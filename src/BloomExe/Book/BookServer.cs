@@ -25,7 +25,10 @@ namespace Bloom.Book
 		public Book GetBookFromBookInfo(BookInfo bookInfo)
 		{
 			//Review: Note that this isn't doing any caching yet... worried that caching will just eat up memory, but if anybody is holding onto these, then the memory won't be freed anyhow
-
+			if(bookInfo.GetType()== typeof(ErrorBookInfo))
+			{
+				return new ErrorBook(((ErrorBookInfo)bookInfo).Exception, bookInfo.FolderPath, true );
+			}
 			var book = _bookFactory(bookInfo, _storageFactory(bookInfo.FolderPath));
 			return book;
 		}
@@ -66,7 +69,7 @@ namespace Bloom.Book
 				//Hack: this is a bit of a hack, to handle problems where we make the book with the suggested initial name, but the title is still something else
 				var name = Path.GetFileName(newBookInfo.FolderPath); // this way, we get "my book 1", "my book 2", etc.
 				newBook.SetTitle(name);
-
+				
 				Logger.WriteMinorEvent("Finished CreateFromnewBook({0})", newBook.FolderPath);
 				Logger.WriteEvent("CreateFromSourceBook({0})", newBook.FolderPath);
 				return newBook;

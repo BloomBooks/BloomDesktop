@@ -23,6 +23,22 @@ namespace Bloom.Book
 			_folderPath = folderPath;
 			_canDelete = canDelete;
 			Logger.WriteEvent("Created ErrorBook with exception message: " + Exception.Message);
+			BookInfo = new ErrorBookInfo(folderPath,exception);
+		}
+
+
+		public override Layout GetLayout()
+		{
+			return Layout.A5Portrait;
+		}
+
+
+		public override string TitleBestForUserDisplay
+		{
+			get
+			{
+				return Title;
+			}
 		}
 
 		public override string Title
@@ -42,10 +58,10 @@ namespace Bloom.Book
 			get { return _canDelete; }
 		}
 
-		public HtmlDom GetEditableHtmlDomForPage(IPage page)
-		{
-			return GetErrorDOM();
-		}
+//		public HtmlDom GetEditableHtmlDomForPage(IPage page)
+//		{
+//			return GetErrorDOM();
+//		}
 
 		public override bool CanUpdate
 		{
@@ -65,25 +81,26 @@ namespace Bloom.Book
 //            return didDelete;
 //        }
 
-		private HtmlDom GetErrorDOM()
-		{
-			var dom = new XmlDocument();
-			var builder = new StringBuilder();
-			builder.Append("<html><body>");
-			builder.AppendLine("<p>This book (" + FolderPath + ") has errors.");
-			builder.AppendLine(
-				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
+//		private HtmlDom GetErrorDOM()
+//		{
+//
+//			var dom = new XmlDocument();
+//			var builder = new StringBuilder();
+//			builder.Append("<html><body>");
+//			builder.AppendLine("<p>This book (" + FolderPath + ") has errors.");
+//			builder.AppendLine(
+//				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
+//
+//			builder.Append(Exception.Message.Replace(Environment.NewLine,"<br/>"));
+//
+//			builder.Append("</body></html>");
+//			return new HtmlDom(builder.ToString());
+//		}
 
-			builder.Append(Exception.Message.Replace(Environment.NewLine,"<br/>"));
-
-			builder.Append("</body></html>");
-			return new HtmlDom(builder.ToString());
-		}
-
-		public override HtmlDom GetPreviewHtmlFileForWholeBook()
-		{
-			return GetErrorDOM();
-		}
+//		public override HtmlDom GetPreviewHtmlFileForWholeBook()
+//		{
+//			return GetErrorDOM();
+//		}
 
 		public override XmlDocument RawDom
 		{

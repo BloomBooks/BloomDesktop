@@ -241,7 +241,11 @@ namespace Bloom.CollectionTab
 
 		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
 		{
-			_thumbNailer.RebuildThumbNailAsync(book, thumbnailOptions, callback, errorCallback);
+			if (!(book is ErrorBook))
+			{
+				_thumbNailer.RebuildThumbNailAsync(book, thumbnailOptions, callback, errorCallback);
+			}
+			
 		}
 
 		public void MakeBloomPack(string path, bool forReaderTools = false)
@@ -446,7 +450,7 @@ namespace Bloom.CollectionTab
 				i++;
 				var book = _bookServer.GetBookFromBookInfo(bookInfo);
 				//gets overwritten: progress.WriteStatus(book.TitleBestForUserDisplay);
-				progress.WriteMessage("Processing " + book.TitleBestForUserDisplay + " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
+				progress.WriteMessage("Processing " + book.TitleBestForUserDisplay+ " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
 				book.BringBookUpToDate(progress);
 			}
 		}
@@ -523,7 +527,7 @@ namespace Bloom.CollectionTab
 				var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
 				if (newBook == null)
 					return; //This can happen if there is a configuration dialog and the user clicks Cancel
-
+				
 				TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 
 				if (_bookSelection != null)

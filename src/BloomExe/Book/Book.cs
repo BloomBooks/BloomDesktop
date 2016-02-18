@@ -107,17 +107,17 @@ namespace Bloom.Book
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
 			}
+
+			if (!info.IsEditable)
+			{
+				Book.SelectNextCoverColor(); // we only increment when showing a template or shell
+				InitCoverColor();
+			}
+
 			// If it doesn't already have a cover color give it one.
 			if (OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]").Count == 0)
 			{
-				InitCoverColor();
-				if (info.IsEditable)
-				{
-					// make that cover color permanent!
-					// We don't use simply Save() because that does some extra work we don't need here
-					// and it causes at least one unit test to fail.
-					_storage.Save();
-				}
+				InitCoverColor(); // should use the same color as what they saw in the preview of the template/shell
 			}
 			FixBookIdAndLineageIfNeeded();
 			_storage.Dom.RemoveExtraBookTitles();
@@ -131,9 +131,14 @@ namespace Bloom.Book
 			UserPrefs.UpdateFileLocation(_storage.FolderPath);
 		}
 
-		public static Color NextBookColor()
+		/// <summary>
+		/// This just increments the color index so that the next book to be constructed that doesn't already have a color will use it
+		/// </summary>
+		public static void SelectNextCoverColor()
 		{
-			return CoverColors[_coverColorIndex++ % CoverColors.Length];
+			_coverColorIndex = _coverColorIndex+1;
+			if( _coverColorIndex >= CoverColors.Length)
+				_coverColorIndex = 0;
 		}
 
 		public CollectionSettings CollectionSettings { get { return _collectionSettings; }}
@@ -150,7 +155,7 @@ namespace Bloom.Book
 		/// If we have to just show title in one language, which should it be?
 		/// Note, this isn't going to be the best for choosing a filename, which we are more likely to want in a national language
 		/// </summary>
-		public string TitleBestForUserDisplay
+		public virtual string TitleBestForUserDisplay
 		{
 			get
 			{
@@ -163,12 +168,12 @@ namespace Bloom.Book
 					//to not show English names. But the order was also critical. So we want those old books to go ahead and use their
 					//English names.
 					var englishTitle = title.GetExactAlternative("en").ToLowerInvariant();
-					var SHRPMatches = new string[] {"p1", "p2", "p3", "p4", "SHRP"};
+					var SHRPMatches = new string[] { "p1", "p2", "p3", "p4", "SHRP" };
 					var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m => englishTitle.Contains(m.ToLowerInvariant()));
 
 					//if this book is one of the ones we're editing in our collection, it really
 					//needs a title in our main language, it would be confusing to show a title from some other langauge
-					if(!couldBeOldStyleUgandaSHRPBook && (IsEditable || title.Empty))
+					if (!couldBeOldStyleUgandaSHRPBook && (IsEditable || title.Empty))
 					{
 						display = LocalizationManager.GetString("CollectionTab.TitleMissing", "Title Missing",
 							"Shown as the thumbnail caption when the book doesn't have a title");
@@ -199,7 +204,7 @@ namespace Bloom.Book
 				}
 				// Handle both Windows and Linux line endings in case a file copied between the two
 				// ends up with the wrong one.
-				display = display.Replace("<br />", " ").Replace("\r\n"," ").Replace("\n", " ").Replace("  "," ");
+				display = display.Replace("<br />", " ").Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
 				display = RemoveXmlMarkup(display).Trim();
 				return display;
 			}
@@ -469,7 +474,16 @@ namespace Bloom.Book
 			var builder = new StringBuilder();
 			builder.Append("<html><body style='font-family:arial,sans'>");
 
-			builder.AppendLine(_storage.GetBrokenBookRecommendationHtml());
+			if(_storage != null)
+			{
+				builder.AppendLine(_storage.GetBrokenBookRecommendationHtml());
+			}
+			else
+			{
+				builder.AppendLine("<p>" + LocalizationManager.GetString("Errors.BookProblem",
+					"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
+				                   + "</p>");
+			}
 
 			builder.Append(((StringBuilderProgress) _log).Text);//review: is this ever non-empty?
 
@@ -1218,7 +1232,7 @@ namespace Bloom.Book
 			get { return _bookData.MultilingualContentLanguage3; }
 		}
 
-		public BookInfo BookInfo { get; private set; }
+		public BookInfo BookInfo { get; protected set; }
 
 		public UserPrefs UserPrefs { get; private set; }
 
@@ -1333,7 +1347,7 @@ namespace Bloom.Book
 			} //todo add other ui languages
 		}
 
-		public bool HasAboutBookInformationToShow { get { return File.Exists(AboutBookMarkdownPath); } }
+		public bool HasAboutBookInformationToShow { get { return _storage!=null && File.Exists(AboutBookMarkdownPath); } }
 		public string AboutBookMarkdownPath  {
 			get
 			{
@@ -1341,12 +1355,9 @@ namespace Bloom.Book
 			}
 		}
 
-		// Assign the next of the standard cover colors which will be used consistently henceforth for this book
-		// (except when actually printing...for that we switch to white so the
-		// actual cardstock color comes through unchanged).
-		internal void InitCoverColor()
+		public void InitCoverColor()
 		{
-			AddCoverColor(this.OurHtmlDom, NextBookColor());
+			AddCoverColor(this.OurHtmlDom, CoverColors[_coverColorIndex]);
 		}
 
 		private void AddCoverColor(HtmlDom dom, Color coverColor)
@@ -1982,7 +1993,7 @@ namespace Bloom.Book
 			_storage.CheckBook(progress, pathToFolderOfReplacementImages);
 		}
 
-		public Layout GetLayout()
+		public virtual Layout GetLayout()
 		{
 			return Layout.FromDom(OurHtmlDom, Layout.A5Portrait);
 		}
