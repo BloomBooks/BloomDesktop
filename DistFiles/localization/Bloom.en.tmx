@@ -1123,12 +1123,6 @@
         <seg>3) Speak</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Toolbox.TalkingBookTool.ToolPurpose">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>This tool helps create recordings which can be used in epubs</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.Edit">
       <tuv xml:lang="en">
         <seg>Edit</seg>

@@ -1,6 +1,9 @@
+@toolboxBackgroundColor: #404040;
+
+
 div.toolboxRoot {
 	display: inline-block;
-	background-color: #404040;
+	background-color: @toolboxBackgroundColor;
 	color: white;
 	font-size: x-small;
 	position: fixed;
@@ -9,6 +12,12 @@ div.toolboxRoot {
 	right: 0;
 	width: 200px;
 	z-index: 18000; /* Just over help bubbles, but under topic dialog */
+	
+	.ui-widget-content{
+		background: none; // clear out the backgroudn image jquery-ui adds
+		background-color: @toolboxBackgroundColor;
+		border: none;
+	}
 }
 
 .ui-accordion-header { -moz-user-select: none; }

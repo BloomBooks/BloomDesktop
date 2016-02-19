@@ -1,6 +1,10 @@
 // C# used to replace this with the desired background color,
 // but the switch to a separate less/css file defeated that mechanism.
+
+@bloomYellow : #FEBF00;
+@highlightColor: @bloomYellow;//#96668f;
 @DarkGray:#404040;
+
 BODY {
     background-color: @DarkGray;
 }
@@ -97,7 +101,7 @@ BODY {
     }
 }
 
-.gridSelected .pageContainer { padding: 1px; border: 2px solid rgb(255, 255, 163); }
+.gridSelected .pageContainer { padding: 1px; border: 2px solid @highlightColor }
 
 .gridItem {
     width: 80px;

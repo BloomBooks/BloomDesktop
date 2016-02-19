@@ -12,5 +12,6 @@ namespace Bloom
 
 		public static Color Blue = Color.FromArgb(17,129,146);
 		public static Color BloomRed = Color.FromArgb(0xff, 0xD6, 0x56, 0x49);
+		public static Color BloomYellow = Color.FromArgb(254, 191, 0);
 	}
 }
