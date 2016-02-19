@@ -356,8 +356,8 @@ class AudioRecording {
         // Erase the whole canvas
         var height = 15;
         var width = 80;
-        var recordQtipColor = '#363333'; // should match value in audioRecording.less
-        ctx.fillStyle = recordQtipColor;
+        var toolboxBackgroundColor ='#404040';// should match value in audioRecording.less
+        ctx.fillStyle = toolboxBackgroundColor;
         ctx.fillRect(0, 0, width, height);
 
         // Draw the appropriate number and color of bars
@@ -365,15 +365,15 @@ class AudioRecording {
         var barWidth = 4;
         var interval = gap + barWidth;
         var bars = Math.floor(width / interval);
-        var redBars = Math.max(Math.floor(bars / 10), 1);
-        var yellowBars = Math.max(Math.floor(bars / 5), 1);
-        var greenBars = bars - redBars - yellowBars;
-        var showBars = Math.floor(bars * parseFloat(level)) + 1;
-        ctx.fillStyle = '#0C8597'; // should match recordQtipForeground; or "#00FF00"; green
+        var loudBars = 2;
+        var quietBars = 2;
+        var mediumBars = Math.max(bars - (loudBars+quietBars), 1);
+        var showBars = Math.floor(bars * parseFloat(level));// + 1;
+        ctx.fillStyle =  '#D2D2D2'; // should match text color or "#00FF00";
         for (var i = 0; i < showBars; i++) {
             var left = interval * i;
-            if (i >= greenBars) ctx.fillStyle = '96668f';//or "#FFFF00"; yellow
-            if (i >= greenBars + yellowBars) ctx.fillStyle = "#FF0000";
+            if (i >= quietBars) ctx.fillStyle = '#0C8597';
+            if (i >= quietBars + mediumBars) ctx.fillStyle = "#FF0000";//red
             ctx.fillRect(left, 0, barWidth, height);
         }
     }
