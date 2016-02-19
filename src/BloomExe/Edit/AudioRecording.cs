@@ -315,9 +315,10 @@ namespace Bloom.Edit
 
 		private void WarnPressTooShort()
 		{
-			MessageBox.Show(null, LocalizationManager.GetString("EditTab.AudioControl.PleaseHold",
-				"Please hold the record button down until you have finished recording", "Appears when the button is pressed very briefly"),
-				 LocalizationManager.GetString("EditTab.AudioControl.PressToRecord", "Press to record", "Caption for PleaseHold message"));
+			MessageBox.Show(null, LocalizationManager.GetString("EditTab.AudioControl.PleaseHoldMessage",
+				"Please hold the button down until you have finished recording", "Appears when the speak/record button is pressed very briefly"),
+				"");//not worth having translators translate a window title for a simple message
+
 			// Seems sometimes on a very short click the recording actually got started while we were informing the user
 			// that he didn't click long enough. Before we try to delete the file where the recording is taking place,
 			// we have to stop it; otherwise, we will get an exception trying to delete it.
