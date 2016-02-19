@@ -196,6 +196,7 @@ class AudioRecording {
             this.setStatus('record', Status.Expected);
         }
         this.setStatus('play', Status.Disabled);
+        this.setStatus('clear', Status.Disabled);
     }
 
     private selectInputDevice(): void {
@@ -266,6 +267,7 @@ class AudioRecording {
         this.updatePlayerStatus();
         this.setStatus('record', Status.Expected);
         this.setStatus('play', Status.Disabled);
+        this.setStatus('clear', Status.Disabled);
     }
 
     public initializeTalkingBookTool() {
