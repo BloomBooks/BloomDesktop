@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Diagnostics;
+using Newtonsoft.Json;
 using System.IO;
 
 namespace Bloom.Book
@@ -47,10 +48,19 @@ namespace Bloom.Book
 
 		private void Save()
 		{
-			// We're checking this because the deserialization routine calls the preoperty setters which triggers a save. We don't
+			// We're checking this because the deserialization routine calls the property setters which triggers a save. We don't
 			// want to save while loading.
-			if (_loading) return;
-			File.WriteAllText(_fileName, JsonConvert.SerializeObject(this));
+			if (_loading)
+				return;
+			var prefs = JsonConvert.SerializeObject(this);
+			Debug.Assert(!string.IsNullOrWhiteSpace(prefs));
+
+			if (!string.IsNullOrWhiteSpace(prefs))
+			{
+				var temp = new SIL.IO.TempFileForSafeWriting(_fileName);
+				File.WriteAllText(temp.TempFilePath, prefs);
+				temp.WriteWasSuccessful();
+			}
 		}
 	}
 
