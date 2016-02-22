@@ -272,7 +272,8 @@ namespace Bloom.web
 						Logger.WriteEvent("At ServerBase: ListenerCallback(): stack=");
 						Logger.WriteEvent(error.StackTrace);
 #if DEBUG
-						throw;
+						//NB: "throw" here makes it impossible for even the programmer to continue and try to see how it happens
+						Debug.Fail("(Debug Only) "+error.Message);
 #endif
 					}
 				}
