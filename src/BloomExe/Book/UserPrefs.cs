@@ -1,5 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Diagnostics;
+using Newtonsoft.Json;
 using System.IO;
+using SIL.Reporting;
+
 
 namespace Bloom.Book
 {
@@ -11,12 +15,30 @@ namespace Bloom.Book
 
 		private UserPrefs() {}
 
-		public static UserPrefs Load(string fileName)
+		public static UserPrefs LoadOrMakeNew(string fileName)
 		{
 			if (string.IsNullOrEmpty(fileName))
 				return null;
 
-			var userPrefs = File.Exists(fileName) ? JsonConvert.DeserializeObject<UserPrefs>(File.ReadAllText(fileName)) : new UserPrefs();
+			UserPrefs userPrefs = null;
+			if(File.Exists(fileName))
+			{
+				try
+				{
+					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(File.ReadAllText(fileName));
+					if (userPrefs == null)
+						throw new ApplicationException("JsonConvert.DeserializeObject() returned null");
+				}
+				catch (Exception e)
+				{
+					Logger.WriteEvent("error reading UserPrefs at "+fileName+"  "+e.Message);
+					//otherwise, just give them a new user prefs
+					userPrefs = null;
+				}
+				
+			}
+			if(userPrefs == null)
+				userPrefs = new UserPrefs();
 			userPrefs._fileName = fileName;
 			userPrefs._loading = false;
 			return userPrefs;
@@ -47,10 +69,19 @@ namespace Bloom.Book
 
 		private void Save()
 		{
-			// We're checking this because the deserialization routine calls the preoperty setters which triggers a save. We don't
+			// We're checking this because the deserialization routine calls the property setters which triggers a save. We don't
 			// want to save while loading.
-			if (_loading) return;
-			File.WriteAllText(_fileName, JsonConvert.SerializeObject(this));
+			if (_loading)
+				return;
+			var prefs = JsonConvert.SerializeObject(this);
+			Debug.Assert(!string.IsNullOrWhiteSpace(prefs));
+
+			if (!string.IsNullOrWhiteSpace(prefs))
+			{
+				var temp = new SIL.IO.TempFileForSafeWriting(_fileName);
+				File.WriteAllText(temp.TempFilePath, prefs);
+				temp.WriteWasSuccessful();
+			}
 		}
 	}
 

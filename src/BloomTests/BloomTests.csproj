@@ -165,6 +165,7 @@
     <Compile Include="Book\BookCollectionTests.cs" />
     <Compile Include="Book\BookCopyrightAndLicenseTests.cs" />
     <Compile Include="Book\BookInfoTests.cs" />
+    <Compile Include="Book\UserPrefsTests.cs" />
     <Compile Include="Book\BookTestsBase.cs" />
     <Compile Include="MiscellaneousTests.cs" />
     <Compile Include="Publish\ExportEpubTests.cs" />
