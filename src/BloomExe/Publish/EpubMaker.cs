@@ -212,7 +212,7 @@ namespace Bloom.Publish
 			MakeSpine(opf, rootElt, manifestPath);
 		}
 
-		private string AudioPathForId(string id)
+		private string GetOrCreateCompressedAudioIfWavExists(string id)
 		{
 			var root = AudioFolderPath;
 			var extensions = new [] {"mp3", "mp4"}; // .ogg,, .wav, ...?
@@ -259,7 +259,7 @@ namespace Bloom.Publish
 
 		private bool IsCompressedAudioForIdMissing(string id)
 		{
-			if (AudioPathForId(id) != null)
+			if (GetOrCreateCompressedAudioIfWavExists(id) != null)
 				return false; // not missing, we got it.
 			// We consider ourselves to have a missing compressed audio if we have a wav recording
 			// but no corresponding compressed waveform.
@@ -280,7 +280,7 @@ namespace Bloom.Publish
 		{
 			var spansWithIds = pageDom.RawDom.SafeSelectNodes(".//span[@id]").Cast<XmlElement>();
 			var spansWithAudio =
-				spansWithIds.Where(x =>AudioPathForId(x.Attributes["id"].Value) != null);
+				spansWithIds.Where(x =>GetOrCreateCompressedAudioIfWavExists(x.Attributes["id"].Value) != null);
 			if (!spansWithAudio.Any())
 				return;
 			var overlayName = GetOverlayName(pageDocName);
@@ -304,7 +304,7 @@ namespace Bloom.Publish
 			foreach (var span in spansWithAudio)
 			{
 				var spanId = span.Attributes["id"].Value;
-				var path = AudioPathForId(spanId);
+				var path = GetOrCreateCompressedAudioIfWavExists(spanId);
 				var epubPath = CopyFileToEpub(path);
 				seq.Add(new XElement(smil+"par",
 					new XAttribute("id", "s" + index++),
