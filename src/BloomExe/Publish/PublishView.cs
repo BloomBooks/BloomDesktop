@@ -519,9 +519,18 @@ namespace Bloom.Publish
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
 
 			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "epub",
-				"bloomEpubPreview.htm");
+				"bloomEpubPreview.html");
+
+			var audioSituationClass = "noAudioAvailable";
+			if(_publishWithoutAudio)
+				audioSituationClass = "haveAudioButNotMakingTalkingBook";
+			else if(_model.BookHasAudio)
+				audioSituationClass = "isTalkingBook";
+
 			var htmlContents = File.ReadAllText(previewHtmlTemplatePath)
-				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory));
+				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory))
+				.Replace("_AudioSituationClass_", audioSituationClass);
+
 			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
 			File.WriteAllText(previewHtmlInstancePath, htmlContents);
 			_epubPreviewBrowser.Navigate(previewHtmlInstancePath.ToLocalhost(), false);

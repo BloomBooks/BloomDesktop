@@ -482,6 +482,12 @@ namespace Bloom.Publish
 		}
 
 		// PrepareToStageEpub must be called first
+		internal bool BookHasAudio
+		{
+ 			get { return _epubMaker.BookHasAudio; }
+		}
+
+		// PrepareToStageEpub must be called first
 		internal void StageEpub(bool publishWithoutAudio)
 		{
 			_epubMaker.StageEpub(publishWithoutAudio);
