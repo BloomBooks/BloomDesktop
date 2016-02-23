@@ -264,7 +264,7 @@ namespace Bloom.Publish
  				return
  					Book.RawDom.SafeSelectNodes("//span[@id]")
  						.Cast<XmlElement>()
- 						.Any(span => AudioPathForId(span.Attributes["id"].Value) != null);
+ 						.Any(span => GetOrCreateCompressedAudioIfWavExists(span.Attributes["id"].Value) != null);
  			}
  		}
 
