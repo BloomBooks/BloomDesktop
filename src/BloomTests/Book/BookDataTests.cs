@@ -983,35 +983,59 @@ namespace BloomTests.Book
 			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacualr Contributions. Only national language fields get this treatment");
 		}
 
-//		[Test]
-//		public void PrepareForEditing_CustomLicenseNotDiscarded()
-//		{
-//			SetDom(@"<div id='bloomDataDiv'>
-//						<div data-book='copyright' lang='*'>
-//							Copyright © 2015, me
-//						</div>
-//						<div data-book='licenseNotes' lang='en'>
-//							Custom license info
-//						</div>
-//					</div>");
-//			var book = CreateBook();
-//			var dom = book.RawDom;
-//			book.PrepareForEditing();
-//			var copyright = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='marginBox']//div[@data-book='copyright']").InnerText;
-//			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
-//			var licenseImage = licenseBlock.SelectSingleNode("img");
-//			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']").InnerText;
-//			var licenseDescription = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']").InnerText;
-//			var licenseNotes = licenseBlock.SelectSingleNode("div[@data-book='licenseNotes']").InnerText;
-//			// Check that updated dom has the right license contents on the Credits page
-//			// Check that data-div hasn't been contaminated with non-custom license stuff
-//			Assert.AreEqual("Copyright © 2015, me", copyright);
-//			Assert.AreEqual("Custom license info", licenseNotes);
-//			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='licenseBlock']/div[@data-book='licenseUrl' and text()='']", 1);
-//			Assert.IsEmpty(licenseDescription);
-//			Assert.IsEmpty(licenseImage.Attributes["src"].Value);
-//			Assert.IsNull(licenseImage.Attributes["alt"]);
-//		}
+		//		[Test]
+		//		public void PrepareForEditing_CustomLicenseNotDiscarded()
+		//		{
+		//			SetDom(@"<div id='bloomDataDiv'>
+		//						<div data-book='copyright' lang='*'>
+		//							Copyright © 2015, me
+		//						</div>
+		//						<div data-book='licenseNotes' lang='en'>
+		//							Custom license info
+		//						</div>
+		//					</div>");
+		//			var book = CreateBook();
+		//			var dom = book.RawDom;
+		//			book.PrepareForEditing();
+		//			var copyright = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='marginBox']//div[@data-book='copyright']").InnerText;
+		//			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
+		//			var licenseImage = licenseBlock.SelectSingleNode("img");
+		//			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']").InnerText;
+		//			var licenseDescription = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']").InnerText;
+		//			var licenseNotes = licenseBlock.SelectSingleNode("div[@data-book='licenseNotes']").InnerText;
+		//			// Check that updated dom has the right license contents on the Credits page
+		//			// Check that data-div hasn't been contaminated with non-custom license stuff
+		//			Assert.AreEqual("Copyright © 2015, me", copyright);
+		//			Assert.AreEqual("Custom license info", licenseNotes);
+		//			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='licenseBlock']/div[@data-book='licenseUrl' and text()='']", 1);
+		//			Assert.IsEmpty(licenseDescription);
+		//			Assert.IsEmpty(licenseImage.Attributes["src"].Value);
+		//			Assert.IsNull(licenseImage.Attributes["alt"]);
+		//		}
 
+
+		/// <summary>
+		/// BL-3078 where when xmatter was injected and updated, the text stored in data-book overwrote
+		/// the innerxml of the div, knocking out the <label></label> in there, which lead to losing 
+		/// the side bubbles explaining what the field was for.
+		/// </summary>
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_EditableHasLabelElement_LabelPreserved()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					 <div data-book='insideBackCover' lang='en'><p/></div>
+				</div>
+				<div class='bloom-page'>
+					 <div id='foo' class='bloom-content1 bloom-editable' data-book='insideBackCover' lang='en'>
+						<label>some label</label>
+					</div>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@id='foo']");
+			Assert.That(foo.InnerXml, Contains.Substring("<label>"));
+		}
 	}
 }

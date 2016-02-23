@@ -727,8 +727,7 @@ namespace Bloom.Book
 							{
 								s = ""; //don't show it in N2, since it's the same as N1
 							}
-							node.InnerXml = s;
-							//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
+							SetInnerXmlPreservingLabel(node, s);
 						}
 					}
 					else if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
@@ -739,7 +738,7 @@ namespace Bloom.Book
 							lang = data.WritingSystemAliases[lang];
 						if (itemsToDelete.Contains(Tuple.Create(key, lang)))
 						{
-							node.InnerXml = ""; // a later process may remove node altogether.
+							SetInnerXmlPreservingLabel(node, "");// a later process may remove node altogether.
 						}
 					}
 				}
@@ -750,6 +749,22 @@ namespace Bloom.Book
 					"Error in UpdateDomFromDataSet(," + elementName + "). RawDom was:\r\n" +
 					targetDom.OuterXml, error);
 			}
+		}
+
+		/// <summary>
+		/// some templates have a <label></label> element that javascript turns into a bubble describing the field
+		/// these labels are temporary, so the go away and are not saved to data-book. But when we then take
+		/// an xmatter template page and replace the contents with what was in data-book, we don't want to clobber
+		/// the <label></label> elements that are already in there. BL-3078
+		/// </summary>
+		/// <param name="node"></param>
+		/// <param name="newInnerXml"></param>
+		private void SetInnerXmlPreservingLabel(XmlElement node, string newInnerXml)
+		{
+			var labelElement = node.SelectSingleNode("label");
+			node.InnerXml = newInnerXml;
+			if (labelElement != null)
+				node.AppendChild(labelElement);
 		}
 
 		/// <summary>
