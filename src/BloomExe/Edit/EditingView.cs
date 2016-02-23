@@ -334,10 +334,8 @@ namespace Bloom.Edit
 				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
 				var dom = _model.GetXmlDocumentForEditScreenWebPage();
 				_model.RemoveStandardEventListeners();
-				_browser1.Focus();
 				_browser1.Navigate(dom, domForCurrentPage);
 				_pageListView.Focus();
-				_browser1.Focus();
 				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
 				// initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
 				// This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
@@ -360,6 +358,8 @@ namespace Bloom.Edit
 			_browser1.WebBrowser.DocumentCompleted -= WebBrowser_ReadyStateChanged;
 			ChangingPages = false;
 			_model.DocumentCompleted();
+			_browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
+
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.
 			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - page change completed", false);
