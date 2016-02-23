@@ -1018,11 +1018,19 @@ namespace Bloom.Book
 			string s = "";
 			if (!this._errorAlreadyContainsInstructions)
 			{
-				s = "<p>" + LocalizationManager.GetString("Errors.BookProblem",
-					"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
-				+ "</p>";
+				s = GenericBookProblemNotice;
 			}
 			return s + "<p>" + ErrorMessagesHtml + "</p>";
+		}
+
+		public static string GenericBookProblemNotice
+		{
+			get
+			{
+				return "<p>" + LocalizationManager.GetString("Errors.BookProblem",
+					"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
+				       + "</p>";
+			}
 		}
 	}
 }

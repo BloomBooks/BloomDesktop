@@ -25,7 +25,7 @@ namespace Bloom.Book
 		public Book GetBookFromBookInfo(BookInfo bookInfo)
 		{
 			//Review: Note that this isn't doing any caching yet... worried that caching will just eat up memory, but if anybody is holding onto these, then the memory won't be freed anyhow
-			if(bookInfo.GetType()== typeof(ErrorBookInfo))
+			if(bookInfo is ErrorBookInfo)
 			{
 				return new ErrorBook(((ErrorBookInfo)bookInfo).Exception, bookInfo.FolderPath, true );
 			}

@@ -58,11 +58,6 @@ namespace Bloom.Book
 			get { return _canDelete; }
 		}
 
-//		public HtmlDom GetEditableHtmlDomForPage(IPage page)
-//		{
-//			return GetErrorDOM();
-//		}
-
 		public override bool CanUpdate
 		{
 			get { return false; }

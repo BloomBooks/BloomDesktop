@@ -108,6 +108,10 @@ namespace Bloom.Book
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
 			}
 
+			//if we're showing the user a shell/template book, pick a color for it 
+			//If it is editable, then we don't want to change to the next color, we
+			//want to use the color that we used for the sample shell/template we
+			//showed them previously.
 			if (!info.IsEditable)
 			{
 				Book.SelectNextCoverColor(); // we only increment when showing a template or shell
@@ -480,9 +484,7 @@ namespace Bloom.Book
 			}
 			else
 			{
-				builder.AppendLine("<p>" + LocalizationManager.GetString("Errors.BookProblem",
-					"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
-				                   + "</p>");
+				builder.AppendLine(BookStorage.GenericBookProblemNotice);
 			}
 
 			builder.Append(((StringBuilderProgress) _log).Text);//review: is this ever non-empty?

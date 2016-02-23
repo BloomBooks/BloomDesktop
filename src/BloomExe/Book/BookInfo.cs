@@ -394,7 +394,7 @@ namespace Bloom.Book
 
 	public class ErrorBookInfo : BookInfo
 	{
-		public ErrorBookInfo(string folderPath, Exception exception) //No: our known-bad contents could crash that: base(folderPath,false/*review*/)
+		public ErrorBookInfo(string folderPath, Exception exception) //No: our known-bad contents could crash that: base(folderPath,false)
 		{
 			FolderPath = folderPath;
 			Exception = exception;
