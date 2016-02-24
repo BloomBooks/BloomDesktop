@@ -18,6 +18,7 @@
   "author": "SIL International",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.9.1",
     "jquery": "^1.11.3",
     "jquery.hotkeys": "^0.1.0",
     "toastr": "^2.1.2"
@@ -28,7 +29,7 @@
     "gulp-jade": "^1.1.0",
     "gulp-less": "^3.0.5",
     "gulp-typescript": "^2.10.0",
-     "gulp-sourcemaps": "^1.6.0",
+    "gulp-sourcemaps": "^1.6.0",
     "jasmine": "^2.4.1",
     "karma": "^0.13.19",
     "karma-chrome-launcher": "^0.2.2",

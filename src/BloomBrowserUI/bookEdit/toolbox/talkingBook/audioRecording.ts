@@ -40,6 +40,8 @@
 // - Some more obvious affordance for launching the Record feature
 // - Extract content of bubble HTML into its own file?
 
+///<reference path="../../../typings/axios/axios.d.ts"/>
+
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
     Enabled, // Can use now, not the most likely thing to do next
@@ -82,21 +84,36 @@ class AudioRecording {
         var id = changeTo.attr("id");
         var player = $('#player');
         //  FF can't directly play mp3, try wav. The relevant wav file is in the audio file of the book in the page frame
-        var bookSrc = this.getPageFrame().src;
-        var index = bookSrc.lastIndexOf('/');
-        var bookFolderUrl = bookSrc.substring(0, index + 1);
-        player.attr('src', bookFolderUrl + 'audio/' + id + '.wav');
+        
+        player.attr('src', this.currentAudioUrl(id));
         var audioElts = this.getAudioElements();
         var index = audioElts.index(changeTo);
         this.setStatus('prev', index === 0 ? Status.Disabled : Status.Enabled);
         this.setStatus('next', index === audioElts.length - 1 ? Status.Disabled : Status.Enabled);
-        // This may get overridden very shortly if we get a notification that the source file is not available.
-        this.setStatus('play', Status.Enabled);
+        
+        this.setStatus('play', Status.Disabled);
+        this.setStatus('clear', Status.Disabled);
+        
+        axios.get(this.currentAudioUrl(id)).then( response => {
+            this.setStatus('play', Status.Enabled);
+            this.setStatus('clear', Status.Enabled);
+        }).catch(error =>{
+            //server couldn't find it, so just leave these buttons disabled
+        });
+
+        
         // This one we currently just allow the user to try any time there is content in the page.
         // There's no easy way to test 'is there a recording for any segment'; we're enabling
         // the play button based on feedback we get as a result of setting the player's src to
         // the expected file, and that only tells us about that one segment.
         this.setStatus('listen', Status.Enabled);
+    }
+
+    private currentAudioUrl(id: string): string{
+        var bookSrc = this.getPageFrame().src;
+        var index = bookSrc.lastIndexOf('/');
+        var bookFolderUrl = bookSrc.substring(0, index + 1);
+        return bookFolderUrl+'audio/' + id + '.wav';
     }
 
     private moveToPrevSpan(): void {
@@ -267,6 +284,7 @@ class AudioRecording {
         this.updatePlayerStatus();
         this.setStatus('record', Status.Expected);
         this.setStatus('play', Status.Disabled);
+        this.setStatus('clear', Status.Disabled);
     }
 
     public initializeTalkingBookTool() {
