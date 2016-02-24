@@ -208,13 +208,16 @@ namespace Bloom.CollectionTab
 					try
 					{
 						dlg.Description += Environment.NewLine + Environment.NewLine + Environment.NewLine;
-						dlg.Description+=_bookSelection.CurrentSelection.Storage.ErrorMessagesHtml;
+						if(_bookSelection.CurrentSelection.Storage != null)
+						{
+							dlg.Description += _bookSelection.CurrentSelection.Storage.ErrorMessagesHtml;
+						}
 					}
 					catch (Exception)
 					{
 						//no use chasing errors generated getting error info
 					}
-					
+					dlg.ShowInTaskbar = true;
                     dlg.ShowDialog();
 				}
 			}

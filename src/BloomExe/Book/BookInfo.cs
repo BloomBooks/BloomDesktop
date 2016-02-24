@@ -32,6 +32,11 @@ namespace Bloom.Book
 			get { return _metadata ?? (_metadata = new BookMetaData()); }
 		}
 
+		//for use by ErrorBookInfo
+		protected BookInfo()
+		{
+			
+		}
 		public BookInfo(string folderPath, bool isEditable)
 		{
 			FolderPath = folderPath;
@@ -389,8 +394,9 @@ namespace Bloom.Book
 
 	public class ErrorBookInfo : BookInfo
 	{
-		public ErrorBookInfo(string folderPath, Exception exception) : base(folderPath,false/*review*/)
+		public ErrorBookInfo(string folderPath, Exception exception) //No: our known-bad contents could crash that: base(folderPath,false)
 		{
+			FolderPath = folderPath;
 			Exception = exception;
 		}
 
@@ -418,6 +424,10 @@ namespace Bloom.Book
 		public static BookMetaData FromString(string input)
 		{
 			var result = JsonConvert.DeserializeObject<BookMetaData>(input);
+			if(result == null)
+			{
+				throw new ApplicationException("meta.json of this book may be corrupt");
+			}
 			if (result.Tools != null)
 			{
 				foreach (var tool in result.Tools.Where(t => t is UnknownTool).ToArray())

@@ -159,14 +159,14 @@ namespace Bloom.Collection
 			_bookInfos.Add(bookInfo);
 		}
 
-		private void AddBookInfo(string path)
+		private void AddBookInfo(string folderPath)
 		{
 			try
 			{
 				//this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
-				if (Directory.GetFiles(path, "*.htm").Length == 0)
+				if (Directory.GetFiles(folderPath, "*.htm").Length == 0)
 					return;
-				var bookInfo = new BookInfo(path, Type == CollectionType.TheOneEditableCollection);
+				var bookInfo = new BookInfo(folderPath, Type == CollectionType.TheOneEditableCollection);
 
 				_bookInfos.Add(bookInfo);
 			}
@@ -176,8 +176,19 @@ namespace Bloom.Collection
 				{
 					e = e.InnerException;
 				}
+				var jsonPath = Path.Combine(folderPath, BookInfo.MetaDataFileName);
+				Logger.WriteError("Reading "+ jsonPath, e);
+				try
+				{
+					Logger.WriteEvent(jsonPath +" Contents: " +System.Environment.NewLine+ File.ReadAllText(jsonPath));
+				}
+				catch(Exception readError)
+				{
+					Logger.WriteError("Error reading "+ jsonPath, readError);
+				}
+				
 				//_books.Add(new ErrorBook(e, path, Type == CollectionType.TheOneEditableCollection));
-				_bookInfos.Add(new ErrorBookInfo(path, e){});
+				_bookInfos.Add(new ErrorBookInfo(folderPath, e){});
 			}
 		}
 
