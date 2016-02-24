@@ -104,19 +104,6 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi' and text()='Tambu Sut']", 1);
 		}
 
-		[Test]
-		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_GetsCoverColor()
-		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
-																			"Vaccinations");
-			// We need to call the actual BookServer method for this test, since it is BookServer code that adds
-			// the cover color.
-			var server = CreateBookServer();
-			var book = server.CreateFromSourceBook(source, _projectFolder.Path);
-
-			AssertThatXmlIn.HtmlFile(book.GetPathHtmlFile()).HasSpecifiedNumberOfMatchesForXpath("//head/style/text()[contains(., 'coverColor')]", 1);
-		}
-
 		private BookServer CreateBookServer()
 		{
 			var collectionSettings =
@@ -132,27 +119,6 @@ namespace BloomTests.Book
 					new PageListChangedEvent(), new BookRefreshEvent());
 			}, path => new BookStorage(path, _fileLocator, null, collectionSettings), () => _starter, null);
 			return server;
-		}
-
-		[Test]
-		public void GetBookFromBookInfo_OnBookWithNoCoverColor_GetsCoverColor_ButNotIfItHasOne()
-		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
-																			"Vaccinations");
-			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path)); // book starter does NOT set cover color
-
-			var server = CreateBookServer();
-			var book = server.GetBookFromBookInfo(new BookInfo(Path.GetDirectoryName(path), true));
-
-			AssertThatXmlIn.HtmlFile(book.GetPathHtmlFile()).HasSpecifiedNumberOfMatchesForXpath("//head/style/text()[contains(., 'coverColor')]", 1);
-
-			// If we make a book from the same file again, we do NOT get a NEW cover color. In fact, the style element
-			// that sets the color should not have changed at all...except that white space may have been re-arranged.
-			var styleNode = book.OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]")[0].Value;
-			var reloadedBook = server.GetBookFromBookInfo(new BookInfo(Path.GetDirectoryName(path), true));
-			var newStylenode = reloadedBook.OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]")[0].Value;
-			var spaceFixer = new Regex("\\s+");
-			Assert.That(spaceFixer.Replace(newStylenode, " ").Trim(), Is.EqualTo(spaceFixer.Replace(styleNode, " ").Trim()));
 		}
 
 		//For Bloom 3.1, we decided to retire this feature. Now, new books are just called "book"
