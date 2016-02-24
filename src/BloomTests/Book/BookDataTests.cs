@@ -1035,7 +1035,7 @@ namespace BloomTests.Book
 			var data = new BookData(dom, _collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
 			var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@id='foo']");
-			Assert.That(foo.InnerXml, Contains.Substring("<label>"));
+			Assert.That(foo.InnerXml, Contains.Substring("<label>some label</label>"));
 		}
 	}
 }
