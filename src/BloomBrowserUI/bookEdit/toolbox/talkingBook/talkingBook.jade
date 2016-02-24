@@ -12,7 +12,11 @@ html
 		div(data-panelId='talkingBookTool')
 			div.ui-audioBody
 				div
-					audio(id='player')
+					// preload=none prevents the audio element from asking for the audio as soon as it gets a new src value, 
+					// which in BL-3153 was faster than the c# thread writing the file could finish with it. 
+					// As an alternative, a settimeout() in the javascript also worked, button
+					// this seems more durable. By the time the user can click Play, we'll be done.
+					audio(id='player', preload='none')
 				div.audio-label(id='audio-check' data-i18n='EditTab.Toolbox.TalkingBookTool.CheckSettings') 1) Check that you are recording into the correct device and that these levels are showing blue:
 				div.ui-audioInputGroup
 					div.ui-audioInput
