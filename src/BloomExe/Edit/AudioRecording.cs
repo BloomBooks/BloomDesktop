@@ -188,7 +188,6 @@ namespace Bloom.Edit
 			if (Recorder.RecordingState != RecordingState.Recording)
 			{
 				WarnPressTooShort();
-				UpdateDisplay();
 				return;
 			}
 			try
@@ -201,8 +200,10 @@ namespace Bloom.Edit
 			{
 				//swallow it. One reason (based on HearThis comment) is that they didn't hold it down long enough, we detect this below.
 			}
-			if (DateTime.Now - _startRecording < TimeSpan.FromSeconds(0.5))
+			if(DateTime.Now - _startRecording < TimeSpan.FromSeconds(0.5))
+			{
 				WarnPressTooShort();
+			}
 			else
 			{
 				//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
@@ -238,9 +239,9 @@ namespace Bloom.Edit
 			if (Recorder.RecordingState == RecordingState.RequestedStop)
 			{
 				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.AudioControl.BadState",
+					LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.BadState",
 						"Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart."),
-					LocalizationManager.GetString("EditTab.AudioControl.BadStateCaption", "Cannot record"));
+					LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.BadStateCaption", "Cannot record"));
 			}
 			//if (!_recordButton.Enabled)
 			//	return false; //could be fired by keyboard
@@ -318,13 +319,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		/// <summary>
-		/// This is a placeholder method in case we need to communicate further with HTML to update the display during recording
-		/// </summary>
-		public void UpdateDisplay()
-		{
-		}
-
 		private void OnStartRecordingTimer_Elapsed(object sender, EventArgs e)
 		{
 #if __MonoCS__
@@ -338,7 +332,7 @@ namespace Bloom.Edit
 
 		private void WarnPressTooShort()
 		{
-			MessageBox.Show(null, LocalizationManager.GetString("EditTab.AudioControl.PleaseHoldMessage",
+			MessageBox.Show(null, LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.PleaseHoldMessage",
 				"Please hold the button down until you have finished recording", "Appears when the speak/record button is pressed very briefly"),
 				"");//not worth having translators translate a window title for a simple message
 
@@ -394,8 +388,8 @@ namespace Bloom.Edit
 		internal void ReportNoMicrophone()
 		{
 			MessageBox.Show(null,
-				LocalizationManager.GetString("EditTab.AudioControl.NoMic", "This computer appears to have no sound recording device available. You will need one to record audio for a talking book."),
-				LocalizationManager.GetString("EditTab.AudioControl.NoInput", "No input device"));
+				LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.NoMic", "This computer appears to have no sound recording device available. You will need one to record audio for a talking book."),
+				LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.NoInput", "No input device"));
 		}
 
 		public void ChangeRecordingDevice(string deviceName)
