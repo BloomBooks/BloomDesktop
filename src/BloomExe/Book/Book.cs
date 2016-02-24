@@ -2030,7 +2030,11 @@ namespace Bloom.Book
 
 		public Metadata GetLicenseMetadata()
 		{
-			return BookCopyrightAndLicense.GetMetadata(OurHtmlDom);
+			BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
+			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom);
+			Logger.WriteEvent("After");
+			BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
+			return result;
 		}
 
 		public void SetMetadata(Metadata metadata)

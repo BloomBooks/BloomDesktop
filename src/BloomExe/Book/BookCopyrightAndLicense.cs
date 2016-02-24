@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using Bloom.Collection;
 using SIL.Extensions;
+using SIL.Reporting;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
 
@@ -27,6 +28,8 @@ namespace Bloom.Book
 			var metadata = new Metadata();
 			if (ShouldSetToDefaultLicense(dom))
 			{
+				Logger.WriteEvent("For BL-3166 Investigation: GetMetadata() setting to default license");
+
 				//start the book off with a simple cc-by
 				metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				return metadata;
@@ -190,6 +193,14 @@ namespace Bloom.Book
 
 			//Enhance: this logic is perhaps overly restrictive?
 			return !hasCopyright && !hasLicenseUrl && !hasLicenseNotes;
+		}
+
+		public static void LogMetdata(HtmlDom dom)
+		{
+			Logger.WriteEvent("For BL-3166 Investigation");
+			Logger.WriteEvent("LicenseUrl: " + dom.GetBookSetting("licenseUrl"));
+			Logger.WriteEvent("LicenseNotes: " + dom.GetBookSetting("licenseNotes"));
+			Logger.WriteEvent("");
 		}
 	}
 }

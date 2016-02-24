@@ -218,6 +218,7 @@ namespace Bloom.Edit
 				}
 
 				_model.SaveNow();//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
+				
 				var metadata = _model.CurrentBook.GetLicenseMetadata();
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
@@ -226,6 +227,24 @@ namespace Bloom.Edit
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
+						Logger.WriteEvent("For BL-3166 Investigation");
+						if(metadata.License == null)
+						{
+							Logger.WriteEvent("old LicenseUrl was null ");
+						}
+						else
+						{
+							Logger.WriteEvent("old LicenseUrl was " + metadata.License.Url);
+						}
+						if (dlg.Metadata.License == null)
+						{
+							Logger.WriteEvent("new LicenseUrl was null ");
+						}
+						else
+						{
+							Logger.WriteEvent("new LicenseUrl: " + dlg.Metadata.License.Url);
+						}
+							
 						_model.ChangeBookLicenseMetaData(dlg.Metadata);
 					}
 				}
