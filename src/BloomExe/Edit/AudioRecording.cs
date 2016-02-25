@@ -301,7 +301,6 @@ namespace Bloom.Edit
 			}
 			_startRecording = DateTime.Now;
 			_startRecordingTimer.Start();
-			UpdateDisplay();
 			return true;
 #endif
 		}
