@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -770,6 +771,9 @@ namespace Bloom.Book
 			OurHtmlDom.MigrateEditableData(page, newPage, lineage.Replace(originalTemplateGuid, updateTo.Guid));
 		}
 
+		private object _updateLock = new object();
+		private bool _doingBookUpdate = false;
+
 		/// <summary>
 		/// As the bloom format evolves, including structure and classes and other attributes, this
 		/// makes changes to old books. It needs to be very fast, because currently we dont' have
@@ -784,57 +788,124 @@ namespace Bloom.Book
 		/// <param name="progress"></param>
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
-			progress.WriteStatus("Updating Front/Back Matter...");
-			// Nothing in the update process should change the license info, so save what is current before we mess with
-			// anything (may fix BL-3166).
-			var licenseMetadata = GetLicenseMetadata();
-			BringXmatterHtmlUpToDate(bookDOM);
-
-			progress.WriteStatus("Gathering Data...");
-			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
-			progress.WriteStatus("Updating Data...");
-
-			InjectStringListingActiveLanguagesOfBook();
-
-			//hack
-			if(bookDOM == OurHtmlDom)//we already have a data for this
+			if (Title.Contains("allowSharedUpdate"))
 			{
-				_bookData.SynchronizeDataItemsThroughoutDOM();
+				// Original version of this code that suffers BL_3166
+				progress.WriteStatus("Updating Front/Back Matter...");
+				BringXmatterHtmlUpToDate(bookDOM);
 
-				// I think we should only mess with tags if we are updating the book for real.
-				var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
-				if (File.Exists(oldTagsPath))
+				progress.WriteStatus("Gathering Data...");
+				TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
+				progress.WriteStatus("Updating Data...");
+
+				InjectStringListingActiveLanguagesOfBook();
+
+				//hack
+				if (bookDOM == OurHtmlDom) //we already have a data for this
 				{
-					ConvertTagsToMetaData(oldTagsPath, BookInfo);
-					File.Delete(oldTagsPath);
+					_bookData.SynchronizeDataItemsThroughoutDOM();
+
+					// I think we should only mess with tags if we are updating the book for real.
+					var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
+					if (File.Exists(oldTagsPath))
+					{
+						ConvertTagsToMetaData(oldTagsPath, BookInfo);
+						File.Delete(oldTagsPath);
+					}
+				}
+				else //used for making a preview dom
+				{
+					var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
+					bd.SynchronizeDataItemsThroughoutDOM();
+				}
+				// get any license info into the json and restored in the replaced front matter.
+				BookCopyrightAndLicense.SetMetadata(GetLicenseMetadata(), bookDOM, FolderPath, CollectionSettings);
+
+				bookDOM.RemoveMetaElement("bloomBookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
+				bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
+				// BookInfo will always have an ID, the constructor makes one even if there is no json file.
+				// To allow migration, pretend it has no ID if there is not yet a meta.json.
+				bookDOM.RemoveMetaElement("bloomBookId", () => (File.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
+					val => BookInfo.Id = val);
+
+				// Title should be replicated in json
+				//if (!string.IsNullOrWhiteSpace(Title)) // check just in case we somehow have more useful info in json.
+				//    bookDOM.Title = Title;
+				// Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
+				// thus ensuring that if something is in the metadata we use it.
+				// If there is nothing there the default of true will survive.
+				bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null,
+					val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
+
+				UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
+
+				//we've removed and possible added pages, so our page cache is invalid
+				_pagesCache = null;
+			}
+			else
+			{
+				// New version that we hope prevents BL_3166
+				if (_doingBookUpdate)
+					MessageBox.Show("Caught Bloom doing two updates at once! Possible BL-3166 is being prevented");
+				lock (_updateLock)
+				{
+					_doingBookUpdate = true;
+					progress.WriteStatus("Updating Front/Back Matter...");
+					// Nothing in the update process should change the license info, so save what is current before we mess with
+					// anything (may fix BL-3166).
+					var licenseMetadata = GetLicenseMetadata();
+					BringXmatterHtmlUpToDate(bookDOM);
+
+					progress.WriteStatus("Gathering Data...");
+					TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
+					progress.WriteStatus("Updating Data...");
+
+					InjectStringListingActiveLanguagesOfBook();
+
+					//hack
+					if (bookDOM == OurHtmlDom) //we already have a data for this
+					{
+						_bookData.SynchronizeDataItemsThroughoutDOM();
+
+						// I think we should only mess with tags if we are updating the book for real.
+						var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
+						if (File.Exists(oldTagsPath))
+						{
+							ConvertTagsToMetaData(oldTagsPath, BookInfo);
+							File.Delete(oldTagsPath);
+						}
+					}
+					else //used for making a preview dom
+					{
+						var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
+						bd.SynchronizeDataItemsThroughoutDOM();
+					}
+					// get any license info into the json and restored in the replaced front matter.
+					BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings);
+
+					bookDOM.RemoveMetaElement("bloomBookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
+					bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
+					// BookInfo will always have an ID, the constructor makes one even if there is no json file.
+					// To allow migration, pretend it has no ID if there is not yet a meta.json.
+					bookDOM.RemoveMetaElement("bloomBookId", () => (File.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
+						val => BookInfo.Id = val);
+
+					// Title should be replicated in json
+					//if (!string.IsNullOrWhiteSpace(Title)) // check just in case we somehow have more useful info in json.
+					//    bookDOM.Title = Title;
+					// Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
+					// thus ensuring that if something is in the metadata we use it.
+					// If there is nothing there the default of true will survive.
+					bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null,
+						val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
+
+					UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
+
+					//we've removed and possible added pages, so our page cache is invalid
+					_pagesCache = null;
+					_doingBookUpdate = false;
 				}
 			}
-			else //used for making a preview dom
-			{
-				var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
-				bd.SynchronizeDataItemsThroughoutDOM();
-			}
-			// get any license info into the json and restored in the replaced front matter.
-			BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings);
-
-			bookDOM.RemoveMetaElement("bloomBookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
-			bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
-			// BookInfo will always have an ID, the constructor makes one even if there is no json file.
-			// To allow migration, pretend it has no ID if there is not yet a meta.json.
-			bookDOM.RemoveMetaElement("bloomBookId", () => (File.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null), val => BookInfo.Id = val);
-
-			// Title should be replicated in json
-			//if (!string.IsNullOrWhiteSpace(Title)) // check just in case we somehow have more useful info in json.
-			//    bookDOM.Title = Title;
-			// Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
-			// thus ensuring that if something is in the metadata we use it.
-			// If there is nothing there the default of true will survive.
-			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
-
-			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
-
-			//we've removed and possible added pages, so our page cache is invalid
-			_pagesCache = null;
 		}
 
 		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
