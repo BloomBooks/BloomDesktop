@@ -763,6 +763,10 @@ namespace Bloom.Book
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
 			progress.WriteStatus("Updating Front/Back Matter...");
+			// Nothing in the update process should change the license info, so save what is current before we mess with
+			// anything (may have been the fix BL-3166, which was so hard to reproduce we could never be sure).
+			var licenseMetadata = GetLicenseMetadata();
+
 			BringXmatterHtmlUpToDate(bookDOM);
 
 			progress.WriteStatus("Gathering Data...");
@@ -790,7 +794,7 @@ namespace Bloom.Book
 				bd.SynchronizeDataItemsThroughoutDOM();
 			}
 			// get any license info into the json
-			BookCopyrightAndLicense.SetMetadata(GetLicenseMetadata(), bookDOM, FolderPath, CollectionSettings);
+			BookCopyrightAndLicense.SetMetadata(licenseMetadata, bookDOM, FolderPath, CollectionSettings);
 
 			bookDOM.RemoveMetaElement("bloomBookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
 			bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
