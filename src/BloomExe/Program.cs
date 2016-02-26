@@ -26,6 +26,7 @@ using System.Linq;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using SIL.Windows.Forms.HtmlBrowser;
+using SIL.WritingSystems;
 
 namespace Bloom
 {
@@ -187,7 +188,6 @@ namespace Bloom
 						using (_applicationContainer = new ApplicationContainer())
 						{
 							SetUpLocalization();
-							Logger.Init();
 							InstallerSupport.MakeBloomRegistryEntries();
 							Browser.SetUpXulRunner();
 							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
@@ -247,7 +247,6 @@ namespace Bloom
 						InstallerSupport.MakeBloomRegistryEntries();
 
 						SetUpLocalization();
-						Logger.Init();
 
 
 						if (args.Length == 1 && !IsInstallerLaunch(args))
@@ -365,6 +364,7 @@ namespace Bloom
 
 			Application.Idle += Startup;
 
+			Sldr.Initialize();
 			try
 			{
 				Application.Run();
@@ -376,7 +376,7 @@ namespace Bloom
 			}
 
 			Settings.Default.Save();
-
+			Sldr.Cleanup();
 			Logger.ShutDown();
 
 
