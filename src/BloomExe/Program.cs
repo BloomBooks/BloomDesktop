@@ -210,8 +210,7 @@ namespace Bloom
 								{
 									var caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
 									var message = LocalizationManager.GetString("Download.Completed",
-										@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
-										+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
+										@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.");
 									message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
 									MessageBox.Show(message, caption);
 								}
