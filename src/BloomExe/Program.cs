@@ -102,7 +102,7 @@ namespace Bloom
 					//and empty or corrupt user.config caused Bloom just silently die.
 					//In libpalaso builds after 3.5, this is handled in a different way.
 					Settings.Default.Reset(); // BL-3177
-					Logger.WriteError("Problem with settings file, resetting.",e);
+					Logger.WriteEvent("Problem with settings file, resetting.");
 				}
 
 				if (IsInstallerLaunch(args))
