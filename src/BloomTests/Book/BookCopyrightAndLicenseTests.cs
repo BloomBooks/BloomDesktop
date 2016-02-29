@@ -92,6 +92,21 @@ namespace BloomTests.Book
 			Assert.AreEqual("Copyright © 2012, test", GetMetadata(dataDivContent).CopyrightNotice);
 		}
 
+		[Test]
+		public void SetLicenseMetadata_ToNoLicenseUrl_OriginalHasLicenseUrlInEn_ClearsEn()
+		{
+			string dataDivContent = @"<div lang='en' data-book='licenseUrl'>http://creativecommons.org/licenses/by-nc-sa/3.0/</div>";
+			var dom = MakeDom(dataDivContent);
+			var creativeCommonsLicense = (CreativeCommonsLicense)(BookCopyrightAndLicense.GetMetadata(dom).License);
+			Assert.IsTrue(creativeCommonsLicense.AttributionRequired); // yes, we got a CC license from the 'en' licenseUrl
+			var newLicense = new CustomLicense();
+			var newMetaData = new Metadata();
+			newMetaData.License = newLicense;
+			var settings = new CollectionSettings();
+			BookCopyrightAndLicense.SetMetadata(newMetaData, dom,  null, settings);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
+		}
+
 		[Test, Ignore("Enable once we have French CC License Localization") /*meanwhile, I have tested on my machine*/]
 		public void SetLicenseMetadata_CCLicenseWithFrenchNationalLanguage_DataDivHasFrenchDescription()
 		{
@@ -182,8 +197,13 @@ namespace BloomTests.Book
 
 		private static Metadata GetMetadata(string dataDivContent)
 		{
-			var dom = new HtmlDom(@"<html><head><div id='bloomDataDiv'>" + dataDivContent + "</div></head><body></body></html>");
+			var dom = MakeDom(dataDivContent);
 			return BookCopyrightAndLicense.GetMetadata(dom);
+		}
+
+		private static HtmlDom MakeDom(string dataDivContent)
+		{
+			return new HtmlDom(@"<html><head><div id='bloomDataDiv'>" + dataDivContent + "</div></head><body></body></html>");
 		}
 
 		[Test]
