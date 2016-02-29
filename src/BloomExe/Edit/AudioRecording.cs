@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.web;
 using L10NSharp;
 #if __MonoCS__
 #else
@@ -17,6 +18,9 @@ using SIL.Reporting;
 
 namespace Bloom.Edit
 {
+
+	public delegate AudioRecording Factory();//autofac uses this
+
 	/// <summary>
 	/// Manages the process of making an audio recording.
 	/// Adapted from HearThis class AudioButtonsControl; however, in Bloom the UI is in HTML
@@ -24,13 +28,17 @@ namespace Bloom.Edit
 	/// Interacts with the logic (and currently embedded HTML) in audioRecording.ts.
 	/// See the comment at the start of that file for various needed enhancements.
 	/// </summary>
-	class AudioRecording
+	public class AudioRecording
 	{
 		private AudioRecorder _recorder;
+		public Func<string> GetBookFolderPath { get; set; }
+		public Func<Control> GetControlForInvoke { get; set; }
+
 		/// <summary>
 		/// The file we want to record to
 		/// </summary>
-		public string Path { get; set; }
+		public string PathToCurrentAudioSegment;
+
 #if __MonoCS__
 #else
 		// Palaso component to do the actual recording.
@@ -86,7 +94,7 @@ namespace Bloom.Edit
 		/// HearThis uses a system timer rather than this normal form timer because with the latter, when the button "captured" the mouse, the timer refused to fire.
 		/// I don't think we can capture the mouse (at least not attempting it yet) so Bloom does not have this problem  and uses a regular Windows.Forms timer.
 		/// </summary>
-		private readonly Timer _startRecordingTimer;
+		private  Timer _startRecordingTimer;
 
 		// This is a bit of a kludge. The server needs to be able to retrieve the data from AudioDevicesJson.
 		// It would be quite messy to give the image server access to the EditingModel which owns the instance of AudioRecording.
@@ -96,13 +104,36 @@ namespace Bloom.Edit
 		// call directly since it is static.
 		private static AudioRecording CurrentRecording { get; set; }
 
-		public AudioRecording()
+		public AudioRecording(EnhancedImageServer server)
 		{
 			_startRecordingTimer = new Timer();
 			_startRecordingTimer.Interval = 300; //  ms from click to actual recording
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
 			_backupPath = System.IO.Path.GetTempFileName();
 			CurrentRecording = this;
+
+			server.RegisterSimpleHandler("audio/startRecord", HandleStartRecording);
+			server.RegisterSimpleHandler("audio/endRecord", HandleEndRecord);
+			server.RegisterSimpleHandler("audio/enableListenButton", HandleEnableListenButton);
+			server.RegisterSimpleHandler("audio/deleteSegment", HandleDeleteSegment);
+			server.RegisterSimpleHandler("audio/setRecordingDevice", HandleSetRecordingDevice);
+			server.RegisterSimpleHandler("audio/checkForSegement", HandleCheckForSegment);
+		}
+
+		// does this page have any audio at all? Used enable the Listen page.
+		private void HandleEnableListenButton(SimpleHandlerRequest request)
+		{
+			var dir = Path.Combine(GetBookFolderPath(), "audio");
+			if(Directory.Exists(dir) &&
+			   Directory.GetFiles(dir).Length > 0)
+			{
+				request.Succeeded("Yes");//currently we're just saying if there is any audio, you can listen to 'um all.
+			}
+			else
+			{
+				request.Succeeded("No");
+			}
+			return; //we handled it
 		}
 
 		/// <summary>
@@ -181,13 +212,22 @@ namespace Bloom.Edit
 		}
 #endif
 
-		public void StopRecording()
+		private void HandleEndRecord(string dummy1, IRequestInfo info, object unusedCollectionSettings)
 		{
+			info.ContentType = "text/plain";
+
 #if __MonoCS__
 #else
+			if (GetControlForInvoke().InvokeRequired)
+			{
+				GetControlForInvoke().Invoke(new Action<string, IRequestInfo, object>(HandleEndRecord), dummy1, info, unusedCollectionSettings);
+				return;
+			}
+
 			if (Recorder.RecordingState != RecordingState.Recording)
 			{
-				WarnPressTooShort();
+				CleanUpAfterPressTooShort();
+				info.WriteError(499,"Got endRecording, but was not recording");
 				return;
 			}
 			try
@@ -200,9 +240,16 @@ namespace Bloom.Edit
 			{
 				//swallow it. One reason (based on HearThis comment) is that they didn't hold it down long enough, we detect this below.
 			}
-			if(DateTime.Now - _startRecording < TimeSpan.FromSeconds(0.5))
+			if((DateTime.Now - _startRecording) < TimeSpan.FromSeconds(0.5))
 			{
-				WarnPressTooShort();
+				CleanUpAfterPressTooShort();
+				var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.PleaseHoldMessage",
+					"Please hold the button down until you have finished recording",
+					"Appears when the speak/record button is pressed very briefly");
+				
+				// Seems sometimes on a very short click the recording actually got started while we were informing the user
+				info.WriteError(499, msg);
+				return;
 			}
 			else
 			{
@@ -212,30 +259,38 @@ namespace Bloom.Edit
 				//That's fine so long as it doesn't make the UI unresponsive on slow machines.
 				if(LameEncoder.IsAvailable())
 				{
-					_mp3Encoder.Encode(Path, Path.Substring(0, Path.Length - 4), new NullProgress());
+					_mp3Encoder.Encode(PathToCurrentAudioSegment, PathToCurrentAudioSegment.Substring(0, PathToCurrentAudioSegment.Length - 4), new NullProgress());
 					// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format (or alternative mp4)
 					// is required for epub. The wav file is a better permanent record of the recording; also,
 					// it is used for playback.
 				}
 			}
+			return;
 #endif
 		}
 
-		public void StartRecording()
-		{
-			TryStartRecord();
-		}
-
-		/// <summary>
-		/// Start the recording
-		/// </summary>
 		/// <returns>true if the recording started successfully</returns>
-		private bool TryStartRecord()
+		public void HandleStartRecording(SimpleHandlerRequest request)
 		{
 #if __MonoCS__
-			MessageBox.Show("Recording does not yet work on Linux", "Cannot record");
-			return false;
+						MessageBox.Show("Recording does not yet work on Linux", "Cannot record");
+						return false;
 #else
+			if(Recording)
+			{
+				request.Failed("Already recording");
+				return;
+			}
+
+			if (GetControlForInvoke().InvokeRequired)
+			{
+				GetControlForInvoke().Invoke(new SimpleHandler(HandleStartRecording), request);
+				return;
+			}
+
+			string segmentId = request.RequiredParam("id");
+			PathToCurrentAudioSegment = GetPathToSegment(segmentId);
+
 			if (Recorder.RecordingState == RecordingState.RequestedStop)
 			{
 				MessageBox.Show(
@@ -255,13 +310,17 @@ namespace Bloom.Edit
 			if (RecordingDevice == null)
 			{
 				ReportNoMicrophone();
-				return false;
+				request.Failed("No Microphone");
+				return ;
 			}
 
-			if (Recording)
-				return false;
+			if(Recording)
+			{
+				request.Failed( "Already Recording");
+				return;
+			}
 
-			if (File.Exists(Path))
+			if (File.Exists(PathToCurrentAudioSegment))
 			{
 				//Try to deal with _backPath getting locked (BL-3160)
 				try
@@ -274,24 +333,26 @@ namespace Bloom.Edit
 				}
 				try
 				{
-					File.Copy(Path, _backupPath, true);
+					File.Copy(PathToCurrentAudioSegment, _backupPath, true);
 				}
 				catch (Exception err)
 				{
 					ErrorReport.NotifyUserOfProblem(err,
-						"Bloom cold not copy "+Path+" to "+_backupPath+" If things remains stuck, you may need to restart your computer.");
-					return false;
+						"Bloom cold not copy "+PathToCurrentAudioSegment+" to "+_backupPath+" If things remains stuck, you may need to restart your computer.");
+					request.Failed( "Problem with backup file");
+					return;
 				}
 				try
 				{
-					File.Delete(Path);
+					File.Delete(PathToCurrentAudioSegment);
 					//DesktopAnalytics.Analytics.Track("Re-recorded a clip", ContextForAnalytics);
 				}
 				catch (Exception err)
 				{
 					ErrorReport.NotifyUserOfProblem(err,
-						"The old copy of the recording at " + Path + " is locked up, so Bloom can't record over it at the moment. If it remains stuck, you may need to restart your computer.");
-					return false;
+						"The old copy of the recording at " + PathToCurrentAudioSegment + " is locked up, so Bloom can't record over it at the moment. If it remains stuck, you may need to restart your computer.");
+					request.Failed( "Audio file locked");
+					return;
 				}
 			}
 			else
@@ -301,8 +362,14 @@ namespace Bloom.Edit
 			}
 			_startRecording = DateTime.Now;
 			_startRecordingTimer.Start();
-			return true;
+			request.Succeeded("starting play");
+			return;
 #endif
+		}
+
+		private string GetPathToSegment(string segmentId)
+		{
+			return System.IO.Path.Combine(GetBookFolderPath(), "audio", segmentId + ".wav");
 		}
 
 		public bool Recording
@@ -324,17 +391,13 @@ namespace Bloom.Edit
 #else
 			_startRecordingTimer.Stop();
 			Debug.WriteLine("Start recording");
-			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path)); // make sure audio directory exists
-			Recorder.BeginRecording(Path);
+			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathToCurrentAudioSegment)); // make sure audio directory exists
+			Recorder.BeginRecording(PathToCurrentAudioSegment);
 #endif
 		}
 
-		private void WarnPressTooShort()
+		private void CleanUpAfterPressTooShort()
 		{
-			MessageBox.Show(null, LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.PleaseHoldMessage",
-				"Please hold the button down until you have finished recording", "Appears when the speak/record button is pressed very briefly"),
-				"");//not worth having translators translate a window title for a simple message
-
 			// Seems sometimes on a very short click the recording actually got started while we were informing the user
 			// that he didn't click long enough. Before we try to delete the file where the recording is taking place,
 			// we have to stop it; otherwise, we will get an exception trying to delete it.
@@ -354,11 +417,12 @@ namespace Bloom.Edit
 			// is the expected action.
 			try
 			{
-				File.Delete(Path);
+				File.Delete(PathToCurrentAudioSegment);
 			}
-			catch (Exception)
+			catch (Exception error)
 			{
-				Debug.Fail("can't delete the recording even after we stopped");
+				Logger.WriteError("Audio Recording trying to delete "+PathToCurrentAudioSegment, error);
+				Debug.Fail("can't delete the recording even after we stopped:"+error.Message);
 			}
 
 			// If we had a prior recording, restore it...button press may have been a mistake.
@@ -366,10 +430,11 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					File.Copy(_backupPath, Path, true);
+					File.Copy(_backupPath, PathToCurrentAudioSegment, true);
 				}
-				catch (IOException)
+				catch (IOException e)
 				{
+					Logger.WriteError("Audio Recording could not restore backup " + _backupPath, e);
 					// if we can't restore it we can't. Review: are there other exception types we should ignore? Should we bother the user?
 				}
 			}
@@ -382,6 +447,7 @@ namespace Bloom.Edit
 			get { return Recorder.SelectedDevice; }
 			set { Recorder.SelectedDevice = value; }
 		}
+
 #endif
 
 		internal void ReportNoMicrophone()
@@ -391,18 +457,53 @@ namespace Bloom.Edit
 				LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.NoInput", "No input device"));
 		}
 
-		public void ChangeRecordingDevice(string deviceName)
-		{
+		public void HandleSetRecordingDevice(SimpleHandlerRequest request)
+		{ 
 #if __MonoCS__
 #else
 			foreach (var dev in RecordingDevice.Devices)
 			{
-				if (dev.ProductName == deviceName)
+				if (dev.ProductName == request.Parameters["deviceName"])
 				{
 					RecordingDevice = dev;
+					return;
 				}
 			}
 #endif
+		}
+
+		private void HandleCheckForSegment(SimpleHandlerRequest request)
+		{
+			var path = GetPathToSegment(request.RequiredParam("id"));
+			request.Succeeded(File.Exists(path) ? "exists" : "not found");
+		}
+
+
+		/// <summary>
+		/// Delete a file (typically a recording, as requested by the Clear button in the talking book tool)
+		/// </summary>
+		/// <param name="fileUrl"></param>
+		private void HandleDeleteSegment(SimpleHandlerRequest request)
+		{
+			var path = GetPathToSegment(request.RequiredParam("id"));
+			if(!File.Exists(path))
+			{
+				request.Succeeded();
+			}
+			else
+			{
+				try
+				{
+					File.Delete(path);
+				}
+				catch(IOException e)
+				{
+					var msg =
+						string.Format(
+							LocalizationManager.GetString("Errors.ProblemDeletingFile", "Bloom had a problem deleting this file: {0}"), path);
+					ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+				}
+			}
 		}
 	}
 }

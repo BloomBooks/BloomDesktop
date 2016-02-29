@@ -68,6 +68,7 @@ namespace Bloom.Edit
 		private List<Action> _tasksToDoAfterSaving = new List<Action>();
 
 		readonly List<string> _activeStandardListeners = new List<string>();
+		private AudioRecording _audioRecording;
 
 		//public event EventHandler UpdatePageList;
 
@@ -88,7 +89,8 @@ namespace Bloom.Edit
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
 			SendReceiver sendReceiver,
-			EnhancedImageServer server)
+			EnhancedImageServer server,
+			AudioRecording audioRecording)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
@@ -100,6 +102,9 @@ namespace Bloom.Edit
 			_server = server;
 			_templatePagesDict = null;
 			_lastPageAdded = String.Empty;
+			_audioRecording = audioRecording;
+			_audioRecording.GetBookFolderPath = ()=>  bookSelection.CurrentSelection.FolderPath;
+			_audioRecording.GetControlForInvoke = () => _view;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -145,6 +150,10 @@ namespace Bloom.Edit
 
 		private Form _oldActiveForm;
 
+		public string CurrentBookFolder()
+		{
+			return _bookSelection.CurrentSelection.FolderPath;
+		}
 		/// <summary>
 		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
 		/// </summary>
@@ -703,10 +712,6 @@ namespace Bloom.Edit
 			AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
 			AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
 			AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
-			AddMessageEventListener("startRecordAudio", StartRecordAudio);
-			AddMessageEventListener("endRecordAudio", EndRecordAudio);
-			AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
-			AddMessageEventListener("deleteFile", DeleteFile);
 		}
 
 		private void SaveToolboxSettings(string data)
@@ -779,24 +784,15 @@ namespace Bloom.Edit
 				this._view.ShowAddPageDialog();
 		}
 
-		AudioRecording _audioRecording = new AudioRecording();
-		/// <summary>
-		/// Start recording audio for the current segment (whose ID is the argument)
-		/// </summary>
-		/// <param name="segmentId"></param>
-		private void StartRecordAudio(string segmentId)
-		{
-			_audioRecording.Path = Path.Combine(_currentlyDisplayedBook.FolderPath, "audio", segmentId + ".wav");
-			_audioRecording.StartRecording();
-		}
-		/// <summary>
-		/// Stop recording and save the result.
-		/// </summary>
-		/// <param name="dummy"></param>
-		private void EndRecordAudio(string dummy)
-		{
-			_audioRecording.StopRecording();
-		}
+//		/// <summary>
+//		/// Start recording audio for the current segment (whose ID is the argument)
+//		/// </summary>
+//		/// <param name="segmentId"></param>
+//		private void StartRecordAudio(string segmentId)
+//		{
+//			_audioRecording.Path = Path.Combine(, "audio", segmentId + ".wav");
+//			_audioRecording.StartRecording(_currentlyDisplayedBook.FolderPathsegmentId);
+//		}
 
 		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
 		{
@@ -849,31 +845,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void ChangeRecordingDevice(string deviceName)
-		{
-			_audioRecording.ChangeRecordingDevice(deviceName);
-		}
-
-		/// <summary>
-		/// Delete a file (typically a recording, as requested by the Clear button in the talking book tool)
-		/// </summary>
-		/// <param name="fileUrl"></param>
-		private void DeleteFile(string fileUrl)
-		{
-			var filePath = ServerBase.GetLocalPathWithoutQuery(fileUrl);
-			if (File.Exists(filePath))
-			{
-				try
-				{
-					File.Delete(filePath);
-				}
-				catch (IOException e)
-				{
-					var msg = string.Format(LocalizationManager.GetString("Errors.ProblemDeletingFile","Bloom had a problem deleting this file: {0}"), filePath);
-					ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
-				}
-			}
-		}
 
 		//invoked from TopicChooser.ts
 		private void SetTopic(string englishTopicAsKey)
