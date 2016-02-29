@@ -80,17 +80,29 @@ namespace Bloom
 					OldVersionCheck();
 				}
 
-				//bring in settings from any previous version
-				if (Settings.Default.NeedUpgrade)
+				try
 				{
-					//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-					Settings.Default.Upgrade();
-					Settings.Default.Reload();
-					Settings.Default.NeedUpgrade = false;
-					Settings.Default.MaximizeWindow = true; // this is needed to force this to be written to the file, where a user can find it to modify it by hand (our video maker)
-					Settings.Default.Save();
-					
-					StartUpWithFirstOrNewVersionBehavior = true;
+
+					//bring in settings from any previous version
+					if(Settings.Default.NeedUpgrade)
+					{
+						//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+						Settings.Default.Upgrade();
+						Settings.Default.Reload();
+						Settings.Default.NeedUpgrade = false;
+						Settings.Default.MaximizeWindow = true;
+						// this is needed to force this to be written to the file, where a user can find it to modify it by hand (our video maker)
+						Settings.Default.Save();
+
+						StartUpWithFirstOrNewVersionBehavior = true;
+					}
+				}
+				catch(Exception e)
+				{
+					//and empty or corrupt user.config caused Bloom just silently die.
+					//In libpalaso builds after 3.5, this is handled in a different way.
+					Settings.Default.Reset(); // BL-3177
+					Logger.WriteError("Problem with settings file, resetting.",e);
 				}
 
 				if (IsInstallerLaunch(args))
