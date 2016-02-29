@@ -77,6 +77,12 @@ namespace Bloom.Book
 		{
 			dom.SetBookSetting("copyright","*",metadata.CopyrightNotice);
 			dom.SetBookSetting("licenseUrl","*",metadata.License.Url);
+			// This is for backwards compatibility. The book may have  licenseUrl in 'en' created by an earlier version of Bloom.
+			// For backwards compatibiilty, GetMetaData will read that if it doesn't find a '*' license first. So now that we're
+			// setting a licenseUrl for '*', we must make sure the 'en' one is gone, because if we're setting a non-CC license,
+			// the new URL will be empty and the '*' one will go away, possibly exposing the 'en' one to be used by mistake.
+			// See BL-3166.
+			dom.SetBookSetting("licenseUrl", "en", null);
 			string languageUsedForDescription;
 
 			//This part is unfortunate... the license description, which is always localized, doesn't belong in the datadiv; it
