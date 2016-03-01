@@ -32,7 +32,6 @@ namespace Bloom.Edit
 	{
 		private AudioRecorder _recorder;
 		public Func<string> GetBookFolderPath { get; set; }
-		public Func<Control> GetControlForInvoke { get; set; }
 
 		/// <summary>
 		/// The file we want to record to
@@ -212,22 +211,14 @@ namespace Bloom.Edit
 		}
 #endif
 
-		private void HandleEndRecord(string dummy1, IRequestInfo info, object unusedCollectionSettings)
+		private void HandleEndRecord(SimpleHandlerRequest request)
 		{
-			info.ContentType = "text/plain";
-
 #if __MonoCS__
 #else
-			if (GetControlForInvoke().InvokeRequired)
-			{
-				GetControlForInvoke().Invoke(new Action<string, IRequestInfo, object>(HandleEndRecord), dummy1, info, unusedCollectionSettings);
-				return;
-			}
-
 			if (Recorder.RecordingState != RecordingState.Recording)
 			{
 				CleanUpAfterPressTooShort();
-				info.WriteError(499,"Got endRecording, but was not recording");
+				request.Failed("Got endRecording, but was not recording");
 				return;
 			}
 			try
@@ -248,7 +239,7 @@ namespace Bloom.Edit
 					"Appears when the speak/record button is pressed very briefly");
 				
 				// Seems sometimes on a very short click the recording actually got started while we were informing the user
-				info.WriteError(499, msg);
+				request.Failed(msg);
 				return;
 			}
 			else
@@ -279,12 +270,6 @@ namespace Bloom.Edit
 			if(Recording)
 			{
 				request.Failed("Already recording");
-				return;
-			}
-
-			if (GetControlForInvoke().InvokeRequired)
-			{
-				GetControlForInvoke().Invoke(new SimpleHandler(HandleStartRecording), request);
 				return;
 			}
 
@@ -362,7 +347,7 @@ namespace Bloom.Edit
 			}
 			_startRecording = DateTime.Now;
 			_startRecordingTimer.Start();
-			request.Succeeded("starting play");
+			request.Succeeded("starting record");
 			return;
 #endif
 		}

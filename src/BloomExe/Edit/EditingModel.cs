@@ -104,7 +104,6 @@ namespace Bloom.Edit
 			_lastPageAdded = String.Empty;
 			_audioRecording = audioRecording;
 			_audioRecording.GetBookFolderPath = ()=>  bookSelection.CurrentSelection.FolderPath;
-			_audioRecording.GetControlForInvoke = () => _view;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);

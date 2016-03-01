@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
+using System.Windows.Forms;
 using Bloom.Collection;
 
 namespace Bloom.web
@@ -13,6 +15,8 @@ namespace Bloom.web
 	/// </summary>
 	public class SimpleHandlerRequest
 	{
+		//public delegate SimpleHandlerRequest Factory(Control uiControlForSynchonization);//autofac uses this
+
 		private readonly IRequestInfo Requestinfo;
 		public readonly CollectionSettings CurrentCollectionSettings;
 		public NameValueCollection Parameters;
@@ -39,13 +43,42 @@ namespace Bloom.web
 		}
 		public void Succeeded(string text)
 		{
+			Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + text);
 			Requestinfo.ContentType = "text/plain";
 			Requestinfo.WriteCompleteOutput(text);
 		}
 		public void Failed(string text)
 		{
+			Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery+": "+text);
 			Requestinfo.ContentType = "text/plain";
 			Requestinfo.WriteError(503,text);
+		}
+
+		public static bool Handle(SimpleHandler simpleHandler, IRequestInfo info, CollectionSettings collectionSettings)
+		{
+			var request = new SimpleHandlerRequest(info, collectionSettings);
+			try
+			{
+				var formForSynchonizing = Application.OpenForms.Cast<Form>().Last();
+				if (formForSynchonizing.InvokeRequired)
+				{
+					formForSynchonizing.Invoke(simpleHandler, request);
+				}
+				else
+				{
+					simpleHandler(request);
+				}
+				if(!info.HaveOutput)
+				{
+					info.WriteCompleteOutput("");
+				}
+			}
+			catch (Exception e)
+			{
+				SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(e, info.RawUrl);
+				return false;
+			}
+			return true;
 		}
 	}
 }

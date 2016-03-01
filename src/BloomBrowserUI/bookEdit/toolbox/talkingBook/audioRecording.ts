@@ -73,6 +73,8 @@ class AudioRecording {
     }
 
     private moveToNextSpan(): void {
+        toastr.clear();
+
         var next = this.getNextSpan();
         if (!next)
             return;
@@ -101,10 +103,7 @@ class AudioRecording {
             current.removeClass('ui-audioCurrent');
         changeTo.addClass('ui-audioCurrent');
         this.idOfCurrentSentence = changeTo.attr("id");
-        var player  = $('#player');
-        //  FF can't directly play mp3, try wav. The relevant wav file is in the audio file of the book in the page frame
-        
-        player.attr('src', this.currentAudioUrl( this.idOfCurrentSentence));
+        this.updatePlayerStatus();
         this.changeState('record');
     }
 
@@ -120,6 +119,7 @@ class AudioRecording {
     }
 
     private moveToPrevSpan(): void {
+        toastr.clear();
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
         var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
@@ -129,32 +129,14 @@ class AudioRecording {
         this.setCurrentSpan(current, prev);
     }
 
-    private endRecordCurrent(): void {
-        // if (!this.recording) return; // sometimes we get bounce?
-        this.recording = false;
-        
-        //this.fireCSharpEvent("endRecordAudio", "");
-        //this.updatePlayerStatus();
-
-        axios.get('/bloom/audio/endRecord').then( response =>{
-            this.changeState('play');
-        }).catch( error =>{
-             this.changeState('record');//record failed, so we expect them to try again
-                toastr.error(error);
-        });
-        
-        this.updatePlayerStatus();
-    }
-
     // Gecko has no way of knowing that we've created or modified the audio file,
     // so it will cache the previous content of the file or
     // remember if no such file previously existed. So we add a bogus query string
     // based on the current time so that it asks the server for the file again.
     // Fixes BL-3161
     private updatePlayerStatus() {
-        var player = $('#player');
-        var src = player.attr('src').split("?")[0]; // strip off any previous query string
-        player.attr('src', src+"?nocache="+new Date().getTime());
+        var player  = $('#player');      
+        player.attr('src', this.currentAudioUrl( this.idOfCurrentSentence)+"?nocache="+new Date().getTime());
     }
 
     private startRecordCurrent(): void {
@@ -166,17 +148,39 @@ class AudioRecording {
         this.recording = true;
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
         var id = current.attr("id");
-        axios.post("/bloom/audio/startRecord?id="+ id).then(result=>{
+        axios.get("/bloom/audio/startRecord?id="+ id).then(result=>{
             this.setStatus('record', Status.Active);
-        }).catch(result=>{
-            toastr.error("Could not start. "+result.data)
+        }).catch(error=>{
+            toastr.error(error.statusText)
+            console.log(error.statusText);
+        });
+    }
+
+
+    private endRecordCurrent(): void {
+        // if (!this.recording) return; // sometimes we get bounce?
+        this.recording = false;
+        
+        //this.fireCSharpEvent("endRecordAudio", "");
+        //this.updatePlayerStatus();
+
+        axios.get('/bloom/audio/endRecord').then( response =>{        
+            this.updatePlayerStatus();
+            this.changeState('play');
+        }).catch( error =>{
+             this.changeState('record');//record failed, so we expect them to try again
+                toastr.error(error.statusText);
+                console.log(error.statusText);
+                this.updatePlayerStatus();
         });
     }
 
     private playCurrent(): void {
-        if(!this.isEnabled('play')){
-            return;
-        }
+        toastr.clear();
+
+        // if(!this.isEnabled('play')){
+        //     return;
+        // }
         
         this.playingAll = false; // in case it gets clicked after an incomplete play all.
         //this.setStatus('listen', Status.Enabled); // but no longer active, in case it was
@@ -255,7 +259,7 @@ class AudioRecording {
             (<any>devList).one("click", function(event) {
                     devList.hide();
                     axios.post("/bloom/audio/setRecordingDevice?"+$(event.target).text()).catch(error=>{
-                        toastr.error(error);
+                        toastr.error(error.statusText);
                     });
                     //thisClass.fireCSharpEvent('changeRecordingDevice', $(event.target).text());
                     thisClass.updateInputDeviceDisplay();
@@ -299,13 +303,15 @@ class AudioRecording {
 
     // Clear the recording for this sentence
     clearRecording(): void {
+        toastr.clear();
+
         if(!this.isEnabled('clear')){
             return;
         }
         //var currentFile = $('#player').attr('src');
         // this.fireCSharpEvent('deleteFile', currentFile);
         axios.get('/bloom/audio/deleteSegment?id='+this.idOfCurrentSentence).catch(error=>{
-            toastr.error(error);
+            toastr.error(error.statusText);
         });
         this.updatePlayerStatus();
         // this.setStatus('record', Status.Expected);
@@ -840,7 +846,7 @@ class AudioRecording {
                 this.setEnabledOrExpecting('play',  expectedVerb);
             }
         }).catch(error =>{
-            toastr.error("Error checking on audio file"+error);
+            toastr.error("Error checking on audio file "+error.statusText);
             //server couldn't find it, so just leave these buttons disabled
         });
     

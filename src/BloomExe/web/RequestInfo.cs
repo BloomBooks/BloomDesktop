@@ -54,13 +54,16 @@ namespace Bloom.web
 			WriteOutput(Encoding.UTF8.GetBytes(s), _actualContext.Response);
 		}
 
-		private static void WriteOutput(byte[] buffer, HttpListenerResponse response)
+		private void WriteOutput(byte[] buffer, HttpListenerResponse response)
 		{
 			response.ContentLength64 += buffer.Length;
 			Stream output = response.OutputStream;
 			output.Write(buffer, 0, buffer.Length);
 			output.Close();
+			HaveOutput = true;
 		}
+
+		public bool HaveOutput { get; private set; }
 
 		public void ReplyWithFileContent(string path)
 		{
@@ -119,6 +122,7 @@ namespace Bloom.web
 			}
 
 			_actualContext.Response.OutputStream.Close();
+			HaveOutput = true;
 		}
 
 		public void ReplyWithImage(string path)
@@ -135,6 +139,7 @@ namespace Bloom.web
 			_actualContext.Response.StatusCode = errorCode;
 			_actualContext.Response.StatusDescription = errorDescription;
 			_actualContext.Response.Close();
+			HaveOutput = true;
 		}
 
 		public void WriteError(int errorCode)

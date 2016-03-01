@@ -213,53 +213,23 @@ namespace Bloom.web
 		{
 			var localPath = GetLocalPathWithoutQuery(info);
 
-			foreach (var kvp in _simpleRequestHandlers)
+			foreach(var pair in _simpleRequestHandlers.Where(pair => localPath.StartsWith(pair.Key)))
 			{
-				if (localPath.StartsWith(kvp.Key))
+				lock (SyncObj)
 				{
-					lock (SyncObj)
-					{
-						var request = new SimpleHandlerRequest(info, CurrentCollectionSettings);
-						try
-						{
-							kvp.Value(request);
-						}
-						catch(Exception e)
-						{ 
-							SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(e,info.RawUrl);
-							return false;
-						}
-						
-						return true;
-					}
+					return SimpleHandlerRequest.Handle(pair.Value, info, CurrentCollectionSettings);
 				}
 			}
 
-			foreach (var kvp in _additionalRequestHandlers)
-			{
-				if (localPath.StartsWith(kvp.Key))
-				{
-					lock (SyncObj)
-					{
-						kvp.Value(localPath, info, CurrentCollectionSettings);
-						return true;//this is always handled; have these callbacks always 'return true' even if they encountered an error is confusing.
-					}
-				}
-			}
-
-			// routing
 			// See if an injected request handler wants to handle this one.
 			// Enhance JohnT:  if we get a larger number of injected handlers, and all keys are still a keyword ending in slash,
 			// it might help to extract the part of the localPath before the slash and use it as a key for dictionary lookup.
-			foreach (var kvp in _additionalRequestHandlers)
+			foreach (var pair in _additionalRequestHandlers.Where(pair => localPath.StartsWith(pair.Key)))
 			{
-				if (localPath.StartsWith(kvp.Key))
+				lock (SyncObj)
 				{
-					lock (SyncObj)
-					{
-						kvp.Value(localPath, info, CurrentCollectionSettings);
-						return true;//this is always handled; have these callbacks always 'return true' even if they encountered an error is confusing.
-					}
+					pair.Value(localPath, info, CurrentCollectionSettings);
+					return true;//this is always handled; have these callbacks always 'return true' even if they encountered an error is confusing.
 				}
 			}
 
