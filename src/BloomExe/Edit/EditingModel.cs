@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Dynamic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,11 +12,9 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
-using Bloom.MiscUI;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.web;
-using BloomTemp;
 using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
@@ -28,11 +25,6 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Reporting;
-using SIL.Xml;
-#if __MonoCS__
-#else
-using SIL.Media.Naudio;
-#endif
 
 namespace Bloom.Edit
 {
@@ -690,10 +682,6 @@ namespace Bloom.Edit
 				return;
 			}
 			AddStandardEventListeners();
-#if __MonoCS__
-#else
-			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
-#endif
 			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
 				tool.RestoreSettings(_view);
 		}
@@ -782,16 +770,6 @@ namespace Bloom.Edit
 			if(this._view!=null)
 				this._view.ShowAddPageDialog();
 		}
-
-//		/// <summary>
-//		/// Start recording audio for the current segment (whose ID is the argument)
-//		/// </summary>
-//		/// <param name="segmentId"></param>
-//		private void StartRecordAudio(string segmentId)
-//		{
-//			_audioRecording.Path = Path.Combine(, "audio", segmentId + ".wav");
-//			_audioRecording.StartRecording(_currentlyDisplayedBook.FolderPathsegmentId);
-//		}
 
 		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
 		{

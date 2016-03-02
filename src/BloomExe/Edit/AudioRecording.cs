@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -31,6 +32,7 @@ namespace Bloom.Edit
 	public class AudioRecording
 	{
 		private AudioRecorder _recorder;
+		readonly BloomWebSocketServer _peakLevelServer;
 		public Func<string> GetBookFolderPath { get; set; }
 
 		/// <summary>
@@ -81,10 +83,6 @@ namespace Bloom.Edit
 #endif
 		private string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
 		private DateTime _startRecording; // For tracking recording length.
-#if __MonoCS__
-#else
-		public event EventHandler<PeakLevelEventArgs> PeakLevelChanged;
-#endif
 		LameEncoder _mp3Encoder = new LameEncoder();
 		/// <summary>
 		/// This timer introduces a brief delay from the mouse click to actually starting to record.
@@ -94,6 +92,8 @@ namespace Bloom.Edit
 		/// I don't think we can capture the mouse (at least not attempting it yet) so Bloom does not have this problem  and uses a regular Windows.Forms timer.
 		/// </summary>
 		private  Timer _startRecordingTimer;
+
+		private double _previousLevel;
 
 		// This is a bit of a kludge. The server needs to be able to retrieve the data from AudioDevicesJson.
 		// It would be quite messy to give the image server access to the EditingModel which owns the instance of AudioRecording.
@@ -110,7 +110,7 @@ namespace Bloom.Edit
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
 			_backupPath = System.IO.Path.GetTempFileName();
 			CurrentRecording = this;
-
+			_peakLevelServer = new BloomWebSocketServer();
 			server.RegisterSimpleHandler("audio/startRecord", HandleStartRecording);
 			server.RegisterSimpleHandler("audio/endRecord", HandleEndRecord);
 			server.RegisterSimpleHandler("audio/enableListenButton", HandleEnableListenButton);
@@ -206,8 +206,12 @@ namespace Bloom.Edit
 #else
 		private void SetPeakLevel(PeakLevelEventArgs args)
 		{
-			if (PeakLevelChanged != null)
-				PeakLevelChanged(this, args);
+			var level = Math.Round(args.Level, 3);
+			if(level != _previousLevel)
+			{
+				_previousLevel = level;
+				_peakLevelServer.Send(level.ToString(CultureInfo.InvariantCulture));
+			}
 		}
 #endif
 

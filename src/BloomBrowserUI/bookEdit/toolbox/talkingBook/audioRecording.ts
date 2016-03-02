@@ -61,6 +61,7 @@ class AudioRecording {
     audioDevicesUrl = '/bloom/audioDevices';
     playingAll: boolean; // true during listen.
     idOfCurrentSentence : string;
+    peakLevelSocket: WebSocket;
 
     // We only do recording in editable divs in the main content language.
     // This should NOT restrict to ones that already contain audio-sentence spans.
@@ -366,7 +367,13 @@ class AudioRecording {
             return;
         }
         this.updateMarkupAndControlsToCurrentText();
+
         this.changeState('record');
+
+        this.peakLevelSocket = new WebSocket("ws://127.0.0.1:8189");//audio/peakLevel");
+        this.peakLevelSocket.onmessage = event => {
+            this.setPeakLevel(event.data);
+        }
     }
 
     public updateMarkupAndControlsToCurrentText() {
@@ -393,6 +400,14 @@ class AudioRecording {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
         page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
+        
+            try{
+                this.peakLevelSocket.close();
+                this.peakLevelSocket = null;
+            }
+            catch(e) {
+                console.log("Error closing peakLevelSocket: "+e);
+            }
     }
 
     // This gets invoked (via a non-object method of the same name in this file,
@@ -898,6 +913,3 @@ function initializeTalkingBookTool() {
     audioRecorder.initializeTalkingBookTool();
 }
 
-function setPeakLevel(level:string) {
-    audioRecorder.setPeakLevel(level);
-}
