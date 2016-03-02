@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.web;
 using L10NSharp;
 #if __MonoCS__
 #else
@@ -27,6 +29,8 @@ namespace Bloom.Edit
 	class AudioRecording
 	{
 		private AudioRecorder _recorder;
+		BloomWebSocketServer _peakLevelServer;
+
 		/// <summary>
 		/// The file we want to record to
 		/// </summary>
@@ -103,6 +107,7 @@ namespace Bloom.Edit
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
 			_backupPath = System.IO.Path.GetTempFileName();
 			CurrentRecording = this;
+			_peakLevelServer = new BloomWebSocketServer();//review: we have no dispose (on us or our parent) so this is never disposed
 		}
 
 		/// <summary>
@@ -176,8 +181,10 @@ namespace Bloom.Edit
 #else
 		private void SetPeakLevel(PeakLevelEventArgs args)
 		{
-			if (PeakLevelChanged != null)
-				PeakLevelChanged(this, args);
+//			if (PeakLevelChanged != null)
+//				PeakLevelChanged(this, args);
+			
+			_peakLevelServer.Send(args.Level.ToString(CultureInfo.InvariantCulture));
 		}
 #endif
 
