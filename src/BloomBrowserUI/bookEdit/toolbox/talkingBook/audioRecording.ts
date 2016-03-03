@@ -53,16 +53,83 @@ enum Status {
 
 
 class AudioRecording {
-    recording: boolean;
-    levelCanvas: HTMLCanvasElement;
-    levelCanvasWidth: number = 15;
-    levelCanvasHeight: number = 80;
-    hiddenSourceBubbles: JQuery;
-    audioDevicesUrl = '/bloom/audioDevices';
-    playingAll: boolean; // true during listen.
-    idOfCurrentSentence : string;
-    peakLevelSocket: WebSocket;
+    private recording: boolean;
+    private levelCanvas: HTMLCanvasElement;
+    private levelCanvasWidth: number = 15;
+    private levelCanvasHeight: number = 80;
+    private hiddenSourceBubbles: JQuery;
+    private audioDevicesUrl = '/bloom/audioDevices';
+    private playingAll: boolean; // true during listen.
+    private idOfCurrentSentence : string;
+    
+    
+        public initializeTalkingBookTool() {
+        // I've sometimes observed events like click being handled repeatedly for a single click.
+        // Adding thse .off calls seems to help...it's as if something causes this show event to happen
+        // more than once so the event handlers were being added repeatedly, but I haven't caught
+        // that actually happening. However, the off() calls seem to prevent it.
+        $('#audio-next').off().click(e => this.moveToNextSpan());
+        $('#audio-prev').off().click(e => this.moveToPrevSpan());
+        $('#audio-record').off().mousedown(e => this.startRecordCurrent()).mouseup(e => this.endRecordCurrent());
+        $('#audio-play').off().click(e => this.playCurrent());
+        $('#audio-listen').off().click(e => this.listen());
+        $('#audio-clear').off().click(e => this.clearRecording());
+        $('#player').off();
+        $('#player').bind('error', e => alert("There was an error playing the sentence."))//TODO ;//this.cantPlay());
 
+        $('#player').bind('ended', e => this.playEnded());
+        $('#audio-input-dev').off().click(e => this.selectInputDevice());
+        
+        toastr.options.positionClass = 'toast-toolbox-bottom';
+        toastr.options.timeOut =  10000;
+        toastr.options.preventDuplicates= true;
+    }
+    public setupForRecording(): void {
+        this.updateInputDeviceDisplay();
+        this.hiddenSourceBubbles = this.getPage().find('.uibloomSourceTextsBubble');
+        this.hiddenSourceBubbles.hide();
+        var editable = this.getRecordableDivs();
+        if (editable.length === 0) {
+            // no editable text on this page.
+            this.changeStateAndSetExpected('');
+            return;
+        }
+        this.updateMarkupAndControlsToCurrentText();
+
+        this.changeStateAndSetExpected('record');
+
+        this.getWebSocket().onmessage = event => {
+                this.setstaticPeakLevel(event.data);
+        }
+    }
+    
+    public removeRecordingSetup() {
+        //alert('removeRecordingSetup');
+        this.hiddenSourceBubbles.show();
+        var page = this.getPage();
+        page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
+        
+        try{
+            this.disposeWebSocket();
+        }
+        catch(e) {
+            console.log("Error closing staticPeakLevelSocket: "+e);
+        }
+    }
+    
+    private getWebSocket() : WebSocket {
+        if(typeof window.top["peakLevelSocket"] == "undefined")
+            window.top["peakLevelSocket"] = new WebSocket("ws://127.0.0.1:8189");
+        return window.top["peakLevelSocket"];
+    }
+    private disposeWebSocket(){
+        if(typeof window.top["peakLevelSocket"] != "undefined")
+        {
+            window.top["peakLevelSocket"].close();
+            window.top["peakLevelSocket"] = undefined;
+        }
+    }
+    
     // We only do recording in editable divs in the main content language.
     // This should NOT restrict to ones that already contain audio-sentence spans.
     private getRecordableDivs() : JQuery {
@@ -81,7 +148,7 @@ class AudioRecording {
             return;
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
         this.setCurrentSpan(current, $(next));
-        this.changeState('record');
+        this.changeStateAndSetExpected('record');
     }
     private getNextSpan(): HTMLElement{
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
@@ -105,7 +172,7 @@ class AudioRecording {
         changeTo.addClass('ui-audioCurrent');
         this.idOfCurrentSentence = changeTo.attr("id");
         this.updatePlayerStatus();
-        this.changeState('record');
+        this.changeStateAndSetExpected('record');
     }
 
     private currentAudioUrl(id: string): string{
@@ -141,9 +208,9 @@ class AudioRecording {
     }
 
     private startRecordCurrent(): void {
-        // if(!this.isEnabled('record')){
-        //     return;
-        // }
+        if(!this.isEnabledOrExpected('record')){
+            return;
+        }
         
         toastr.clear();
         this.recording = true;
@@ -159,17 +226,17 @@ class AudioRecording {
 
 
     private endRecordCurrent(): void {
-        // if (!this.recording) return; // sometimes we get bounce?
+        if (!this.recording) return; // will trigger if the button wasn't enabled, so the recording never started
+        
         this.recording = false;
         
-        //this.fireCSharpEvent("endRecordAudio", "");
         //this.updatePlayerStatus();
 
         axios.get('/bloom/audio/endRecord').then( response =>{        
             this.updatePlayerStatus();
-            this.changeState('play');
+            this.changeStateAndSetExpected('play');
         }).catch( error =>{
-             this.changeState('record');//record failed, so we expect them to try again
+             this.changeStateAndSetExpected('record');//record failed, so we expect them to try again
                 toastr.error(error.statusText);
                 console.log(error.statusText);
                 this.updatePlayerStatus();
@@ -179,9 +246,9 @@ class AudioRecording {
     private playCurrent(): void {
         toastr.clear();
 
-        // if(!this.isEnabled('play')){
-        //     return;
-        // }
+        if(!this.isEnabledOrExpected('play')){
+            return;
+        }
         
         this.playingAll = false; // in case it gets clicked after an incomplete play all.
         //this.setStatus('listen', Status.Enabled); // but no longer active, in case it was
@@ -217,7 +284,7 @@ class AudioRecording {
                 return;
             }
             this.playingAll = false;
-            this.changeState('listen');
+            this.changeStateAndSetExpected('listen');
             return;
         }
         // this.setStatus('play', Status.Enabled); // no longer 'expected' or 'active'
@@ -225,7 +292,7 @@ class AudioRecording {
         // if ($('#audio-next').hasClass('enabled')) {
         //     this.setStatus('next', Status.Expected);
         // }
-        this.changeState('next');
+        this.changeStateAndSetExpected('next');
     }
 
     // private cantPlay(): void {
@@ -306,7 +373,7 @@ class AudioRecording {
     clearRecording(): void {
         toastr.clear();
 
-        if(!this.isEnabled('clear')){
+        if(!this.isEnabledOrExpected('clear')){
             return;
         }
         //var currentFile = $('#player').attr('src');
@@ -318,31 +385,8 @@ class AudioRecording {
         // this.setStatus('record', Status.Expected);
         // this.setStatus('play', Status.Disabled);
         // this.setStatus('clear', Status.Disabled);
-        this.changeState('record');
+        this.changeStateAndSetExpected('record');
     }
-
-    public initializeTalkingBookTool() {
-        // I've sometimes observed events like click being handled repeatedly for a single click.
-        // Adding thse .off calls seems to help...it's as if something causes this show event to happen
-        // more than once so the event handlers were being added repeatedly, but I haven't caught
-        // that actually happening. However, the off() calls seem to prevent it.
-        $('#audio-next').off().click(e => this.moveToNextSpan());
-        $('#audio-prev').off().click(e => this.moveToPrevSpan());
-        $('#audio-record').off().mousedown(e => this.startRecordCurrent()).mouseup(e => this.endRecordCurrent());
-        $('#audio-play').off().click(e => this.playCurrent());
-        $('#audio-listen').off().click(e => this.listen());
-        $('#audio-clear').off().click(e => this.clearRecording());
-        $('#player').off();
-        $('#player').bind('error', e => alert("There was an error playing the sentence."))//TODO ;//this.cantPlay());
-
-        $('#player').bind('ended', e => this.playEnded());
-        $('#audio-input-dev').off().click(e => this.selectInputDevice());
-        
-        toastr.options.positionClass = 'toast-top-right';
-        toastr.options.timeOut = 10000;
-        toastr.options.preventDuplicates= true;
-    }
-
     public getPageFrame(): HTMLIFrameElement {
         return <HTMLIFrameElement>parent.window.document.getElementById('page');
     }
@@ -354,27 +398,7 @@ class AudioRecording {
         return $(page.contentWindow.document.body);
     }
 
-    public setupForRecording(): void {
-        this.updateInputDeviceDisplay();
-        this.hiddenSourceBubbles = this.getPage().find('.uibloomSourceTextsBubble');
-        this.hiddenSourceBubbles.hide();
-        var editable = this.getRecordableDivs();
-        if (editable.length === 0) {
-            // no editable text on this page.
-            //this.configureForNothingToRecord();
 
-            this.changeState('');
-            return;
-        }
-        this.updateMarkupAndControlsToCurrentText();
-
-        this.changeState('record');
-
-        this.peakLevelSocket = new WebSocket("ws://127.0.0.1:8189");//audio/peakLevel");
-        this.peakLevelSocket.onmessage = event => {
-            this.setPeakLevel(event.data);
-        }
-    }
 
     public updateMarkupAndControlsToCurrentText() {
         var editable = this.getRecordableDivs();
@@ -396,26 +420,12 @@ class AudioRecording {
         thisClass.setCurrentSpan(this.getPage().find('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
     }
 
-    public removeRecordingSetup() {
-        this.hiddenSourceBubbles.show();
-        var page = this.getPage();
-        page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
-        
-            try{
-                this.peakLevelSocket.close();
-                this.peakLevelSocket = null;
-            }
-            catch(e) {
-                console.log("Error closing peakLevelSocket: "+e);
-            }
-    }
-
     // This gets invoked (via a non-object method of the same name in this file,
     // and one of the same name in CalledFromCSharp) when a C# event fires indicating
     // that we should display a different peak level. It draws a series of bars
     // (reminiscent of leds in a hardware level meter) within the canvas in the
     //  top right of the bubble to indicate the current peak level.
-    public setPeakLevel(level: string): void {
+    public setstaticPeakLevel(level: string): void {
         var ctx = this.levelCanvas.getContext("2d");
         // Erase the whole canvas
         var height = 15;
@@ -840,7 +850,7 @@ class AudioRecording {
     
     // ------------ State Machine ----------------
     
-    private changeState(expectedVerb: string){
+    private changeStateAndSetExpected(expectedVerb: string){
         console.log("changeState("+expectedVerb+")");
         this.setStatus('record', Status.Disabled);
         this.setStatus('play', Status.Disabled);
@@ -888,8 +898,8 @@ class AudioRecording {
            this.setStatus(verb,Status.Enabled);
     }
     
-    private isEnabled(verb: string):Boolean{
-        return $('#audio-' + verb).hasClass('enabled');    
+    private isEnabledOrExpected(verb: string):Boolean{
+        return $('#audio-' + verb).hasClass('enabled') || $('#audio-' + verb).hasClass('expected') ;    
     }
     
     private setStatus(which: string, to: Status): void {

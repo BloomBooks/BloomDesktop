@@ -221,7 +221,14 @@ namespace Bloom.Edit
 #else
 			if (Recorder.RecordingState != RecordingState.Recording)
 			{
-				CleanUpAfterPressTooShort();
+				//usually, this is a result of us getting the "end" before we actually started, because it was too quick
+				if(TestForTooShortAndSendFailIfSo(request))
+				{
+					_startRecordingTimer.Enabled = false;//we don't want it firing in a few milliseconds from now
+					return;
+				}
+
+				//but this would handle it if there was some other reason
 				request.Failed("Got endRecording, but was not recording");
 				return;
 			}
@@ -235,17 +242,8 @@ namespace Bloom.Edit
 			{
 				//swallow it. One reason (based on HearThis comment) is that they didn't hold it down long enough, we detect this below.
 			}
-			if((DateTime.Now - _startRecording) < TimeSpan.FromSeconds(0.5))
-			{
-				CleanUpAfterPressTooShort();
-				var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.PleaseHoldMessage",
-					"Please hold the button down until you have finished recording",
-					"Appears when the speak/record button is pressed very briefly");
-				
-				// Seems sometimes on a very short click the recording actually got started while we were informing the user
-				request.Failed(msg);
+			if (TestForTooShortAndSendFailIfSo(request))
 				return;
-			}
 			else
 			{
 				//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
@@ -260,8 +258,23 @@ namespace Bloom.Edit
 					// it is used for playback.
 				}
 			}
-			return;
 #endif
+		}
+
+		private bool TestForTooShortAndSendFailIfSo(SimpleHandlerRequest request)
+		{
+			if ((DateTime.Now - _startRecording) < TimeSpan.FromSeconds(0.5))
+			{
+				CleanUpAfterPressTooShort();
+				var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.PleaseHoldMessage",
+					"Please hold the button down until you have finished recording",
+					"Appears when the speak/record button is pressed very briefly");
+
+				// Seems sometimes on a very short click the recording actually got started while we were informing the user
+				request.Failed(msg);
+				return true;
+			}
+			return false;
 		}
 
 		/// <returns>true if the recording started successfully</returns>
@@ -351,7 +364,7 @@ namespace Bloom.Edit
 			}
 			_startRecording = DateTime.Now;
 			_startRecordingTimer.Start();
-			request.Succeeded("starting record");
+			request.Succeeded("starting record soon");
 			return;
 #endif
 		}
@@ -379,7 +392,7 @@ namespace Bloom.Edit
 #if __MonoCS__
 #else
 			_startRecordingTimer.Stop();
-			Debug.WriteLine("Start recording");
+			Debug.WriteLine("Start actual recording");
 			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathToCurrentAudioSegment)); // make sure audio directory exists
 			Recorder.BeginRecording(PathToCurrentAudioSegment);
 #endif
