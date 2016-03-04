@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -29,7 +29,7 @@ namespace Bloom.Book
 		/// we leave it to the supplied fileLocator to find it.
 		/// </summary>
 		/// <param name="nameOfXMatterPack">e.g. "Factory", "SILIndonesia"</param>
-		/// <param name="fileLocator">The locator needs to be able tell use the path to an xmater html file, given its name</param>
+		/// <param name="fileLocator">The locator needs to be able tell us the path to an xmater html file, given its name</param>
 		public XMatterHelper(HtmlDom bookDom, string nameOfXMatterPack, IFileLocator fileLocator)
 		{		
 			_bookDom = bookDom;

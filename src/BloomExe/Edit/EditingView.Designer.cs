@@ -52,17 +52,17 @@
 			System.Drawing.Imaging.ImageAttributes imageAttributes6 = new System.Drawing.Imaging.ImageAttributes();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
-			this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
+			this.settingsLauncherHelper1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarPanel = new System.Windows.Forms.Panel();
-			this._duplicatePageButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._deletePageButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._undoButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._cutButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._pasteButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._copyButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
+			this._duplicatePageButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._deletePageButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._undoButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._cutButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._pasteButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._copyButton = new SIL.Windows.Forms.Widgets.BitmapButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
@@ -186,7 +186,7 @@
 			this._duplicatePageButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._duplicatePageButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._duplicatePageButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._duplicatePageButton, "EditTab._duplicatePageButton");
+			this._L10NSharpExtender.SetLocalizingId(this._duplicatePageButton, "EditTab.DuplicatePageButton");
 			this._duplicatePageButton.Location = new System.Drawing.Point(184, 0);
 			this._duplicatePageButton.Margin = new System.Windows.Forms.Padding(3, 3, 3, 1);
 			this._duplicatePageButton.Name = "_duplicatePageButton";
@@ -228,7 +228,7 @@
 			this._deletePageButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._deletePageButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._deletePageButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._deletePageButton, "EditTab._deletePageButton");
+			this._L10NSharpExtender.SetLocalizingId(this._deletePageButton, "EditTab.DeletePageButton");
 			this._deletePageButton.Location = new System.Drawing.Point(239, 0);
 			this._deletePageButton.Margin = new System.Windows.Forms.Padding(3, 3, 3, 1);
 			this._deletePageButton.Name = "_deletePageButton";
@@ -270,7 +270,7 @@
 			this._undoButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._undoButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._undoButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._undoButton, "EditTab._undoButton");
+			this._L10NSharpExtender.SetLocalizingId(this._undoButton, "EditTab.UndoButton");
 			this._undoButton.Location = new System.Drawing.Point(128, 0);
 			this._undoButton.Name = "_undoButton";
 			this._undoButton.OffsetPressedContent = true;
@@ -311,7 +311,7 @@
 			this._cutButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._cutButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._cutButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._cutButton, "EditTab._cutButton");
+			this._L10NSharpExtender.SetLocalizingId(this._cutButton, "EditTab.CutButton");
 			this._cutButton.Location = new System.Drawing.Point(52, 7);
 			this._cutButton.Name = "_cutButton";
 			this._cutButton.OffsetPressedContent = true;
@@ -352,7 +352,7 @@
 			this._pasteButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._pasteButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._pasteButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._pasteButton, "EditTab._pasteButton");
+			this._L10NSharpExtender.SetLocalizingId(this._pasteButton, "EditTab.PasteButton");
 			this._pasteButton.Location = new System.Drawing.Point(2, 5);
 			this._pasteButton.Name = "_pasteButton";
 			this._pasteButton.OffsetPressedContent = true;
@@ -393,7 +393,7 @@
 			this._copyButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._copyButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._copyButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._copyButton, "EditTab._copyButton");
+			this._L10NSharpExtender.SetLocalizingId(this._copyButton, "EditTab.CopyButton");
 			this._copyButton.Location = new System.Drawing.Point(52, 29);
 			this._copyButton.Name = "_copyButton";
 			this._copyButton.OffsetPressedContent = true;
@@ -422,12 +422,12 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
+			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab.MenusToolStrip");
 			this._menusToolStrip.Location = new System.Drawing.Point(294, 10);
 			this._menusToolStrip.Name = "_menusToolStrip";
 			this._menusToolStrip.Size = new System.Drawing.Size(165, 56);
 			this._menusToolStrip.TabIndex = 2;
-			this._menusToolStrip.Text = "toolStrip1";
+			this._menusToolStrip.Text = "";
 			// 
 			// _contentLanguagesDropdown
 			// 
@@ -436,7 +436,7 @@
 			this._contentLanguagesDropdown.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._contentLanguagesDropdown, "Choose language to make this a bilingual or trilingual book");
 			this._L10NSharpExtender.SetLocalizationComment(this._contentLanguagesDropdown, null);
-			this._L10NSharpExtender.SetLocalizingId(this._contentLanguagesDropdown, "EditTab._contentLanguagesDropdown");
+			this._L10NSharpExtender.SetLocalizingId(this._contentLanguagesDropdown, "EditTab.ContentLanguagesDropdown");
 			this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
 			this._contentLanguagesDropdown.Size = new System.Drawing.Size(129, 19);
 			this._contentLanguagesDropdown.Text = "Multilingual Settings";
@@ -478,7 +478,7 @@
 			this._splitTemplateAndSource.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._splitTemplateAndSource, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._splitTemplateAndSource, null);
-			this._L10NSharpExtender.SetLocalizingId(this._splitTemplateAndSource, "EditTab._splitTemplateAndSource");
+			this._L10NSharpExtender.SetLocalizingId(this._splitTemplateAndSource, "EditTab.SplitTemplateAndSource");
 			this._splitTemplateAndSource.Location = new System.Drawing.Point(0, 0);
 			this._splitTemplateAndSource.Margin = new System.Windows.Forms.Padding(4);
 			this._splitTemplateAndSource.Name = "_splitTemplateAndSource";
@@ -539,18 +539,18 @@
         private System.Windows.Forms.Timer _editButtonsUpdateTimer;
 		private System.Windows.Forms.Timer _handleMessageTimer;
 		private System.Windows.Forms.Panel _topBarPanel;
-		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper settingsLauncherHelper1;
+		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper settingsLauncherHelper1;
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _contentLanguagesDropdown;
 		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
 		private ToPalaso.BetterToolTip _betterToolTip1;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _copyButton;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _pasteButton;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _cutButton;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _undoButton;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _deletePageButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _copyButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _pasteButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _cutButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _undoButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _deletePageButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-        private Palaso.UI.WindowsForms.Widgets.BitmapButton _duplicatePageButton;
+        private SIL.Windows.Forms.Widgets.BitmapButton _duplicatePageButton;
 
 
     }

@@ -9,12 +9,12 @@ using Bloom.Collection;
 using BloomTemp;
 using L10NSharp;
 using NUnit.Framework;
-using Palaso.IO;
+using SIL.IO;
 using Bloom;
 using Bloom.ImageProcessing;
 using Bloom.web;
-using Palaso.Reporting;
-using TemporaryFolder = Palaso.TestUtilities.TemporaryFolder;
+using SIL.Reporting;
+using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
 
 namespace BloomTests.web
 {
@@ -37,7 +37,7 @@ namespace BloomTests.web
 			ErrorReport.IsOkToInteractWithUser = false;
 			_collectionPath = Path.Combine(_folder.Path, "TestCollection");
 			var cs = new CollectionSettings(Path.Combine(_folder.Path, "TestCollection.bloomCollection"));
-			_fileLocator = new BloomFileLocator(cs, new XMatterPackFinder(new string[] { }), ProjectContext.GetFactoryFileLocations(),
+			_fileLocator = new BloomFileLocator(cs, new XMatterPackFinder(new string[] { FileLocator.GetDirectoryDistributedWithApplication("xMatter") }), ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 		}
 
@@ -249,6 +249,9 @@ namespace BloomTests.web
 			cssFile = Path.Combine(bookPath, "languageDisplay.css");
 			File.WriteAllText(cssFile, @".languageDisplayCssTest{}");
 
+			cssFile = Path.Combine(bookPath, "ForUnitTest-XMatter.css");
+			File.WriteAllText(cssFile, @"This is the one in the book");
+			
 			// Factory-XMatter.css
 			cssFile = Path.Combine(bookPath, "Factory-XMatter.css");
 			File.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
@@ -354,7 +357,22 @@ namespace BloomTests.web
 				Assert.That(transaction.ReplyContents, Is.EqualTo(".customCollectionStylesCssTest{}"));
 			}
 		}
+		[Test]
+		public void RequestXMatter_OnlyExistsInBookAndDistFiles_ReturnsTheOneInDistFiles()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "ForUnitTest-XMatter.css");
 
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url);
+
+				server.MakeReply(transaction);
+
+				Assert.AreEqual(transaction.ReplyContents, "This is the one in DistFiles");
+			}
+		}
 		[Test]
 		public void GetCorrect_XmatterStylesCss()
 		{

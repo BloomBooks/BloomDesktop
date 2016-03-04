@@ -371,7 +371,9 @@ var StyleEditor = (function () {
         return ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.8', '2.0', '2.5', '3.0'];
     };
     StyleEditor.prototype.getWordSpaceOptions = function () {
-        return [localizationManager.getText('EditTab.FormatDialog.WordSpacingNormal', 'Normal'), localizationManager.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'), localizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
+        return [localizationManager.getText('EditTab.FormatDialog.WordSpacingNormal', 'Normal'),
+            localizationManager.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'),
+            localizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
     };
     // Returns an object giving the current selection for each format control.
     StyleEditor.prototype.getFormatValues = function () {
@@ -439,17 +441,7 @@ var StyleEditor = (function () {
         var underline = box.css('text-decoration') == 'underline';
         var center = box.css('text-align') == 'center';
         return {
-            ptSize: ptSize,
-            fontName: fontName,
-            lineHeight: lineHeight,
-            wordSpacing: wordSpacing,
-            borderChoice: borderChoice,
-            backColor: backColor,
-            bold: bold,
-            italic: italic,
-            underline: underline,
-            center: center
-        };
+            ptSize: ptSize, fontName: fontName, lineHeight: lineHeight, wordSpacing: wordSpacing, borderChoice: borderChoice, backColor: backColor, bold: bold, italic: italic, underline: underline, center: center };
     };
     StyleEditor.prototype.IsPageXMatter = function (targetBox) {
         var $target = $(targetBox);
@@ -495,7 +487,28 @@ var StyleEditor = (function () {
         var txt = localizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
         */
-        formatButton.click(function () {
+        // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
+        var suppress = $(document).find('meta[name="lockFormatting"]');
+        var noFormatChange = suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true';
+        //The following commented out code works fine on Windows, but causes the program to crash
+        //(disappear) on Linux when you click on the format button.
+        //if (suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true') {
+        //    formatButton.click(function () {
+        //        localizationManager.asyncGetText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.')
+        //            .done(translation => {
+        //                alert(translation);
+        //        });
+        //    });
+        //    return;
+        //}
+        // It is not reliable to attach the click handler directly, as in  $(#formatButton).click(...)
+        // I don't know why it doesn't work because even when it fails $(#formatButton).length is 1, so it seems to be
+        // finding the right element. But some of the time it doesn't work. See BL-2701. This rather awkard
+        // approach is the recommended way to make events fire for dynamically added elements.
+        // The .off prevents adding multiple event handlers as the parent box gains focus repeatedly.
+        // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
+        $(targetBox).off('click.formatButton');
+        $(targetBox).on('click.formatButton', '#formatButton', function () {
             iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
                 // This line is needed inside the click function to keep from using a stale version of 'styleName'
@@ -513,81 +526,109 @@ var StyleEditor = (function () {
                 editor.styles.sort(function (a, b) {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
-                var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">' + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
-                if (editor.authorMode) {
+                var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">'
+                    + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
+                if (noFormatChange) {
+                    var translation = localizationManager.getText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.');
+                    html += '<div class="bloomDialogMainPage"><p>' + translation + '</p></div>';
+                }
+                else if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">';
                     if (!editor.xmatterMode) {
-                        html += '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>' + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style') + editor.makeDiv("style-group", "state-initial", null, null, editor.makeSelect(editor.styles, styleName, 'styleSelect') + editor.makeDiv('dont-see', null, null, null, '<span data-i18n="EditTab.FormatDialog.DontSeeNeed">' + "Don't see what you need?" + '</span>' + ' <a id="show-createStyle" href="" data-i18n="EditTab.FormatDialog.CreateStyle">Create a new style</a>') + editor.makeDiv('createStyle', null, null, null, editor.makeDiv(null, null, null, 'EditTab.FormatDialog.NewStyle', 'New style') + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.FormatDialog.Create" disabled>Create</button>') + editor.makeDiv("please-use-alpha", null, 'color: red;', 'EditTab.FormatDialog.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".') + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.FormatDialog.AlreadyExists', 'That style already exists. Please choose another name.'))) + "</div>"; // end of Style Name tab-page div
+                        html += '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>'
+                            + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style')
+                            + editor.makeDiv("style-group", "state-initial", null, null, editor.makeSelect(editor.styles, styleName, 'styleSelect')
+                                + editor.makeDiv('dont-see', null, null, null, '<span data-i18n="EditTab.FormatDialog.DontSeeNeed">' + "Don't see what you need?" + '</span>'
+                                    + ' <a id="show-createStyle" href="" data-i18n="EditTab.FormatDialog.CreateStyle">Create a new style</a>')
+                                + editor.makeDiv('createStyle', null, null, null, editor.makeDiv(null, null, null, 'EditTab.FormatDialog.NewStyle', 'New style')
+                                    + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.FormatDialog.Create" disabled>Create</button>')
+                                    + editor.makeDiv("please-use-alpha", null, 'color: red;', 'EditTab.FormatDialog.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".')
+                                    + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.FormatDialog.AlreadyExists', 'That style already exists. Please choose another name.')))
+                            + "</div>"; // end of Style Name tab-page div
                     }
-                    html += '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>' + editor.makeCharactersContent(fonts, current) + '</div>' + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.MoreTab">More</h2>' + editor.makeDiv(null, null, null, null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null, editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B') + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I') + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U'))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Position', 'Position') + editor.makeDiv(null, null, null, null, editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png')) + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png'))))) + editor.makeDiv(null, null, 'margin-top:10px', null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Borders', 'Borders') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('border-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('border-black', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: black', null, '')) + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: black', null, ''))) + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', null, editor.makeDiv('border-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: gray', null, '')) + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: gray', null, '')))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Background', 'Background') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, ''))))) + '<div class="format-toolbar-description" id="formatMoreDesc"></div>' + '</div>' + '</div>'; // end of tab-pane div
+                    html += '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>'
+                        + editor.makeCharactersContent(fonts, current)
+                        + '</div>' // end of tab-page div for format
+                        + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.MoreTab">More</h2>'
+                        + editor.makeDiv(null, null, null, null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null, editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B')
+                            + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I')
+                            + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U')))
+                            + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Position', 'Position') + editor.makeDiv(null, null, null, null, editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png'))
+                                + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png')))))
+                        + editor.makeDiv(null, null, 'margin-top:10px', null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Borders', 'Borders')
+                            + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('border-none', 'icon16x16', null, null, editor.makeImage('grayX.png'))
+                                + editor.makeDiv('border-black', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: black', null, ''))
+                                + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: black', null, '')))
+                            + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', null, editor.makeDiv('border-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: gray', null, ''))
+                                + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: gray', null, ''))))
+                            + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Background', 'Background')
+                                + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png'))
+                                    + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, '')))))
+                        + '<div class="format-toolbar-description" id="formatMoreDesc"></div>'
+                        + '</div>' // end of tab-page div for 'more' tab
+                        + '</div>'; // end of tab-pane div
                 }
                 else {
                     // not in authorMode...much simpler dialog, no tabs, just the body of the characters tab.
-                    html += '<div class="bloomDialogMainPage">' + editor.makeCharactersContent(fonts, current) + '</div>';
+                    html += '<div class="bloomDialogMainPage">'
+                        + editor.makeCharactersContent(fonts, current)
+                        + '</div>';
                 }
                 html += '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $('body').after(html);
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
-                toolbar.draggable();
+                toolbar.draggable({ distance: 10, scroll: false, containment: $('html') });
+                toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                 toolbar.css('opacity', 1.0);
-                editor.getCharTabDescription();
-                editor.getMoreTabDescription();
-                $('#font-select').change(function () {
-                    editor.changeFont();
-                });
-                editor.AddQtipToElement($('#font-select'), localizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
-                $('#size-select').change(function () {
-                    editor.changeSize();
-                });
-                editor.AddQtipToElement($('#size-select'), localizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
-                $('#line-height-select').change(function () {
-                    editor.changeLineheight();
-                });
-                editor.AddQtipToElement($('#line-height-select').parent(), localizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
-                $('#word-space-select').change(function () {
-                    editor.changeWordSpace();
-                });
-                editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
-                if (editor.authorMode) {
-                    if (!editor.xmatterMode) {
-                        $('#styleSelect').change(function () {
-                            editor.selectStyle();
-                        });
-                        $('#style-select-input').alphanum({ allowSpace: false, preventLeadingNumeric: true });
-                        $('#style-select-input').on('input', function () {
-                            editor.styleInputChanged();
-                        }); // not .change(), only fires on loss of focus
-                        $('#style-select-input').get(0).trimNotification = function () {
-                            editor.styleStateChange('invalid-characters');
-                        };
-                        $('#show-createStyle').click(function (event) {
-                            event.preventDefault();
-                            editor.showCreateStyle();
-                            return false;
-                        });
-                        $('#create-button').click(function () {
-                            editor.createStyle();
-                        });
+                if (!noFormatChange) {
+                    editor.getCharTabDescription();
+                    editor.getMoreTabDescription();
+                    $('#font-select').change(function () { editor.changeFont(); });
+                    editor.AddQtipToElement($('#font-select'), localizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
+                    $('#size-select').change(function () { editor.changeSize(); });
+                    editor.AddQtipToElement($('#size-select'), localizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
+                    $('#line-height-select').change(function () { editor.changeLineheight(); });
+                    editor.AddQtipToElement($('#line-height-select').parent(), localizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
+                    $('#word-space-select').change(function () { editor.changeWordSpace(); });
+                    editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
+                    if (editor.authorMode) {
+                        if (!editor.xmatterMode) {
+                            $('#styleSelect').change(function () { editor.selectStyle(); });
+                            $('#style-select-input').alphanum({ allowSpace: false, preventLeadingNumeric: true });
+                            $('#style-select-input').on('input', function () { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
+                            // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
+                            // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
+                            $('#style-select-input').get(0).trimNotification = function () { editor.styleStateChange('invalid-characters'); };
+                            $('#show-createStyle').click(function (event) {
+                                event.preventDefault();
+                                editor.showCreateStyle();
+                                return false;
+                            });
+                            $('#create-button').click(function () { editor.createStyle(); });
+                        }
+                        var buttonIds = editor.getButtonIds();
+                        for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
+                            var button = $('#' + buttonIds[idIndex]);
+                            button.click(function () { editor.buttonClick(this); });
+                            button.addClass('propButton');
+                        }
+                        editor.selectButtons(current);
+                        new WebFXTabPane($('#tabRoot').get(0), false, null);
                     }
-                    var buttonIds = editor.getButtonIds();
-                    for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
-                        var button = $('#' + buttonIds[idIndex]);
-                        button.click(function () {
-                            editor.buttonClick(this);
-                        });
-                        button.addClass('propButton');
-                    }
-                    editor.selectButtons(current);
-                    new WebFXTabPane($('#tabRoot').get(0), false, null);
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
                 StyleEditor.positionInViewport(toolbar);
+                toolbar.draggable("enable");
                 $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function (event) {
-                    if (event.target != toolbar && toolbar.has(event.target).length === 0 && $(event.target.parent) != toolbar && toolbar.has(event.target).length === 0 && toolbar.is(":visible")) {
+                    if (event.target !== toolbar.get(0) &&
+                        toolbar.has(event.target).length === 0 &&
+                        $(event.target).parent() !== toolbar &&
+                        toolbar.has(event.target).length === 0 &&
+                        toolbar.is(":visible")) {
                         toolbar.remove();
                         event.stopPropagation();
                         event.preventDefault();
@@ -610,6 +651,7 @@ var StyleEditor = (function () {
         var elem = toolbar[0];
         var top = elem.offsetTop;
         var height = elem.offsetHeight;
+        // get the top of the toolbar in relation to the top of its containing elements
         while (elem.offsetParent) {
             elem = elem.offsetParent;
             top += elem.offsetTop;
@@ -635,7 +677,19 @@ var StyleEditor = (function () {
         this.selectButton('background-' + current.backColor, true);
     };
     StyleEditor.prototype.makeCharactersContent = function (fonts, current) {
-        return this.makeDiv(null, null, null, null, this.makeDiv(null, null, null, 'EditTab.Font', 'Font') + this.makeDiv(null, "control-section", null, null, this.makeSelect(fonts, current.fontName, 'font-select', 15) + ' ' + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select')) + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing') + this.makeDiv(null, null, null, null, '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">' + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' ' + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">' + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select') + '</span>')) + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, null);
+        return this.makeDiv(null, null, null, null, this.makeDiv(null, null, null, 'EditTab.Font', 'Font')
+            + this.makeDiv(null, "control-section", null, null, this.makeSelect(fonts, current.fontName, 'font-select', 15) + ' '
+                + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select'))
+            + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing')
+            + this.makeDiv(null, null, null, null, '<span style="white-space: nowrap">'
+                + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">'
+                + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' '
+                + '</span>' + ' '
+                + '<span style="white-space: nowrap">'
+                + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">'
+                + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
+                + '</span>'))
+            + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, null);
     };
     // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
     StyleEditor.prototype.stateChange = function (id, newState) {
@@ -654,7 +708,7 @@ var StyleEditor = (function () {
             $('#create-button').removeAttr('disabled');
         }
         else {
-            $('#create-button').attr('disabled', true);
+            $('#create-button').attr('disabled', 'true');
         }
         this.stateChange("style-group", newState);
     };
@@ -746,7 +800,8 @@ var StyleEditor = (function () {
         }
         // BL-2386 This one should NOT be language-dependent; only style dependent
         if (this.shouldSetDefaultRule()) {
-            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName).done(function (translation) {
+            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
+                .done(function (translation) {
                 $('#formatCharDesc').html(translation);
             });
             return;
@@ -756,7 +811,8 @@ var StyleEditor = (function () {
         var lang = localizationManager.getLanguageName(iso);
         if (!lang)
             lang = iso;
-        localizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName).done(function (translation) {
+        localizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
+            .done(function (translation) {
             $('#formatCharDesc').html(translation);
         });
     };
@@ -769,7 +825,8 @@ var StyleEditor = (function () {
                 styleName = styleName.substring(0, index);
         }
         // BL-2386 This one should NOT be language-dependent; only style dependent
-        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName).done(function (translation) {
+        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
+            .done(function (translation) {
             $('#formatMoreDesc').html(translation);
         });
     };
@@ -1042,7 +1099,7 @@ var StyleEditor = (function () {
         var current = this.getFormatValues();
         this.ignoreControlChanges = true;
         $('#font-select').val(current.fontName);
-        $('#size-select').val(current.ptSize);
+        $('#size-select').val(current.ptSize.toString());
         $('#line-height-select').val(current.lineHeight);
         $('#word-space-select').val(current.wordSpacing);
         var buttonIds = this.getButtonIds();

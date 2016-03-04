@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
-using Palaso.UI.WindowsForms.Widgets;
+using SIL.Windows.Forms.Widgets;
 
 namespace Bloom.Publish
 {

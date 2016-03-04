@@ -29,4 +29,8 @@
 *.bmml -whitespace
 *.DotSettings -whitespace
 *.mdpolicy -whitespace
+
+# These files are mainly imported from other projects, better not to enforce our system
+*.d.ts -whitespace
+src/BloomBrowserUI/compilerconfig.json -whitespace
 changelog -whitespace

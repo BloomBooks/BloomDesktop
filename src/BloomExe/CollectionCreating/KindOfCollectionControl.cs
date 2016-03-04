@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using Bloom.Collection;
 using L10NSharp;
-using Palaso.UI.WindowsForms.i18n;
+using SIL.Windows.Forms.i18n;
 
 namespace Bloom.CollectionCreating
 {

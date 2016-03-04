@@ -1,0 +1,115 @@
+﻿body #qtip-audio {
+  background-color: #faf7cc !important;
+  border-color: #0c8597 !important;
+}
+body #qtip-audio .ui-icon {
+  display: inline-block;
+}
+body div.ui-audioTitle {
+  color: #0c8597;
+  font-size: larger;
+  margin-top: 5px;
+  font-size: large;
+}
+body div.ui-audioBody {
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+body button.ui-audio-button {
+  height: 40px;
+  width: 40px;
+  border: none;
+  background-size: contain;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  display: block;
+  margin-bottom: 5px;
+}
+body button#audio-prev {
+  height: 20px;
+  width: 20px;
+}
+body button#audio-record.enabled {
+  background-image: url(audio/record_enabled.svg);
+}
+body button#audio-record.expected {
+  background-image: url(audio/record_expected.svg);
+}
+body button#audio-record.disabled {
+  background-image: url(audio/record_disabled.svg);
+}
+body button#audio-record.active {
+  background-image: url(audio/record_active.svg);
+}
+body button#audio-play.enabled {
+  background-image: url(audio/play_enabled.svg);
+}
+body button#audio-play.expected {
+  background-image: url(audio/play_expected.svg);
+}
+body button#audio-play.disabled {
+  background-image: url(audio/play_disabled.svg);
+}
+body button#audio-play.active {
+  background-image: url(audio/play_active.svg);
+}
+body button#audio-next.enabled {
+  background-image: url(audio/next_enabled.svg);
+}
+body button#audio-next.expected {
+  background-image: url(audio/next_expected.svg);
+}
+body button#audio-next.disabled {
+  background-image: url(audio/next_disabled.svg);
+}
+body button#audio-prev.enabled {
+  background-image: url(audio/prev_enabled.svg);
+}
+body button#audio-prev.disabled {
+  background-image: url(audio/prev_disabled.svg);
+}
+body div.button-label-wrapper {
+  display: inline-block;
+  margin-left: 20px;
+}
+body span.audio-label {
+  font-size: x-small;
+  color: #0c8597;
+}
+body span.audio-label.expected {
+  color: #96668f;
+}
+body button#audio-prev {
+  margin-bottom: 25px;
+}
+body div.ui-audioFooter {
+  margin-top: 30px;
+  margin-bottom: 5px;
+}
+body span.ui-audioCurrent {
+  background-color: #faf7cc;
+}
+body div.ui-audioMeter {
+  float: right;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+body #audio-devlist {
+  display: none;
+  position: absolute;
+  background-color: white;
+  width: 200px;
+}
+body #audio-devlist li {
+  min-height: 20px;
+  font-size: 12px;
+}
+body #audio-devlist li:hover {
+  background-color: lightgray;
+}
+body #audio-input-dev {
+  margin-top: 2px;
+  width: 15px;
+}
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImF1ZGlvUmVjb3JkaW5nLmxlc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBSUEsSUFDSTtFQUNJLHlCQUFBO0VBQ0EscUJBQUE7O0FBSFIsSUFLSSxZQUFZO0VBQVUscUJBQUE7O0FBTDFCLElBT0ksSUFBRztFQUFnQixjQUFBO0VBQThCLGlCQUFBO0VBQWtCLGVBQUE7RUFBaUIsZ0JBQUE7O0FBUHhGLElBU0ksSUFBRztFQUFlLGdCQUFBO0VBQWtCLG1CQUFBOztBQVR4QyxJQVVJLE9BQU07RUFBa0IsWUFBQTtFQUFhLFdBQUE7RUFBYSxZQUFBO0VBQWEsd0JBQUE7RUFBd0IsNkJBQUE7RUFBNkIsNEJBQUE7RUFBNEIsY0FBQTtFQUFjLGtCQUFBOztBQVZsSyxJQVdJLE9BQU07RUFBYSxZQUFBO0VBQWEsV0FBQTs7QUFYcEMsSUFZSSxPQUFNLGFBQWE7RUFBVSwrQ0FBQTs7QUFaakMsSUFhSSxPQUFNLGFBQWE7RUFBVyxnREFBQTs7QUFibEMsSUFjSSxPQUFNLGFBQWE7RUFBVyxnREFBQTs7QUFkbEMsSUFlSSxPQUFNLGFBQWE7RUFBUyw4Q0FBQTs7QUFmaEMsSUFnQkksT0FBTSxXQUFXO0VBQVUsNkNBQUE7O0FBaEIvQixJQWlCSSxPQUFNLFdBQVc7RUFBVyw4Q0FBQTs7QUFqQmhDLElBa0JJLE9BQU0sV0FBVztFQUFXLDhDQUFBOztBQWxCaEMsSUFtQkksT0FBTSxXQUFXO0VBQVMsNENBQUE7O0FBbkI5QixJQW9CSSxPQUFNLFdBQVc7RUFBVSw2Q0FBQTs7QUFwQi9CLElBcUJJLE9BQU0sV0FBVztFQUFXLDhDQUFBOztBQXJCaEMsSUFzQkksT0FBTSxXQUFXO0VBQVcsOENBQUE7O0FBdEJoQyxJQXVCSSxPQUFNLFdBQVc7RUFBVSw2Q0FBQTs7QUF2Qi9CLElBd0JJLE9BQU0sV0FBVztFQUFXLDhDQUFBOztBQXhCaEMsSUEwQkksSUFBRztFQUF1QixxQkFBQTtFQUFzQixpQkFBQTs7QUExQnBELElBMkJJLEtBQUk7RUFBYyxrQkFBQTtFQUFrQixjQUFBOztBQTNCeEMsSUE0QkksS0FBSSxZQUFZO0VBQVcsY0FBQTs7QUE1Qi9CLElBNkJJLE9BQU07RUFBYSxtQkFBQTs7QUE3QnZCLElBK0JJLElBQUc7RUFBaUIsZ0JBQUE7RUFBa0Isa0JBQUE7O0FBL0IxQyxJQWlDSSxLQUFJO0VBQWtCLHlCQUFBOztBQWpDMUIsSUFrQ0ksSUFBRztFQUFnQixZQUFBO0VBQVksa0JBQUE7RUFBa0IsV0FBQTtFQUFXLFVBQUE7O0FBbENoRSxJQXFDSztFQUFnQixhQUFBO0VBQWEsa0JBQUE7RUFBa0IsdUJBQUE7RUFBd0IsWUFBQTs7QUFyQzVFLElBcUNLLGVBQ2dCO0VBQUksZ0JBQUE7RUFBaUIsZUFBQTs7QUFDaEIsSUFGckIsZUFDZ0IsR0FDTTtFQUFRLDJCQUFBOztBQXZDbkMsSUEwQ0s7RUFBbUIsZUFBQTtFQUFpQixXQUFBIiwiZmlsZSI6InVuZGVmaW5lZCJ9 */

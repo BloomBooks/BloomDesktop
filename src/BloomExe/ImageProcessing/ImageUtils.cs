@@ -5,10 +5,10 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Palaso.Progress;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Logger = Palaso.Reporting.Logger;
-using TempFile = Palaso.IO.TempFile;
+using SIL.Progress;
+using SIL.Windows.Forms.ImageToolbox;
+using Logger = SIL.Reporting.Logger;
+using TempFile = SIL.IO.TempFile;
 
 namespace Bloom.ImageProcessing
 {
@@ -16,6 +16,10 @@ namespace Bloom.ImageProcessing
 	{
 		public static bool AppearsToBeJpeg(PalasoImage imageInfo)
 		{
+			// A user experienced a crash due to a null object in this section of the code.
+			// I've added a couple of checks to prevent that kind of crash here.
+			if (imageInfo == null || imageInfo.Image == null)
+				return false;
 			/*
 			 * Note, each guid is VERY SIMILAR. The difference is only in the last 2 digits of the 1st group.
 			   Undefined  B96B3CA9
@@ -30,7 +34,7 @@ namespace Bloom.ImageProcessing
 				EXIF    B96B3CB2
 				Icon    B96B3CB5
 			 */
-			if(ImageFormat.Jpeg.Guid == imageInfo.Image.RawFormat.Guid)
+			if(imageInfo.Image.RawFormat != null && ImageFormat.Jpeg.Guid == imageInfo.Image.RawFormat.Guid)
 				return true;
 
 			if(ImageFormat.Jpeg.Equals(imageInfo.Image.PixelFormat))//review
@@ -47,7 +51,7 @@ namespace Bloom.ImageProcessing
 		/// If the image has a filename, replaces any file with the same name.
 		/// </summary>
 		/// <returns>The name of the file, now in the book's folder.</returns>
-		public static string ProcessAndSaveImageIntoFolder(PalasoImage imageInfo, string bookFolderPath)
+		public static string ProcessAndSaveImageIntoFolder(PalasoImage imageInfo, string bookFolderPath, bool isSameFile)
 		{
 			LogMemoryUsage();
 			bool isEncodedAsJpeg = false;
@@ -55,7 +59,11 @@ namespace Bloom.ImageProcessing
 			{
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
 				var shouldConvertToJpeg = !isEncodedAsJpeg && ShouldChangeFormatToJpeg(imageInfo.Image);
-				var imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
+				string imageFileName;
+				if (isSameFile)
+					imageFileName = imageInfo.FileName;
+				else
+					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 				if (shouldConvertToJpeg)
 				{
@@ -77,7 +85,7 @@ namespace Bloom.ImageProcessing
 					using (var tmp = new TempFile())
 					{
 						image.Save(tmp.Path, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
-						Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tmp.Path, destinationPath, null);
+						SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tmp.Path, destinationPath, null);
 					}
 
 				}
@@ -127,29 +135,29 @@ namespace Bloom.ImageProcessing
 		private static string GetFileNameToUseForSavingImage(string bookFolderPath, PalasoImage imageInfo, bool isJpeg)
 		{
 			var extension = isJpeg ? ".jpg" : ".png";
-			if(string.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
+			// Some images, like from a scanner or camera, won't have a name yet.  Some will need a number
+			// in order to differentiate from what is already there. We don't try and be smart somehow and
+			// know when to just replace the existing one with the same name... some other process will have
+			// to remove unused images.
+			string basename;
+			if (string.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
 			{
-				// Some images, like from a scanner or camera, won't have a name yet.  Some will need a number
-				// in order to differentiate from what is already there. We don't try and be smart somehow and
-				// know when to just replace the existing one with the same name... some other process will have
-				// to remove unused images.
-
-				const string s = "image";
-				var i = 0;
-				var suffix = "";
-
-				while(File.Exists(Path.Combine(bookFolderPath, s + suffix + extension)))
-				{
-					++i;
-					suffix = i.ToString(CultureInfo.InvariantCulture);
-				}
-
-				return s + suffix + extension;
+				basename = "image";
 			}
 			else
 			{
-				return Path.GetFileNameWithoutExtension(imageInfo.FileName) + extension;
+				// Even pictures that aren't obviously unnamed or temporary may have the same name.
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2627 ("Wierd Image Problem").
+				basename = Path.GetFileNameWithoutExtension(imageInfo.FileName);
 			}
+			var i = 0;
+			var suffix = "";
+			while (File.Exists(Path.Combine(bookFolderPath, basename + suffix + extension)))
+			{
+				++i;
+				suffix = i.ToString(CultureInfo.InvariantCulture);
+			}
+			return basename + suffix + extension;
 		}
 
 		private static void LogMemoryUsage()
@@ -253,7 +261,7 @@ namespace Bloom.ImageProcessing
 					parameters.Param[0] = new EncoderParameter(encoder, 100L);
 					safetyImage.Save(tempPath.Path, jpgEncoder, parameters);
 				}
-				Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath.Path, destinationPath, null);
+				SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath.Path, destinationPath, null);
 			}
 		}
 

@@ -13,7 +13,7 @@ namespace BloomTests
 	{
 		class ProblemReporterDialogDouble: ProblemReporterDialog
 		{
-			public ProblemReporterDialogDouble(): base(null, null)
+			public ProblemReporterDialogDouble()
 			{
 				Success = true;
 				_youTrackProjectKey = "AUT";
@@ -51,6 +51,7 @@ namespace BloomTests
 		[Test]
 		[Category("SkipOnTeamCity")] //I don't know why this is blocked, probably we need a firewall opening
 		[Platform(Exclude = "Linux", Reason = "YouTrackSharp is too Windows-centric")]
+		[STAThread]
 		public void CanSubmitProblemReportTestProject()
 		{
 			using (var dlg = new ProblemReporterDialogDouble())

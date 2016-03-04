@@ -2,8 +2,8 @@
 using System.IO;
 using System.Linq;
 using Bloom.web;
-using Palaso.IO;
-using Palaso.Reporting;
+using SIL.IO;
+using SIL.Reporting;
 using Bloom.Properties;
 
 namespace Bloom.ImageProcessing
@@ -64,7 +64,7 @@ namespace Bloom.ImageProcessing
 					"What can you do?{0}" +
 					"Click OK, then exit Bloom and restart your computer.{0}" +
 					"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine,
-					Palaso.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux");
+					SIL.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux");
 			}
 		}
 
@@ -76,41 +76,45 @@ namespace Bloom.ImageProcessing
 			if (!_useCache)
 				return false;
 
-			var r = GetLocalPathWithoutQuery(info);
+			var imageFile = GetLocalPathWithoutQuery(info);
 
 			// only process images
-			var isSvg = r.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
-			if (!IsImageTypeThatCanBeDegraded(r) && !isSvg)
+			var isSvg = imageFile.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
+			if (!IsImageTypeThatCanBeDegraded(imageFile) && !isSvg)
 				return false;
 
-			r = r.Replace("thumbnail", "");
+			imageFile = imageFile.Replace("thumbnail", "");
+
+			var processImage = !isSvg;
 
 			// This happens with the new way we are serving css files
-			if (!File.Exists(r))
+			if (!File.Exists(imageFile))
 			{
-				var fileName = Path.GetFileName(r);
+				var fileName = Path.GetFileName(imageFile);
 				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
-				r = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
+				imageFile = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
+
+				// image file not found
+				if (string.IsNullOrEmpty(imageFile)) return false;
+
+				// BL-2368: Do not process files from the BloomBrowserUI directory. These files are already in the state we
+				//          want them. Running them through _cache.GetPathToResizedImage() is not necessary, and in PNG files
+				//          it converts all white areas to transparent. This is resulting in icons which only contain white
+				//          (because they are rendered on a dark background) becoming completely invisible.
+				processImage = false;
 			}
 
-			if (!string.IsNullOrEmpty(r))
+			if (processImage)
 			{
-				if (isSvg)
-				{
-					info.ReplyWithImage(r);
-					return true;
-				}
-
 				// thumbnail requests have the thumbnail parameter set in the query string
 				var thumb = info.GetQueryString()["thumbnail"] != null;
-				var pathToFile = _cache.GetPathToResizedImage(r, thumb);
+				imageFile = _cache.GetPathToResizedImage(imageFile, thumb);
 
-				if (string.IsNullOrEmpty(pathToFile)) return false;
-
-				info.ReplyWithImage(pathToFile);
-				return true;
+				if (string.IsNullOrEmpty(imageFile)) return false;
 			}
-			return false;
+
+			info.ReplyWithImage(imageFile);
+			return true;
 		}
 
 		protected static bool IsImageTypeThatCanBeDegraded(string path)

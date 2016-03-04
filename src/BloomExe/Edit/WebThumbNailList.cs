@@ -10,8 +10,8 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Gecko;
-using Palaso.UI.WindowsForms.Reporting;
-using Palaso.Xml;
+using SIL.Windows.Forms.Reporting;
+using SIL.Xml;
 using L10NSharp;
 
 namespace Bloom.Edit
@@ -22,20 +22,24 @@ namespace Bloom.Edit
 		/// The CSS class we give the main div for each page; the same element always has an id attr which identifies the page.
 		/// </summary>
 		internal const string ClassForGridItem = "gridItem";
-		private bool _inSelectionAlready;
-		private bool _intentionallyChangingSelection;
-
-
-		private ListViewItem _currentDraggingItem;
-		private ListViewItem _currentTarget;
-		private Pen _boundsPen;
-		private int _numberofEmptyListItemsAtStart;
 		public HtmlThumbNailer Thumbnailer;
-		private Image _placeHolderImage;
 		public event EventHandler PageSelectedChanged;
 		private Bloom.Browser _browser;
 		private int _verticalScrollDistance;
 		private static string _thumbnailInterval;
+
+		internal class MenuItemSpec
+		{
+			public string Label;
+			public Func<IPage, bool> EnableFunction;
+			public Action<IPage> ExecuteCommand;
+		}
+
+
+		// A list of menu items that should be in both the web browser's right-click menu and
+		// the one we show ourselves when the arrow is clicked. The second item in the tuple
+		// determines whether the item should be enabled; the third performs the action.
+		internal List<MenuItemSpec> ContextMenuItems { get; set; }
 
 		public WebThumbNailList()
 		{
@@ -79,7 +83,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		public Action<GeckoContextMenuEventArgs> ContextMenuProvider
+		public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider
 		{
 			get { return _browser.ContextMenuProvider; }
 			set { _browser.ContextMenuProvider = value; }
@@ -94,28 +98,6 @@ namespace Bloom.Edit
 			}
 		}
 
-//        void _listView_DrawItem(object sender, DrawListViewItemEventArgs e)
-//        {
-//            e.DrawDefault = true;
-//			if (e.Item == _currentTarget && e.Item != _currentDraggingItem)
-//			{
-//				e.Graphics.DrawLine(Pens.Red, e.Bounds.Left, e.Bounds.Bottom, e.Bounds.Left, e.Bounds.Top);
-//			}
-//            //indicate selection in a more obvious way than just the grey screen we get by default
-//            if(e.Item.Selected )
-//            {
-//                var r = e.Bounds;
-//                r.Inflate(-1,-1);
-//                e.Graphics.DrawRectangle(_boundsPen,r);
-//            }
-//
-//
-//            if (e.Item == ItemWhichWouldPrecedeANewPageInsertion)
-//            {
-//                e.Graphics.DrawLine(Pens.White, e.Bounds.Right-8, e.Bounds.Bottom-2, e.Bounds.Right-5, e.Bounds.Bottom-6);
-//                e.Graphics.DrawLine(Pens.White, e.Bounds.Right - 2, e.Bounds.Bottom-2, e.Bounds.Right - 5, e.Bounds.Bottom - 6);
-//            }
-//        }
 
 		public bool KeepShowingSelection
 		{
@@ -133,352 +115,12 @@ namespace Bloom.Edit
 				handler(page, null);
 			}
 		}
-//        public void SetItems(IEnumerable<IPage> items)
-//        {
-//            _listView.ListViewItemSorter = null;
-//            SuspendLayout();
-//			_listView.BeginUpdate();
-//            _listView.Items.Clear();
-//            _thumbnailImageList.Images.Clear();
-//
-//            _numberofEmptyListItemsAtStart = 0;
-//        	int pageNumber = 0;
-//            foreach (IPage page in items)
-//            {
-//                if (_listView == null)//hack... once I saw this go null in the middle of working, when I tabbed away from the control
-//                    return;
-//
-//                if (page is PlaceHolderPage)
-//                    ++_numberofEmptyListItemsAtStart;
-//
-//				AddOnePage(page, ref pageNumber);
-//            }
-//            _listView.ListViewItemSorter = new SortListViewItemByIndex();
-//        	_listView.EndUpdate();
-//            ResumeLayout();
-//        }
-//
-//		public void UpdateThumbnailCaptions()
-//		{
-//			_listView.BeginUpdate();
-//			int pageNumber = 0;
-//			foreach (ListViewItem item in _listView.Items)
-//			{
-//				IPage page = (IPage) item.Tag;
-//			    var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-//                item.Text = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions."+captionOrPageNumber, captionOrPageNumber);
-//			}
-//			_listView.EndUpdate();
-//		}
-
-//		private void AddOnePage(IPage page, ref int pageNumber)
-//		{
-//			var label = PreferPageNumbers ? page.GetCaptionOrPageNumber(ref pageNumber) : page.Caption;
-//            label = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + label, label);
-//
-//            ListViewItem item = new ListViewItem(label, 0);
-//			item.Tag = page;
-//
-//			Image thumbnail = Resources.PagePlaceHolder; ;
-//			if (page is PlaceHolderPage)
-//				thumbnail = _placeHolderImage;
-//			_thumbnailImageList.Images.Add(page.Id, thumbnail);
-//			item.ImageIndex = _thumbnailImageList.Images.Count - 1;
-//			_listView.Items.Add(item);
-//			if (!(page is PlaceHolderPage))
-//			{
-//				UpdateThumbnailAsync(page);
-//			}
-//		}
-
-//		public void UpdateThumbnailAsync(IPage page)
-//		{
-//			XmlDocument pageDom = page.Book.GetPreviewXmlDocumentForPage(page).RawDom;
-//
-//			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom,
-//													  Palette.TextAgainstDarkBackground,
-//													  false, image => RefreshOneThumbnailCallback(page, image),
-//													  error=> HandleThumbnailerError(page, error));
-//		}
-//
-//	    private void HandleThumbnailerError(IPage page, Exception error)
-//    	{
-//#if DEBUG
-//
-//			//NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//			//Javascript errors in the *editable* page (the one on screen) can show up here. Bizarre... haven't figured out how/why. Maybe due to calling application.doevents()
-//			//in the thumbnail generator. Symptom is that even passing a blank html file to the thumbnailer still gives javascript errors here, but taking the javascript out of
-//			//the editable page (in Book.GetEditableHtmlDomForPage() ) fixes it.
-//			//Note, even though you'll get the error once for everythumbnail, don't let that fool you.
-//
-//			Debug.Fail("Debug only" + error.Message);
-//#endif
-//    		RefreshOneThumbnailCallback(page, Resources.Error70x70);
-//    	}
-//
-//    	private void RefreshOneThumbnailCallback(IPage page, Image image)
-//		{
-//			if (IsDisposed)
-//				return;
-//			var imageIndex = _thumbnailImageList.Images.IndexOfKey(page.Id);
-//			if (imageIndex > -1)
-//			{
-//				_thumbnailImageList.Images[imageIndex] = image;
-//
-//				//at one time the page we just inserted would have the same id, but be a different IPage object.
-//				//Now, the above checks for id equality too (never did track down why the objects change, but this is robust, so I'm not worried about it)
-//
-//				var listItem = (from ListViewItem i in _listView.Items where ((i.Tag == page) || ((IPage)i.Tag).Id == page.Id) select i).FirstOrDefault();
-//				if(listItem!=null)
-//				{
-//					_listView.Invalidate(listItem.Bounds);
-//				}
-//				else
-//				{
-//					Debug.Fail("Did not find a matching page."); //theoretically, this could happen if you managed to delete the page before its thumnbail could be built
-//					var lastPage = _listView.Items[_listView.Items.Count - 1];
-//				}
-//
-//			}
-//		}
 
 
 		public bool CanSelect { get; set; }
 		public bool PreferPageNumbers { get; set; }
 
 		public RelocatePageEvent RelocatePageEvent { get; set; }
-//
-//    	private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-//        {
-//			if (_inSelectionAlready)
-//				return;
-//			if (!_intentionallyChangingSelection)//yes, having painful phantom selections when the cursor leaves this control
-//			{
-//				_listView.SelectedIndices.Clear();
-//			}
-//
-//        	_inSelectionAlready = true;
-//			try
-//			{
-//				if (_listView.SelectedItems.Count == 0)
-//				{
-//					InvokePageSelectedChanged(null);
-//				}
-//				else
-//				{
-//					Page page = _listView.SelectedItems[0].Tag as Page;
-//					if(!CanSelect)
-//					{
-//						//leads to two apparent clicks... (hence the _mouseDidGoDown thing)
-//						_listView.SelectedIndices.Clear();
-//					}
-//					InvokePageSelectedChanged(page);
-//				}
-//			}
-//			finally
-//			{
-//				_inSelectionAlready = false;
-//			}
-//        }
-//
-//        private void ThumbNailList_BackColorChanged(object sender, EventArgs e)
-//        {
-//            _listView.BackColor = BackColor;
-//        }
-//
-//		private void _listView_MouseDown(object sender, MouseEventArgs e)
-//		{
-//			_intentionallyChangingSelection = true;
-//		    //_mouseDownLocation = e.Location;
-//			if (this.RelocatePageEvent !=null)
-//			{
-//                var listItem = _listView.GetItemAt(e.X, e.Y);
-//                if (listItem == null)
-//                    return;
-//                if (!((IPage)listItem.Tag).CanRelocate)
-//                {
-//                    return;
-//                }
-//                Capture = true;
-//
-//			    _currentDraggingItem = listItem;
-//				Cursor = Cursors.Hand;
-//			}
-//		}
-//
-//        /// <summary>
-//        /// used to visually indicate where the page would show up, if we add a new one
-//        /// </summary>
-//        public ListViewItem ItemWhichWouldPrecedeANewPageInsertion
-//        {
-//            get; set;
-//        }
-//
-//		private void _listView_MouseUp(object sender, MouseEventArgs e)
-//		{
-////            if (_mouseDownLocation == default(Point))
-////            {
-////                _currentTarget = null;
-////                _currentDraggingItem = null;
-////                return;
-////            }
-////
-////		    var mouseDownLocation = _mouseDownLocation;
-////		    _mouseDownLocation = default(Point);
-//
-//			Capture = false;
-//			Debug.WriteLine("MouseUp");
-//            _intentionallyChangingSelection = false;
-//
-//			if (Control.MouseButtons == MouseButtons.Left)
-//				return;
-//
-//			Cursor = Cursors.Default;
-//
-//		    bool notPointingAtOriginalLocation= _listView.GetItemAt(e.X, e.Y) != _currentDraggingItem;
-//
-////		    var horizontalMovement = Math.Abs(mouseDownLocation.X - e.X);
-////            var verticalMovement = Math.Abs(mouseDownLocation.Y - e.Y);
-////		    bool sufficientDistance = horizontalMovement > _thumbnailImageList.ImageSize.Width
-////                || verticalMovement > _thumbnailImageList.ImageSize.Height;
-//
-//            if (notPointingAtOriginalLocation &&  RelocatePageEvent != null && _currentDraggingItem != null)
-//			{
-//				Debug.WriteLine("Re-ordering");
-//				if (_currentTarget == null ||
-//						_currentTarget == _currentDraggingItem) //should never happen, but to be safe
-//				{
-//					_currentTarget = null;
-//					_currentDraggingItem = null;
-//					return;
-//				}
-//
-//				var relocatePageInfo = new RelocatePageInfo((IPage) _currentDraggingItem.Tag, _currentTarget.Index - _numberofEmptyListItemsAtStart);
-//				RelocatePageEvent.Raise(relocatePageInfo);
-//				if (relocatePageInfo.Cancel)
-//					return;
-//
-//				_listView.BeginUpdate();
-//				_listView.Items.Remove(_currentDraggingItem);
-//				_listView.Items.Insert(_currentTarget.Index, _currentDraggingItem);
-//				_listView.EndUpdate();
-//				_currentTarget = null;
-//				_currentDraggingItem = null;
-//
-//				UpdateThumbnailCaptions();
-//				_listView.Invalidate();
-//			}
-//			else
-//			{
-//				_currentTarget = null;
-//				_currentDraggingItem = null;
-//			}
-//		}
-//
-//
-//        private void _listView_MouseMove(object sender, MouseEventArgs e)
-//		{
-//
-//            if (_listView.GetItemAt(e.X, e.Y) == _currentDraggingItem)
-//                return; //not really a "move" if we're still pointing at the original item
-//
-//			if (this.RelocatePageEvent != null && _currentDraggingItem != null)
-//			{
-//			    if (Control.MouseButtons != MouseButtons.Left)
-//			    {
-////hack trying to get a correct notion of when the mouse is up
-//			        _listView_MouseUp(null, e);
-//			        return;
-//			    }
-//
-//			    Debug.WriteLine("Dragging");
-//			    Cursor = Cursors.Hand;
-//			    ListViewItem  target=null;
-//                if (null == _listView.GetItemAt(e.X, e.Y))
-//                {
-//                    target = _listView.GetItemAt(e.X+20, e.Y);
-//                }
-//                else
-//                {
-//                    target = _listView.GetItemAt(e.X, e.Y);
-//                }
-//
-//                if (target == null)
-//                {
-//                    //when we point right in the middle, we'll get a null target, but we sure want one,
-//                    //so try looking to one side
-//
-//                    Debug.WriteLine("null target");
-//                }
-//                else
-//                {
-//                    Debug.WriteLine("target: " + target.Text);
-//
-//                    //if we're pointing to the right of some item, we want to insert *after* it.
-//                    var middle = target.Position.X + (_thumbnailImageList.ImageSize.Width/2);
-//                    if (e.X > middle && _listView.Items.Count - 1 > target.Index)
-//                    {
-//                        target = _listView.Items[target.Index + 1]; //choose the next item
-//                    }
-//                }
-//			    if (_currentDraggingItem == target)//doesn't count to drag on yourself
-//				{
-//					return;
-//				}
-//
-//				if (target != _currentTarget)
-//				{
-//					_listView.Invalidate(); //repaint
-//				}
-//				_currentTarget = target;
-//			}
-//		}
-//
-//        public void SelectPage(IPage page)
-//        {
-//            if (_listView == null)
-//                return;
-//
-//            foreach (ListViewItem listViewItem in _listView.Items)
-//            {
-//                var itemPage = listViewItem.Tag as IPage;
-//                if (itemPage == null)
-//                    continue;
-//
-//                if(itemPage.Id == page.Id) //actual page object may change between book loads, but the id is consistent
-//                {
-//                    try
-//                    {
-//                        _intentionallyChangingSelection = true;
-//                        listViewItem.Selected = true;
-//                        ItemWhichWouldPrecedeANewPageInsertion = listViewItem;
-//                    	listViewItem.EnsureVisible();
-//                    }
-//                    finally
-//                    {
-//                        _intentionallyChangingSelection = false;
-//                    }
-//                    return;
-//                }
-//            }
-//// actually, this is common because we might not yet have been told to update our list   Debug.Fail("Did not find item to select");
-//        }
-//
-//        public void SetPageInsertionPoint(IPage pageBeforeInsertion)
-//        {
-//            ItemWhichWouldPrecedeANewPageInsertion = _listView.Items.OfType<ListViewItem>().FirstOrDefault(i => i.Tag == pageBeforeInsertion);
-//        }
-//
-//    	public void EmptyThumbnailCache()
-//    	{
-//    		foreach (ListViewItem item in _listView.Items)
-//    		{
-//
-//    			var pageId = (item.Tag as IPage).Id;
-//				if(!(item.Tag is PlaceHolderPage))
-//					Thumbnailer.PageChanged(pageId);
-//    		}
-//    	}
 		public void EmptyThumbnailCache()
 		{
 
@@ -512,6 +154,9 @@ namespace Bloom.Edit
 			if (classContent.Contains("gridSelected"))
 				return;
 			gridElt.SetAttribute("class", classContent + " gridSelected");
+			var menuElt = GetElementForMenuHolder();
+			menuElt.ParentElement.RemoveChild(menuElt);
+			gridElt.DOMElement.AppendChild(menuElt.DOMElement);
 		}
 
 		string ColorToHtmlCode(Color color)
@@ -544,6 +189,7 @@ namespace Bloom.Edit
 
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
+			RemoveThumbnailListeners();
 			var result = new List<IPage>();
 			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
 			if (firstRealPage == null)
@@ -562,7 +208,7 @@ namespace Bloom.Edit
 			var pageDoc = dom.RawDom;
 
 			// BL-987: Add styles to optimize performance on Linux
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				var style = pageDoc.CreateElement("style");
 				style.InnerXml = "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
@@ -575,27 +221,17 @@ namespace Bloom.Edit
 			_pageMap.Clear();
 			foreach (var page in pages)
 			{
-				var node = page.GetDivNodeForThisPage();
-				if (node == null)
+				var pageElement = page.GetDivNodeForThisPage();
+				if (pageElement == null)
 					continue; // or crash? How can this happen?
 				result.Add(page);
-				var pageThumbnail = pageDoc.ImportNode(node, true);
+				var pageElementForThumbnail = pageDoc.ImportNode(pageElement, true) as XmlElement;
 
 				// BL-1112: Reduce size of images in page thumbnails.
 				// We are setting the src to empty so that we can use JavaScript to request the thumbnails
 				// in a controlled manner that should reduce the likelihood of not receiving the image quickly
 				// enough and displaying the alt text rather than the image.
-				var imgNodes = pageThumbnail.SelectNodes(".//img");
-				if (imgNodes != null)
-				{
-					foreach (XmlNode imgNode in imgNodes)
-					{
-						var attr = pageDoc.CreateAttribute("thumb-src");
-						attr.Value = imgNode.Attributes["src"].Value;
-						imgNode.Attributes.Append(attr);
-						imgNode.Attributes["src"].Value = "";
-					}
-				}
+				DelayAllImageNodes(pageElementForThumbnail);
 
 				var cellDiv = pageDoc.CreateElement("div");
 				cellDiv.SetAttribute("class", ClassForGridItem);
@@ -609,7 +245,7 @@ namespace Bloom.Edit
 				//have something to give a border to when this page is selected
 				var pageContainer = pageDoc.CreateElement("div");
 				pageContainer.SetAttribute("class", PageContainerClass);
-				pageContainer.AppendChild(pageThumbnail);
+				pageContainer.AppendChild(pageElementForThumbnail);
 
 				/* And here it gets fragile (for not).
 					The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
@@ -618,7 +254,7 @@ namespace Bloom.Edit
 					moment, we assign appropriate sizes, by hand. We rely on c# code to add these
 					classes, since we can't write a rule in css3 that peeks into a child attribute.
 				*/
-				var pageClasses = pageThumbnail.GetStringAttribute("class").Split(new[] {' '});
+				var pageClasses = pageElementForThumbnail.GetStringAttribute("class").Split(new[] {' '});
 				var cssClass = pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
 				if (!string.IsNullOrEmpty(cssClass))
 					pageContainer.SetAttribute("class", "pageContainer " + cssClass);
@@ -628,7 +264,7 @@ namespace Bloom.Edit
 				captionDiv.SetAttribute("class", "thumbnailCaption");
 				cellDiv.AppendChild(captionDiv);
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-				captionDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
+				captionDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel." + captionOrPageNumber, captionOrPageNumber);
 			}
 
 			// set interval based on physical RAM
@@ -642,6 +278,32 @@ namespace Bloom.Edit
 			return result;
 		}
 
+		private static void DelayAllImageNodes(XmlElement pageElementForThumbnail)
+		{
+			var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElementForThumbnail);
+			if (imgNodes != null)
+			{
+				foreach (XmlElement imgNode in imgNodes)
+				{
+					imgNode.SetAttribute("thumb-src", HtmlDom.GetImageElementUrl(imgNode).UrlEncoded);
+					HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(""));
+				}
+			}
+		}
+
+		private static void MarkImageNodesForThumbnail(XmlElement pageElementForThumbnail)
+		{
+			var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElementForThumbnail);
+			if (imgNodes != null)
+			{
+				foreach (XmlElement imgNode in imgNodes)
+				{
+					var url = HtmlDom.GetImageElementUrl(imgNode).UrlEncoded + "?thumbnail=1";
+					HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(url));
+				}
+			}
+		}
+
 		private static string GridId(IPage page)
 		{
 			return "page-" + page.Id;
@@ -649,10 +311,23 @@ namespace Bloom.Edit
 
 		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
 		{
-			_browser.AddMessageEventListener("gridClick", ItemClick);
-			_browser.AddMessageEventListener("gridReordered", GridReordered);
+			AddThumbnailListeners();
 			SelectPage(_selectedPage);
 			_browser.VerticalScrollDistance = _verticalScrollDistance;
+		}
+
+		private void AddThumbnailListeners()
+		{
+			_browser.AddMessageEventListener("gridClick", ItemClick);
+			_browser.AddMessageEventListener("gridReordered", GridReordered);
+			_browser.AddMessageEventListener("menuClicked", MenuClick);
+		}
+
+		private void RemoveThumbnailListeners()
+		{
+			_browser.RemoveMessageEventListener("gridClick");
+			_browser.RemoveMessageEventListener("gridReordered");
+			_browser.RemoveMessageEventListener("menuClicked");
 		}
 
 		private void ItemClick(string s)
@@ -660,6 +335,23 @@ namespace Bloom.Edit
 			IPage page;
 			if (_pageMap.TryGetValue(s, out page))
 				InvokePageSelectedChanged(page);
+		}
+
+		private void MenuClick(string pageId)
+		{
+			IPage page;
+			var menu = new ContextMenuStrip();
+			if (!_pageMap.TryGetValue(pageId, out page))
+				return;
+			foreach (var item in ContextMenuItems)
+			{
+				var useItem = item; // for use in Click action (reference to loop variable has unpredictable results)
+				var menuItem = new ToolStripMenuItem(item.Label);
+				menuItem.Click += (sender, args) => useItem.ExecuteCommand(page);
+				menuItem.Enabled = item.EnableFunction(page);
+				menu.Items.Add(menuItem);
+			}
+			menu.Show(MousePosition);
 		}
 
 		/// <summary>
@@ -724,9 +416,9 @@ namespace Bloom.Edit
 			{
 				if (!_pages[i].CanRelocate)
 				{
-					var msg = LocalizationManager.GetString("PageList.CantMoveXMatter",
+					var msg = LocalizationManager.GetString("EditTab.PageList.CantMoveXMatter",
 						"That change is not allowed. Front matter and back matter pages must remain where they are");
-					var caption = LocalizationManager.GetString("PageList.CantMoveXMatterCaption",
+					var caption = LocalizationManager.GetString("EditTab.PageList.CantMoveXMatterCaption",
 						"Invalid Move");
 					if (_pages[i].Book.LockedDown)
 					{
@@ -779,7 +471,7 @@ namespace Bloom.Edit
 				var gridElt = _browser.WebBrowser.Document.GetElementById(GridId(page));
 				var titleElt = GetFirstChildWithClass(gridElt, "gridTitle") as GeckoElement;
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-				var desiredText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
+				var desiredText = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel." + captionOrPageNumber, captionOrPageNumber);
 				if (titleElt == null || titleElt.TextContent == desiredText)
 					continue;
 				titleElt.TextContent = desiredText;
@@ -802,12 +494,27 @@ namespace Bloom.Edit
 				Debug.Fail("Can't update page...missing page element");
 				return; // for end user we just won't update the thumbnail.
 			}
-			pageContainerElt.ReplaceChild(MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, page.GetDivNodeForThisPage()), pageElt);
+			// Remove listeners so that garbage collection resulting from the Dispose has a better
+			// chance to work (without entanglements between javascript and mozilla's DOM memory).
+			RemoveThumbnailListeners();
+			var divNodeForThisPage = page.GetDivNodeForThisPage();
+			//clone so we can modify it for thumbnailing without messing up the version we will save
+			divNodeForThisPage = divNodeForThisPage.CloneNode(true) as XmlElement;
+			MarkImageNodesForThumbnail(divNodeForThisPage);
+			var geckoNode = MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, divNodeForThisPage);
+			pageContainerElt.ReplaceChild(geckoNode, pageElt);
+			pageElt.Dispose();
+			AddThumbnailListeners();
 		}
 
 		private GeckoElement GetGridElementForPage(IPage page)
 		{
 			return _browser.WebBrowser.Document.GetElementById(GridId(page));
+		}
+
+		private GeckoElement GetElementForMenuHolder()
+		{
+			return _browser.WebBrowser.Document.GetElementById("menuIconHolder");
 		}
 
 		private GeckoNode GetFirstChildWithClass(GeckoElement parentElement, string targetClass)
@@ -858,6 +565,15 @@ namespace Bloom.Edit
 			{
 				if (_browser != null)
 					_browser.Isolator = value;
+			}
+		}
+
+		public ControlKeyEvent ControlKeyEvent
+		{
+			set
+			{
+				if (_browser != null)
+					_browser.ControlKeyEvent = value;
 			}
 		}
 	}

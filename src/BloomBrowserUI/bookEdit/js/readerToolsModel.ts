@@ -1,12 +1,13 @@
 /// <reference path="interIframeChannel.ts" />
 /// <reference path="getIframeChannel.ts" />
 /// <reference path="synphonyApi.ts" />
-/// <reference path="libsynphony/bloom_lib.d.ts" />
-/// <reference path="libsynphony/synphony.d.ts" />
 /// <reference path="libsynphony/jquery.text-markup.d.ts" />
 /// <reference path="jquery.div-columns.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="editableDivUtils.ts" />
+/// <reference path="directoryWatcher.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
+/// <reference path="readerTools.ts" />
 
 var iframeChannel = getIframeChannel();
 
@@ -25,6 +26,7 @@ var MarkupType = {
 };
 
 var previousHeight = 0;
+var previousWidth = 0;
 
 var sortIconSelectedClass = "sortIconSelected"; // The class we apply to the selected sort icon
 var disabledIconClass = "disabledIcon"; // The class we apply to icons that are disabled.
@@ -58,9 +60,8 @@ class ReaderToolsModel {
   fontName: string = '';
   readableFileExtensions: string[] = [];
   keypressTimer: any = null;
-
-  /** @type DirectoryWatcher directoryWatcher */
-  directoryWatcher = null;
+  directoryWatcher: DirectoryWatcher = null;
+  maxAllowedWords: number = 10000;
 
   // remember words so we can update the counts real-time
   bookPageWords = [];
@@ -76,6 +77,7 @@ class ReaderToolsModel {
 
   // some things need to wait until the word list has finished loading
   wordListLoaded: boolean = false;
+  allowedWordFilesRemaining: number = 0;
 
   constructor() {
 
@@ -122,6 +124,9 @@ class ReaderToolsModel {
     if (stages.length <= 0) {
       ReaderToolsModel.updateElementContent("stageNumber", "0");
       return;
+    }
+    if (this.stageNumber > stages.length) {
+       this.stageNumber = stages.length;
     }
     ReaderToolsModel.updateElementContent("stageNumber", stages[this.stageNumber - 1].getName());
   }
@@ -292,6 +297,20 @@ class ReaderToolsModel {
    */
   updateWordList(): void {
 
+    // show the correct headings
+    var useAllowedWords = (this.synphony.source) ? this.synphony.source.useAllowedWords === 1 : false;
+
+    // this happens during unit testing
+    if (document.getElementById('make-letter-word-list-div')) {
+      document.getElementById('make-letter-word-list-div').style.display = useAllowedWords ? 'none' : '';
+      document.getElementById('letters-in-this-stage').style.display = useAllowedWords ? 'none' : '';
+      document.getElementById('letterList').parentElement.style.display = useAllowedWords ? 'none' : '';
+      document.getElementById('sample-words-this-stage').style.display = useAllowedWords ? 'none' : '';
+      document.getElementById('sortFrequency').style.display = useAllowedWords ? 'none' : '';
+      document.getElementById('allowed-words-this-stage').style.display = useAllowedWords ? '' : 'none';
+      document.getElementById('allowed-word-list-truncated').style.display = useAllowedWords ? '' : 'none';
+    }
+
     if (!this.wordListLoaded) return;
 
     var wordList = document.getElementById('wordList');
@@ -300,7 +319,13 @@ class ReaderToolsModel {
     var stages = this.synphony.getStages();
     if (stages.length === 0) return;
 
-    var words: DataWord[] = this.getStageWordsAndSightWords(this.stageNumber);
+    var words: DataWord[];
+    if (useAllowedWords)
+      words = ReaderToolsModel.getAllowedWordsAsObjects(this.stageNumber);
+    else
+      words = this.getStageWordsAndSightWords(this.stageNumber);
+
+    resizeWordList(false);
 
     // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
     // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
@@ -353,7 +378,11 @@ class ReaderToolsModel {
    */
   updateLetterList(): void {
     var stages = this.synphony.getStages();
-    if (stages.length === 0) return;
+    if (stages.length === 0) {
+      // In case the user deletes all stages, and something had been displayed before.
+      ReaderToolsModel.updateElementContent("letterList", "");
+      return;
+    }
 
     if (this.stageNumber > 0) {
       this.stageGraphemes = this.getKnownGraphemes(this.stageNumber); //BL-838
@@ -542,7 +571,7 @@ class ReaderToolsModel {
 
       var selection: Selection = page.contentWindow.getSelection();
       var current: Node = selection.anchorNode;
-      var active: HTMLDivElement = $(selection.anchorNode).closest('div').get(0);
+      var active = <HTMLDivElement>$(selection.anchorNode).closest('div').get(0);
       if (!active || selection.rangeCount > 1 || (selection.rangeCount == 1 && !selection.getRangeAt(0).collapsed)) {
         return; // don't even try to adjust markup while there is some complex selection
       }
@@ -640,8 +669,10 @@ class ReaderToolsModel {
 
     // qtips can be orphaned if the element they belong to is deleted
     // (and so the mouse can't move off their owning element, and they never go away).
+    // BL-2758 But if we're in a source collection we may have valid source bubbles,
+    // don't delete them!
     if (editableElements.length > 0)
-      $(editableElements[0]).closest('body').children('.qtip').remove();
+      $(editableElements[0]).closest('body').children('.qtip:not(".uibloomSourceTextsBubble")').remove();
 
     switch (this.currentMarkupType) {
       case MarkupType.Leveled:
@@ -676,13 +707,22 @@ class ReaderToolsModel {
         if (stages.length === 0) return;
 
         // get word lists
-        var cumulativeWords = this.getStageWords();
-        var sightWords = this.getSightWords(this.stageNumber);
+        var cumulativeWords: DataWord[];
+        var sightWords: string[];
+        if (this.synphony.source.useAllowedWords === 1) {
+          cumulativeWords = [];
+          sightWords = ReaderToolsModel.selectWordsFromAllowedLists(this.stageNumber);
+        }
+        else {
+          cumulativeWords = this.getStageWords();
+          sightWords = this.getSightWords(this.stageNumber);
+        }
 
         editableElements.checkDecodableReader({
           focusWords: cumulativeWords,
           previousWords: cumulativeWords,
-          sightWords: sightWords,
+          // libsynphony lowercases the text, so we must do the same with sight words.  (BL-2550)
+          sightWords: sightWords.join(' ').toLowerCase().split(/\s/),
           knownGraphemes: this.stageGraphemes
         });
 
@@ -887,7 +927,13 @@ class ReaderToolsModel {
     else {
       var words = libsynphony.getWordsFromHtmlString(fileContents);
 
-      for (var i = 0; i < words.length; i++) {
+      // Limit the number of words processed from files.  The program hangs on very long lists.
+      var lim = words.length;
+      var wordNames = Object.keys(this.allWords);
+      if (wordNames.length + words.length > this.maxAllowedWords) {
+        lim = this.maxAllowedWords - wordNames.length;
+      }
+      for (var i = 0; i < lim; i++) {
         this.allWords[words[i]] = 1 + (this.allWords[words[i]] || 0);
       }
     }
@@ -910,6 +956,7 @@ class ReaderToolsModel {
       setTimeout(function() {
 
         model.wordListLoaded = true;
+        model.updateControlContents(); // needed if user deletes all of the stages.
         model.doMarkup();
         model.updateWordList();
         model.processWordListChangedListeners();
@@ -961,8 +1008,7 @@ class ReaderToolsModel {
   addWordsToSynphony() {
 
     // add words to the word list
-    var syn = this.getSynphony();
-    syn.addWords(this.allWords);
+    SynphonyApi.addWords(this.allWords);
     libsynphony.processVocabularyGroups();
   }
 
@@ -1004,6 +1050,53 @@ class ReaderToolsModel {
       return libsynphony.selectGPCWordsFromCache(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
   }
 
+  static selectWordsFromAllowedLists(stageNumber: number): string[] {
+
+    var stages: ReaderStage[] = model.getSynphony().getStages(stageNumber);
+
+    var words: string[] = [];
+    for (var i=0; i < stages.length; i++) {
+      if (stages[i].allowedWords)
+        words = words.concat(stages[i].allowedWords);
+    }
+
+    // we are limiting the number of words to maxAllowedWords for performance reasons
+    if (words.length > model.maxAllowedWords) {
+      words = words.slice(0, model.maxAllowedWords);
+    }
+
+    return words;
+  }
+
+  /**
+   * Get the allowed words for the current stage and all previous stages as an array of DataWord objects
+   * @param stageNumber
+   * @returns An array of DataWord objects
+   */
+  static getAllowedWordsAsObjects(stageNumber: number): DataWord[] {
+
+    var words: string[] = ReaderToolsModel.selectWordsFromAllowedLists(stageNumber);
+    var returnVal: DataWord[] = [];
+
+    for (var i = 0; i < words.length; i++) {
+      returnVal.push(new DataWord(words[i]));
+    }
+
+    // inform the user if the list was truncated
+    var accordion: Document = iframeChannel.getAccordionWindow().document;
+    var msgDiv: JQuery = $(accordion).find('#allowed-word-list-truncated');
+
+    // if the list was truncated, show the message
+    if (words.length < model.maxAllowedWords) {
+      msgDiv.html('');
+    }
+    else {
+      msgDiv.html(SimpleDotNetFormat($(accordion).find('#allowed_word_list_truncated_text').html(), [model.maxAllowedWords.toLocaleString()]));
+    }
+
+    return returnVal;
+  }
+
   saveState(): void {
 
     // this is needed for unit testing
@@ -1035,5 +1128,34 @@ class ReaderToolsModel {
     if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
     this.setStageNumber(state.stage);
     this.setLevelNumber(state.level);
+  }
+
+  getAllowedWordsLists(): void {
+
+    var stages = this.synphony.getStages();
+
+    // remember how many we are loading so we know when we're finished
+    this.allowedWordFilesRemaining = stages.length;
+
+    stages.forEach(function(stage, index) {
+      if (stage.allowedWordsFile) {
+        iframeChannel.simpleAjaxGetWithCallbackParam('/bloom/readers/getAllowedWordsList', ReaderToolsModel.setAllowedWordsListList, index, stage.allowedWordsFile);
+      }
+    });
+  }
+
+  static setAllowedWordsListList(fileContents: string, stageIndex: number): void {
+
+    // remove this one from the count of files remaining
+    model.allowedWordFilesRemaining--;
+
+    model.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
+
+    // if all loaded...
+    if (model.allowedWordFilesRemaining < 1) {
+      model.wordListLoaded = true;
+      model.updateControlContents();
+      model.doMarkup();
+    }
   }
 }

@@ -37,10 +37,10 @@ namespace Bloom.CollectionCreating
             this._vernacularLanguagePage = new Bloom.Wizard.WizardAdapterPage();
             this._languageLocationPage = new Bloom.Wizard.WizardAdapterPage();
             this._finishPage = new Bloom.Wizard.WizardAdapterPage();
-			this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+			this.betterLabel1 = new SIL.Windows.Forms.Widgets.BetterLabel();
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
             this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
-			this._welcomeHtml = new Bloom.HtmlLabel();
+			this._welcomeHtml = new SIL.Windows.Forms.Widgets.HtmlLabel();
 			this.kindOfCollectionControl1 = new Bloom.CollectionCreating.KindOfCollectionControl();
 			this._vernacularLanguageIdControl = new Bloom.CollectionCreating.LanguageIdControl();
 			this._languageLocationControl = new Bloom.CollectionCreating.LanguageLocationControl();
@@ -237,8 +237,8 @@ namespace Bloom.CollectionCreating
         private Bloom.Wizard.WizardAdapterPage _collectionNameProblemPage;
         private Bloom.Wizard.WizardAdapterPage _languageLocationPage;
 		private LanguageLocationControl _languageLocationControl;
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
+		private SIL.Windows.Forms.Widgets.BetterLabel betterLabel1;
         private Bloom.Wizard.WizardAdapterPage _welcomePage;
-		private HtmlLabel _welcomeHtml;
+		private SIL.Windows.Forms.Widgets.HtmlLabel _welcomeHtml;
 	}
 }

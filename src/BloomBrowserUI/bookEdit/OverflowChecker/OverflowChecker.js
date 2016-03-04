@@ -17,8 +17,10 @@ var OverflowChecker = (function () {
             OverflowChecker.CheckOnMinHeight(this);
         });
         //Add the handler so that when the elements change, we test for overflow
-        editablePageElements.on("keyup paste", function (e) {
-            var target = e.target;
+        editablePageElements.on('keyup paste', function (e) {
+            // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
+            // If we allow an embedded paste target (e.g. <p>) to get tested for overflow, it will overflow artificially.
+            var target = $(e.target).closest(editablePageElements)[0];
             // Give the browser time to get the pasted text into the DOM first, before testing for overflow
             // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
             //        At first I was concerned that this might slow typing, but it doesn't seem to.
@@ -65,7 +67,8 @@ var OverflowChecker = (function () {
         //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
         var shortBoxFudgeFactor = 4;
-        return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + shortBoxFudgeFactor || element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
+        return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + shortBoxFudgeFactor ||
+            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
     };
     // Actual testable determination of Type II overflow or not
     // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
@@ -95,7 +98,7 @@ var OverflowChecker = (function () {
                 return currentAncestor[0];
             }
             if (currentAncestor.hasClass('marginBox')) {
-                break;
+                break; // Don't check anything outside of marginBox
             }
         }
         return null;

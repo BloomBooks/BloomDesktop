@@ -32,7 +32,7 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BloomPackInstallDialog));
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
 			this._okButton = new System.Windows.Forms.Button();
-			this._message = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+			this._message = new SIL.Windows.Forms.Widgets.BetterLabel();
 			this._errorImage = new System.Windows.Forms.PictureBox();
 			this._backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._startupTimer = new System.Windows.Forms.Timer(this.components);
@@ -147,7 +147,7 @@
 
 		private System.Windows.Forms.PictureBox pictureBox1;
 		private System.Windows.Forms.Button _okButton;
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel _message;
+		private SIL.Windows.Forms.Widgets.BetterLabel _message;
 		private System.Windows.Forms.PictureBox _errorImage;
 		private System.ComponentModel.BackgroundWorker _backgroundWorker;
 		private System.Windows.Forms.Timer _startupTimer;

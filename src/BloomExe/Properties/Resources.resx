@@ -349,13 +349,31 @@
   <data name="edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\edit.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="MediumOnWhite" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\MediumOnWhite.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="installerBackground" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\installerBackground.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="videos" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\videos.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Hamburger" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Hamburger.PNG;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="help16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\help16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="OpenCreateLibrary16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\OpenCreateLibrary16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="settingsbw16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\settingsbw16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AddPageButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AddPageButton.PNG;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AddPageButtonDisabled" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AddPageButtonDisabled.PNG;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="epubPublishButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\epubPublishButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

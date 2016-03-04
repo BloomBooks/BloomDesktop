@@ -7,7 +7,7 @@ using Bloom.ToPalaso;
 using System.Linq;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using Palaso.Reporting;
+using SIL.Reporting;
 using System.Windows.Forms;
 
 
@@ -46,6 +46,7 @@ namespace Bloom
 				builder.Register(c => new NavigationIsolator()).InstancePerLifetimeScope();
 
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<NavigationIsolator>())).SingleInstance();
+				builder.Register<BookThumbNailer>(c => new BookThumbNailer(c.Resolve<HtmlThumbNailer>())).SingleInstance();
 
 				_container = builder.Build();
 
@@ -66,6 +67,8 @@ namespace Bloom
 			public LocalizationManager LocalizationManager;
 
 			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
+
+			public BookThumbNailer BookThumbNailer { get { return _container.Resolve<BookThumbNailer>(); }}
 
 			public void Dispose()
 			{

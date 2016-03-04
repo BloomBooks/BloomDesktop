@@ -10,11 +10,12 @@ using System.Runtime.InteropServices;
 using Bloom.Properties;
 using Gecko;
 using Gecko.Interop;
+using L10NSharp;
 #if !__MonoCS__
 using IWshRuntimeLibrary;
 #endif
 using Microsoft.Win32;
-using Palaso.IO;
+using SIL.IO;
 
 namespace Bloom.Publish
 {
@@ -36,6 +37,7 @@ namespace Bloom.Publish
 #endif
 		//private PdfPrintProgressListener _listener;
 		private string _pdfPath;
+		private bool _haveShownAdobeReaderRecommendation;
 
 		public PdfViewer()
 		{
@@ -115,7 +117,7 @@ namespace Bloom.Publish
 			// https://jira.sil.org/browse/BL-951 for a description of the buggy program
 			// behavior without this hack.
 			var file = pdfFile;
-			if (Palaso.PlatformUtilities.Platform.IsUnix)
+			if (SIL.PlatformUtilities.Platform.IsUnix)
 				file = file.EscapeCharsForHttp().EscapeCharsForHttp();
 			var url = string.Format("{0}{1}?file=/bloom/{2}",
 				Bloom.web.ServerBase.PathEndingInSlash,
@@ -140,8 +142,37 @@ namespace Bloom.Publish
 				stylesheet.CssRules.Add("#toolbarViewerRight, #viewOutline, #viewAttachments, #viewThumbnail, #viewFind {display: none}");
 				stylesheet.CssRules.Add("#previous, #next, #pageNumberLabel, #pageNumber, #numPages {display: none}");
 				stylesheet.CssRules.Add("#toolbarViewerLeft .splitToolbarButtonSeparator {display: none}");
+
+#if !__MonoCS__
+				if (!_haveShownAdobeReaderRecommendation)
+				{
+					_haveShownAdobeReaderRecommendation = true;
+					var message = LocalizationManager.GetString("PublishTab.Notifications.AdobeReaderRecommendation",
+						"This PDF viewer can be improved by installing the free Adobe Reader on this computer.");
+					RunJavaScript("toastr.remove();" +
+								  "toastr.options = { 'positionClass': 'toast-bottom-right','timeOut': '15000'};" +
+								  "toastr['info']('" + message + "')");
+				}
+#endif
 			};
 			return true;
+		}
+
+		public string RunJavaScript(string script)
+		{
+			var browser = ((GeckoWebBrowser)_pdfViewerControl);
+			Debug.Assert(!InvokeRequired);
+			Debug.Assert(browser.Window != null);
+			if (browser.Window != null)
+			{
+				using (var context = new AutoJSContext(browser.Window.JSContext))
+				{
+					string result;
+					context.EvaluateScript(script, (nsISupports)browser.Document.DomObject, out result);
+					return result;
+				}
+			}
+			return null;
 		}
 
 		public void Print()

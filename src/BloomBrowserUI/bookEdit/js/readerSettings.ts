@@ -1,3 +1,4 @@
+/// <reference path="libsynphony/underscore-1.5.2.d.ts" />
 
 /**
  * Decodable Leveled Reader Settings
@@ -7,7 +8,7 @@ class ReaderSettings {
   stages: ReaderStage[] = [];
   letters: string = '';
   moreWords: string = '';
-
+  useAllowedWords: number = 0;
 }
 
 // Defines an object to hold data about one stage in the decodable books tool
@@ -17,6 +18,8 @@ class ReaderStage {
   sightWords: string = '';
   letters: string = '';
   words: string[];
+  allowedWordsFile: string = '';
+  allowedWords: string[];
 
   constructor(name: string) {
     this.name = name;
@@ -24,6 +27,11 @@ class ReaderStage {
 
   getName(): string {
     return this.name;
+  }
+
+  setAllowedWordsString(fileContents: string): void {
+    // the list of words is being cleaned and deduped by the server
+    this.allowedWords = fileContents.split(/[,]/);
   }
 }
 

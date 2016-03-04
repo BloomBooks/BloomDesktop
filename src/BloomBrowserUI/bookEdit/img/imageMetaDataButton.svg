@@ -9,11 +9,11 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="64px"
-   height="64px"
+   width="65.551331"
+   height="66.107506"
    id="svg2985"
    version="1.1"
-   inkscape:version="0.48.0 r9654"
+   inkscape:version="0.48.4 r9939"
    sodipodi:docname="imageMetaDataButton.svg">
   <defs
      id="defs2987" />
@@ -25,17 +25,21 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.75"
-     inkscape:cx="48.189806"
-     inkscape:cy="6.7272749"
+     inkscape:cx="49.625315"
+     inkscape:cy="6.5828482"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:document-units="px"
      inkscape:grid-bbox="true"
-     inkscape:window-width="1280"
-     inkscape:window-height="1002"
-     inkscape:window-x="1592"
+     inkscape:window-width="1680"
+     inkscape:window-height="987"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     fit-margin-top="5"
+     fit-margin-left="5"
+     fit-margin-right="5"
+     fit-margin-bottom="5" />
   <metadata
      id="metadata2990">
     <rdf:RDF>
@@ -51,7 +55,8 @@
   <g
      id="layer1"
      inkscape:label="Layer 1"
-     inkscape:groupmode="layer">
+     inkscape:groupmode="layer"
+     transform="translate(1.4355089,2.2519315)">
     <path
        sodipodi:type="arc"
        style="fill:none;stroke:#000000;stroke-width:59.96856308;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
@@ -60,7 +65,7 @@
        sodipodi:cy="257.99081"
        sodipodi:rx="209.16389"
        sodipodi:ry="209.16389"
-       d="m 482.99046,257.99081 a 209.16389,209.16389 0 1 1 -418.327786,0 209.16389,209.16389 0 1 1 418.327786,0 z"
+       d="m 482.99046,257.99081 c 0,115.51803 -93.64586,209.1639 -209.16389,209.1639 -115.51803,0 -209.163896,-93.64587 -209.163896,-209.1639 0,-115.51803 93.645866,-209.16389 209.163896,-209.16389 115.51803,0 209.16389,93.64586 209.16389,209.16389 z"
        transform="matrix(0.11614784,0,0,0.11731069,-0.46438709,0.53749514)" />
     <g
        transform="matrix(0.99162945,0,0,1.0084412,-18.545455,-1.4545455)"

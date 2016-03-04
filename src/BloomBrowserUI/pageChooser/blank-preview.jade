@@ -1,0 +1,13 @@
+//- Initial page displayed by large preview if no template is selected.
+doctype html
+
+include mixins/page-chooser-mixins
+
+html
+	head
+		meta(charset='UTF-8')
+		title Blank Preview Page
+		+stylesheet('blank-preview.css')
+	body
+		#mainDiv
+			#innerBox This will contain a preview of a template page when one is selected.

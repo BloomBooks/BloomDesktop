@@ -32,7 +32,7 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InDesignXmlInformationDialog));
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this.button1 = new System.Windows.Forms.Button();
-			this.htmlLabel1 = new Bloom.HtmlLabel();
+			this.htmlLabel1 = new SIL.Windows.Forms.Widgets.HtmlLabel();
 			this.dontShowThisAgainButton1 = new Bloom.MiscUI.DontShowThisAgainButton();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
@@ -40,7 +40,7 @@
 			// _L10NSharpExtender
 			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
-			this._L10NSharpExtender.PrefixForNewItems = "InDesignXmlInformationDialog";
+			this._L10NSharpExtender.PrefixForNewItems = "PublishTab.InDesignDialog";
 			// 
 			// button1
 			// 
@@ -82,7 +82,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.dontShowThisAgainButton1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.dontShowThisAgainButton1, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this.dontShowThisAgainButton1, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this.dontShowThisAgainButton1, "InDesignXmlInformationDialog.dontShowThisAgainButton");
+			this._L10NSharpExtender.SetLocalizingId(this.dontShowThisAgainButton1, "PublishTab.InDesignDialog.DontShowThisAgainButton");
 			this.dontShowThisAgainButton1.Location = new System.Drawing.Point(28, 207);
 			this.dontShowThisAgainButton1.Name = "dontShowThisAgainButton1";
 			this.dontShowThisAgainButton1.Size = new System.Drawing.Size(134, 17);
@@ -102,7 +102,7 @@
 			this.Controls.Add(this.dontShowThisAgainButton1);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, "This is the title of a dialog about exporting a Bloom book to the InDesign XML format");
-			this._L10NSharpExtender.SetLocalizingId(this, "InDesignXmlInformationDialog.WindowTitle");
+			this._L10NSharpExtender.SetLocalizingId(this, "PublishTab.InDesignDialog.WindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "InDesignXmlInformationDialog";
@@ -117,7 +117,7 @@
 
 		private MiscUI.DontShowThisAgainButton dontShowThisAgainButton1;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private HtmlLabel htmlLabel1;
+		private SIL.Windows.Forms.Widgets.HtmlLabel htmlLabel1;
 		private System.Windows.Forms.Button button1;
 	}
 }

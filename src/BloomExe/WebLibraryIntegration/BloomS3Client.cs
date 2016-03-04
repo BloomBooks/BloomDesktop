@@ -5,17 +5,16 @@ using System.Linq;
 using System.Net;
 using System.Security;
 using System.Text;
-using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
-using Palaso.Code;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.Progress;
+using SIL.Code;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms.Progress;
 using RestSharp.Contrib;
 
 namespace Bloom.WebLibraryIntegration
@@ -46,7 +45,7 @@ namespace Bloom.WebLibraryIntegration
 					s3config.ProxyCredentials = new NetworkCredential(proxy.Username, proxy.Password);
 			}
 
-			_amazonS3 = AWSClientFactory.CreateAmazonS3Client(KeyManager.S3AccessKey,
+			_amazonS3 = new AmazonS3Client(KeyManager.S3AccessKey,
 				KeyManager.S3SecretAccessKey, s3config);
 			Guard.AgainstNull(_amazonS3, "Connection to AWS");
 			_transferUtility = new TransferUtility(_amazonS3);
@@ -64,19 +63,19 @@ namespace Bloom.WebLibraryIntegration
 
 		internal string BucketName {get { return _bucketName; }}
 
-		public bool GetBookExists(string key)
+		internal ListObjectsResponse GetMatchingItems(string key)
 		{
-			return GetBookFileCount(key) > 0;
-		}
-
-		internal int GetBookFileCount(string key)
-		{
-			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
+			var matchingItemsResponse = _amazonS3.ListObjects(new ListObjectsRequest()
 			{
 				BucketName = _bucketName,
 				Prefix = key
 			});
-			var count = matchingFilesResponse.S3Objects.Count;
+			return matchingItemsResponse;
+		}
+
+		internal int GetBookFileCount(string key)
+		{
+			var count = GetMatchingItems(key).S3Objects.Count;
 			return count;
 		}
 
@@ -161,6 +160,10 @@ namespace Bloom.WebLibraryIntegration
 
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
 			CopyDirectory(pathToBloomBookDirectory, destDirName);
+			// Don't upload audio (todo: test).
+			string audioDir = Path.Combine(destDirName, "audio");
+			if (Directory.Exists(audioDir))
+				Directory.Delete(audioDir, true);
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
 			foreach (var file in unwantedPdfs)
 				File.Delete(file);
@@ -184,7 +187,7 @@ namespace Bloom.WebLibraryIntegration
 			fileSystemInfo.Delete();
 		}
 
-		private readonly string[] excludedFileNames = { "thumbs.db" }; // these files (if encountered) won't be uploaded
+		private readonly string[] excludedFileNames = { "thumbs.db", "book.userprefs" }; // these files (if encountered) won't be uploaded
 
 		/// <summary>
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
@@ -349,19 +352,48 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		private bool AvoidThisFile(string objectKey)
+		{
+			// Note that Amazon S3 regards "/" as the directory delimiter for directory oriented
+			// displays of object keys.
+			return objectKey.ToLowerInvariant().EndsWith("/thumbs.db") || objectKey.ToLowerInvariant().EndsWith(".pdf");
+		}
+
+		private int CountDesiredFiles(ListObjectsResponse matching)
+		{
+			int totalItems = 0;
+			for (int i = 0; i < matching.S3Objects.Count; ++i)
+			{
+				if (AvoidThisFile(matching.S3Objects[i].Key))
+					continue;
+				++totalItems;
+			}
+			return totalItems;
+		}
+
 		/// <summary>
 		/// Warning, if the book already exists in the location, this is going to delete it an over-write it. So it's up to the caller to check the sanity of that.
 		/// </summary>
 		/// <param name="storageKeyOfBookFolder"></param>
 		public string DownloadBook(string storageKeyOfBookFolder, string pathToDestinationParentDirectory, ProgressDialog downloadProgress = null)
 		{
-			//TODO tell it not to download pdfs. Those are just in there for previewing purposes, we don't need to get them now that we're getting the real thing
-
 			//review: should we instead save to a newly created folder so that we don't have to worry about the
 			//other folder existing already? Todo: add a test for that first.
 
-			if (!GetBookExists(storageKeyOfBookFolder))
+			// We need to download individual files to avoid downloading unwanted files (PDFs and thumbs.db to
+			// be specific).  See https://silbloom.myjetbrains.com/youtrack/issue/BL-2312.  So we need the list
+			// of items, not just the count.
+			var matching = GetMatchingItems(storageKeyOfBookFolder);
+			var totalItems = CountDesiredFiles(matching);
+			if (totalItems == 0)
 				throw new DirectoryNotFoundException("The book we tried to download is no longer in the BloomLibrary");
+
+			Debug.Assert(matching.S3Objects[0].Key.StartsWith(storageKeyOfBookFolder + "/"));
+
+			// Get the top-level directory name of the book from the first object key.
+			var bookFolderName = matching.S3Objects[0].Key.Substring(storageKeyOfBookFolder.Length + 1);
+			while (bookFolderName.Contains("/"))
+				bookFolderName = Path.GetDirectoryName(bookFolderName);
 
 			// Amazon.S3 appears to truncate titles at 50 characters when building directory and filenames.  This means
 			// that relative paths can be as long as 117 characters (2 * 50 + 2 for slashes + 15 for .BloomBookOrder).
@@ -370,53 +402,33 @@ namespace Bloom.WebLibraryIntegration
 			// that image filenames are no longer than 65 characters.)  See https://jira.sil.org/browse/BL-1160.
 			using (var tempDestination = new TemporaryFolder("BDS_" + Guid.NewGuid()))
 			{
-				var request = new TransferUtilityDownloadDirectoryRequest()
-				{
-					BucketName = _bucketName,
-					S3Directory = storageKeyOfBookFolder,
-					LocalDirectory = tempDestination.FolderPath
-				};
-				int downloaded = 0;
-				int initialProgress = 0;
+				var tempDirectory = Path.Combine(tempDestination.FolderPath, bookFolderName);
 				if (downloadProgress != null)
+					downloadProgress.Invoke((Action)(() => { downloadProgress.ProgressRangeMaximum = totalItems; }));
+				int booksDownloaded = 0;
+				for (int i = 0; i < matching.S3Objects.Count; ++i)
 				{
-					downloadProgress.Invoke((Action)(() =>
+					var objKey = matching.S3Objects[i].Key;
+					if (AvoidThisFile(objKey))
+						continue;
+					// Removing the book's prefix from the object key, then using the remainder of the key
+					// in the filepath allows for nested subdirectories.
+					var filepath = objKey.Substring(storageKeyOfBookFolder.Length + 1);
+					// Download this file then bump progress.
+					var req = new TransferUtilityDownloadRequest()
 					{
-						downloadProgress.Progress++; // count getting set up as one step.
-						initialProgress = downloadProgress.Progress; // might be one more step done, downloading order
-					}));
+						BucketName = BucketName,
+						Key = objKey,
+						FilePath = Path.Combine(tempDestination.FolderPath, filepath)
+					};
+					_transferUtility.Download(req);
+					++booksDownloaded;
+					if (downloadProgress != null)
+						downloadProgress.Invoke((Action)(() => { downloadProgress.Progress = booksDownloaded; }));
 				}
-				int total = 14; // arbitrary (typical minimum files in project)
-				request.DownloadedDirectoryProgressEvent += delegate(object sender, DownloadDirectoryProgressArgs args)
-				{
-					int progressMax = initialProgress + args.TotalNumberOfFiles;
-					int currentProgress = initialProgress + args.NumberOfFilesDownloaded;
-					if (downloadProgress != null && (progressMax != total || currentProgress != downloaded))
-					{
-						total = progressMax;
-						downloaded = currentProgress;
-						// We only want to invoke if something really changed.
-						downloadProgress.Invoke((Action)(() =>
-						{
-							downloadProgress.ProgressRangeMaximum = progressMax; // probably only changes the first time
-							downloadProgress.Progress = currentProgress;
-						}));
-					}
-				};
-				_transferUtility.DownloadDirectory(request);
+				var destinationPath = Path.Combine(pathToDestinationParentDirectory, bookFolderName);
 
-				//look inside the wrapper that we got
-
-				var children = Directory.GetDirectories(tempDestination.FolderPath);
-				if (children.Length != 1)
-				{
-					throw new ApplicationException(
-						string.Format("Bloom expected to find a single directory in {0}, but instead there were {1}",
-							tempDestination.FolderPath, children.Length));
-				}
-				var destinationPath = Path.Combine(pathToDestinationParentDirectory, Path.GetFileName(children[0]));
-
-				//clear out anything exisitng on our target
+				//clear out anything existing on our target
 				var didDelete = false;
 				if (Directory.Exists(destinationPath))
 				{
@@ -435,11 +447,11 @@ namespace Bloom.WebLibraryIntegration
 				// It's important that books appear as nearly complete as possible, because a file watcher will very soon add the new
 				// book to the list of downloaded books the user can make new ones from, once it appears in the target directory.
 				bool done = false;
-				if (didDelete && PathUtilities.PathsAreOnSameVolume(pathToDestinationParentDirectory, tempDestination.FolderPath))
+				if (didDelete && PathUtilities.PathsAreOnSameVolume(pathToDestinationParentDirectory, tempDirectory))
 				{
 					try
 					{
-						Directory.Move(children[0], destinationPath);
+						Directory.Move(tempDirectory, destinationPath);
 						done = true;
 					}
 					catch (IOException)
@@ -448,10 +460,9 @@ namespace Bloom.WebLibraryIntegration
 					}
 					catch (UnauthorizedAccessException)
 					{ }
-
 				}
 				if (!done)
-					done = CopyDirectory(children[0], destinationPath);
+					done = CopyDirectory(tempDirectory, destinationPath);
 				if (!done)
 				{
 					var msg = LocalizationManager.GetString("Download.CopyFailed",

@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -18,8 +17,8 @@ using Bloom.web;
 using Gecko;
 using Gecko.DOM;
 using Gecko.Events;
-using Palaso.IO;
-using Palaso.Reporting;
+using SIL.IO;
+using SIL.Reporting;
 using Bloom.Workspace;
 
 namespace Bloom
@@ -132,9 +131,44 @@ namespace Bloom
 			// See http://kb.mozillazine.org/About:config_entries, http://www.davidtan.org/tips-reduce-firefox-memory-cache-usage
 			// and http://forums.macrumors.com/showthread.php?t=1838393.
 			GeckoPreferences.User["memory.free_dirty_pages"] = true;
-			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 1;
+			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 0;
 			GeckoPreferences.User["browser.sessionhistory.max_total_viewers"] = 0;
 			GeckoPreferences.User["browser.cache.memory.enable"] = false;
+
+			// Some more settings that can help to reduce memory consumption.
+			// (Tested in switching pages in the Edit tool.  These definitely reduce consumption in that test.)
+			// See http://www.instantfundas.com/2013/03/how-to-keep-firefox-from-using-too-much.html
+			// and http://kb.mozillazine.org/Memory_Leak.
+			// maximum amount of memory used to cache decoded images
+			GeckoPreferences.User["image.mem.max_decoded_image_kb"] = 40960;        // 40MB (default = 256000 == 250MB)
+			// maximum amount of memory used by javascript
+			GeckoPreferences.User["javascript.options.mem.max"] = 40960;            // 40MB (default = -1 == automatic)
+			// memory usage at which javascript starts garbage collecting
+			GeckoPreferences.User["javascript.options.mem.high_water_mark"] = 20;   // 20MB (default = 128 == 128MB)
+			// SurfaceCache is an imagelib-global service that allows caching of temporary
+			// surfaces. Surfaces normally expire from the cache automatically if they go
+			// too long without being accessed.
+			GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 40960;    // 40MB (default = 102400 == 100MB)
+			GeckoPreferences.User["image.mem.surfacecache.min_expiration_ms"] = 500;    // 500ms (default = 60000 == 60sec)
+
+			// maximum amount of memory for the browser cache (probably redundant with browser.cache.memory.enable above, but doesn't hurt)
+			GeckoPreferences.User["browser.cache.memory.capacity"] = 0;             // 0 disables feature
+
+			// do these do anything?
+			//GeckoPreferences.User["javascript.options.mem.gc_frequency"] = 5;	// seconds?
+			//GeckoPreferences.User["dom.caches.enabled"] = false;
+			//GeckoPreferences.User["browser.sessionstore.max_tabs_undo"] = 0;	// (default = 10)
+			//GeckoPreferences.User["network.http.use-cache"] = false;
+
+			// These settings prevent a problem where the gecko instance running the add page dialog
+			// would request several images at once, but we were not able to generate the image
+			// because we could not make additional requests of the localhost server, since some limit
+			// had been reached. I'm not sure all of them are needed, but since in this program we
+			// only talk to our own local server, there is no reason to limit any requests to the server,
+			// so increasing all the ones that look at all relevant seems like a good idea.
+			GeckoPreferences.User["network.http.max-persistent-connections-per-server"] = 200;
+			GeckoPreferences.User["network.http.pipelining.maxrequests"] = 200;
+			GeckoPreferences.User["network.http.pipelining.max-optimistic-requests"] = 200;
 
 			Application.ApplicationExit += OnApplicationExit;
 		}
@@ -157,6 +191,12 @@ namespace Bloom
 		}
 
 		/// <summary>
+		/// Allow creator to hook up this event handler if the browser needs to handle Ctrl-N.
+		/// Not every browser instance needs this.
+		/// </summary>
+		public ControlKeyEvent ControlKeyEvent { get; set; }
+
+		/// <summary>
 		/// Should be set by every caller of the constructor before attempting navigation. The only reason we don't make it a constructor argument
 		/// is so that Browser can be used in designer.
 		/// </summary>
@@ -171,16 +211,15 @@ namespace Bloom
 
 			_cutCommand.Implementer = () => _browser.CutSelection();
 			_copyCommand.Implementer = () => _browser.CopySelection();
-			_pasteCommand.Implementer = () => PasteFilteredText(false);
+			_pasteCommand.Implementer = () => Paste();
 			_undoCommand.Implementer = () =>
 			{
 				// Note: this is only used for the Undo button in the toolbar;
 				// ctrl-z is handled in JavaScript directly.
-				var result = RunJavaScript("(typeof calledByCSharp === 'undefined') ? 'f' : 'y'");
-				if (result == "y")
+				var result = RunJavaScript("(typeof calledByCSharp === 'undefined') ? 'undefined' : 'ok'");
+				if (result == "ok")
 				{
-					if (RunJavaScript("calledByCSharp.handleUndo()") == "fail")
-						_browser.Undo(); // not using special Undo.
+					RunJavaScript("calledByCSharp.handleUndo()");
 				}
 				else
 				{
@@ -333,70 +372,133 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Prevent a CTRL+V pasting when we have the Paste button disabled, e.g. when pictures are on the clipboard
+		/// Prevent a CTRL+V pasting when we have the Paste button disabled, e.g. when pictures are on the clipboard.
+		/// Also handle CTRL+N creating a new page on Linux/Mono.
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
 		void OnDomKeyPress(object sender, DomKeyEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
 			const uint DOM_VK_INSERT = 0x2D;
+
+			//enhance: it's possible that, with the introduction of ckeditor, we don't need to pay any attention 
+			//to ctrl+v. I'm doing a hotfix to a beta here so I don't want to change more than necessary.
 			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
-				if (_pasteCommand==null /*happend in calendar config*/ || !_pasteCommand.Enabled)
+				if (_pasteCommand==null /*happened in calendar config*/ || !_pasteCommand.Enabled)
 				{
 					Debug.WriteLine("Paste not enabled, so ignoring.");
 					e.PreventDefault();
 				}
-				else if(_browser.CanPaste && BloomClipboard.ContainsText())
-				{
-					e.PreventDefault(); //we'll take it from here, thank you very much
-					PasteFilteredText(false);
-				}
+				//otherwise, ckeditor will handle the paste
+			}
+			// On Windows, Form.ProcessCmdKey (intercepted in Shell) seems to get ctrl messages even when the browser
+			// has focus.  But on Mono, it doesn't.  So we just do the same thing as that Shell.ProcessCmdKey function
+			// does, which is to raise this event.
+			if (SIL.PlatformUtilities.Platform.IsMono && ControlKeyEvent != null && e.CtrlKey && e.KeyChar == 'n')
+			{
+				Keys keyData = Keys.Control | Keys.N;
+				ControlKeyEvent.Raise(keyData);
 			}
 		}
 
-		private void PasteFilteredText(bool removeSingleLineBreaks)
+		private void Paste()
 		{
-			Debug.Assert(!InvokeRequired);
-
-			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
-			var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
-
-			if (!string.IsNullOrEmpty(text))
+			if (Control.ModifierKeys == Keys.Control)
 			{
-				if (removeSingleLineBreaks)
-				{
-					text = text.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
-				}
-				//setting clears other formats that might be on the clipboard, such as html
-				BloomClipboard.SetText(text, TextDataFormat.UnicodeText);
+				var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
+				text = System.Web.HttpUtility.JavaScriptStringEncode(text);
+				RunJavaScript("BloomField.CalledByCSharp_SpecialPaste('" + text + "')");
+			}
+			else
+			{
+				//just let ckeditor do the MSWord filtering
 				_browser.Paste();
 			}
 		}
 
 		/// <summary>
-		/// This action will be passed a GeckoContextMenuEventArgs to which appropriate menu items
-		/// can be added. For now these are in place of our standard extensions; that is, if this
-		/// is non-null the standard ones won't be present.
+		/// This Function will be passed a GeckoContextMenuEventArgs to which appropriate menu items
+		/// can be added. If it returns true these are in place of our standard extensions; if false, the
+		/// standard ones will follow whatever it adds.
 		/// </summary>
-		public Action<GeckoContextMenuEventArgs> ContextMenuProvider { get; set; }
+		public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider { get; set; }
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
+			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
 			if (ContextMenuProvider != null)
 			{
-				ContextMenuProvider(e);
-				return;
+				var replacesStdMenu = ContextMenuProvider(e);
+#if DEBUG
+				FFMenuItem = AddOpenPageInFFItem(e);
+#endif
+
+				if (replacesStdMenu)
+					return; // only the provider's items
 			}
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
-			e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
+			if(FFMenuItem == null)
+				AddOpenPageInFFItem(e);
+#if DEBUG
+			AddOtherMenuItemsForDebugging(e);
+#endif
 
 			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
 		}
+
+		private MenuItem AddOpenPageInFFItem(GeckoContextMenuEventArgs e)
+		{
+			return e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)",
+					new EventHandler(OnOpenPageInSystemBrowser));
+		}
+
+#if DEBUG
+		private void AddOtherMenuItemsForDebugging(GeckoContextMenuEventArgs e)
+		{
+			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
+			e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
+			e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
+		}
+
+		private void OnOpenAboutMemory(object sender, EventArgs e)
+		{
+			var form = new AboutMemory(Isolator);
+			form.Text = "Bloom Browser Memory Diagnostics (\"about:memory\")";
+			form.FirstLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory for a basic explanation.";
+			form.FirstLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory";
+			form.SecondLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs for more details.";
+			form.SecondLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs";
+			form.Navigate("about:memory");
+			form.Show();	// NOT Modal!
+		}
+
+		private void OnOpenAboutConfig(object sender, EventArgs e)
+		{
+			var form = new AboutMemory(Isolator);
+			form.Text = "Bloom Browser Internal Configuration Settings (\"about:config\")";
+			form.FirstLinkMessage = "See http://kb.mozillazine.org/About:config_entries for a basic explanation.";
+			form.FirstLinkUrl = "http://kb.mozillazine.org/About:config_entries";
+			form.SecondLinkMessage = null;
+			form.SecondLinkUrl = null;
+			form.Navigate("about:config");
+			form.Show();    // NOT Modal!
+		}
+
+		private void OnOpenAboutCache(object sender, EventArgs e)
+		{
+			var form = new AboutMemory(Isolator);
+			form.Text = "Bloom Browser Internal Cache Status (\"about:cache?storage=&context=\")";
+			form.FirstLinkMessage = "See http://kb.mozillazine.org/Browser.cache.memory.capacity for a basic explanation.";
+			form.FirstLinkUrl = "http://kb.mozillazine.org/Browser.cache.memory.capacity";
+			form.SecondLinkMessage = null;
+			form.SecondLinkUrl = null;
+			form.Navigate("about:cache?storage=&context=");
+			form.Show();    // NOT Modal!
+		}
+#endif
 
 		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
@@ -435,7 +537,7 @@ namespace Bloom
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			bool isWindows = Palaso.PlatformUtilities.Platform.IsWindows;
+			bool isWindows = SIL.PlatformUtilities.Platform.IsWindows;
 			string genericError = "Something went wrong trying to open this page in ";
 			try
 			{
@@ -483,15 +585,6 @@ namespace Bloom
 
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
-			var mouseEvent = e as Gecko.DomMouseEventArgs;
-			var specialPasteClick = ModifierKeys.HasFlag(Keys.Control) || (mouseEvent!=null && mouseEvent.Button== GeckoMouseButton.Middle);
-			if(_browser.CanPaste && BloomClipboard.ContainsText() && specialPasteClick)
-			{
-				e.PreventDefault();
-				PasteFilteredText(true);
-				return;
-			}
-
 			Debug.Assert(!InvokeRequired);
 		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.
@@ -500,8 +593,6 @@ namespace Bloom
 			EventHandler handler = OnBrowserClick;
 			if (handler != null)
 				handler(this, e);
-
-
 		}
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
@@ -745,7 +836,7 @@ namespace Bloom
 				var thisPageId = browserPageId["id"];
 				if(expectedPageId != thisPageId)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");
 					return;
 				}
 				_pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
@@ -905,6 +996,7 @@ namespace Bloom
 
 		/// <summary>
 		/// Only the first call per browser per event name takes effect.
+		/// (Unless RemoveMessageEventListener is called explicitly for the event name.)
 		/// </summary>
 		/// <param name="eventName"></param>
 		/// <param name="action"></param>
@@ -917,6 +1009,18 @@ namespace Bloom
 			_knownEvents.Add(eventName);
 		}
 
+		/// <summary>
+		/// Remove a previously installed event handler.
+		/// </summary>
+		/// <param name="eventName"></param>
+		public void RemoveMessageEventListener(string eventName)
+		{
+			if (_browser != null)
+			{
+				_browser.RemoveMessageEventListener(eventName);
+				_knownEvents.Remove(eventName);
+			}
+		}
 
 		/* snippets
 		 *

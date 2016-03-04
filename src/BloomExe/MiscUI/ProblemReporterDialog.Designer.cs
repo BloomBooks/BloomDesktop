@@ -42,7 +42,7 @@
 			this._includeBook = new System.Windows.Forms.CheckBox();
 			this._seeDetails = new System.Windows.Forms.LinkLabel();
 			this._cancelButton = new System.Windows.Forms.Button();
-			this._status = new Bloom.HtmlLabel();
+			this._status = new SIL.Windows.Forms.Widgets.HtmlLabel();
 			this._submitMsg = new System.Windows.Forms.Label();
 			this._privacyLabel = new System.Windows.Forms.LinkLabel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -328,7 +328,7 @@
 		private System.Windows.Forms.Button _submitButton;
 		private System.Windows.Forms.CheckBox _includeBook;
 		private System.Windows.Forms.LinkLabel _seeDetails;
-		private HtmlLabel _status;
+		private SIL.Windows.Forms.Widgets.HtmlLabel _status;
 		private System.Windows.Forms.Button _cancelButton;
 		private System.Windows.Forms.Label _submitMsg;
 		private System.Windows.Forms.LinkLabel _privacyLabel;

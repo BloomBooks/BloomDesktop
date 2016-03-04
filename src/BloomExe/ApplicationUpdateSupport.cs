@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using L10NSharp;
-using Palaso.PlatformUtilities;
+using SIL.PlatformUtilities;
 using Squirrel;
 
 namespace Bloom
@@ -68,16 +68,14 @@ namespace Bloom
 						// but if they did, try and give them a hint about what went wrong
 						if (result.IsConnectivityError)
 						{
-
 							var failMsg = LocalizationManager.GetString("CollectionTab.UnableToCheckForUpdate",
 								"Could not connect to the server to check for an update. Are you connected to the internet?",
 								"Shown when Bloom tries to check for an update but can't, for example becuase it can't connect to the internet, or a problems with our server, etc.");
 							ShowFailureNotification(failMsg);
-
 						}
 						else if (result.Error == null)
 						{
-							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+							SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 								"Bloom failed to find if there is an update available, for some unknown reason.");
 						}
 						else
@@ -166,17 +164,22 @@ namespace Bloom
 				{
 					return ChannelNameForUnitTests;
 				}
-				if (Palaso.PlatformUtilities.Platform.IsUnix)
+				var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
+				// Use a very specific channel name on developer machines based on build configuration.
+				if (path.Replace('\\','/').EndsWith("/output/Debug/Bloom.exe"))
+					return "Developer/Debug";       // verifies this code is running on a developer machine.
+				if (path.Replace('\\', '/').EndsWith("/output/Release/Bloom.exe"))
+					return "Developer/Release";       // verifies this code is running on a developer machine.
+				if (Platform.IsUnix)
 				{
-					// The package name and the specific directories where the program is
-					// installed reflect the status ("channel") of the program on Linux.
-					var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
-					if (path.Contains("-testing/") || path.Contains("-alpha/"))
-						return "Alpha";
-					if (path.Contains("-unstable/") || path.Contains ("-beta/"))
-						return "Beta";
-					if (path.EndsWith("/output/Debug/Bloom.exe"))
-						return "Debug";		// verifies this code is working on developer machines.
+					// The package name and the specific directories where the program is installed reflect
+					// the status ("channel") of the program on Linux.  Use this package name on Linux to
+					// help screen shots clarify immediately which Linux package is being used.  (and to help
+					// testers remember?)
+					if (path.Contains("/bloom-desktop-unstable/"))
+						return "bloom-desktop-unstable";
+					if (path.Contains ("/bloom-desktop-beta/"))
+						return "bloom-desktop-beta";
 					return "Release";
 				}
 				var s = Assembly.GetEntryAssembly().ManifestModule.Name.Replace("bloom", "").Replace("Bloom", "").Replace(".exe", "").Trim();
@@ -186,31 +189,39 @@ namespace Bloom
 
 		private static async void InitiateSquirrelNotifyUpdatesAvailable(string updateUrl, Action<string> restartBloom)
 		{
-			if (OkToInitiateUpdateManager)
+			try
 			{
-				UpdateInfo info;
-				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName))
+				if (OkToInitiateUpdateManager)
 				{
-					// At this point the method returns(!) and no longer blocks anything.
-					info = await _bloomUpdateManager.CheckForUpdate();
+					UpdateInfo info;
+					ArrangeToDisposeSquirrelManagerOnExit();
+					using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName))
+					{
+						// At this point the method returns(!) and no longer blocks anything.
+						info = await _bloomUpdateManager.CheckForUpdate();
+					}
+					// Since this is in the async method _after_ the await we know the CheckForUpdate has finished.
+					_bloomUpdateManager = null;
+					if (NoUpdatesAvailable(info))
+					{
+						SIL.Reporting.Logger.WriteEvent("Squirrel: No updateavailable.");
+						return; // none available.
+					}
+					var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available.");
+					var action = LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now");
+					SIL.Reporting.Logger.WriteEvent("Squirrel: Notifying that an update is available");
+					// Unfortunately, there's no good time to dispose of this object...according to its own comments
+					// it's not even safe to close it. It moves itself out of sight eventually if ignored.
+					var notifier = new ToastNotifier();
+					notifier.Image.Image = Resources.Bloom.ToBitmap();
+					notifier.ToastClicked += (sender, args) => CheckForASquirrelUpdate(BloomUpdateMessageVerbosity.Verbose, restartBloom, true);
+					notifier.Show(msg, action, 10);
 				}
-				// Since this is in the async method _after_ the await we know the CheckForUpdate has finished.
-				_bloomUpdateManager = null;
-				if (NoUpdatesAvailable(info))
-				{
-					Palaso.Reporting.Logger.WriteEvent("Squirrel: No updateavailable.");
-					return; // none available.
-				}
-				var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available.");
-				var action = LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now");
-				Palaso.Reporting.Logger.WriteEvent("Squirrel: Notifying that an update is available");
-				// Unfortunately, there's no good time to dispose of this object...according to its own comments
-				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
-				var notifier = new ToastNotifier();
-				notifier.Image.Image = Resources.Bloom.ToBitmap();
-				notifier.ToastClicked += (sender, args) => CheckForASquirrelUpdate(BloomUpdateMessageVerbosity.Verbose, restartBloom, true);
-				notifier.Show(msg, action, 10);
+			}
+			catch (System.Net.WebException e)
+			{
+				SIL.Reporting.Logger.WriteEvent("Squirrel: Network unreliable - " + e.Message);
+				return;
 			}
 		}
 
@@ -264,7 +275,7 @@ namespace Bloom
 				var releasesToDownload = updateInfo.ReleasesToApply;
 				var size = releasesToDownload.Sum(x => x.Filesize)/1024;
 				var updatingMsg = String.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading update to {0} ({1}K)"), version, size);
-				Palaso.Reporting.Logger.WriteEvent("Squirrel: "+updatingMsg);
+				SIL.Reporting.Logger.WriteEvent("Squirrel: "+updatingMsg);
 				updatingNotifier.Show(updatingMsg, "", -1);
 
 				var sb = new StringBuilder("Squirrel update downloading " + releasesToDownload.Count + " release files starting at" + DateTime.Now + ":");
@@ -276,13 +287,13 @@ namespace Bloom
 					sb.Append(release.Filesize);
 					sb.Append(")");
 				}
-				Palaso.Reporting.Logger.WriteEvent(sb.ToString());
+				SIL.Reporting.Logger.WriteEvent(sb.ToString());
 
 				var progressMsg = LocalizationManager.GetString("CollectionTab.Progress", "({0}% complete)");
 
 				await manager.DownloadReleases(releasesToDownload, x => UpdateProgress(updatingNotifier, updatingMsg, progressMsg, x));
 
-				Palaso.Reporting.Logger.WriteEvent("Squirrel update download succeeded at " + DateTime.Now);
+				SIL.Reporting.Logger.WriteEvent("Squirrel update download succeeded at " + DateTime.Now);
 
 				// There's no telling what fraction of the total download and update will be. With a bad connection downloading can take a long time.
 				// With a lot of updates applying can take a long time.  If it has to
@@ -292,7 +303,7 @@ namespace Bloom
 				UpdateProgress(updatingNotifier, updatingMsg, progressMsg, 0);
 				newInstallDirectory = await manager.ApplyReleases(updateInfo, x => UpdateProgress(updatingNotifier, updatingMsg, progressMsg, x));
 
-				Palaso.Reporting.Logger.WriteEvent("Squirrel update finished applying updates at " + DateTime.Now);
+				SIL.Reporting.Logger.WriteEvent("Squirrel update finished applying updates at " + DateTime.Now);
 
 				await manager.CreateUninstallerRegistryEntry();
 				updatingNotifier.Hide();
@@ -308,7 +319,7 @@ namespace Bloom
 					// it are not part of the sequence on the web site at all, or even if there's
 					// some sort of discontinuity in the sequence of deltas.
 					ignoreDeltaUpdates = true;
-					Palaso.Reporting.Logger.WriteEvent("Squirrel update incremental download failed; trying whole package. Exception: " + ex.Message);
+					SIL.Reporting.Logger.WriteEvent("Squirrel update incremental download failed; trying whole package. Exception: " + ex.Message);
 					goto retry;
 				}
 
@@ -317,7 +328,7 @@ namespace Bloom
 				// RELEASES is getting uploaded before the delta and nupkg files (due to subtask overlap
 				// in MsBuild? Due to 'eventual consistency' not yet being attained by S3?).
 				// In any case we don't need to crash the program over a failed update. Just log it.
-				Palaso.Reporting.Logger.WriteEvent("Squirrel update failed: " + ex.Message + ex.StackTrace);
+				SIL.Reporting.Logger.WriteEvent("Squirrel update failed: " + ex.Message + ex.StackTrace);
 				return new UpdateResult() {NewInstallDirectory = null, Outcome = UpdateOutcome.InstallFailed};
 			}
 
@@ -330,10 +341,23 @@ namespace Bloom
 
 		private static void UpdateProgress(ToastNotifier updatingNotifier, string updatingMsg, string progressMsg, int x)
 		{
-			updatingNotifier.Invoke((Action)(() =>
+			if (updatingNotifier.IsHandleCreated)	// Must have a handle to Invoke anything!
 			{
-				updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x));
-			}));
+				try
+				{
+					updatingNotifier.Invoke((Action)(() =>
+					{
+						updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x));
+					}));
+				}
+				catch (InvalidOperationException)
+				{
+					// This can be caused by someone clicking on the progress Toast display (BL-2465).
+					// Ignore it.  (It's possible that the IsHandleCreated above removes the possibility
+					// of this error, but I've always been a belt AND suspenders type guy when it comes
+					// to bugfixing.)
+				}
+			}
 		}
 	}
 }

@@ -23,7 +23,7 @@
 		<!-- channelRelease is 'Release' if channel is empty, otherwise same as channel-->
 		<channelRelease>$(channel)</channelRelease>
 		<channelRelease Condition="'$(channel)'==''">Release</channelRelease>
-		<!-- channelRelease is empty if channel is empty, otherwise dot before channel-->
+		<!-- dotChannel is empty if channel is empty, otherwise dot before channel-->
 		<dotChannel>.$(channel)</dotChannel>
 		<dotChannel Condition="'$(channel)'==''"></dotChannel>
 		<ApplicationName>Bloom$(channel)</ApplicationName>
@@ -71,7 +71,7 @@
 	<Message Text="BuildHash: $(BuildHash)" Importance="high"/>
 
 	<!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-	<CreateProperty Value="3.1.$(BuildCounter)">
+	<CreateProperty Value="3.5.$(BuildCounter)">
 	  <Output PropertyName="Version" TaskParameter="Value"/>
 	</CreateProperty>
 	<CreateProperty Value="$(Version).$(BuildHash)">
@@ -91,7 +91,7 @@
 	  </CreateProperty>
 	  <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
 	  you should set your preferred release folder from the command line, usually /p:SquirrelReleaseFolder=<root>/output/installer-->
-	  <CreateProperty Value="Z:\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
+	  <CreateProperty Value="\\bob.psonet\buildshare\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
 		  <Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
 	  </CreateProperty>
 	<Message Text="Version: $(Version)" Importance="high"/>
@@ -214,6 +214,10 @@
 		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom$(channel).pdb"/>
 		<Message Text="Making Nuget package: $(Version)" Importance="high"  />
 
+		<!-- Bloom expects an icon with a name corresponding to the EXE, which gets used for the desktop shortcut.
+		If we one day make distinct icons for the channels, we'll need to revise this to get the right channel-specific icon.-->
+		<Copy SourceFiles="$(RootDir)\src\BloomExe\Resources\Bloom.ico"  DestinationFiles="$(RootDir)\output\Release\Bloom$(channelRelease).ico"/>
+
 		<Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
 
 		<!-- This is the command that actually runs Squirrel. Usually the exe invoked here is called Squirrel. However, we're building our own
@@ -258,12 +262,10 @@
 	<Target Name="UploadCore">
 		<Message Text="Attempting rsync of $(SquirrelInstallerFileName)" Importance="high"/>
 
-		<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
-		<Copy SourceFiles="../output/$(Configuration)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
-
 		<!-- The way the web site generates the list of old installers requires that they be the only files in the
 		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.
 		When we're ready to go live with squirrel we can change this target folder or the web site.-->
+		<!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
 		<S3BuildPublisher
 		EncryptionContainerName ="$(Key)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelInstallerFileName)"

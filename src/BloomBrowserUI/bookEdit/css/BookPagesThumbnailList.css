@@ -1,6 +1,17 @@
 BODY {
   background-color: #404040;
 }
+/* this is handy for debugging page numbering in the thumbnail list
+.bloom-page::after {
+  content: counter(pageNumber);
+  position: absolute;
+  bottom: 7px;
+  left: 10px;
+  color: red;
+  overflow: visible;
+  font-size: 100pt;
+}
+*/
 .pageContainer {
   padding: 3px;
   box-sizing: border-box;
@@ -9,6 +20,7 @@ BODY {
   height: 65px;
   width: 47px;
   /* default = A5Portrait */
+
   transform-style: preserve-3d;
 }
 .pageContainer.A5Landscape {
@@ -38,6 +50,41 @@ BODY {
 }
 .pageContainer.B5Portrait .bloom-page {
   transform: scale(0.06);
+}
+.pageContainer.LetterLandscape {
+  height: 47px;
+  width: 61px;
+}
+.pageContainer.LetterLandscape .bloom-page {
+  transform: scale(0.058);
+}
+.pageContainer.LetterPortrait {
+  height: 61px;
+  width: 47px;
+}
+.pageContainer.LetterPortrait .bloom-page {
+  transform: scale(0.058);
+}
+.pageContainer.HalfLetterPortrait {
+  height: 61px;
+  width: 47px;
+}
+.pageContainer.HalfLetterPortrait .bloom-page {
+  transform: scale(0.075);
+}
+.pageContainer.QuarterLetterLandscape {
+  height: 47px;
+  width: 61px;
+}
+.pageContainer.QuarterLetterLandscape .bloom-page {
+  transform: scale(0.115);
+}
+.pageContainer.QuarterLetterPortrait {
+  height: 61px;
+  width: 47px;
+}
+.pageContainer.QuarterLetterPortrait .bloom-page {
+  transform: scale(0.115);
 }
 .pageContainer .bloom-page {
   backface-visibility: hidden;
@@ -72,4 +119,9 @@ BODY {
 }
 .placeholder {
   pointer-events: none;
+}
+#menuIconHolder {
+  position: absolute;
+  bottom: 6px;
+  right: 0;
 }

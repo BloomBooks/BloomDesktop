@@ -82,6 +82,7 @@
       </tuv>
     </tu>
     <tu tuid="Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -109,6 +110,7 @@
       </tuv>
     </tu>
     <tu tuid="Click to choose topic">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Click to choose topic</seg>
@@ -150,7 +152,7 @@
         <seg>పెద్ద చిత్రాలు మెమొరీ వినియోగాన్ని తగ్గించడానికి చిత్రాన్ని సర్వర్ ఉపయోగించడానికి</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
       <tuv xml:lang="en">
         <seg>(Experimental) Show Send/Receive Controls</seg>
       </tuv>
@@ -296,7 +298,7 @@
         <seg>సెట్టింగుల గురించి</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
       <tuv xml:lang="en">
         <seg>Vernacular Language</seg>
       </tuv>
@@ -320,7 +322,7 @@
         <seg>భాష 3 (ఉదాహరణకు: ప్రాంతీయ భాష) (ఐచ్ఛిక)</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
       <tuv xml:lang="en">
         <seg>Remove</seg>
       </tuv>
@@ -386,7 +388,7 @@
         <seg>పునఃప్రారంభమైన</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog._restartMessage">
+    <tu tuid="CollectionSettingsDialog.RestartMessage">
       <tuv xml:lang="en">
         <seg>Bloom will close and re-open this project with the new settings.</seg>
       </tuv>
@@ -402,7 +404,7 @@
         <seg>వర్ధిల్లు ఇప్పుడు ఈ HTML పత్రం తెరుచుకోవడం</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
+    <tu tuid="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
       <tuv xml:lang="en">
         <seg>Update Book</seg>
       </tuv>
@@ -410,7 +412,7 @@
         <seg>నవీకరణ పుస్తకం</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateThumbnail">
+    <tu tuid="CollectionTab.BookMenu.UpdateThumbnail">
       <tuv xml:lang="en">
         <seg>Update Thumbnail</seg>
       </tuv>
@@ -418,7 +420,7 @@
         <seg>నవీకరణ సూక్ష్మచిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.deleteBook">
+    <tu tuid="CollectionTab.BookMenu.DeleteBook">
       <tuv xml:lang="en">
         <seg>Delete Book</seg>
       </tuv>
@@ -426,7 +428,7 @@
         <seg>పుస్తకం తొలగించండి</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
+    <tu tuid="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
       <tuv xml:lang="en">
         <seg>Export to Word or LibreOffice...</seg>
       </tuv>
@@ -434,7 +436,7 @@
         <seg>పదం లేదా లిబ్రేఆఫీస్ ఎగుమతి</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
+    <tu tuid="CollectionTab.BookMenu.ExportToXMLForInDesign">
       <tuv xml:lang="en">
         <seg>Export to XML for InDesign...</seg>
       </tuv>
@@ -515,7 +517,7 @@
         <seg>పుస్తకం '{0}'</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
+    <tu tuid="CollectionTab.ContextMenu.OpenFolderOnDisk">
       <tuv xml:lang="en">
         <seg>Open Folder on Disk</seg>
       </tuv>
@@ -600,7 +602,7 @@
         <seg>టెంప్లేట్లు</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._editBookButton">
+    <tu tuid="CollectionTab.EditBookButton">
       <tuv xml:lang="en">
         <seg>Edit this book</seg>
       </tuv>
@@ -608,7 +610,7 @@
         <seg>ఈ పుస్తకం సంకలనం</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._makeBloomPackButton">
+    <tu tuid="CollectionTab.MakeBloomPackButton">
       <tuv xml:lang="en">
         <seg>Make Bloom Pack</seg>
       </tuv>
@@ -616,7 +618,7 @@
         <seg>బ్లూమ్ తిరిగి తయారు</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+    <tu tuid="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Make Reader Template BloomPack...</seg>
       </tuv>
@@ -624,7 +626,7 @@
         <seg>రీడర్ టెంప్లేట్ బ్లూమ్ ప్యాక్ చేయి ...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.advancedToolStripMenuItem">
+    <tu tuid="CollectionTab.AdvancedToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Advanced</seg>
       </tuv>
@@ -632,7 +634,7 @@
         <seg>అధునాతన</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkLabel">
+    <tu tuid="CollectionTab.BloomLibraryLinkLabel">
       <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
       <tuv xml:lang="en">
         <seg>Get more source books at BloomLibrary.org</seg>
@@ -641,7 +643,7 @@
         <seg>మరింత ఆధార పుస్తకం పొందండివికసించిన లైబ్రరీ వద్ద</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+    <tu tuid="CollectionTab.BloomLibraryLinkVerificationCaption">
       <note>get this clicking on BloomLibrary.org link in source collection</note>
       <tuv xml:lang="en">
         <seg>Source Collection</seg>
@@ -650,7 +652,7 @@
         <seg>మూలం సేకరణ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourceHeading">
+    <tu tuid="CollectionTab.BookSourceHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Books</seg>
       </tuv>
@@ -658,7 +660,7 @@
         <seg>కొత్త పుస్తకాల కోసం వర్గాలు</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourcesLockNotice">
+    <tu tuid="CollectionTab.BookSourcesLockNotice">
       <tuv xml:lang="en">
         <seg>This collection is locked, so new books cannot be added/removed.</seg>
       </tuv>
@@ -666,7 +668,7 @@
         <seg>ఈ సేకరణ లాక్ ఉంది, </seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
+    <tu tuid="CollectionTab.HiddenBookExplanationForSourceCollections">
       <tuv xml:lang="en">
         <seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
       </tuv>
@@ -676,6 +678,7 @@
     </tu>
     <tu tuid="CollectionTab.hiddenBooksNotice">
       <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Where's the rest?</seg>
       </tuv>
@@ -683,7 +686,8 @@
         <seg>మిగిలిన ఎక్కడ ఉంది?</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+    <tu tuid="CollectionTab.MoreLanguagesMenuItem">
+      <note>Brings up the localization dialog</note>
       <tuv xml:lang="en">
         <seg>More...</seg>
       </tuv>
@@ -691,7 +695,7 @@
         <seg>మరింత</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.sourcesForNewShellsHeading">
+    <tu tuid="CollectionTab.SourcesForNewShellsHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Shells</seg>
       </tuv>
@@ -785,7 +789,7 @@
         <seg>ఐచ్ఛిక</seg>
       </tuv>
     </tu>
-    <tu tuid="ConfiguringBookMessage">
+    <tu tuid="CollectionTab.ConfiguringBookMessage">
       <tuv xml:lang="en">
         <seg>Building...</seg>
       </tuv>
@@ -989,6 +993,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -1209,7 +1214,7 @@
         <seg>టెంప్లేట్ పేజీలు</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.1">
+    <tu tuid="TemplateBooks.PageLabel.1">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>1</seg>
@@ -1218,7 +1223,7 @@
         <seg>1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.2">
+    <tu tuid="TemplateBooks.PageLabel.2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>2</seg>
@@ -1227,7 +1232,7 @@
         <seg>2</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.3">
+    <tu tuid="TemplateBooks.PageLabel.3">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>3</seg>
@@ -1236,7 +1241,7 @@
         <seg>3</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.4">
+    <tu tuid="TemplateBooks.PageLabel.4">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>4</seg>
@@ -1245,7 +1250,7 @@
         <seg>4</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.5">
+    <tu tuid="TemplateBooks.PageLabel.5">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>5</seg>
@@ -1254,7 +1259,7 @@
         <seg>5</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.6">
+    <tu tuid="TemplateBooks.PageLabel.6">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>6</seg>
@@ -1263,7 +1268,7 @@
         <seg>6</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.7">
+    <tu tuid="TemplateBooks.PageLabel.7">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>7</seg>
@@ -1272,7 +1277,7 @@
         <seg>7</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.8">
+    <tu tuid="TemplateBooks.PageLabel.8">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>8</seg>
@@ -1281,7 +1286,7 @@
         <seg>8</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.9">
+    <tu tuid="TemplateBooks.PageLabel.9">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>9</seg>
@@ -1290,7 +1295,7 @@
         <seg>9</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
+    <tu tuid="TemplateBooks.PageLabel.Alphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Alphabet</seg>
@@ -1299,7 +1304,7 @@
         <seg>అక్షరమాల</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Image</seg>
@@ -1308,7 +1313,7 @@
         <seg>ప్రాథమిక పాఠం &amp; చిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Picture</seg>
@@ -1317,7 +1322,7 @@
         <seg>ప్రాథమిక పాఠం &amp; చిత్రాన్ని</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
+    <tu tuid="TemplateBooks.PageLabel.Credits Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Credits Page</seg>
@@ -1326,7 +1331,7 @@
         <seg>క్రెడిట్స్ పేజీ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+    <tu tuid="TemplateBooks.PageLabel.Custom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Custom</seg>
@@ -1335,7 +1340,7 @@
         <seg>కస్టమ్</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 1">
+    <tu tuid="TemplateBooks.PageLabel.Day 1">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 1</seg>
@@ -1344,7 +1349,7 @@
         <seg>రోజు 1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 2">
+    <tu tuid="TemplateBooks.PageLabel.Day 2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 2</seg>
@@ -1353,7 +1358,7 @@
         <seg>రోజు 2</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 3">
+    <tu tuid="TemplateBooks.PageLabel.Day 3">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 3</seg>
@@ -1362,7 +1367,7 @@
         <seg>రోజు 3</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 4">
+    <tu tuid="TemplateBooks.PageLabel.Day 4">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 4</seg>
@@ -1371,7 +1376,7 @@
         <seg>రోజు 4</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 5a">
+    <tu tuid="TemplateBooks.PageLabel.Day 5a">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5a</seg>
@@ -1380,7 +1385,7 @@
         <seg>రోజు 5a</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 5b">
+    <tu tuid="TemplateBooks.PageLabel.Day 5b">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5b</seg>
@@ -1389,7 +1394,7 @@
         <seg>రోజు 5b</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
+    <tu tuid="TemplateBooks.PageLabel.Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Front Cover</seg>
@@ -1398,7 +1403,7 @@
         <seg>ముందు కవర్</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image On Bottom</seg>
@@ -1407,7 +1412,7 @@
         <seg>అడుగున చిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Image in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image in Middle</seg>
@@ -1416,7 +1421,7 @@
         <seg>మధ్యలో చిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Inside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Back Cover</seg>
@@ -1425,7 +1430,7 @@
         <seg>తిరిగి కవర్ లోపల</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
+    <tu tuid="TemplateBooks.PageLabel.Inside Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Front Cover</seg>
@@ -1434,7 +1439,7 @@
         <seg>ముందు కవర్ లోపల</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Instructions">
+    <tu tuid="TemplateBooks.PageLabel.Instructions">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Instructions</seg>
@@ -1443,7 +1448,7 @@
         <seg>సూచనలను</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just Text">
+    <tu tuid="TemplateBooks.PageLabel.Just Text">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just Text</seg>
@@ -1452,7 +1457,7 @@
         <seg>కేవలం టెక్స్ట్</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
+    <tu tuid="TemplateBooks.PageLabel.Just a Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just a Picture</seg>
@@ -1461,7 +1466,7 @@
         <seg>కేవలం ఒక చిత్రాన్ని</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just an Image">
+    <tu tuid="TemplateBooks.PageLabel.Just an Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just an Image</seg>
@@ -1470,7 +1475,7 @@
         <seg>కేవలం ఒక చిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Outside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Outside Back Cover</seg>
@@ -1479,7 +1484,7 @@
         <seg>తిరిగి కవర్ బయట</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
+    <tu tuid="TemplateBooks.PageLabel.Picture &amp; Word">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture &amp; Word</seg>
@@ -1488,16 +1493,16 @@
         <seg>చిత్రాన్ని &amp; పదం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Picture on Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Picture On Bottom</seg>
+        <seg>Picture on Bottom</seg>
       </tuv>
       <tuv xml:lang="te">
         <seg>అడుగున చిత్రాన్ని</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Picture in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture in Middle</seg>
@@ -1506,7 +1511,7 @@
         <seg>మధ్యలో చిత్రంలో</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
+    <tu tuid="TemplateBooks.PageLabel.This Page Is Intentionally Blank">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Page Is Intentionally Blank</seg>
@@ -1515,7 +1520,7 @@
         <seg>ఈ పేజీని ఉద్దేశపూర్వకంగా ఖాళీగా ఉంది</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Title Page">
+    <tu tuid="TemplateBooks.PageLabel.Title Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Title Page</seg>
@@ -1524,7 +1529,7 @@
         <seg>టైటిల్ పేజీ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown">
+    <tu tuid="EditTab.ContentLanguagesDropdown">
       <tuv xml:lang="en">
         <seg>Multilingual Settings</seg>
       </tuv>
@@ -1532,7 +1537,7 @@
         <seg>బహుభాషా సెట్టింగులు</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
@@ -1540,7 +1545,7 @@
         <seg>ప్రతిని</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
@@ -1548,7 +1553,7 @@
         <seg>కట్</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton.ToolTip">
+    <tu tuid="EditTab.CutButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Cut (Ctrl-x)</seg>
       </tuv>
@@ -1556,7 +1561,7 @@
         <seg>కట్ (Ctrl + x)</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.CutButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>You need to select some text before you can cut it</seg>
       </tuv>
@@ -1564,7 +1569,7 @@
         <seg>మీరు కట్ ముందు మీరు కొంత టెక్స్ట్ ఎంచుకోండి అవసరం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
@@ -1572,7 +1577,7 @@
         <seg>తొలగించడానికి \n పేజీ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton.ToolTip">
+    <tu tuid="EditTab.DeletePageButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Remove this page from the book</seg>
       </tuv>
@@ -1580,7 +1585,7 @@
         <seg>పుస్తకం నుండి ఈ పేజీని తొలగించండి</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.DeletePageButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>This page cannot be removed</seg>
       </tuv>
@@ -1588,7 +1593,7 @@
         <seg>ఈ పేజీ తొలగించడం సాధ్యం కాదు</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
@@ -1596,7 +1601,7 @@
         <seg>నకిలీ \n పేజీ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton.ToolTip">
+    <tu tuid="EditTab.DuplicatePageButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Insert a new page which is a duplicate of this one</seg>
       </tuv>
@@ -1604,7 +1609,7 @@
         <seg>ఈ ఒక నకిలీ ఉంది దీనిలో ఒక కొత్త పేజీ ఇన్సర్ట్</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>This page cannot be duplicated</seg>
       </tuv>
@@ -1612,7 +1617,7 @@
         <seg>ఈ పేజీకి నకలు ఉండకూడదు</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
@@ -1620,7 +1625,7 @@
         <seg>పేస్ట్</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton.ToolTip">
+    <tu tuid="EditTab.PasteButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Paste (Ctrl+v)</seg>
       </tuv>
@@ -1628,7 +1633,7 @@
         <seg>అతికించండి (Ctrl + z)</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.PasteButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>There is nothing on the Clipboard that you can paste here.</seg>
       </tuv>
@@ -1636,7 +1641,7 @@
         <seg>మీరు ఇక్కడ అతికించండి క్లిప్బోర్డ్కు న ఏమీ లేదు</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
@@ -1644,7 +1649,7 @@
         <seg>దిద్దుబాటు రద్దుచెయ్యి</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton.ToolTip">
+    <tu tuid="EditTab.UndoButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Undo (Ctrl+z)</seg>
       </tuv>
@@ -1652,7 +1657,7 @@
         <seg>నాశనము చేసినది (Ctrl+z)</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
@@ -1661,7 +1666,7 @@
         <seg>రెండు భాషలు</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+    <tu tuid="EditTab.CopyImageIPMetadataQuestion">
       <note>get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
@@ -1670,7 +1675,7 @@
         <seg>ఈ పుస్తకం లో అన్ని ఇతర చిత్రాలు ఈ సమాచారాన్ని కాపీ?</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+    <tu tuid="EditTab.LayoutInPublishTabOnlyNotice">
       <tuv xml:lang="en">
         <seg>This option is only available in the Publish tab.</seg>
       </tuv>
@@ -1678,7 +1683,7 @@
         <seg>ఈ ఐచ్చికము మాత్రమే ప్రచురించవచ్చు టాబ్ లో ఉంది.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
@@ -1687,7 +1692,7 @@
         <seg>ఒకే భాష</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.noOtherLayouts">
+    <tu tuid="EditTab.NoOtherLayouts">
       <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
       <tuv xml:lang="en">
         <seg>There are no other layout options for this template.</seg>
@@ -1696,7 +1701,7 @@
         <seg>ఈ టెంప్లేట్ కోసం ఏ ఇతర లేఅవుట్ ఎంపికలు ఉన్నాయి</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+    <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
       <tuv xml:lang="en">
         <seg>Picture Intellectual Property Information</seg>
       </tuv>
@@ -1704,7 +1709,7 @@
         <seg>మేధో ఆస్తి సమాచారం చిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>
@@ -1737,7 +1742,7 @@
         <seg>రీడర్ టెంప్లేట్ ఉపయోగించి</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._makeASuggestionMenuItem">
+    <tu tuid="HelpMenu.MakeASuggestionMenuItem">
       <tuv xml:lang="en">
         <seg>Make a Suggestion</seg>
       </tuv>
@@ -1745,7 +1750,7 @@
         <seg>ఒక సలహా</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._webSiteMenuItem">
+    <tu tuid="HelpMenu.WebSiteMenuItem">
       <tuv xml:lang="en">
         <seg>Web Site</seg>
       </tuv>
@@ -1762,7 +1767,7 @@
         <seg>కంటెంట్ ప్రదర్శన</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+    <tu tuid="HelpMenu.CheckForNewVersionMenuItem">
       <tuv xml:lang="en">
         <seg>Check For New Version</seg>
       </tuv>
@@ -1770,7 +1775,7 @@
         <seg>కొత్త వెర్షన్ను తనిఖీ</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.creditsMenuItem">
+    <tu tuid="HelpMenu.CreditsMenuItem">
       <tuv xml:lang="en">
         <seg>About Bloom</seg>
       </tuv>
@@ -1779,7 +1784,7 @@
       </tuv>
     </tu>
 
-    <tu tuid="HelpMenu.documentationMenuItem">
+    <tu tuid="HelpMenu.DocumentationMenuItem">
       <tuv xml:lang="en">
         <seg>Documentation</seg>
       </tuv>
@@ -1787,7 +1792,7 @@
         <seg>డాక్యుమెంటేషన్</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.registrationMenuItem">
+    <tu tuid="HelpMenu.RegistrationMenuItem">
       <tuv xml:lang="en">
         <seg>Registration</seg>
       </tuv>
@@ -1795,7 +1800,7 @@
         <seg>నమోదు</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.releaseNotesMenuItem">
+    <tu tuid="HelpMenu.ReleaseNotesMenuItem">
       <tuv xml:lang="en">
         <seg>Release Notes...</seg>
       </tuv>
@@ -1812,7 +1817,7 @@
         <seg>షెల్ పుస్తకం సూచనలను</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.showEventLogMenuItem">
+    <tu tuid="HelpMenu.ShowEventLogMenuItem">
       <tuv xml:lang="en">
         <seg>Show Event Log</seg>
       </tuv>
@@ -1829,7 +1834,7 @@
         <seg>శిక్షణ మాన్యువల్</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -1838,7 +1843,7 @@
         <seg>InDesign XML సమాచారం</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -2194,7 +2199,7 @@
         <seg>లేబుల్ 3</seg>
       </tuv>
     </tu>
-    <tu tuid="LoginDialog.showPassword">
+    <tu tuid="LoginDialog.ShowPassword">
       <tuv xml:lang="en">
         <seg>&amp;Show Password</seg>
       </tuv>
@@ -2477,7 +2482,7 @@
         <seg>ఎవరైనా else మీరు ఒక సేకరణ భాగస్వామ్యం పంపు / recieve ఉపయోగించింది?\n మీ కంప్యూటర్లో వారి సేకరణకు కాపీ ఈ ఎరుపు బటన్లు ఒకటి ఉపయోగించండి.\n తరువాత, వారితో తిరిగి మీ పని భాగస్వామ్యం స్వీకరించండి / పంపండి ఉపయోగించండి.</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -2485,7 +2490,7 @@
         <seg>ఇప్పటికే భర్తీ</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -2493,7 +2498,7 @@
         <seg>నోటీసు</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -2501,7 +2506,7 @@
         <seg>ఆ మార్పు అనుమతి లేదు. వారు ఎక్కడ ఫ్రంట్ పదార్థం మరియు తిరిగి మేటర్ పేజీలు కొనసాగించాలి.</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -3069,7 +3074,7 @@
         <seg>అప్లోడ్</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.ccLink">
+    <tu tuid="PublishTab.Upload.CcLink">
       <tuv xml:lang="en">
         <seg>CC-BY-NC</seg>
       </tuv>
@@ -3077,7 +3082,7 @@
         <seg>CC-BY-NC</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.loginLink">
+    <tu tuid="PublishTab.Upload.LoginLink">
       <tuv xml:lang="en">
         <seg>Log in to BloomLibrary.org</seg>
       </tuv>
@@ -3085,7 +3090,7 @@
         <seg>BLOOMLibrary .org లాగిన్</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.signupLink">
+    <tu tuid="PublishTab.Upload.SignupLink">
       <tuv xml:lang="en">
         <seg>Sign up for BloomLibrary.org</seg>
       </tuv>
@@ -3788,7 +3793,7 @@
         <seg>నమోదు {0}</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Basic Book">
+    <tu tuid="TemplateBooks.BookName.Basic Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Book</seg>
@@ -3797,7 +3802,7 @@
         <seg>ప్రాథమిక పుస్తకం</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Big Book">
+    <tu tuid="TemplateBooks.BookName.Big Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Big Book</seg>
@@ -3806,7 +3811,7 @@
         <seg>పెద్ద పుస్తకం</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Decodable Reader">
+    <tu tuid="TemplateBooks.BookName.Decodable Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader</seg>
@@ -3815,7 +3820,7 @@
         <seg>దానిని decodable రీడర్</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Leveled Reader">
+    <tu tuid="TemplateBooks.BookName.Leveled Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader</seg>
@@ -3824,7 +3829,7 @@
         <seg>తనపై వచ్చిన రీడర్</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Picture Dictionary">
+    <tu tuid="TemplateBooks.BookName.Picture Dictionary">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture Dictionary</seg>
@@ -3833,7 +3838,7 @@
         <seg>చిత్రాన్ని నిఘంటువు</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Wall Calendar">
+    <tu tuid="TemplateBooks.BookName.Wall Calendar">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Wall Calendar</seg>
@@ -4022,7 +4027,7 @@
         <seg>సంప్రదాయ కథ</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>

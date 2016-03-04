@@ -1,5 +1,156 @@
 ﻿/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
-/*+clearfix {*/
+.qtip-default {
+  background-color: #faf7cc !important;
+  border-color: #e0deb7 !important;
+  color: black !important;
+  border-radius: 5px;
+}
+.uibloomSourceTextsBubble {
+  z-index: 15002 !important;
+  background-color: #faf7cc !important;
+  border-color: #e0deb7 !important;
+  border-width: 2px !important;
+}
+.uibloomSourceTextsBubble.passive-bubble {
+  z-index: 15001 !important;
+}
+.uibloomSourceTextsBubble.passive-bubble .qtip-content {
+  padding-bottom: 0 !important;
+}
+.uibloomSourceTextsBubble .qtip-content {
+  padding: 0 9px 9px !important;
+  overflow: visible !important;
+}
+.ui-sourceTextsForBubble {
+  position: relative;
+  border-color: #e0deb7;
+  max-height: inherit;
+}
+.ui-sourceTextsForBubble NAV {
+  display: block;
+  height: 34px;
+  margin: 0 -8px;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
+}
+.ui-sourceTextsForBubble NAV > UL {
+  z-index: 1;
+  background-color: transparent;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  list-style: outside none none;
+  top: 1px;
+  line-height: 22px;
+}
+.ui-sourceTextsForBubble NAV > UL::after {
+  position: absolute;
+  content: "";
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid #faf7cc;
+  z-index: 2;
+}
+.ui-sourceTextsForBubble NAV > UL > LI {
+  font-size: 9pt;
+  height: 31px;
+  border-right: 1px solid #faf7cc;
+  border-top-right-radius: 6px;
+  float: left;
+  flex: 1 0 auto;
+  background-color: #e0deb7;
+}
+.ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
+  border-left: 1px solid #faf7cc;
+  border-top-left-radius: 6px;
+}
+.ui-sourceTextsForBubble NAV > UL > LI:first-child {
+  border-top-left-radius: 15px;
+}
+.ui-sourceTextsForBubble NAV > UL > LI.active {
+  background-color: #faf7cc;
+  border-bottom-color: #faf7cc;
+  z-index: 3;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A {
+  max-width: 79px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  padding: 5px;
+  outline: none;
+  text-decoration: none;
+  color: black;
+  font-family: Segoe UI, sans-serif;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A.active {
+  font-weight: bold;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A:hover {
+  text-decoration: underline;
+  background-color: #faf7cc;
+}
+.ui-sourceTextsForBubble .source-text {
+  font-size: 10pt;
+  line-height: 1.5;
+  color: black;
+  padding-top: 4px;
+}
+.ui-sourceTextsForBubble .source-text.active {
+  overflow-y: hidden !important;
+}
+.ui-sourceTextsForBubble .source-text:lang(th),
+.ui-sourceTextsForBubble .source-text:lang(km),
+.ui-sourceTextsForBubble .source-text:lang(kjg),
+.ui-sourceTextsForBubble .source-text:lang(prt) {
+  font-size: 18pt;
+}
+.dropdown-list {
+  max-height: 200px;
+  overflow-y: auto;
+  text-align: left;
+  opacity: 1;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  margin-top: 2px;
+  white-space: nowrap;
+  border: 1px solid #faf7cc;
+  background-color: #e0deb7 !important;
+  top: 0;
+  font-size: 9pt;
+  z-index: 5;
+}
+.dropdown-list LI:hover {
+  background-color: #faf7cc;
+}
+.dropdown-menu {
+  width: 32px;
+  border: none !important;
+}
+.dropdown-menu:hover UL {
+  display: inline-block;
+}
+.dropdown-menu DIV {
+  margin: 4px 0 0 0;
+  display: block;
+}
+.dropdown-menu DIV::before {
+  content: "(";
+}
+.dropdown-menu DIV::after {
+  content: ")";
+}
+.dropdown-menu UL {
+  display: none;
+}
+.panel-container {
+  border: 1px solid black;
+  padding: 0 10px;
+}
 BODY {
   background-color: #363333;
 }
@@ -60,99 +211,119 @@ DIV.page.coverColor {
 }
 /*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
 DIV.readOnlyInTranslationMode {
-  border: thin solid #C0B9B9;
+  border: thin solid #c0b9b9;
 }
 DIV.hoverUp {
-  background-color: #D5D5E4;
+  background-color: #d5d5e4;
 }
-BUTTON.smallImageButton {
-  width: 50%;
-  height: 50%;
-  /*+border-radius:0;*/
-  -moz-border-radius: 0;
-  -webkit-border-radius: 0;
-  -khtml-border-radius: 0;
-  border-radius: 0;
-  border-radius: 0 0 0 0;
-  z-index: 100;
-  background-repeat: no-repeat;
-  border-style: none !important;
-  background-size: contain !important;
-}
-BUTTON.largeImageButton {
-  width: 70px;
+.imageButton {
+  width: 87px;
   height: 52px;
-  /*+border-radius:3px;*/
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  -khtml-border-radius: 3px;
-  border-radius: 3px;
   z-index: 100;
+  position: absolute;
   background-repeat: no-repeat;
-  background-position: 12px 4px;
-  border: 2px outset #716666;
+  background-size: contain;
+  background-position: center center;
 }
-BUTTON.pasteImageButton.smallImageButton {
-  background-image: url("../img/pasteImageButtonSmall.png") !important;
-  background-position: 67% 28% !important;
+.imageButton.smallButtonWidth {
+  width: 50%;
+  max-width: 87px;
+  border-style: none;
 }
-BUTTON.pasteImageButton.largeImageButton {
-  background-image: url("../img/pasteImageButtonLarge.png") !important;
+.imageButton.smallButtonHeight {
+  height: 50%;
+  max-height: 52px;
+  border-style: none;
 }
-BUTTON.changeImageButton.smallImageButton {
-  background-image: url("../img/changeImageButtonSmall.png");
-  background-position: 63% 27% !important;
+.imageButton.changeImageButton {
+  right: 0;
+  top: 0;
+  background-color: #96668f;
+  background-image: url("../img/changeButton.svg");
 }
-BUTTON.changeImageButton.largeImageButton {
-  background-image: url("../img/changeImageButtonLarge.png") !important;
+.imageButton.pasteImageButton {
+  right: 0;
+  bottom: 0;
+  background-color: #0c8597;
+  background-image: url("../img/pasteButton.svg");
+  background-position: right center;
 }
-BUTTON.changeImageButton {
-  /*+placement:anchor-top-right 0px 0px;*/
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  /*[disabled]background-position:13px 3px;*/
-  background-color: #96668F;
+.imageButton.pasteImageButton.smallButtonWidth {
+  width: 87px;
 }
-BUTTON.pasteImageButton {
-  /*+placement:anchor-bottom-right 0px 0px;*/
-  position: absolute;
-  right: 0px;
-  bottom: 0px;
-  /*[disabled]background-position:13px 3px;*/
-  background-color: #0C8597;
+.imageButton.pasteImageButton.smallButtonWidth.verySmallButtons {
+  width: 98%;
+  background-size: 60%;
 }
-BUTTON.editMetadataButton {
+.imageButton.editMetadataButton {
+  left: 0;
+  top: 0;
   background-image: url("../img/imageMetaDataButton.svg") !important;
-  background-size: contain;
-  background-position: 5px 0px;
-  /*[disabled]width:70px;*/
-  /*[disabled]height:52px;*/
-  background-repeat: no-repeat !important;
-  /*+placement:anchor-top-left 0px 0px;*/
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  z-index: 1000;
+  background-color: #3a7f62;
 }
-BUTTON.editMetadataButton.smallImageButton {
-  background-position: 0 0 !important;
-}
-BUTTON.editMetadataButton.imgMetadataProblem {
+.imageButton.editMetadataButton.imgMetadataProblem {
+  background-color: transparent;
   background-image: url("../img/imageMissingMetaData.svg") !important;
-  background: transparent;
-  background-size: contain;
-  background-position: 5px 0px;
   border: none;
 }
-.hoverUp BUTTON.editMetadataButton {
-  background: #3A7F62;
+.hoverUp .imageButton {
+  border: 2px outset #716666 !important;
+  border-radius: 3px !important;
+}
+.hoverUp .imageButton:hover {
+  border: inset #716666 !important;
+}
+.hoverUp .imageButton.editMetadataButton {
+  background-image: none;
+  background-color: #3a7f62 !important;
+}
+BUTTON.miniButton {
+  width: 20px;
+  height: 18px;
+  right: 60px;
+  border: none;
+  position: absolute;
+  background-position: left center;
+  background-repeat: no-repeat;
   background-size: contain;
-  background-position: 5px 0px;
-  border: 2px outset #716666;
+  background-color: transparent;
+  z-index: 120;
+}
+BUTTON.miniButton:hover {
+  border: 1px inset #716666;
+}
+BUTTON.miniButton.verySmallButtons {
+  right: 60%;
+}
+BUTTON.miniButton.smallButtonHeight {
+  height: 15%;
+}
+BUTTON.miniButton.verySmallButtons {
+  width: 30%;
+}
+BUTTON.miniButton.cutImageButton {
+  background-image: url("../img/cut.svg");
+  bottom: 27px;
+}
+BUTTON.miniButton.cutImageButton.disabled {
+  background-image: url("../img/cutGrey.svg");
+  pointer-events: none;
+}
+BUTTON.miniButton.cutImageButton.smallButtonHeight {
+  bottom: 26%;
+}
+BUTTON.miniButton.copyImageButton {
+  background-image: url("../img/copy.svg");
+  bottom: 6px;
+}
+BUTTON.miniButton.copyImageButton.disabled {
+  background-image: url("../img/copyGrey.svg");
+  pointer-events: none;
+}
+BUTTON.miniButton.copyImageButton.smallButtonHeight {
+  bottom: 4%;
 }
 BUTTON.deleteButton {
-  /*+placement:anchor-bottom-left;*/
   position: absolute;
   left: 0;
   bottom: 0;
@@ -160,7 +331,6 @@ BUTTON.deleteButton {
   width: 40px;
   height: 40px;
   z-index: 100;
-  /*[disabled]background-position:13px 3px;*/
 }
 /*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
 .moveButtonIcon {
@@ -236,60 +406,6 @@ TEXTAREA.province {
   margin-top: -8px;
   margin-right: 8px;
 }
-.ui-sourceTextsForBubble UL {
-  padding: 0;
-  z-index: 1;
-  background-color: transparent;
-  text-align: left;
-  width: 219px;
-  /*+placement:shift -7px 1px;*/
-  position: relative;
-  left: -7px;
-  top: 1px;
-}
-.ui-sourceTextsForBubble UL LI {
-  display: inline-block;
-  padding-right: 11px;
-  padding-left: 7px;
-  font-size: 9pt;
-  margin-right: 11px;
-  height: 31px;
-}
-.ui-sourceTextsForBubble UL LI A {
-  display: block;
-  padding: 5px;
-  outline: none;
-  /*[empty]font-style:;*/
-  text-decoration: none;
-  color: #000000;
-}
-.ui-sourceTextsForBubble UL LI A:hover {
-  text-decoration: underline;
-}
-.ui-sourceTextsForBubble UL LI.active {
-  padding-top: 1px;
-  position: relative;
-  top: 1px;
-  font: bold 11pt sans-serif;
-}
-.ui-sourceTextsForBubble UL LI A.active {
-  font-weight: bold;
-}
-.ui-sourceTextsForBubble .source-text {
-  font-size: 10pt;
-  line-height: 1.5;
-  color: #000000;
-}
-.ui-sourceTextsForBubble .source-text:lang(th),
-.ui-sourceTextsForBubble .source-text:lang(km),
-.ui-sourceTextsForBubble .source-text:lang(kjg),
-.ui-sourceTextsForBubble .source-text:lang(prt) {
-  font-size: 18pt;
-}
-.panel-container {
-  border: 1px solid #000000;
-  padding: 0 10px;
-}
 DIV.textWholePage UL {
   /*+placement:displace 1px -37px;*/
   position: absolute;
@@ -321,6 +437,9 @@ DIV.marginBox {
 .bloom-frontMatter DIV.marginBox {
   /*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
   border: none;
+}
+.thisOverflowingParent #formatButton {
+  top: 0;
 }
 #formatButton {
   overflow: hidden;
@@ -438,34 +557,6 @@ SPAN.sentence-too-long {
 .book-too-many-words .marginBox {
   border: 5px solid orange !important;
 }
-/*
-
-	this was all a nice idea, but not a localizable approach
-
-.page-too-many-words .marginBox::after {
-	content: 'Too many words on page';
-	position: absolute;
-	bottom: -35px;
-	background-color: orange;
-}
-
-.book-too-many-words .marginBox::after {
-	content: 'Too many words in book';
-	position: absolute;
-	bottom: -30px;
-		left: 300px;
-	background-color: red;
-	color: white;
-}
-.book-too-many-unique-words .marginBox::after {
-	content: 'Too many unique words in book';
-	position: absolute;
-	bottom: -30px;
-	right: 50px;
-	background-color:  purple
-	color: white;
-}
-*/
 .ui-dialog {
   z-index: 20000;
 }
@@ -564,4 +655,10 @@ SPAN.possible-word
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
   right: 0px;
 }
-/*# sourceMappingURL=editMode.css.map */
+div.cke_float div.cke_top {
+  padding: 4px !important;
+}
+div.cke_float div.cke_top span.cke_toolgroup {
+  margin: 0 !important;
+}
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6L0Jsb29tRGVza3RvcC9zcmMvQmxvb21Ccm93c2VyVUkvYm9va0VkaXQvc291cmNlQnViYmxlcy9zb3VyY2VCdWJibGVzLmxlc3MiLCJlZGl0TW9kZS5sZXNzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFRQTtFQUNDLHlCQUFBO0VBQ0EscUJBQUE7RUFDQSxZQUFBO0VBQ0csa0JBQUE7O0FBS0o7RUFLSSx5QkFBQTtFQVNILHlCQUFBO0VBQ0EscUJBQUE7RUFDQSw0QkFBQTs7QUFWRyx5QkFBQztFQUNHLHlCQUFBOztBQURKLHlCQUFDLGVBRUc7RUFDSSw0QkFBQTs7QUFUWix5QkFpQkM7RUFDQyw2QkFBQTtFQUVBLDRCQUFBOztBQU1GO0VBQ0Msa0JBQUE7RUFDQSxxQkFBQTtFQUNHLG1CQUFBOztBQUhKLHdCQUlDO0VBQ0MsY0FBQTtFQUNBLFlBQUE7RUFDQSxjQUFBO0VBRUEsNkJBQUE7RUFDQSw0QkFBQTs7QUFWRix3QkFJQyxJQU9DO0VBQ0MsVUFBQTtFQUNBLDZCQUFBO0VBQ0Esa0JBQUE7RUFDQSxTQUFBO0VBQ0EsVUFBQTtFQUNBLGFBQUE7RUFDQSw2QkFBQTtFQUNBLFFBQUE7RUFDQSxpQkFBQTs7QUFDQSx3QkFqQkYsSUFPQyxLQVVFO0VBQ0Esa0JBQUE7RUFDQSxTQUFTLEVBQVQ7RUFDQSxXQUFBO0VBQ0EsU0FBQTtFQUNBLE9BQUE7RUFDQSxnQ0FBQTtFQUNBLFVBQUE7O0FBNUJKLHdCQUlDLElBT0MsS0FtQkM7RUFDQyxjQUFBO0VBQ0EsWUFBQTtFQUNBLCtCQUFBO0VBQ0EsNEJBQUE7RUFDQSxXQUFBO0VBQ0EsY0FBQTtFQUNBLHlCQUFBOztBQUNBLHdCQWxDSCxJQU9DLEtBbUJDLEtBUUUsSUFBSTtFQUNKLDhCQUFBO0VBQ0EsMkJBQUE7O0FBRUQsd0JBdENILElBT0MsS0FtQkMsS0FZRTtFQUNBLDRCQUFBOztBQUVELHdCQXpDSCxJQU9DLEtBbUJDLEtBZUU7RUFDQSx5QkFBQTtFQUNBLDRCQUFBO0VBQ0EsVUFBQTs7QUFoREwsd0JBSUMsSUFPQyxLQW1CQyxLQW9CQztFQUNDLGVBQUE7RUFDQSxtQkFBQTtFQUNBLHVCQUFBO0VBQ0EsZ0JBQUE7RUFDQSxjQUFBO0VBQ0EsWUFBQTtFQUNBLGFBQUE7RUFDQSxxQkFBQTtFQUNBLFlBQUE7RUFDQSxpQ0FBQTs7QUFDQSx3QkF6REosSUFPQyxLQW1CQyxLQW9CQyxFQVdFO0VBQ0EsaUJBQUE7O0FBRUQsd0JBNURKLElBT0MsS0FtQkMsS0FvQkMsRUFjRTtFQUNBLDBCQUFBO0VBQ0EseUJBQUE7O0FBbEVOLHdCQXdFQztFQUNDLGVBQUE7RUFDQSxnQkFBQTtFQUNBLFlBQUE7RUFDQSxnQkFBQTs7QUFDQSx3QkFMRCxhQUtFO0VBQ0EsNkJBQUE7O0FBS0Qsd0JBWEQsYUFXRSxLQUFLO0FBQU0sd0JBWGIsYUFXYyxLQUFLO0FBQUssd0JBWHhCLGFBV3lCLEtBQUs7QUFBTyx3QkFYckMsYUFXc0MsS0FBSztFQUN6QyxlQUFBOztBQVFIO0VBQ0MsaUJBQUE7RUFDQSxnQkFBQTtFQUNBLGdCQUFBO0VBQ0EsVUFBQTtFQUNBLFNBQUE7RUFDQSxVQUFBO0VBQ0Esa0JBQUE7RUFDQSxlQUFBO0VBQ0EsbUJBQUE7RUFDQSx5QkFBQTtFQUNBLHlCQUFBO0VBQ0EsTUFBQTtFQUNBLGNBQUE7RUFDQSxVQUFBOztBQUVDLGNBREQsR0FDRTtFQUNBLHlCQUFBOztBQUlIO0VBQ0MsV0FBQTtFQUNBLHVCQUFBOztBQUNBLGNBQUMsTUFDQTtFQUNDLHFCQUFBOztBQUxILGNBUUM7RUFDQyxpQkFBQTtFQUNBLGNBQUE7O0FBQ0EsY0FIRCxJQUdFO0VBQ0EsU0FBUyxHQUFUOztBQUVELGNBTkQsSUFNRTtFQUNBLFNBQVMsR0FBVDs7QUFmSCxjQWtCQztFQUNDLGFBQUE7O0FBR0Y7RUFFQyx1QkFBQTtFQUNBLGVBQUE7O0FDakxEO0VBRUMseUJBQUE7O0FBRUQsV0FBVztFQUVWLFNBQVMsR0FBVDtFQUNBLGNBQUE7RUFDQSxTQUFBO0VBQ0EsV0FBQTtFQUNBLGtCQUFBO0VBQ0EsWUFBQTs7QUFFRDtFQUVDLHFCQUFBOztBQUVEOztFQUdDLGNBQUE7O0VBRUEsWUFBQTs7O0FBR0QsR0FBRztFQUVGLHlCQUFBOztBQUVELFdBQVksSUFBRztFQUVkLHFDQUFBOzs7QUFHRCxVQUFXLElBQUc7O0VBR2Isa0JBQUE7RUFDQSxVQUFBO0VBQ0EsVUFBQTs7QUFFRCxHQUFHO0VBRUYsZ0JBQUE7O0VBRUEseUJBQUE7O0VBRUEsa0JBQUE7RUFDQSxVQUFBO0VBQ0EsU0FBQTtFQUNBLFdBQUE7O0FBRUQsU0FBVSxJQUFHO0VBRVosa0JBQUE7O0FBRUQsUUFBUyxJQUFHO0VBRVgsa0JBQUE7O0FBR0QsR0FBRztFQUVGLHlCQUFBO0VBQ0EsNkJBQUE7O0FBRUQsR0FBRyxLQUFLO0VBRVAseUJBQUE7RUFDQSw2QkFBQTs7O0FBVUQsR0FBRztFQUVGLDBCQUFBOztBQUVELEdBQUc7RUFFRix5QkFBQTs7QUFFRDtFQUNDLFdBQUE7RUFDQSxZQUFBO0VBQ0EsWUFBQTtFQUNHLGtCQUFBO0VBQ0gsNEJBQUE7RUFDRyx3QkFBQTtFQUNBLGtDQUFBOztBQUNBLFlBQUM7RUFDQSxVQUFBO0VBQ0csZUFBQTtFQUNBLGtCQUFBOztBQUVKLFlBQUM7RUFDQSxXQUFBO0VBQ0csZ0JBQUE7RUFDQSxrQkFBQTs7QUFFSixZQUFDO0VBQ0EsUUFBQTtFQUNBLE1BQUE7RUFDQSx5QkFBQTtFQUNBLHNCQUFzQiwwQkFBdEI7O0FBRUQsWUFBQztFQUNBLFFBQUE7RUFDQSxTQUFBO0VBQ0EseUJBQUE7RUFDQSxzQkFBc0IseUJBQXRCO0VBQ0csaUNBQUE7O0FBQ0EsWUFOSCxpQkFNSTtFQUNHLFdBQUE7O0FBQ0EsWUFSUCxpQkFNSSxpQkFFSTtFQUNHLFVBQUE7RUFDQSxvQkFBQTs7QUFJWixZQUFDO0VBQ0csT0FBQTtFQUNILE1BQUE7RUFDRyxzQkFBc0IsaUNBQXRCO0VBQ0gseUJBQUE7O0FBQ0csWUFMSCxtQkFLSTtFQUNHLDZCQUFBO0VBQ0Esc0JBQXNCLGtDQUF0QjtFQUNBLFlBQUE7O0FBSVosUUFBUztFQUNMLDBCQUFBO0VBQ0gsNkJBQUE7O0FBQ0csUUFISyxhQUdKO0VBQ0cscUJBQUE7O0FBRUosUUFOSyxhQU1KO0VBQ0csc0JBQUE7RUFDQSx5QkFBQTs7QUFHUixNQUFNO0VBQ0YsV0FBQTtFQUNBLFlBQUE7RUFDQSxXQUFBO0VBQ0EsWUFBQTtFQUNBLGtCQUFBO0VBQ0EsZ0NBQUE7RUFDQSw0QkFBQTtFQUNBLHdCQUFBO0VBQ0EsNkJBQUE7RUFDQSxZQUFBOztBQUNBLE1BWEUsV0FXRDtFQUNHLHlCQUFBOztBQUVKLE1BZEUsV0FjRDtFQUNHLFVBQUE7O0FBRUosTUFqQkUsV0FpQkQ7RUFDRyxXQUFBOztBQUVKLE1BcEJFLFdBb0JEO0VBQ0csVUFBQTs7QUFFSixNQXZCRSxXQXVCRDtFQUNBLHNCQUFzQixpQkFBdEI7RUFDRyxZQUFBOztBQUNBLE1BMUJGLFdBdUJELGVBR0k7RUFDQSxzQkFBc0IscUJBQXRCO0VBQ0csb0JBQUE7O0FBRUosTUE5QkYsV0F1QkQsZUFPSTtFQUNHLFdBQUE7O0FBR1IsTUFsQ0UsV0FrQ0Q7RUFDQSxzQkFBc0Isa0JBQXRCO0VBQ0csV0FBQTs7QUFDQSxNQXJDRixXQWtDRCxnQkFHSTtFQUNBLHNCQUFzQixzQkFBdEI7RUFDRyxvQkFBQTs7QUFFSixNQXpDRixXQWtDRCxnQkFPSTtFQUNHLFVBQUE7O0FBSVosTUFBTTtFQUVMLGtCQUFBO0VBQ0EsT0FBQTtFQUNBLFNBQUE7RUFDQSxzQkFBc0IsK0JBQXRCO0VBQ0EsV0FBQTtFQUNBLFlBQUE7RUFDQSxZQUFBOzs7QUFHRDtFQUVDLHNCQUFzQiwyQkFBdEI7RUFDQSxzQkFBQTtFQUNBLHVCQUFBOztBQUVELE1BQU07O0VBR0wsa0JBQUE7RUFDQSxXQUFBO0VBQ0EsVUFBQTtFQUNBLHNCQUFzQiwyQkFBdEI7RUFDQSw0QkFBQTtFQUNBLDZCQUFBO0VBQ0EsV0FBQTtFQUNBLFlBQUE7RUFDQSx3QkFBQTtFQUNBLGFBQUE7RUFDQSx3QkFBQTs7QUFFRDtBQUFVLEdBQUc7RUFFWiwwQkFBQTs7OztBQUlELFdBQVk7QUFBVSxHQUFHO0VBRXhCLHFDQUFBOztBQUVELEdBQUc7RUFFRix5QkFBQTtFQUNBLDBCQUFBOztBQUVELFFBQVE7QUFBUSxHQUFHLGVBQWU7RUFFakMseUNBQUE7RUFDQSwrRUFBQTtFQUNBLFVBQUE7O0FBRUQsUUFBUTtFQUVQLFlBQUE7RUFDQSxZQUFBOztBQUtEO0VBRUMsVUFBQTtFQUNBLHNCQUFBOztBQUhELFNBSUMsRUFBQyxNQUFNO0VBQ04sU0FBUSxHQUFSOztBQUdGO0VBQ0MsOEJBQUE7O0FBSUQsd0JBQXdCO0FBQVMsd0JBQXdCO0VBQ3hELFNBQVMsbUJBQVQ7RUFDQSxnQkFBQTtFQUNBLFVBQUE7RUFDQSxrQkFBQTtFQUNBLFNBQUE7RUFDQSxPQUFBO0VBQ0EsY0FBQTtFQUNBLGdCQUFBOztBQUdELGVBQWdCO0VBRWYsdUJBQUE7RUFDQSxZQUFBO0VBQ0EsaUJBQUE7RUFDQSxjQUFBO0VBQ0EsY0FBQTtFQUNBLGdCQUFBO0VBQ0EsaUJBQUE7O0FBSUQsR0FBRyxjQUFlOztFQUdqQixrQkFBQTtFQUNBLGdCQUFBO0VBQ0EsaUJBQUE7OztBQUdELGFBQWM7RUFFYixVQUFBO0VBQ0EsV0FBQTtFQUNBLHlCQUFBO0VBQ0EsbUJBQUE7O0FBRUQ7QUFBaUI7RUFFaEIsU0FBQTs7QUFFRDtBQUFpQjtFQUVoQixRQUFBOztBQUVEOzs7O0FBS0EsR0FBRztFQUVGLDBDQUFBOztBQUVELGtCQUFtQixJQUFHOztFQUdyQixZQUFBOztBQU1ELHNCQUF1QjtFQUNyQixNQUFBOztBQUdGO0VBRUMsZ0JBQUE7RUFDQSxrQkFBQTtFQUNBLGdCQUFBO0VBQ0EsU0FBQTtFQUNBLE9BQUE7O0VBRUEsZUFBQTtFQUNBLFlBQUE7RUFDQSxXQUFBOztBQVZELGFBV0M7RUFDQyxrQkFBQTtFQUNBLFNBQUE7RUFDQSxPQUFBOztBQUdGLGFBQWE7RUFFWixjQUFBOzs7QUFHRDtFQUVDLHlCQUFBOztFQUVBLGtCQUFBO0VBQ0EsV0FBQTtFQUNBLFdBQUE7RUFDQSxZQUFBO0VBQ0EsYUFBQTs7OztBQUlEO0FBQWU7QUFBZTtFQUU3Qix5QkFBQTs7QUFFRCxRQUFTO0VBRVIsWUFBQTs7QUFFRCxRQUFTLEtBQUssS0FBSztFQUVsQiwwQkFBQTtFQUNBLGdCQUFBOzs7QUFHRCxFQUFFO0VBRUQsYUFBQTtFQUNBLFlBQUE7RUFDQSxpQkFBQTtFQUNBLGdCQUFBO0VBQ0EsNkJBQUE7O0FBRUQsRUFBRSxRQUFTO0VBRVYscUJBQUE7RUFDQSxZQUFBOztBQUVELFFBQVE7QUFBa0IsR0FBRyxlQUFlO0VBQzNDLGVBQUE7O0FBRUQsUUFBUTtBQUFrQixHQUFHLGVBQWU7RUFDM0MsZUFBQTtFQUNBLGlCQUFBOztBQUVEO0VBRUMsa0JBQUE7OztBQUdEO0FBQWMsZUFBZSxzQkFBc0IseUJBQXlCLElBQUksOEJBQThCO0VBRTdHLGtCQUFBO0VBQ0EsUUFBQTtFQUNBLFdBQUE7O0VBRUEseUJBQUE7RUFDQSxnQkFBQTtFQUNBLDhCQUFBOztFQUNBLGtCQUFBO0VBQ0EsbUJBQUE7RUFDQSxjQUFBOztBQUVEOztFQUdDLGlCQUFBO0VBQ0EsaUJBQUE7O0FBRUQsZUFBZSxzQkFBc0IseUJBQXlCLElBQUksOEJBQThCO0VBRS9GLFNBQVMsNkJBQVQ7RUFDQSxXQUFBO0VBQ0EsaUJBQUE7Ozs7Ozs7OztBQVNELHNCQUFzQixrQkFBa0IsTUFBTSxJQUFJLFFBQVE7RUFFekQsU0FBUyxzQkFBVDtFQUNBLGNBQUE7OztBQUdELElBQUk7RUFFSCx3QkFBQTs7QUFHRCxvQkFBcUI7RUFDcEIsbUNBQUE7O0FBRUQsMkJBQTRCO0VBQzNCLG1DQUFBOztBQUVELG9CQUFxQjtFQUNwQixtQ0FBQTs7QUFHRDtFQUFhLGNBQUE7O0FBS2IsSUFBSTtFQUVILHlCQUFBOzs7Ozs7Ozs7Ozs7OztBQWdCRDtFQUNDLHFCQUFBO0VBQXVCLHNCQUFBOztFQUN2QixrQkFBQTtFQUFvQixXQUFBO0VBQ3BCLHlCQUFBO0VBQTBCLHNCQUFBO0VBQXVCLHFCQUFBOztBQUVsRDtFQUNDLGFBQUE7O0FBRUQ7RUFDQyxjQUFBO0VBQWdCLGdCQUFBO0VBQWtCLGVBQUE7RUFDbEMseUJBQUE7RUFBMkIsa0JBQUE7O0FBRTVCO0VBQ0MsY0FBQTtFQUFnQixXQUFBO0VBQWEsa0JBQUE7RUFDN0IsdUNBQUE7RUFBeUMsMENBQUE7RUFDekMscUNBQUE7RUFBdUMsa0NBQUE7O0FBRXhDLGtCQUFrQjtBQUFTLGtCQUFrQjtFQUM1QyxjQUFBO0VBQWdCLFdBQUE7RUFBYSxVQUFBO0VBQVksWUFBQTtFQUFjLFVBQUE7RUFBWSxpQkFBQTtFQUNuRSxlQUFBO0VBQWlCLFlBQUE7RUFBYyx5Q0FBQTtFQUEyQyxpQkFBQTtFQUMxRSwyQkFBQTtFQUE2Qiw4QkFBQTtFQUFnQyxzQkFBQTtFQUM3RCw2QkFBQTtFQUNBLDRCQUFBOztBQUVELGtCQUFrQjtFQUNqQixTQUFTLEVBQVQ7RUFDQSxrQkFBQTtFQUNBLHlCQUFBO0VBQTJCLGNBQUE7O0FBRTVCLGtCQUFrQjtFQUNqQixTQUFTLEVBQVQ7RUFDQSxtQkFBQTtFQUNBLHlCQUFBO0VBQTJCLGNBQUE7RUFDM0IsaUJBQUE7O0FBRUQ7RUFDQyxjQUFBO0VBQWdCLFdBQUE7RUFBYSxXQUFBO0VBQzdCLG1CQUFBO0VBQ0Esa0JBQUE7RUFBb0IsTUFBQTtFQUFRLFNBQUE7RUFBVyxXQUFBO0VBQ3ZDLG9DQUFBO0VBQXNDLHVDQUFBO0VBQ3RDLGtDQUFBO0VBQW9DLCtCQUFBOztBQUVyQyxxQkFBcUIsUUFBUyxxQkFBcUI7RUFDbEQsY0FBQTs7QUFFRCxxQkFBcUIsUUFBUyxxQkFBcUI7RUFDbEQsVUFBQTs7QUFHRCxHQUFHLFVBQ0QsSUFBRztFQUNKLHVCQUFBOztBQUZELEdBQUcsVUFDRCxJQUFHLFFBR0osS0FBSTtFQUFpQixvQkFBQSIsImZpbGUiOiJ1bmRlZmluZWQifQ== */

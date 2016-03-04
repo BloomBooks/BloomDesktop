@@ -9,10 +9,10 @@ using Bloom.Edit;
 using Bloom.ToPalaso;
 using Bloom.Workspace;
 using L10NSharp;
-using Palaso.Code;
-using Palaso.CommandLineProcessing;
-using Palaso.IO;
-using Palaso.Progress;
+using SIL.Code;
+using SIL.CommandLineProcessing;
+using SIL.IO;
+using SIL.Progress;
 using PdfDroplet.LayoutMethods;
 using PdfSharp;
 using PdfSharp.Drawing;
@@ -96,16 +96,16 @@ namespace Bloom.Publish
 				// externalIDs dictionary in PdfImportedObjectTable, and eventually a new exception trying
 				// to look up an object ID at line 121 of that class. We catch that exception here and
 				// suggest possible actions the user can take until we find a better solution.
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					LocalizationManager.GetString("PdfMaker.BadPdf", "Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:")
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					LocalizationManager.GetString("PublishTab.PdfMaker.BadPdf", "Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:")
 						+ Environment.NewLine + "- "
-						+ LocalizationManager.GetString("PdfMaker.TryRestart", "Restart your computer and try this again right away")
+						+ LocalizationManager.GetString("PublishTab.PdfMaker.TryRestart", "Restart your computer and try this again right away")
 						+ Environment.NewLine + "- "
 						+
-						LocalizationManager.GetString("PdfMaker.TrySmallerImages",
+						LocalizationManager.GetString("PublishTab.PdfMaker.TrySmallerImages",
 							"Replace large, high-resolution images in your document with lower-resolution ones")
 						+ Environment.NewLine + "- "
-						+ LocalizationManager.GetString("PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory"));
+						+ LocalizationManager.GetString("PublishTab.PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory"));
 
 			}
 
@@ -192,13 +192,19 @@ namespace Bloom.Publish
 					pageSize = PageSize.B4;
 					break;
 				case "Letter":
-					pageSize = PageSize.Letter;//TODO... what's reasonable?
+					pageSize = PageSize.Ledger;
 					break;
 				case "HalfLetter":
 					pageSize = PageSize.Letter;
 					break;
+				case "QuarterLetter":
+					pageSize = PageSize.Statement;	// ?? Wikipedia says HalfLetter is aka Statement
+					break;
 				case "Legal":
 					pageSize = PageSize.Legal;//TODO... what's reasonable?
+					break;
+				case "HalfLegal":
+					pageSize = PageSize.Legal;
 					break;
 				default:
 					throw new ApplicationException("PdfMaker.MakeBooklet() does not contain a map from " + incomingPaperSize + " to a PdfSharp paper size.");
@@ -219,11 +225,17 @@ namespace Bloom.Publish
 						// To keep the GUI simple, we assume that A6 page size for booklets
 						// implies 4up printing on A4 paper.  This feature was requested by
 						// https://jira.sil.org/browse/BL-1059 "A6 booklets should print 4
-						// to an A4 sheet".
+						// to an A4 sheet".  The same is done for QuarterLetter booklets
+						// printing on Letter size sheets.
 						if (incomingPaperSize == "A6")
 						{
 							method = new SideFold4UpBookletLayouter();
 							pageSize = PageSize.A4;
+						}
+						else if (incomingPaperSize == "QuarterLetter")
+						{
+							method = new SideFold4UpBookletLayouter();
+							pageSize = PageSize.Letter;
 						}
 						else
 						{

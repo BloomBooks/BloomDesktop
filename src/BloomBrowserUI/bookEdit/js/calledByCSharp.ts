@@ -2,26 +2,55 @@
 
 class CalledByCSharp {
 
-  handleUndo(): string {
+  handleUndo(): void {
+    // Stuff "in the accordion" (not clear what that means) gets its own undo handling
     var contentWindow = this.getAccordionContent();
-    if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo()) {
-      return 'fail';
+    if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
+          contentWindow.model.undo();
+    } // elsewhere, we try to ask ckEditor to undo, else just the document
+    else{
+        var ckEditorUndo = this.ckEditorUndoCommand();
+        if (ckEditorUndo === null || !ckEditorUndo.exec()) {
+            //sometimes ckEditor isn't active, so it wasn't paying attention, so it can't do the undo. So ask the document to do an undo:
+            (<any>this.getPageContent()).document.execCommand('undo', false, null);
+        }
     }
-    contentWindow.model.undo();
-    return 'success';
   }
+
+ ckEditorUndoCommand(): any {
+     try {
+         return (<any>this.getPageContent()).CKEDITOR.instances.editor1.commands.undo;
+     }
+     catch (e) {
+         return null;
+     }
+ }
 
   canUndo(): string {
     var contentWindow = this.getAccordionContent();
-    if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo())
-      return 'fail'; // we don't want to decide
-    return contentWindow.model.canUndo();
+    if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
+          return contentWindow.model.canUndo();
+    }
+    /* I couldn't find a way to ask ckeditor if it is ready to do an undo.
+      The "canUndo()" is misleading; what it appears to mean is, can this command (undo) be undone?*/
+
+    /*  var ckEditorUndo = this.ckEditorUndoCommand();
+        if (ckEditorUndo === null) return 'fail';
+        return ckEditorUndo.canUndo() ? 'yes' : 'no';
+    */
+
+      return "fail"; //go ask the browser
   }
 
-    pageSelectionChanging() {
-        var contentWindow = this.getPageContent();
-        contentWindow['pageSelectionChanging']();
-    }
+  pageSelectionChanging() {
+    var contentWindow = this.getPageContent();
+    contentWindow['pageSelectionChanging']();
+  }
+
+  disconnectForGarbageCollection() {
+      var contentWindow = this.getPageContent();
+      contentWindow['disconnectForGarbageCollection']();
+  }
 
   loadReaderToolSettings(settings: string, bookFontName: string) {
 
@@ -48,6 +77,30 @@ class CalledByCSharp {
     if (typeof contentWindow['SetCopyrightAndLicense'] === 'function')
       contentWindow['SetCopyrightAndLicense'](contents);
   }
+
+    recordAudio() {
+      var contentWindow = this.getPageContent();
+        if (!contentWindow) return;
+        if (typeof contentWindow['recordAudio'] === 'function') {
+            contentWindow['recordAudio']();
+        }
+    }
+
+    cleanupAudio() {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow) return;
+        if (typeof contentWindow['cleanupAudio'] === 'function') {
+            contentWindow['cleanupAudio']();
+        }
+    }
+
+    setPeakLevel(level:string) {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow) return;
+        if (typeof contentWindow['setPeakLevel'] === 'function') {
+            contentWindow['setPeakLevel'](level);
+        }
+    }
 
   removeSynphonyMarkup() {
 

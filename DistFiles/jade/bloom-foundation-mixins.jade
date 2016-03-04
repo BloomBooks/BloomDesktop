@@ -36,35 +36,36 @@ mixin pageWithJustPageSize
 	.A5Portrait(attributes)
 		block
 
-mixin page(englishLabel)
+mixin page(englishLabel, englishDescription)
 	+pageWithJustPageSize.bloom-page(attributes)
-		+page-label-english(englishLabel)
+		+page-label-english(englishLabel, englishDescription)
 		.marginBox
 			block
 
 //- The most common kind of page template; it is numbered and not required.
-mixin page-choice(englishLabel)
-	+page(englishLabel).numberedPage(attributes, data-page='extra')
+mixin page-choice(englishLabel, englishDescription)
+	+page(englishLabel, englishDescription).numberedPage(attributes, data-page='extra')
 		block
 
-mixin page-layout(englishLabel)
+mixin page-layout(englishLabel, englishDescription)
 	+pageWithJustPageSize.bloom-page(attributes)
-		+page-label-english(englishLabel)
+		+page-label-english(englishLabel, englishDescription)
 		.marginBox.origami-layout-mode
 			block
 
 //- The most common kind of page template; it is numbered and not required.
-mixin page-choice-layout(englishLabel)
-	+page-layout(englishLabel).numberedPage(attributes, data-page='extra')
+mixin page-choice-layout(englishLabel, englishDescription)
+	+page-layout(englishLabel, englishDescription).numberedPage(attributes, data-page='extra')
 		block
 
 //- This is a page that is always in the book and can't be removed, like a cover page.
-mixin page-required(englishLabel)
-	+page(englishLabel)(data-page='required', attributes)
+mixin page-required(englishLabel, englishDescription)
+	+page(englishLabel, englishDescription)(data-page='required', attributes)
 		block
 
-mixin page-label-english(englishLabel)
+mixin page-label-english(englishLabel, englishDescription)
 	.pageLabel(lang='en')=englishLabel
+	.pageDescription(lang='en')=englishDescription
 
 //- Example Usage with placeholder and bubble:
 //-	+field.question
@@ -165,11 +166,15 @@ mixin field-mono-meta(language, dataBookName)
 	+editable(language)(data-book=dataBookName,data-metalanguage=language,attributes)
 		block
 
+mixin  page-splittable-choice-custom(englishLabel, englishDescription)
+	+page-choice(englishLabel, englishDescription).customPage.bloom-combinedPage(attributes)
+			block
+
 //- A splittable page is one that has each element tagged with either 'bloom-leadingElement' or 'bloom-trailingElement'.
 //- The css for the page should then respond to the page having either bloom-combined (when not split) and
 //- either bloom-leadingPage or bloom-trailingPage (when split). See "Split Page Support" in the Bloom Format Documentation.
-mixin  page-splittable-choice(englishLabel)
-	+page-choice(englishLabel)(class='bloom-combinedPage', attributes)
+mixin  page-splittable-choice(englishLabel, englishDescription)
+	+page-choice(englishLabel, englishDescription)(class='bloom-combinedPage', attributes)
 		block
 
 mixin script(javascriptfileName)
@@ -189,10 +194,6 @@ mixin editable(language)
 	.bloom-content1.bloom-editable(lang=language, contenteditable="true", attributes)
 		block
 
-mixin page-Custom()
-	+page-choice-layout('Custom').customPage#5dcd48df-e9ab-4a07-afd4-6a24d0398386
-		.split-pane-component-inner
-			.box-header-off.bloom-translationGroup
 
 //----- utility functions------------------------------
 - function requireZeroArguments(functionName, args) {

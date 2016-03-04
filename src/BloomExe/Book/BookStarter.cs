@@ -7,10 +7,10 @@ using System.Linq;
 using System.Xml;
 using Bloom.Collection;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -87,7 +87,7 @@ namespace Bloom.Book
 				return candidates.First();
 			else
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 					"There should only be a single htm file in each folder ({0}). [not counting configuration.htm]", folder);
 				throw new ApplicationException();
 			}
@@ -293,31 +293,17 @@ namespace Bloom.Book
 				var helper = new XMatterHelper(storage.Dom, xmatterName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation);
+				//TranslationGroupManager.PrepareDataBookTranslationGroups(storage.Dom,languages);
 			}
 		}
 
 		private void RemoveDataDivElement(XmlNode dom, string key)
 		{
-			var dataDiv = GetOrCreateDataDiv(dom);
+			var dataDiv = HtmlDom.GetOrCreateDataDiv(dom);
 			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key)))
 			{
 				dataDiv.RemoveChild(e);
 			}
-		}
-
-		private XmlElement GetOrCreateDataDiv(XmlNode dom)
-		{
-			var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
-			if (dataDiv == null)
-			{
-				XmlDocument doc = dom as XmlDocument;
-				if (doc == null)
-					doc = dom.OwnerDocument;
-				dataDiv = doc.CreateElement("div");
-				dataDiv.SetAttribute("id", "bloomDataDiv");
-				dom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
-			}
-			return dataDiv;
 		}
 
 		private void UpdateEditabilityMetadata(BookStorage storage)
@@ -421,26 +407,18 @@ namespace Bloom.Book
 
 		private string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
-			var storage = _bookStorageFactory(sourcePath);
-			/* we're experimenting with doing away with defaultNameForDerivedBooks
-				var name = storage.Dom.GetMetaValue("defaultNameForDerivedBooks",  "Book");
-				if (name == "My Book") //some older stuff has this
-					name = "Book";
-			*/
-			var name = LocalizationManager.GetString("EditTab.NewBookName", "Book",
-					"Default file and folder name when you make a new book, but haven't give it a title yet.");
-
-			int i = 0;
-			string suffix = "";
-
-			while (Directory.Exists(Path.Combine(parentCollectionPath, name+suffix)))
-			{
-				++i;
-				suffix = i.ToString(CultureInfo.InvariantCulture);
-			}
-			return name+suffix;
+			var name = BookStorage.SanitizeNameForFileSystem(UntitledBookName);
+			return BookStorage.GetUniqueFolderName(parentCollectionPath, name);
 		}
 
+		public static string UntitledBookName
+		{
+			get
+			{
+				return LocalizationManager.GetString("EditTab.NewBookName", "Book",
+					"Default file and folder name when you make a new book, but haven't give it a title yet.");
+			}
+		}
 
 		private static void CopyFolder(string sourcePath, string destinationPath)
 		{
@@ -459,7 +437,12 @@ namespace Bloom.Book
 			}
 			foreach (var dirPath in Directory.GetDirectories(sourcePath))
 			{
-				CopyFolder(dirPath, Path.Combine(destinationPath, Path.GetFileName(dirPath)));
+				//any files found under "template" will not be copied. At the moment (Aug 2015), this is only
+				//thumbnail svgs, but we could move readme's and such in there
+				if (Path.GetFileName(dirPath).ToLowerInvariant() != "template")
+				{
+					CopyFolder(dirPath, Path.Combine(destinationPath, Path.GetFileName(dirPath)));
+				}
 			}
 		}
 	}

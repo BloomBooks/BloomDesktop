@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Amazon.Runtime;
+using Amazon.S3;
 using Autofac.Features.Metadata;
 using Bloom.Book;
 using Bloom.Collection;
@@ -15,11 +16,11 @@ using Bloom.Properties;
 using Bloom.Publish;
 using DesktopAnalytics;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Network;
-using Palaso.Progress;
-using Palaso.UI.WindowsForms.Progress;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Network;
+using SIL.Progress;
+using SIL.Windows.Forms.Progress;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -32,16 +33,16 @@ namespace Bloom.WebLibraryIntegration
 	{
 		private BloomParseClient _parseClient;
 		private BloomS3Client _s3Client;
-		private readonly HtmlThumbNailer _htmlThumbnailer;
+		private readonly BookThumbNailer _thumbnailer;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
-		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
+		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
 		{
 			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
-			_htmlThumbnailer = htmlThumbnailer;
+			_thumbnailer = htmlThumbnailer;
 			_bookDownloadStartingEvent = bookDownloadStartingEvent;
 		}
 
@@ -72,7 +73,7 @@ namespace Bloom.WebLibraryIntegration
 #if DEBUG
 				if (decoded.StartsWith(("BloomLibraryBooks")))
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 					"The book is from bloomlibrary.org, but you are running the DEBUG version of Bloom, which can only use dev.bloomlibrary.org.");
 				}
 				else
@@ -83,7 +84,7 @@ namespace Bloom.WebLibraryIntegration
 #else
 				if (decoded.StartsWith(("BloomLibraryBooks-Sandbox")))
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 						"The book is from the testing version of the bloomlibrary, but you are running the RELEASE version of Bloom. The RELEASE build cannot use the 'dev.bloomlibrary.org' site. If you need to do that for testing purposes, set the windows Environment variable 'BloomSandbox' to 'true'.", decoded);
 				}
 				else
@@ -155,7 +156,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private static void DisplayProblem(Exception e, string message)
 		{
-			var action = new Action(() => Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, message));
+			var action = new Action(() => SIL.Reporting.ErrorReport.NotifyUserOfProblem(e, message));
 				var shellWindow = ShellWindow;
 				if (shellWindow != null)
 					shellWindow.Invoke(action);
@@ -211,7 +212,7 @@ namespace Bloom.WebLibraryIntegration
 				if (_progressDialog.ProgressStateResult != null &&
 					_progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
-						Palaso.Reporting.ErrorReport.ReportFatalException(
+						SIL.Reporting.ErrorReport.ReportFatalException(
 							_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
 					}
 				}
@@ -389,6 +390,25 @@ namespace Bloom.WebLibraryIntegration
 						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
 					return "";
 				}
+				catch (AmazonS3Exception e)
+				{
+					if (e.Message.Contains("The difference between the request time and the current time is too large"))
+					{
+						progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.TimeProblem",
+							"There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this."));
+						if (!UseSandbox)
+							Analytics.Track("UploadBook-Failure-SystemTime");
+					}
+					else
+					{
+						DisplayNetworkUploadProblem(e, progress);
+						if (!UseSandbox)
+							// don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+							Analytics.Track("UploadBook-Failure",
+								new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+					}
+					return "";
+				}
 				catch (AmazonServiceException e)
 				{
 					DisplayNetworkUploadProblem(e, progress);
@@ -514,7 +534,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
 					"For some reason, from the command line, we cannot get these credentials out of Settings.Default. However if you place your command line arguments in the properties of the project in visual studio and run from there, it works. If you are already doing that and get this message, then try running Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
 				return;
 			}
@@ -606,9 +626,9 @@ namespace Bloom.WebLibraryIntegration
 						bookSelection);
 					currentEditableCollectionSelection.SelectCollection(collection);
 				}
-				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _htmlThumbnailer);
+				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _thumbnailer);
 				publishModel.PageLayout = book.GetLayout();
-				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null);
+				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null);
 				string dummy;
 				// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
 				var langDict = book.AllLanguages;
@@ -641,10 +661,11 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
-			MakeThumbnail(book, 70, invokeTarget);
-			MakeThumbnail(book, 256, invokeTarget);
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
-			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
+			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
+			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book, 256, invokeTarget);
+			var uploadPdfPath = UploadPdfPath(bookFolder);
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
 			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
@@ -660,40 +681,11 @@ namespace Bloom.WebLibraryIntegration
 			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath));
 		}
 
-		void MakeThumbnail(Book.Book book, int height, Control invokeTarget)
+		internal static string UploadPdfPath(string bookFolder)
 		{
-			bool done = false;
-			string error = null;
-
-			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
-			{
-				CenterImageUsingTransparentPadding = false,
-				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
-
-				Height=height,
-				Width =-1,
-				FileName = "thumbnail-"+height+".png"
-			};
-
-			book.RebuildThumbNailAsync(options, (info, image) => done = true,
-				(info, ex) =>
-				{
-					done = true;
-					throw ex;
-				});
-			var giveUpTime = DateTime.Now.AddSeconds(15);
-			while (!done && DateTime.Now < giveUpTime)
-			{
-				Thread.Sleep(100);
-				Application.DoEvents();
-				// In the context of bulk upload, when a model dialog is the only window, apparently Application.Idle is never invoked.
-				// So we need a trick to allow the thumbnailer to actually make some progress, since it usually works while idle.
-				this._htmlThumbnailer.Advance(invokeTarget);
-			}
-			if (!done)
-			{
-				throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created. This usually means Bloom is busy making thumbnails for other things. Wait a bit, and try again.", options.FileName));
-			}
+			// Do NOT use ChangeExtension here. If the folder name has a period (e.g.: "Look at the sky. What do you see")
+			// ChangeExtension will strip of the last sentence, which is not what we want (and not what BloomLibrary expects).
+			return Path.Combine(bookFolder, Path.GetFileName(bookFolder) + ".pdf");
 		}
 
 		internal bool IsThisVersionAllowedToUpload()

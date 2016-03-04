@@ -4,15 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using Palaso.CommandLineProcessing;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Network;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Palaso.Xml;
+using SIL.CommandLineProcessing;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Network;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageToolbox;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -30,11 +30,7 @@ namespace Bloom.Book
 			{
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / imgElements.Count());
 				progress.WriteStatus("Copying to " + Path.GetFileName(path));
-				using (var image = PalasoImage.FromFile(path))
-				{
-					image.Metadata = metadata;
-					image.SaveUpdatedMetadataIfItMakesSense();
-				}
+				metadata.Write(path);
 				++completed;
 			}
 
@@ -66,8 +62,9 @@ namespace Bloom.Book
 		public static void UpdateImgMetdataAttributesToMatchImage(string folderPath, XmlElement imgElement, IProgress progress, Metadata metadata)
 		{
 			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
-			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty);
-			var end = fileName.IndexOf('?');
+			var url = HtmlDom.GetImageElementUrl(new ElementProxy(imgElement));
+			var end = url.NotEncoded.IndexOf('?');
+			string fileName = url.NotEncoded;
 			if (end > 0)
 			{
 				fileName = fileName.Substring(0, end);
@@ -81,7 +78,6 @@ namespace Bloom.Book
 				return; // they have bigger problems, which aren't appropriate to deal with here.
 			}
 
-			fileName = HttpUtilityFromMono.UrlDecode(fileName);
 			if (metadata == null)
 			{
 				progress.WriteStatus("Reading metadata from " + fileName);
@@ -95,10 +91,7 @@ namespace Bloom.Book
 					//Debug.Fail(" (Debug only) Image " + path + " is missing");
 					return;
 				}
-				using (var image = PalasoImage.FromFile(path))
-				{
-					metadata = image.Metadata;
-				}
+				metadata = Metadata.FromFile(path);
 			}
 
 			progress.WriteStatus("Writing metadata to HTML for " + fileName);
@@ -119,7 +112,7 @@ namespace Bloom.Book
 			//Update the html attributes which echo some of it, and is used by javascript to overlay displays related to
 			//whether the info is there or missing or whatever.
 
-			var imgElements = dom.SafeSelectNodes("//img");
+			var imgElements = HtmlDom.SelectChildImgAndBackgroundImageElements(dom.RawDom.DocumentElement);
 			int completed = 0;
 			foreach (XmlElement img in imgElements)
 			{

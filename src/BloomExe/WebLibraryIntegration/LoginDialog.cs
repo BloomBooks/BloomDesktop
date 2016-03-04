@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.Publish;
 using L10NSharp;
-using Palaso.Code;
+using SIL.Code;
+using SIL.Reporting;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -84,7 +80,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			get
 			{
-				return L10NSharp.LocalizationManager.GetString("PublishTab.Upload.Login.LoginOrSignupConnectionFailed",
+				return LocalizationManager.GetString("PublishTab.Upload.Login.LoginOrSignupConnectionFailed",
 					"Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.");
 			}
 		}
@@ -107,7 +103,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
+				ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
 				return;
 			}
 			if (userExists)
@@ -132,7 +128,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
+				ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
 			}
 		}
 
@@ -203,6 +199,7 @@ namespace Bloom.WebLibraryIntegration
 			base.OnLoad(e);
 			_emailBox.Text = Settings.Default.WebUserId;
 			_passwordBox.Text = Settings.Default.WebPassword;
+			UpdateDisplay();
 		}
 
 		protected override void OnShown(EventArgs e)

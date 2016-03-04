@@ -1,4 +1,4 @@
-﻿/// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
@@ -7,13 +7,11 @@
 var ShowTopicChooser = function () {
     TopicChooser.showTopicChooser();
 };
-
 var TopicChooser = (function () {
     function TopicChooser() {
     }
     TopicChooser.showTopicChooser = function () {
         var currentTopicKey = $("div[data-book='topic']").parent().find("[lang='en']").text();
-
         TopicChooser.createTopicDialogDiv(currentTopicKey);
         var dlg = $("#topicChooser").dialog({
             autoOpen: true,
@@ -23,77 +21,65 @@ var TopicChooser = (function () {
                 at: 'top',
                 of: $('.bloom-page')
             },
-            buttons: {
-                "OK": {
+            buttons: [
+                {
                     id: "OKButton",
                     text: "OK",
                     width: 100,
                     click: function () {
                         var t = $("ol#topicList li.ui-selected");
-
-                        //set or clear the topic variable in our data-div
+                        //Ask the Model to set or clear the topic variable
                         if (t.length) {
                             var key = t[0].dataset['key'];
-                            var translationGroup = $("div[data-book='topic']").parent();
-                            var englishDiv = translationGroup.find("[lang='en']")[0];
-                            if (!englishDiv) {
-                                englishDiv = translationGroup.find("div[data-book='topic']")[0];
-                                $(englishDiv).clone().attr("lang", "en");
-                                $(englishDiv).appendTo($(translationGroup));
-                            }
-
-                            //for translation convenience, we use "NoTopic" as the key during UI. But when storing, it's cleaner to just save empty string if we don't have a topic
-                            if (key == "NoTopic") {
-                                //this will clear all of them, for everylanguage
-                                $("div[data-book='topic']").text("");
-                            } else {
-                                $(englishDiv).text(key);
-
-                                //NB: when the nationalLanguage1 is also English, this won't do anything, but that's ok because we set the element to the key which is the same as its
-                                //English, at least today. If that changes in the future, we'd need to put the "key" somewhere other than in the text of the English element
-                                localizationManager.asyncGetTextInLang("Topics." + key, key, "N1").done(function (topicInNatLang1) {
-                                    $("div[data-book='topic']").filter(".bloom-contentNational1").text(topicInNatLang1);
-                                });
-                            }
+                            //notice here that we are not changing the topic on the page.
+                            //Doing so here would mean duplicating the logic we have to have
+                            //in c# anyhow. Instead, we are doing more of a react-style
+                            //thing here where the UI raises an event requesting a change
+                            //to the model, and then let that propagate back down to the
+                            //ui (that is, the html on the page).
+                            TopicChooser.fireCSharpEvent('setTopic', key);
                         }
                         $(this).dialog("close");
                     }
                 }
-            }
+            ]
         });
-
         //make a double click on an item close the dialog
         dlg.find("li").dblclick(function () {
             var x = dlg.dialog("option", "buttons");
             x['OK'].apply(dlg);
         });
     };
-
+    TopicChooser.fireCSharpEvent = function (eventName, eventData) {
+        var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
+        document.dispatchEvent(event);
+    };
     TopicChooser.createTopicDialogDiv = function (currentTopicKey) {
         // if it's already there, remove it
         $("#topicChooser").remove();
-
         //Make us a div with an empty list of topics. The caller will have to turn this into an actual dialog box.
-        $("<div id='topicChooser' title='Topics'>" + "<style scoped>" + "           @import '/bloom/bookEdit/TopicChooser/topicChooser.css'" + "   </style>" + "<ol id='topicList'></ol></div>").appendTo($("body"));
-
+        $("<div id='topicChooser' title='Topics'>" +
+            "<style scoped>" +
+            "           @import '/bloom/bookEdit/TopicChooser/topicChooser.css'" +
+            "   </style>" +
+            "<ol id='topicList'></ol></div>").appendTo($("body"));
         //now fill in the topic
         this.populateTopics(currentTopicKey);
     };
-
     TopicChooser.populateTopics = function (currentTopicKey) {
         var iframeChannel = getIframeChannel();
-
         iframeChannel.simpleAjaxGet('/bloom/topics', function (topics) {
+            // Here, topics will be an object with a property for each known topic. Each property is a key:value pair
+            // where the key is the English, and the value is the topic in the UI Language
+            // add all the other topics, selecting the one that matches the currentTopic, if any
             for (var i in Object.keys(topics)) {
                 var key = Object.keys(topics)[i];
                 var extraClass = (key === currentTopicKey) ? " ui-selected " : "";
                 $("ol#topicList").append("<li class='ui-widget-content " + extraClass + " ' data-key='" + key + "'>" + topics[key] + "</li>");
             }
-
             $("#topicList").dblclick(function () {
                 $("#OKButton").click();
             });
-
             //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following,
             //when you select an item, nothing visible happens (from stackoverflow)
             $("#topicList").selectable({

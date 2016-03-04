@@ -25,6 +25,15 @@ function isEmpty(el) {
 function setupLayoutMode() {
     $('.split-pane-component-inner').each(function () {
         var $this = $(this);
+        if ($this.find('.split-pane').length) {
+            // This is an unexpected situation, probably caused by using a broken version of the
+            // origami-based picture-in-middle. split-pane-component-inner's are not meant to be
+            // wrapped around split-panes; they indicate leaves that can be further split, while
+            // split-panes represent an area that has already been split. A reasonable repair is
+            // to remove the split-pane-component-inner, leaving its contents.
+            $this.find('.split-pane').unwrap();
+            return true; // continue
+        }
         if (!$this.find('.bloom-imageContainer, .bloom-translationGroup:not(.box-header-off)').length)
             $this.append(getTypeSelectors());
 

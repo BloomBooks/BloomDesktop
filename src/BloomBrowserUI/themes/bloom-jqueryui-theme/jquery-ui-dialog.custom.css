@@ -1,17 +1,17 @@
-div.ui-dialog, div.ui-dialog-buttonpane { background: #ddd; padding: 0; }
+div.ui-dialog, div.ui-dialog-buttonpane { background: white; padding: 0; }
 div.ui-dialog a { color: #000; outline: 0; }
 div.ui-dialog a.blue-link { color: #2392db; }
 div.ui-dialog textarea, div.ui-dialog input[type="text"] { border: 1px solid #999; }
 div.ui-dialog input[type="text"] { padding: 2px; }
 
 div.ui-dialog div.ui-dialog-titlebar {
-	background: #ddd;
+	background: white;
 	border: 0;
 	color: #000;
 	border-bottom: 1px solid #666;
 }
 
-div.ui-dialog div.ui-dialog-content { background: #ddd; padding: 0; margin: 0; }
+div.ui-dialog div.ui-dialog-content { background: white; padding: 0; margin: 0; }
 
 div.ui-dialog button.ui-dialog-titlebar-close {
 	background: #aaa;

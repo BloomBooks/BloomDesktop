@@ -1,4 +1,4 @@
-include ../../../jade/bloom-foundation-mixins
+include ../../../jade/standardPages.jade
 
 mixin bookVariable-topic(langCode, title)
 	div(data-book='topic', lang=langCode)=title
@@ -33,11 +33,18 @@ html
 			+bookVariable-topic('id', 'Kamus')
 			+bookVariable-topic('th', 'พจนานุกรม')
 			+bookVariable-topic('es', 'Diccionario')
-		.bloom-page.numberedPage.images6.A5Portrait.pictureDictionaryPage(data-page='extra')#7E5B8274-C7BD-4471-B54D-50CF09E4D888
-			+field-classOnChild('picturePageTitle-style').domain
-				label.placeholder The title
-			+repeat(6)
-				.wordAndPicture.bloom-draggable.bloom-resizable
-					+image
-					+field-classOnChild('pictureCaption-style').wordsDiv
-						label.placeholder caption
+		.bloom-page.numberedPage.images6.A5Portrait.pictureDictionaryPage#7E5B8274-C7BD-4471-B54D-50CF09E4D899
+			.pageLabel Picture Dictionary Page
+			.pageDescription A page with six placeholders for a picture and a word
+			.marginBox
+				+field-classOnChild('picturePageTitle-style').domain
+					label.placeholder The title
+				+repeat(6)
+					.wordAndPicture.bloom-draggable.bloom-resizable
+						+image
+						+field-classOnChild('pictureCaption-style').wordsDiv
+							label.placeholder caption
+
+		+standardPage-JustPicture
+		+standardPage-JustText
+		+standardPage-Custom

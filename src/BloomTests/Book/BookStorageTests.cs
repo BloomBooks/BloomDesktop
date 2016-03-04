@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
-using System.Threading;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.TestUtilities;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.TestUtilities;
 
 namespace BloomTests.Book
 {
@@ -53,7 +53,15 @@ namespace BloomTests.Book
 			GetInitialStorageWithCustomHtml("<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
 		}
-
+		[Test]
+		public void Save_HasEmptyParagraphs_RetainsEmptyParagraphs()
+		{
+			var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p>";
+			GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable'>" +
+				pattern +
+				"</div></div></div></body></html>");
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//p", 5);
+		}
 		[Test]
 		public void Save_BookHadEditStyleSheet_NowHasPreviewAndBase()
 		{
@@ -62,6 +70,97 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
 
+
+		[Test]
+		public  void CleanupUnusedImageFiles_BookHadUnusedImages_ImagesRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"<div style='background-image:url(\"keepme.png\")'></div>" +
+					"<img src='keepme2.png'></img>" +
+					"</div></div></body></html>");
+			var keepName = Environment.OSVersion.Platform == PlatformID.Win32NT ? "KeEpMe.pNg" : "keepme.png";
+			var keepNameImg = Environment.OSVersion.Platform == PlatformID.Win32NT ? "KeEpMe2.pNg" : "keepme2.png";
+			var keepTempDiv = MakeSamplePngImage(Path.Combine(_folder.Path, keepName));
+            var keepTempImg = MakeSamplePngImage(Path.Combine(_folder.Path, keepNameImg));
+			var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(keepTempDiv.Path));
+			Assert.IsTrue(File.Exists(keepTempImg.Path));
+			Assert.IsFalse(File.Exists(dropmeTemp.Path));
+		}
+
+		[Test]
+		public void CleanupUnusedImageFiles_ImageHasQuery_ImagesNotRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"<img src='keepme.png?1234'></img>" +
+					"</div></div></body></html>");
+			var keepTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.png"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(keepTemp.Path));
+		}
+		[Test]
+		public void CleanupUnusedImageFiles_ImageOnlyReferencedInDataDiv_ImageNotRemoved()
+		{
+			 var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body>"+
+					"<div id ='bloomDataDiv'><div data-book='coverImage'>keepme.png</div>"+
+					"<div data-book='coverImage'> keepme.jpg </div></div>" +
+					"<div class='bloom-page'><div class='marginBox'>" +
+					"</div></div></body></html>");
+			var keepTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.png"));
+			var keepTempJPG = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.jpg"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(keepTemp.Path));
+			Assert.IsTrue(File.Exists(keepTempJPG.Path));
+		}
+		[Test]
+		public void CleanupUnusedImageFiles_ThumbnailsAndPlaceholdersNotRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"</div></div></body></html>");
+			var p1 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail.png"));
+			var p2 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail88.png"));
+			var p3 = MakeSamplePngImage(Path.Combine(_folder.Path, "placeholder.png"));
+			var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(p1.Path));
+			Assert.IsTrue(File.Exists(p2.Path));
+			Assert.IsTrue(File.Exists(p3.Path));
+			Assert.IsFalse(File.Exists(dropmeTemp.Path));
+		}
+		[Test]
+		public void CleanupUnusedImageFiles_UnusedImageIsLocked_NotException()
+		{
+			var storage = GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='marginBox'></div></body></html>");
+			var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
+			//make it undelete-able
+			using (Image.FromFile(dropmeTemp.Path))
+			{
+				storage.CleanupUnusedImageFiles();
+			}
+		}
+		[Test]
+		public void Save_BookHasMissingImages_NoCrash()
+		{
+			var storage = GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='marginBox'><img src='keepme.png'></img></div></div></body></html>");
+			storage.Save();
+		}
+		private TempFile MakeSamplePngImage(string name)
+		{
+			var temp = TempFile.WithFilename(name);
+			var x = new Bitmap(10, 10);
+			x.Save(temp.Path, ImageFormat.Png);
+			x.Dispose();
+			return temp;
+		}
 		//
 		//        [Test]
 		//        public void Delete_IsDeleted()
@@ -215,7 +314,7 @@ namespace BloomTests.Book
 		public void BringBookUpToDate_ConvertsTagsToJsonWithExpectedDefaults()
 		{
 			var storage = GetInitialStorage();
-			var locator = (FileLocator)storage.GetFileLocator();
+			var locator = (FileLocator) storage.GetFileLocator();
 			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			locator.AddPath(root.CombineForPath("bookLayout"));
 			var folder = storage.FolderPath;
@@ -229,25 +328,19 @@ namespace BloomTests.Book
 					Language2Iso639Code = "en",
 					Language3Iso639Code = "fr"
 				});
-			// We can't use a Moq here (at least with Moq 4.2.1409.1722) for HtmlThumbNailer since
-			// that doesn't call Dispose, causing other tests to fail.
-			// using (var htmlThumbNailer = new Moq.Mock<HtmlThumbNailer>(new object[] { new NavigationIsolator() }).Object)
-			using (var htmlThumbNailer = new HtmlThumbNailer(new NavigationIsolator()))
-			{
-				var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
-					collectionSettings,
-					htmlThumbNailer, new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
+			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Mock<ITemplateFinder>().Object,
+				collectionSettings,
+				new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
 
-				book.BringBookUpToDate(new NullProgress());
+			book.BringBookUpToDate(new NullProgress());
 
-				Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
-				// BL-2163, we are no longer migrating suitableForMakingShells
-				Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.False);
-				Assert.That(storage.MetaData.IsFolio, Is.True);
-				Assert.That(storage.MetaData.IsExperimental, Is.True);
-				Assert.That(storage.MetaData.BookletMakingIsAppropriate, Is.True);
-				Assert.That(storage.MetaData.AllowUploading, Is.True);
-			}
+			Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
+			// BL-2163, we are no longer migrating suitableForMakingShells
+			Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.False);
+			Assert.That(storage.MetaData.IsFolio, Is.True);
+			Assert.That(storage.MetaData.IsExperimental, Is.True);
+			Assert.That(storage.MetaData.BookletMakingIsAppropriate, Is.True);
+			Assert.That(storage.MetaData.AllowUploading, Is.True);
 		}
 
 		[Test]

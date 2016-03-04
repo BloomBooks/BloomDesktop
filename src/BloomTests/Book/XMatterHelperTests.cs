@@ -8,8 +8,8 @@ using System.Xml;
 using Bloom.Book;
 using NUnit.Framework;
 
-using Palaso.IO;
-using Palaso.TestUtilities;
+using SIL.IO;
+using SIL.TestUtilities;
 
 namespace BloomTests.Book
 {

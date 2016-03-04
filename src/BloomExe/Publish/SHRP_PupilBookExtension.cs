@@ -11,8 +11,8 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using System.Linq;
-using Palaso.Progress;
-using Palaso.Xml;
+using SIL.Progress;
+using SIL.Xml;
 
 namespace Bloom.Publish
 {
@@ -58,7 +58,7 @@ namespace Bloom.Publish
 		private void MakeThumbnailsForTeachersGuide(object sender, EventArgs e)
 		{
 
-//			var dlg = new Palaso.UI.WindowsForms.Progress.ProgressDialog();
+//			var dlg = new SIL.Windows.Forms.Progress.ProgressDialog();
 //			dlg.Overview = "Creating thumbnail files...";
 //			BackgroundWorker preprocessWorker = new BackgroundWorker();
 //			preprocessWorker.DoWork += PlaceThumbnailOrders;

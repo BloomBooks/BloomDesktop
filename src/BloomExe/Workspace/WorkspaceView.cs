@@ -21,10 +21,10 @@ using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
-using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ReleaseNotes;
-using Palaso.UI.WindowsForms.SettingProtection;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Windows.Forms.ReleaseNotes;
+using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.Workspace
 {
@@ -38,6 +38,16 @@ namespace Bloom.Workspace
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
 		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
 		private readonly ChorusSystem _chorusSystem;
+		private bool _viewInitialized;
+		private int _originalToolStripPanelWidth;
+		private int _originalToolSpecificPanelHorizPos;
+		private int _originalUiMenuWidth;
+		private int _stage1SpaceSaved;
+		private int _stage2SpaceSaved;
+		private string _originalSettingsText;
+		private string _originalCollectionText;
+		private string _originalHelpText;
+		private string _originalUiLanguageSelection;
 		private LibraryView _collectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
@@ -80,7 +90,7 @@ namespace Bloom.Workspace
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-			_checkForNewVersionMenuItem.Visible = Palaso.PlatformUtilities.Platform.IsWindows;
+			_checkForNewVersionMenuItem.Visible = SIL.PlatformUtilities.Platform.IsWindows;
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
@@ -154,7 +164,7 @@ namespace Bloom.Workspace
 				SelectPage(_collectionView);
 //			}
 
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				// Without this adjustment, we lose some controls on smaller resolutions.
 				AdjustToolPanelLocation(true);
@@ -163,6 +173,12 @@ namespace Bloom.Workspace
 			}
 
 			SetupUILanguageMenu();
+			_viewInitialized = false;
+		}
+
+		private int TabButtonSectionWidth
+		{
+			get { return _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10; }
 		}
 
 		/// <summary>
@@ -171,7 +187,7 @@ namespace Bloom.Workspace
 		/// </summary>
 		void AdjustToolPanelLocation(bool allowNarrowing)
 		{
-			var widthOfTabButtons = _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10;
+			var widthOfTabButtons = TabButtonSectionWidth;
 			var location = _toolSpecificPanel.Location;
 			if (widthOfTabButtons > location.X || allowNarrowing)
 			{
@@ -285,7 +301,9 @@ namespace Bloom.Workspace
 													Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
 													item.Select();
 													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
+													SaveOriginalButtonTexts();
 													_localizationChangedEvent.Raise(null);
+													AdjustButtonTextsForCurrentSize();
 												});
 				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
 				{
@@ -296,7 +314,7 @@ namespace Bloom.Workspace
 			}
 
 			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
-			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.menuToBringUpLocalizationDialog","More..."));
+			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.MoreLanguagesMenuItem", "More..."));
 			menu.Click += new EventHandler((a, b) =>
 			{
 				_localizationManager.ShowLocalizationDialogBox(false);
@@ -380,7 +398,7 @@ namespace Bloom.Workspace
 		{
 			CurrentTabView = view as IBloomTabArea;
 			// Warn the user if we're starting to use too much memory.
-			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
 
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
@@ -392,7 +410,7 @@ namespace Bloom.Workspace
 
 			_panelHoldingToolStrip.BackColor = CurrentTabView.TopBarControl.BackColor = _tabStrip.BackColor;
 
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				BackgroundColorsForLinux(CurrentTabView);
 			}
@@ -443,6 +461,7 @@ namespace Bloom.Workspace
 			_toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
 			Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
 			SelectPage((Control) e.SelectedTab.Tag);
+			AdjustTabStripDisplayForScreenSize();
 		}
 
 		private void _tabStrip_BackColorChanged(object sender, EventArgs e)
@@ -457,7 +476,7 @@ namespace Bloom.Workspace
 			{
 				path = FileLocator.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm");
 			}
-			using(var dlg = new Palaso.UI.WindowsForms.SIL.SILAboutBox(path))
+			using(var dlg = new SIL.Windows.Forms.Miscellaneous.SILAboutBox(path))
 			{
 				dlg.ShowDialog();
 			}
@@ -509,13 +528,17 @@ namespace Bloom.Workspace
 
 		private void WorkspaceView_Resize(object sender, EventArgs e)
 		{
-			//when doing videos at this really low resolution, there's just no room for this
-			_panelHoldingToolStrip.Visible = this.Width > 820;
+			if (this.ParentForm != null && this.ParentForm.WindowState != FormWindowState.Minimized)
+			{
+				AdjustTabStripDisplayForScreenSize();
+			}
 		}
 
 		private void WorkspaceView_Load(object sender, EventArgs e)
 		{
 			CheckDPISettings();
+			_originalToolStripPanelWidth = 0;
+			_viewInitialized = true;
 		}
 
 		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
@@ -537,7 +560,7 @@ namespace Bloom.Workspace
 				var dy = g.DpiY;
 				if(dx!=96 || dy!=96)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 						"The \"text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Possibly books won't lay out correctly. If this is a problem, change the DPI back to 96 (the default on most computers), using the 'Display' Control Panel.", dx);
 				}
 			}
@@ -616,13 +639,248 @@ namespace Bloom.Workspace
 		private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
 		{
 			var path = FileLocator.GetFileDistributedWithApplication(false,"infoPages", "TrainingVideos-en.md");
-			//enhance: change the name of this class in Palaso to just "MarkDownDialog"
+			//enhance: change the name of this class in SIL.Windows.Forms to just "MarkDownDialog"
 			using(var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.Bloom, path))
 			{
 				dlg.Text = LocalizationManager.GetString("HelpMenu.trainingVideos", "Training Videos");
 				dlg.ShowDialog();
 			}
 		}
+
+		#region Responsive Toolbar
+
+		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
+		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
+
+		private int STAGE_1
+		{
+			get
+			{
+				if (_editTab.IsSelected)
+				{
+					return TabButtonSectionWidth + _editingView.TopBarControl.Width + _originalToolStripPanelWidth;
+				}
+				if (_publishTab.IsSelected)
+				{
+					return TabButtonSectionWidth + _publishView.TopBarControl.Width + PUBLISH_PANEL_FUDGE + _originalToolStripPanelWidth;
+				}
+				return TabButtonSectionWidth + _originalToolStripPanelWidth;
+			}
+		}
+		private int STAGE_2
+		{
+			get { return STAGE_1 - _stage1SpaceSaved; }
+		}
+		private int STAGE_3
+		{
+			get { return STAGE_2 - _stage2SpaceSaved;}
+		}
+		private const int PANEL_TOOLSTRIP_SMALLWIDTH = 66;
+		private const int PANEL_VERTICAL_SPACER = 10; // Used to center the shrunk icons vertically in the Tool Strip Panel
+		private const int PUBLISH_PANEL_FUDGE = 21; // Somehow Publish view TopBarControl's width isn't right
+		private const string SPACE = " ";
+
+		private void AdjustTabStripDisplayForScreenSize()
+		{
+			if (!_viewInitialized)
+				return;
+
+			if (_originalToolStripPanelWidth == 0)
+			{
+				SaveOriginalWidthValues();
+				SaveOriginalButtonTexts();
+			}
+
+			switch (_currentShrinkage)
+			{
+				default:
+					// Shrinkage.FullSize
+					if (Width < STAGE_1)
+					{
+						// shrink to stage 1
+						_currentShrinkage = Shrinkage.Stage1;
+						ShrinkToStage1();
+
+						// It is possible that we are jumping from FullScreen to a 'remembered'
+						// smaller screen size, so test for all of them!
+						if (Width < STAGE_2)
+						{
+							_currentShrinkage = Shrinkage.Stage2;
+							ShrinkToStage2();
+
+							if (Width < STAGE_3)
+							{
+								_currentShrinkage = Shrinkage.Stage3;
+								ShrinkToStage3();
+							}
+						}
+					}
+					break;
+				case Shrinkage.Stage1:
+					if (Width >= STAGE_1)
+					{
+						// grow back to unshrunk
+						_currentShrinkage = Shrinkage.FullSize;
+						GrowToFullSize();
+						break;
+					}
+					if (Width < STAGE_2)
+					{
+						// shrink to stage 2
+						_currentShrinkage = Shrinkage.Stage2;
+						ShrinkToStage2();
+					}
+					break;
+				case Shrinkage.Stage2:
+					if (Width >= STAGE_2)
+					{
+						// grow back to stage 1
+						_currentShrinkage = Shrinkage.Stage1;
+						GrowToStage1();
+						break;
+					}
+					if (Width < STAGE_3)
+					{
+						// shrink to stage 3
+						_currentShrinkage = Shrinkage.Stage3;
+						ShrinkToStage3();
+					}
+					break;
+				case Shrinkage.Stage3:
+					if (Width >= STAGE_3)
+					{
+						// grow back to stage 2
+						_currentShrinkage = Shrinkage.Stage2;
+						GrowToStage2();
+					}
+					break;
+			}
+		}
+
+		private void SaveOriginalWidthValues()
+		{
+			_originalToolStripPanelWidth = _panelHoldingToolStrip.Width;
+			_originalToolSpecificPanelHorizPos = _toolSpecificPanel.Location.X;
+			_originalUiMenuWidth = _uiLanguageMenu.Width;
+			_stage1SpaceSaved = 0;
+			_stage2SpaceSaved = 0;
+		}
+
+		private void SaveOriginalButtonTexts()
+		{
+			_originalSettingsText = _settingsButton.Text;
+			_originalCollectionText = _openCreateCollectionButton.Text;
+			_originalHelpText = _helpMenu.Text;
+			_originalUiLanguageSelection = _uiLanguageMenu.Text;
+		}
+
+		private void RestoreOriginalButtonTexts()
+		{
+			_settingsButton.Text = _originalSettingsText;
+			_settingsButton.ToolTipText = null;
+			_openCreateCollectionButton.Text = _originalCollectionText;
+			_helpMenu.Text = _originalHelpText;
+			_uiLanguageMenu.Text = _originalUiLanguageSelection;
+			_uiLanguageMenu.ToolTipText = null;
+		}
+
+		private void ShrinkToStage1()
+		{
+			// Calculate right edge of tabs and move _toolSpecificPanel over to it
+			var rightEdge = _publishTab.Bounds.Right + 5;
+			if (_originalToolSpecificPanelHorizPos <= rightEdge)
+				return;
+			_stage1SpaceSaved = _originalToolSpecificPanelHorizPos - rightEdge;
+			var currentToolPanelVert = _toolSpecificPanel.Location.Y;
+			_toolSpecificPanel.Location = new Point(rightEdge, currentToolPanelVert);
+		}
+
+		private void GrowToFullSize()
+		{
+			// revert _toolSpecificPanel to its original location
+			_toolSpecificPanel.Location = new Point(_originalToolSpecificPanelHorizPos, _toolSpecificPanel.Location.Y);
+			_stage1SpaceSaved = 0;
+		}
+
+		/// <summary>
+		/// Remove the button texts if needed for the current size of the main window.
+		/// </summary>
+		void AdjustButtonTextsForCurrentSize()
+		{
+			if (_currentShrinkage == Shrinkage.Stage2 || _currentShrinkage == Shrinkage.Stage3)
+				RemoveButtonTexts();
+		}
+
+		/// <summary>
+		/// Remove the text from each of the buttons, but set the tooltip text where
+		/// needed.  (Tooltips different than the text have already been set on two of
+		/// these buttons.)
+		/// </summary>
+		private void RemoveButtonTexts()
+		{
+			// Mono requires an explicit tooltip text when setting the text to an empty
+			// string, but .Net seems to remember the previous text string used as a
+			// default tooltip.  It's simplest (and safest) to set it in both cases.
+			_settingsButton.Text = string.Empty;
+			_settingsButton.ToolTipText = _originalSettingsText;
+			_helpMenu.Text = string.Empty;
+			_openCreateCollectionButton.Text = string.Empty;
+			// We can't set this text to the empty string because that makes the menu
+			// icon too small by itself.  But setting it to a space also sets the
+			// (default) tooltip to just a space.
+			_uiLanguageMenu.Text = SPACE;
+			_uiLanguageMenu.ToolTipText = _originalUiLanguageSelection;
+		}
+
+		private void ShrinkToStage2()
+		{
+			// before this we want to change button sizes and icons on the 4 items
+			RemoveButtonTexts();
+			_settingsButton.Image = Resources.settingsbw16x16;
+			_openCreateCollectionButton.Image = Resources.OpenCreateLibrary16x16;
+			_helpMenu.Image = Resources.help16x16;
+			var uiMenuHeight = _uiLanguageMenu.Size.Height;
+			_uiLanguageMenu.Width = uiMenuHeight; // make it a small square (hopefully just show the dropdown arrow?)
+			var panelLocation = _panelHoldingToolStrip.Location;
+			_stage2SpaceSaved = _originalToolStripPanelWidth - PANEL_TOOLSTRIP_SMALLWIDTH;
+			_panelHoldingToolStrip.Width = PANEL_TOOLSTRIP_SMALLWIDTH;
+			_panelHoldingToolStrip.Height -= PANEL_VERTICAL_SPACER;
+			// move the whole panel to the right edge
+			_panelHoldingToolStrip.Location =
+				new Point(panelLocation.X + _stage2SpaceSaved, panelLocation.Y + PANEL_VERTICAL_SPACER);
+			// otherwise as we keep shrinking the right side of the tool specific panel blanks us out
+			_panelHoldingToolStrip.BringToFront();
+		}
+
+		private void GrowToStage1()
+		{
+			_panelHoldingToolStrip.Width = _originalToolStripPanelWidth;
+			_panelHoldingToolStrip.Height += PANEL_VERTICAL_SPACER;
+			_panelHoldingToolStrip.Location =
+				new Point(this.Width - _originalToolStripPanelWidth, _panelHoldingToolStrip.Location.Y - PANEL_VERTICAL_SPACER);
+			// restore original button sizes and icons
+			RestoreOriginalButtonTexts();
+			_settingsButton.Image = Resources.settings24x24;
+			_openCreateCollectionButton.Image = Resources.OpenCreateLibrary24x24;
+			_helpMenu.Image = Resources.help24x24;
+			_uiLanguageMenu.Width = _originalUiMenuWidth;
+			_stage2SpaceSaved = 0;
+		}
+
+		private void ShrinkToStage3()
+		{
+			// Extreme measures for really small screens
+			_panelHoldingToolStrip.Visible = false;
+		}
+
+		private void GrowToStage2()
+		{
+			_panelHoldingToolStrip.Visible = true;
+		}
+
+
+		#endregion
+
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer

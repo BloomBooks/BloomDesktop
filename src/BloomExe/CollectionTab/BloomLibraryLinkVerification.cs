@@ -15,7 +15,7 @@ namespace Bloom.CollectionTab
 		private void Initialize()
 		{
 			// Set localized caption
-			Text = LocalizationManager.GetString("CollectionTab.bloomLibraryLinkVerificationCaption", "Source Collection", "get this clicking on BloomLibrary.org link in source collection");
+			Text = LocalizationManager.GetString("CollectionTab.BloomLibraryLinkVerificationCaption", "Source Collection", "get this clicking on BloomLibrary.org link in source collection");
 
 			// Set localized message
 			var msg = "Note: The Bloom Library contains shell books, whereas ";

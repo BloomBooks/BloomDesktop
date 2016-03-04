@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Bloom.Properties;
-using Palaso.Reporting;
+using SIL.Reporting;
 
 namespace Bloom.Book
 {
@@ -40,12 +40,6 @@ namespace Bloom.Book
 		public override bool CanDelete
 		{
 			get { return _canDelete; }
-		}
-
-
-		public override void GetThumbNailOfBookCoverAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback)
-		{
-			callback(Resources.Error70x70);
 		}
 
 		public HtmlDom GetEditableHtmlDomForPage(IPage page)

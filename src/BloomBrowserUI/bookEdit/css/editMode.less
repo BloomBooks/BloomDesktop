@@ -1,5 +1,7 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
-/*+clearfix {*/
+
+@import "../sourceBubbles/sourceBubbles.less";
+
 BODY
 {
 	background-color: #363333;
@@ -72,115 +74,130 @@ DIV.page.coverColor
 	border: medium outset #000000;
 }
 /*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
+@MediumGray: #C0B9B9;
+@ImageHoverOverlay: #D5D5E4;
+@ImageButtonBorder: #716666;
+@ChangeImageButtonColor: #96668F;
+@PasteImageButtonColor: #0C8597;
+@MetadataButtonColor: #3A7F62;
+
 DIV.readOnlyInTranslationMode
 {
-	border: thin solid #C0B9B9;
+	border: thin solid @MediumGray;
 }
 DIV.hoverUp
 {
-	background-color: #D5D5E4;
+	background-color: @ImageHoverOverlay;
 }
-BUTTON.smallImageButton
-{
-	width: 50%;
-	height: 50%;
-	/*+border-radius:0;*/
-	-moz-border-radius: 0;
-	-webkit-border-radius: 0;
-	-khtml-border-radius: 0;
-	border-radius: 0;
-	border-radius: 0 0 0 0;
-	z-index: 100;
-	background-repeat: no-repeat;
-	border-style: none !important;
-	background-size: contain !important;
-}
-BUTTON.largeImageButton
-{
-	width: 70px;
+.imageButton {
+	width: 87px;
 	height: 52px;
-	/*+border-radius:3px;*/
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	-khtml-border-radius: 3px;
-	border-radius: 3px;
 	z-index: 100;
+    position: absolute;
 	background-repeat: no-repeat;
-	background-position: 12px 4px;
-	border: 2px outset #716666;
+    background-size: contain;
+    background-position: center center;
+    &.smallButtonWidth {
+	    width: 50%;
+        max-width: 87px;
+        border-style: none;
+    }
+    &.smallButtonHeight {
+	    height: 50%;
+        max-height: 52px;
+        border-style: none;
+    }
+    &.changeImageButton {
+	    right: 0;
+	    top: 0;
+	    background-color: @ChangeImageButtonColor;
+	    background-image: url("../img/changeButton.svg");
+    }
+    &.pasteImageButton {
+	    right: 0;
+	    bottom: 0;
+	    background-color: @PasteImageButtonColor;
+	    background-image: url("../img/pasteButton.svg");
+        background-position: right center;
+        &.smallButtonWidth {
+            width: 87px;
+            &.verySmallButtons {
+                width: 98%;
+                background-size: 60%;
+            }
+        }
+    }
+    &.editMetadataButton {
+        left: 0;
+	    top: 0;
+        background-image: url("../img/imageMetaDataButton.svg") !important;
+	    background-color: @MetadataButtonColor;
+        &.imgMetadataProblem {
+            background-color: transparent;
+            background-image: url("../img/imageMissingMetaData.svg") !important;
+            border: none;
+        }
+    }
 }
-BUTTON.pasteImageButton.smallImageButton
-{
-	background-image: url("../img/pasteImageButtonSmall.png") !important;
-	background-position: 67% 28% !important;
+.hoverUp .imageButton {
+   	border: 2px outset @ImageButtonBorder !important;
+	border-radius: 3px !important;
+    &:hover {
+        border: inset @ImageButtonBorder !important;
+    }
+    &.editMetadataButton {
+        background-image: none;
+        background-color: @MetadataButtonColor !important;
+    }
 }
-BUTTON.pasteImageButton.largeImageButton
-{
-	background-image: url("../img/pasteImageButtonLarge.png") !important;
-}
-BUTTON.changeImageButton.smallImageButton
-{
-	background-image: url("../img/changeImageButtonSmall.png");
-	background-position: 63% 27% !important;
-}
-BUTTON.changeImageButton.largeImageButton
-{
-	background-image: url("../img/changeImageButtonLarge.png") !important;
-}
-BUTTON.changeImageButton
-{
-	/*+placement:anchor-top-right 0px 0px;*/
-	position: absolute;
-	right: 0px;
-	top: 0px;
-	/*[disabled]background-position:13px 3px;*/
-	background-color: #96668F;
-}
-BUTTON.pasteImageButton
-{
-	/*+placement:anchor-bottom-right 0px 0px;*/
-	position: absolute;
-	right: 0px;
-	bottom: 0px;
-	/*[disabled]background-position:13px 3px;*/
-	background-color: #0C8597;
-}
-BUTTON.editMetadataButton
-{
-	background-image: url("../img/imageMetaDataButton.svg") !important;
-	background-size: contain;
-	background-position: 5px 0px;
-	/*[disabled]width:70px;*/
-	/*[disabled]height:52px;*/
-	background-repeat: no-repeat !important;
-	/*+placement:anchor-top-left 0px 0px;*/
-	position: absolute;
-	left: 0px;
-	top: 0px;
-	z-index: 1000;
-}
-BUTTON.editMetadataButton.smallImageButton
-{
-	background-position: 0 0 !important;
-}
-BUTTON.editMetadataButton.imgMetadataProblem
-{
-	background-image: url("../img/imageMissingMetaData.svg") !important;
-	background: transparent;
-	background-size: contain;
-	background-position: 5px 0px;
-	border: none;
-}
-.hoverUp BUTTON.editMetadataButton
-{
-	background: #3A7F62;
-	background-size: contain;
-	background-position: 5px 0px;
-	border: 2px outset #716666;
+BUTTON.miniButton {
+    width: 20px;
+    height: 18px;
+    right: 60px;
+    border: none;
+    position: absolute;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: transparent;
+    z-index: 120;
+    &:hover {
+        border: 1px inset @ImageButtonBorder;
+    }
+    &.verySmallButtons {
+        right: 60%;
+    }
+    &.smallButtonHeight {
+        height: 15%;
+    }
+    &.verySmallButtons {
+        width: 30%;
+    }
+    &.cutImageButton {
+	    background-image: url("../img/cut.svg");
+        bottom: 27px;
+        &.disabled {
+    	    background-image: url("../img/cutGrey.svg");
+            pointer-events: none;
+        }
+        &.smallButtonHeight {
+            bottom: 26%;
+        }
+    }
+    &.copyImageButton {
+	    background-image: url("../img/copy.svg");
+        bottom: 6px;
+        &.disabled {
+    	    background-image: url("../img/copyGrey.svg");
+            pointer-events: none;
+        }
+        &.smallButtonHeight {
+            bottom: 4%;
+        }
+    }
 }
 BUTTON.deleteButton
 {
-	/*+placement:anchor-bottom-left;*/
 	position: absolute;
 	left: 0;
 	bottom: 0;
@@ -188,7 +205,6 @@ BUTTON.deleteButton
 	width: 40px;
 	height: 40px;
 	z-index: 100;
-	/*[disabled]background-position:13px 3px;*/
 }
 /*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
 .moveButtonIcon
@@ -239,28 +255,25 @@ TEXTAREA.province
 	height: 33px;
 }
 
+@OverflowColor: red;
+
 .overflow
 {
-	//background-color: rgba(255, 0, 0, .7) !important; //a little transparency is helpful for troublshooting
-	color:red !important;
-	border: solid thin red !important; //NB: can't afford to go "thick" because it throws off the calculation
-	 p:empty:after{ //br:after would be great but it doesn't work
+	color: @OverflowColor !important;
+	border: solid thin @OverflowColor !important; //NB: can't afford to go "thick" because it throws off the calculation
+	p:empty:after{ //br:after would be great but it doesn't work
 		content:'¶';
 	}
 }
 .childOverflowingThis {
-	border-bottom: solid thick red !important;
+	border-bottom: solid thick @OverflowColor !important;
 	// no, that's really confusing when text far from the crime turns red color: red !important;
-}
-.Layout-Problem-Detected{
-	//border: dashed thick green !important;
-
 }
 //we do both in case one is already used and !important
 .Layout-Problem-Detected:before, .Layout-Problem-Detected:after {
 	content: attr(layoutproblem);
 	text-align: left;
-	color: red;
+	color: @OverflowColor;
 	position:absolute;
 	bottom: 0;
 	left: 0;
@@ -279,64 +292,7 @@ TEXTAREA.province
 	margin-right: 8px;
 }
 
-.ui-sourceTextsForBubble {
-	UL {
-		padding: 0;
-		z-index: 1;
-		background-color: transparent;
-		text-align: left;
-		width: 219px;
-		/*+placement:shift -7px 1px;*/
-		position: relative;
-		left: -7px;
-		top: 1px;
-	}
-	UL LI {
-		display: inline-block;
-		padding-right: 11px;
-		padding-left: 7px;
-		font-size: 9pt;
-		margin-right: 11px;
-		height: 31px;
-	}
-	UL LI A {
-		display: block;
-		padding: 5px;
-		outline: none;
-		/*[empty]font-style:;*/
-		text-decoration: none;
-		color: #000000;
-	}
-	UL LI A:hover {
-		text-decoration: underline;
-	}
-	UL LI.active {
-		padding-top: 1px;
-		position: relative;
-		top: 1px;
-		font: bold 11pt sans-serif;
-	}
-	UL LI A.active {
-		font-weight: bold;
-	}
-	.source-text{
-		font-size: 10pt;
-		line-height: 1.5;
-		color: #000000;
 
-		//thai script languages. If using Arial, they need to be 30% bigger or so. With the
-		// popular Angsana New, it would need to be like 100% bigger
-		&:lang(th), &:lang(km),&:lang(kjg), &:lang(prt){
-			font-size: 18pt;
-		}
-	}
-
-}
-.panel-container
-{
-	border: 1px solid #000000;
-	padding: 0 10px;
-}
 DIV.textWholePage UL
 {
 	/*+placement:displace 1px -37px;*/
@@ -373,6 +329,13 @@ DIV.marginBox
 {
 	/*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
 	border: none;
+}
+
+//BL-2512 when overflowing on pages where the text is allowed to run off the screen, the formatButton would not be visible/reachable, so you couldn't shrink the text
+//in response to the overflow situation.
+//So in this situation, we just show it at the top.
+.thisOverflowingParent #formatButton{
+  top: 0;
 }
 
 #formatButton
@@ -501,36 +464,6 @@ SPAN.sentence-too-long
 	border: 5px solid orange !important;
 }
 
-
-/*
-
-	this was all a nice idea, but not a localizable approach
-
-.page-too-many-words .marginBox::after {
-	content: 'Too many words on page';
-	position: absolute;
-	bottom: -35px;
-	background-color: orange;
-}
-
-.book-too-many-words .marginBox::after {
-	content: 'Too many words in book';
-	position: absolute;
-	bottom: -30px;
-		left: 300px;
-	background-color: red;
-	color: white;
-}
-.book-too-many-unique-words .marginBox::after {
-	content: 'Too many unique words in book';
-	position: absolute;
-	bottom: -30px;
-	right: 50px;
-	background-color:  purple
-	color: white;
-}
-*/
-
 .ui-dialog { z-index: 20000; }
 
 SPAN.sight-word
@@ -555,50 +488,58 @@ SPAN.possible-word
  * Layout Mode (origami) switch (from proto.io)
  */
 .onoffswitch {
-  display: inline-block; vertical-align: middle; /* This is the only thing I added custom */
-  position: relative; width: 50px;
-  -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+	display: inline-block; vertical-align: middle; /* This is the only thing I added custom */
+	position: relative; width: 50px;
+	-webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
 }
 .onoffswitch-checkbox {
-  display: none;
+	display: none;
 }
 .onoffswitch-label {
-  display: block; overflow: hidden; cursor: pointer;
-  border: 2px solid #999999; border-radius: 0px;
+	display: block; overflow: hidden; cursor: pointer;
+	border: 2px solid #999999; border-radius: 0px;
 }
 .onoffswitch-inner {
-  display: block; width: 200%; margin-left: -100%;
-  -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
-  -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+	display: block; width: 200%; margin-left: -100%;
+	-moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
+	-o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
 }
 .onoffswitch-inner:before, .onoffswitch-inner:after {
-  display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 10px;
-  font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
-  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
-  border: 2px solid transparent;
-  background-clip: padding-box;
+	display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 10px;
+	font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+	-moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+	border: 2px solid transparent;
+	background-clip: padding-box;
 }
 .onoffswitch-inner:before {
-  content: "";
-  padding-left: 10px;
-  background-color: #D65649; color: #FFFFFF;
+	content: "";
+	padding-left: 10px;
+	background-color: #D65649; color: #FFFFFF;
 }
 .onoffswitch-inner:after {
-  content: "";
-  padding-right: 10px;
-  background-color: #CCCCCC; color: #333333;
-  text-align: right;
+	content: "";
+	padding-right: 10px;
+	background-color: #CCCCCC; color: #333333;
+	text-align: right;
 }
 .onoffswitch-switch {
-  display: block; width: 14px; margin: 0px;
-  background: #000000;
-  position: absolute; top: 0; bottom: 0; right: 36px;
-  -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
-  -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+	display: block; width: 14px; margin: 0px;
+	background: #000000;
+	position: absolute; top: 0; bottom: 0; right: 36px;
+	-moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
+	-o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
-  margin-left: 0;
+	margin-left: 0;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-  right: 0px;
+	right: 0px;
+}
+
+div.cke_float {
+  div.cke_top {
+	padding: 4px !important;
+
+	span.cke_toolgroup { margin: 0 !important; }
+  }
 }

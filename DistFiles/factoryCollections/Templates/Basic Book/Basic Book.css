@@ -39,6 +39,34 @@ STARTLAYOUTS
 			   "SplitAcrossPages"
 			]
 		 }
+	  },
+	  {
+		 "LetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "LetterLandscape":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "HalfLetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "QuarterLetterLandscape":{
+			"Styles":[
+			   "Default"
+			]
+		 }
 	  }
    ]
 }
@@ -372,6 +400,51 @@ in javascript. Search for 'bloom-centerContentVertically'.
   height: 55%;
 }
 .pictureAndWordPage.A4Landscape .bloom-content1 {
+  font-size: 600%;
+}
+.pictureAndWordPage.QuarterLetterPortrait .bloom-translationGroup {
+  height: 35%;
+}
+.pictureAndWordPage.QuarterLetterPortrait .bloom-imageContainer {
+  height: 62%;
+}
+.pictureAndWordPage.QuarterLetterPortrait .bloom-content1 {
+  font-size: 400%;
+}
+.pictureAndWordPage.QuarterLetterLandscape .bloom-translationGroup {
+  height: 42%;
+}
+.pictureAndWordPage.QuarterLetterLandscape .bloom-imageContainer {
+  height: 55%;
+}
+.pictureAndWordPage.QuarterLetterLandscape .bloom-content1 {
+  font-size: 600%;
+}
+.pictureAndWordPage.HalfLetterPortrait .bloom-translationGroup {
+  height: 35%;
+}
+.pictureAndWordPage.HalfLetterPortrait .bloom-imageContainer {
+  height: 62%;
+}
+.pictureAndWordPage.HalfLetterPortrait .bloom-content1 {
+  font-size: 400%;
+}
+.pictureAndWordPage.LetterPortrait .bloom-translationGroup {
+  height: 23%;
+}
+.pictureAndWordPage.LetterPortrait .bloom-imageContainer {
+  height: 74%;
+}
+.pictureAndWordPage.LetterPortrait .bloom-content1 {
+  font-size: 600%;
+}
+.pictureAndWordPage.LetterLandscape .bloom-translationGroup {
+  height: 42%;
+}
+.pictureAndWordPage.LetterLandscape .bloom-imageContainer {
+  height: 55%;
+}
+.pictureAndWordPage.LetterLandscape .bloom-content1 {
   font-size: 600%;
 }
 .pictureAndWordPage .bloom-translationGroup {

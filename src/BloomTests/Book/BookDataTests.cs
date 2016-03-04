@@ -5,11 +5,13 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using L10NSharp;
 using NUnit.Framework;
-using Palaso.Extensions;
-using Palaso.Reporting;
-using Palaso.TestUtilities;
-using Palaso.UI.WindowsForms.ClearShare;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.TestUtilities;
+using SIL.Windows.Forms.ClearShare;
 
 namespace BloomTests.Book
 {
@@ -17,14 +19,33 @@ namespace BloomTests.Book
 	public sealed class BookDataTests
 	{
 		private CollectionSettings _collectionSettings;
+		private LocalizationManager _localizationManager;
+		private LocalizationManager _palasoLocalizationManager;
 
 		[SetUp]
 		public void Setup()
 		{
-			_collectionSettings = new CollectionSettings(new NewCollectionSettings() {
+			_collectionSettings = new CollectionSettings(new NewCollectionSettings()
+			{
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
-				Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+				Language1Iso639Code = "xyz",
+				Language2Iso639Code = "en",
+				Language3Iso639Code = "fr"
+			});
 			ErrorReport.IsOkToInteractWithUser = false;
+
+			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
+			_localizationManager = LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
+				null, "", new string[] {});
+			_palasoLocalizationManager = LocalizationManager.Create("fr", "Palaso","Palaso", "1.0.0", localizationDirectory, "SIL/Palaso",
+				null, "", new string[] { });
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			_localizationManager.Dispose();
+			_palasoLocalizationManager.Dispose();
 		}
 
 		[Test]
@@ -591,6 +612,87 @@ namespace BloomTests.Book
 			Assert.IsNull(data.GetVariableOrNull("topic", "tpi"));
 		}
 
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_VariousTopicScenarios()
+		{
+			TestTopicHandling("Health", "fr", "Santé", "fr", "en", null, "Should use lang1");
+			TestTopicHandling("Health", "fr", "Santé", "x", "fr", null, "Should use lang2");
+			TestTopicHandling("Health", "fr", "Santé", "x", "y", "fr", "Should use lang3");
+			TestTopicHandling("Health", "en", "Health", "x", "y", "z", "Should use English");
+			TestTopicHandling("Health", "en", "Health", "en", "fr", "es", "Should use lang1");
+			TestTopicHandling("NoTopic", "", "", "en", "fr", "es", "'No Topic' should give no @lang and no text");
+			TestTopicHandling("Bogus", "en", "Bogus", "z", "fr", "es", "Unrecognized topic should give topic in English");
+		}
+		private void TestTopicHandling(string topicKey, string expectedLanguage, string expectedTranslation, string lang1, string lang2, string lang3, string description)
+		{
+			_collectionSettings.Language1Iso639Code = lang1;
+			_collectionSettings.Language2Iso639Code = lang2;
+			_collectionSettings.Language3Iso639Code = lang3;
+
+			var bookDom = new HtmlDom(@"<html><body>
+				<div id='bloomDataDiv'>
+						<div data-book='topic' lang='en'>"+topicKey+@"</div>
+				</div>
+				<div id='somePage'>
+                    <div id='test' data-derived='topic'>
+					</div>
+                </div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			try
+			{
+				if (string.IsNullOrEmpty(expectedLanguage))
+				{
+					AssertThatXmlIn.Dom(bookDom.RawDom)
+						.HasSpecifiedNumberOfMatchesForXpath(
+							"//div[@id='test' and @data-derived='topic' and not(@lang) and text()='" + expectedTranslation + "']", 1);
+				}
+				else
+				{
+					AssertThatXmlIn.Dom(bookDom.RawDom)
+						.HasSpecifiedNumberOfMatchesForXpath(
+							"//div[@id='test' and @data-derived='topic' and @lang='" + expectedLanguage + "' and text()='" +
+							expectedTranslation + "']", 1);
+				}
+			}
+			catch (Exception)
+			{
+				Assert.Fail(description);
+			}
+			
+		}
+
+		/// <summary>
+		/// we use English as the one and only "key" language for topics in the datadiv
+		/// </summary>
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_HasMultipleTopicItems_RemovesAllButEnglish()
+		{
+			var bookDom = new HtmlDom(@"<html><body>
+				<div id='bloomDataDiv'>
+						<div data-book='topic' lang='en'>Health</div>
+						<div data-book='topic' lang='fr'>Santé</div>
+				</div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='topic' and @lang='fr']");
+		}
+
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_TopicHasParagraphElement_Removed()
+		{
+			var bookDom = new HtmlDom(@"<html><body>
+				<div id='bloomDataDiv'>
+						<div data-book='topic' lang='en'><p>Health</p></div>
+				</div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-derived='topic' and @lang='en']/p", 0);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='topic' and @lang='en' and text()='Health']", 1);
+		}
 		private bool AndikaNewBasicIsInstalled()
 		{
 			const string fontToCheck = "andika new basic";
@@ -741,49 +843,6 @@ namespace BloomTests.Book
 
 		#endregion
 
-		#region Metadata
-		[Test]
-		public void GetLicenseMetadata_HasCustomLicense_RightsStatementContainsCustom()
-		{
-			string dataDivContent= @"<div lang='en' data-book='licenseNotes'>my custom</div>
-					<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
-			Assert.AreEqual("my custom", GetMetadata(dataDivContent).License.RightsStatement);
-		}
-		[Test]
-		public void GetLicenseMetadata_HasCCLicenseURL_ConvertedToFulCCLicenseObject()
-		{
-			//nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
-			string dataDivContent = @"<div lang='en' data-book='licenseUrl'>http://creativecommons.org/licenses/by-nc-sa/3.0/</div>";
-			var creativeCommonsLicense = (CreativeCommonsLicense) (GetMetadata(dataDivContent).License);
-			Assert.IsTrue(creativeCommonsLicense.AttributionRequired);
-			Assert.IsFalse(creativeCommonsLicense.CommercialUseAllowed);
-			Assert.IsTrue(creativeCommonsLicense.DerivativeRule== CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike);
-		}
-		[Test]
-		public void GetLicenseMetadata_NullLicense_()
-		{
-			//nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
-			string dataDivContent = @"<div lang='en' data-book='licenseDescription'>This could say anthing</div>";
-			Assert.IsTrue(GetMetadata(dataDivContent).License is NullLicense);
-		}
-
-		[Test]
-		public void GetLicenseMetadata_HasSymbolInCopyright_FullCopyrightStatmentAcquired()
-		{
-			string dataDivContent = @"<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
-			Assert.AreEqual("Copyright © 2012, test", GetMetadata(dataDivContent).CopyrightNotice);
-		}
-
-		private static Metadata GetMetadata(string dataDivContent)
-		{
-			var dom = new HtmlDom(@"<html><head><div id='bloomDataDiv'>" + dataDivContent + "</div></head><body></body></html>");
-			var data = new BookData(dom, new CollectionSettings(), null);
-			return data.GetLicenseMetadata();
-		}
-
-		#endregion
-
-		#region Copying data across languages, where it seems the lesser of two evils
 
 //		[Test]
 //		public void SynchronizeDataItemsThroughoutDOM_EnglishTitleButNoVernacular_DoesNotCopyInEnglish()
@@ -924,6 +983,59 @@ namespace BloomTests.Book
 			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacualr Contributions. Only national language fields get this treatment");
 		}
 
-		#endregion
+		//		[Test]
+		//		public void PrepareForEditing_CustomLicenseNotDiscarded()
+		//		{
+		//			SetDom(@"<div id='bloomDataDiv'>
+		//						<div data-book='copyright' lang='*'>
+		//							Copyright © 2015, me
+		//						</div>
+		//						<div data-book='licenseNotes' lang='en'>
+		//							Custom license info
+		//						</div>
+		//					</div>");
+		//			var book = CreateBook();
+		//			var dom = book.RawDom;
+		//			book.PrepareForEditing();
+		//			var copyright = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='marginBox']//div[@data-book='copyright']").InnerText;
+		//			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
+		//			var licenseImage = licenseBlock.SelectSingleNode("img");
+		//			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']").InnerText;
+		//			var licenseDescription = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']").InnerText;
+		//			var licenseNotes = licenseBlock.SelectSingleNode("div[@data-book='licenseNotes']").InnerText;
+		//			// Check that updated dom has the right license contents on the Credits page
+		//			// Check that data-div hasn't been contaminated with non-custom license stuff
+		//			Assert.AreEqual("Copyright © 2015, me", copyright);
+		//			Assert.AreEqual("Custom license info", licenseNotes);
+		//			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='licenseBlock']/div[@data-book='licenseUrl' and text()='']", 1);
+		//			Assert.IsEmpty(licenseDescription);
+		//			Assert.IsEmpty(licenseImage.Attributes["src"].Value);
+		//			Assert.IsNull(licenseImage.Attributes["alt"]);
+		//		}
+
+
+		/// <summary>
+		/// BL-3078 where when xmatter was injected and updated, the text stored in data-book overwrote
+		/// the innerxml of the div, knocking out the <label></label> in there, which lead to losing 
+		/// the side bubbles explaining what the field was for.
+		/// </summary>
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_EditableHasLabelElement_LabelPreserved()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					 <div data-book='insideBackCover' lang='en'><p/></div>
+				</div>
+				<div class='bloom-page'>
+					 <div id='foo' class='bloom-content1 bloom-editable' data-book='insideBackCover' lang='en'>
+						<label>some label</label>
+					</div>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			var foo = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@id='foo']");
+			Assert.That(foo.InnerXml, Contains.Substring("<label>some label</label>"));
+		}
 	}
 }

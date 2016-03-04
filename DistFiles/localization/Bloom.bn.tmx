@@ -33,6 +33,7 @@
       </tuv>
     </tu>
     <tu tuid="Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -109,7 +110,7 @@
         <seg>ভাষাগুলি</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
       <tuv xml:lang="en">
         <seg>Vernacular Language</seg>
       </tuv>
@@ -117,7 +118,7 @@
         <seg>অ-ইংরেজি ভাষা</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
       <tuv xml:lang="en">
         <seg>Remove</seg>
       </tuv>
@@ -258,7 +259,7 @@
         <seg>টেমপ্লেটগুলি</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._editBookButton">
+    <tu tuid="CollectionTab.EditBookButton">
       <tuv xml:lang="en">
         <seg>Edit this book</seg>
       </tuv>
@@ -266,7 +267,7 @@
         <seg>এই বই সম্পাদনা করুন</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+    <tu tuid="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Make Reader Template Bloom Pack...</seg>
       </tuv>
@@ -274,7 +275,7 @@
         <seg>একটি পাঠক টেমপ্লেট Bloom প্যাক তৈরি করুন…</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+    <tu tuid="CollectionTab.BloomLibraryLinkVerificationCaption">
       <note>get this clicking on BloomLibrary.org link in source collection</note>
       <tuv xml:lang="en">
         <seg>Source Collection</seg>
@@ -283,7 +284,7 @@
         <seg>উৎস সংগ্রহ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourceHeading">
+    <tu tuid="CollectionTab.BookSourceHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Books</seg>
       </tuv>
@@ -291,7 +292,8 @@
         <seg>নতুন বইয়ের উৎস</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+    <tu tuid="CollectionTab.MoreLanguagesMenuItem">
+      <note>Brings up the localization dialog</note>
       <tuv xml:lang="en">
         <seg>More...</seg>
       </tuv>
@@ -520,6 +522,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -571,7 +574,7 @@
         <seg>টেমপ্লেট পৃষ্ঠা</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
+    <tu tuid="TemplateBooks.PageLabel.Alphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Alphabet</seg>
@@ -580,7 +583,7 @@
         <seg>বর্ণমালা</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Image</seg>
@@ -589,7 +592,7 @@
         <seg>প্রাথমিক টেক্সট ও ছবি</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Picture</seg>
@@ -598,7 +601,7 @@
         <seg>প্রাথমিক টেক্সট ও ছবি</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
+    <tu tuid="TemplateBooks.PageLabel.Credits Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Credits Page</seg>
@@ -607,7 +610,7 @@
         <seg>স্বীকৃতি পৃষ্ঠা</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+    <tu tuid="TemplateBooks.PageLabel.Custom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Custom</seg>
@@ -616,7 +619,7 @@
         <seg>নিজস্ব</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
+    <tu tuid="TemplateBooks.PageLabel.Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Front Cover</seg>
@@ -625,7 +628,7 @@
         <seg>সামনের কভার</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image On Bottom</seg>
@@ -634,7 +637,7 @@
         <seg>নিচের চিত্র</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Image in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image in Middle</seg>
@@ -643,7 +646,7 @@
         <seg>মাঝের চিত্র</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Inside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Back Cover</seg>
@@ -652,7 +655,7 @@
         <seg>পিছনের কভারের ভিতর দিক</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just Text">
+    <tu tuid="TemplateBooks.PageLabel.Just Text">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just Text</seg>
@@ -661,7 +664,7 @@
         <seg>শুধুমাত্র টেক্সট</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
+    <tu tuid="TemplateBooks.PageLabel.Just a Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just a Picture</seg>
@@ -670,7 +673,7 @@
         <seg>শুধুমাত্র একটি চিত্র</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Outside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Outside Back Cover</seg>
@@ -679,16 +682,16 @@
         <seg>পিছনের কভারের বাইরের দিক</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Picture on Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Picture On Bottom</seg>
+        <seg>Picture on Bottom</seg>
       </tuv>
       <tuv xml:lang="bn">
         <seg>নিচের ছবি</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Picture in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture in Middle</seg>
@@ -697,7 +700,7 @@
         <seg>মাঝের ছবি</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Title Page">
+    <tu tuid="TemplateBooks.PageLabel.Title Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Title Page</seg>
@@ -706,7 +709,7 @@
         <seg>শিরোনাম পৃষ্ঠা</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
@@ -714,7 +717,7 @@
         <seg>অনুলিপি করুন</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
@@ -722,7 +725,7 @@
         <seg>কাটা</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
@@ -730,7 +733,7 @@
         <seg>পৃষ্ঠা মুছুন</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
@@ -738,7 +741,7 @@
         <seg>ডুপ্লিকেট\n পৃষ্ঠা</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
@@ -746,7 +749,7 @@
         <seg>প্রতিলেপন করুন</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
@@ -754,7 +757,7 @@
         <seg>পূর্বাবস্থা</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
@@ -763,7 +766,7 @@
         <seg>দুটি ভাষা</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
@@ -772,7 +775,7 @@
         <seg>একটি ভাষা</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>
@@ -805,7 +808,7 @@
         <seg>পাঠক টেমপ্লেট ব্যবহার করা</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+    <tu tuid="HelpMenu.CheckForNewVersionMenuItem">
       <tuv xml:lang="en">
         <seg>Check For New Version</seg>
       </tuv>
@@ -813,7 +816,7 @@
         <seg>নতুন সংস্করণের জন্য দেখে নিন</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.creditsMenuItem">
+    <tu tuid="HelpMenu.CreditsMenuItem">
       <tuv xml:lang="en">
         <seg>About Bloom</seg>
       </tuv>
@@ -821,7 +824,7 @@
         <seg>Bloom সম্বন্ধে</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -1310,7 +1313,7 @@
         <seg>বন্ধ করুন</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Basic Book">
+    <tu tuid="TemplateBooks.BookName.Basic Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Book</seg>
@@ -1319,7 +1322,7 @@
         <seg>প্রাথমিক বই</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Big Book">
+    <tu tuid="TemplateBooks.BookName.Big Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Big Book</seg>
@@ -1328,7 +1331,7 @@
         <seg>বড় বই</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Decodable Reader">
+    <tu tuid="TemplateBooks.BookName.Decodable Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader</seg>
@@ -1337,7 +1340,7 @@
         <seg>ডিকোডযোগ্য পাঠক</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Leveled Reader">
+    <tu tuid="TemplateBooks.BookName.Leveled Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader</seg>

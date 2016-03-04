@@ -46,11 +46,14 @@ function loadReaderSetupData(jsonData: string): void {
   if (!data.levels) data.levels = [];
   if (data.stages.length === 0) data.stages.push(new ReaderStage('1'));
   if (data.levels.length === 0) data.levels.push(new ReaderLevel('1'));
+  if (!data.useAllowedWords) data.useAllowedWords = 0;
 
   // language tab
   (<HTMLInputElement>document.getElementById('dls_letters')).value = data.letters;
   previousMoreWords = data.moreWords.replace(/ /g, '\n');
   (<HTMLInputElement>document.getElementById('dls_more_words')).value = previousMoreWords;
+  $('input[name="words-or-letters"][value="' + data.useAllowedWords + '"]').prop('checked', true);
+  enableSampleWords();
 
   // stages tab
   displayLetters();
@@ -61,7 +64,8 @@ function loadReaderSetupData(jsonData: string): void {
   for (var i = 0; i < stages.length; i++) {
     if (!stages[i].letters) stages[i].letters = '';
     if (!stages[i].sightWords) stages[i].sightWords = '';
-    tbody.append('<tr class="linked"><td>' + (i + 1) + '</td><td class="book-font">' + stages[i].letters + '</td><td class="book-font">' + stages[i].sightWords + '</td></tr>');
+    if (!stages[i].allowedWordsFile) stages[i].allowedWordsFile = '';
+    tbody.append('<tr class="linked"><td>' + (i + 1) + '</td><td class="book-font">' + stages[i].letters + '</td><td class="book-font">' + stages[i].sightWords + '</td><td class="book-font">' + stages[i].allowedWordsFile + '</td></tr>');
   }
 
   // click event for stage rows
@@ -89,7 +93,8 @@ function loadReaderSetupData(jsonData: string): void {
 function saveClicked(): void {
 
   // update more words
-  if ((<HTMLInputElement>document.getElementById('dls_more_words')).value !== previousMoreWords) {
+  if (((<HTMLInputElement>document.getElementById('dls_more_words')).value !== previousMoreWords)
+    || (parseInt($('input[name="words-or-letters"]:checked').val()) != 0)) {
 
     var accordion = accordionWindow();
 
@@ -137,6 +142,8 @@ function getChangedSettings(): any {
   moreWords = _.filter(moreWords, function(a: string) { return a.trim() !== ''; });
   s.moreWords = moreWords.join(' ');
 
+  s.useAllowedWords = parseInt($('input[name="words-or-letters"]:checked').val());
+
   // stages
   var stages: JQuery = $('#stages-table').find('tbody tr');
   for (var i: number = 0; i < stages.length; i++) {
@@ -144,9 +151,10 @@ function getChangedSettings(): any {
     var row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
     stage.letters = (<HTMLTableCellElement>row.cells[1]).innerHTML;
     stage.sightWords = cleanSpaceDelimitedList((<HTMLTableCellElement>row.cells[2]).innerHTML);
+    stage.allowedWordsFile = (<HTMLTableCellElement>row.cells[3]).innerHTML;
 
     // do not save stage with no data
-    if (stage.letters || stage.sightWords)
+    if (stage.letters || stage.sightWords || stage.allowedWordsFile)
       s.stages.push(stage);
   }
 

@@ -4,21 +4,24 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using System.IO;
+using System.Net;
 using Bloom.ImageProcessing;
 using BloomTemp;
 using L10NSharp;
 using Microsoft.Win32;
-using Palaso.Code;
-using Palaso.IO;
+using SIL.Code;
+using SIL.IO;
 using Bloom.Collection;
-using Palaso.Reporting;
-using Palaso.Extensions;
+using Bloom.Edit;
+using SIL.Reporting;
+using SIL.Extensions;
 using RestSharp.Contrib;
 
 namespace Bloom.web
@@ -36,6 +39,7 @@ namespace Bloom.web
 		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
+		private readonly BookThumbNailer _thumbNailer;
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -45,8 +49,10 @@ namespace Bloom.web
 		internal EnhancedImageServer() : base( new RuntimeImageProcessor(new BookRenamedEvent()))
 		{ }
 
-		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
-		{ }
+		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer): base(cache)
+		{
+			_thumbNailer = thumbNailer;
+		}
 
 		/// <summary>
 		/// This constructor is used for unit testing
@@ -234,13 +240,13 @@ namespace Bloom.web
 			{
 				var usingIP = false;
 
-				if (Palaso.PlatformUtilities.Platform.IsWindows)
+				if (SIL.PlatformUtilities.Platform.IsWindows)
 				{
 					// In order to detect an input processor, we need to execute this on the main UI thread.
 					var frm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 					if (frm != null)
 					{
-						usingIP = Palaso.UI.WindowsForms.Keyboarding.KeyboardController.IsFormUsingInputProcessor(frm);
+						usingIP = SIL.Windows.Forms.Keyboarding.KeyboardController.IsFormUsingInputProcessor(frm);
 					}
 				}
 
@@ -255,15 +261,44 @@ namespace Bloom.web
 				return ProcessLevedRTInfo(info, localPath);
 			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
-				// project on network mapped drive like localhost\C$.
-				// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
-				// which for some reason drops the needed leading slashes.
-				var temp = "//" + localPath;
+				var temp = LocalHostPathToFilePath(localPath);
 				if (File.Exists(temp))
 					localPath = temp;
 			}
 
 			return ProcessContent(info, localPath);
+		}
+
+		/// <summary>
+		/// Adjust the 'localPath' obtained from a request in a platform-dependent way to a path
+		/// that can actually be used to retrieve a file (or test for its existence).
+		/// </summary>
+		/// <param name="localPath"></param>
+		/// <returns></returns>
+		private static string LocalHostPathToFilePath(string localPath)
+		{
+#if __MonoCS__
+			// The JSON format may use a string like this to reference a local path.
+			// Try it without the leading marker.
+			return localPath.Substring(10);
+#else
+			// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
+			// which for some reason drops the leading slashes for a network mapped drive.
+			// network mapped drives don't work if the computer isn't on a network.
+			// So we'll change the localhost\C$ to C: (same for other letters)
+			var pathArray = localPath.Substring(10).ToCharArray();
+			var drive = char.ToUpper(pathArray[0]);
+			if (pathArray[1] == '$' && pathArray[2] == '/' && drive >= 'A' && drive <= 'Z')
+				pathArray[1] = ':';
+			return new String(pathArray);
+#endif
+		}
+
+		private static string AdjustPossibleLocalHostPathToFilePath(string path)
+		{
+			if (!path.StartsWith("localhost/", StringComparison.InvariantCulture))
+				return path;
+			return LocalHostPathToFilePath(path);
 		}
 
 		/// <summary>
@@ -297,7 +332,32 @@ namespace Bloom.web
 					{
 						result.width = img.Width;
 						result.height = img.Height;
-					}
+						switch (img.PixelFormat)
+						{
+							case PixelFormat.Format32bppArgb:
+							case PixelFormat.Format32bppRgb:
+							case PixelFormat.Format32bppPArgb:
+								result.bitDepth = "32";
+								break;
+							case PixelFormat.Format24bppRgb:
+								result.bitDepth = "24";
+								break;
+							case PixelFormat.Format16bppArgb1555:
+							case PixelFormat.Format16bppGrayScale:
+								result.bitDepth = "16";
+								break;
+							case PixelFormat.Format8bppIndexed:
+								result.bitDepth = "8";
+								break;
+							case PixelFormat.Format1bppIndexed:
+								result.bitDepth = "1";
+								break;
+							default:
+								result.bitDepth = "unknown";
+                                break;
+						}
+                    }
+					
 					info.WriteCompleteOutput(Newtonsoft.Json.JsonConvert.SerializeObject(result));
 					return true;
 				}
@@ -333,7 +393,7 @@ namespace Bloom.web
 			Console.Out.WriteLine(errorMsg);
 
 			if (popUpErrors)
-				ErrorReport.NotifyUserOfProblem(errorMsg);
+				Shell.DisplayProblemToUser(errorMsg);
 		}
 
 		private bool ProcessI18N(string localPath, IRequestInfo info)
@@ -374,7 +434,7 @@ namespace Bloom.web
 				var cleanUrl = url.Replace("\\", "/"); // allows jump to file to work
 
 				string browser = string.Empty;
-				if (Palaso.PlatformUtilities.Platform.IsLinux)
+				if (SIL.PlatformUtilities.Platform.IsLinux)
 				{
 					// REVIEW: This opens HTML files in the browser. Do we have any non-html
 					// files that this code needs to open in the browser? Currently they get
@@ -440,6 +500,10 @@ namespace Bloom.web
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
+				case "audioDevices":
+					info.ContentType = "text/json";
+					info.WriteCompleteOutput(AudioRecording.AudioDevicesJson);
+					return true;
 				case "topics":
 					return GetTopicList(info);
 				case "help":
@@ -489,7 +553,7 @@ namespace Bloom.web
 			return true;
 		}
 
-		private static bool ProcessAnyFileContent(IRequestInfo info, string localPath)
+		private bool ProcessAnyFileContent(IRequestInfo info, string localPath)
 		{
 			string modPath = localPath;
 			string path = null;
@@ -509,6 +573,8 @@ namespace Bloom.web
 				// but it has nothing to do with the actual file location.
 				if (localPath.StartsWith("OriginalImages/"))
 					possibleFullImagePath = localPath.Substring(15);
+				if (info.GetQueryString()["generateThumbnaiIfNecessary"] == "true")
+					return FindOrGenerateImage(info, localPath);
 				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
 					path = possibleFullImagePath;
@@ -532,6 +598,87 @@ namespace Bloom.web
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		/// <summary>
+		/// Requests with ?generateThumbnaiIfNecessary=true are potentially recursive in that we may have to navigate
+		/// a browser to the template page in order to construct the thumbnail.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <returns></returns>
+		protected override bool IsRecursiveRequestContext(HttpListenerContext context)
+		{
+			return base.IsRecursiveRequestContext(context) || context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
+		}
+
+		/// <summary>
+		/// Currently used in the Add Page dialog, a path with ?generateThumbnaiIfNecessary=true indicates a thumbnail for
+		/// a template page. Usually we expect that a file at the same path but with extension .svg will
+		/// be found and returned. Failing this we try for one ending in .png. If this still fails we
+		/// start a process to generate an image from the template page content.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns>Should always return true, unless we really can't come up with an image at all.</returns>
+		private bool FindOrGenerateImage(IRequestInfo info, string path)
+		{
+			var localPath = AdjustPossibleLocalHostPathToFilePath(path);
+			var svgpath = Path.ChangeExtension(localPath, "svg");
+			if (File.Exists(svgpath))
+			{
+				ReplyWithFileContentAndType(info, svgpath);
+				return true;
+			}
+			var pngpath = Path.ChangeExtension(localPath, "png");
+			if (File.Exists(pngpath))
+			{
+				ReplyWithFileContentAndType(info, pngpath);
+				return true;
+			}
+			// We don't have an image; try to make one.
+			if (CurrentBook == null)
+				return false; // paranoia
+			var template = CurrentBook.FindTemplateBook();
+			if (template == null)
+				return false; // paranoia
+			var caption = Path.GetFileNameWithoutExtension(path).Trim();
+			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
+			if (isLandscape)
+				caption = caption.Substring(0, caption.Length - "-landscape".Length);
+			int dummy = 0;
+			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
+			var templatePage = template.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
+			if (templatePage == null)
+				templatePage = template.GetPages().FirstOrDefault(); // may get something useful?? or throw??
+
+			Image image = _thumbNailer.GetThumbnailForPage(template, templatePage, isLandscape);
+
+			// The clone here is an attempt to prevent an unexplained exception complaining that the source image for the bitmap is in use elsewhere.
+			using (Bitmap b = new Bitmap((Image)image.Clone()))
+			{
+				try
+				{
+					{
+						Directory.CreateDirectory(Path.GetDirectoryName(pngpath));
+						b.Save(pngpath);
+					}
+					ReplyWithFileContentAndType(info, pngpath);
+				}
+				catch (Exception)
+				{
+					using (var file = new TempFile())
+					{
+						b.Save(file.Path);
+						ReplyWithFileContentAndType(info, file.Path);
+					}
+				}
+			}
+			return true; // We came up with some reply
+		}
+
+		private static void ReplyWithFileContentAndType(IRequestInfo info, string path)
+		{
+			info.ContentType = GetContentType(Path.GetExtension(path));
+			info.ReplyWithFileContent(path);
 		}
 
 		private bool ProcessCssFile(IRequestInfo info, string localPath)
@@ -567,6 +714,13 @@ namespace Bloom.web
 
 			// if still not found, and localPath is an actual file path, use it
 			if (string.IsNullOrEmpty(path) && File.Exists(localPath)) path = localPath;
+
+			if (string.IsNullOrEmpty(path))
+			{
+				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
+				var lastTry = FileLocator.GetFileDistributedWithApplication(true, "BloomBrowserUI", localPath);
+				if(File.Exists(lastTry)) path = lastTry;
+			}
 
 			// return false if the file was not found
 			if (string.IsNullOrEmpty(path)) return false;

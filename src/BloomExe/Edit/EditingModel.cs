@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -15,14 +16,19 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.web;
 using BloomTemp;
 using DesktopAnalytics;
+using Gecko;
 using L10NSharp;
 using Newtonsoft.Json;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Gecko;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageToolbox;
+using SIL.Windows.Forms.Reporting;
+#if __MonoCS__
+#else
+using SIL.Media.Naudio;
+#endif
 
 namespace Bloom.Edit
 {
@@ -48,10 +54,16 @@ namespace Bloom.Edit
 		private bool _inProcessOfDeleting;
 		private string _accordionFolder;
 		private EnhancedImageServer _server;
+		private readonly TemplateInsertionCommand _templateInsertionCommand;
+		private Dictionary<string, IPage> _templatePagesDict;
+		private string _lastPageAdded;
+		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
 		private List<Action> _tasksToDoAfterSaving = new List<Action>();
+
+		readonly List<string> _activeStandardListeners = new List<string>();
 
 		//public event EventHandler UpdatePageList;
 
@@ -82,6 +94,8 @@ namespace Bloom.Edit
 			_collectionSettings = collectionSettings;
 			_sendReceiver = sendReceiver;
 			_server = server;
+			_templatePagesDict = null;
+			_lastPageAdded = String.Empty;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -108,7 +122,6 @@ namespace Bloom.Edit
 					RefreshDisplayOfCurrentPage();
 					//_view.UpdateDisplay();
 					_view.UpdatePageList(false);
-					_view.UpdateTemplateList();
 				}
 				else if (_view != null)
 				{
@@ -119,6 +132,7 @@ namespace Bloom.Edit
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
 			_server.CurrentBook = CurrentBook;
+			_templateInsertionCommand = templateInsertionCommand;
 		}
 
 		private Form _oldActiveForm;
@@ -132,6 +146,7 @@ namespace Bloom.Edit
 			if (details.From == _view)
 			{
 				SaveNow();
+				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.disconnectForGarbageCollection(); }");
 				// This bizarre behavior prevents BL-2313 and related problems.
 				// For some reason I cannot discover, switching tabs when focus is in the Browser window
 				// causes Bloom to get deactivated, which prevents various controls from working.
@@ -141,7 +156,7 @@ namespace Bloom.Edit
 				Application.Idle += ReactivateFormOnIdle;
 				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
 				//won't polute the history
-				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay));
+				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", CurrentBook.TitleBestForUserDisplay));
 
 			}
 		}
@@ -167,6 +182,7 @@ namespace Bloom.Edit
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
 			_server.CurrentBook = CurrentBook;
+			_templatePagesDict = null;
 			if (Visible)
 			{
 				_view.ClearOutDisplay();
@@ -237,7 +253,7 @@ namespace Bloom.Edit
 
 		private void OnRelocatePage(RelocatePageInfo info)
 		{
-			info.Cancel = !_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
+			info.Cancel = !CurrentBook.RelocatePage(info.Page, info.IndexOfPageAfterMove);
 			if(!info.Cancel)
 			{
 				Analytics.Track("Relocate Page");
@@ -247,7 +263,7 @@ namespace Bloom.Edit
 
 		private void OnInsertTemplatePage(object sender, EventArgs e)
 		{
-			_bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
+			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
 			_view.UpdatePageList(false);
 			//_pageSelection.SelectPage(newPage);
 			try
@@ -267,7 +283,7 @@ namespace Bloom.Edit
 
 		public bool HaveCurrentEditableBook
 		{
-			get { return _bookSelection.CurrentSelection != null; }
+			get { return CurrentBook != null; }
 		}
 
 		public Book.Book CurrentBook
@@ -275,28 +291,9 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection; }
 		}
 
-		public bool ShowTranslationPanel
+		public bool CanAddPages
 		{
-			get
-			{
-				return _bookSelection.CurrentSelection.HasSourceTranslations;
-			}
-		}
-
-		public bool ShowTemplatePanel
-		{
-			get
-			{
-//                if (_librarySettings.IsSourceCollection)
-//                {
-//                    return true;
-//                }
-//                else
-//                {
-
-					return _bookSelection.CurrentSelection.UseSourceForTemplatePages;
-//                }
-			}
+			get { return !(CurrentBook.LockedDown || CurrentBook.IsCalendar); }
 		}
 
 		public bool CanDuplicatePage
@@ -340,16 +337,16 @@ namespace Bloom.Edit
 									{
 										IsRtl = _collectionSettings.IsLanguage1Rtl
 //					            		Selected =
-//					            			_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
+//					            			CurrentBook.MultilingualContentLanguage2 ==
 //					            			_librarySettings.Language2Iso639Code
 									};
 					_contentLanguages.Add(item2);
 					if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 					{
 						//NB: this could be the 2nd language (when the national 1 language is not selected)
-//						bool selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
+//						bool selected = CurrentBook.MultilingualContentLanguage2 ==
 //						                _librarySettings.Language3Iso639Code ||
-//						                _bookSelection.CurrentSelection.MultilingualContentLanguage3 ==
+//						                CurrentBook.MultilingualContentLanguage3 ==
 //						                _librarySettings.Language3Iso639Code;
 						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
 														_collectionSettings.GetLanguage3Name("en"))
@@ -360,13 +357,19 @@ namespace Bloom.Edit
 					}
 				}
 				//update the selections
-				_contentLanguages.First(l => l.Iso639Code == _collectionSettings.Language2Iso639Code).Selected =
-					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language2Iso639Code;
+				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _collectionSettings.Language2Iso639Code);
+				if (lang2 != null)
+					lang2.Selected = CurrentBook.MultilingualContentLanguage2 == _collectionSettings.Language2Iso639Code;
+				else
+					Logger.WriteEvent("Found no Lang2 in ContentLanguages; count= " + _contentLanguages.Count);
 
 				//the first language is always selected. This covers the common situation in shellbook collections where
 				//we have English as both the 1st and national language. https://jira.sil.org/browse/BL-756
-				_contentLanguages.First(l => l.Iso639Code == _collectionSettings.Language1Iso639Code).Selected = true;
-					
+				var lang1 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _collectionSettings.Language1Iso639Code);
+				if (lang1 != null)
+					lang1.Selected = true;
+				else
+					Logger.WriteEvent("Hit BL-2780 condition in ContentLanguages; count= " + _contentLanguages.Count);
 
 				var contentLanguageMatchingNatLan2 =
 					_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language3Iso639Code).FirstOrDefault();
@@ -374,8 +377,8 @@ namespace Bloom.Edit
 				if(contentLanguageMatchingNatLan2!=null)
 				{
 					contentLanguageMatchingNatLan2.Selected =
-					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language3Iso639Code
-					|| _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
+					CurrentBook.MultilingualContentLanguage2 ==_collectionSettings.Language3Iso639Code
+					|| CurrentBook.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
 				}
 
 
@@ -483,22 +486,21 @@ namespace Bloom.Edit
 
 			_currentlyDisplayedBook = CurrentBook;
 
-			var errors = _bookSelection.CurrentSelection.GetErrorsIfNotCheckedBefore();
+			var errors = _currentlyDisplayedBook.GetErrorsIfNotCheckedBefore();
 			if (!string.IsNullOrEmpty(errors))
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(errors);
+				ErrorReport.NotifyUserOfProblem(errors);
 				return;
 			}
-			var page = _bookSelection.CurrentSelection.FirstPage;
+
+			// BL-2339: try to choose the last edited page
+			var page = _currentlyDisplayedBook.GetPageByIndex(_currentlyDisplayedBook.UserPrefs.MostRecentPage) ?? _currentlyDisplayedBook.FirstPage;
+
 			if (page != null)
 				_pageSelection.SelectPage(page);
 
 			if (_view != null)
 			{
-				if(ShowTemplatePanel)
-				{
-					_view.UpdateTemplateList();
-				}
 				_view.UpdatePageList(false);
 			}
 		}
@@ -529,6 +531,7 @@ namespace Bloom.Edit
 			{
 				_view.ChangingPages = true;
 				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.pageSelectionChanging();}");
+				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.disconnectForGarbageCollection(); }");
 			}
 		}
 
@@ -537,7 +540,7 @@ namespace Bloom.Edit
 			Logger.WriteMinorEvent("changing page selection");
 			Analytics.Track("Select Page");//not "edit page" because at the moment we don't have the capability of detecting that.
 			// Trace memory usage in case it may be useful
-			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "switched page in edit", true);
+			MemoryManagement.CheckMemory(false, "switched page in edit", true);
 
 			if (_view != null)
 			{
@@ -546,6 +549,16 @@ namespace Bloom.Edit
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
 				}
 				_previouslySelectedPage = _pageSelection.CurrentSelection;
+
+				// BL-2339: remember last edited page
+				if (_previouslySelectedPage != null)
+				{
+					var idx = _previouslySelectedPage.GetIndex();
+					if (idx > -1)
+						_previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
+				}
+
+				_pageSelection.CurrentSelection.Book.BringPageUpToDate(_pageSelection.CurrentSelection.GetDivNodeForThisPage());
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
@@ -561,7 +574,7 @@ namespace Bloom.Edit
 
 		public void SetupServerWithCurrentPageIframeContents()
 		{
-			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			if (_currentPage != null)
 				_currentPage.Dispose();
@@ -573,7 +586,7 @@ namespace Bloom.Edit
 				_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
 			_server.CurrentBook = _currentlyDisplayedBook;
-			_server.AuthorMode = ShowTemplatePanel;
+			_server.AuthorMode = CanAddPages;
 		}
 
 		/// <summary>
@@ -626,7 +639,7 @@ namespace Bloom.Edit
 		/// </summary>
 		internal void DocumentCompleted()
 		{
-			System.Windows.Forms.Application.Idle += OnIdleAfterDocumentSupposedlyCompleted;
+			Application.Idle += OnIdleAfterDocumentSupposedlyCompleted;
 		}
 
 		/// <summary>
@@ -639,7 +652,7 @@ namespace Bloom.Edit
 		/// <param name="e"></param>
 		void OnIdleAfterDocumentSupposedlyCompleted(object sender, EventArgs e)
 		{
-			System.Windows.Forms.Application.Idle -= OnIdleAfterDocumentSupposedlyCompleted;
+			Application.Idle -= OnIdleAfterDocumentSupposedlyCompleted;
 
 			//Work-around for BL-422: https://jira.sil.org/browse/BL-422
 			if (_currentlyDisplayedBook == null)
@@ -649,11 +662,166 @@ namespace Bloom.Edit
 				Logger.WriteEvent("BL-422 happened just now (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted).");
 				return;
 			}
-			// listen for events raised by javascript
-			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
-			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
-			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
-			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
+			AddStandardEventListeners();
+#if __MonoCS__
+#else
+			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
+#endif
+		}
+
+		/// <summary>
+		/// listen for these events raised by javascript.
+		/// </summary>
+		internal void AddStandardEventListeners()
+		{
+			AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
+			AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
+			AddMessageEventListener("setTopic", SetTopic);
+			AddMessageEventListener("finishSavingPage", FinishSavingPage);
+			AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
+			AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
+			AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
+			AddMessageEventListener("startRecordAudio", StartRecordAudio);
+			AddMessageEventListener("endRecordAudio", EndRecordAudio);
+			AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
+		}
+
+		private void AddMessageEventListener(string name, Action<string> listener)
+		{
+			_activeStandardListeners.Add(name);
+			_view.AddMessageEventListener(name, listener);
+		}
+
+		/// <summary>
+		/// stop listening for these events raised by javascript.
+		/// </summary>
+		internal void RemoveStandardEventListeners()
+		{
+			foreach (var name in _activeStandardListeners)
+			{
+				_view.RemoveMessageEventListener(name);
+			}
+			_activeStandardListeners.Clear();
+		}
+
+
+		/// <summary>
+		/// When the user types ctrl+n, we do this:
+		/// 1) If the user is on a page that is xmatter, or a singleton, then we just add the first page in the template
+		/// 2) Else, make a new page of the same type as the current one
+		/// </summary>
+		/// <param name="unused"></param>
+		public void HandleAddNewPageKeystroke(string unused)
+		{
+			if (!HaveCurrentEditableBook || _currentlyDisplayedBook.LockedDown)
+				return;
+
+			try
+			{
+				if (CanDuplicatePage)
+				{
+					if (AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor))
+						return;
+				}
+				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
+				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
+					return;
+			}
+			catch (Exception error)
+			{
+				Logger.WriteEvent(error.Message);
+				//this is not worth bothering the user about
+#if DEBUG
+				throw error;
+#endif
+			}
+			//there was some error figuring out a default page, let's just let the user choose what they want
+			if(this._view!=null)
+				this._view.ShowAddPageDialog();
+		}
+
+		AudioRecording _audioRecording = new AudioRecording();
+		/// <summary>
+		/// Start recording audio for the current segment (whose ID is the argument)
+		/// </summary>
+		/// <param name="segmentId"></param>
+		private void StartRecordAudio(string segmentId)
+		{
+			_audioRecording.Path = Path.Combine(_currentlyDisplayedBook.FolderPath, "audio", segmentId + ".wav");
+			_audioRecording.StartRecording();
+		}
+		/// <summary>
+		/// Stop recording and save the result.
+		/// </summary>
+		/// <param name="dummy"></param>
+		private void EndRecordAudio(string dummy)
+		{
+			_audioRecording.StopRecording();
+		}
+
+		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
+		{
+			if (_templatePagesDict != null)
+				return _templatePagesDict;
+
+			var templateBook = CurrentBook.FindTemplateBook();
+			if (templateBook == null)
+				return null;
+			_templatePagesDict = templateBook.GetTemplatePagesIdDictionary();
+			return _templatePagesDict;
+		}
+
+		private bool AddNewPageBasedOnTemplate(string pageId)
+		{
+			IPage page;
+			var dict = GetTemplatePagesForThisBook();
+			if (dict != null && dict.TryGetValue(pageId, out page))
+			{
+				_templateInsertionCommand.Insert(page as Page);
+				_lastPageAdded = pageId;
+				return true;
+			}
+			return false;
+		}
+
+		private void ChangePageLayoutBasedOnTemplate(string layoutId)
+		{
+			SaveNow();
+
+			IPage page;
+			var dict = GetTemplatePagesForThisBook();
+			if (dict != null && dict.TryGetValue(layoutId, out page))
+			{
+				var templatePage = page.GetDivNodeForThisPage();
+				var book = _pageSelection.CurrentSelection.Book;
+				var pageToChange = PageChangingLayout ?? _pageSelection.CurrentSelection;
+				book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, pageToChange.Id);
+				_lastPageAdded = layoutId; // Review
+				// The Page objects are cached in the page list and may be used if we issue another
+				// change layout command. We must update their lineage so the right "current layout"
+				// will be shown if the user changes the layout of the same page again.
+				var pageChanged = pageToChange as Page;
+				if (pageChanged != null)
+					pageChanged.UpdateLineage(new[] {layoutId});
+				if (pageToChange.Id == _pageSelection.CurrentSelection.Id)
+					_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+				else
+					_pageSelection.SelectPage(pageToChange);
+			}
+		}
+
+		private void ChangeRecordingDevice(string deviceName)
+		{
+			_audioRecording.ChangeRecordingDevice(deviceName);
+		}
+
+		//invoked from TopicChooser.ts
+		private void SetTopic(string englishTopicAsKey)
+		{
+			//make the change in the data div
+			_currentlyDisplayedBook.SetTopic(englishTopicAsKey);
+			//reflect that change on this page
+			RethinkPageAndReloadIt(null);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
@@ -684,7 +852,7 @@ namespace Bloom.Edit
 			// or set the proper classes on those editables to match the current multilingual settings.
 			// So after a change, this eventually gets called. We then ask the page's book to fix things
 			// up so that those boxes are ready to edit
-			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			_currentlyDisplayedBook.UpdateEditableAreasOfElement(_domForCurrentPage);
 
 			//Enhance: Probably we could avoid having two saves, by determing what it is that they entail that is required.
@@ -694,7 +862,7 @@ namespace Bloom.Edit
 
 		private bool CannotSavePage()
 		{
-			var returnVal = _bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null ||
+			var returnVal = _bookSelection == null || CurrentBook == null || _pageSelection.CurrentSelection == null ||
 				_currentlyDisplayedBook == null;
 
 			if (returnVal)
@@ -785,30 +953,6 @@ namespace Bloom.Edit
 			return string.Empty;
 		}
 
-		private void SetModalState(string isModal)
-		{
-			_view.SetModalState(isModal == "true");
-		}
-
-		private static string CleanUpDataForJavascript(string data)
-		{
-			// We need to escape backslashes and quotes so the whole content arrives intact.
-			// Backslash first so the ones we insert for quotes don't get further escaped.
-			// Since the input is going to be processed as a string literal in JavaScript, it also can't contain real newlines.
-			return data.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
-		}
-
-		/// <summary>
-		/// Remove line ends, otherwise javascript chokes during JSON.parse().
-		/// Checks for both Windows and Unix line ends.
-		/// </summary>
-		/// <param name="jsonData"></param>
-		/// <returns></returns>
-		private static string CleanUpJsonDataForJavascript(string jsonData)
-		{
-			jsonData = jsonData.Replace("\r", "").Replace("\n", "");
-			return CleanUpDataForJavascript(jsonData);
-		}
 
 		private string MakeAccordionContent()
 		{
@@ -915,7 +1059,7 @@ namespace Bloom.Edit
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
 					//this old code:
-					//	_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+					//	CurrentBook.SavePage(_domForCurrentPage);
 					//would some times ask book X to save a page from book Y.
 					//We could never reproduce it at will, so this is to help with that...
 					if(this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
@@ -944,6 +1088,7 @@ namespace Bloom.Edit
 						Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
 						throw err;
 					}
+					CheckForBL2364();
 					//OK, looks safe, time to save.
 					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
 				}
@@ -960,16 +1105,39 @@ namespace Bloom.Edit
 			}
 		}
 
+		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
+		// to save is not in the book we're trying to save it into.
+		private void CheckForBL2364()
+		{
+			try
+			{
+				XmlElement divElement =
+					_domForCurrentPage.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
+				string pageDivId = divElement.GetAttribute("id");
+				if (pageDivId != _pageSelection.CurrentSelection.Id)
+					throw new ApplicationException(
+						"Bl-2634: id of _domForCurrentPage is not the same as ID of _pageSelection.CurrentSelection");
+			}
+			catch (Exception err)
+			{
+				if (err.StackTrace.Contains("DeletePage"))
+					Logger.WriteEvent("Trying to save a page while executing DeletePage");
+				Logger.WriteEvent("Error: SaveNow(): a mixup occurred in page IDs");
+				throw;
+			}
+		}
+
 		public void ChangePicture(GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
 		{
 			try
 			{
 				Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
 				var editor = new PageEditingModel();
-				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, img, imageInfo, progress);
+				editor.ChangePicture(CurrentBook.FolderPath, new ElementProxy(img), imageInfo, progress);
 
 				//we have to save so that when asked by the thumbnailer, the book will give the proper image
 				SaveNow();
+				CurrentBook.Storage.CleanupUnusedImageFiles();
 				//but then, we need the non-cleaned version back there
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 
@@ -1005,7 +1173,7 @@ namespace Bloom.Edit
 			if (_view != null)
 			{
 				var pagesStartingWithCurrentSelection =
-					_bookSelection.CurrentSelection.GetPages().SkipWhile(p => p.Id != _pageSelection.CurrentSelection.Id);
+					CurrentBook.GetPages().SkipWhile(p => p.Id != _pageSelection.CurrentSelection.Id);
 				var candidates = pagesStartingWithCurrentSelection.ToArray();
 				for (int i = 0; i < candidates.Length - 1; i++)
 				{
@@ -1014,17 +1182,17 @@ namespace Bloom.Edit
 						return candidates[i];
 					}
 				}
-				var pages = _bookSelection.CurrentSelection.GetPages();
+				var pages = CurrentBook.GetPages();
 				// ReSharper disable PossibleMultipleEnumeration
 				if (!pages.Any())
 				{
 					var exception = new ApplicationException(
 						string.Format(
-							@"_bookSelection.CurrentSelection.GetPages() gave no pages (BL-262 repro).
+							@"CurrentBook.GetPages() gave no pages (BL-262 repro).
 									  Book is '{0}'\r\nErrors known to book=[{1}]\r\n{2}\r\n{3}",
-							_bookSelection.CurrentSelection.TitleBestForUserDisplay,
-							_bookSelection.CurrentSelection.CheckForErrors(),
-							_bookSelection.CurrentSelection.RawDom.OuterXml,
+							CurrentBook.TitleBestForUserDisplay,
+							CurrentBook.CheckForErrors(),
+							CurrentBook.RawDom.OuterXml,
 							new StackTrace().ToString()));
 
 					ErrorReport.NotifyUserOfProblem(exception,
@@ -1073,7 +1241,7 @@ namespace Bloom.Edit
 
 			if (null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == name))
 			{
-				var s = L10NSharp.LocalizationManager.GetString("EditTab.FontMissing",
+				var s = LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
 				return string.Format(s, _collectionSettings.DefaultLanguage1FontName);
@@ -1123,6 +1291,64 @@ namespace Bloom.Edit
 			}
 		}
 	   */
+
+		private string GetPathToCurrentTemplateHtml
+		{
+			get
+			{
+				var templateBook = CurrentBook.FindTemplateBook();
+				if (templateBook == null)
+					return null;
+
+				return templateBook.GetPathHtmlFile();
+			}
+		}
+
+		/// <summary>
+		/// Returns a json string for initializing the AddPage dialog. It gives paths to our current TemplateBook
+		/// and specifies whether the dialog is to be used for adding pages or choosing a different layout.
+		/// </summary>
+		/// <remarks>If forChooseLayout is true, page argument is required.</remarks>
+		public string GetAddPageArguments(bool forChooseLayout, IPage page = null)
+		{
+			dynamic addPageSettings = new ExpandoObject();
+			addPageSettings.lastPageAdded = _lastPageAdded;
+			addPageSettings.orientation = CurrentBook.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
+			dynamic collection1 = new ExpandoObject();
+			collection1.templateBookFolderUrl = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
+			collection1.templateBookUrl = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
+			addPageSettings.collections = new[] {collection1};
+			addPageSettings.chooseLayout = forChooseLayout;
+			if (forChooseLayout)
+				addPageSettings.currentLayout = page.IdOfFirstAncestor;
+			var settingsString = JsonConvert.SerializeObject(addPageSettings);
+			return settingsString;
+		}
+
+		public void ShowAddPageDialog()
+		{
+			_view.ShowAddPageDialog();
+		}
+
+		private const string URL_PREFIX = "/bloom/localhost/";
+
+		private static string MassageUrlForJavascript(string url)
+		{
+			var newUrl = URL_PREFIX + url;
+			return newUrl.Replace(':', '$').Replace('\\', '/');
+		}
+
+		internal void ChangePageLayout(IPage page)
+		{
+			PageChangingLayout = page;
+			_view.ShowChangeLayoutDialog(page);
+		}
+
+		public void ChangeBookLicenseMetaData(Metadata metadata)
+		{
+			CurrentBook.SetMetadata(metadata);
+			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
+		}
 	}
 
 	public class TemplateInsertionCommand

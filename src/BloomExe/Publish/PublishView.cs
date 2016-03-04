@@ -13,9 +13,9 @@ using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
-using Palaso.Reporting;
+using SIL.Reporting;
 using Gecko;
-using Palaso.IO;
+using SIL.IO;
 using System.Drawing;
 
 namespace Bloom.Publish
@@ -29,14 +29,18 @@ namespace Bloom.Publish
 		private BookTransfer _bookTransferrer;
 		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
+		private EpubView _epubPreviewControl;
+		private Browser _epubPreviewBrowser;
+		private NavigationIsolator _isolator;
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login)
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
+			_isolator = isolator;
 
 			InitializeComponent();
 
@@ -52,7 +56,7 @@ namespace Bloom.Publish
 			// BL-625: With mono, if a RadioButton group has its AutoCheck properties set to true, the default RadioButton.OnEnter
 			//         event checks to make sure one of the RadioButtons is checked. If none are checked, the one the mouse pointer
 			//         is over is checked, causing the CheckChanged event to fire.
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 				SetAutoCheck(false);
 
 			//NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
@@ -76,7 +80,7 @@ namespace Bloom.Publish
 //			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				BackgroundColorsForLinux();
 			}
@@ -117,6 +121,7 @@ namespace Bloom.Publish
 			_bookletCoverRadio.AutoCheck = autoCheck;
 			_bookletBodyRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
+			_epubRadio.AutoCheck = autoCheck;
 		}
 
 		private void SetupLocalization()
@@ -125,6 +130,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
+			LocalizeSuperToolTip(_epubRadio, "PublishTab.EpubRadio");
 		}
 
 		private void LocalizeSuperToolTip(Control controlThatHasSuperTooltipAttached, string l10nIdOfControl)
@@ -168,13 +174,18 @@ namespace Bloom.Publish
 			// We choose not to remember the last state this tab might have been in.
 			// Also since we don't know if the pdf is out of date, we assume it is, and don't show the prior pdf.
 			// SetModelFromButtons takes care of both of these things for the model
-			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked = _simpleAllPagesRadio.Checked = _uploadRadio.Checked = false;
+			ClearRadioButtons();
 			SetModelFromButtons();
 			_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
 
 			UpdateDisplay();
 
 			_activated = true;
+		}
+
+		private void ClearRadioButtons()
+		{
+			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked = _simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -231,8 +242,12 @@ namespace Bloom.Publish
 		{
 			if (IsHandleCreated) // May not be when bulk uploading
 			{
+				// Upload and epub display modes simply depend on the appropriate button being checked.
+				// If any of the other buttons is checked, we display the preview IF we have it.
 				if (_uploadRadio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.Upload; 	// We CAN upload even without a preview.
+					_model.DisplayMode = PublishModel.DisplayModes.Upload;
+				else if (_epubRadio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.Epub;
 				else if (_model.PdfGenerationSucceeded)
 					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
 				else
@@ -251,6 +266,7 @@ namespace Bloom.Publish
 		{
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
+			_epubRadio.Visible = Settings.Default.ShowExperimentalCommands;
 
 			_layoutChoices.Text = _model.PageLayout.ToString();
 
@@ -258,6 +274,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
 			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
 			_uploadRadio.Checked = _model.UploadMode;
+			_epubRadio.Checked = _model.EpubMode;
 
 			if (!_model.AllowUpload)
 			{
@@ -267,6 +284,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Enabled = _model.ShowBookletOption;
 			_bookletCoverRadio.Enabled = _model.ShowCoverOption;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
+			_epubRadio.Enabled = true; // Review: any situation where we shouldn't be able to do this?
 
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
@@ -298,7 +316,9 @@ namespace Bloom.Publish
 			var item = (ToolStripMenuItem)sender;
 			_model.PageLayout = ((Layout)item.Tag);
 			_layoutChoices.Text = _model.PageLayout.ToString();
-			ControlsChanged();
+			ClearRadioButtons();
+			UpdateDisplay();
+			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
 		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
@@ -307,8 +327,17 @@ namespace Bloom.Publish
 			{
 				Controls.Remove(_publishControl);
 				_publishControl = null;
-				_pdfViewer.Visible = true;
 			}
+			if (displayMode != PublishModel.DisplayModes.Epub && _epubPreviewControl != null && Controls.Contains(_epubPreviewControl))
+			{
+				Controls.Remove(_epubPreviewControl);
+			}
+			if (displayMode == PublishModel.DisplayModes.Epub)
+				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveEpub", "&Save EPUB...");
+			else
+				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveButton", "&Save PDF...");
+			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.Epub)
+				_pdfViewer.Visible = true;
 			switch (displayMode)
 			{
 				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
@@ -364,6 +393,19 @@ namespace Bloom.Publish
 
 					break;
 				}
+				case PublishModel.DisplayModes.Epub:
+				{
+					// We may reuse this for the process of generating the epub staging files. For now, skip it.
+					_workingIndicator.Visible = false;
+					_printButton.Enabled = false; // don't know how to print an epub
+					_saveButton.Enabled = true; // lets us save it to an actual epub
+					_pdfViewer.Visible = false;
+					Cursor = Cursors.Default;
+
+					SetupEpubControl();
+
+					break;
+				}
 			}
 		}
 
@@ -388,13 +430,57 @@ namespace Bloom.Publish
 			_publishControl.BringToFront();
 		}
 
+		private void SetupEpubControl()
+		{
+			Cursor =Cursors.WaitCursor;
+			_model.StageEpub();
+			if (_epubPreviewControl == null)
+			{
+				_epubPreviewControl = new EpubView();
+				_epubPreviewBrowser = new Browser();
+				_epubPreviewBrowser.Isolator = _isolator;
+				_epubPreviewBrowser.Dock = DockStyle.Fill;
+				_epubPreviewControl.Controls.Add(_epubPreviewBrowser);
+				// Has to be in front of the panel docked top for Fill to work.
+				_epubPreviewBrowser.BringToFront();
+			}
+			_epubPreviewControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
+				_pdfViewer.Width, _pdfViewer.Height);
+			_epubPreviewControl.Dock = _pdfViewer.Dock;
+			_epubPreviewControl.Anchor = _pdfViewer.Anchor;
+			var saveBackGround = _epubPreviewControl.BackColor; // changed to match parent during next statement
+			Controls.Add(_epubPreviewControl);
+			_epubPreviewControl.BackColor = saveBackGround; // keep own color.
+			// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
+			_epubPreviewControl.BringToFront();
+			
+			var root = _model.BookSelection.CurrentSelection.GetFileLocator().LocateDirectoryWithThrow("Readium");
+			var tempFolder = Path.GetDirectoryName(_model.StagingDirectory);
+			// This is kludge. I hope it can be improved. To make a preview we currently need all the Readium
+			// files in a folder that is a parent of the staging folder containing the book content.
+			// This allows us to tell Readium about the book by passing the name of the folder using the ?epub=
+			// URL parameter. It doesn't work to use the original Readium file and make the parameter a full path.
+			// It's possible that there is some variation that would work, e.g., make the param a full file:/// url
+			// to the book folder. It's also possible we could get away with only copying the HTML file itself,
+			// if we modified it to have localhost: links to the JS and CSS. Haven't tried this yet. The current
+			// approach at least works.
+			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
+			
+			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false,"BloomBrowserUI","epub","bloomEpubPreview.htm");
+			var htmlContents = File.ReadAllText(previewHtmlTemplatePath).Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory));
+			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
+			File.WriteAllText(previewHtmlInstancePath, htmlContents);
+			_epubPreviewBrowser.Navigate(previewHtmlInstancePath.ToLocalhost(), false);
+			Cursor = Cursors.Default;
+		}
+
 		private void OnBookletRadioChanged(object sender, EventArgs e)
 		{
 			if (!_activated)
 				return;
 
 			// BL-625: One of the RadioButtons is now checked, so it is safe to re-enable AutoCheck.
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 				SetAutoCheck(true);
 
 			var oldPortion = _model.BookletPortion;
@@ -406,6 +492,10 @@ namespace Bloom.Publish
 				if (_uploadRadio.Checked)
 				{
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
+				}
+				else if (_epubRadio.Checked)
+				{
+					_model.DisplayMode = PublishModel.DisplayModes.Epub;
 				}
 				else if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
 				{
@@ -423,19 +513,6 @@ namespace Bloom.Publish
 				}
 				return;
 			}
-
-			ControlsChanged();
-		}
-
-		private void OnShowCropMarks_CheckedChanged(object sender, EventArgs e)
-		{
-			if (!_activated)
-				return;
-
-			var oldSetting = _model.ShowCropMarks;
-			SetModelFromButtons();
-			if (oldSetting == _model.ShowCropMarks)
-				return; // no changes detected
 
 			ControlsChanged();
 		}
@@ -465,7 +542,8 @@ namespace Bloom.Publish
 			else
 				_model.BookletPortion = PublishModel.BookletPortions.None;
 			_model.UploadMode = _uploadRadio.Checked;
-			_model.ShowCropMarks = _showCropMarks.Checked && !_uploadRadio.Checked; // don't want crop-marks on upload PDF
+			_model.EpubMode = _epubRadio.Checked;
+			_model.ShowCropMarks = false; // obsolete: _showCropMarks.Checked && !_uploadRadio.Checked; // don't want crop-marks on upload PDF
 		}
 
 		internal string PdfPreviewPath { get { return _model.PdfFilePath; } }
@@ -488,6 +566,15 @@ namespace Bloom.Publish
 				SetDisplayMode(PublishModel.DisplayModes.Upload);
 				return;
 			}
+			if (_epubRadio.Checked)
+			{
+				// We aren't going to display it, so don't bother generating it.
+				// Unfortunately, the completion of the generation process is normally responsible for putting us into
+				// the right display mode for what we generated (or failed to), after this routine puts us into the
+				// mode that shows generation is pending. For the epub button case, we want to go straight to the epub preview.
+				SetDisplayMode(PublishModel.DisplayModes.Epub);
+				return;
+			}
 
 			SetDisplayMode(PublishModel.DisplayModes.Working);
 			_makePdfBackgroundWorker.RunWorkerAsync();
@@ -506,7 +593,7 @@ namespace Bloom.Publish
 			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
 				_model.PageLayout.SizeAndOrientation + "-" + (isBooklet() ? "Booklet-" : ""));
 			string printSettingsSampleName = null;
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				printSettingsSampleName = printSettingsSamplePrefix + "Linux-" + LocalizationManager.UILanguageId + ".png";
 				if (!File.Exists(printSettingsSampleName))
@@ -664,6 +751,11 @@ namespace Bloom.Publish
 				Thread.Sleep(100);
 				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
 			}
+		}
+
+		private void _epubButton_Click(object sender, EventArgs e)
+		{
+			_model.SaveAsEpub();
 		}
 	}
 }

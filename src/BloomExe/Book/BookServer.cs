@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Edit;
-using Palaso.Reporting;
+using SIL.Reporting;
 
 namespace Bloom.Book
 {

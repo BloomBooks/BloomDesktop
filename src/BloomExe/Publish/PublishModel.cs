@@ -14,7 +14,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web;
 using DesktopAnalytics;
-using Palaso.IO;
+using SIL.IO;
 using PdfDroplet.LayoutMethods;
 
 namespace Bloom.Publish
@@ -28,12 +28,15 @@ namespace Bloom.Publish
 
 		public string PdfFilePath { get; private set; }
 
+		private EpubMaker _epubMaker;
+
 		public enum DisplayModes
 		{
 			WaitForUserToChooseSomething,
 			Working,
 			ShowPdf,
 			Upload,
+			Epub,
 			Printing,
 			ResumeAfterPrint
 		}
@@ -60,11 +63,11 @@ namespace Bloom.Publish
 		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly BookServer _bookServer;
-		private readonly HtmlThumbNailer _htmlThumbNailer;
+		private readonly BookThumbNailer _thumbNailer;
 		private string _lastDirectory;
 
 		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings,
-			BookServer bookServer, HtmlThumbNailer htmlThumbNailer)
+			BookServer bookServer, BookThumbNailer thumbNailer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
@@ -73,7 +76,7 @@ namespace Bloom.Publish
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
 			_bookServer = bookServer;
-			_htmlThumbNailer = htmlThumbNailer;
+			_thumbNailer = thumbNailer;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 		}
@@ -82,6 +85,9 @@ namespace Bloom.Publish
 
 		// True when we are showing the controls for uploading. (Review: does this belong in the model or view?)
 		public bool UploadMode { get; set; }
+
+		// True when showing an epub preview.
+		public bool EpubMode { get; set; }
 
 		public bool PdfGenerationSucceeded { get; set; }
 
@@ -113,19 +119,19 @@ namespace Bloom.Publish
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
 					// Check memory for the benefit of developers.  The user won't see anything.
-					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
+					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
 						PageLayout.SizeAndOrientation.IsLandScape, LayoutPagesForRightToLeft,
 						layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 					// Warn the user if we're starting to use too much memory.
-					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
+					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
 			}
 			catch (Exception e)
 			{
 				//we can't safely do any ui-related work from this thread, like putting up a dialog
 				doWorkEventArgs.Result = e;
-				//                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
+				//                SIL.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
 				//                SetDisplayMode(DisplayModes.WaitForUserToChooseSomething);
 				//                return;
 			}
@@ -235,6 +241,11 @@ namespace Bloom.Publish
 
 				}
 			}
+			if (_epubMaker != null)
+			{
+				_epubMaker.Dispose();
+				_epubMaker = null;
+			}
 
 			GC.SuppressFinalize(this);
 		}
@@ -258,7 +269,11 @@ namespace Bloom.Publish
 
 		public bool ShowBookletOption
 		{
-			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
+			get
+			{
+				return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
+				       BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.PageSizeName != "Letter";
+			}
 		}
 
 		public bool ShowCoverOption
@@ -267,24 +282,28 @@ namespace Bloom.Publish
 			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
 		}
 
-		public override bool Equals(object obj)
-		{
-			if (obj == null)
-				return false;
-
-			var m = (PublishModel)obj ;
-			return m.BookletPortion == BookletPortion && m.PageLayout == PageLayout;
-		}
 
 		public void Save()
 		{
+			if (EpubMode)
+			{
+				try
+				{
+					SaveAsEpub();
+				}
+				catch (Exception err)
+				{
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the epub.  {0}", err.Message);
+				}
+				return;
+			}
 			try
 			{
 				// Give a slight preference to USB keys, though if they used a different directory last time, we favor that.
 
 				if (string.IsNullOrEmpty(_lastDirectory) || !Directory.Exists(_lastDirectory))
 				{
-					var drives = Palaso.UsbDrive.UsbDriveInfo.GetDrives();
+					var drives = SIL.UsbDrive.UsbDriveInfo.GetDrives();
 					if (drives != null && drives.Count > 0)
 					{
 						_lastDirectory = drives[0].RootDirectory.FullName;
@@ -331,7 +350,7 @@ namespace Bloom.Publish
 			}
 			catch (Exception err)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the PDF.  {0}", err.Message);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the PDF.  {0}", err.Message);
 			}
 		}
 
@@ -357,7 +376,7 @@ namespace Bloom.Publish
 //			System.Diagnostics.Process.Start(tempHtml.Path);
 
 			var htmlFilePath = MakeFinalHtmlForPdfMaker().Key;
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (SIL.PlatformUtilities.Platform.IsWindows)
 				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
 			else
 				Process.Start("xdg-open", '"' + htmlFilePath + '"');
@@ -429,12 +448,11 @@ namespace Bloom.Publish
 				BackgroundColor = Color.White,
 				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None,
 				CenterImageUsingTransparentPadding = false,
-				//210x147 is about what the TG's expect, but we're going to tripple that in case it makes for better printing
-				Height = 630,
-				Width = 441,
+				Height = height,
+				Width = width
 			};
 			dom.UseOriginalImages = true; // apparently these thumbnails can be big...anyway we want printable images.
-			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError);
+			_thumbNailer.HtmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError);
 		}
 
 		public IEnumerable<ToolStripItem> GetExtensionMenuItems()
@@ -473,5 +491,41 @@ namespace Bloom.Publish
 ////	            yield return pageDom;
 ////	        }
 //	    }
+
+		internal void StageEpub()
+		{
+			if (_epubMaker != null)
+			{
+				//it has state that we don't want to reuse, so make a new one
+				_epubMaker.Dispose();
+				_epubMaker = null;
+			}
+			_epubMaker = new EpubMaker(_thumbNailer);
+			_epubMaker.Book = BookSelection.CurrentSelection;
+			_epubMaker.Unpaginated = true; // Enhance: UI?
+			_epubMaker.StageEpub();
+		}
+
+		internal string StagingDirectory { get { return _epubMaker.StagingDirectory; } }
+
+		internal void SaveAsEpub()
+		{
+			using (var dlg = new SaveFileDialog())
+			{
+				if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
+					dlg.InitialDirectory = _lastDirectory;
+
+				string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(BookSelection.CurrentSelection.FolderPath),
+													 _collectionSettings.GetLanguage1Name("en"));
+				dlg.FileName = suggestedName;
+				dlg.Filter = "EPUB|*.epub";
+				if (DialogResult.OK == dlg.ShowDialog())
+				{
+					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
+					_epubMaker.FinishEpub(dlg.FileName);
+					Analytics.Track("Save Epub");
+				}
+			}
+		}
 	}
 }

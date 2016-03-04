@@ -185,6 +185,8 @@ function AddEditKeyHandlers(container) {
         e.preventDefault();
         document.execCommand("justifycenter", false, null);
     });
+
+    //Note, CTRL+N is also caught, but up on the Shell where it is turned into an event, so that it can be caught even when the focus isn't on the browser
 }
 
 // Add little language tags
@@ -209,7 +211,7 @@ function AddLanguageTags(container) {
         if (isTranslationMode && $this.hasClass('bloom-readOnlyInTranslationMode')) {
             return;
         }
-        if (!isTranslationMode && $this.hasClass('bloom-readOnlyInEditMode')) {
+        if (!isTranslationMode && $this.hasClass('bloom-readOnlyInAuthorMode')) {
             return;
         }
 
@@ -230,23 +232,6 @@ function AddLanguageTags(container) {
         // Put whatToSay into data attribute for pickup by the css
         $this.attr('data-languageTipContent', whatToSay);
     });
-}
-
-// This function is called directly from EditingView.OnShowBookMetadataEditor()
-function SetCopyrightAndLicense(data) {
-    //nb: for textarea, we need val(). But for div, it would be text()
-    $("DIV[data-book='copyright']").text(DecodeHtml(data.copyright));
-    $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
-    $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
-    $("DIV[data-book='licenseNotes']").text(DecodeHtml(data.licenseNotes));
-    var licenseImageValue = data.licenseImage + "?" + new Date().getTime(); //the time thing makes the browser reload it even if it's the same name
-    if (data.licenseImage.length == 0) {
-        licenseImageValue = ""; //don't wan the date on there
-        $("IMG[data-book='licenseImage']").attr('alt', '');
-    }
-
-    $("IMG[data-book='licenseImage']").attr("src", licenseImageValue);
-    SetBookCopyrightAndLicenseButtonVisibility($('body'));
 }
 
 function SetBookCopyrightAndLicenseButtonVisibility(container) {
@@ -389,8 +374,6 @@ function SetupElements(container) {
     $(container).find(".bloom-centerVertically").resize(function () { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
         $(this).CenterVerticallyInParent();
     });
-
-    bloomHintBubbles.addHintBubbles(container);
 
     //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
     //So one of our foundational stylesheets looks for @data-placeholder and simulates the
@@ -548,10 +531,15 @@ function SetupElements(container) {
     if ($(container).find(".bloom-preventSourceBubbles").length == 0) {
         $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function() {
             if ($(this).find("textarea, div").length > 1) {
-                bloomSourceBubbles.MakeSourceTextDivForGroup(this);
+                bloomSourceBubbles.ProduceSourceBubbles(this);
             }
         });
     }
+
+    //NB: this should be after the ProduceSourceBubbles(), so that it can remove labels that
+    //would otherwise be underfoot when we call this. This would happen with the Book Title
+    //when there are source languages to show
+    bloomHintBubbles.addHintBubbles(container);
 
     // Add overflow event handlers so that when a div is overfull,
     // we add the overflow class and it gets a red background or something
@@ -572,10 +560,7 @@ function SetupElements(container) {
         }
     });
 
-    getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
-        if (response === 'Yes')
-            $(container).find('.bloom-editable').longPress();
-    });
+    loadLongpressInstructions($(container).find('.bloom-editable'));
 
     //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed,
     //a blank line is shown and the letter pressed shows up after that.
@@ -649,6 +634,74 @@ $(document).ready(function() {
     SetupElements($('body'));
     OneTimeSetup();
 
+    // configure ckeditor
+    if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
+    CKEDITOR.disableAutoInline = true;
+
+    // Map from ckeditor id strings to the div the ckeditor is wrapping.
+    var mapCkeditDiv = new Object();
+
+    // attach ckeditor to the contenteditable="true" class="bloom-content1"
+    // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
+    // but skip any element with class="bloom-userCannotModifyStyles"
+    $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"],.bloom-contentNational1[contenteditable="true"]').each(function() {
+        if ($(this).find('.bloom-imageContainer').length) {
+            // We would *like* to wire up ckeditor, but would need to get it to stop interfering 
+            // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
+            // Currently this is only possible in the grade 4 Uganda books by SIL-LEAD.
+            // So for now, we just going to say that you don't get ckeditor inside fields that have an embedded image.
+            return;
+        }
+        if ($(this).hasClass('bloom-userCannotModifyStyles'))
+            return; // equivalent to 'continue'
+
+        if ($(this).css('cursor') == 'not-allowed')
+            return;
+
+        var ckedit = CKEDITOR.inline(this);
+
+        // Record the div of the edit box for use later in positioning the format bar.
+        mapCkeditDiv[ckedit.id] = this;
+
+       // show or hide the toolbar when the text selection changes
+        ckedit.on('selectionCheck', function(evt) {
+            var editor = evt['editor'];
+            // Length of selected text is more reliable than comparing
+            // endpoints of the first range.  Mozilla can return multiple
+            // ranges with the first one being empty.
+            var selection = editor.getSelection();
+            var textSelected = selection.getSelectedText();
+            var show = (textSelected.length > 0);
+            var bar = $('body').find('.' + editor.id);
+            show ? bar.show() : bar.hide();
+
+            // Move the format bar on the screen if needed.
+            // (Note that offsets are not defined if it's not visible.)
+            if (show) {
+                var barTop = bar.offset().top;
+                var div = mapCkeditDiv[editor.id];
+                var rect = div.getBoundingClientRect();
+                var parent = bar.scrollParent();
+                var scrollTop = (parent) ? parent.scrollTop() : 0;
+                var boxTop = rect.top + scrollTop;
+                if (boxTop - barTop < 5) {
+                    var barLeft = bar.offset().left;
+                    var barHeight = bar.height();
+                    bar.offset({ top: boxTop - barHeight, left: barLeft });
+                }
+            }
+        });
+
+        // hide the toolbar when ckeditor starts
+        ckedit.on('instanceReady', function(evt) {
+            var editor = evt['editor'];
+            var bar = $('body').find('.' + editor.id);
+            bar.hide();
+        });
+
+        BloomField.WireToCKEditor(this, ckedit);
+    });
+
     //this is some sample code for working on CommandAvailabilityPublisher websocket messages
 //   var client = new WebSocket("ws://127.0.0.1:8189");
 //   client.onmessage = function(event) {
@@ -665,4 +718,35 @@ var pageSelectionChanging = function () {
     marginBox.removeClass('origami-layout-mode');
     marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
     fireCSharpEditEvent('finishSavingPage', '');
+};
+
+// This is invoked from C# when we are about to leave a page (often right after the previous
+// method for changing pages).  It is mainly to clean things up so that garbage collection
+// won't lose multiple megabytes of data that both the DOM (C++) and Javascript subsystems
+// think the other is still using.
+var disconnectForGarbageCollection = function () {
+    // disconnect all event handlers
+    $.find().off();
+
+    var page = $('.bloom-page');
+    // blow away any img elements to ensure their data disappears.
+    // (the whole document is being replaced, and this happens after it's been saved to a file)
+    page.find('img').each(function() { $(this).setAttribute("src", ""); });
+    page.find('img').each(function () { $(this).remove(); });
+    $('[style*=".background-image"]').each(function () { $(this).remove(); });
+};
+
+function loadLongpressInstructions(jQuerySetOfMatchedElements) {
+    getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
+        if (response === 'Yes') {
+            localizationManager.asyncGetText(
+                'BookEditor.CharacterMap.Instructions',
+                'To select, use your mouse wheel or point at what you want, then release the key.')
+            .done(function (translation) {
+                    jQuerySetOfMatchedElements.longPress(
+                        { instructions: "<div class='instructions'>" + translation + "</div>" }
+                    );
+            });
+        };
+    });
 }

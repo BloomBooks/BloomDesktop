@@ -21,28 +21,58 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="bookEdit\accordion\accordion.css" />
+    <Content Include="bookEdit\accordion\accordion.css">
+      <DependentUpon>accordion.less</DependentUpon>
+    </Content>
+    <Content Include="audio\audioRecording.css">
+      <DependentUpon>audioRecording.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\accordion\Accordion.htm" />
     <Content Include="bookEdit\accordion\accordion.js" />
     <Content Include="bookEdit\accordion\DecodableRT\DecodableRT.htm" />
     <Content Include="bookEdit\accordion\LeveledRT\LeveledRT.htm" />
     <Content Include="bookEdit\accordion\PageElements\PageElements.htm" />
-    <Content Include="bookEdit\accordion\readerTools.css" />
+    <Content Include="bookEdit\accordion\readerTools.css">
+      <DependentUpon>readerTools.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\accordion\settings\Settings.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.js" />
+    <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.css">
+      <DependentUpon>TemplatePagesThumbnailList.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.htm" />
     <Content Include="bookEdit\bloomField\test.htm" />
     <Content Include="bookEdit\bloomField\bloomField.ts" />
-    <Content Include="bookEdit\css\origami.css" />
+    <Content Include="bookEdit\css\bloomDialog.css">
+      <DependentUpon>bloomDialog.less</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\css\BookPagesThumbnailList.css" />
+    <Content Include="bookEdit\css\origami.css">
+      <DependentUpon>origami.less</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\css\qtipOverrides.css">
+      <DependentUpon>qtipOverrides.less</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\js\readerToolsBootstrap.js" />
+    <Content Include="bookEdit\css\BookPagesThumbnailList.less" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
     <Content Include="bookEdit\html\font-awesome\Readme.txt" />
+    <Content Include="bookEdit\img\changeButton.svg" />
+    <Content Include="bookEdit\img\copy.svg" />
+    <Content Include="bookEdit\img\copyGrey.svg" />
+    <Content Include="bookEdit\img\cut.svg" />
+    <Content Include="bookEdit\img\cutGrey.svg" />
     <Content Include="bookEdit\img\dragHandle.png" />
     <Content Include="bookEdit\img\FontSizeLetter.svg" />
     <Content Include="bookEdit\img\LineSpacing.png" />
+    <Content Include="bookEdit\img\pasteButton.svg" />
     <Content Include="bookEdit\img\WordSpacing.png" />
     <Content Include="bookEdit\js\bloomImages.js" />
     <Content Include="bookEdit\js\BloomToolbox.js" />
@@ -55,9 +85,13 @@
     <Content Include="bookEdit\js\libsynphony\underscore_min_152.js" />
     <Content Include="bookEdit\js\libsynphony\xregexp-all-min.js" />
     <Content Include="bookEdit\js\origami.js" />
-    <Content Include="bookEdit\css\editMode.css" />
+    <Content Include="bookEdit\css\editMode.css">
+      <DependentUpon>editMode.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\css\editOriginalMode.css" />
-    <Content Include="bookEdit\css\editPaneGlobal.css" />
+    <Content Include="bookEdit\css\editPaneGlobal.css">
+      <DependentUpon>editPaneGlobal.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\css\editTranslationMode.css" />
     <Content Include="bookEdit\html\HtmlPage1.html" />
     <Content Include="bookEdit\html\topicDialog.htm" />
@@ -73,13 +107,18 @@
     <Content Include="bookEdit\img\moveDivButton.png" />
     <Content Include="bookEdit\img\pasteImageButtonLarge.png" />
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
-    <Content Include="bookEdit\js\toolbar\jquery.d.ts" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
+    <TypeScriptCompile Include="audio\audioRecording.ts" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
     <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
+    <TypeScriptCompile Include="bookEdit\js\bloomHintBubbles.ts" />
+    <TypeScriptCompile Include="bookEdit\js\bloomNotices.ts" />
+    <TypeScriptCompile Include="bookEdit\js\bloomQtipUtils.ts" />
     <TypeScriptCompile Include="bookEdit\js\calledByCSharp.ts" />
+    <TypeScriptCompile Include="bookEdit\js\collectionSettings.d.ts" />
     <TypeScriptCompile Include="bookEdit\js\directoryWatcher.ts" />
+    <TypeScriptCompile Include="bookEdit\js\editableDivUtils.ts" />
     <TypeScriptCompile Include="bookEdit\js\getIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\interIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\jquery.div-columns.ts" />
@@ -90,8 +129,18 @@
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbars.css" />
     <Content Include="bookEdit\js\toolbar\toolbar.d.ts" />
-    <Content Include="bookEdit\readerSetup\readerSetup.css" />
+    <Content Include="bookEdit\OverflowChecker\OverflowChecker.js" />
+    <Content Include="bookEdit\readerSetup\readerSetup.css">
+      <DependentUpon>readerSetup.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\readerSetup\ReaderSetup.htm" />
+    <Content Include="bookEdit\sourceBubbles\bloomSourceBubbles.js" />
+    <Content Include="bookEdit\sourceBubbles\sourceBubbles.css">
+      <DependentUpon>sourceBubbles.less</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\StyleEditor\StyleEditor.css">
+      <DependentUpon>StyleEditor.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\test\cSharpDependencyInjector.js" />
     <Content Include="bookEdit\test\interIframeChannelInitializer.js" />
     <Content Include="bookEdit\test\libsynphony\jquery.text-markup.test.js" />
@@ -102,8 +151,14 @@
     <Content Include="bookEdit\test\readerTools.Test.js" />
     <Content Include="bookEdit\test\readerTools_libSynphony.Test.js" />
     <Content Include="bookEdit\test\SynphonyApi.Test.js" />
+    <Content Include="bookEdit\TopicChooser\topicChooser.css">
+      <DependentUpon>topicChooser.less</DependentUpon>
+    </Content>
     <Content Include="bookLayout\.guidsForInstaller.xml" />
     <Content Include="bookLayout\collection styles override template.css" />
+    <Content Include="bookLayout\CommonBasePageEpub.css">
+      <DependentUpon>CommonBasePageEpub.less</DependentUpon>
+    </Content>
     <Content Include="bookLayout\languageDisplayTemplate.css" />
     <Content Include="bookPreview\css\.guidsForInstaller.xml" />
     <Content Include="bookPreview\css\previewMode.css" />
@@ -116,6 +171,8 @@
     <Content Include="browserBasedCollectionView\library.js" />
     <Content Include="collection\.guidsForInstaller.xml" />
     <Content Include="collection\thumbnail.css" />
+    <Content Include="epub\baseEpub.css" />
+    <Content Include="epub\bloomEpubPreview.htm" />
     <Content Include="images\.guidsForInstaller.xml" />
     <Content Include="images\a5Portrait.svg" />
     <Content Include="images\experiment.png" />
@@ -153,13 +210,25 @@
     <Content Include="lib\json.js" />
     <Content Include="lib\long-press\jquery.longpress.js" />
     <Content Include="lib\long-press\jquery.mousewheel.js" />
+    <Content Include="lib\long-press\longpress.css" />
     <Content Include="lib\split-pane\split-pane.css" />
     <Content Include="lib\split-pane\split-pane.js" />
     <Content Include="lib\tabpane.js" />
+    <Content Include="pageChooser\blank-preview.css" />
+    <Content Include="pageChooser\blank-preview.htm" />
+    <Content Include="pageChooser\js\page-chooser.js" />
+    <Content Include="pageChooser\mixins\page-chooser-mixins.htm" />
+    <Content Include="pageChooser\page-chooser-main.htm" />
+    <Content Include="pageChooser\page-chooser.css">
+      <DependentUpon>page-chooser.less</DependentUpon>
+    </Content>
+    <Content Include="pageChooser\transparent.gif" />
+    <Content Include="Readium\bloomEpubPreview.css" />
     <Content Include="test\.guidsForInstaller.xml" />
     <Content Include="test\fixtures\basePage.css" />
     <Content Include="test\fixtures\OverflowTestPage.htm" />
     <Content Include="test\specs\OverflowSpec.js" />
+    <Content Include="test\specs\SourceBubblesSpec.js" />
     <Content Include="test\specs\StyleEditorSpec.js" />
     <Content Include="themes\bloom-jqueryui-theme\.guidsForInstaller.xml" />
     <Content Include="themes\bloom-jqueryui-theme\images\.guidsForInstaller.xml" />
@@ -181,6 +250,8 @@
     <TypeScriptCompile Include="bookEdit\js\readerTools.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerToolsModel.ts" />
     <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
+    <TypeScriptCompile Include="bookEdit\OverflowChecker\OverflowChecker.ts" />
+    <TypeScriptCompile Include="bookEdit\sourceBubbles\bloomSourceBubbles.ts" />
     <TypeScriptCompile Include="bookEdit\TopicChooser\TopicChooser.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
@@ -189,6 +260,8 @@
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
     <TypeScriptCompile Include="lib\localizationManager\localizationManager.ts" />
     <TypeScriptCompile Include="lib\localizationManager\localizationManagerSpec.ts" />
+    <TypeScriptCompile Include="pageChooser\js\page-chooser.ts" />
+    <TypeScriptCompile Include="test\specs\SourceBubblesSpec.ts" />
     <TypeScriptCompile Include="test\specs\StyleEditorSpec.ts" />
     <Content Include="bookLayout\basePage.css" />
   </ItemGroup>
@@ -200,11 +273,6 @@
     <Folder Include="bookEdit\editor\" />
     <Folder Include="bookPreview\html\" />
     <Folder Include="bookPreview\img\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="bookEdit\StyleEditor\StyleEditor.js.map">
-      <DependentUpon>StyleEditor.ts</DependentUpon>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="bookEdit\iconfont\fonts\BloomIcons.dev.svg" />
@@ -236,7 +304,31 @@
     <Content Include="bookEdit\css\origami.less" />
     <Content Include="bookEdit\html\font-awesome\fonts\fontawesome-webfont.woff" />
     <Content Include="bookEdit\StyleEditor\StyleEditor.less" />
+    <Content Include="bookEdit\sourceBubbles\sourceBubbles.less" />
     <Content Include="bookLayout\basePage.less" />
+    <Content Include="pageChooser\blank-preview.jade" />
+    <Content Include="pageChooser\mixins\page-chooser-mixins.jade" />
+    <Content Include="pageChooser\page-chooser-main.jade" />
+    <Content Include="pageChooser\page-chooser.less" />
+    <Content Include="bookEdit\css\editMode.less" />
+    <Content Include="bookEdit\css\bloomDialog.less" />
+    <Content Include="bookEdit\css\editPaneGlobal.less" />
+    <Content Include="bookEdit\css\qtipOverrides.less" />
+    <Content Include="bookEdit\css\tab.winclassic.less" />
+    <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.less" />
+    <Content Include="bookEdit\TopicChooser\topicChooser.less" />
+    <Content Include="bookEdit\readerSetup\readerSetup.less" />
+    <Content Include="bookEdit\accordion\readerTools.less" />
+    <Content Include="bookEdit\accordion\accordion.less" />
+    <Content Include="bookLayout\CommonBasePageEpub.less" />
+    <None Include="compilerconfig.json" />
+    <Content Include="compilerconfig.json.defaults">
+      <DependentUpon>compilerconfig.json</DependentUpon>
+    </Content>
+    <Content Include="audio\audioRecording.less" />
+    <Content Include="packages.config" />
+    <Content Include="epub\baseEpub.less" />
+    <Content Include="epub\bloomEpubPreview.less" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -269,12 +361,21 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
     <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
     <OutputPath>..\..\output\web\</OutputPath>
     <DebugType>full</DebugType>
+    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptTarget>ES3</TypeScriptTarget>
@@ -285,4 +386,11 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Import Project="..\..\packages\BuildWebCompiler.1.3.144\build\BuildWebCompiler.targets" Condition="Exists('..\..\packages\BuildWebCompiler.1.3.144\build\BuildWebCompiler.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\BuildWebCompiler.1.3.144\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\BuildWebCompiler.1.3.144\build\BuildWebCompiler.targets'))" />
+  </Target>
 </Project>

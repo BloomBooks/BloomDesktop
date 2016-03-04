@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Reflection;
-using Palaso.Reporting;
+using SIL.Reporting;
 
 namespace Bloom
 {
@@ -16,12 +16,14 @@ namespace Bloom
 	public class UpdateVersionTable
 	{
 		//unit tests can change this
-		public  string  URLOfTable = "http://bloomlibrary.org/channels/UpgradeTable{0}.txt";
+		public string URLOfTable = "http://bloomlibrary.org/channels/UpgradeTable{0}.txt";
 		//unit tests can pre-set this
-		public  string TextContentsOfTable { get; set; }
+		public string TextContentsOfTable
+		{ get; set; }
 
 		//unit tests can pre-set this
-		public  Version RunningVersion { get; set; }
+		public Version RunningVersion
+		{ get; set; }
 
 		public class UpdateTableLookupResult
 		{
@@ -33,7 +35,7 @@ namespace Bloom
 				get
 				{
 					return Error != null &&
-					       Error.Status == WebExceptionStatus.Timeout || Error.Status == WebExceptionStatus.NameResolutionFailure;
+						(Error.Status == WebExceptionStatus.Timeout || Error.Status == WebExceptionStatus.NameResolutionFailure);
 				}
 			}
 		}
@@ -44,58 +46,96 @@ namespace Bloom
 		/// <returns></returns>
 		public UpdateTableLookupResult LookupURLOfUpdate()
 		{
-			if (String.IsNullOrEmpty(TextContentsOfTable))
+			if(String.IsNullOrEmpty(TextContentsOfTable))
 			{
 				Logger.WriteEvent("Enter LookupURLOfUpdate()");
 				var client = new WebClient();
 				{
 					try
 					{
-						Logger.WriteMinorEvent("Channel is '" + ApplicationUpdateSupport.ChannelName + "'");
-						Logger.WriteMinorEvent("UpdateVersionTable looking for UpdateVersionTable URL: " + GetUrlOfTable());
+						Logger.WriteEvent("Channel is '" + ApplicationUpdateSupport.ChannelName + "'");
+						Logger.WriteEvent("UpdateVersionTable looking for UpdateVersionTable URL: " + GetUrlOfTable());
 						TextContentsOfTable = client.DownloadString(GetUrlOfTable());
-						Logger.WriteMinorEvent("UpdateVersionTable contents are " + Environment.NewLine + TextContentsOfTable);
+
+						//things like captive portals will return an html page rather than the text file what we asked for, if the user isn't 
+						//logged in.
+						if(TextContentsOfTable.ToLower().Contains("<html"))
+						{
+							LogTableContents();
+							return new UpdateTableLookupResult() { Error = new WebException("Internet connection did not allow check for update.") };
+						}
 					}
-					catch (WebException e)
+					catch(WebException e)
 					{
 						Logger.WriteEvent("***Error in LookupURLOfUpdate: " + e.Message);
-						if (e.Status == WebExceptionStatus.ProtocolError)
+						if(e.Status == WebExceptionStatus.ProtocolError)
 						{
 							var resp = e.Response as HttpWebResponse;
-							if (resp != null && resp.StatusCode == HttpStatusCode.NotFound)
+							if(resp != null && resp.StatusCode == HttpStatusCode.NotFound)
 							{
 								Logger.WriteEvent(String.Format("***Error: UpdateVersionTable failed to find a file at {0} (channel='{1}'",
 									GetUrlOfTable(), ApplicationUpdateSupport.ChannelName));
 							}
 						}
-						else if (IsConnectionError(e))
+						else if(IsConnectionError(e))
 						{
 							Logger.WriteEvent("***Error: UpdateVersionTable could not connect to the server");
 						}
-						return new UpdateVersionTable.UpdateTableLookupResult() {Error = e};
+						return new UpdateTableLookupResult() { Error = e };
 					}
 				}
 			}
-			if (RunningVersion == default(Version))
+			if(RunningVersion == default(Version))
 			{
 				RunningVersion = Assembly.GetExecutingAssembly().GetName().Version;
 			}
 
-			//NB Programmers: don't change this to some OS-specific line ending, this is  file read by both OS's. '\n' is common to files edited on linux and windows.
-			foreach (var line in TextContentsOfTable.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
+			var parsingErrorMsg = String.Empty;
+			try
 			{
-				if (line.TrimStart().StartsWith("#"))
-					continue; //comment
+				//NB Programmers: don't change this to some OS-specific line ending, this is  file read by both OS's. '\n' is common to files edited on linux and windows.
+				foreach(var line in TextContentsOfTable.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
+				{
+					if(line.TrimStart().StartsWith("#"))
+						continue; //comment
 
-				var parts = line.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
-				if(parts.Length!=3)
-					throw new ApplicationException("Could not parse a line of the UpdateVersionTable on "+URLOfTable+" '"+line+"'");
-				var lower = Version.Parse(parts[0]);
-				var upper = Version.Parse(parts[1]);
-				if (lower <= RunningVersion && upper >= RunningVersion)
-					return new UpdateVersionTable.UpdateTableLookupResult() {URL = parts[2].Trim()};
+					var parts = line.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+					if(parts.Length != 3)
+					{
+						Logger.WriteEvent("***Error: UpdateVersionTable could not parse line {0} of this updateTableContent:", line);
+						LogTableContents();
+						throw new ApplicationException(line);
+					}
+					var lower = Version.Parse(parts[0]);
+					var upper = Version.Parse(parts[1]);
+					if(lower <= RunningVersion && upper >= RunningVersion)
+						return new UpdateTableLookupResult() { URL = parts[2].Trim() };
+				}
 			}
-			return  new UpdateVersionTable.UpdateTableLookupResult() {URL = String.Empty};
+			catch(ApplicationException e)
+			{
+				// BL-2654 Failure when reading upgrade table should not give a crash
+				// In this case, a line of the UpdateVersionTable was not parseable
+				// Put a message in the log and don't upgrade (and return a message that will get into a 'toast')
+				parsingErrorMsg = "Could not parse a line of the UpdateVersionTable" + e.Message;
+				Logger.WriteEvent(parsingErrorMsg);
+			}
+			catch(ArgumentException e)
+			{
+				// BL-2654 Failure when reading upgrade table should not give a crash
+				// In this case, a version number in the UpdateVersionTable was not parseable
+				// Put a message in the log and don't upgrade (and return a message that will get into a 'toast')
+				parsingErrorMsg = "Could not parse a version number in the UpdateVersionTable" + e.Message;
+				Logger.WriteEvent(parsingErrorMsg);
+			}
+			return new UpdateTableLookupResult() { URL = String.Empty, Error = new WebException(parsingErrorMsg) };
+		}
+
+		private void LogTableContents()
+		{
+			//html may have javascript which has braces which will kill the string.format in WriteEvent
+			var safeContents = TextContentsOfTable.Replace("{", "{{").Replace("}", "}}");
+			Logger.WriteEvent("***UpdateVersionTable contents are " + Environment.NewLine + safeContents);
 		}
 
 		private string GetUrlOfTable()
@@ -108,9 +148,9 @@ namespace Bloom
 			return
 				ex.Status == WebExceptionStatus.Timeout ||
 				ex.Status == WebExceptionStatus.NameResolutionFailure;
-				//I'm not sure if you'd ever get one of these?
-//				ex.Status == WebExceptionStatus.ReceiveFailure ||
-	//			ex.Status == WebExceptionStatus.ConnectFailure;
+			//I'm not sure if you'd ever get one of these?
+			//				ex.Status == WebExceptionStatus.ReceiveFailure ||
+			//			ex.Status == WebExceptionStatus.ConnectFailure;
 		}
 	}
 }

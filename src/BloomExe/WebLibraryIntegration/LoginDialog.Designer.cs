@@ -143,12 +143,13 @@
 			this._borderLabel.BackColor = System.Drawing.Color.Red;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._borderLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._borderLabel, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._borderLabel, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._borderLabel, "LoginDialog.label3");
 			this._borderLabel.Location = new System.Drawing.Point(17, 30);
 			this._borderLabel.Name = "_borderLabel";
 			this._borderLabel.Size = new System.Drawing.Size(249, 22);
 			this._borderLabel.TabIndex = 7;
-			this._borderLabel.Text = "label3";
+			this._borderLabel.Visible = false;
 			// 
 			// _showPasswordCheckBox
 			// 
@@ -157,7 +158,7 @@
 			this._showPasswordCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._showPasswordCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._showPasswordCheckBox, null);
-			this._L10NSharpExtender.SetLocalizingId(this._showPasswordCheckBox, "LoginDialog.showPassword");
+			this._L10NSharpExtender.SetLocalizingId(this._showPasswordCheckBox, "LoginDialog.ShowPassword");
 			this._showPasswordCheckBox.Location = new System.Drawing.Point(20, 105);
 			this._showPasswordCheckBox.Name = "_showPasswordCheckBox";
 			this._showPasswordCheckBox.Size = new System.Drawing.Size(102, 17);
@@ -166,13 +167,13 @@
 			this._showPasswordCheckBox.UseVisualStyleBackColor = true;
 			this._showPasswordCheckBox.CheckedChanged += new System.EventHandler(this._showPasswordCheckBox_CheckedChanged);
 			// 
-			// _termsOfUseLabel
+			// _termsOfUseCheckBox
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._termsOfUseCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._termsOfUseCheckBox, null);
 			this._L10NSharpExtender.SetLocalizingId(this._termsOfUseCheckBox, "LoginDialog.AgreeToTerms");
 			this._termsOfUseCheckBox.Location = new System.Drawing.Point(22, 185);
-			this._termsOfUseCheckBox.Name = "_termsOfUseLabel";
+			this._termsOfUseCheckBox.Name = "_termsOfUseCheckBox";
 			this._termsOfUseCheckBox.Size = new System.Drawing.Size(244, 23);
 			this._termsOfUseCheckBox.TabIndex = 9;
 			this._termsOfUseCheckBox.Text = "I agree to the Bloom Library\'s Terms of Use";

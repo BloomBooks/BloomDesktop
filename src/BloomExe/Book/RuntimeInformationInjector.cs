@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using L10NSharp;
 using Newtonsoft.Json;
-using Palaso.IO;
-using Palaso.UI.WindowsForms.WritingSystems;
-using Palaso.Xml;
+using SIL.IO;
+using SIL.Windows.Forms.WritingSystems;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -94,7 +92,7 @@ namespace Bloom.Book
 			if (langs.Any())
 			{
 				// We don't have a localization for these languages, but we can at least try to give them a name
-				var lookup = new LookupIsoCodeModel(); // < 1ms
+				var lookup = new LanguageLookupModel(); // < 1ms
 				foreach (var lang in langs) // may include things like empty string, z, *, but this is harmless as they are not language codes.
 				{
 					string match;
@@ -147,7 +145,7 @@ namespace Bloom.Book
 				if (!element.HasAttribute("data-i18n"))
 				{
 					var englishLabel = element.InnerText;
-					var key = "EditTab.ThumbnailCaptions." + englishLabel;
+					var key = "TemplateBooks.PageLabel." + englishLabel;
 					AddTranslationToDictionaryUsingEnglishAsKey(d, key, englishLabel);
 
 					element.SetAttribute("data-i18n", key);
@@ -169,7 +167,7 @@ namespace Bloom.Book
 			SafelyAddLanguage(d, "id", "Bahasa Indonesia");
 			SafelyAddLanguage(d, "ar","العربية/عربي‎");//arabic
 			//    return { "en": "English", "vernacularLang": "en", "{V}": "English", "{N1}": "English", "{N2}": "", "ar": "العربية/عربي‎","id": "Bahasa Indonesia", 
-			//"ha": "Hausa", "hi": "हिन्दी", "es": "español", "fr": "français", "pt": "português", "swa": "Swahili", "th": "ภาษาไทย", "tpi": "Tok Pisin", "EditTab.ThumbnailCaptions.Front Cover": "Front Cover", "*You may use this space for author/illustrator, or anything else.": "*You may use this space for author/illustrator, or anything else.", "Click to choose topic": "Click to choose topic", "BookEditor.FontSizeTip": "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\\nCurrent size is {2}pt.", "FrontMatter.Factory.Book title in {lang}": "Book title in {lang}", "FrontMatter.Factory.Click to choose topic": "Click to choose topic", "FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.": "International Standard Book Number. Leave blank if you don't have one of these.", "FrontMatter.Factory.Acknowledgments for translated version, in {lang}": "Acknowledgments for translated version, in {lang}", "FrontMatter.Factory.Use this to acknowledge any funding agencies.": "Use this to acknowledge any funding agencies.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover." };
+			//"ha": "Hausa", "hi": "हिन्दी", "es": "español", "fr": "français", "pt": "português", "swa": "Swahili", "th": "ภาษาไทย", "tpi": "Tok Pisin", "TemplateBooks.PageLabel.Front Cover": "Front Cover", "*You may use this space for author/illustrator, or anything else.": "*You may use this space for author/illustrator, or anything else.", "Click to choose topic": "Click to choose topic", "BookEditor.FontSizeTip": "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\\nCurrent size is {2}pt.", "FrontMatter.Factory.Book title in {lang}": "Book title in {lang}", "FrontMatter.Factory.Click to choose topic": "Click to choose topic", "FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.": "International Standard Book Number. Leave blank if you don't have one of these.", "FrontMatter.Factory.Acknowledgments for translated version, in {lang}": "Acknowledgments for translated version, in {lang}", "FrontMatter.Factory.Use this to acknowledge any funding agencies.": "Use this to acknowledge any funding agencies.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover." };
 
 		}
 
@@ -185,35 +183,50 @@ namespace Bloom.Book
 		/// <param name="d"></param>
 		private static void AddHtmlUiStrings(Dictionary<string, string> d)
 		{
-			//ATTENTION: Currently, the english here must exactly match whats in the html. See comment in AddTranslationToDictionaryUsingEnglishAsKey
+			// ATTENTION: Currently, the english here must exactly match whats in the html.
+			// See comment in AddTranslationToDictionaryUsingEnglishAsKey
 
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FontSizeTip", "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BookTitlePrompt", "Book title in {lang}");
-
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FontSizeTip",
+				"Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BookTitlePrompt",
+				"Book title in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.AuthorIllustratorPrompt",
+				"You may use this space for author/illustrator, or anything else.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalContributorsPrompt",
 				"The contributions made by writers, illustrators, editors, etc., in {lang}");
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt", "Acknowledgments for translated version, in {lang}");
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.FundingAgenciesPrompt", "Use this to acknowledge any funding agencies.");
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CopyrightPrompt","Click to Edit Copyright & License");
-
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt",
+				"Acknowledgments for translated version, in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.FundingAgenciesPrompt",
+				"Use this to acknowledge any funding agencies.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CopyrightPrompt",
+				"Click to Edit Copyright & License");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalAcknowledgmentsPrompt",
 				"Original (or Shell) Acknowledgments in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TopicPrompt",
+				"Click to choose topic");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.ISBNPrompt",
+				"International Standard Book Number. Leave blank if you don't have one of these.");
 
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TopicPrompt", "Click to choose topic");
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.ISBNPrompt", "International Standard Book Number. Leave blank if you don't have one of these.");
-
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Contributions", "When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.");
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Translator", "When you make a book from a shell, use this box to tell who did the translation.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Contributions",
+				"When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Translator",
+				"When you make a book from a shell, use this box to tell who did the translation.");
 			
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.InsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.OutsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.InsideBackCoverTextPrompt",
+				"If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.OutsideBackCoverTextPrompt",
+				"If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
 
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.EditMetadata", "Edit Image Credits, Copyright, & License");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.EditMetadata",
+				"Edit Image Credits, Copyright, & License");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CopyImage", "Copy Image");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CutImage", "Cut Image");
 
 			// tool tips for style editor
-			AddTranslationToDictionaryUsingKey(d, "BookEditor.FontSizeTip", "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
+			AddTranslationToDictionaryUsingKey(d, "BookEditor.FontSizeTip",
+				"Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
 			//No longer used. See BL-799 AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialogTip", "Adjust formatting for style");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingNormal", "Normal");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingWide", "Wide");
@@ -283,6 +296,16 @@ namespace Bloom.Book
 
 			d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
 			d.Add("isSourceCollection", collectionSettings.IsSourceCollection.ToString());
+
+			// BL-2357 To aid in smart ordering of source languages in source bubble
+			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
+			{
+				d.Add("currentCollectionLanguage2", collectionSettings.Language2Iso639Code);
+			}
+			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			{
+				d.Add("currentCollectionLanguage3", collectionSettings.Language3Iso639Code);
+			}
 
 			d.Add("bloomBrowserUIFolder", FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI").ToLocalhost());
 

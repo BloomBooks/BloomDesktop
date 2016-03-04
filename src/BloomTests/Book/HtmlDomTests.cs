@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Xml;
-using NUnit.Framework;
+using Bloom;
 using Bloom.Book;
-using Palaso.TestUtilities;
+using NUnit.Framework;
+using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -156,6 +154,297 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='../settingsCollectionStyles.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='../customCollectionStyles.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[11][@href='customBookStyles.css']", 1);
+		}
+
+
+		[Test]
+		public void MergeClassesIntoNewPage_BothEmtpy()
+		{
+			AssertHasClasses("", MergeClasses("","", new[] { "dropMe" }));
+		}
+		[Test]
+		public void MergeClassesIntoNewPage_TargetEmpty()
+		{
+			AssertHasClasses("one two", MergeClasses("one two", "", new[] {"dropMe"}));
+		}
+		[Test]
+		public void MergeClassesIntoNewPage_SourceEmpty()
+		{
+			AssertHasClasses("one two", MergeClasses("", "one two", new[] { "dropMe" }));
+		}
+		[Test]
+		public void MergeClassesIntoNewPage_SourceAllDroppable()
+		{
+			AssertHasClasses("one two", MergeClasses("dropMe dropMe dropMe ", "one two", new[] { "dropMe" }));
+		}
+		[Test]
+		public void MergeClassesIntoNewPage_MergesAndDropsItemsInDropList()
+		{
+			AssertHasClasses("one two three", MergeClasses("one drop two delete", "three", new[] { "drop","delete" }));
+		}
+		[Test]
+		public void GetImageElementUrl_ElementIsImg_ReturnsSrc()
+		{
+			var element = MakeElement("<img src='test%20me'/>");
+			Assert.AreEqual("test%20me", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+		}
+		[Test]
+		public void GetImageElementUrl_ElementIsDivWithBackgroundImage_ReturnsUrl()
+		{
+			var element = MakeElement("<div style='font-face:url(\"somefont\"); background-image:url(\"test%20me\")'/>");
+            Assert.AreEqual("test%20me", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+
+			//stress the regex a bit
+			element = MakeElement("<div style=\" background-image : URL(\'test%20me\')\"/>");
+			Assert.AreEqual("test%20me", HtmlDom.GetImageElementUrl(element).UrlEncoded, "Query was too restrictive somehow");
+		}
+
+		[Test]
+		public void GetImageElementUrl_ElementHasUrlOnFont_ReturnsEmpty()
+		{
+			var element = MakeElement("<div style='font-face:url(\"somefont\")'/>");
+			Assert.AreEqual("", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+		}
+
+		[Test]
+		public void GetImageElementUrl_ElementHasNoImage_ReturnsEmpty()
+		{
+			var element = MakeElement("<div style='width:50px'/>");
+			Assert.AreEqual("", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+		}
+
+		private ElementProxy MakeElement(string xml)
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml(xml);
+			return new ElementProxy(dom.DocumentElement);
+		}
+
+		private void AssertHasClasses(string expectedString, string actualString)
+		{
+			var expected = expectedString.Split(new[] { ' ' });
+			var actual = actualString.Split(new[] {' '});
+			Assert.AreEqual(expected.Length, actual.Length);
+			foreach (var e in expected)
+			{
+				Assert.IsTrue(actual.Contains(e));
+			}
+		}
+
+		private string MergeClasses(string sourceClasses, string targetClasses, string[] classesToDrop)
+		{
+			var sourceDom = new XmlDocument();
+			sourceDom.LoadXml(string.Format("<div class='{0}'/>", sourceClasses));
+			var targetDom = new XmlDocument();
+			targetDom.LoadXml(string.Format("<div class='{0}'/>", targetClasses));
+			var targetNode = (XmlElement)targetDom.SelectSingleNode("div");
+			HtmlDom.MergeClassesIntoNewPage((XmlElement)sourceDom.SelectSingleNode("div"), targetNode, classesToDrop);
+			return targetNode.GetStringAttribute("class");
+		}
+
+		[Test]
+		public void RemoveExtraBookTitles_BookTitlesThatAreJustGeneric_Removed()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='en'>something unique</div>
+						<div data-book='bookTitle' lang='id'>Buku Dasar</div>
+						<div data-book='bookTitle' lang='tpi'>Nupela Buk</div>
+				</div>
+				<div id='somePage'>
+					<div class='bloom-translationGroup bookTitle'>
+						<div class='bloom-editable' data-book='bookTitle' lang='tpi'>
+							<p>Nupela Buk<br/></p>
+						</div>
+						<div class='bloom-editable' data-book='bookTitle' lang='id'>
+							<p>Buku Dasar</p>
+						</div>
+						<div class='bloom-editable' data-book='bookTitle'>
+							<p>something unique<br/></p>
+						</div>
+					</div>
+				</div>
+			 </body></html>");
+			bookDom.RemoveExtraBookTitles();
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='en' and text()='something unique']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='id']", 0);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='tpi']", 0);
+		}
+		
+		[Test]
+		public void SetImageElementUrl_GivenImg_SetsSrc()
+		{
+			var img = MakeElement("<img src='old.png'/>");
+			HtmlDom.SetImageElementUrl(img, UrlPathString.CreateFromUrlEncodedString("test%20me"));
+			Assert.AreEqual("test%20me",img.GetAttribute("src"));
+			Assert.AreEqual("", img.GetAttribute("style"));
+		}
+		[Test]
+		public void SetImageElementUrl_GivenDiv_SetsStyle()
+		{
+			var div = MakeElement("<div style=\" background-image : URL(\'old.png\')\"/>");
+			HtmlDom.SetImageElementUrl(div, UrlPathString.CreateFromUrlEncodedString("test%20me"));
+			Assert.AreEqual("background-image:url(\'test%20me\')", div.GetAttribute("style"));
+			Assert.AreEqual("", div.GetAttribute("src"));
+		}
+
+		[Test]
+		public void SelectChildImgAndBackgroundImageElements()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<div>" +
+							"<div id='thisShouldBeIgnored'>" +
+								"<img/>" +
+								"<div style=\"background-image : URL(\'old.png\')\"/>" +
+								"<img/>" +
+								"<div style=\"background-image : URL(\'old.png\')\"/>" +
+							"</div>" +
+							"<div id='thisOne'>" +
+								"<foo/>" +
+								"<img/>" +
+								"<div style=\"color:red;\">hello</div><div style=\" background-image : URL(\'old.png\')\"/>" +
+							"</div>" +
+						"</div>");
+			var elements = HtmlDom.SelectChildImgAndBackgroundImageElements(dom.SelectSingleNode("//*[@id='thisOne']") as XmlElement);
+			Assert.AreEqual(2,elements.Count);
+		}
+
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_NoBackgroundImageProperty_False()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<div style=\"color:red;\"></div>");
+			Assert.IsFalse(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.DocumentElement));
+		}
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_HasBackgroundImageProperty_True()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<div style=\" background-image : URL(\'old.png\')\"></div>");
+			Assert.IsTrue(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.DocumentElement));
+
+			dom.LoadXml("<div style=\'background-image:url( \"old.png\" )\'></div>");
+			Assert.IsTrue(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.DocumentElement), "Regex needs work?");
+		}
+
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_Img_True()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><img/></body></html>");
+			Assert.IsTrue(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.SelectNodes("//img")[0] as XmlElement));
+		}
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_ImgIsSybling_False()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><img/><foo/></body></html>");
+			Assert.IsFalse(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.SelectNodes("//foo")[0] as XmlElement));
+		}
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_ImgIsChild_False()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><div><img/></div></body></html>");
+			Assert.IsFalse(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.SelectNodes("//div")[0] as XmlElement));
+		}
+		[Test]
+		public void RemoveBookSetting_TwoVariationsWereThere_BothRemoved()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='leaveMe' lang='en'>something unique</div>
+						<div data-book='removeMe' lang='id'>Buku Dasar</div>
+						<div data-book='removeMe' lang='tpi'>Nupela Buk</div>
+				</div>
+			 </body></html>");
+			bookDom.RemoveBookSetting("removeMe");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='removeMe']", 0);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='leaveMe']", 1);
+		}
+		[Test]
+		public void RemoveBookSetting_NoneThere_NothingHappens()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='leaveMe' lang='en'>something unique</div>
+				</div>
+			 </body></html>");
+			bookDom.RemoveBookSetting("foobar");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='leaveMe']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book]", 1);
+		}
+		[Test]
+		public void GetBookSetting_TwoVariationsWereThere_ReturnsBoth()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='leaveMe' lang='en'>something unique</div>
+						<div data-book='getMe' lang='id'>Buku</div>
+						<div data-book='getMe' lang='tpi'>Buk</div>
+				</div>
+			 </body></html>");
+			var result = bookDom.GetBookSetting("getMe");
+			Assert.AreEqual(2,result.Count);
+			Assert.AreEqual("Buk", result["tpi"]);
+			Assert.AreEqual("Buku", result["id"]);
+		}
+		[Test]
+		public void GetBookSetting_NotThere_ReturnsEmptyMultistring()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+			 </body></html>");
+			var result = bookDom.GetBookSetting("getMe");
+			Assert.AreEqual(0, result.Count);
+		}
+		[Test]
+		public void SetBookSetting_WasMissingCompletely_DataDivHasNewString()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+			 </body></html>");
+			bookDom.SetBookSetting("foo","xyz","hello");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='xyz' and text()='hello']", 1);
+		}
+		[Test]
+		public void SetBookSetting_NoDataDivYet_SettingAdded()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+			 </body></html>");
+			bookDom.SetBookSetting("foo", "xyz", "hello");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[@id='bloomDataDiv']/div[@data-book='foo' and @lang='xyz' and text()='hello']", 1);
+		}
+		[Test]
+		public void SetBookSetting_HadADifferentValueCompletely_NewValue()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='foo' lang='en'>blah</div>
+					<div data-book='foo' lang='xyz'>boo</div>
+				</div>
+			 </body></html>");
+			bookDom.SetBookSetting("foo", "xyz", "hello");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='xyz' and text()='hello']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='en' and text()='blah']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']", 2);
+		}
+		[Test]
+		public void SetBookSetting_AddANewVariationToAnExistingKey_Added()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='foo' lang='en'>English</div>
+					<div data-book='foo' lang='id'>Indonesian</div>
+				</div>
+			 </body></html>");
+			bookDom.SetBookSetting("foo", "fr", "French");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='id' and text()='Indonesian']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='en' and text()='English']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='fr' and text()='French']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']", 3);
 		}
 	}
 }

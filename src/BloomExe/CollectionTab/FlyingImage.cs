@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using Palaso.UI.WindowsForms.Widgets.Flying;
+using SIL.Windows.Forms.Widgets.Flying;
 
 namespace Bloom.CollectionTab
 {

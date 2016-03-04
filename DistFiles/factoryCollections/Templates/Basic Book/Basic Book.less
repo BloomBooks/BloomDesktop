@@ -1,5 +1,6 @@
 @import "../../../less/common-mixins.less";
 
+// out: Basic Book.css, sourcemap: true, compress: false
 /*+}*/
 /*The following is json. Bloom reads it in order to know what size/orientation options this stylesheet supports
 STARTLAYOUTS
@@ -39,6 +40,34 @@ STARTLAYOUTS
 			   "Default",
 			   "SideBySide",
 			   "SplitAcrossPages"
+			]
+		 }
+	  },
+	  {
+		 "LetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "LetterLandscape":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "HalfLetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "QuarterLetterLandscape":{
+			"Styles":[
+			   "Default"
 			]
 		 }
 	  }
@@ -426,6 +455,21 @@ in javascript. Search for 'bloom-centerContentVertically'.
 		.Setup(74%, 600%);
 	}
 	&.A4Landscape {
+		.Setup(55%, 600%);
+	}
+	&.QuarterLetterPortrait {
+		.Setup(62%, 400%);
+	}
+	&.QuarterLetterLandscape {
+		.Setup(55%, 600%);
+	}
+	&.HalfLetterPortrait {
+		.Setup(62%, 400%);
+	}
+	&.LetterPortrait {
+		.Setup(74%, 600%);
+	}
+	&.LetterLandscape {
 		.Setup(55%, 600%);
 	}
 

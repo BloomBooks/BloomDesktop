@@ -9,8 +9,8 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using NUnit.Framework;
-using Palaso.IO;
-using Palaso.TestUtilities;
+using SIL.IO;
+using SIL.TestUtilities;
 
 namespace BloomTests.Book
 {
@@ -24,7 +24,7 @@ namespace BloomTests.Book
 		[SetUp]
 		public void Setup()
 		{
-			Palaso.Reporting.ErrorReport.IsOkToInteractWithUser = false;
+			SIL.Reporting.ErrorReport.IsOkToInteractWithUser = false;
 			_folder  =new TemporaryFolder("BookCollectionTests");
 			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[] {}), ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
@@ -33,7 +33,7 @@ namespace BloomTests.Book
 
 		Bloom.Book.Book BookFactory(BookInfo bookInfo, IBookStorage storage, bool editable)
 		{
-			return new Bloom.Book.Book(bookInfo,  storage, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  Language1Iso639Code = "xyz" }), null,
+			return new Bloom.Book.Book(bookInfo,  storage, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  Language1Iso639Code = "xyz" }),
 													new PageSelection(),
 													new PageListChangedEvent(), new BookRefreshEvent());
 		}

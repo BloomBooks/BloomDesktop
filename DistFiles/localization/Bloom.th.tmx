@@ -139,6 +139,7 @@
       </tuv>
     </tu>
     <tu tuid="Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -175,6 +176,7 @@
       </tuv>
     </tu>
     <tu tuid="Click to choose topic">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Click to choose topic</seg>
@@ -216,7 +218,7 @@
         <seg>กรุณาใช้ Image Server การดำเนินงานภาพใหญ่นี้สามารถลดการใช้หน่วยความจำ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
       <tuv xml:lang="en">
         <seg>(Experimental) Show Send/Receive Controls</seg>
       </tuv>
@@ -317,7 +319,7 @@
         <seg>การจัดตั้ง …</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
       <tuv xml:lang="en">
         <seg>Vernacular Language</seg>
       </tuv>
@@ -341,7 +343,7 @@
         <seg>ภาษาที่ 3 (ตัวอย่างเช่นภาษาของแคว้น) (ถ้ามี)</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
       <tuv xml:lang="en">
         <seg>Remove</seg>
       </tuv>
@@ -398,7 +400,7 @@
         <seg>เริ่มต้นใหม่</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog._restartMessage">
+    <tu tuid="CollectionSettingsDialog.RestartMessage">
       <tuv xml:lang="en">
         <seg>Bloom will close and re-open this project with the new settings.</seg>
       </tuv>
@@ -414,7 +416,7 @@
         <seg>Bloom จะเปิดไฟล์ HTML (Word หรือ LibreOffice)ในประมวลผลคำของคุณ. โปรดทราบว่าคุณสามารถจัดการกับข้อความของหนังสือหรือภาพ แต่ไม่จำเป็นต้องสามารถที่จะบันทึกรูปแบบ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
+    <tu tuid="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
       <tuv xml:lang="en">
         <seg>Update Book</seg>
       </tuv>
@@ -422,7 +424,7 @@
         <seg>การปรับปรุงหนังสือ </seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateThumbnail">
+    <tu tuid="CollectionTab.BookMenu.UpdateThumbnail">
       <tuv xml:lang="en">
         <seg>Update Thumbnail</seg>
       </tuv>
@@ -430,7 +432,7 @@
         <seg>การปรับปรุง Thumbnail</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.deleteBook">
+    <tu tuid="CollectionTab.BookMenu.DeleteBook">
       <tuv xml:lang="en">
         <seg>Delete Book</seg>
       </tuv>
@@ -438,7 +440,7 @@
         <seg>ลบหนังสือ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
+    <tu tuid="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
       <tuv xml:lang="en">
         <seg>Export to Word or LibreOffice...</seg>
       </tuv>
@@ -446,7 +448,7 @@
         <seg>ส่งออกไปยัง Word หรือ LibreOffice ...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
+    <tu tuid="CollectionTab.BookMenu.ExportToXMLForInDesign">
       <tuv xml:lang="en">
         <seg>Export to XML for InDesign...</seg>
       </tuv>
@@ -527,7 +529,7 @@
         <seg>{0} หนังสือ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
+    <tu tuid="CollectionTab.ContextMenu.OpenFolderOnDisk">
       <tuv xml:lang="en">
         <seg>Open Folder on Disk</seg>
       </tuv>
@@ -612,7 +614,7 @@
         <seg>แบบเทมเพลต</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._editBookButton">
+    <tu tuid="CollectionTab.EditBookButton">
       <tuv xml:lang="en">
         <seg>Edit this book</seg>
       </tuv>
@@ -620,7 +622,7 @@
         <seg>การแก้ไขหนังสือเล่มนี้</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._makeBloomPackButton">
+    <tu tuid="CollectionTab.MakeBloomPackButton">
       <tuv xml:lang="en">
         <seg>Make Bloom Pack</seg>
       </tuv>
@@ -628,7 +630,7 @@
         <seg>ทำ Bloom Pack</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+    <tu tuid="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Make Reader Template Bloom Pack...</seg>
       </tuv>
@@ -636,7 +638,7 @@
         <seg>ทำแม่แบบผู้อ่าน Bloom Pack ...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.advancedToolStripMenuItem">
+    <tu tuid="CollectionTab.AdvancedToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Advanced</seg>
       </tuv>
@@ -644,7 +646,7 @@
         <seg>ก้าวหน้า</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkLabel">
+    <tu tuid="CollectionTab.BloomLibraryLinkLabel">
       <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
       <tuv xml:lang="en">
         <seg>Get more source books at BloomLibrary.org</seg>
@@ -653,7 +655,7 @@
         <seg>ได้รับแหล่งหนังสืออื่น ๆที่ BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+    <tu tuid="CollectionTab.BloomLibraryLinkVerificationCaption">
       <note>get this clicking on BloomLibrary.org link in source collection</note>
       <tuv xml:lang="en">
         <seg>Source Collection</seg>
@@ -662,7 +664,7 @@
         <seg>Source Collection</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourceHeading">
+    <tu tuid="CollectionTab.BookSourceHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Books</seg>
       </tuv>
@@ -670,7 +672,7 @@
         <seg>แหล่งที่มาสำหรับหนังสือใหม่</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourcesLockNotice">
+    <tu tuid="CollectionTab.BookSourcesLockNotice">
       <tuv xml:lang="en">
         <seg>This collection is locked, so new books cannot be added/removed.</seg>
       </tuv>
@@ -678,7 +680,7 @@
         <seg>การเก็บรวบรวมนี้ถูกล็อกคุณไม่สามารถเพิ่มหรือลบหนังสือได้</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
+    <tu tuid="CollectionTab.HiddenBookExplanationForSourceCollections">
       <tuv xml:lang="en">
         <seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
       </tuv>
@@ -688,6 +690,7 @@
     </tu>
     <tu tuid="CollectionTab.hiddenBooksNotice">
       <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Where's the rest?</seg>
       </tuv>
@@ -695,7 +698,8 @@
         <seg>ส่วนที่เหลืออยู่ใน?</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+    <tu tuid="CollectionTab.MoreLanguagesMenuItem">
+      <note>Brings up the localization dialog</note>
       <tuv xml:lang="en">
         <seg>More...</seg>
       </tuv>
@@ -703,7 +707,7 @@
         <seg>อื่น ๆ ...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.openCreateCollectionToolStripMenuItem">
+    <tu tuid="CollectionTab.OpenCreateCollectionMenuItem">
       <tuv xml:lang="en">
         <seg>Open or Create Another Collection</seg>
       </tuv>
@@ -711,7 +715,7 @@
         <seg>เปิดหรือสร้าง Collection อีก</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.sourcesForNewShellsHeading">
+    <tu tuid="CollectionTab.SourcesForNewShellsHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Shells</seg>
       </tuv>
@@ -805,7 +809,7 @@
         <seg>ไม่จำเป็น</seg>
       </tuv>
     </tu>
-    <tu tuid="ConfiguringBookMessage">
+    <tu tuid="CollectionTab.ConfiguringBookMessage">
       <tuv xml:lang="en">
         <seg>Building...</seg>
       </tuv>
@@ -1262,6 +1266,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -1491,7 +1496,7 @@
         <seg>หน้าแม่แบบ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.1">
+    <tu tuid="TemplateBooks.PageLabel.1">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>1</seg>
@@ -1500,7 +1505,7 @@
         <seg>1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.2">
+    <tu tuid="TemplateBooks.PageLabel.2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>2</seg>
@@ -1509,7 +1514,7 @@
         <seg>2</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.3">
+    <tu tuid="TemplateBooks.PageLabel.3">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>3</seg>
@@ -1518,7 +1523,7 @@
         <seg>3</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.4">
+    <tu tuid="TemplateBooks.PageLabel.4">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>4</seg>
@@ -1527,7 +1532,7 @@
         <seg>4</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.5">
+    <tu tuid="TemplateBooks.PageLabel.5">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>5</seg>
@@ -1536,7 +1541,7 @@
         <seg>5</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.6">
+    <tu tuid="TemplateBooks.PageLabel.6">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>6</seg>
@@ -1545,7 +1550,7 @@
         <seg>6</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.7">
+    <tu tuid="TemplateBooks.PageLabel.7">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>7</seg>
@@ -1554,7 +1559,7 @@
         <seg>7</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.8">
+    <tu tuid="TemplateBooks.PageLabel.8">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>8</seg>
@@ -1563,7 +1568,7 @@
         <seg>8</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.9">
+    <tu tuid="TemplateBooks.PageLabel.9">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>9</seg>
@@ -1572,7 +1577,7 @@
         <seg>9</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
+    <tu tuid="TemplateBooks.PageLabel.Alphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Alphabet</seg>
@@ -1581,7 +1586,7 @@
         <seg>ตัวอักษร</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Image</seg>
@@ -1590,7 +1595,7 @@
         <seg>ข้อความพื้นฐานและภาพ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Picture</seg>
@@ -1599,7 +1604,7 @@
         <seg>ข้อความและรูปภาพ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
+    <tu tuid="TemplateBooks.PageLabel.Credits Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Credits Page</seg>
@@ -1608,7 +1613,7 @@
         <seg>เครดิตหน้า</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+    <tu tuid="TemplateBooks.PageLabel.Custom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Custom</seg>
@@ -1617,7 +1622,7 @@
         <seg>ประเพณี</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 1">
+    <tu tuid="TemplateBooks.PageLabel.Day 1">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 1</seg>
@@ -1626,7 +1631,7 @@
         <seg>วันที่ 1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 2">
+    <tu tuid="TemplateBooks.PageLabel.Day 2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 2</seg>
@@ -1635,7 +1640,7 @@
         <seg>วันที่ 2</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 3">
+    <tu tuid="TemplateBooks.PageLabel.Day 3">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 3</seg>
@@ -1644,7 +1649,7 @@
         <seg>วันที่ 3</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 4">
+    <tu tuid="TemplateBooks.PageLabel.Day 4">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 4</seg>
@@ -1653,7 +1658,7 @@
         <seg>วันที่ 4</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 5a">
+    <tu tuid="TemplateBooks.PageLabel.Day 5a">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5a</seg>
@@ -1662,7 +1667,7 @@
         <seg>วันที่ 5a</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 5b">
+    <tu tuid="TemplateBooks.PageLabel.Day 5b">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5b</seg>
@@ -1671,7 +1676,7 @@
         <seg>วันที่ 5b</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
+    <tu tuid="TemplateBooks.PageLabel.Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Front Cover</seg>
@@ -1680,7 +1685,7 @@
         <seg>ปกหน้า</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image On Bottom</seg>
@@ -1689,7 +1694,7 @@
         <seg>ภาพที่แสดงด้านล่าง</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Image in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image in Middle</seg>
@@ -1698,7 +1703,7 @@
         <seg>ภาพในกลาง</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Inside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Back Cover</seg>
@@ -1707,7 +1712,7 @@
         <seg>ปกหลังด้านใน</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
+    <tu tuid="TemplateBooks.PageLabel.Inside Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Front Cover</seg>
@@ -1716,7 +1721,7 @@
         <seg>ภายในปกหน้า</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Instructions">
+    <tu tuid="TemplateBooks.PageLabel.Instructions">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Instructions</seg>
@@ -1725,7 +1730,7 @@
         <seg>คำแนะนำ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just Text">
+    <tu tuid="TemplateBooks.PageLabel.Just Text">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just Text</seg>
@@ -1734,7 +1739,7 @@
         <seg>เพียงแค่ข้อความ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
+    <tu tuid="TemplateBooks.PageLabel.Just a Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just a Picture</seg>
@@ -1743,7 +1748,7 @@
         <seg>เพียงแค่รูปภาพ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just an Image">
+    <tu tuid="TemplateBooks.PageLabel.Just an Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just an Image</seg>
@@ -1752,7 +1757,7 @@
         <seg>เพียงแค่ภาพ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Outside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Outside Back Cover</seg>
@@ -1761,7 +1766,7 @@
         <seg>นอกปกหลัง</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
+    <tu tuid="TemplateBooks.PageLabel.Picture &amp; Word">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture &amp; Word</seg>
@@ -1770,16 +1775,16 @@
         <seg>รูปภาพและคำ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Picture on Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Picture On Bottom</seg>
+        <seg>Picture on Bottom</seg>
       </tuv>
       <tuv xml:lang="th">
         <seg>รูปภาพที่ด้านล่าง</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Picture in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture in Middle</seg>
@@ -1788,7 +1793,7 @@
         <seg>ภาพในกลาง</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
+    <tu tuid="TemplateBooks.PageLabel.This Page Is Intentionally Blank">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Page Is Intentionally Blank</seg>
@@ -1797,7 +1802,7 @@
         <seg>หน้านี้จะว่างเปล่าจงใจ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Title Page">
+    <tu tuid="TemplateBooks.PageLabel.Title Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Title Page</seg>
@@ -1806,7 +1811,7 @@
         <seg>ชื่อหน้า</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown">
+    <tu tuid="EditTab.ContentLanguagesDropdown">
       <tuv xml:lang="en">
         <seg>Multilingual Settings</seg>
       </tuv>
@@ -1814,7 +1819,7 @@
         <seg>การตั้งค่าการพูดได้หลายภาษา</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
@@ -1822,7 +1827,7 @@
         <seg>อัด</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
@@ -1830,7 +1835,7 @@
         <seg>ตัด</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
@@ -1838,7 +1843,7 @@
         <seg>ลบ\n หน้า</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
@@ -1846,7 +1851,7 @@
         <seg>อัด\n หน้า</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
@@ -1854,7 +1859,7 @@
         <seg>แปะ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
@@ -1862,7 +1867,7 @@
         <seg>แก้</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
@@ -1871,7 +1876,7 @@
         <seg>สองภาษา</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+    <tu tuid="EditTab.CopyImageIPMetadataQuestion">
       <note>get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
@@ -1880,7 +1885,7 @@
         <seg>อัดข้อมูลนี้ไปภาพอื่น ๆ ทั้งหมดในหนังสือเล่มนี้หรือไม่?</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+    <tu tuid="EditTab.LayoutInPublishTabOnlyNotice">
       <tuv xml:lang="en">
         <seg>This option is only available in the Publish tab.</seg>
       </tuv>
@@ -1888,7 +1893,7 @@
         <seg>ตัวเลือกนี้จะใช้ได้เฉพาะในประกาศ tab</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
@@ -1897,7 +1902,7 @@
         <seg>หนึ่งภาษา</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.noOtherLayouts">
+    <tu tuid="EditTab.NoOtherLayouts">
       <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
       <tuv xml:lang="en">
         <seg>There are no other layout options for this template.</seg>
@@ -1906,7 +1911,7 @@
         <seg>ไม่มีตัวเลือกรูปแบบอื่น ๆ สำหรับแม่แบบนี้</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+    <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
       <tuv xml:lang="en">
         <seg>Picture Intellectual Property Information</seg>
       </tuv>
@@ -1914,7 +1919,7 @@
         <seg>รูปภาพข้อมูลทรัพย์สินทางปัญญา</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>
@@ -1947,7 +1952,7 @@
         <seg>การใช้แม่แบบอ่าน</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._makeASuggestionMenuItem">
+    <tu tuid="HelpMenu.MakeASuggestionMenuItem">
       <tuv xml:lang="en">
         <seg>Make a Suggestion</seg>
       </tuv>
@@ -1955,7 +1960,7 @@
         <seg>ให้คำแนะนำได้</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._webSiteMenuItem">
+    <tu tuid="HelpMenu.WebSiteMenuItem">
       <tuv xml:lang="en">
         <seg>Web Site</seg>
       </tuv>
@@ -1963,7 +1968,7 @@
         <seg>เว็บไซต์</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+    <tu tuid="HelpMenu.CheckForNewVersionMenuItem">
       <tuv xml:lang="en">
         <seg>Check For New Version</seg>
       </tuv>
@@ -1971,7 +1976,7 @@
         <seg>ตรวจสอบรุ่นใหม่</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.creditsMenuItem">
+    <tu tuid="HelpMenu.CreditsMenuItem">
       <tuv xml:lang="en">
         <seg>About Bloom</seg>
       </tuv>
@@ -1979,7 +1984,7 @@
         <seg>เกี่ยวกับ Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.documentationMenuItem">
+    <tu tuid="HelpMenu.DocumentationMenuItem">
       <tuv xml:lang="en">
         <seg>Documentation</seg>
       </tuv>
@@ -1987,7 +1992,7 @@
         <seg>เอกสาร</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.keyBloomConceptsToolStripMenuItem">
+    <tu tuid="HelpMenu.KeyBloomConceptsToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Key Bloom Concepts</seg>
       </tuv>
@@ -1995,7 +2000,7 @@
         <seg>แนวคิดหลักของ Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.registrationMenuItem">
+    <tu tuid="HelpMenu.RegistrationMenuItem">
       <tuv xml:lang="en">
         <seg>Registration</seg>
       </tuv>
@@ -2003,7 +2008,7 @@
         <seg>การลงทะเบียน</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.releaseNotesMenuItem">
+    <tu tuid="HelpMenu.ReleaseNotesMenuItem">
       <tuv xml:lang="en">
         <seg>Release Notes...</seg>
       </tuv>
@@ -2011,7 +2016,7 @@
         <seg>บันทึกรี ...</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.reportAProblemToolStripMenuItem">
+    <tu tuid="HelpMenu.ReportAProblemToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Report a Problem...</seg>
       </tuv>
@@ -2019,7 +2024,7 @@
         <seg>รายงานปัญหา ...</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.showEventLogMenuItem">
+    <tu tuid="HelpMenu.ShowEventLogMenuItem">
       <tuv xml:lang="en">
         <seg>Show Event Log</seg>
       </tuv>
@@ -2027,7 +2032,7 @@
         <seg>แสดงบันทึกเหตุการณ์</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -2036,7 +2041,7 @@
         <seg>InDesign XML ข้อมูล</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -2343,7 +2348,7 @@
         <seg>การเข้าสู่ระบบ BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="LoginDialog.showPassword">
+    <tu tuid="LoginDialog.ShowPassword">
       <tuv xml:lang="en">
         <seg>&amp;Show Password</seg>
       </tuv>
@@ -2626,7 +2631,7 @@
         <seg>มีคนอื่นที่ใช้ในการส่ง / รับCollectionที่จะแบ่งปันกับคุณ? \n ให้ใช้ปุ่มใดปุ่มหนึ่งสีแดงเหล่านี้เพื่อคัดลอกColletionของพวกเขาไปยังเครื่องคอมพิวเตอร์ของคุณ. \n ต่อมาใช้ส่ง / รับที่จะร่วมกันทำงานของคุณกลับมาพร้อมกับพวกเขา</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -2634,7 +2639,7 @@
         <seg>แทนที่ที่มีอยู่</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -2642,7 +2647,7 @@
         <seg>แจ้งให้ทราบ</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -2650,7 +2655,7 @@
         <seg>การเปลี่ยนแปลงที่ไม่ได้รับอนุญาต.เรื่องหน้าและหน้าเรื่องกลับต้องอยู่ที่พวกเขาอยู่</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -2658,7 +2663,7 @@
         <seg>ย้ายที่ไม่ถูกต้อง</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.BadPdf">
+    <tu tuid="PublishTab.PdfMaker.BadPdf">
       <tuv xml:lang="en">
         <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</seg>
       </tuv>
@@ -2666,7 +2671,7 @@
         <seg>"Bloom มีปัญหาการทำรูปแบบไฟล์ PDF ของหนังสือเล่มนี้\nคุณอาจต้องการความช่วยเหลือทางเทคนิคหรือการที่จะติดต่อนักพัฒนา แต่ที่นี่มีบางสิ่งที่คุณสามารถลอง:"</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryMoreMemory">
+    <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
       <tuv xml:lang="en">
         <seg>Try doing this on a computer with more memory</seg>
       </tuv>
@@ -2674,7 +2679,7 @@
         <seg>ลองทำเช่นนี้บนคอมพิวเตอร์ที่มี memory เพิ่มเติม</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryRestart">
+    <tu tuid="PublishTab.PdfMaker.TryRestart">
       <tuv xml:lang="en">
         <seg>Restart your computer and try this again right away</seg>
       </tuv>
@@ -2682,7 +2687,7 @@
         <seg>เปิดคอมพิวเตอร์ของคุณใหม่และพยายามที่นี้อีกครั้งทันที</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TrySmallerImages">
+    <tu tuid="PublishTab.PdfMaker.TrySmallerImages">
       <tuv xml:lang="en">
         <seg>Replace large, high-resolution images in your document with lower-resolution ones</seg>
       </tuv>
@@ -3250,7 +3255,7 @@
         <seg>การอัปโหลด {0}</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.ccLink">
+    <tu tuid="PublishTab.Upload.CcLink">
       <tuv xml:lang="en">
         <seg>CC-BY-NC</seg>
       </tuv>
@@ -3258,7 +3263,7 @@
         <seg>CC-BY-NC</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.loginLink">
+    <tu tuid="PublishTab.Upload.LoginLink">
       <tuv xml:lang="en">
         <seg>Log in to BloomLibrary.org</seg>
       </tuv>
@@ -3266,7 +3271,7 @@
         <seg>เข้าสู่ BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.signupLink">
+    <tu tuid="PublishTab.Upload.SignupLink">
       <tuv xml:lang="en">
         <seg>Sign up for BloomLibrary.org</seg>
       </tuv>
@@ -3956,7 +3961,7 @@
         <seg>ซิปหนังสือ ...</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Basic Book">
+    <tu tuid="TemplateBooks.BookName.Basic Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Book</seg>
@@ -3965,7 +3970,7 @@
         <seg>หนังสือพื้นฐาน</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Big Book">
+    <tu tuid="TemplateBooks.BookName.Big Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Big Book</seg>
@@ -3974,7 +3979,7 @@
         <seg>หนังสือเล่มใหญ่</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Decodable Reader">
+    <tu tuid="TemplateBooks.BookName.Decodable Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader</seg>
@@ -3983,7 +3988,7 @@
         <seg>Decodable Reader</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Leveled Reader">
+    <tu tuid="TemplateBooks.BookName.Leveled Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader</seg>
@@ -3992,7 +3997,7 @@
         <seg>Leveled Reader</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Picture Dictionary">
+    <tu tuid="TemplateBooks.BookName.Picture Dictionary">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture Dictionary</seg>
@@ -4001,7 +4006,7 @@
         <seg>พจนานุกรมรูปภาพ</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Wall Calendar">
+    <tu tuid="TemplateBooks.BookName.Wall Calendar">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Wall Calendar</seg>
@@ -4209,7 +4214,7 @@
         <seg>เรื่องแบบดั้งเดิม</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>

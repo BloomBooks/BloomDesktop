@@ -92,5 +92,10 @@ namespace Bloom.CollectionChoosing
 			_paths.Insert(0, path);
 			return true;
 		}
+
+		public void RemovePath(string path)
+		{
+			_paths.Remove(path);
+		}
 	}
 }

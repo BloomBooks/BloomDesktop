@@ -1,57 +1,65 @@
 ﻿using System;
-using System.Xml;
+using System.IO;
+using Bloom.Book;
 using Bloom.ImageProcessing;
-using Palaso.Progress;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Palaso.Xml;
-using Gecko;
+using SIL.Network;
+using SIL.Progress;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.Edit
 {
 	public class PageEditingModel
 	{
-		public void ChangePicture(string bookFolderPath, GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="bookFolderPath"></param>
+		/// <param name="imgOrDivWithBackgroundImage">Can be an XmlElement (during testing)</param>
+		/// <param name="imageInfo"></param>
+		/// <param name="progress"></param>
+		public void ChangePicture(string bookFolderPath, ElementProxy imgOrDivWithBackgroundImage, PalasoImage imageInfo,
+			IProgress progress)
 		{
-			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath);
-			img.SetAttribute("src", imageFileName);
-			UpdateMetdataAttributesOnImgElement(img, imageInfo);
+			var isSameFile = IsSameFilePath(bookFolderPath, HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage).UrlEncoded, imageInfo);
+			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath, isSameFile);
+			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage,
+				UrlPathString.CreateFromUnencodedString(imageFileName));
+			UpdateMetadataAttributesOnImage(imgOrDivWithBackgroundImage, imageInfo);
 		}
-
 
 		/// <summary>
-		/// for testing.... todo: maybe they should test ProcessAndSaveImageIntoFolder() directly, instead
+		/// Check whether the new image file is the same as the one we already have chosen.
+		/// (or at least the same pathname in the filesystem)
 		/// </summary>
-		public void ChangePicture(string bookFolderPath, XmlDocument dom, string imageId, PalasoImage imageInfo)
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2776.
+		/// If the user goes out of his way to choose the exact same picture file from the
+		/// original location again, a copy will still be created with a slightly revised
+		/// name.  Cropping a picture also results in a new copy of the file with the
+		/// revised name.  We still need a tool to remove unused picture files from a
+		/// book's folder.  (ie, BL-2351)
+		/// </remarks>
+		private bool IsSameFilePath(string bookFolderPath, string src, PalasoImage imageInfo)
 		{
-
-			var matches = dom.SafeSelectNodes("//img[@id='" + imageId + "']");
-			XmlElement img = matches[0] as XmlElement;
-
-			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath);
-			img.SetAttribute("src", imageFileName);
-
+			if (!String.IsNullOrEmpty(src))
+			{
+				var path = Path.Combine(bookFolderPath, HttpUtilityFromMono.UrlDecode(src));
+				if (path == imageInfo.OriginalFilePath)
+					return true;
+			}
+			return false;
 		}
 
-
-
-
-		public void UpdateMetdataAttributesOnImgElement(GeckoHtmlElement img, PalasoImage imageInfo)
-		{
-			UpdateMetadataAttributesOnImage(img, imageInfo);
-
-			img.Click(); //wake up javascript to update overlays
-		}
-
-		public static void UpdateMetadataAttributesOnImage(GeckoElement img, PalasoImage imageInfo)
+		public static void UpdateMetadataAttributesOnImage(ElementProxy imgOrDivWithBackgroundImage, PalasoImage imageInfo)
 		{
 			//see also Book.UpdateMetadataAttributesOnImage(), which does the same thing but on the document itself, not the browser dom
-			img.SetAttribute("data-copyright",
+			imgOrDivWithBackgroundImage.SetAttribute("data-copyright",
 							 String.IsNullOrEmpty(imageInfo.Metadata.CopyrightNotice) ? "" : imageInfo.Metadata.CopyrightNotice);
 
-			img.SetAttribute("data-creator", String.IsNullOrEmpty(imageInfo.Metadata.Creator) ? "" : imageInfo.Metadata.Creator);
+			imgOrDivWithBackgroundImage.SetAttribute("data-creator", String.IsNullOrEmpty(imageInfo.Metadata.Creator) ? "" : imageInfo.Metadata.Creator);
 
 
-			img.SetAttribute("data-license", imageInfo.Metadata.License == null ? "" : imageInfo.Metadata.License.ToString());
+			imgOrDivWithBackgroundImage.SetAttribute("data-license", imageInfo.Metadata.License == null ? "" : imageInfo.Metadata.License.ToString());
 		}
 
 		/*

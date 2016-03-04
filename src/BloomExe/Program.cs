@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Configuration;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.Properties;
@@ -15,12 +17,14 @@ using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using Gecko;
 using L10NSharp;
-using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.Registration;
-using Palaso.UI.WindowsForms.Reporting;
-using Palaso.UI.WindowsForms.UniqueToken;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Windows.Forms.Registration;
+using SIL.Windows.Forms.Reporting;
+using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
+using Bloom.MiscUI;
+using SIL.Windows.Forms.HtmlBrowser;
 
 namespace Bloom
 {
@@ -57,29 +61,48 @@ namespace Bloom
 		[HandleProcessCorruptedStateExceptions]
 		static void Main(string[] args1)
 		{
+			Logger.Init();
+			CheckForCorruptUserConfig();
+
+			//Debug.Fail("Attach Now");
 			bool skipReleaseToken = false;
 			try
 			{
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 
+				XWebBrowser.DefaultBrowserType = XWebBrowser.BrowserType.GeckoFx;
+
 				var args = args1;
 
-				if (Palaso.PlatformUtilities.Platform.IsWindows)
+				if (SIL.PlatformUtilities.Platform.IsWindows)
 				{
 					OldVersionCheck();
 				}
-				//bring in settings from any previous version
-				if (Settings.Default.NeedUpgrade)
+
+				try
 				{
-					//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-					Settings.Default.Upgrade();
-					Settings.Default.Reload();
-					Settings.Default.NeedUpgrade = false;
-					Settings.Default.MaximizeWindow = true; // this is needed to force this to be written to the file, where a user can find it to modify it by hand (our video maker)
-					Settings.Default.Save();
-					
-					StartUpWithFirstOrNewVersionBehavior = true;
+
+					//bring in settings from any previous version
+					if(Settings.Default.NeedUpgrade)
+					{
+						//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+						Settings.Default.Upgrade();
+						Settings.Default.Reload();
+						Settings.Default.NeedUpgrade = false;
+						Settings.Default.MaximizeWindow = true;
+						// this is needed to force this to be written to the file, where a user can find it to modify it by hand (our video maker)
+						Settings.Default.Save();
+
+						StartUpWithFirstOrNewVersionBehavior = true;
+					}
+				}
+				catch(Exception e)
+				{
+					//and empty or corrupt user.config caused Bloom just silently die.
+					//In libpalaso builds after 3.5, this is handled in a different way.
+					Settings.Default.Reset(); // BL-3177
+					Logger.WriteEvent("Problem with settings file, resetting.");
 				}
 
 				if (IsInstallerLaunch(args))
@@ -113,9 +136,15 @@ namespace Bloom
 				// Ensures that registration settings for all channels of Bloom are stored in a common place,
 				// so the user is not asked to register each independently.
 				RegistrationSettingsProvider.SetProductName("Bloom");
-#if DEBUG
-				using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
 
+				Dictionary<string, string> propertiesThatGoWithEveryEvent = ErrorReport.GetStandardProperties();
+				propertiesThatGoWithEveryEvent.Remove("MachineName");
+				propertiesThatGoWithEveryEvent.Remove("UserName");
+				propertiesThatGoWithEveryEvent.Remove("UserDomainName");
+				propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
+
+#if DEBUG
+				using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), propertiesThatGoWithEveryEvent, true))
 #else
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
@@ -123,7 +152,7 @@ namespace Bloom
 				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
 					|| feedbackSetting.ToLowerInvariant() == "true";
 
-				using (new DesktopAnalytics.Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), allowTracking))
+				using (new DesktopAnalytics.Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), propertiesThatGoWithEveryEvent, allowTracking))
 
 #endif
 
@@ -137,6 +166,7 @@ namespace Bloom
 						using (_applicationContainer = new ApplicationContainer())
 						{
 							SetUpLocalization();
+							
 							var path = args[0];
 							// This allows local links to bloom packs.
 							if (path.ToLowerInvariant().StartsWith("bloom://"))
@@ -174,7 +204,7 @@ namespace Bloom
 							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 							LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
+								_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
 							transfer.HandleBloomBookOrder(args[0]);
 							PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
 
@@ -215,12 +245,12 @@ namespace Bloom
 							// A special path to upload chunks of stuff. This is not currently documented and is not very robust.
 							// - User must log in before running this
 							// - For best results each bloom book needs to be part of a collection in its parent folder
-							// - little error checking (e.g., we don't apply the usual constaints that a book must have title and licence info)
+							// - little error checking (e.g., we don't apply the usual constraints that a book must have title and licence info)
 							SetUpLocalization();
 							Browser.SetUpXulRunner();
 								Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
+								_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
 							transfer.UploadFolder(args[1], _applicationContainer);
 							return;
 						}
@@ -234,6 +264,8 @@ namespace Bloom
 						if (args.Length == 1 && !IsInstallerLaunch(args))
 						{
 							Debug.Assert(args[0].ToLowerInvariant().EndsWith(".bloomcollection")); // Anything else handled above.
+							if (CollectionChoosing.OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(args[0]))
+								return;
 							Settings.Default.MruProjects.AddNewPath(args[0]);
 						}
 
@@ -247,12 +279,12 @@ namespace Bloom
 							}
 							catch (ApplicationException error)
 							{
-								Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
+								SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
 								Environment.Exit(-1);
 							}
 							catch (Exception error)
 							{
-								Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+								SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
 									"Bloom could not finish renaming your collection folder. Restart your computer and try again.");
 								Environment.Exit(-1);
 							}
@@ -263,6 +295,12 @@ namespace Bloom
 #if DEBUG
 						StartDebugServer();
 #endif
+
+						if(!BloomIntegrityDialog.CheckIntegrity())
+						{
+							Environment.Exit(-1);
+						}
+
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
 						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
@@ -276,7 +314,7 @@ namespace Bloom
 			finally
 			{
 				// Check memory one final time for the benefit of developers.  The user won't see anything.
-				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
 				if (!skipReleaseToken)
 					UniqueToken.ReleaseToken();
 			}
@@ -523,6 +561,12 @@ namespace Bloom
 			if (!string.IsNullOrEmpty(path))
 			{
 				CollectionChoosing.OpenCreateCloneControl.CheckForBeingInDropboxFolder(path);
+				while (CollectionChoosing.OpenCreateCloneControl.IsInvalidCollectionToEdit(path))
+				{
+					// Somehow...from a previous version?...we have an invalid file in our MRU list.
+					Settings.Default.MruProjects.RemovePath(path);
+					path = Settings.Default.MruProjects.Latest;
+				}
 			}
 
 			if (path == null || !OpenProjectWindow(path))
@@ -596,8 +640,8 @@ namespace Bloom
 				_projectContext = null;
 			}
 
-			Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-				new Palaso.Reporting.ShowAlwaysPolicy(), error,
+			SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+				new SIL.Reporting.ShowAlwaysPolicy(), error,
 				"{0} had a problem loading the {1} project. Please report this problem to the developers by clicking 'Details' below.",
 				Application.ProductName, Path.GetFileNameWithoutExtension(projectPath));
 		}
@@ -658,7 +702,7 @@ namespace Bloom
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
 			}
 
 			_projectContext.Dispose();
@@ -784,7 +828,7 @@ namespace Bloom
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,
 											"SIL/Bloom",
-											Resources.Bloom, "issues@bloomlibrary.org", "Palaso.UI");
+											Resources.Bloom, "issues@bloomlibrary.org", "SIL");
 
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 			}
@@ -823,9 +867,9 @@ Our issue-tracking system is searchable by anyone. Search engines (like Google) 
 
 Anyone looking specifically at our issue tracking system can read what you sent us. So if you have something private to say, please send it to one of the developers privately with a note that you don't want the issue in our issue tracking system. If need be, we'll make some kind of sanitized place-holder for your issue so that we don't lose it.
 ";
-			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
-			Palaso.Reporting.ErrorReport.AddStandardProperties();
-			Palaso.Reporting.ExceptionHandler.Init();
+			SIL.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
+			SIL.Reporting.ErrorReport.AddStandardProperties();
+			SIL.Reporting.ExceptionHandler.Init();
 
 			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
 		}
@@ -876,7 +920,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 					{
 					}
 
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 						"This beta version of Bloom is now over 90 days old. If possible, please get a new version at bloomlibrary.org.");
 			}
 
@@ -887,7 +931,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 		/// </summary>
 		private static void CheckLinuxFileAssociations()
 		{
-			if (!Palaso.PlatformUtilities.Platform.IsLinux)
+			if (!SIL.PlatformUtilities.Platform.IsLinux)
 				return;
 
 			// on Linux, Environment.SpecialFolder.LocalApplicationData defaults to ~/.local/share
@@ -983,7 +1027,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLowerInvariant().Contains("bloom"));
 
 			// This is your count on Windows.
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (SIL.PlatformUtilities.Platform.IsWindows)
 				return bloomProcessCount;
 
 			// On Linux, the process name is usually "mono-sgen" or something similar, but not all processes
@@ -1002,6 +1046,50 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 		public static BloomFileLocator OptimizedFileLocator
 		{
 			get { return _projectContext.OptimizedFileLocator; }
+		}
+
+		private static void CheckForCorruptUserConfig()
+		{
+#if WaitForBloom3pt6
+			//First check the user.config we get through using the palaso stuff.  This is the one in a folder with a name like Bloom/3.5.0.0
+			var palasoSettings = new SIL.Settings.CrossPlatformSettingsProvider();
+			palasoSettings.Initialize(null,null);
+			var error = palasoSettings.CheckForErrorsInFile();
+			if (error != null)
+			{
+				//Note: this is probably too early to do anything more complicated that writing to a log...
+				//Enhance: we might be able to do a MessageBox.Show(), but it would be better to save this error 
+				//and inform the user later when the UI can interact with them.
+				Logger.WriteEvent("error reading palaso user config: "+error.Message);
+				Logger.WriteEvent("Should self-heal");
+			}
+#endif
+			//Now check the plain .net user.config we also use (sigh). This is the one in a folder with a name like Bloom.exe_Url_avygitvf1lws5lpjrmoh5j0ggsx4tkj0
+
+			//roughly from http://stackoverflow.com/questions/9572243/what-causes-user-config-to-empty-and-how-do-i-restore-without-restarting
+			try
+			{
+				ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal);
+			}
+			catch (ConfigurationErrorsException ex)
+			{
+				Logger.WriteEvent("Cannot open user config file "+ex.Filename);
+				Logger.WriteEvent(ex.Message);
+
+				if (File.Exists(ex.Filename))
+				{
+					Logger.WriteEvent("Config file content:\n{0}", File.ReadAllText(ex.Filename));
+					Logger.WriteEvent("Deleting "+ ex.Filename);
+					File.Delete(ex.Filename);
+					Properties.Settings.Default.Upgrade();
+					// Properties.Settings.Default.Reload();
+					// you could optionally restart the app instead
+				}
+				else
+				{
+					Logger.WriteEvent("Config file {0} does not exist", ex.Filename);
+				}
+			}
 		}
 	}
 }

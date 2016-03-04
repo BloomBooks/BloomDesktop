@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Xsl;
-using System.Linq;
-using Palaso.Extensions;
-using Palaso.Reporting;
-using Palaso.Xml;
+using DesktopAnalytics;
+using Gecko;
+using SIL.Extensions;
+using SIL.Reporting;
+using SIL.Text;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -293,11 +297,18 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveFileProtocolFromStyleSheetLinks()
 		{
-			List<XmlElement> links = new List<XmlElement>();
 			foreach (XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
-				var linke = link.GetAttribute("href");
-				link.SetAttribute("href", linke.Replace("file:///", "").Replace("file://", ""));
+				var href = link.GetAttribute("href");
+				link.SetAttribute("href", href.Replace("file:///", "").Replace("file://", ""));
+			}
+		}
+		public void RemoveDirectorySpecificationFromStyleSheetLinks()
+		{
+			foreach(XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var href = link.GetAttribute("href");
+				link.SetAttribute("href", Path.GetFileName(href));
 			}
 		}
 
@@ -430,6 +441,27 @@ namespace Bloom.Book
 			return _dom.SafeSelectNodes("//head/meta[@name='" + name + "']").Count > 0;
 		}
 
+		/// <summary>
+		/// Fix BL-2789, where Tok Pisin and Indonesian would show up in the source bubble for book titles, 
+		/// saying the equivalent of "new book" in each language. BasicBook doesn't have that anymore,
+		/// but this cleans it up in books made from old shells.
+		/// </summary>
+		public void RemoveExtraBookTitles()
+		{ 
+			//NB: here we're just keeping it simple, not even making sure, for example, that 
+			//"Nupela Book" is in a Tok Pisin div. If it was in English, we'd zap it as well.
+			//This xpath will collect up both divs in the data-div, and also copies of this
+			//that may be in a bloom-translationGroup in the cover and title pages.
+			var genericBookNames = new[] { "Basic Book", "Nupela Buk", "Buku Dasar" };
+			foreach (XmlElement n in _dom.SafeSelectNodes("//*[@data-book='bookTitle']"))
+			{
+				if (genericBookNames.Contains(n.InnerText.Trim()))
+				{
+					n.ParentNode.RemoveChild(n);
+				}				
+			}
+		}
+
 		public void RemoveExtraContentTypesMetas()
 		{
 			bool first=true;
@@ -547,6 +579,140 @@ namespace Bloom.Book
 			XmlDomExtensions.RemoveStyleSheetIfFound(RawDom, path);
 		}
 
+		public void UpdatePageToTemplate(HtmlDom pageDom, XmlElement templatePageDiv, string pageId)
+		{
+			var pageDiv = pageDom.SafeSelectNodes("//body/div[@id='" + pageId + "']").Cast<XmlElement>().FirstOrDefault();
+			if (pageDiv != null)
+			{
+				var idAttr = templatePageDiv.Attributes["id"];
+				var templateId = idAttr == null ? "" : idAttr.Value;
+				var oldLineage = MigrateEditableData(pageDiv, templatePageDiv, templateId);
+				var props = new Dictionary<string, string>();
+				props["newLayout"] = templateId;
+				props["oldLineage"] = oldLineage;
+				Analytics.Track("Change Page Layout", props);
+			}
+		}
+
+		/// <summary>
+		/// Replace page in its parent with an element which is a clone of template, but with the contents
+		/// of page transferred as far as possible. Retain the id of the page. Set its lineage to the supplied value
+		/// </summary>
+		/// <param name="page"></param>
+		/// <param name="template"></param>
+		/// <param name="lineage"></param>
+		/// <param name="originalTemplateGuid"></param>
+		/// <param name="updateTo"></param>
+		internal string MigrateEditableData(XmlElement page, XmlElement template, string lineage)
+		{
+			var newPage = (XmlElement)page.OwnerDocument.ImportNode(template, true);
+			page.ParentNode.ReplaceChild(newPage, page);
+			newPage.SetAttribute("id", page.Attributes["id"].Value);
+			var oldLineageAttr = page.Attributes["data-pagelineage"];
+			var oldLineage = oldLineageAttr == null ? "" : oldLineageAttr.Value;
+			newPage.SetAttribute("data-pagelineage", lineage);
+
+			//preserve the data-page attribute of the old page, which will normally be empty or missing
+			var dataPageValue = page.GetAttribute("data-page");
+			if (string.IsNullOrEmpty(dataPageValue))
+			{
+				newPage.RemoveAttribute("data-page");
+			}
+			else
+			{
+				newPage.SetAttribute("data-page", dataPageValue); //the template has these as data-page='extra'
+			}
+
+			// migrate text
+			MigrateChildren(page, "bloom-translationGroup", newPage);
+			// migrate images
+			MigrateChildren(page, "bloom-imageContainer", newPage);
+			return oldLineage;
+		}
+
+		/// <summary>
+		/// For each div in the page which has the specified class, find the corresponding div with that class in newPage,
+		/// and replace its contents with the contents of the source page.
+		/// Also inserts any needed styles we know about.
+		/// </summary>
+		/// <param name="page"></param>
+		/// <param name="parentClass"></param>
+		/// <param name="newPage"></param>
+		private static void MigrateChildren(XmlElement page, string parentClass, XmlElement newPage)
+		{
+			//the leading '.' here is needed because newPage is an element in a larger DOM, and we only want to search in this page
+			var xpath = ".//div[contains(concat(' ', @class, ' '), ' " + parentClass + " ')]";
+			var oldParents = page.SafeSelectNodes(xpath);
+			var newParents = newPage.SafeSelectNodes(xpath);
+			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
+			// thing to copy or where the numbers are not equal. It's just a precaution.
+			for (int i = 0; i < Math.Min(newParents.Count, oldParents.Count); i++)
+			{
+				var oldParent = (XmlElement)oldParents[i];
+				var newParent = (XmlElement)newParents[i];
+				foreach (var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
+					newParent.RemoveChild(child);
+				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
+				// which messes things up unless we make a copy of the collection.
+				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
+				{
+					newParent.AppendChild(child);
+					AddKnownStyleIfMissing(child);
+				}
+			}
+		}
+
+		private static Dictionary<string, string> _stylesToDefine;
+
+		private static Dictionary<string, string> StylesToDefine
+		{
+			get
+			{
+				if (_stylesToDefine == null)
+				{
+					_stylesToDefine = new Dictionary<string, string>();
+					_stylesToDefine["BigWords"] = ".BigWords-style { font-size: 45pt !important; text-align: center !important; }";
+				}
+				return _stylesToDefine;
+			}
+		}
+
+		private static void AddKnownStyleIfMissing(XmlNode child)
+		{
+			if (child.Attributes == null)
+				return; // e.g., whitespace
+			var classAttr = child.Attributes["class"];
+			if (classAttr == null)
+				return;
+			foreach (var style in classAttr.Value.Split(' ').Where(x => x.EndsWith("-style")))
+			{
+				var key = style.Substring(0, style.Length - ".style".Length);
+				string defaultDefn;
+				if (!StylesToDefine.TryGetValue(key, out defaultDefn))
+					continue; // I don't think there should be more than one -style item, but just in case...
+				// Todo: conditions...
+				var headElt = child.OwnerDocument.DocumentElement.ChildNodes.Cast<XmlNode>().First(x => x.Name == "head");
+				var userStyles =
+					headElt.SafeSelectNodes("./style[@type='text/css' and @title='userModifiedStyles']")
+						.Cast<XmlElement>()
+						.FirstOrDefault();
+				if (userStyles == null)
+				{
+					userStyles = child.OwnerDocument.CreateElement("style");
+					userStyles.SetAttribute("type", "text/css");
+					userStyles.SetAttribute("title", "userModifiedStyles");
+					userStyles.InnerText = defaultDefn;
+					headElt.AppendChild(userStyles);
+					continue;
+				}
+				var content = userStyles.InnerText;
+				var lookFor = new Regex("\\." + style + "\\s*{");
+				if (lookFor.IsMatch(content))
+					continue; // style already defined
+				userStyles.InnerText = content + " " + defaultDefn;
+			}
+		}
+
 		/* The following, to use normal url query parameters to say if we wanted transparency,
 		 * was a nice idea, but turned out to not be necessary. I'm leave the code here in
 		 * case in the future we do find a need to add query parameters.
@@ -601,5 +767,221 @@ namespace Bloom.Book
 				node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
 			}
 		}
+
+		/// <summary>
+		/// Gives all the unique language codes found in datadiv elements that have data-book
+		/// </summary>
+		/// <returns></returns>
+		public List<string> GatherDataBookLanguages()
+		{
+			var dataBookElements = RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book]");
+			return dataBookElements.Cast<XmlElement>()
+				.Select(node => node.GetOptionalStringAttribute("lang", null))
+				.Where(lang => !string.IsNullOrEmpty(lang) && (lang!="*" || lang!="z"))
+				.Distinct()
+				.ToList();
+		}
+
+		public MultiTextBase GetBookSetting(string key)
+		{
+			var result = new MultiTextBase();
+			foreach (XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']"))
+			{
+				var lang = e.GetAttribute("lang");
+				result.SetAlternative(lang ?? "", e.InnerText);
+			}
+			return result;
+		}
+
+		public void RemoveBookSetting(string key)
+		{
+			foreach (XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']").Cast<XmlElement>().ToList())
+			{
+				e.ParentNode.RemoveChild(e);
+			}
+		}
+
+		public void SetBookSetting(string key, string writingSystemId, string form)
+		{
+			var dataDiv = GetOrCreateDataDiv(RawDom);
+			XmlElement node =
+				dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
+					writingSystemId)) as XmlElement;
+
+			if (string.IsNullOrEmpty(form))
+			{
+				if(null != node)
+					dataDiv.RemoveChild(node);
+				return;
+			}
+
+			if (null == node)
+			{
+				node = RawDom.CreateElement("div");
+				node.SetAttribute("data-book", key);
+				node.SetAttribute("lang", writingSystemId);
+			}
+			node.InnerText = form; // not InnerXml as it may contain things like SILA & LASI that are not valid XML
+			dataDiv.AppendChild(node);
+		}
+
+		/// <summary>
+		/// Blindly merge the classes from the source into the target.
+		/// </summary>
+		/// <param name="sourcePage"></param>
+		/// <param name="targetPage"></param>
+		/// <param name="classesToDrop"></param>
+		public static void MergeClassesIntoNewPage(XmlElement sourcePage, XmlElement targetPage, string[] classesToDrop)
+		{
+			foreach (var c in GetClasses(sourcePage))
+			{
+				if(!classesToDrop.Contains(c))
+					AddClassIfMissing(targetPage, c);
+			}
+		}
+
+		private static IEnumerable<string> GetClasses(XmlElement element)
+		{
+			var classes = element.GetAttribute("class");
+			if (String.IsNullOrEmpty(classes))
+				return new string[] {};
+			return classes.SplitTrimmed(' ');
+		}
+				/// <summary>
+		/// Find the first child of parent that has the specified class as (one of) its classes.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="classVal"></param>
+		/// <returns></returns>
+		public static XmlElement FindChildWithClass(XmlElement parent, string classVal)
+		{
+			// Can probably be done with xpath ./*[contains(concat(" ", normalize-space(@class), " "), " classVal ")]
+			// (plus something to get the first one).
+			// But I'm more confident of this version and suspect it might be faster for such a simple case.
+			foreach (var node in parent.ChildNodes)
+			{
+				var elt = node as XmlElement;
+				if (elt == null)
+					continue;
+				var eltClass = " " + GetAttributeValue(elt, "class") + " ";
+				if (eltClass.Contains(" " + classVal + " "))
+					return elt;
+			}
+			return null;
+		}
+
+		public static string GetAttributeValue(XmlElement elt, string name)
+		{
+			var attr = elt.Attributes[name];
+			if (attr == null)
+				return "";
+			return attr.Value;
+		}
+
+		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
+		{
+			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
+			foreach (Match match in findFF.Matches(cssContent))
+			{
+				foreach (var family in match.Groups[1].Value.Split(','))
+				{
+					var name = family.Trim();
+					// Strip matched quotes
+					if (name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
+						name = name.Substring(1, name.Length - 2);
+					result.Add(name);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets the url for the image, either from an img element or any other element that has 
+		/// an inline style with background-image set.
+		/// </summary>
+		public static UrlPathString GetImageElementUrl(GeckoHtmlElement imageElement)
+		{
+			return GetImageElementUrl(new ElementProxy(imageElement));
+		}
+
+		/// <summary>
+		/// Gets the url for the image, either from an img element or any other element that has 
+		/// an inline style with background-image set.
+		/// </summary>
+		public static UrlPathString GetImageElementUrl(XmlElement imageElement)
+		{
+			return GetImageElementUrl(new ElementProxy(imageElement));
+		}
+
+		/// <summary>
+		/// Gets the url for the image, either from an img element or any other element that has 
+		/// an inline style with background-image set.
+		/// </summary>
+		public static UrlPathString GetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage)
+		{
+			if (imgOrDivWithBackgroundImage.Name.ToLower() == "img")
+			{
+				var src = imgOrDivWithBackgroundImage.GetAttribute("src");
+                return UrlPathString.CreateFromUrlEncodedString(src);
+			}
+			else
+			{
+				var styleRule = imgOrDivWithBackgroundImage.GetAttribute("style") ?? "";
+				var regex = new Regex("background-image\\s*:\\s*url\\((.*)\\)", RegexOptions.IgnoreCase);
+				var match = regex.Match(styleRule);
+				if (match.Groups.Count == 2)
+				{
+					return UrlPathString.CreateFromUrlEncodedString(match.Groups[1].Value.Trim(new[] {'\'', '"'}));
+				}
+			}
+			//we choose to return this instead of null to reduce errors created by things like 
+			// HtmlDom.GetImageElementUrl(element).UrlEncoded. If we just returned null, that has to be written
+			// as something that checks for null, like:
+			//  var url = HtmlDom.GetImageElementUrl(element). if(url!=null) url.UrlEncoded
+			return UrlPathString.CreateFromUnencodedString("");
+		}
+
+
+		/// <summary>
+		/// Sets the url attribute either of an img (the src attribute) 
+		/// or a div with an inline style with an background-image rule
+		/// </summary>
+		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url)
+		{
+			if (imgOrDivWithBackgroundImage.Name.ToLower() == "img")
+			{
+				imgOrDivWithBackgroundImage.SetAttribute( "src", url.UrlEncoded);
+			}
+			else
+			{
+				imgOrDivWithBackgroundImage.SetAttribute("style", string.Format("background-image:url('{0}')", url.UrlEncoded));
+			} 
+		}
+
+		public static XmlNodeList SelectChildImgAndBackgroundImageElements(XmlElement element)
+		{
+			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
+		}
+
+		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)
+		{
+			return element.SelectNodes("self::img | self::*[contains(@style,'background-image')]").Count == 1;
+		}
+
+		public static XmlElement GetOrCreateDataDiv(XmlNode dom)
+		{
+			var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
+			if (dataDiv == null)
+			{
+				XmlDocument doc = dom as XmlDocument;
+				if (doc == null)
+					doc = dom.OwnerDocument;
+				dataDiv = doc.CreateElement("div");
+				dataDiv.SetAttribute("id", "bloomDataDiv");
+				dom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
+			}
+			return dataDiv;
+		}
+
+
 	}
 }

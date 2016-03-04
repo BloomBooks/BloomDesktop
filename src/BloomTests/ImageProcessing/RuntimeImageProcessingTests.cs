@@ -3,7 +3,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using Bloom;
 using NUnit.Framework;
-using Palaso.IO;
+using SIL.IO;
 
 
 using Bloom.ImageProcessing;

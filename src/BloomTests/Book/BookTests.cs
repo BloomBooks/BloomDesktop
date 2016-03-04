@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -7,126 +6,21 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
 using Bloom.Publish;
 using Moq;
 using NUnit.Framework;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.TestUtilities;
-using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Xml;
 using System;
 
 namespace BloomTests.Book
 {
 	[TestFixture]
-	public class BookTests
+	public class BookTests : BookTestsBase
 	{
-		private Mock<IBookStorage> _storage;
-		private Mock<ITemplateFinder> _templateFinder;
-		private Mock<IFileLocator> _fileLocator;
-		private Mock<HtmlThumbNailer> _thumbnailer;
-		private Mock<PageSelection> _pageSelection;
-		private PageListChangedEvent _pageListChangedEvent;
-		private TemporaryFolder _testFolder;
-		private TemporaryFolder _tempFolder;
-		private CollectionSettings _collectionSettings;
-		private HtmlDom _bookDom;
-		private BookInfo _metadata;
-
-		[SetUp]
-		public void Setup()
-		{
-			_storage = new Moq.Mock<IBookStorage>();
-			_storage.Setup(x => x.GetLooksOk()).Returns(true);
-			_bookDom = new HtmlDom(GetThreePageDom());
-			_storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
-			_storage.SetupGet(x => x.Key).Returns("testkey");
-			_storage.SetupGet(x => x.FileName).Returns("testTitle");
-			_storage.Setup(x => x.GetRelocatableCopyOfDom(It.IsAny<IProgress>())).Returns(()=>
-																							  {
-																								  return
-																									  _bookDom.Clone();
-																							  });// review: the real thing does more than just clone
-			_storage.Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>(),It.IsAny<IProgress>())).Returns(
-				(HtmlDom x, IProgress y) => {return x.Clone();});// review: the real thing does more than just clone
-
-			_storage.Setup(x => x.GetFileLocator()).Returns(()=>_fileLocator.Object);
-
-			_testFolder = new TemporaryFolder("BookTests");
-			_tempFolder = new TemporaryFolder(_testFolder, "book");
-			MakeSamplePngImageWithMetadata(Path.Combine(_tempFolder.Path,"original.png"));
-			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
-			_metadata = new BookInfo(_tempFolder.Path, true);
-			_storage.SetupGet(x => x.MetaData).Returns(_metadata);
-
-			_templateFinder = new Moq.Mock<ITemplateFinder>();
-			_fileLocator = new Moq.Mock<IFileLocator>();
-			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
-			string xMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter");
-			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
-			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","Templates");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout","languageDisplayTemplate.css"));
-			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("origami.css")).Returns("../notareallocation/origami.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("editPaneGlobal.css")).Returns("../notareallocation/editPaneGlobal.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
-			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js");
-
-			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
-			_fileLocator.Setup(x => x.LocateDirectoryWithThrow("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
-			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Factory-XMatter"));
-			_fileLocator.Setup(x => x.LocateFileWithThrow("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
-
-			_fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
-			_fileLocator.Setup(x => x.LocateDirectoryWithThrow("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
-			_fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("BigBook-XMatter"));
-			_fileLocator.Setup(x => x.LocateFileWithThrow("BigBook-XMatter".CombineForPath("BigBook-XMatter.htm"))).Returns(xMatter.CombineForPath("BigBook-XMatter", "BigBook-XMatter.htm"));
-
-			//warning: we're neutering part of what the code under test is trying to do here:
-			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
-
-			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { new NavigationIsolator()});
-			_pageSelection = new Mock<PageSelection>();
-			_pageListChangedEvent = new PageListChangedEvent();
-	  }
-
-		[TearDown]
-		public void TearDown()
-		{
-			if (_testFolder != null)
-			{
-				_testFolder.Dispose();
-				_testFolder = null;
-			}
-			_thumbnailer.Object.Dispose();
-		}
-
-		private Bloom.Book.Book CreateBook(CollectionSettings collectionSettings)
-		{
-			_collectionSettings = collectionSettings;
-			return new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
-				_collectionSettings,
-				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
-		}
-
-		private Bloom.Book.Book CreateBook()
-		{
-			return CreateBook(CreateDefaultCollectionsSettings());
-		}
-
-		private CollectionSettings CreateDefaultCollectionsSettings()
-		{
-			return new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
-		}
-
 //        [Test]
 //        public void InsertPage_PageInMiddle_IsInserted()
 //        {
@@ -189,7 +83,6 @@ namespace BloomTests.Book
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
 		}
-
 
 		[Test]
 		public void UpdateTextsNewlyChangedToRequiresParagraph_HasOneBR()
@@ -255,7 +148,7 @@ namespace BloomTests.Book
 				Language1Iso639Code = "th", Language2Iso639Code = "fr", Language3Iso639Code = "es" });
 			var book =  new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
-				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 
 			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code);
 
@@ -269,8 +162,6 @@ namespace BloomTests.Book
 			book.SetMultilingualContentLanguages("", null);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai']", 1);
 		}
-
-
 
 		[Test]
 		public void SavePage_ChangeMade_StorageToldToSave()
@@ -294,8 +185,6 @@ namespace BloomTests.Book
 
 			Assert.AreEqual("changed.png", imgInStorage.GetAttribute("src"));
 		}
-
-
 
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfFirstTwin_StorageUpdated()
@@ -323,7 +212,6 @@ namespace BloomTests.Book
 			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
 			Assert.AreEqual("original2", vernacularTextNodesInStorage.Item(1).InnerText, "the second copy of this page should not have been changed");
 		}
-
 
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfSecondTwin_StorageUpdated()
@@ -451,7 +339,6 @@ namespace BloomTests.Book
 			Assert.AreEqual("bloom-page A5Portrait", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
 		}
 
-
 		[Test]
 		public void InsertPageAfter_SourcePageHasLineage_GetsLineageOfSourcePlusItsAncestor()
 		{
@@ -510,18 +397,18 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page')]", expectedCount);
 		}
 
-//
-//        [Test]
-//        public void DeletePage_RaisesDeletedEvent()
-//        {
-//            var book = CreateBook();
-//            bool gotEvent=false;
-//            book.PageDeleted+=new EventHandler((x,y)=>gotEvent=true);
-//            var original = book.GetPages().Count();
-//            Page existingPage = book.GetPages().Last();
-//            book.DeletePage(existingPage);
-//            Assert.IsTrue(gotEvent);
-//        }
+		//
+		//        [Test]
+		//        public void DeletePage_RaisesDeletedEvent()
+		//        {
+		//            var book = CreateBook();
+		//            bool gotEvent=false;
+		//            book.PageDeleted+=new EventHandler((x,y)=>gotEvent=true);
+		//            var original = book.GetPages().Count();
+		//            Page existingPage = book.GetPages().Last();
+		//            book.DeletePage(existingPage);
+		//            Assert.IsTrue(gotEvent);
+		//        }
 
 		[Test]
 		public void DuplicatePage()
@@ -743,7 +630,8 @@ namespace BloomTests.Book
 		/// regression test... when we rebuild the xmatter, we also need to update the html attributes that let us
 		/// know the state of the image metadata without having to open the image up (slow).
 		/// </summary>
-		[Test, Ignore("breaks on team city for some reason")]
+		[Test]
+		[Category("SkipOnTeamCity")]
 		public void BringBookUpToDate_CoverImageHasMetaData_HtmlForCoverPageHasMetaDataAttributes()
 		{
 			_bookDom = new HtmlDom(@"
@@ -760,7 +648,7 @@ namespace BloomTests.Book
 			MakeSamplePngImageWithMetadata(imagePath);
 
 			book.BringBookUpToDate(new NullProgress());
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']",1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@data-book='coverImage' and @data-creator='joe']",1);
 		}
 
 		private TempFile MakeTempImage(string name)
@@ -795,10 +683,12 @@ namespace BloomTests.Book
 
 			//book.BringBookUpToDate(new NullProgress());
 			var dom = book.GetPreviewHtmlFileForWholeBook();
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='theCover.png']", 1);
+			
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@style=\"background-image:url('theCover.png')\"]", 1);
 		}
 
-		[Test, Ignore("breaks on team city for some reason")]
+		[Test]
+		[Category("SkipOnTeamCity")]
 		public void UpdateImgMetdataAttributesToMatchImage_HtmlForImgGetsMetaDataAttributes()
 		{
 			_bookDom = new HtmlDom(@"
@@ -819,7 +709,7 @@ namespace BloomTests.Book
 			MakeSamplePngImageWithMetadata(imagePath);
 
 			book.BringBookUpToDate(new NullProgress());
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@src='test.png' and @data-creator='joe']", 1);
 		}
 
 		[Test]
@@ -963,6 +853,26 @@ namespace BloomTests.Book
 			Assert.That(_metadata.Title, Is.EqualTo("changed & <mangled>"));
 		}
 
+
+		[Test]
+		public void Save_UpdatesBookInfoMetadataTags()
+		{
+			_bookDom = new HtmlDom(
+				@"<html><body>
+					<div class='bloom-page' id='guid3'>
+						<div lang='en' data-derived='topic'>original</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+			book.OurHtmlDom.SetBookSetting("topic", "en", "Animal stories");
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
+
+			book.OurHtmlDom.SetBookSetting("topic", "en", "Science");
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
+		}
 		[Test]
 		public void Save_UpdatesMetadataCreditsRemovingBreaks()
 		{
@@ -1021,43 +931,7 @@ namespace BloomTests.Book
 			book.Save();
 			Assert.That(_metadata.Isbn, Is.EqualTo(""));
 		}
-
-		[Test]
-		public void Save_UpdatesMetadataTags()
-		{
-			_bookDom = new HtmlDom(
-				@"<html>
-				<head>
-					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
-				   <title>Test Shell</title>
-					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
-					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
-				</head>
-				<body>
-					<div class='bloom-page' id='guid3'>
-						<div lang='en' data-book='topic'>original</div>
-					</div>
-				</body></html>");
-
-			var book = CreateBook();
-			
-			var topicElt = _bookDom.SelectSingleNode("//div/div[@data-book='topic' and @lang='en']");
-			topicElt.InnerText = "Animal stories";
-			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
-
-			// We'd like to check what happens when it is edited again.
-			// Problem is, the first save has created a BloomDataDiv which comes before the div we are modifying and
-			// has the old value. (This isn't a problem editing the real topic area because editing happens on a
-			// cut-down document that only has one page and thus no data-div.)
-			var datadiv = _bookDom.SelectSingleNode("//div[@id='bloomDataDiv']");
-			datadiv.ParentNode.RemoveChild(datadiv);
-			topicElt.InnerText = "Science";
-			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
-		}
-
-		[Test]
+		
 		public void Save_UpdatesAllTitles()
 		{
 			_bookDom = new HtmlDom(
@@ -1175,7 +1049,7 @@ namespace BloomTests.Book
 			licenseData.License = CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by-sa/3.0/");
 			licenseData.License.RightsStatement = "Please acknowledge nicely to joe.blow@example.com";
 
-			book.UpdateLicenseMetdata(licenseData);
+			book.SetMetadata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("cc-by-sa"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely to joe.blow@ex(download book to read full email address)"));
@@ -1183,7 +1057,7 @@ namespace BloomTests.Book
 			// Custom License
 			licenseData.License = new CustomLicense {RightsStatement = "Use it if you dare"};
 
-			book.UpdateLicenseMetdata(licenseData);
+			book.SetMetadata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("custom"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Use it if you dare"));
@@ -1191,7 +1065,7 @@ namespace BloomTests.Book
 			// Null License (ask the user)
 			licenseData.License = new NullLicense { RightsStatement = "Ask me" };
 
-			book.UpdateLicenseMetdata(licenseData);
+			book.SetMetadata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("ask"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Ask me"));
@@ -1244,19 +1118,6 @@ namespace BloomTests.Book
 			var book = CreateBook(collectionSettings);
 			var langs = book.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='languagesOfBook']") as XmlElement;
 			Assert.AreEqual("English", langs.InnerText);
-		}
-
-		private void MakeSamplePngImageWithMetadata(string path)
-		{
-			var x = new Bitmap(10, 10);
-			x.Save(path, ImageFormat.Png);
-			x.Dispose();
-			using (var img = PalasoImage.FromFile(path))
-			{
-				img.Metadata.Creator = "joe";
-				img.Metadata.CopyrightNotice = "Copyright 1999 by me";
-				img.SaveUpdatedMetadataIfItMakesSense();
-			}
 		}
 
 
@@ -1373,46 +1234,6 @@ namespace BloomTests.Book
 			XmlElement x1 = (XmlElement) d.SelectSingleNode("//div");
 			templatePage.Setup(x=>x.GetDivNodeForThisPage()).Returns(x1);
 			return templatePage;
-		}
-
-
-
-		private XmlDocument GetThreePageDom()
-		{
-			var dom = new XmlDocument();
-			dom.LoadXml(@"<html ><head></head><body>
-				<div class='bloom-page' id='guid1'>
-					<p>
-						<textarea lang='en' id='1'  data-book='bookTitle'>tree</textarea>
-						<textarea lang='xyz' id='2'  data-book='bookTitle'>dog</textarea>
-					</p>
-				</div>
-				<div class='bloom-page' id='guid2'>
-					<p>
-						<textarea lang='en' id='3'>english</textarea>
-						<textarea lang='xyz' id='4'>originalVernacular</textarea>
-						<textarea lang='tpi' id='5'>tokpsin</textarea>
-					</p>
-					<img id='img1' src='original.png'/>
-				</div>
-				<div class='bloom-page' id='guid3'>
-					<p>
-						<textarea id='6' lang='xyz'>original2</textarea>
-					</p>
-					<p>
-						<textarea lang='xyz' id='copyOfVTitle'  data-book='bookTitle'>tree</textarea>
-						<textarea lang='xyz' id='aa'  data-collection='testLibraryVariable'>aa</textarea>
-					   <textarea lang='xyz' id='bb'  data-collection='testLibraryVariable'>bb</textarea>
-
-					</p>
-				</div>
-				</body></html>");
-			return dom;
-		}
-
-		private void SetDom(string bodyContents)
-		{
-			_bookDom = new HtmlDom(@"<html ><head></head><body>" + bodyContents + "</body></html>");
 		}
 	}
 }

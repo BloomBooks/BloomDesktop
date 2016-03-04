@@ -1,0 +1,89 @@
+/*Styles for ReaderTools.htm*/
+div.stageLine {
+	display: block;
+	font-size: 16pt;
+}
+span.stageLine { float: left; -moz-user-select: none; }
+td.acceptable { color: lightgreen; }
+td.tooLarge { color: orange; }
+td.statistics-label { padding-right: 5px; }
+td.statistics-max { padding-right: 3px; text-align: center; }
+td.statistics-actual { padding-right: 3px; text-align: center; }
+span.setup { font-size: xx-small; margin-left: 10px; }
+div.tableHolder { overflow: auto; }
+div.sortBlock {
+	position: relative;
+	float: right;
+	margin: 0 14px 8px 6px;
+	display: inline-block;
+	border: 1px solid #fff;
+}
+div.rightBorder {
+	border: 0 solid white;
+	border-right-width: 1px;
+}
+div.sortIconSelected { background: grey; }
+div.sortItem {
+	display: inline-block;
+	color: white;
+	padding: 2px 3px;
+	cursor: pointer;
+}
+span.ofStage { font-size: 12pt; }
+span.disabledIcon { visibility: hidden; }
+td.disabledLimit { visibility: hidden; }
+
+div.wordList, div.letterList { margin: 4px; }
+div.wordList { column-count: 3; }
+div.letter { margin: 0 2px 2px; float: left; min-width: 20px; }
+div.word { margin: 0 2px 2px; width: auto; }
+div.sight-word {
+	color: #87CEFA;
+}
+
+div.section ul { padding-left: 16px; margin-top: 4px; }
+div.section ul li { color: #fff; }
+
+.ui-icon-triangle-1-w, .ui-icon-triangle-1-e { cursor: pointer; }
+
+#make-letter-word-list-div {
+  	position: absolute;
+	bottom: 0;
+  	padding: 8px 4px;
+	background-color: #333;
+	box-sizing: border-box;
+	width: calc(100% - 3px);
+}
+#make-letter-word-list {
+  font-size: 10px;
+}
+
+#setupStages {
+	display: block;
+	position: relative;
+	float: right;
+	margin: 0 10px 14px 0;
+}
+
+#setupStages span.setup { margin-left: 2px; }
+
+.noSelect { -moz-user-select: none; }
+
+#decodable-edit {
+	height: 14px;
+	position: relative;
+	top: 3px;
+}
+#leveled-edit {
+	height: 14px;
+	position: relative;
+	top: 3px;
+}
+
+#allowed-word-list-truncated {
+	position: absolute;
+	bottom: 0;
+	padding: 8px 4px;
+	background-color: #333;
+	color: #87CEFA;
+}

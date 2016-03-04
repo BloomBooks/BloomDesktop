@@ -15,8 +15,8 @@ using DesktopAnalytics;
 using Gecko;
 using Gecko.Events;
 using Gecko.Utils;
-using Palaso.Code;
-using Palaso.Reporting;
+using SIL.Code;
+using SIL.Reporting;
 using Bloom.Book;
 using Bloom.Properties;
 using BloomTemp;
@@ -94,6 +94,56 @@ namespace Bloom
 			public int Width = 70;
 			public int Height = DefaultHeight;
 			public string FileName = "thumbnail.png";
+		}
+
+
+		/// <summary>
+		/// A synchronous version of getting thumbnails, currently used by the image server
+		/// to get thumbnails that are used in the add page dialog.
+		/// </summary>
+		/// <param name="key">Used to retrieve the thumbnail from a dictionary if we are asked for
+		/// the same one repeatedly</param>
+		/// <param name="document">Whose rendering will produce the thumbnail content.</param>
+		/// <param name="options"></param>
+		/// <returns></returns>
+		public Image GetThumbnail(string key, HtmlDom document, ThumbnailOptions options)
+		{
+			Image image;
+			Image thumbnail = null;
+			lock (this)
+			{
+				//In our cache?
+				if (!String.IsNullOrWhiteSpace(key) && _images.TryGetValue(key, out image))
+				{
+					return image;
+				}
+				_backgroundColorOfResult = options.BackgroundColor;
+				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(document.RawDom);
+
+				var browser = GetBrowserForPaperSize(document.RawDom);
+				if (browser == null)
+					return Resources.PagePlaceHolder;
+
+				var order = new ThumbnailOrder()
+				{
+					Options = options,
+					Document = document
+				};
+				for (int i = 0; i < 4; i++)
+				{
+					if (CreateThumbNail(order, browser, out thumbnail))
+						break;
+					// For some reason...possibly another navigation was in progress...we can't do this just now.
+					// Try a few times.
+				}
+				if (thumbnail == null) // just can't get it.
+				{
+					return Resources.PagePlaceHolder; // but don't save it...try again if we get another request.
+				}
+				if (!String.IsNullOrWhiteSpace(key))
+					_images[key] = thumbnail;
+			}
+			return thumbnail;
 		}
 
 
@@ -218,6 +268,10 @@ namespace Bloom
 						}
 						browser.Height = div.ClientHeight;
 						browser.Width = div.ClientWidth;
+			// This is probably not needed...width zero came about in debugging incomplete code where a stylesheet
+			// did not take effect..but it seems like a reasonable bit of defensive programming to keep.
+			if (browser.Width == 0)
+				browser.Width = browser.Height/2; // arbitrary way of avoiding crash
 			return new Size(browser.Width, browser.Height);
 		}
 
@@ -580,6 +634,7 @@ namespace Bloom
 						}
 					}
 				}
+				image.Dispose();
 			}
 		}
 

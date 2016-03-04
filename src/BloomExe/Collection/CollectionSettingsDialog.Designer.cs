@@ -49,7 +49,6 @@ namespace Bloom.Collection
 			this._fontSettings2Link = new System.Windows.Forms.LinkLabel();
 			this._fontSettings1Link = new System.Windows.Forms.LinkLabel();
 			this._xmatterList = new System.Windows.Forms.ListView();
-			this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this._xmatterDescription = new System.Windows.Forms.TextBox();
 			this._fontComboLanguage3 = new System.Windows.Forms.ComboBox();
 			this._fontComboLanguage2 = new System.Windows.Forms.ComboBox();
@@ -77,7 +76,7 @@ namespace Bloom.Collection
 			this._restartReminder = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._cancelButton = new System.Windows.Forms.Button();
-			this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
+			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this._tab.SuspendLayout();
@@ -133,7 +132,7 @@ namespace Bloom.Collection
 			this._removeLanguage3Link.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._removeLanguage3Link, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._removeLanguage3Link, null);
-			this._L10NSharpExtender.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog.LanguageTab._removeLanguageLink");
+			this._L10NSharpExtender.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog.LanguageTab.RemoveLanguageLink");
 			this._removeLanguage3Link.Location = new System.Drawing.Point(159, 243);
 			this._removeLanguage3Link.Name = "_removeLanguage3Link";
 			this._removeLanguage3Link.Size = new System.Drawing.Size(58, 19);
@@ -258,7 +257,7 @@ namespace Bloom.Collection
 			this._language1Label.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._language1Label, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._language1Label, null);
-			this._L10NSharpExtender.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab._language1Label");
+			this._L10NSharpExtender.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel");
 			this._language1Label.Location = new System.Drawing.Point(26, 24);
 			this._language1Label.Name = "_language1Label";
 			this._language1Label.Size = new System.Drawing.Size(140, 19);
@@ -335,7 +334,7 @@ namespace Bloom.Collection
 			// _xmatterList
 			// 
 			this._xmatterList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1});
+				new System.Windows.Forms.ColumnHeader() { Width = 250 } });
 			this._xmatterList.FullRowSelect = true;
 			this._xmatterList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this._xmatterList.HideSelection = false;
@@ -347,13 +346,6 @@ namespace Bloom.Collection
 			this._xmatterList.UseCompatibleStateImageBehavior = false;
 			this._xmatterList.View = System.Windows.Forms.View.Details;
 			this._xmatterList.SelectedIndexChanged += new System.EventHandler(this._xmatterList_SelectedIndexChanged);
-			// 
-			// columnHeader1
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this.columnHeader1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.columnHeader1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.columnHeader1, "columnHeader1");
-			this.columnHeader1.Width = 250;
 			// 
 			// _xmatterDescription
 			// 
@@ -618,7 +610,7 @@ namespace Bloom.Collection
 			this._showExperimentCommands.Name = "_showExperimentCommands";
 			this._showExperimentCommands.Size = new System.Drawing.Size(404, 23);
 			this._showExperimentCommands.TabIndex = 4;
-			this._showExperimentCommands.Text = "Show Experimental Commands (e.g. Export XML for InDesign)";
+			this._showExperimentCommands.Text = "Show Experimental Commands (e.g. Export Epub, Record Audio for Talking Book)";
 			this._showExperimentCommands.UseVisualStyleBackColor = true;
 			this._showExperimentCommands.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
 			// 
@@ -644,7 +636,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._showSendReceive, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._showSendReceive, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._showSendReceive, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive");
+			this._L10NSharpExtender.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive");
 			this._showSendReceive.Location = new System.Drawing.Point(50, 78);
 			this._showSendReceive.Name = "_showSendReceive";
 			this._showSendReceive.Size = new System.Drawing.Size(291, 23);
@@ -691,7 +683,7 @@ namespace Bloom.Collection
 			this._restartReminder.ForeColor = System.Drawing.Color.Firebrick;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._restartReminder, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._restartReminder, null);
-			this._L10NSharpExtender.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog._restartMessage");
+			this._L10NSharpExtender.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog.RestartMessage");
 			this._restartReminder.Location = new System.Drawing.Point(273, 348);
 			this._restartReminder.MaximumSize = new System.Drawing.Size(380, 0);
 			this._restartReminder.Name = "_restartReminder";
@@ -808,7 +800,7 @@ namespace Bloom.Collection
 		private System.Windows.Forms.Label _provinceLabel;
 		private System.Windows.Forms.LinkLabel _removeLanguage3Link;
 		private System.Windows.Forms.Label _restartReminder;
-		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
+		private SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.TabPage tabPage4;
 		private System.Windows.Forms.CheckBox _useImageServer;
@@ -829,7 +821,6 @@ namespace Bloom.Collection
 		private Button _helpButton;
 		private TextBox _xmatterDescription;
 		private ListView _xmatterList;
-		private ColumnHeader columnHeader1;
 		private CheckBox _automaticallyUpdate;
 		private LinkLabel _fontSettings3Link;
 		private LinkLabel _fontSettings2Link;

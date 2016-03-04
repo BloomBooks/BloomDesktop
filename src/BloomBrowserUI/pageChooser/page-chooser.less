@@ -1,0 +1,276 @@
+// page-chooser.less - rules for the Bloom Page Chooser dialog
+// try not to overwrite the bloomDialog.less rules
+
+@PreviewPaneLeftPadding: 15px;
+@WindowsDialogBackgroundColor: #F0F0F0;
+@WindowsButton-BackgroundColor: #E1E1E1;
+@WindowsButton-BackgroundColor-Hover: #B0DEE4;
+@WindowsButton-Border: #ADADAD;
+@HighlightColor: rgba(176, 222, 228, 1);
+ // partly transparent to go on TOP of the page image but still let it show through.
+ // Intended to be similar to HighlightColor when over the default dialog background, but I haven't
+ // tried to figure out exactly what would achieve that.
+@TransparentHiglightColor: hsla(186.9, 49.1%, 65%, 0.45);
+
+BODY {
+	margin: 4px;
+}
+#mainContainer {
+	border: none;
+	margin: 0;
+	height: 490px;
+	width: 790px;
+    display: flex;
+    flex-direction: row;
+	box-sizing: border-box;
+	padding-top: 10px;
+}
+.gridItemDisplay {
+	overflow-y: auto;
+	height: auto;
+	flex: 2;
+	display: flex;
+	flex-direction: column;
+}
+#singlePagePreview {
+	flex: 2;
+	order: 2;
+	height: auto;
+	min-width: 320px;
+    max-width: 370px; // in the standard dialog width, allows the other pane to be wide enough for 3 columns with scroll bar
+	padding-left: @PreviewPaneLeftPadding;
+
+	img{
+		border: 1px solid @HighlightColor;
+		//center it
+			display:block;
+			margin-left: auto;
+			margin-right: auto;
+	}
+}
+#preview {
+  max-height: 232px;
+}
+
+.landscape {
+    #preview {
+        width: unset;
+        height: 200px;
+    }
+}
+#previewCaption {
+	font-weight: bold;
+	text-align: center;
+}
+//#previewDescription {
+//	height: 90px;
+//	border: none;
+//	.DescriptionHeader {
+//		font-weight: bold;
+//	}
+//
+//}
+
+.DescriptionText {
+	white-space: normal;
+	max-height: 119px;
+	line-height: 1.5em;
+	overflow: hidden;
+  text-overflow: ellipsis;
+	overflow-y: auto ;
+	margin-right: @PreviewPaneLeftPadding;
+	margin-left: @PreviewPaneLeftPadding;
+}
+
+
+// Currently unused
+//.templatesCaption {
+//	overflow: hidden;
+//	background: #E0E0E0;
+//	padding-top: 4px;
+//	padding-bottom: 4px;
+//	padding-left: 20px;
+//	margin-top: 5px;
+//	margin-left: 5px;
+//    flex: 1 1 100%;
+//    flex-wrap: nowrap;
+//}
+.outerCollectionContainer {
+	flex-direction: column;
+}
+.collection {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+.collectionCaption {
+	font-weight: bold;
+	padding-left: 4px;
+	margin-left: 20px;
+	display: block;
+}
+.innerCollectionContainer {
+	margin: 0 0 0 0;
+}
+.gridItem {
+	margin: 0 10px 10px 11px;
+	width: 104px;
+	//height: 170px;
+	display: inline-block;
+}
+
+.gridItem:hover {
+    .selectionOverlay {
+        background: @TransparentHiglightColor;
+    }
+}
+.gridItem.ui-selected {
+    .selectionOverlay {
+        background: @TransparentHiglightColor;
+    }
+}
+.thumbnail {
+	overflow: hidden;
+	display: block;
+	margin-top: 4px;
+	background: inherit;
+	border: 1px solid darkgray;
+
+	//todo: this will have to change depending on orientation
+	width: 60px;
+	//take the height proportionally, from the width
+	margin-left: 20px;//centers the thumbnail in the enclosing grid item
+}
+
+.disabled .thumbnail {
+    opacity: 0.3;
+}
+
+.landscape {
+    .thumbnail {
+        width:unset;
+        height: 60px;
+        margin-left: 6px;
+    }
+}
+.gridItem {
+	.gridItemCaption {
+		display: none; // The captions aren't really helping the user, just adding complexity
+		//font-weight: bold;
+		text-align: center;
+		height: 2em; // enough for two lines
+		position: relative;
+		left: 0;
+		overflow: hidden;
+		line-height: 1em;
+	}
+	.pageDescription{display:none;}
+}
+.invisibleThumbCover {
+	z-index: 5;
+	position: absolute;
+	height: 130px;
+	width: 100px;
+	background: url(transparent.gif);
+}
+.selectionOverlay {
+	z-index: 3;
+	position: absolute;
+	height: 100px;
+	width: 100px;
+}
+
+.landscape {
+    .selectionOverlay {
+        height: 70px;
+    }
+}
+
+#mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button{
+	background: @WindowsButton-BackgroundColor !important;
+	color: black;
+	border: @WindowsButton-Border solid thin;
+	font-size: 10pt;
+	margin-left:10px;
+}
+
+#mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
+	background: @WindowsButton-BackgroundColor-Hover !important;
+	color:
+	black;
+}
+
+#mainContainer .ui-dialog-buttonpane{
+	padding: 0.3em 20px 20px 0.4em;
+}
+#mainContainer div.ui-dialog div.ui-dialog-content, .ui-dialog .ui-dialog-buttonpane, .bloomDialogContainer{
+	background-color: @WindowsDialogBackgroundColor !important;
+}
+
+#mainContainer div.ui-dialog div.ui-dialog-titlebar{
+	border: none;
+	.ui-dialog-title{
+		font-weight: normal;
+	}
+}
+
+#mainContainer .ui-dialog-buttonpane{	display: none;}
+/*
+.ui-dialog-buttonset {
+
+	.normalButton {
+		font-weight: normal !important;
+	}
+
+	//.defaultButton {
+	//	.ui-icon-plusthick {
+	//		left: 0.25em !important;
+	//	}
+	//	.ui-button-text {
+	//		//text-align: right !important;
+	//		font-weight: bold;
+	//	}
+	//	border: solid 5px @HighlightColor !important;
+	//}
+}*/
+
+#addPageButton {
+	//center it
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+
+	padding: 10px;
+	width: 200px;
+	border: 5px solid @HighlightColor;
+	font-weight: bold;
+    background-image:none;
+
+	&:disabled{
+		color:lightgrey;
+		border: medium solid lightgray;
+	}
+}
+
+#convertAnyway {
+    color:red;
+    visibility:hidden;
+    margin-left: @PreviewPaneLeftPadding;
+    margin-right: @PreviewPaneLeftPadding;
+}
+#convertLosesMaterial {
+    color:red;
+    visibility:hidden;
+    margin-left: @PreviewPaneLeftPadding; // rather arbitrary. I'd like it to be left-aligned with the picture.
+    margin-right: @PreviewPaneLeftPadding;
+    line-height: 1.5em;
+}
+
+.willLoseData {
+    #convertAnyway {
+        visibility:visible;
+    }
+    #convertLosesMaterial {
+        visibility:visible;
+    }
+}

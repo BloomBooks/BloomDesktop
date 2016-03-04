@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 #if !__MonoCS__
 using IWshRuntimeLibrary;
 #endif
@@ -7,32 +9,60 @@ using File = System.IO.File;
 
 namespace Bloom.Collection
 {
-	class ShortcutMaker
+	static class ShortcutMaker
 	{
+#if !__MonoCS__
+		const int MAX_PATH = 255;
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+		private static extern int GetShortPathName([MarshalAs(UnmanagedType.LPTStr)] string path,
+			[MarshalAs(UnmanagedType.LPTStr)] StringBuilder shortPath, int shortPathLength);
+#endif
+
 		public static void CreateDirectoryShortcut(string targetPath, string whereToPutItPath)
 		{
 			var name = Path.GetFileName(targetPath);
-			string linkPath = Path.Combine(whereToPutItPath, name) + ".lnk";
+			var linkPath = Path.Combine(whereToPutItPath, name) + ".lnk";
+			var shortLinkPath = "";
+
 			if(File.Exists(linkPath))
 				File.Delete(linkPath);
 
 #if !__MonoCS__
-			var WshShell = new WshShellClass();
-			var shortcut = (IWshShortcut)WshShell.CreateShortcut(linkPath);
+			var wshShell = new WshShellClass();
+			var shortcut = (IWshShortcut)wshShell.CreateShortcut(linkPath);
 
 			try
 			{
 				shortcut.TargetPath = targetPath;
-				//shortcut.Description = "Launch My Application";
-				//shortcut.IconLocation = Application.StartupPath + @"\app.ico";
 			}
-			catch (Exception error)
+			catch (Exception)
 			{
-				if (targetPath !=System.Text.Encoding.ASCII.GetString(System.Text.Encoding.ASCII.GetBytes(targetPath)))
-					throw new ApplicationException("Unfortunately, windows had trouble making a shortcut to remember this project, because of a problem with non-ASCII characters. Sorry!");
-				throw error;
+				if (targetPath == Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(targetPath))) throw;
+
+				// this exception was caused by non-ascii characters in the path, use 8.3 names instead
+				var shortTargetPath = new StringBuilder(MAX_PATH);
+				GetShortPathName(targetPath, shortTargetPath, MAX_PATH);
+
+				var shortWhereToPutPath = new StringBuilder(MAX_PATH);
+				GetShortPathName(whereToPutItPath, shortWhereToPutPath, MAX_PATH);
+
+				name = Path.GetFileName(shortTargetPath.ToString());
+
+				shortLinkPath = Path.Combine(shortWhereToPutPath.ToString(), name) + ".lnk";
+				if (File.Exists(shortLinkPath))
+					File.Delete(shortLinkPath);
+
+				shortcut = (IWshShortcut)wshShell.CreateShortcut(shortLinkPath);
+				shortcut.TargetPath = shortTargetPath.ToString();
 			}
+
 			shortcut.Save();
+
+			// now rename the link to the correct name if needed
+			if (!string.IsNullOrEmpty(shortLinkPath))
+				File.Move(shortLinkPath, linkPath);
+
 #else
 			// It's tempting to use symbolic links instead which would work much nicer - iff
 			// the UnixSymbolicLinkInfo class wouldn't cause us to crash...

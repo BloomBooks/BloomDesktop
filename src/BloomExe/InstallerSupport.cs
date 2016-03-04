@@ -12,10 +12,12 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
+using DesktopAnalytics;
 using L10NSharp;
 using Microsoft.Win32;
-using Palaso.PlatformUtilities;
-using Palaso.Reporting;
+using SIL.IO;
+using SIL.PlatformUtilities;
+using SIL.Reporting;
 using Squirrel;
 
 namespace Bloom
@@ -81,6 +83,14 @@ namespace Bloom
 			{
 				RemoveBloomRegistryEntries();
 			}
+			if (args[0] == "--squirrel-updated")
+			{
+				var props = new Dictionary<string, string>();
+				if (args.Length > 1)
+					props["newVersion"] = args[1];
+				props["channel"] = ApplicationUpdateSupport.ChannelName;
+				Analytics.Track("Update Version", props);
+			}
 			switch (args[0])
 			{
 				// args[1] is version number
@@ -125,25 +135,26 @@ namespace Bloom
 				// This will be done by the package installer.
 				return;
 			}
-			var installDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+			var iconDir = FileLocator.GetDirectoryDistributedWithApplication("icons");
 
 			// This is what I (JohnT) think should make Bloom display the right icon for .BloomCollection files.
-			EnsureRegistryValue(@".BloomCollection\DefaultIcon", Path.Combine(installDir, "BloomCollectionIcon.ico"));
-			EnsureRegistryValue(@".BloomPack\DefaultIcon", Path.Combine(installDir, "BloomPack.ico"));
+			EnsureRegistryValue(@".BloomCollection\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico"));
+			EnsureRegistryValue(@".BloomPack\DefaultIcon", Path.Combine(iconDir, "BloomPack.ico"));
 
 			// These may also be connected with making BloomCollection files display the correct icon.
 			// Based on things found in (or done by) the old wix installer.
 			EnsureRegistryValue(".BloomCollection", "Bloom.BloomCollectionFile");
 			EnsureRegistryValue(".BloomCollectionFile", "Bloom.BloomCollectionFile");
 			EnsureRegistryValue("Bloom.BloomCollectionFile", "Bloom Book Collection");
-			EnsureRegistryValue(@"Bloom.BloomCollectionFile\DefaultIcon", Path.Combine(installDir, "BloomCollectionIcon.ico, 0")); // review: do we have to use 8.3 names?
+			EnsureRegistryValue(@"Bloom.BloomCollectionFile\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico, 0"));
 
 			// I think these help BloomPack files display the correct icon.
 			EnsureRegistryValue(".BloomPack", "Bloom.BloomPackFile");
 			EnsureRegistryValue("Bloom.BloomPackFile", "Bloom Book Collection");
 			EnsureRegistryValue(".BloomPackFile", "Bloom Book Collection");
-			EnsureRegistryValue(@"Bloom.BloomPackFile\DefaultIcon", Path.Combine(installDir, "BloomPack.ico, 0"));
-			EnsureRegistryValue(@".BloomPackFile\DefaultIcon", Path.Combine(installDir, "BloomPack.ico, 0"));
+			EnsureRegistryValue(@"Bloom.BloomPackFile\DefaultIcon", Path.Combine(iconDir, "BloomPack.ico, 0"));
+			EnsureRegistryValue(@".BloomPackFile\DefaultIcon", Path.Combine(iconDir, "BloomPack.ico, 0"));
 			EnsureRegistryValue(@"SOFTWARE\Classes\Bloom.BloomPack", "Bloom Book Pack", "FriendlyTypeName");
 
 			// This might be part of registering as the executable for various file types?

@@ -8,10 +8,17 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Publish;
 using NUnit.Framework;
-using Palaso.IO;
+using SIL.IO;
 using Bloom;
 
-namespace BloomTests
+//we have this "SetupFixture" which calls Browser.SetUpXulRunner(). I think Eberhard added it, but there is no comment saying what
+//its purpose is. //In any case on our new TeamCity Build agent, that causes these unit tests to fail (and only these).
+//The test succeeds, but then the test runner dies when Xpcom.Shutdown() is called. One theory is that these tests run
+// geckofxhtmltopdf.exe, which also uses XulRunner. It's as if that thing is shut down already and so crashes when it is told
+// to shut down again.
+//Since the SetupFixture applies to all tests withthe same namespace, we turn it off for these tests by giving them their own namespace:
+// ReSharper disable once CheckNamespace
+namespace BloomTestsThatAvoidTheSetupFixture
 {
 	[TestFixture]
 #if __MonoCS__

@@ -4,8 +4,8 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Palaso.IO;
-using Palaso.Xml;
+using SIL.IO;
+using SIL.Xml;
 using TidyManaged;
 
 namespace Bloom
@@ -13,10 +13,12 @@ namespace Bloom
 	public static class XmlHtmlConverter
 	{
 
-		private static readonly Regex _selfClosingRegex = new Regex(@"<([ubi]|span)(\s+[^><]+\s*)/>");
-		private static readonly Regex _emptySelfClosingRegex = new Regex(@"<([ubi]|span)\s*/>");
-		private static readonly Regex _emptyTagsRegex = new Regex(@"<([ubi]|span)(\s+[^><]+\s*)>(\s*)</\1>");
-
+		private static readonly Regex _selfClosingRegex = new Regex(@"<([ubi]|em|strong|span)(\s+[^><]+\s*)/>");
+		private static readonly Regex _emptySelfClosingElementsToRemoveRegex = new Regex(@"<([ubi]|em|strong|span)\s*/>");
+		private static readonly Regex _emptyElementsWithAttributesRegex = new Regex(@"<([ubi]|em|strong|span)(\s+[^><]+\s*)>(\s*)</\1>");
+		private static readonly Regex _emptyElementsToPreserveRegex = new Regex(@"<(p)\s*>(\s*)</\1>");
+		private static readonly Regex _selfClosingElementsToPreserveRegex = new Regex(@"<(p)(\s*[^><]*\s*)/>");
+		
 
 		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
 		{
@@ -39,7 +41,7 @@ namespace Bloom
 
 			// It also likes to insert newlines before <b>, <u>, and <i>, and convert any existing whitespace
 			// there to a space.
-			content = new Regex(@"<([ubi])>").Replace(content, "REMOVEWHITESPACE<$1>");
+			content = new Regex(@"<([ubi]|em|strong)>").Replace(content, "REMOVEWHITESPACE<$1>");
 
 			// fix for <br></br> tag doubling
 			content = content.Replace("<br></br>", "<br />");
@@ -72,7 +74,7 @@ namespace Bloom
 					var errors = tidy.CleanAndRepair();
 					if (!string.IsNullOrEmpty(errors))
 					{
-						throw new ApplicationException(string.Format("{0}{2}{2}{1}", errors, content, Environment.NewLine));
+						throw new ApplicationException(errors);
 					}
 					var newContents = tidy.Save();
 					try
@@ -84,7 +86,7 @@ namespace Bloom
 
 						// The regex here is mainly for the \s as a convenient way to remove whatever whitespace TIDY
 						// has inserted. It's a fringe benefit that we can use the[bi] to deal with both elements in one replace.
-						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*<([biu])>", "<$1>");
+						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*<([biu]|em|strong)>", "<$1>");
 
 						//In BL2250, we still had REMOVEWHITESPACE sticking around sometimes. The way we reproduced it was
 						//with <u> </u>. That is, we started with
@@ -94,6 +96,25 @@ namespace Bloom
 
 						// remove blank lines at the end of style blocks
 						newContents = Regex.Replace(newContents, @"\s+<\/style>", "</style>");
+
+						// remove <br> elements immediately preceding </p> close tag (BL-2557)
+						// These are apparently inserted by ckeditor as far as we can tell.  They don't show up on
+						// fields that have never had a ckeditor activated, and always show up on fields that have
+						// received focus and activated an inline ckeditor.  The ideal ckeditor use case appears
+						// to be for data entry as part of a web page that get stored separately, with the data
+						// obtained something like the following in javascript:
+						//        ckedit.on('blur', function(evt) {
+						//            var editor = evt['editor'];
+						//            var data = editor.getData();
+						//            <at this point, the data looks okay, with any <br> element before the </p> tag.>
+						//            <store the data somewhere: the following lines have no effect, and may be silly.>
+						//            var div = mapCkeditDiv[editor.id];
+						//            div.innerHTML = data;
+						//        });
+						// Examining the initial value of div.innerHTML shows the unwanted <br> element, but it is
+						// not in the data returned by editor.getData().  Since assigning to div.innerHTML doesn't
+						// affect what gets written to the file, this hack was implemented instead.
+						newContents = Regex.Replace(newContents, @"(<br></br>|<br ?/>)[\r\n]*</p>", "</p>");
 
 						// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 						dom.PreserveWhitespace = true;
@@ -144,9 +165,15 @@ namespace Bloom
 			// $1 is the tag name.
 			// $2 is the tag attributes.
 			// $3 is the blank space between the opening and closing tags, if any.
-			content = _emptyTagsRegex.Replace(content, "<$1$2>REMOVEME$3</$1>");
+			content = _emptyElementsWithAttributesRegex.Replace(content, "<$1$2>REMOVEME$3</$1>");
 
-			return content;
+			// Tidy deletes <p></p>, though that's obviously not something to delete!
+			content = _emptyElementsToPreserveRegex.Replace(content, "<$1$2>REMOVEME</$1>");
+
+			// Prevent Tidy from deleting <p/> too
+			content = _selfClosingElementsToPreserveRegex.Replace(content, "<$1$2>REMOVEME</$1>");
+
+            return content;
 		}
 
 		/// <summary>
@@ -169,7 +196,7 @@ namespace Bloom
 
 		public static string RemoveEmptySelfClosingTags(string html)
 		{
-			return _emptySelfClosingRegex.Replace(html, "");
+			return _emptySelfClosingElementsToRemoveRegex.Replace(html, "");
 		}
 
 		/// <summary>
@@ -260,55 +287,52 @@ namespace Bloom
 		/// </summary>
 		public static string SaveDOMAsHtml5(XmlDocument dom, string targetPath)
 		{
-			using (var xmlFile = new TempFile())
+			// First we write the DOM out to string
+
+			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true, OmitXmlDeclaration = true};
+			var xmlStringBuilder = new StringBuilder();
+			using (var writer = XmlWriter.Create(xmlStringBuilder, settings))
 			{
-				// First we write the DOM out to string
-
-				var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true, OmitXmlDeclaration = true};
-				var xmlStringBuilder = new StringBuilder();
-				using (var writer = XmlWriter.Create(xmlStringBuilder, settings))
-				{
-					dom.WriteContentTo(writer);
-					writer.Close();
-				}
-
-				// HTML Tidy will mess that xml up, so we have this work around to make it "safe from libtidy"
-				var xml = xmlStringBuilder.ToString();
-				xml = AddFillerToKeepTidyFromRemovingEmptyElements(xml);
-
-				// Now re-write as html, indented nicely
-				string html;
-				using (var tidy = Document.FromString(xml))
-				{
-					tidy.ShowWarnings = false;
-					tidy.Quiet = true;
-					tidy.AddTidyMetaElement = false;
-					tidy.OutputXml = false;
-					tidy.OutputHtml = true;
-					tidy.DocType = DocTypeMode.Html5;
-					tidy.MergeDivs = AutoBool.No;
-					tidy.MergeSpans = AutoBool.No;
-					tidy.PreserveEntities = true;
-					tidy.JoinStyles = false;
-					tidy.IndentBlockElements = AutoBool.Auto; //instructions say avoid 'yes'
-					tidy.WrapAt = 9999;
-					tidy.IndentSpaces = 4;
-					tidy.CharacterEncoding = EncodingType.Utf8;
-					tidy.CleanAndRepair();
-					using (var stream = new MemoryStream())
-					{
-						tidy.Save(stream);
-						stream.Flush();
-						stream.Seek(0L, SeekOrigin.Begin);
-						using (var sr = new StreamReader(stream, Encoding.UTF8))
-							html = sr.ReadToEnd();
-					}
-				}
-
-				// Now revert the stuff we did to make it "safe from libtidy"
-				html = RemoveFillerInEmptyElements(html);
-				File.WriteAllText(targetPath, html, Encoding.UTF8);
+				dom.WriteContentTo(writer);
+				writer.Close();
 			}
+
+			// HTML Tidy will mess that xml up, so we have this work around to make it "safe from libtidy"
+			var xml = xmlStringBuilder.ToString();
+			xml = AddFillerToKeepTidyFromRemovingEmptyElements(xml);
+
+			// Now re-write as html, indented nicely
+			string html;
+			using (var tidy = Document.FromString(xml))
+			{
+				tidy.ShowWarnings = false;
+				tidy.Quiet = true;
+				tidy.AddTidyMetaElement = false;
+				tidy.OutputXml = false;
+				tidy.OutputHtml = true;
+				tidy.DocType = DocTypeMode.Html5;
+				tidy.MergeDivs = AutoBool.No;
+				tidy.MergeSpans = AutoBool.No;
+				tidy.PreserveEntities = true;
+				tidy.JoinStyles = false;
+				tidy.IndentBlockElements = AutoBool.Auto; //instructions say avoid 'yes'
+				tidy.WrapAt = 9999;
+				tidy.IndentSpaces = 4;
+				tidy.CharacterEncoding = EncodingType.Utf8;
+				tidy.CleanAndRepair();
+				using (var stream = new MemoryStream())
+				{
+					tidy.Save(stream);
+					stream.Flush();
+					stream.Seek(0L, SeekOrigin.Begin);
+					using (var sr = new StreamReader(stream, Encoding.UTF8))
+						html = sr.ReadToEnd();
+				}
+			}
+
+			// Now revert the stuff we did to make it "safe from libtidy"
+			html = RemoveFillerInEmptyElements(html);
+			File.WriteAllText(targetPath, html, Encoding.UTF8);
 
 			return targetPath;
 		}

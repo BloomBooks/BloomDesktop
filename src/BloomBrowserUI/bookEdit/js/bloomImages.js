@@ -35,17 +35,26 @@ function SetupImagesInContainer(container)
 }
 
 function SetupImage(image) {
+    //This is needed to support captioned, inline images, as in  SIL LEAD's Uganda P4 Pupils Books.
+    //In these cases, the captions went from 1 to many lines, and
+    //the container needs to grow to hold the caption (else the text doesn't flow around the caption). But as it
+    //grows, we don't want the image to also keep moving downwards so that it is centered within the container.
+    //The images also are going to look best left aligned.
+    var doCenterImage = !$(image).parent().hasClass('bloom-alignImageTopLeft');
+
+    var options = { scale: "fit", center: doCenterImage }
+
     //make images scale up to their container without distorting their proportions, while being centered within it.
-    $(image).scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
+    $(image).scaleImage(options); //uses jquery.myimgscale.js
 
     // when the image changes, we need to scale again:
     $(image).load(function () {
-        $(this).scaleImage({ scale: "fit" });
+        $(this).scaleImage(options);
     });
 
     //and when their parent is resized by the user, we need to scale again:
     $(image).parent().resize(function () {
-        $(this).find("img").scaleImage({ scale: "fit" });
+        $(this).find("img").scaleImage(options);
         try {
             ResetRememberedSize(this);
         } catch (error) {
@@ -54,48 +63,85 @@ function SetupImage(image) {
     });
 }
 
+function GetButtonModifier(container) {
+    var buttonModifier = '';
+    var imageButtonWidth = 87;
+    var imageButtonHeight = 52;
+    var $container = $(container);
+    if ($container.height() < imageButtonHeight * 2) {
+        buttonModifier = 'smallButtonHeight';
+    }
+    if ($container.width() < imageButtonWidth * 2) {
+        buttonModifier += ' smallButtonWidth';
+
+    }
+    if ($container.width() < imageButtonWidth) {
+        buttonModifier += ' verySmallButtons';
+    }
+    return buttonModifier;
+}
+
 //Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
 //the img to fit the available space
 function SetupImageContainer(containerDiv) {
     $(containerDiv).mouseenter(function () {
-        var img = $(this).find('img');
+        var $this = $(this);
+        var img = $this.find('img');
+        if (img.length === 0) //TODO check for bloom-backgroundImage to make sure this isn't just a case of a missing <img>
+                img = containerDiv; //using a backgroundImage
 
-        var buttonModifier = "largeImageButton";
-        if ($(this).height() < 95) {
-            buttonModifier = 'smallImageButton';
-        }
-        $(this).prepend('<button class="pasteImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
-        $(this).prepend('<button class="changeImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.ChangeImage") + '"></button>');
+        var buttonModifier = GetButtonModifier($this);
+
+        $this.prepend('<button class="miniButton cutImageButton disabled '+ buttonModifier + '" title="' +
+            localizationManager.getText('EditTab.Image.CutImage') + '"></button>');
+        $this.prepend('<button class="miniButton copyImageButton disabled ' + buttonModifier + '" title="' +
+            localizationManager.getText('EditTab.Image.CopyImage') + '"></button>');
+        $this.prepend('<button class="pasteImageButton imageButton ' + buttonModifier +
+            '" title="' + localizationManager.getText('EditTab.Image.PasteImage') + '"></button>');
+        $this.prepend('<button class="changeImageButton imageButton ' + buttonModifier +
+            '" title="' + localizationManager.getText('EditTab.Image.ChangeImage') + '"></button>');
 
         SetImageTooltip(containerDiv, img);
 
-        if (CreditsAreRelevantForImage(img)) {
-            $(this).prepend('<button class="editMetadataButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.EditMetadata") + '"></button>');
+        if (IsImageReal(img)) {
+            $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' +
+                localizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
+            $this.find('.miniButton').each(function() {
+                $(this).removeClass('disabled');
+            });
         }
 
-        $(this).addClass('hoverUp');
+        $this.addClass('hoverUp');
     })
     .mouseleave(function () {
-        $(this).removeClass('hoverUp');
-        $(this).find(".changeImageButton").each(function () {
-            $(this).remove()
+        var $this = $(this);
+        $this.removeClass('hoverUp');
+        $this.find('.changeImageButton').each(function () {
+            $(this).remove();
         });
-        $(this).find(".pasteImageButton").each(function () {
-            $(this).remove()
+        $this.find('.pasteImageButton').each(function () {
+            $(this).remove();
         });
-        $(this).find(".editMetadataButton").each(function () {
+        $this.find('.miniButton').each(function() {
+            $(this).remove();
+        });
+        $this.find('.editMetadataButton').each(function () {
             if (!$(this).hasClass('imgMetadataProblem')) {
-                $(this).remove()
+                $(this).remove();
             }
         });
     });
 }
 
 function SetImageTooltip(container, img) {
-    getIframeChannel().simpleAjaxGet('/bloom/imageInfo?image=' + $(img).attr('src'), function (response) {
-        var info = response.name + "\n"
-                + getFileLengthString(response.bytes) + "\n"
-                + response.width + " x " + response.height;
+  getIframeChannel().simpleAjaxGet('/bloom/imageInfo?image=' + GetRawImageUrl(img), function (response) {
+        const kBrowserDpi = 96; // this appears to be constant even on higher dpi screens. See http://www.w3.org/TR/css3-values/#absolute-lengths
+        var dpi = Math.round(response.width / ($(img).width() / kBrowserDpi));
+      var info = response.name + "\n"
+          + getFileLengthString(response.bytes) + "\n"
+          + response.width + " x " + response.height + "\n"
+          + dpi + " DPI (should be 300-600)\n"
+          + "Bit Depth: " + response.bitDepth.toString();
         container.title = info;
         });
 }
@@ -109,48 +155,78 @@ function getFileLengthString(bytes) {
     }
 }
 
-
-function CreditsAreRelevantForImage(img) {
-    return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
+// IsImageReal returns true if the img tag refers to a non-placeholder image
+// If the image is a placeholder:
+// - we don't want to offer to edit placeholder credits
+// - we don't want to activate the minibuttons for cut/copy
+function IsImageReal(img) {
+    return GetRawImageUrl(img).toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
 }
 
+// Gets the src attribute out of images, and the background-image:url() of everything else
+function GetRawImageUrl(imgOrDivWithBackgroundImage) {
+    if ($(imgOrDivWithBackgroundImage).hasAttr("src")) {
+        return $(imgOrDivWithBackgroundImage).attr("src");
+    }
+    //handle divs with background-image in an inline style attribute
+    if ($(imgOrDivWithBackgroundImage).hasAttr("style")) {
+        var style = $(imgOrDivWithBackgroundImage).attr("style");
+        // see http://stackoverflow.com/questions/9723889/regex-to-match-urls-in-inline-styles-div-style-url
+        //var result = (/url\(\s*(['"]?)(.*?)\1\s*\)/.exec(style) || [])[2];
+        return (/url\s*\(\s*(['"]?)(.*?)\1\s*\)/.exec(style) || [])[2];
+    }
+    return "";
+}
+function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
+    if (imgOrDivWithBackgroundImage.tagName.toLowerCase() === "img") {
+        imgOrDivWithBackgroundImage.src = url;
+    }
+    else {
+        imgOrDivWithBackgroundImage.style = "background-image:url('"+url+"')";
+    } 
+}
 //While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
 // so that we can easily & quickly get to the here.
 function SetOverlayForImagesWithoutMetadata(container) {
+    $(container).find("*[style*='background-image']").each(function () {
+        SetOverlayForImagesWithoutMetadataInner(this, this);
+    });
+
+    //Do the same for any img elements inside
     $(container).find(".bloom-imageContainer").each(function () {
         var img = $(this).find('img');
-        if (!CreditsAreRelevantForImage(img)) {
-            return;
-        }
-        var container = $(this);
+        SetOverlayForImagesWithoutMetadataInner($(img).parent(), img);
+    });
+}
 
+function SetOverlayForImagesWithoutMetadataInner(container, img) {
+     if (!IsImageReal(img)) {
+        return;
+    }
+
+    UpdateOverlay(container, img);
+
+    //and if the bloom program changes these values (i.e. the user changes them using bloom), I
+    //haven't figured out a way (apart from polling) to know that. So for now I'm using a hack
+    //where Bloom calls click() on the image when it wants an update, and we detect that here.
+    $(img).click(function () {
         UpdateOverlay(container, img);
-
-        //and if the bloom program changes these values (i.e. the user changes them using bloom), I
-        //haven't figured out a way (apart from polling) to know that. So for now I'm using a hack
-        //where Bloom calls click() on the image when it wants an update, and we detect that here.
-        $(img).click(function () {
-            UpdateOverlay(container, img);
-        });
     });
 }
 
 function UpdateOverlay(container, img) {
 
-    $(container).find(".imgMetadataProblem").each(function () {
-        $(this).remove()
+    $(container).find("button.imgMetadataProblem").each(function () {
+        $(this).remove();
     });
 
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
     var copyright = $(img).attr('data-copyright');
-    if (!copyright || copyright.length == 0) {
+    if (!copyright || copyright.length === 0) {
 
-        var buttonModifier = "largeImageButton";
-        if ($(container).height() < 80) {
-            buttonModifier = 'smallImageButton';
-        }
+        var buttonModifier = GetButtonModifier(container);
 
-        $(container).prepend("<button class='editMetadataButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
+        $(container).prepend("<button class='editMetadataButton imageButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
     }
 }
 
@@ -158,8 +234,8 @@ function UpdateOverlay(container, img) {
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
 // TODO: internationalize
 function SetAlternateTextOnImages(element) {
-    if ($(element).attr('src').length > 0) { //don't show this on the empty license image when we don't know the license yet
-        var nameWithoutQueryString = $(element).attr('src').split("?")[0];
+    if (GetRawImageUrl(element).length > 0) { //don't show this on the empty license image when we don't know the license yet
+        var nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
         $(element).attr('alt', 'This picture, ' + nameWithoutQueryString + ', is missing or was loading too slowly.');
     } else {
         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'

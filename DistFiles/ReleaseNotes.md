@@ -1,7 +1,69 @@
-﻿## Important Notices
+﻿## 3.5
+- You can now copy and cut images
+- You can now hover over an image to get its dimensions, dots-per-inch, and color depth
+- Bloom uses less memory when you have very large image files
+- Better image memory handling
+- Book folders no longer accumulate files for images that you aren't using anymore
+- Can now delete source books downloaded from BloomLibrary.org
+- Faster bloomlibrary.org downloads
+- New Arithmetic Template
+- Better error report when the operating system blocks Bloom from touching a file due to weird file permissions
+- New experimental EPUB option in Publish Tab (Enable from Settings:Advanced)
+- New experimental Talking Book recording/publishing. Enable from Settings:Advanced. To start, right-click in text and choose "Record Audio".
+- Fixed Art Of Reading forgetting what language you want to search with.
+- Fixed problem where black and white (1 bit) images were converted to 32 bit
+- Fixed problem with publishing from a network drive
+- Fixed problem where blank lines would disappear
+- Several other small fixes
+
+## 3.4
+- If after creating a page you decide that you want a different layout than the one you original chose, you can now select "Choose Different Layout" and select a different one.
+- If you have the latest [Art Of Reading](http://bloomlibrary.org/#/artofreading) installed (version 3.1), then you can now search for pictures in one of: Arabic, Chinese, Bengali, English, French, Hindi, Indonesian, Portuguese, Spanish, Swahili, and Thai.
+- Bloom now supports Letter, HalfLetter, and QuarterLetter (North American) paper sizes.
+- Fixed Problem where blank lines were removed.
+- Dozens of Fixes.
+
+## 3.3
+- All basic pages are now "customizable". That means you can change the relative size of elements on the page, for example making the picture bigger and the text area smaller. You can also click the "Change Layout" button to add new elements to the page.
+
+- When you select some text, Bloom now shows a small popup with buttons for bold, underline, and italic.
+
+- Previously, Bloom used screen space to show a list of available pages you could add. Now, we've freed up that precious space and instead there is an "Add Page" button you click to see a list of pages you can add.
+
+- The toolbar now rearranges itself as need so that everything is available on very small screens (netbooks).
+
+- Books now default license to CC-BY (requested by All Children Reading).
+
+- Books made from Leveled Reader template delivered via Leveled Reader Bloom Pack now have all the formatting locked down, preventing writers from altering the font, size, or spacing of the text (requested by All Children Reading).
+
+
+## 3.2
+
+- Support new Decodable Readers workflow. Instead of defining a set of letters plus sight words for each Decodable Stage, Bloom now allows you to specify one or more text files of "Allowed Words".
+  - These must be simple, unicode text files. Other formats are not supported: Word, LibreOffice, Excel, etc.
+  - We have found that 1000 words works fine even on an old slow laptop. If you have much larger lists and a slow computer, there may be some lag while editing. Please let us know if this is a problem for anyone.
+  - Complex characters in unicode can be [coded in more than one way](https://en.wikipedia.org/wiki/Unicode_equivalence). At this point, if the word list has a word code in one way, and the text in the book was entered a different way, Bloom will not recognize the word.  Please let us know if this is a problem for anyone.
+
+- Bloom's Edit tab now always returns you the last page you were viewing in a book. This was a [UserVoice Request](https://bloombooks.uservoice.com/forums/153625-general/suggestions/6986831-open-to-the-last-edited-page-in-a-book)
+
+- "Source text bubbles" in shell books have received a much needed makeover, including real tabs in a drop-down list of languages for books that have many source languages.
+
+- In the set up dialog for Decodable Stages, Bloom now outlines letters from previous stages in orange. Previously, they were only bold and some users didn't notice them.
+
+- In the Collections tab, the selected book now displays a little triangle. Clicking on that shows a menu of things you can do with the book. More advanced items are still only available by right-clicking on the book.
+
+- That Book menu now offers a "Copy Book" command.
+
+- Both "Factory" and "Traditional" Front Matter packs now set the first content page to "1"
+
+
+## 3.1
+Version 3.1 was a disciplined sustained & effort to improve hundreds of "little things" that could confuse or block people in certain situations from getting books created, translated, or printed. It also represents the first version where the Linux (Trusty and Precise) version is very close to parity with the Windows version.
+
+## Important Notices
 
 ### Andika Replaced By "Andika New Basic" 
-- Many Bloom collections use SIL's free "Andika" literacy font as their default typeface. When you create a PDF using Andika, styles such as bold, italic etc. are lost. This will happen with any font that doesn't include a real bold/italic/etc face. This is problem outside of our control at this time (we've reported it to Mozilla). Happily, SIL has released a subset of Andika named [Andika New Basic](http://scripts.sil.org/cms/scripts/page.php?item_id=Andika_New_Basic). Bloom now installs this font for you and uses it by default. If your language is not fully supported by Andika New Basic, please choose another font, ly one which includes built-in bold and italic. You can test your font by using CTRL+B to make some text bold, then going to publish and looking to see if bold makes it through to the PDF.
+- Many Bloom collections use SIL's free "Andika" literacy font as their default typeface. When you create a PDF using Andika, styles such as bold, italic etc. are lost. This will happen with any font that doesn't include a real bold/italic/etc face. This problem is outside of our control at this time (we've reported it to Mozilla). Happily, SIL has released a subset of Andika named [Andika New Basic](http://scripts.sil.org/cms/scripts/page.php?item_id=Andika_New_Basic). Bloom now installs this font for you and uses it by default. If your language is not fully supported by Andika New Basic, please choose another font, ideally one which includes built-in bold and italic. You can test your font by using CTRL+B to make some text bold, then going to publish and looking to see if bold makes it through to the PDF.
 - Note, Bloom will automatically change the default font from Andika to Andika New Basic, if you have Andika set. It will only do this once, so if you choose to change it back to Andika, it won't keep changing it. Note also that Bloom will not attempt to change any custom styles you may have created. If you need bold/italics to show up in a custom style, you'll have to change away from Andika by hand.
 
 ### Keyman 9
@@ -13,13 +75,10 @@
 ### The end of the line for Windows XP
 - Starting with Bloom 3.1, Bloom will no longer run on Windows XP. Sorry! As Microsoft has retired support for XP, it has become difficult for us to be limitted to program bits that work on XP. But Bloom 3.0 will continue to be available and works just fine. We don't expect there to be any problems with someone using Bloom 3.0 on XP using books created by other people using Bloom 3.1.
 
-## 3.1
-Version 3.1 was a disciplined sustained & effort to improve hundreds of "little things" that could confuse or block people in certain situations form getting books created, translated, or printed. It also represents the first version where the Linux (Trusty and Precise) version is very close to parity with the Windows version.
-
 ## 3.1 Beta 3
 - Running the installer again does an uninstall/reinstall
 - Added privacy notice to "Report A Problem" dialog
-- Allow user to control which languages are advertised on BL.org, when uploading
+- Allow user to control which languages are advertised on bloomlibrary.org, when uploading
 - Show source language names even if they aren't part of the collection
 - Fixed incorrect margins in PDFs
 - Andika New Basics now part of Linux package

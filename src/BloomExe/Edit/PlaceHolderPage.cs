@@ -8,7 +8,7 @@ namespace Bloom.Edit
 	/// <summary>
 	/// This is just so the first (top-left) thumbnail is empty, so that the cover page appears in the second column.
 	/// </summary>
-	public class PlaceHolderPage     : IPage
+	public class PlaceHolderPage   : IPage
 	{
 		public string Id
 		{
@@ -65,5 +65,13 @@ namespace Bloom.Edit
 			return Caption;
 
 		}
+
+		public int GetIndex()
+		{
+			return -1;
+		}
+
+		public string IdOfFirstAncestor
+		{ get { return null; } }
 	}
 }

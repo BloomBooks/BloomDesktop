@@ -1,3 +1,38 @@
+bloom-desktop-unstable (3.5.0) stable; urgency=medium
+
+  * Up the version number on the master (unstable) branch to 3.5.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 25 Sep 2015 10:04:01 -0500
+
+bloom-desktop-unstable (3.4.0) stable; urgency=medium
+
+  * Update to version 3.4 on the master (unstable) branch.
+  * More bug fixes: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Mon, 31 Aug 2015 10:57:13 -0500
+
+bloom-desktop-unstable (3.3.1) stable; urgency=medium
+
+  * Revert to using "Bloom VS2010.sln" for package building.
+  * More bug fixes: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Wed, 12 Aug 2015 11:24:57 -0500
+
+bloom-desktop-unstable (3.3.0) stable; urgency=medium
+
+  * Update the Linux package version to 3.3
+  * More bug fixes: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Thu, 06 Aug 2015 17:07:38 -0500
+
+bloom-desktop-unstable (3.2.0) stable; urgency=medium
+
+  * Update version number of unstable version to 3.2
+  * Include .mdb files in package for better crash stack traces
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 31 Jul 2015 15:46:56 -0500
+
 bloom-desktop-unstable (3.1.0) stable; urgency=medium
 
   * Update version number of unstable version to 3.1

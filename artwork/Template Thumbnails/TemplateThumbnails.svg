@@ -15,9 +15,9 @@
    height="100"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="TemplateThumbnails.svg"
-   inkscape:export-filename="C:\dev\Bloom Custom Template Work\RTIUganda\RTIUgandaP1Primer\thumbnail.png"
+   inkscape:export-filename="X:\dev\b35\DistFiles\factoryCollections\Templates\Arithmetic\thumbnail.png"
    inkscape:export-xdpi="63"
    inkscape:export-ydpi="63">
   <sodipodi:namedview
@@ -27,17 +27,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="72.296148"
-     inkscape:cy="-246.68779"
+     inkscape:zoom="5.6"
+     inkscape:cx="32.029685"
+     inkscape:cy="45.156741"
      inkscape:document-units="px"
-     inkscape:current-layer="g3501-1"
+     inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1704"
+     inkscape:window-width="1742"
      inkscape:window-height="1177"
-     inkscape:window-x="-30800"
-     inkscape:window-y="-32000"
-     inkscape:window-maximized="0"
+     inkscape:window-x="1192"
+     inkscape:window-y="468"
+     inkscape:window-maximized="1"
      width="480px" />
   <defs
      id="defs4">
@@ -602,7 +602,7 @@
          inkscape:export-xdpi="60.563259"
          inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\A5Portrait\placeHolder.png"
          transform="matrix(0.49096165,0,0,0.49096165,765.43581,1695.1003)"
-         d="m 539.80589,261.93216 c 0,4.86973 -3.9477,8.81743 -8.81743,8.81743 -4.86973,0 -8.81742,-3.9477 -8.81742,-8.81743 0,-4.86973 3.94769,-8.81743 8.81742,-8.81743 4.86973,0 8.81743,3.9477 8.81743,8.81743 z"
+         d="m 539.80589,261.93216 a 8.8174267,8.8174267 0 0 1 -8.81743,8.81743 8.8174267,8.8174267 0 0 1 -8.81742,-8.81743 8.8174267,8.8174267 0 0 1 8.81742,-8.81743 8.8174267,8.8174267 0 0 1 8.81743,8.81743 z"
          sodipodi:ry="8.8174267"
          sodipodi:rx="8.8174267"
          sodipodi:cy="261.93216"
@@ -651,7 +651,7 @@
              sodipodi:cy="191.56537"
              sodipodi:rx="46.210487"
              sodipodi:ry="42.500156"
-             d="m 443.21592,191.56537 c 0,23.47219 -20.68914,42.50016 -46.21049,42.50016 -25.52135,0 -46.21049,-19.02797 -46.21049,-42.50016 0,-23.47219 20.68914,-42.50016 46.21049,-42.50016 25.52135,0 46.21049,19.02797 46.21049,42.50016 z"
+             d="m 443.21592,191.56537 a 46.210487,42.500156 0 0 1 -46.21049,42.50016 46.210487,42.500156 0 0 1 -46.21049,-42.50016 46.210487,42.500156 0 0 1 46.21049,-42.50016 46.210487,42.500156 0 0 1 46.21049,42.50016 z"
              transform="matrix(1.0426817,0,0,1.0831169,18.687496,-16.904964)" />
           <path
              style="fill:none;stroke:#000000;stroke-width:3.17677903;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible"
@@ -893,7 +893,7 @@
              sodipodi:cy="191.56537"
              sodipodi:rx="46.210487"
              sodipodi:ry="42.500156"
-             d="m 443.21592,191.56537 c 0,23.47219 -20.68914,42.50016 -46.21049,42.50016 -25.52135,0 -46.21049,-19.02797 -46.21049,-42.50016 0,-23.47219 20.68914,-42.50016 46.21049,-42.50016 25.52135,0 46.21049,19.02797 46.21049,42.50016 z"
+             d="m 443.21592,191.56537 a 46.210487,42.500156 0 0 1 -46.21049,42.50016 46.210487,42.500156 0 0 1 -46.21049,-42.50016 46.210487,42.500156 0 0 1 46.21049,-42.50016 46.210487,42.500156 0 0 1 46.21049,42.50016 z"
              transform="matrix(1.0426817,0,0,1.0831169,18.687496,-16.904964)" />
           <path
              style="fill:none;stroke:#000000;stroke-width:3.17677903;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible"
@@ -1177,7 +1177,6 @@
            id="path3458" />
         <circle
            style="fill:#3a7f62;fill-opacity:1"
-           d="m 45.716,28.5 c 0,3.589851 -2.91015,6.5 -6.5,6.5 -3.589851,0 -6.5,-2.910149 -6.5,-6.5 0,-3.589851 2.910149,-6.5 6.5,-6.5 3.58985,0 6.5,2.910149 6.5,6.5 z"
            sodipodi:ry="6.5"
            sodipodi:rx="6.5"
            sodipodi:cy="28.5"
@@ -1188,7 +1187,6 @@
            id="circle3460" />
         <circle
            style="fill:#3a7f62;fill-opacity:1"
-           d="m 43.716,16.5 c 0,1.380712 -1.119289,2.5 -2.5,2.5 -1.380712,0 -2.5,-1.119288 -2.5,-2.5 0,-1.380712 1.119288,-2.5 2.5,-2.5 1.380711,0 2.5,1.119288 2.5,2.5 z"
            sodipodi:ry="2.5"
            sodipodi:rx="2.5"
            sodipodi:cy="16.5"
@@ -1199,7 +1197,6 @@
            id="circle3462" />
         <circle
            style="fill:#3a7f62;fill-opacity:1"
-           d="m 29.716,27.5 c 0,1.380712 -1.119289,2.5 -2.5,2.5 -1.380712,0 -2.5,-1.119288 -2.5,-2.5 0,-1.380712 1.119288,-2.5 2.5,-2.5 1.380711,0 2.5,1.119288 2.5,2.5 z"
            sodipodi:ry="2.5"
            sodipodi:rx="2.5"
            sodipodi:cy="27.5"
@@ -1210,7 +1207,6 @@
            id="circle3464" />
         <circle
            style="fill:#3a7f62;fill-opacity:1"
-           d="m 26.716,2.5 c 0,1.3807119 -1.119289,2.5 -2.5,2.5 -1.380712,0 -2.5,-1.1192881 -2.5,-2.5 0,-1.3807119 1.119288,-2.5 2.5,-2.5 1.380711,0 2.5,1.1192881 2.5,2.5 z"
            sodipodi:ry="2.5"
            sodipodi:rx="2.5"
            sodipodi:cy="2.5"
@@ -1221,7 +1217,6 @@
            id="circle3466" />
         <circle
            style="fill:#3a7f62;fill-opacity:1"
-           d="m 26.716,18 c 0,2.209139 -1.790861,4 -4,4 -2.209139,0 -4,-1.790861 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.209139,0 4,1.790861 4,4 z"
            sodipodi:ry="4"
            sodipodi:rx="4"
            sodipodi:cy="18"
@@ -1232,7 +1227,6 @@
            id="circle3468" />
         <circle
            style="fill:#3a7f62;fill-opacity:1"
-           d="m 34.716,13 c 0,1.656854 -1.343146,3 -3,3 -1.656855,0 -3,-1.343146 -3,-3 0,-1.656854 1.343145,-3 3,-3 1.656854,0 3,1.343146 3,3 z"
            sodipodi:ry="3"
            sodipodi:rx="3"
            sodipodi:cy="13"
@@ -1243,7 +1237,6 @@
            id="circle3470" />
         <circle
            style="fill:#3a7f62;fill-opacity:1"
-           d="m 21.716,29.5 c 0,2.485281 -2.014719,4.5 -4.5,4.5 -2.485282,0 -4.5,-2.014719 -4.5,-4.5 0,-2.485281 2.014718,-4.5 4.5,-4.5 2.485281,0 4.5,2.014719 4.5,4.5 z"
            sodipodi:ry="4.5"
            sodipodi:rx="4.5"
            sodipodi:cy="29.5"
@@ -1276,8 +1269,7 @@
          sodipodi:cx="39.216"
          sodipodi:cy="28.5"
          sodipodi:rx="6.5"
-         sodipodi:ry="6.5"
-         d="m 45.716,28.5 c 0,3.589851 -2.91015,6.5 -6.5,6.5 -3.589851,0 -6.5,-2.910149 -6.5,-6.5 0,-3.589851 2.910149,-6.5 6.5,-6.5 3.58985,0 6.5,2.910149 6.5,6.5 z" />
+         sodipodi:ry="6.5" />
       <circle
          id="circle4266"
          r="2.5"
@@ -1286,8 +1278,7 @@
          sodipodi:cx="41.216"
          sodipodi:cy="16.5"
          sodipodi:rx="2.5"
-         sodipodi:ry="2.5"
-         d="m 43.716,16.5 c 0,1.380712 -1.119289,2.5 -2.5,2.5 -1.380712,0 -2.5,-1.119288 -2.5,-2.5 0,-1.380712 1.119288,-2.5 2.5,-2.5 1.380711,0 2.5,1.119288 2.5,2.5 z" />
+         sodipodi:ry="2.5" />
       <circle
          id="circle4268"
          r="2.5"
@@ -1296,8 +1287,7 @@
          sodipodi:cx="27.216"
          sodipodi:cy="27.5"
          sodipodi:rx="2.5"
-         sodipodi:ry="2.5"
-         d="m 29.716,27.5 c 0,1.380712 -1.119289,2.5 -2.5,2.5 -1.380712,0 -2.5,-1.119288 -2.5,-2.5 0,-1.380712 1.119288,-2.5 2.5,-2.5 1.380711,0 2.5,1.119288 2.5,2.5 z" />
+         sodipodi:ry="2.5" />
       <circle
          id="circle4270"
          r="2.5"
@@ -1306,8 +1296,7 @@
          sodipodi:cx="24.216"
          sodipodi:cy="2.5"
          sodipodi:rx="2.5"
-         sodipodi:ry="2.5"
-         d="m 26.716,2.5 c 0,1.3807119 -1.119289,2.5 -2.5,2.5 -1.380712,0 -2.5,-1.1192881 -2.5,-2.5 0,-1.3807119 1.119288,-2.5 2.5,-2.5 1.380711,0 2.5,1.1192881 2.5,2.5 z" />
+         sodipodi:ry="2.5" />
       <circle
          id="circle4272"
          r="4"
@@ -1316,8 +1305,7 @@
          sodipodi:cx="22.716"
          sodipodi:cy="18"
          sodipodi:rx="4"
-         sodipodi:ry="4"
-         d="m 26.716,18 c 0,2.209139 -1.790861,4 -4,4 -2.209139,0 -4,-1.790861 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.209139,0 4,1.790861 4,4 z" />
+         sodipodi:ry="4" />
       <circle
          id="circle4274"
          r="3"
@@ -1326,8 +1314,7 @@
          sodipodi:cx="31.716"
          sodipodi:cy="13"
          sodipodi:rx="3"
-         sodipodi:ry="3"
-         d="m 34.716,13 c 0,1.656854 -1.343146,3 -3,3 -1.656855,0 -3,-1.343146 -3,-3 0,-1.656854 1.343145,-3 3,-3 1.656854,0 3,1.343146 3,3 z" />
+         sodipodi:ry="3" />
       <circle
          id="circle4276"
          r="4.5"
@@ -1336,12 +1323,11 @@
          sodipodi:cx="17.216"
          sodipodi:cy="29.5"
          sodipodi:rx="4.5"
-         sodipodi:ry="4.5"
-         d="m 21.716,29.5 c 0,2.485281 -2.014719,4.5 -4.5,4.5 -2.485282,0 -4.5,-2.014719 -4.5,-4.5 0,-2.485281 2.014718,-4.5 4.5,-4.5 2.485281,0 4.5,2.014719 4.5,4.5 z" />
+         sodipodi:ry="4.5" />
     </g>
     <g
        id="g3379-1"
-       transform="translate(-274.25641,-21.718276)">
+       transform="translate(-757.10932,11.616758)">
       <rect
          inkscape:export-ydpi="91.849998"
          inkscape:export-xdpi="91.849998"
@@ -1351,13 +1337,13 @@
          height="98.271706"
          width="67.331383"
          id="rect3776-1-5-1-4"
-         style="fill:#e48c84;fill-opacity:1;stroke:#a73125;stroke-width:1.27299999999999990;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:7.63799999999999990, 2.54599999999999980;stroke-dashoffset:0" />
+         style="fill:#e48c84;fill-opacity:1;stroke:#a73125;stroke-width:1.273;stroke-miterlimit:4;stroke-dasharray:7.638, 2.546;stroke-dashoffset:0;stroke-opacity:1" />
       <text
          sodipodi:linespacing="125%"
          id="text5280-7-9-6-0"
          y="996.36499"
          x="304.76913"
-         style="font-size:54.56119919px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#e48c84;fill-opacity:1;stroke:none;font-family:Sans"
+         style="font-style:normal;font-weight:normal;font-size:54.56119919px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#e48c84;fill-opacity:1;stroke:none"
          xml:space="preserve"><tspan
            style="font-size:10.91224003px;fill:#e48c84;fill-opacity:1"
            y="996.36499"
@@ -1369,7 +1355,7 @@
          id="text3298-8"
          y="1047.9309"
          x="298.83499"
-         style="font-size:59.3179512px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         style="font-style:normal;font-weight:normal;font-size:59.3179512px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
          xml:space="preserve"><tspan
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:AbcPrintDottedLined;-inkscape-font-specification:AbcPrintDottedLined"
            y="1047.9309"
@@ -1381,7 +1367,7 @@
          id="text3298-8-8"
          y="829.24994"
          x="186.02994"
-         style="font-size:41.59990692px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         style="font-style:normal;font-weight:normal;font-size:41.59990692px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
          xml:space="preserve"><tspan
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Andika;-inkscape-font-specification:Andika"
            y="829.24994"
@@ -1663,7 +1649,6 @@
         <g
            id="g13">
           <circle
-             d="m 53.576001,41.028999 c 0,2.179316 -1.766684,3.946 -3.946,3.946 -2.179316,0 -3.946,-1.766684 -3.946,-3.946 0,-2.179315 1.766684,-3.946 3.946,-3.946 2.179316,0 3.946,1.766685 3.946,3.946 z"
              sodipodi:ry="3.9460001"
              sodipodi:rx="3.9460001"
              sodipodi:cy="41.028999"
@@ -1676,7 +1661,6 @@
         <g
            id="g17">
           <circle
-             d="m 37.507001,47.685001 c 0,2.179868 -1.767132,3.947 -3.947,3.947 -2.179868,0 -3.947,-1.767132 -3.947,-3.947 0,-2.179868 1.767132,-3.947 3.947,-3.947 2.179868,0 3.947,1.767132 3.947,3.947 z"
              sodipodi:ry="3.947"
              sodipodi:rx="3.947"
              sodipodi:cy="47.685001"
@@ -1689,7 +1673,6 @@
         <g
            id="g21">
           <circle
-             d="m 30.850999,63.754002 c 0,2.179868 -1.767132,3.947 -3.947,3.947 -2.179868,0 -3.947,-1.767132 -3.947,-3.947 0,-2.179868 1.767132,-3.947 3.947,-3.947 2.179868,0 3.947,1.767132 3.947,3.947 z"
              sodipodi:ry="3.947"
              sodipodi:rx="3.947"
              sodipodi:cy="63.754002"
@@ -1702,7 +1685,6 @@
         <g
            id="g25">
           <circle
-             d="m 76.305002,63.754002 c 0,2.179868 -1.767132,3.947 -3.947,3.947 -2.179868,0 -3.947,-1.767132 -3.947,-3.947 0,-2.179868 1.767132,-3.947 3.947,-3.947 2.179868,0 3.947,1.767132 3.947,3.947 z"
              sodipodi:ry="3.947"
              sodipodi:rx="3.947"
              sodipodi:cy="63.754002"
@@ -1843,7 +1825,6 @@
           <g
              id="g7285">
             <circle
-               d="m 53.576001,41.028999 c 0,2.179316 -1.766684,3.946 -3.946,3.946 -2.179316,0 -3.946,-1.766684 -3.946,-3.946 0,-2.179315 1.766684,-3.946 3.946,-3.946 2.179316,0 3.946,1.766685 3.946,3.946 z"
                sodipodi:ry="3.9460001"
                sodipodi:rx="3.9460001"
                sodipodi:cy="41.028999"
@@ -1856,7 +1837,6 @@
           <g
              id="g7289">
             <circle
-               d="m 37.507001,47.685001 c 0,2.179868 -1.767132,3.947 -3.947,3.947 -2.179868,0 -3.947,-1.767132 -3.947,-3.947 0,-2.179868 1.767132,-3.947 3.947,-3.947 2.179868,0 3.947,1.767132 3.947,3.947 z"
                sodipodi:ry="3.947"
                sodipodi:rx="3.947"
                sodipodi:cy="47.685001"
@@ -1869,7 +1849,6 @@
           <g
              id="g7293">
             <circle
-               d="m 30.850999,63.754002 c 0,2.179868 -1.767132,3.947 -3.947,3.947 -2.179868,0 -3.947,-1.767132 -3.947,-3.947 0,-2.179868 1.767132,-3.947 3.947,-3.947 2.179868,0 3.947,1.767132 3.947,3.947 z"
                sodipodi:ry="3.947"
                sodipodi:rx="3.947"
                sodipodi:cy="63.754002"
@@ -1882,7 +1861,6 @@
           <g
              id="g7297">
             <circle
-               d="m 76.305002,63.754002 c 0,2.179868 -1.767132,3.947 -3.947,3.947 -2.179868,0 -3.947,-1.767132 -3.947,-3.947 0,-2.179868 1.767132,-3.947 3.947,-3.947 2.179868,0 3.947,1.767132 3.947,3.947 z"
                sodipodi:ry="3.947"
                sodipodi:rx="3.947"
                sodipodi:cy="63.754002"
@@ -2005,7 +1983,239 @@
         </g>
       </g>
     </g>
-  </g>
+    <g
+       id="g6889-3"
+       transform="translate(-147.14286,552.35128)"
+       style="fill:#98d0b9;fill-opacity:1"
+       inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\BasicBook\thumbnail.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         inkscape:export-ydpi="91.849998"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Sample Shells\A5 Wall Calendar\thumbnail.png"
+         y="970.9176"
+         x="-166.52283"
+         height="98.271706"
+         width="67.331383"
+         id="rect6891-3"
+         style="fill:#98d0b9;fill-opacity:1;stroke:#000000;stroke-width:1.273;stroke-miterlimit:4;stroke-dasharray:7.638, 2.546;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text6893-7"
+         y="992.34052"
+         x="-152.34695"
+         style="font-style:normal;font-weight:normal;font-size:54.56119919px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#98d0b9;fill-opacity:1;stroke:none"
+         xml:space="preserve"><tspan
+           style="font-size:10.91224003px;fill:#98d0b9;fill-opacity:1"
+           y="992.34052"
+           x="-152.34695"
+           sodipodi:role="line"
+           id="tspan6895-9" /></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:63.67641449px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="-300.99548"
+       y="1549.1613"
+       id="text6899-1"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan6901-7"
+         x="-300.99548"
+         y="1549.1613"
+         style="font-size:12.7352829px">Leveled</tspan><tspan
+         sodipodi:role="line"
+         x="-300.99548"
+         y="1565.0803"
+         style="font-size:12.7352829px"
+         id="tspan6903-2">Reader</tspan></text>
+    <g
+       inkscape:export-ydpi="90"
+       inkscape:export-xdpi="90"
+       inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\BasicBook\thumbnail.png"
+       style="fill:#98d0b9;fill-opacity:1"
+       transform="translate(-147.14286,552.35128)"
+       id="g6905-0">
+      <rect
+         style="fill:#98d0b9;fill-opacity:1;stroke:#000000;stroke-width:1.273;stroke-miterlimit:4;stroke-dasharray:7.638, 2.546;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect6907-2"
+         width="67.331383"
+         height="98.271706"
+         x="-166.52283"
+         y="970.9176"
+         inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Sample Shells\A5 Wall Calendar\thumbnail.png"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-ydpi="91.849998" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:54.56119919px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#98d0b9;fill-opacity:1;stroke:none"
+         x="-152.34695"
+         y="992.34052"
+         id="text6909-6"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan6911-5"
+           sodipodi:role="line"
+           x="-152.34695"
+           y="992.34052"
+           style="font-size:10.91224003px;fill:#98d0b9;fill-opacity:1" /></text>
+    </g>
+    <text
+       sodipodi:linespacing="125%"
+       id="text6913-7"
+       y="1541.3325"
+       x="-297.52087"
+       style="font-style:normal;font-weight:normal;font-size:63.67641449px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       xml:space="preserve"><tspan
+         id="tspan6917-0"
+         style="font-size:12.7352829px"
+         y="1541.3325"
+         x="-297.52087"
+         sodipodi:role="line">Bible</tspan><tspan
+         style="font-size:12.7352829px"
+         y="1557.2516"
+         x="-297.52087"
+         sodipodi:role="line"
+         id="tspan4656">Story</tspan></text>
+    <rect
+       style="opacity:1;fill:#273630;fill-opacity:1;fill-rule:nonzero;stroke:#273630;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4658"
+       width="5.8083777"
+       height="43.436558"
+       x="-283.38837"
+       y="1565.2672" />
+    <rect
+       y="1575.6212"
+       x="-292.35349"
+       height="5.0507612"
+       width="23.738585"
+       id="rect4660"
+       style="opacity:1;fill:#273630;fill-opacity:1;fill-rule:nonzero;stroke:#273630;stroke-width:1.99999988;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <g
+       inkscape:export-ydpi="90"
+       inkscape:export-xdpi="90"
+       inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\BasicBook\thumbnail.png"
+       style="fill:#98d0b9;fill-opacity:1"
+       transform="matrix(1.0000951,0,0,1.0000946,182.30577,-17.63408)"
+       id="g4571">
+      <rect
+         style="fill:#98d0b9;fill-opacity:1;stroke:#000000;stroke-width:1.27287924;stroke-miterlimit:4;stroke-dasharray:7.63727598, 2.54575866;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect4573"
+         width="67.331383"
+         height="98.271706"
+         x="-166.52283"
+         y="970.9176"
+         inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Sample Shells\A5 Wall Calendar\thumbnail.png"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-ydpi="91.849998" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:54.56119919px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#98d0b9;fill-opacity:1;stroke:none"
+         x="-152.34695"
+         y="992.34052"
+         id="text4575"
+         sodipodi:linespacing="125%"><tspan
+           id="tspan4577"
+           sodipodi:role="line"
+           x="-152.34695"
+           y="992.34052"
+           style="font-size:10.91224003px;fill:#98d0b9;fill-opacity:1" /></text>
+    </g>
+    <text
+       sodipodi:linespacing="125%"
+       id="text4579"
+       y="979.27039"
+       x="28.438513"
+       style="font-style:normal;font-weight:normal;font-size:63.68245316px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       xml:space="preserve"><tspan
+         style="font-size:12.73649025px"
+         y="979.27039"
+         x="28.438513"
+         id="tspan4581"
+         sodipodi:role="line">Leveled</tspan><tspan
+         id="tspan4583"
+         style="font-size:12.73649025px"
+         y="995.19098"
+         x="28.438513"
+         sodipodi:role="line">Reader</tspan></text>
+    <g
+       id="g4585"
+       transform="matrix(1.0000951,0,0,1.0000946,182.30577,-17.63408)"
+       style="fill:#98d0b9;fill-opacity:1"
+       inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Templates\BasicBook\thumbnail.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         inkscape:export-ydpi="91.849998"
+         inkscape:export-xdpi="91.849998"
+         inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Sample Shells\A5 Wall Calendar\thumbnail.png"
+         y="970.9176"
+         x="-166.52283"
+         height="98.271706"
+         width="67.331383"
+         id="rect4587"
+         style="fill:#98d0b9;fill-opacity:1;stroke:#000000;stroke-width:1.27287924;stroke-miterlimit:4;stroke-dasharray:7.63727598, 2.54575866;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text4589"
+         y="992.34052"
+         x="-152.34695"
+         style="font-style:normal;font-weight:normal;font-size:54.56119919px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#98d0b9;fill-opacity:1;stroke:none"
+         xml:space="preserve"><tspan
+           style="font-size:10.91224003px;fill:#98d0b9;fill-opacity:1"
+           y="992.34052"
+           x="-152.34695"
+           sodipodi:role="line"
+           id="tspan4591" /></text>
+    </g>
+    <rect
+       y="1007.1579"
+       x="127.23864"
+       height="23.738583"
+       width="5.8083777"
+       id="rect4599"
+       style="opacity:1;fill:#273630;fill-opacity:1;fill-rule:nonzero;stroke:#273630;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       style="opacity:1;fill:#273630;fill-opacity:1;fill-rule:nonzero;stroke:#273630;stroke-width:1.99999988;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4601"
+       width="23.738585"
+       height="5.0507612"
+       x="118.27352"
+       y="1015.4915" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4603"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#1f4535;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(1.2853417,0,0,1.285341,-18.244144,958.61723)"><flowRegion
+         id="flowRegion4605"><rect
+           id="rect4607"
+           width="43.088726"
+           height="59.265911"
+           x="30.052038"
+           y="8.8337336"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#1f4535;fill-opacity:1" /></flowRegion><flowPara
+         id="flowPara4643"
+         style="text-align:end;text-anchor:end;fill:#1f4535;fill-opacity:1">2+2 </flowPara></flowRoot>    <rect
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#1f4535;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4651"
+       width="17.67935"
+       height="17.67934"
+       x="54.848248"
+       y="1011.409" />
+    <flowRoot
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25.70438957px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#1f4535;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="flowRoot4657"
+       xml:space="preserve"
+       transform="matrix(1.0000951,0,0,1.0000946,-21.309027,3.7325369)"><flowRegion
+         id="flowRegion4659"><rect
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:25.70438957px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#1f4535;fill-opacity:1"
+           y="997.75488"
+           x="17.0452"
+           height="76.169708"
+           width="55.378471"
+           id="rect4661" /></flowRegion><flowPara
+         style="text-align:end;text-anchor:end;fill:#1f4535;fill-opacity:1"
+         id="flowPara4663">= </flowPara></flowRoot>  </g>
   <g
      transform="matrix(0.30237053,0,0,0.30237053,-116.82406,213.29986)"
      id="month_1_2012"

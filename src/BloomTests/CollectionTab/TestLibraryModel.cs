@@ -4,7 +4,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using ICSharpCode.SharpZipLib.Zip;
-using Palaso.TestUtilities;
+using SIL.TestUtilities;
 
 namespace BloomTests.CollectionTab
 {
@@ -14,7 +14,7 @@ namespace BloomTests.CollectionTab
 
 		public TestLibraryModel(TemporaryFolder testFolder)
 			: base(testFolder.Path, new CollectionSettings(), null, new BookSelection(), new SourceCollectionsList(),
-			null, null, new CreateFromSourceBookCommand(), null, null)
+			null, null, new CreateFromSourceBookCommand(), null, null, null)
 		{
 			TestFolderPath = testFolder.Path;
 		}
@@ -28,9 +28,9 @@ namespace BloomTests.CollectionTab
 			}
 		}
 
-		public void RunCompressDirectoryTest(ZipOutputStream zipStream)
+		public void RunCompressDirectoryTest(ZipOutputStream zipStream, bool forReaderTools = false)
 		{
-			CompressDirectory(TestFolderPath, zipStream, GetDirNameOffset, false);
+			CompressDirectory(TestFolderPath, zipStream, GetDirNameOffset, forReaderTools);
 		}
 	}
 }

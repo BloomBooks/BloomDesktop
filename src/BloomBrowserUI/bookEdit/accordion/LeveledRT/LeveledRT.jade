@@ -4,10 +4,13 @@ html
 	body
 		h3(data-panelId='LeveledRT', data-markuptype='2', data-order='20', data-i18n='Accordion.LeveledReaderTool') Leveled Reader Tool
 		div(data-panelId='LeveledRT')
-			img#levels-steps(src='http://localhost:8089/bloom/images/steps-white.png', style='margin-left: 14px; width: 32px')
-			.stageLine
+			#setupStages
+				img#leveled-edit(src='/bloom/images/edit-white.png')
+				span.setup.noSelect
+					a(href="javascript:parent.window.showSetupDialog('levels');", data-i18n='LeveledReaderTool.SetUpLevels') Set up Levels
+			.stageLine.clear.noSelect
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
-				span.stageLabel.stageLine
+				span.stageLabel.stageLine.noSelect
 					span(data-i18n='LeveledReaderTool.Level')="Level "
 					span#levelNumber 1
 					span.ofStage(data-i18n='LeveledReaderTool.LevelOf')!="&nbsp;of&nbsp;"
@@ -50,8 +53,6 @@ html
 					td.statistics-max#maxUniqueWordsPerBook
 					td.statistics-actual#actualUniqueWords -
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
-				span.setup.stageLine
-					a(href="javascript:parent.window.showSetupDialog('levels');", data-i18n='LeveledReaderTool.SetUpLevels') Set up Levels
 			.section(style='clear: both; margin-left: 8px;')
 				span(data-i18n='LeveledReaderTool.FoThisLevel') For this Level
 				ul#thingsToRemember
@@ -70,5 +71,6 @@ html
 						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?ChoiceOfTopic")', data-i18n='LeveledReaderTool.ChoiceOfTopic') Choice of Topic
 			script(type='text/javascript').
 				$(document).ready(function() {
-					setTimeout(initializeLeveledRT, 100);
+					// this timeout is different than the DecodableRT timeout to prevent initializing synphony twice
+					setTimeout(initializeLeveledRT, 200);
 				});

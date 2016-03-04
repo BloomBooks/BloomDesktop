@@ -1,4 +1,8 @@
+using System.Drawing.Imaging;
+using SIL.Extensions;
+using SIL.Windows.Forms.ClearShare;
 using System;
+using System.IO;
 
 namespace Bloom.Book
 {
@@ -19,8 +23,6 @@ namespace Bloom.Book
 
 			InvokeSelectionChanged();
 		}
-
-
 
 		public Book CurrentSelection
 		{

@@ -8,8 +8,8 @@ using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Chorus.UI.Clone;
-using Palaso.UI.WindowsForms.Extensions;
-using Palaso.i18n;
+using SIL.Windows.Forms.Extensions;
+using SIL.i18n;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -164,7 +164,7 @@ namespace Bloom.CollectionChoosing
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom ran into a problem:\r\n{0}",
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom ran into a problem:\r\n{0}",
 																 error.Message);
 			}
 		}
@@ -210,10 +210,29 @@ namespace Bloom.CollectionChoosing
 			SelectedPath = path;
 			if (!string.IsNullOrEmpty(path))
 			{
+				if (ReportIfInvalidCollectionToEdit(path)) return;
 				CheckForBeingInDropboxFolder(path);
 				_mruList.AddNewPath(path);
 				Invoke(DoneChoosingOrCreatingLibrary);
 			}
+		}
+
+		public static bool ReportIfInvalidCollectionToEdit(string path)
+		{
+			if (IsInvalidCollectionToEdit(path))
+			{
+				var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InSourceCollectionMessage",
+					"This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.");
+				MessageBox.Show(msg);
+				return true;
+			}
+			return false;
+		}
+
+		public static bool IsInvalidCollectionToEdit(string path)
+		{
+			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
+				|| path.StartsWith(ProjectContext.FactoryCollectionsDirectory);
 		}
 
 		/// <summary>
@@ -248,20 +267,29 @@ namespace Bloom.CollectionChoosing
 					// but Dropbox places its .dropbox folder in the user's home directory so we need to strip
 					// one directory level from that return value.
 					var baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-					if (Palaso.PlatformUtilities.Platform.IsWindows)
+					if (SIL.PlatformUtilities.Platform.IsWindows)
 						dropboxInfoFile = Path.Combine(baseFolder, @"Dropbox\info.json");
 					else
 						dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
 
+					//on my windows 10 box, the file we want is in AppData\Local\Dropbox
 					if (!File.Exists(dropboxInfoFile))
-						return; // User appears to not have Dropbox installed
+					{
+						baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+						if (SIL.PlatformUtilities.Platform.IsWindows)
+							dropboxInfoFile = Path.Combine(baseFolder, @"Dropbox\info.json");
+						else
+							dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
+						if (!File.Exists(dropboxInfoFile))
+							return; // User appears to not have Dropbox installed
+					}
 
 					var info = File.ReadAllText(dropboxInfoFile);
 					var matches = Regex.Matches(info, @"{""path"": ""([^""]+)"",");
 					foreach (Match match in matches)
 					{
 						var folder = match.Groups[1].Value;
-						if (Palaso.PlatformUtilities.Platform.IsWindows)
+						if (SIL.PlatformUtilities.Platform.IsWindows)
 						{
 							folder = folder.Replace("\\\\", "\\");
 							folder = folder.ToLowerInvariant();
@@ -273,7 +301,7 @@ namespace Bloom.CollectionChoosing
 				if (_dropboxFolders.Count == 0)
 					return; // User appears to not have Dropbox installed
 
-				if (Palaso.PlatformUtilities.Platform.IsWindows)
+				if (SIL.PlatformUtilities.Platform.IsWindows)
 					path = path.ToLowerInvariant(); // We do a case-insensitive compare on Windows.
 
 				foreach (var folder in _dropboxFolders)
@@ -283,7 +311,7 @@ namespace Bloom.CollectionChoosing
 						var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InDropboxMessage",
 							"Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.",
 							"");
-						MessageBox.Show(msg);
+						SIL.Reporting.ErrorReport.NotifyUserOfProblem(msg);
 						return;
 					}
 				}
@@ -291,9 +319,9 @@ namespace Bloom.CollectionChoosing
 			catch (Exception e)
 			{
 				// To help fix BL-1246, we enable this:
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					"For some reason Bloom could not check your Dropbox settings. This should not cause you any problems, but please report it so we can fix it.");
-				Palaso.Reporting.Logger.WriteEvent("*** In CheckForBeingInDropboxFolder(), got "+e.Message+Environment.NewLine+e.StackTrace);
+				SIL.Reporting.Logger.WriteEvent("*** In CheckForBeingInDropboxFolder(), got "+e.Message+Environment.NewLine+e.StackTrace);
 				Debug.Fail(e.Message);
 			}
 		}

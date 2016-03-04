@@ -36,8 +36,7 @@ mixin page-cover(label)
 
 mixin chooser-topic
 	//- TODO: Somehow the data-functionOnHintClick doesn't interact well with the new label.bubble method.
-	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode.bloom-alwaysShowBubble(data-functionOnHintClick="ShowTopicChooser()", data-hint="Click to choose topic")
-		.bloom-readOnlyInTranslationMode.bloom-editable.Cover-Default-style(data-book="topic")
+	.coverBottomBookTopic.bloom-readOnlyInTranslationMode.bloom-userCannotModifyStyles.bloom-alwaysShowBubble.Cover-Default-style(data-derived="topic", data-functionOnHintClick="ShowTopicChooser()", data-hint = "Click to choose topic")
 
 mixin field-ISBN
 	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")
@@ -46,11 +45,11 @@ mixin field-ISBN
 		div.bloom-editable(data-book="ISBN", lang="*").Credits-Page-style.bloom-userCannotModifyStyles
 
 mixin field-acknowledgments-localizedVersion
-	// readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.
+	// readOnlyInAuthorMode: we want to leave this blank for if/when someone takes this doc and is translating it.
 	//- Why both versionAcknowledgments && inside-cover-version-Credits-Page-style?
 	//-   versionAcknowledgments governs placement on the page, inside-cover-version-Credits-Page-style is a
 	//-   holding place for user style adjustments (like font-size)
-	+editable("N1").versionAcknowledgments.Credits-Page-style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Name of Translator, in {lang}")
+	+editable("N1").versionAcknowledgments.Credits-Page-style.bloom-readOnlyInAuthorMode(data-book="versionAcknowledgments", data-hint="Name of Translator, in {lang}")
 
 // TODO: this is a mess
 mixin field-acknowledgments-originalVersion
@@ -61,15 +60,13 @@ mixin field-acknowledgments-originalVersion
 
 mixin block-licenseAndCopyright
 	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
-		.copyright(data-book="copyright", lang="*").Credits-Page-style
+		.copyright(data-derived="copyright", lang="*").Credits-Page-style
 			{copyright}
 		.licenseBlock
-			img.licenseImage(src="" data-book="licenseImage")
-			.licenseUrl(data-book="licenseUrl", lang="en")
-				{License Url}
-			.licenseDescription(data-book="licenseDescription",lang="en").Credits-Page-style
-				{License Description}
-			.licenseNotes(data-book="licenseNotes", lang="en").Credits-Page-style
+			img.licenseImage(src="license.png" data-derived="licenseImage")
+			.licenseUrl(data-derived="licenseUrl", lang="en") http://creativecommons.org/licenses/by/4.0/
+			.licenseDescription(data-derived="licenseDescription",lang="en").Credits-Page-style You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
+			.licenseNotes(data-derived="licenseNotes", lang="en").Credits-Page-style
 				{License Notes}
 
 
@@ -92,7 +89,7 @@ mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
 	+page-cover('Front Cover')(attributes, data-export='front-matter-cover').frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
 
-		//- enchance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
+		//- enhance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
 		//- 	+field-matter('bookTitle').Title-On-Cover-style
 		//- 		label.bubble Book title in {lang}
 		//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
@@ -102,9 +99,7 @@ mixin factoryStandard-outsideFrontCover
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
 
-
-		.bloom-imageContainer
-			img(src="placeHolder.png", data-book='coverImage')
+		.bloom-imageContainer.bloom-backgroundImage(data-book='coverImage', style="background-image:url('placeHolder.png')")
 
 			//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
 			// because it is never empty

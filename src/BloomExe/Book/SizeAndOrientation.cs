@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using Newtonsoft.Json;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -104,18 +104,21 @@ namespace Bloom.Book
 						PageSizeName = "A5"
 					};
 			}
-			int startOfAlternativeName=-1;
-			if(nameLower.Contains("landscape"))
-				startOfAlternativeName = startOfOrientationName + "landscape".Length;
-			else
-				startOfAlternativeName = startOfOrientationName + "portrait".Length;
 
 			return new SizeAndOrientation()
 					{
 						IsLandScape = nameLower.Contains("landscape"),
-						PageSizeName = nameLower.Substring(0, startOfOrientationName).ToUpperFirstLetter(),
-						//AlternativeName = name.Substring(startOfAlternativeName, nameLower.Length - startOfAlternativeName)
+						PageSizeName = ExtractPageSizeName(name, startOfOrientationName),
 					};
+		}
+
+		private static string ExtractPageSizeName(string nameLower, int startOfOrientationName)
+		{
+			var name = nameLower.Substring(0, startOfOrientationName).ToUpperFirstLetter();
+			//these are needed so that "HalfLetter" doesn't come out "Halfletter"
+			name = name.Replace("letter", "Letter");
+			name = name.Replace("legal", "Legal");
+			return name;
 		}
 
 		public static void AddClassesForLayout(HtmlDom dom, Layout layout)
@@ -137,7 +140,11 @@ namespace Bloom.Book
 				var path = fileLocator.LocateFile(fileName);
 				if(string.IsNullOrEmpty(path))
 				{
-					throw new ApplicationException("Could not locate "+fileName);
+					// We're looking for a block of json that is typically found in Basic Book.css or a comparable place for
+					// a book based on some other template. Caling code is prepared for not finding this block.
+					// It seems safe to ignore a reference to some missing style sheet.
+					Debug.Fail("Could not locate "+fileName);
+					continue;
 				}
 				var contents = File.ReadAllText(path);
 				var start = contents.IndexOf("STARTLAYOUTS");

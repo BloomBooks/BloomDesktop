@@ -12,7 +12,9 @@ DESTDIR = debian/$(PACKAGE)
 LIB     = usr/lib/$(PACKAGE)
 SHARE   = usr/share/$(PACKAGE)
 
-FULL_BUILD_NUMBER ?= 0.0.1.0
+# NOTE: make the third (and fourth?) number match changelog if you are
+# building the package manually.
+FULL_BUILD_NUMBER ?= 0.0.0.0
 
 %:
 	dh $@ --with=cli --parallel
@@ -42,7 +44,7 @@ override_dh_auto_install:
 	cd $(DESTDIR)/$(LIB) && rm AxInterop* BloomTests* Interop* Moq* nunit*
 	# Install data files
 	cp -r DistFiles $(DESTDIR)/$(LIB)/
-	rm -rf $(DESTDIR)/$(LIB)/DistFiles/Andika
+	rm -rf $(DESTDIR)/$(LIB)/DistFiles/AndikaNewBasic
 	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/DistFiles
 	# Install browser support files
 	cp -r src/BloomBrowserUI $(DESTDIR)/$(LIB)/
@@ -80,3 +82,8 @@ override_dh_clideps:
 		--exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll --exclude-moduleref=libtidy.dll \
 		--exclude-moduleref=msdelta.dll --exclude-moduleref=mspatcha.dll --exclude-moduleref=mspatchc.dll \
 		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll
+
+# Don't strip debug symbols -- we want them for informative crash stack traces
+override_dh_strip:
+
+override_dh_clistrip:

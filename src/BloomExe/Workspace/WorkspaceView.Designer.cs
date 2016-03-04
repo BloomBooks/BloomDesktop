@@ -30,7 +30,7 @@
         {
 			this.components = new System.ComponentModel.Container();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
+			this._settingsLauncherHelper = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._containerPanel = new System.Windows.Forms.Panel();
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
@@ -86,7 +86,7 @@
 			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
 			this._toolSpecificPanel.Location = new System.Drawing.Point(333, 2);
 			this._toolSpecificPanel.Name = "_toolSpecificPanel";
-			this._toolSpecificPanel.Size = new System.Drawing.Size(700, 66);
+			this._toolSpecificPanel.Size = new System.Drawing.Size(762, 66);
 			this._toolSpecificPanel.TabIndex = 17;
 			// 
 			// _panelHoldingToolStrip
@@ -189,7 +189,7 @@
 			this._documentationMenuItem.Image = global::Bloom.Properties.Resources.help24x24;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._documentationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._documentationMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.documentationMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.DocumentationMenuItem");
 			this._documentationMenuItem.Name = "_documentationMenuItem";
 			this._documentationMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._documentationMenuItem.Text = "Help. Lots of help!";
@@ -215,7 +215,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._releaseNotesMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._releaseNotesMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._releaseNotesMenuItem, "HelpMenu.releaseNotesMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._releaseNotesMenuItem, "HelpMenu.ReleaseNotesMenuItem");
 			this._releaseNotesMenuItem.Name = "_releaseNotesMenuItem";
 			this._releaseNotesMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._releaseNotesMenuItem.Text = "Release Notes...";
@@ -227,7 +227,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._keyBloomConceptsMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._keyBloomConceptsMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._keyBloomConceptsMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._keyBloomConceptsMenuItem, "HelpMenu.keyBloomConceptsToolStripMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._keyBloomConceptsMenuItem, "HelpMenu.KeyBloomConceptsToolStripMenuItem");
 			this._keyBloomConceptsMenuItem.Name = "_keyBloomConceptsMenuItem";
 			this._keyBloomConceptsMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._keyBloomConceptsMenuItem.Text = "Key Bloom Concepts";
@@ -271,7 +271,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._reportAProblemMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._reportAProblemMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._reportAProblemMenuItem, "HelpMenu.reportAProblemToolStripMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._reportAProblemMenuItem, "HelpMenu.ReportAProblemToolStripMenuItem");
 			this._reportAProblemMenuItem.Name = "_reportAProblemMenuItem";
 			this._reportAProblemMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._reportAProblemMenuItem.Text = "Report a Problem...";
@@ -282,7 +282,7 @@
 			this._makeASuggestionMenuItem.Image = global::Bloom.Properties.Resources.uservoice16x161;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._makeASuggestionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._makeASuggestionMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._makeASuggestionMenuItem, "HelpMenu._makeASuggestionMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._makeASuggestionMenuItem, "HelpMenu.MakeASuggestionMenuItem");
 			this._makeASuggestionMenuItem.Name = "_makeASuggestionMenuItem";
 			this._makeASuggestionMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._makeASuggestionMenuItem.Text = "Make a Suggestion";
@@ -292,7 +292,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._webSiteMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._webSiteMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._webSiteMenuItem, "HelpMenu._webSiteMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._webSiteMenuItem, "HelpMenu.WebSiteMenuItem");
 			this._webSiteMenuItem.Name = "_webSiteMenuItem";
 			this._webSiteMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._webSiteMenuItem.Text = "Web Site";
@@ -308,7 +308,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._showLogMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._showLogMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._showLogMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._showLogMenuItem, "HelpMenu.showEventLogMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._showLogMenuItem, "HelpMenu.ShowEventLogMenuItem");
 			this._showLogMenuItem.Name = "_showLogMenuItem";
 			this._showLogMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._showLogMenuItem.Text = "Show Event Log";
@@ -323,7 +323,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._checkForNewVersionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._checkForNewVersionMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._checkForNewVersionMenuItem, "HelpMenu.checkForNewVersionToolStripMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._checkForNewVersionMenuItem, "HelpMenu.CheckForNewVersionMenuItem");
 			this._checkForNewVersionMenuItem.Name = "_checkForNewVersionMenuItem";
 			this._checkForNewVersionMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._checkForNewVersionMenuItem.Text = "Check For New Version";
@@ -333,7 +333,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._registrationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._registrationMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._registrationMenuItem, "HelpMenu.registrationMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._registrationMenuItem, "HelpMenu.RegistrationMenuItem");
 			this._registrationMenuItem.Name = "_registrationMenuItem";
 			this._registrationMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._registrationMenuItem.Text = "Registration";
@@ -343,7 +343,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._aboutBloomMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._aboutBloomMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._aboutBloomMenuItem, "HelpMenu.creditsMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._aboutBloomMenuItem, "HelpMenu.CreditsMenuItem");
 			this._aboutBloomMenuItem.Name = "_aboutBloomMenuItem";
 			this._aboutBloomMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._aboutBloomMenuItem.Text = "About Bloom";
@@ -367,12 +367,6 @@
 			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "HelpMenu";
-			// 
-			// _applicationUpdateCheckTimer
-			// 
-			this._applicationUpdateCheckTimer.Enabled = true;
-			this._applicationUpdateCheckTimer.Interval = 60000;
-			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 
 			// _tabStrip
 			// 
@@ -417,9 +411,9 @@
 			this._collectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._collectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._collectionTab.Size = new System.Drawing.Size(103, 71);
-			this._collectionTab.TextChanged += HandleTabTextChanged;
 			this._collectionTab.Text = "Collections";
 			this._collectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._collectionTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
 			// 
 			// _editTab
 			// 
@@ -439,9 +433,9 @@
 			this._editTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._editTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._editTab.Size = new System.Drawing.Size(69, 71);
-			this._editTab.TextChanged += HandleTabTextChanged;
 			this._editTab.Text = "Edit";
 			this._editTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._editTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
 			// 
 			// _publishTab
 			// 
@@ -463,9 +457,15 @@
 			this._publishTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._publishTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._publishTab.Size = new System.Drawing.Size(83, 71);
-			this._publishTab.TextChanged += HandleTabTextChanged;
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._publishTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
+			// 
+			// _applicationUpdateCheckTimer
+			// 
+			this._applicationUpdateCheckTimer.Enabled = true;
+			this._applicationUpdateCheckTimer.Interval = 60000;
+			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 
 			// WorkspaceView
 			// 
@@ -497,7 +497,7 @@
         #endregion
 
 		private System.Windows.Forms.ToolTip toolTip1;
-		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper _settingsLauncherHelper;
+		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper _settingsLauncherHelper;
 		private System.Windows.Forms.Panel _containerPanel;
 		private System.Windows.Forms.Panel _toolSpecificPanel;
 		private System.Windows.Forms.Panel _panelHoldingToolStrip;

@@ -1,5 +1,5 @@
-﻿using Palaso.Progress;
-using Palaso.UI.WindowsForms.Progress;
+﻿using SIL.Progress;
+using SIL.Windows.Forms.Progress;
 
 namespace Bloom.ToPalaso.Experimental
 {

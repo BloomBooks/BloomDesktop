@@ -46,7 +46,6 @@ build/xulrunner*
 build/Palaso.BuildTasks.dll
 build/MSBuild.*
 packages/*.*
-copy*.*
 Copy*.bat
 *.orig
 *.map
@@ -97,3 +96,4 @@ node_modules/
 Andika-R.ttf
 *~
 Bloom/
+.vs/config/applicationhost.config

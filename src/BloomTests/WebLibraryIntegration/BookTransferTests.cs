@@ -9,9 +9,9 @@ using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using L10NSharp;
 using NUnit.Framework;
-using Palaso.Extensions;
-using Palaso.Progress;
-using Palaso.UI.WindowsForms.ImageToolbox;
+using SIL.Extensions;
+using SIL.Progress;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -55,7 +55,7 @@ namespace BloomTests.WebLibraryIntegration
 			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
 			_htmlThumbNailer = new HtmlThumbNailer(new NavigationIsolator());
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), _htmlThumbNailer, new BookDownloadStartingEvent());
+			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer), new BookDownloadStartingEvent());
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
 		}
 
@@ -109,7 +109,7 @@ namespace BloomTests.WebLibraryIntegration
 			Login();
 			//HashSet<string> notifications = new HashSet<string>();
 
-			var progress = new Palaso.Progress.StringBuilderProgress();
+			var progress = new SIL.Progress.StringBuilderProgress();
 			var s3Id = _transfer.UploadBook(originalBookFolder,progress);
 
 			var uploadMessages = progress.Text.Split(new string[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
@@ -148,6 +148,21 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			var localBook = MakeBook("local", "someId", "someone", "test");
 			Assert.That(_transfer.IsBookOnServer(localBook), Is.False);
+		}
+
+		/// <summary>
+		/// Regression test. Using ChangeExtension to append the PDF truncates the name when there is a period.
+		/// </summary>
+		[Test]
+		public void BookWithPeriodInTitle_DoesNotGetTruncatedPdfName()
+		{
+#if __MonoCS__
+			Assert.That(BookTransfer.UploadPdfPath("/somewhere/Look at the sky. What do you see"),
+				Is.EqualTo("/somewhere/Look at the sky. What do you see/Look at the sky. What do you see.pdf"));
+#else
+			Assert.That(BookTransfer.UploadPdfPath(@"c:\somewhere\Look at the sky. What do you see"),
+				Is.EqualTo(@"c:\somewhere\Look at the sky. What do you see\Look at the sky. What do you see.pdf"));
+#endif
 		}
 
 		[Test]

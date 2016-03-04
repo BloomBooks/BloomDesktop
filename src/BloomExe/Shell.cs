@@ -10,8 +10,8 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Workspace;
-using Palaso.Extensions;
-using Palaso.UI.WindowsForms.PortableSettingsProvider;
+using SIL.Extensions;
+using SIL.Windows.Forms.PortableSettingsProvider;
 
 namespace Bloom
 {
@@ -19,6 +19,7 @@ namespace Bloom
 	{
 		private readonly CollectionSettings _collectionSettings;
 		private readonly LibraryClosing _libraryClosingEvent;
+		private readonly ControlKeyEvent _controlKeyEvent;
 		private readonly WorkspaceView _workspaceView;
 
 		// This is needed because on Linux the ResizeEnd event is firing before the Load event handler is
@@ -29,11 +30,13 @@ namespace Bloom
 												CollectionSettings collectionSettings,
 												BookDownloadStartingEvent bookDownloadStartingEvent,
 												LibraryClosing libraryClosingEvent,
-												QueueRenameOfCollection queueRenameOfCollection)
+												QueueRenameOfCollection queueRenameOfCollection,
+												ControlKeyEvent controlKeyEvent)
 		{
 			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
+			_controlKeyEvent = controlKeyEvent;
 			InitializeComponent();
 
 			//bring the application to the front (will normally be behind the user's web browser)
@@ -117,7 +120,7 @@ namespace Bloom
 				}
 				catch (Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
 						"Sorry, Bloom failed to even prepare for the rename of the project to '{0}'", _nameToChangeCollectionUponClosing);
 				}
 			}
@@ -127,7 +130,14 @@ namespace Bloom
 
 		public void SetWindowText(string bookName)
 		{
-			string formattedText = string.Format("{0} - Bloom {1} Built on {2}", _workspaceView.Text, GetShortVersionInfo(), GetBuiltOnDate());
+			// Let's only mark the window text for Alpha and Beta releases. It looks odd to have that in 
+			// release builds, and doesn't add much since we can treat Release builds as the unmarked case.
+			// Note that developer builds now have a special "channel" marking as well to differentiate them
+			// from true Release builds in screen shots.
+			var formattedText = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetShortVersionInfo());
+			var channel = ApplicationUpdateSupport.ChannelName;
+			if (channel.ToLowerInvariant() != "release")
+				formattedText = string.Format("{0} {1}", formattedText, channel);
 			if (bookName != null)
 			{
 				formattedText = string.Format("{0} - {1}", bookName, formattedText);
@@ -144,7 +154,7 @@ namespace Bloom
 			var asm = Assembly.GetExecutingAssembly();
 			var ver = asm.GetName().Version;
 			var file = asm.CodeBase.Replace("file://", string.Empty);
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (SIL.PlatformUtilities.Platform.IsWindows)
 				file = file.TrimStart('/');
 			var fi = new FileInfo(file);
 
@@ -295,6 +305,43 @@ namespace Bloom
 			var formTopLeft = new Rectangle(rect.Left, rect.Top, 100, 100);
 
 			return screens.Any(screen => screen.WorkingArea.Contains(formTopLeft));
+		}
+
+		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+		{
+			if(Control.ModifierKeys == Keys.Control)
+			{
+				_controlKeyEvent.Raise(keyData);
+				//this event system doesn't actually give us a return value,, so we don't know if it was handled or not
+				//so we'll always just let it bubble. If that becomes a problem, we'll need a different design.
+				//return true;
+			}
+			return base.ProcessCmdKey(ref msg, keyData);
+		}
+
+		private delegate void NotifyTheUserOfProblem(string message, params object[] args);
+		/// <summary>
+		/// Display a dialog box that reports a problem to the user.
+		/// </summary>
+		/// <remarks>
+		/// On Linux at least, displaying a dialog on a thread that is not the main GUI
+		/// thread causes a crash with a segmentation violation.  So we try to display on
+		/// the main thread.
+		/// </remarks>
+		public static void DisplayProblemToUser(string message, params object[] args)
+		{
+			var forms = Application.OpenForms;
+			for (int i = 0; i < forms.Count; ++i)
+			{
+				var s = forms [i] as Bloom.Shell;
+				if (s != null && s.InvokeRequired)
+				{
+					var d = new Shell.NotifyTheUserOfProblem(SIL.Reporting.ErrorReport.NotifyUserOfProblem);
+					s.Invoke(d, new object[] { message, args });
+					return;
+				}
+			}
+			SIL.Reporting.ErrorReport.NotifyUserOfProblem(message, args);
 		}
 	}
 }

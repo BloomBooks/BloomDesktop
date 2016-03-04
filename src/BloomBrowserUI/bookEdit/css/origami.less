@@ -12,6 +12,10 @@
   visibility: visible;
 }
 
+.split-pane > .split-pane-component {
+  overflow: hidden !important; // override split-pane.css rules that call for overflow: auto
+}
+
 .split-pane.vertical-percent > .split-pane-component.position-left {
   right: 50%;
   margin-right: 3px;
@@ -153,7 +157,8 @@
   position: relative;
   width: 100%;
   height: 100%;
-  padding: 2px;
+  //3.0 to 3.2 had padding: 2px;, probably to make resizing easier or something? But then we can never reach the page margins
+  padding: 0px;
   box-sizing: border-box;
 }
 
@@ -185,6 +190,6 @@
 .selector-links, .selector-links a {
   color: @activeColor;
 }
-.selector-links DIV {
+.selector-links div {
 	display: inline;
 }

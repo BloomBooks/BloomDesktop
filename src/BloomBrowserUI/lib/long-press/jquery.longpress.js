@@ -5,24 +5,27 @@
  *    Licence: MIT License http://opensource.org/licenses/mit-license.php
  *
  *  Modified Oct 2014 to work with editable divs also
+ *  Modified August 2015 to remove arrow key feature, which was interfering with ckeditor (or vice-versa, really)
+ *  Modified August 2015 to add instructions at the bottom
+ *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
 
 ;(function ($, window, undefined) {
 
     var pluginName = 'longPress',
         document = window.document,
-        defaults = {/*
-            propertyName: "value"
-        */};
+        defaults = {
+            instructions: ""
+        };
 
     var moreChars={
         // extended latin (and african latin)
         // upper
         'A':'ĀĂÀÁÂÃÄÅĄⱭ∀Æ',
         'B':'Ɓ',
-        'C':'ÇĆĈĊČƆ',
+        'C': 'ÇĆĈƆ̃ĊČƆ',
         'D':'ÐĎĐḎƊ',
-        'E':'ÈÉÊËĒĖĘẸĚƏÆƎƐ€',
+        'E': 'ÈÉÊẼËĒĖĘẸĚƏÆƎƐ€',
         'F':'ƑƩ',
         'G':'ĜĞĠĢƢ',
         'H':'ĤĦ',
@@ -36,7 +39,7 @@
         'R':'ŔŘɌⱤ',
         'S':'ßſŚŜŞṢŠÞ§',
         'T':'ŢŤṮƬƮ',
-        'U':'ÙÚÛÜŪŬŮŰŲɄƯƱ',
+        'U':'ÙÚÛŨÜŪŬŮŰŲɄƯƱ', 
         'V':'Ʋ',
         'W':'ŴẄΩ',
         'Y':'ÝŶŸƔƳ',
@@ -45,9 +48,9 @@
         // lower
         'a':'āăàáâãäåąɑæαª',
         'b':'ßβɓ',
-        'c':'çςćĉċč¢ɔ',
+        'c': 'çςćĉɔ̃ċč¢ɔ',
         'd':'ðďđɖḏɖɗ',
-        'e':'èéêëēėęẹěəæεɛ€',
+        'e':'èéêẽëēėęẹěəæεɛ€', 
         'f':'ƒʃƭ',
         'g':'ĝğġģɠƣ',
         'h':'ĥħɦẖ',
@@ -61,7 +64,7 @@
         'r':'ŕřɍɽ',
         's':'ßſśŝşṣšþ§',
         't':'ţťṯƭʈ',
-        'u':'ùúûüūŭůűųưμυʉʊ',
+        'u': 'ùúûũüūŭůűųưμυʉʊ',
         'v':'ʋ',
         'w':'ŵẅω',
         'y':'ýŷÿɣyƴ',
@@ -79,7 +82,8 @@
         '"':'“”„‟',
         '<':'≤‹',
         '>':'≥›',
-        '=':'≈≠≡'
+        '=': '≈≠≡',
+        '/': '÷'
 
     };
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
@@ -112,26 +116,30 @@
     var textAreaCaretPosition;
     var storedOffset;
 
-    var popup=$('<ul class=long-press-popup />');
+    var popup;
 
     $(window).mousewheel(onWheel);
 
     function onKeyDown(e) {
-
+        /* we had to disable thes because ckeditor was seeing them and messing things up. Hopefully in the future it can be reinstated:
         // Arrow key with popup visible
-        if ($('.long-press-popup').length>0 && (e.which==37 || e.which==39)) {
-            if (e.which==37) activePreviousLetter();
+        if ($('.long-press-popup').length > 0 && (e.which == 37 || e.which == 39)) {
+            e.stopPropagation(); //stop ckeditor from seeing this (DOESN"T WORK)
+            e.preventDefault();
+            if (e.which == 37) activePreviousLetter();
             else if (e.which==39) activateNextLetter();
 
-            e.preventDefault();
+
             return;
         }
+        */
 
         if (ignoredKeyDownKeys.indexOf(e.which)>-1) return;
         activeElement=e.target;
 
         if (e.which==lastWhich) {
             e.preventDefault();
+            e.stopPropagation(); //attempt to stop ckeditor from seeing this event
             if (!timer) timer=setTimeout(onTimer, 10);
             return;
         }
@@ -164,13 +172,13 @@
         }
     }
     function showPopup(chars) {
-        popup.empty();
+        popup.find('ul').empty();
         var letter;
         for (var i=0; i<chars.length; i++) {
             letter=$('<li class=long-press-letter />').text(chars[i]);
             letter.mouseenter(activateLetter);
             letter.click(onPopupLetterClick);
-            popup.append(letter);
+            popup.find('ul').append(letter);
         }
         $('body').append(popup);
         selectedCharIndex=-1;
@@ -227,8 +235,12 @@
         if (isTextArea()) {
             setTextAreaCaretPosition(activeElement, textAreaCaretPosition);
         } else {
-            EditableDivUtils.makeSelectionIn(activeElement, storedOffset, null, true);
-            setFocusDelayed();
+            // If we make the selection before setting the focus, the selection
+            // ends up in the wrong place (BL-2717).
+            if (activeElement && typeof activeElement.focus != "undefined") {
+                activeElement.focus();
+                EditableDivUtils.makeSelectionIn(activeElement, storedOffset, null, true);
+            }
         }
     }
 
@@ -336,6 +348,7 @@
         this._defaults = defaults;
         this._name = pluginName;
 
+        popup = $('<div  class=long-press-popup><ul />' + this.options.instructions + '</div>');
         this.init();
     }
 

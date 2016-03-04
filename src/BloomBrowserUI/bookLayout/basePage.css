@@ -1,3 +1,12 @@
+﻿body {
+  line-height: 1.5;
+  font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
+}
+.bloom-backgroundImage {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
 /*+init {*/
 * {
   position: relative;
@@ -5,60 +14,58 @@
   padding: 0;
   font-size: 1em;
 }
-H1,
-H2,
-H3,
-H4,
-H5,
-H6,
-TH {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+th {
   font-weight: inherit;
 }
-ADDRESS,
-CITE,
-DFN,
-VAR {
+address,
+cite,
+dfn,
+var {
   font-style: inherit;
 }
-CAPTION,
-CODE,
-KBD,
-PRE,
-SAMP,
-TT,
-INPUT,
-TEXTAREA,
-SELECT,
-BUTTON {
+caption,
+code,
+kbd,
+pre,
+samp,
+tt,
+input,
+textarea,
+select,
+button {
   font-family: inherit;
 }
-TABLE {
+table {
   border-spacing: 0;
 }
-TH {
+th {
   text-align: left;
 }
-HTML,
-BODY,
-THEAD,
-TBODY,
-TFOOT,
-TR,
-TH,
-TD,
-BR {
+html,
+body,
+thead,
+tbody,
+tfoot,
+tr,
+th,
+td,
+br {
   position: static;
 }
-INPUT[type=hidden] {
+input[type=hidden] {
   display: none !important;
 }
-FIELDSET,
-A IMG {
+fieldset,
+a img {
   border: 0;
 }
-BODY {
-  line-height: 1.5;
-  font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
+body {
   /*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
@@ -75,7 +82,7 @@ To handling the mis-match.*/
   background-repeat: no-repeat;
   background-size: 70%;
 }
-DIV.ui-tooltip-content {
+div.ui-tooltip-content {
   overflow: visible !important;
   font-size: 10pt;
   padding: 0px 9px;
@@ -91,12 +98,11 @@ DIV.ui-tooltip-content {
 p {
   min-height: 1em;
 }
-TEXTAREA,
+textarea,
 .bloom-editable {
   resize: none;
   /*don't show those cute little resize controls in Firefox 4 and greater*/
   overflow: visible;
-  font-size: 143%;
   line-height: 1.5em;
   min-height: 1.8em;
   width: 100%;
@@ -121,7 +127,7 @@ span.bloom-linebreak {
   display: block;
   text-indent: 0;
 }
-DIV.bloom-page {
+div.bloom-page {
   display: block;
   page-break-after: auto;
   background-color: #FFFFFF;
@@ -130,11 +136,11 @@ the margin-top is calculated to center the text vertically, but htmltopdf then d
 so it just heads down off the page, messing things up.*/
   overflow: hidden;
 }
-DIV#bloomDataDiv {
+div#bloomDataDiv {
   display: none;
 }
 @media screen {
-  DIV.bloom-page {
+  div.bloom-page {
     /*[disabled]border:1px solid #000000;*/
   }
 }
@@ -166,6 +172,8 @@ page be the full page, regardless of the contents.
 
 To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
 preview.css.
+
+Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 */
 .bloom-page.A5Portrait {
   min-width: 148mm;
@@ -209,6 +217,66 @@ preview.css.
   max-width: 148mm;
   min-height: 105mm;
   max-height: 105mm;
+}
+.bloom-page.QuarterLetterPortrait {
+  min-width: 4.25in;
+  max-width: 4.25in;
+  min-height: 5.5in;
+  max-height: 5.5in;
+}
+.bloom-page.QuarterLetterLandscape {
+  min-width: 5.5in;
+  max-width: 5.5in;
+  min-height: 4.25in;
+  max-height: 4.25in;
+}
+.bloom-page.HalfLetterPortrait {
+  min-width: 5.5in;
+  max-width: 5.5in;
+  min-height: 8.5in;
+  max-height: 8.5in;
+}
+.bloom-page.HalfLetterLandscape {
+  min-width: 8.5in;
+  max-width: 8.5in;
+  min-height: 5.5in;
+  max-height: 5.5in;
+}
+.bloom-page.LetterPortrait {
+  min-width: 8.5in;
+  max-width: 8.5in;
+  min-height: 11in;
+  max-height: 11in;
+}
+.bloom-page.LetterLandscape {
+  min-width: 11in;
+  max-width: 11in;
+  min-height: 8.5in;
+  max-height: 8.5in;
+}
+.bloom-page.HalfLegalPortrait {
+  min-width: 7in;
+  max-width: 7in;
+  min-height: 8.5in;
+  max-height: 8.5in;
+}
+.bloom-page.HalfLegalLandscape {
+  min-width: 8.5in;
+  max-width: 8.5in;
+  min-height: 7in;
+  max-height: 7in;
+}
+.bloom-page.LegalPortrait {
+  min-width: 8.5in;
+  max-width: 8.5in;
+  min-height: 14in;
+  max-height: 14in;
+}
+.bloom-page.LegalLandscape {
+  min-width: 14in;
+  max-width: 14in;
+  min-height: 8.5in;
+  max-height: 8.5in;
 }
 /*Margins*/
 .textWholePage .marginBox {
@@ -275,6 +343,70 @@ preview.css.
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
   max-width: 136mm;
 }
+.QuarterLetterPortrait .marginBox {
+  height: 4.31889764in;
+  width: 2.67519685in;
+}
+.QuarterLetterPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 2.67519685in;
+}
+.QuarterLetterLandscape .marginBox {
+  height: 3.06889764in;
+  width: 3.92519685in;
+}
+.QuarterLetterLandscape .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 3.92519685in;
+}
+.HalfLetterPortrait .marginBox {
+  height: 7.31889764in;
+  width: 3.92519685in;
+}
+.HalfLetterPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 3.92519685in;
+}
+.LetterPortrait .marginBox {
+  height: 9.81889764in;
+  width: 6.92519685in;
+}
+.LetterPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 6.92519685in;
+}
+.LetterLandscape .marginBox {
+  height: 7.31889764in;
+  width: 9.42519685in;
+}
+.LetterLandscape .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 9.42519685in;
+}
+.HalfLegalPortrait .marginBox {
+  height: 7.31889764in;
+  width: 5.42519685in;
+}
+.HalfLegalPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 5.42519685in;
+}
+.LegalPortrait .marginBox {
+  height: 12.81889764in;
+  width: 6.92519685in;
+}
+.LegalPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 6.92519685in;
+}
+.LegalLandscape .marginBox {
+  height: 7.31889764in;
+  width: 12.42519685in;
+}
+.LegalLandscape .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 12.42519685in;
+}
 .publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
   /* shifted margin */
   left: 15mm;
@@ -298,19 +430,22 @@ preview.css.
 body:not(.publishMode) .marginBox {
   left: 20mm;
 }
+.pageDescription {
+  display: none;
+}
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
-LABEL.bubble,
-LABEL.placeholder {
+label.bubble,
+label.placeholder {
   display: none;
 }
 .superscript {
   vertical-align: super;
   font-size: 80%;
 }
-H1 {
+h1 {
   font-size: 1.5em;
 }
-H2 {
+h2 {
   font-size: 1.2em;
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/
@@ -321,19 +456,30 @@ H2 {
 .bloom-translationGroup .bloom-editable.bloom-content3 {
   margin-top: 10px;
 }
+.customPage {
+  /* This is in order to divide up the whole section in equal parts.
+		I'm not sure, though...it looks better when you first make the page. But it actually reduces the flexibility for the user a bit. Hmmm*/
+}
 .customPage .bloom-imageContainer {
-  width: 99%;
-  height: 98%;
+  width: calc(100% - 1px);
+  height: calc(100% - 3px);
   z-index: 1000;
   overflow: hidden;
 }
 .customPage .bloom-editable {
   overflow-y: hidden;
 }
+.customPage .bloom-translationGroup {
+  height: calc(100% - 2px);
+  width: calc(100% - 2px);
+}
+.customPage.bloom-bilingual .bloom-editable {
+  height: auto;
+}
+.customPage.bloom-trilingual .bloom-editable {
+  height: auto;
+}
 .customPage .split-pane-component {
   min-height: 1.5em;
 }
-.customPage.A5Portrait.bloom-monolingual .bloom-translationGroup {
-  height: 99%;
-  width: 99%;
-}
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkNvbW1vbkJhc2VQYWdlRXB1Yi5sZXNzIiwiYmFzZVBhZ2UubGVzcyIsIkM6L0Jsb29tRGVza3RvcC9EaXN0RmlsZXMvbGVzcy9jb21tb24tbWl4aW5zLmxlc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFDQyxnQkFBQTtFQUNBLGFBQWEsNEJBQTRCLGdCQUFnQixpQkFBaUIsc0JBQXNCLHlCQUFoRzs7QUFHRDtFQUNFLHdCQUFBO0VBQ0EsNEJBQUE7RUFDQSwyQkFBQTs7O0FDSEQ7RUFDQyxrQkFBQTtFQUNBLFNBQUE7RUFDQSxVQUFBO0VBQ0EsY0FBQTs7QUFFRDtBQUFJO0FBQUk7QUFBSTtBQUFJO0FBQUk7QUFBSTtFQUN2QixvQkFBQTs7QUFFRDtBQUFTO0FBQU07QUFBSztFQUNuQixtQkFBQTs7QUFFRDtBQUFTO0FBQU07QUFBSztBQUFLO0FBQU07QUFBSTtBQUFPO0FBQVU7QUFBUTtFQUMzRCxvQkFBQTs7QUFFRDtFQUNDLGlCQUFBOztBQUVEO0VBQ0MsZ0JBQUE7O0FBRUQ7QUFBTTtBQUFNO0FBQU87QUFBTztBQUFPO0FBQUk7QUFBSTtBQUFJO0VBQzVDLGdCQUFBOztBQUVELEtBQUs7RUFDSix3QkFBQTs7QUFFRDtBQUFVLENBQUU7RUFDWCxTQUFBOztBQVFGOzs7Ozs7O0VBUUMsZUFBQTs7O0FBSUQsU0FDQztFQUNDLHNCQUFzQiw2Q0FBdEI7O0VBQ00sMkJBQUE7RUFDQSw0QkFBQTtFQUNBLG9CQUFBOztBQUdSLEdBQUc7RUFFRiw0QkFBQTtFQUNBLGVBQUE7RUFDQSxnQkFBQTs7QUFFRCx5QkFBMEI7O0VBR3pCLDJCQUFBOztBQUVEO0VBRUMsZ0JBQUE7RUFDQSxZQUFBOztBQUVEO0VBQ0UsZUFBQTs7QUFFRjtBQUFVO0VBRVQsWUFBQTs7RUFFQSxpQkFBQTtFQUVBLGtCQUFBO0VBQ0EsaUJBQUE7RUFDQSxXQUFBOzs7Ozs7QUFPRDtFQUNDLFlBQUE7O0VBRUEsaUJBQUE7RUFDQSxlQUFBO0VBQ0Esa0JBQUE7RUFDQSxpQkFB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 */

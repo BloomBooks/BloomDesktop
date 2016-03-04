@@ -1,12 +1,4 @@
 /// <reference path="readerSetup.io.ts" />
-/// <reference path="../js/libsynphony/jquery.text-markup.d.ts" />
-/// <reference path="../js/libsynphony/bloom_lib.d.ts" />
-/// <reference path="../../lib/localizationManager/localizationManager.ts" />
-/// <reference path="../../lib/jquery.d.ts" />
-/// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../../lib/jquery.i18n.custom.ts" />
-/// <reference path="../../lib/misc-types.d.ts" />
-/// <reference path="../js/jquery.div-columns.ts" />
 
 var desiredGPCs: string[];
 var previousGPCs: string[];
@@ -57,7 +49,11 @@ function process_UI_Message(event: MessageEvent): void {
       return;
 
     case 'Words':
-      displayWordsForSelectedStage(params[1]);
+      var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';
+      if (useSampleWords)
+        displayAllowedWordsForSelectedStage(params[1]);
+      else
+        displayWordsForSelectedStage(params[1]);
       return;
 
     case 'SetupType':
@@ -185,7 +181,11 @@ function selectStage(tr: HTMLTableRowElement): void {
   (<HTMLInputElement>document.getElementById('setup-stage-sight-words')).value = (<HTMLTableCellElement>tr.cells[2]).innerHTML;
 
   $('#stages-table').find('tbody tr.selected').removeClass('selected').addClass('linked');
-  $(tr).removeClass('linked').addClass('selected');
+
+  var currentTr = $(tr);
+  currentTr.removeClass('linked').addClass('selected');
+
+  setAllowedWordsFile(currentTr.find('td:nth-child(4)').html());
 
   // get the words
   requestWordsForSelectedStage();
@@ -193,18 +193,17 @@ function selectStage(tr: HTMLTableRowElement): void {
 
 function requestWordsForSelectedStage():void {
 
-  var tr = $('#stages-table').find('tbody tr.selected').get(0);
+    var tr = <HTMLTableRowElement>$('#stages-table').find('tbody tr.selected').get(0);
 
-
-  desiredGPCs = (tr.cells[1].innerHTML).split(' ');
+  desiredGPCs = ((<HTMLTableCellElement>tr.cells[1]).innerHTML).split(' ');
   previousGPCs = $.makeArray($(tr).prevAll().map(function() {
-    return this.cells[1].innerHTML.split(' ');
+    return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
   }));
 
   var knownGPCS = previousGPCs.join(' ') + ' ' + desiredGPCs.join(' ');
-  currentSightWords = (tr.cells[2].innerHTML).split(' ');
+  currentSightWords = ((<HTMLTableCellElement>tr.cells[2]).innerHTML).split(' ');
   sightWords = $.makeArray($(tr).prevAll().map(function() {
-    return this.cells[2].innerHTML.split(' ');
+    return (<HTMLTableCellElement>this.cells[2]).innerHTML.split(' ');
   }));
 
   sightWords = _.union(sightWords, currentSightWords);
@@ -212,7 +211,11 @@ function requestWordsForSelectedStage():void {
   // remove empty items
   sightWords = _.compact(sightWords);
 
-  accordionWindow().postMessage('Words\n' + knownGPCS, '*');
+  var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';
+  if (useSampleWords)
+    accordionWindow().postMessage('Words\n' + (<HTMLTableCellElement>tr.cells[0]).innerHTML, '*');
+  else
+    accordionWindow().postMessage('Words\n' + knownGPCS, '*');
 }
 
 /**
@@ -255,15 +258,15 @@ function selectLetters(tr: HTMLTableRowElement) {
   // letters in the current stage
   var stage_letters: string[] = (<HTMLTableCellElement>tr.cells[1]).innerHTML.split(' ');
   var current: JQuery = letters.filter(function(index, element) {
-    return stage_letters.indexOf(element.innerHTML) > -1;
+    return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
   });
 
   // letters in previous stages
   stage_letters = $.makeArray($(tr).prevAll().map(function() {
-    return this.cells[1].innerHTML.split(' ');
+    return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
   }));
   var previous = letters.filter(function(index, element) {
-    return stage_letters.indexOf(element.innerHTML) > -1;
+      return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
   });
 
   // show current and previous letters
@@ -310,6 +313,38 @@ function setLevelCheckBoxValue(id: string, value: string): void {
   var txt: HTMLInputElement = <HTMLInputElement>document.getElementById('max-' + id);
   txt.value = value === '-' ? '' : value;
   txt.disabled = !checked;
+}
+
+function displayAllowedWordsForSelectedStage(wordsStr: string): void {
+
+  var wordList = document.getElementById('rs-matching-words');
+  wordList.innerHTML = '';
+
+  var wordsObj: Object = JSON.parse(wordsStr);
+  var words: string[] = <string[]>_.toArray(wordsObj);
+
+  var result: string = '';
+  var longestWord: string = '';
+  var longestWordLength: number = 0;
+
+  _.each(words, function(w: string) {
+
+    result += '<div class="book-font word">' + w + '</div>';
+
+    if (w.length > longestWordLength) {
+      longestWord = w;
+      longestWordLength = longestWord.length;
+    }
+  });
+
+  // set the list
+  wordList.innerHTML = result;
+
+  // make columns
+  $.divsToColumnsBasedOnLongestWord('word', longestWord);
+
+  // display the count
+  document.getElementById('setup-words-count').innerHTML = words.length.toString();
 }
 
 function displayWordsForSelectedStage(wordsStr: string): void {
@@ -372,7 +407,7 @@ function displayWordsForSelectedStage(wordsStr: string): void {
 function addNewStage(): void {
 
   var tbody: JQuery = $('#stages-table').find('tbody');
-  tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="book-font"></td><td class="book-font"></td></tr>');
+  tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="book-font"></td><td class="book-font"></td><td class="book-font"></td></tr>');
 
   // click event for stage rows
   tbody.find('tr:last').onOnce('click', function() {
@@ -416,11 +451,11 @@ function tabBeforeActivate(ui): void {
     rows.each(function() {
 
       // get the letters for this stage
-      var letters = this.cells[1].innerHTML.split(' ');
+      var letters = (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
 
       // make sure each letter for this stage is all in the allLetters list
       letters = _.intersection(letters, allLetters);
-      this.cells[1].innerHTML = letters.join(' ');
+      (<HTMLTableCellElement>this.cells[1]).innerHTML = letters.join(' ');
     });
 
     // select letters for current stage
@@ -505,7 +540,15 @@ function removeStage(): void {
   // remove the current stage
   var current_row: JQuery = tbody.find('tr.selected');
   var current_stage: number = parseInt(current_row.find("td").eq(0).html());
+
+  // remember for the next step
+  var allowedWordsFile = current_row.find("td").eq(3).html();
+
   current_row.remove();
+
+  // if there is an Allowed Words file, remove it also
+  if (allowedWordsFile.length > 0)
+    checkAndDeleteAllowedWordsFile(allowedWordsFile);
 
   var rows: JQuery = tbody.find('tr');
 
@@ -538,7 +581,7 @@ function renumberRows(rows: JQuery): void {
   var rowNum = 1;
 
   $.each(rows, function() {
-    this.cells[0].innerHTML = rowNum++;
+    (<HTMLTableCellElement>this.cells[0]).innerHTML = (rowNum++).toString();
   });
 }
 
@@ -690,14 +733,129 @@ function attachEventHandlers(): void {
       var id = this.id.replace(/^use-/, '');
       var txtBox: HTMLInputElement = <HTMLInputElement>document.getElementById('max-' + id);
       txtBox.disabled = !this.checked;
-      $('#levels-table').find('tbody tr.selected td.' + id).html(this.checked ? txtBox.value : '');
+      $('#levels-table').find('tbody tr.selected td.' + id).html(this.checked ? txtBox.value : '-');
     });
 
     levelDetail.find('.level-textbox').onOnce('keyup', function() {
       var id = this.id.replace(/^max-/, '');
       $('#levels-table').find('tbody tr.selected td.' + id).html(this.value);
     });
+
+    $('input[name="words-or-letters"]').onOnce('change', function() {
+      enableSampleWords();
+    });
+
+    $('#setup-choose-allowed-words-file').onOnce('click', function() {
+      getIframeChannel().simpleAjaxPost('/bloom/readers/selectStageAllowedWordsFile',
+        function(fileName: string) {
+          if (fileName) setAllowedWordsFile(fileName);
+
+          // hide stale controls
+          $('#setup-stage-matching-words').find('div').hide();
+        });
+      return false;
+    });
+
+    $('#remove-allowed-word-file').onOnce('click', function() {
+      setAllowedWordsFile('');
+
+      // hide stale controls
+      $('#setup-stage-matching-words').find('div').hide();
+
+      return false;
+    });
+
+    var allowedDiv = $('#allowed-words-file-div');
+    allowedDiv.onOnce('mouseenter', function() {
+      var title = document.getElementById('remove_word_list').innerHTML;
+      var anchor = $(this).find('a');
+      anchor.attr('title', title);
+      anchor.show();
+    });
+
+    allowedDiv.onOnce('mouseleave', function() { $(this).find('a').hide(); });
   }
+}
+
+function setAllowedWordsFile(fileName: string): void {
+
+  var allowedWordsSpan: HTMLSpanElement = (<HTMLSpanElement>document.getElementById('allowed-words-file'));
+  var currentFile: string = allowedWordsSpan.innerHTML;
+
+  // set the new text
+  allowedWordsSpan.innerHTML = fileName;
+
+  if (fileName) {
+    document.getElementById('setup-choose-allowed-words-file').style.display = 'none';
+    document.getElementById('allowed-words-file-div').style.display = '';
+  }
+  else {
+    document.getElementById('setup-choose-allowed-words-file').style.display = '';
+    document.getElementById('allowed-words-file-div').style.display = 'none';
+    fileName = ''; // to be sure it isn't undefined
+  }
+
+  $('#stages-table').find('tbody tr.selected td:nth-child(4)').html(fileName);
+
+  // remove file if no longer used
+  if (currentFile) {
+    checkAndDeleteAllowedWordsFile(currentFile);
+  }
+}
+
+/**
+ * If this file is no longer being used, delete it from the 'Word Lists' directory.
+ * @param fileName
+ */
+function checkAndDeleteAllowedWordsFile(fileName: string): void {
+
+  // loop through the stages looking for the file name
+  var stages: JQuery = $('#stages-table').find('tbody tr');
+  for (var i: number = 0; i < stages.length; i++) {
+    var row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
+
+    // if this file name is still in use, return now
+    if ((<HTMLTableCellElement>row.cells[3]).innerHTML == fileName) {
+      return;
+    }
+  }
+  
+  // if you are here, the file name is not in use
+  getIframeChannel().simpleAjaxNoCallback('/bloom/readers/recycleAllowedWordsFile', fileName);
+}
+
+function enableSampleWords() {
+
+  // get the selected option
+  var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';
+
+  // initialize control state
+  var controls = $('#dlstabs-1').find('.disableable');
+  var stagesTable = $('#stages-table');
+  controls.removeClass('disabled');
+  stagesTable.removeClass('hide-second-column');
+  stagesTable.removeClass('hide-third-column');
+  stagesTable.removeClass('hide-fourth-column');
+
+  // enable or disable
+  if (useSampleWords) {
+    controls.addClass('disabled');
+    stagesTable.addClass('hide-second-column');
+    stagesTable.addClass('hide-third-column');
+  }
+  else {
+    stagesTable.addClass('hide-fourth-column');
+  }
+
+  // controls for letter-based stages
+  document.getElementById('setup-stage-letters-and-words').style.display = useSampleWords ? 'none' : '';
+  document.getElementById('matching-words-span').style.display = useSampleWords ? 'none' : '';
+
+  // controls for word-list-based stages
+  document.getElementById('setup-stage-words-file').style.display = useSampleWords ? '' : 'none';
+  document.getElementById('allowed-words-span').style.display = useSampleWords ? '' : 'none';
+  //
+  //
 }
 
 function setWordContainerHeight() {
@@ -734,5 +892,9 @@ $(document).ready(function () {
   $('body').find('*[data-i18n]').localize(finishInitializing);
   var accordion = accordionWindow();
   accordion['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
-  (<longPressInterface>$('textarea')).longPress();
+  // found solution to longpress access here:
+  // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do
+  var pageIframe = parent.frames['page'];
+  var container = $('body');
+  pageIframe.loadLongpressInstructions(container.find('textarea'));
 });

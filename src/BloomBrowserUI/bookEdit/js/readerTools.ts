@@ -16,6 +16,8 @@ interface textMarkup extends JQueryStatic {
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
 
+var readerToolsInitialized: boolean = false;
+
 function getSetupDialogWindow(): Window {
   return (<HTMLIFrameElement>parent.window.document.getElementById("settings_frame")).contentWindow;
 }
@@ -35,15 +37,31 @@ function processDLRMessage(event: MessageEvent): void {
       return;
 
     case 'Words': // request from setup dialog for a list of words for a stage
-      var words = ReaderToolsModel.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
+      var words: any;
+      if (model.getSynphony().source.useAllowedWords) {
+        // params[1] is the stage number
+        words = ReaderToolsModel.selectWordsFromAllowedLists(parseInt(params[1]));
+      }
+      else {
+        // params[1] is a list of known graphemes
+        words = ReaderToolsModel.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
+      }
+
       getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');
       return;
 
     case 'Refresh': // notification from setup dialog that settings have changed
       var synphony = model.getSynphony();
       synphony.loadSettings(JSON.parse(params[1]));
-      model.updateControlContents();
-      model.doMarkup();
+
+      if (model.getSynphony().source.useAllowedWords) {
+        model.getAllowedWordsLists();
+      }
+      else {
+        model.updateControlContents();
+        model.doMarkup();
+      }
+
       return;
 
     case 'SetupType':
@@ -128,11 +146,8 @@ function setupReaderKeyAndFocusHandlers(container: HTMLElement, model: ReaderToo
 
 function initializeDecodableRT(): void {
 
-  // make sure synphony is initialized
-  if (!model.getSynphony().source) {
-    iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-    iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
-  }
+  // load synphony settings
+  loadSynphonySettings();
 
   // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
   $('#incStage').onOnce('click.readerTools', function() {
@@ -156,18 +171,20 @@ function initializeDecodableRT(): void {
   });
 
   model.updateControlContents();
+  $("#accordion").accordion("refresh");
 
-  setTimeout(function() { resizeWordList(); }, 100);
+  $(window).resize(function() {
+    resizeWordList(false);
+  });
+
+  setTimeout(function() { resizeWordList(); }, 200);
   setTimeout(function() { $.divsToColumns('letter'); }, 100);
 }
 
 function initializeLeveledRT(): void {
 
-  // make sure synphony is initialized
-  if (!model.getSynphony().source) {
-    iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-    iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
-  }
+  // load synphony settings
+  loadSynphonySettings();
 
   $('#incLevel').onOnce('click.readerTools', function() {
     model.incrementLevel();
@@ -178,6 +195,7 @@ function initializeLeveledRT(): void {
   });
 
   model.updateControlContents();
+  $("#accordion").accordion("refresh");
 }
 
 if (typeof ($) === "function") {
@@ -187,6 +205,16 @@ if (typeof ($) === "function") {
     model = new ReaderToolsModel();
     model.setSynphony(new SynphonyApi());
   });
+}
+
+function loadSynphonySettings(): void {
+
+  // make sure synphony is initialized
+  if (!readerToolsInitialized && !model.getSynphony().source) {
+    readerToolsInitialized = true;
+    iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+    iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
+  }
 }
 
 /**
@@ -214,8 +242,14 @@ function initializeSynphony(settingsFileContent: string): void {
   model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
   model.directoryWatcher.start();
 
-  // get the list of sample texts
-  iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+  if (synphony.source.useAllowedWords) {
+    // get the allowed words for each stage
+    model.getAllowedWordsLists();
+  }
+  else {
+    // get the list of sample texts
+    iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+  }
 }
 
 /**
@@ -297,7 +331,7 @@ function makeLetterWordList(): void {
     allWords: allWords.join('\t')
   };
 
-  $.ajax(ajaxSettings)
+  $.ajax(<JQueryAjaxSettings>ajaxSettings)
 }
 
 function loadExternalLink(url: string): void {
@@ -311,26 +345,42 @@ function loadExternalLink(url: string): void {
  * We need to check the size of the decodable reader tool pane periodically so we can adjust the height of the word list
  * @global {number} previousHeight
  */
-function resizeWordList(): void {
+function resizeWordList(startTimeout: boolean = true): void {
 
   var div: JQuery = $('body').find('div[data-panelId="DecodableRT"]');
   if (div.length === 0) return; // if not found, the tool was closed
 
+  var wordList: JQuery = div.find('#wordList');
   var currentHeight: number = div.height();
+  var currentWidth: number = wordList.width();
 
   // resize the word list if the size of the pane changed
-  if (previousHeight !== currentHeight) {
-    previousHeight = currentHeight;
+  if ((previousHeight !== currentHeight) || (previousWidth !== currentWidth)) {
 
-    var wordList: JQuery = div.find('#wordList');
+    previousHeight = currentHeight;
+    previousWidth = currentWidth;
+
     var top = wordList.parent().position().top;
 
-    var height = Math.floor(currentHeight - top - 20);
+    var synphony = model.getSynphony();
+    if (synphony.source) {
 
-    if (height < 50) height = 50;
+      var ht = currentHeight - top;
+      if (synphony.source.useAllowedWords === 1) {
+        ht -= div.find('#allowed-word-list-truncated').height();
+      }
+      else {
+        ht -= div.find('#make-letter-word-list-div').height();
+      }
 
-    wordList.parent().css('height', height + 'px');
+      // for a reason I haven't discovered, the height calculation is always off by 6 pixels
+      ht += 6;
+
+      if (ht < 50) ht = 50;
+
+      wordList.parent().css('height', Math.floor(ht) + 'px');
+    }
   }
 
-  setTimeout(function() { resizeWordList(); }, 500);
+  if (startTimeout) setTimeout(function() { resizeWordList(); }, 500);
 }

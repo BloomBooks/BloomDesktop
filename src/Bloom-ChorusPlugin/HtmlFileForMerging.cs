@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml;
 using Bloom;
-using Palaso.IO;
+using SIL.IO;
 
 namespace Bloom_ChorusPlugin
 {

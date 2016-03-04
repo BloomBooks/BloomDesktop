@@ -9,7 +9,7 @@ interface qtipInterface extends JQuery {
 
 class bloomNotices {
     public static addExperimentalNotice(container: HTMLElement): void {
-        var experimental = localizationManager.getText('ExperimentalNotice',
+        var experimental = localizationManager.getText('EditTab.ExperimentalNotice',
             'This page is an experimental prototype which may have many problems, for which we apologize.');
         $(container).find(".pictureDictionaryPage").each(function () {
             (<qtipInterface>$(this)).qtipSecondary({
@@ -29,12 +29,12 @@ class bloomNotices {
     public static addEditingNotAllowedMessages(container: HTMLElement): void {
         var notAllowed = localizationManager.getText('EditTab.EditNotAllowed',
             'You cannot change these because this is not the original copy.');
-        var readOnly = localizationManager.getText('EditTab.ReadOnlyInEditMode',
+        var readOnly = localizationManager.getText('EditTab.ReadOnlyInAuthorMode',
             'You cannot put anything in there while making an original book.');
         $(container).find('*[data-hint]').each(function () {
             if ($(this).css('cursor') == 'not-allowed') {
                 var whyDisabled = notAllowed;
-                if ($(this).hasClass('bloom-readOnlyInEditMode')) {
+                if ($(this).hasClass('bloom-ReadOnlyInAuthorMode')) {
                     whyDisabled = readOnly;
                 }
 

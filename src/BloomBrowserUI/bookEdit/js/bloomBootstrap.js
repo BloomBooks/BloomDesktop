@@ -13,17 +13,19 @@ var scripts = [
     'lib/jquery.myimgscale.js',
     'lib/jquery.resize.js',
     'lib/errorHandler.js',
+    'lib/toastr.min.js',
     'bookEdit/js/editableDivUtils.js',
     'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/BloomAccordion.js',
     'bookEdit/js/bloomQtipUtils.js',
-    'bookEdit/js/bloomSourceBubbles.js',
+    'bookEdit/sourceBubbles/bloomSourceBubbles.js',
     'bookEdit/js/bloomNotices.js',
     'bookEdit/js/bloomHintBubbles.js',
     'bookEdit/StyleEditor/StyleEditor.js',
     'bookEdit/OverflowChecker/OverflowChecker.js',
     'bookEdit/TopicChooser/TopicChooser.js',
     'lib/tabpane.js',
+    'lib/ckeditor/ckeditor.js',
     'bookEdit/js/toolbar/jquery.toolbar.js',
     'bookEdit/bloomField/bloomField.js',
     'bookEdit/js/bloomImages.js',
@@ -32,7 +34,13 @@ var scripts = [
     'bookEdit/js/origami.js',
     'lib/long-press/jquery.mousewheel.js',
     'lib/jquery.alphanum.js',
-    'lib/long-press/jquery.longpress.js'
+    'lib/long-press/jquery.longpress.js',
+    // synphony stuff is currently needed just to support finding sentences in audioRecording.
+    'bookEdit/js/libsynphony/xregexp-all-min.js',
+    'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
+    'bookEdit/js/libsynphony/synphony_lib.js',
+    'bookEdit/js/libsynphony/bloom_lib.js',
+    'audio/audioRecording.js'
 ];
 
 var styleSheets = [
@@ -45,7 +53,8 @@ var styleSheets = [
     'bookEdit/css/tab.winclassic.css',
     'bookEdit/StyleEditor/StyleEditor.css',
     'bookEdit/css/bloomDialog.css',
-    'lib/long-press/longpress.css'
+    'lib/long-press/longpress.css',
+    'audio/audioRecording.css'
 ];
 
 for (var i = 0; i < scripts.length; i++) {

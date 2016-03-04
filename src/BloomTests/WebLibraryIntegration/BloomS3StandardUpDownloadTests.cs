@@ -4,7 +4,7 @@ using System.Linq;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using NUnit.Framework;
-using Palaso.Progress;
+using SIL.Progress;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -15,7 +15,7 @@ namespace BloomTests.WebLibraryIntegration
 		private string _srcCollectionPath;
 		private string _destCollectionPath;
 		private const string BookName = "Test Book";
-		private readonly string[] ExcludedFiles = new [] {"thumbs.db", "extra.pdf"};
+		private readonly string[] ExcludedFiles = {"thumbs.db", "book.userprefs", "extra.pdf", "preview.pdf"};
 		private string _storageKeyOfBookFolder;
 
 		[TestFixtureSetUp]
@@ -65,11 +65,12 @@ namespace BloomTests.WebLibraryIntegration
 		private string MakeBookIncludingThumbs(TemporaryFolder srcFolder)
 		{
 			var bookFolder = new TemporaryFolder(srcFolder, BookName).FolderPath;
-			File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "test");
-			File.WriteAllText(Path.Combine(bookFolder, "one.css"), "test");
-			File.WriteAllText(Path.Combine(bookFolder, "preview.pdf"), "test pdf file");
-			File.WriteAllText(Path.Combine(bookFolder, "extra.pdf"), "unwanted pdf file");
-			File.WriteAllText(Path.Combine(bookFolder, "thumbs.db"), "test thumbs.db file");
+			File.WriteAllText(Path.Combine(bookFolder, "one.htm"), @"test");
+			File.WriteAllText(Path.Combine(bookFolder, "one.css"), @"test");
+			File.WriteAllText(Path.Combine(bookFolder, "preview.pdf"), @"test pdf file");
+			File.WriteAllText(Path.Combine(bookFolder, "extra.pdf"), @"unwanted pdf file");
+			File.WriteAllText(Path.Combine(bookFolder, "thumbs.db"), @"test thumbs.db file");
+			File.WriteAllText(Path.Combine(bookFolder, "book.userPrefs"), @"test book.userPrefs file");
 			return bookFolder;
 		}
 
@@ -95,11 +96,13 @@ namespace BloomTests.WebLibraryIntegration
 			var srcFileCount = Directory.GetFiles(fullBookSrcPath).Count();
 
 			// Do not count the excluded files (thumbs.db, extra.pdf)
-			Assert.That(_client.GetBookFileCount(_storageKeyOfBookFolder), Is.EqualTo(srcFileCount - ExcludedFiles.Length));
-			Assert.That(Directory.GetFiles(fullBookDestPath).Count(), Is.EqualTo(srcFileCount - ExcludedFiles.Length));
+			// preview.pdf exists in the source, but is not pulled down to the destination.
+			Assert.That(_client.GetBookFileCount(_storageKeyOfBookFolder), Is.EqualTo(srcFileCount - ExcludedFiles.Length + 1));
+			var matching = Directory.GetFiles(fullBookDestPath);
+			Assert.That(matching.Count(), Is.EqualTo(srcFileCount - ExcludedFiles.Length));
 			foreach (var fileName in Directory.GetFiles(fullBookSrcPath)
 				.Select(Path.GetFileName)
-				.Where(file => !ExcludedFiles.Contains(file)))
+				.Where(file => !ExcludedFiles.Contains(file.ToLower())))
 			{
 				Assert.IsTrue(File.Exists(Path.Combine(fullBookDestPath, fileName)));
 			}

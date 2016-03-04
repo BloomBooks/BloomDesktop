@@ -5,10 +5,10 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
 using L10NSharp;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.WritingSystems;
-using Palaso.Extensions;
-using Palaso.WritingSystems;
+using SIL.Reporting;
+using SIL.Windows.Forms.WritingSystems;
+using SIL.Extensions;
+using SIL.WritingSystems;
 using System.Collections.Generic;
 
 namespace Bloom.Collection
@@ -42,7 +42,7 @@ namespace Bloom.Collection
 			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
 			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
 			// AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (SIL.PlatformUtilities.Platform.IsWindows)
 				_automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
 			else
 				_automaticallyUpdate.Hide();
@@ -129,7 +129,7 @@ namespace Bloom.Collection
 
 			if (l != null)
 			{
-				_collectionSettings.Language1Iso639Code = l.Code;
+				_collectionSettings.Language1Iso639Code = l.LanguageTag;
 				_collectionSettings.Language1Name = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
@@ -139,7 +139,7 @@ namespace Bloom.Collection
 			var l = ChangeLanguage(_collectionSettings.Language2Iso639Code);
 			if (l != null)
 			{
-				_collectionSettings.Language2Iso639Code = l.Code;
+				_collectionSettings.Language2Iso639Code = l.LanguageTag;
 				ChangeThatRequiresRestart();
 			}
 		}
@@ -149,7 +149,7 @@ namespace Bloom.Collection
 			var l = ChangeLanguage(_collectionSettings.Language3Iso639Code);
 			if (l != null)
 			{
-				_collectionSettings.Language3Iso639Code = l.Code;
+				_collectionSettings.Language3Iso639Code = l.LanguageTag;
 				ChangeThatRequiresRestart();
 			}
 		}
@@ -161,16 +161,18 @@ namespace Bloom.Collection
 
 		private LanguageInfo ChangeLanguage(string iso639Code, string potentiallyCustomName=null)
 		{
-			using (var dlg = new LookupISOCodeDialog())
+			using (var dlg = new LanguageLookupDialog())
 			{
 				//at this point, we don't let them customize the national languages
-				dlg.ShowDesiredLanguageNameField = potentiallyCustomName != null;
+				dlg.IsDesiredLanguageNameFieldVisible = potentiallyCustomName != null;
 
-				dlg.SelectedLanguage = new LanguageInfo() { Code = iso639Code};
-				if(!string.IsNullOrEmpty(potentiallyCustomName))
+				var language = new LanguageInfo() { LanguageTag = iso639Code};
+				if (!string.IsNullOrEmpty(potentiallyCustomName))
 				{
-					dlg.SelectedLanguage.DesiredName = potentiallyCustomName;
+					language.DesiredName = potentiallyCustomName; // to be noticed, must set before dlg.SelectedLanguage
 				}
+				dlg.SelectedLanguage = language;
+				dlg.SearchText = iso639Code;
 
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
@@ -292,11 +294,11 @@ namespace Bloom.Collection
 		}
 
 		/// <summary>
-		/// NB The selection stuff is flakey if we attempt to select things before the control is all created, settled down, bored.
+		/// NB The selection stuff is flaky if we attempt to select things before the control is all created, settled down, bored.
 		/// </summary>
 		private void SetupXMatterList()
 		{
-			var packsToSkip = new string[] {"null", "bigbook", "SHRP"};
+			var packsToSkip = new string[] {"null", "bigbook", "SHRP", "SHARP", "ForUnitTest"};
 			_xmatterList.Items.Clear();
 			ListViewItem itemForFactoryDefault = null;
 			foreach(var pack in _xmatterPackFinder.All)
@@ -304,7 +306,13 @@ namespace Bloom.Collection
 				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
 					continue;
 
-				var item = _xmatterList.Items.Add(pack.Key);
+				var labelToShow = pack.Key;
+				if (labelToShow == "Factory")
+				{
+					labelToShow = "Paper Saver";
+				}
+				labelToShow = LocalizationManager.GetDynamicString("Bloom","CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."+labelToShow, labelToShow, "Name of a Front/Back Matter Pack");
+				var item = _xmatterList.Items.Add(labelToShow);
 				item.Tag = pack;
 				if(pack.Key == _collectionSettings.XMatterPackName)
 					item.Selected = true;

@@ -72,7 +72,7 @@
 			this._editBookButton.Image = global::Bloom.Properties.Resources.edit;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._editBookButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._editBookButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._editBookButton, "CollectionTab._editBookButton");
+			this._L10NSharpExtender.SetLocalizingId(this._editBookButton, "CollectionTab.EditBookButton");
 			this._editBookButton.Location = new System.Drawing.Point(12, 6);
 			this._editBookButton.Name = "_editBookButton";
 			this._editBookButton.Size = new System.Drawing.Size(170, 42);
@@ -113,6 +113,8 @@
 			// _previewBrowser
 			// 
 			this._previewBrowser.BackColor = System.Drawing.Color.DarkGray;
+			this._previewBrowser.ContextMenuProvider = null;
+			this._previewBrowser.ControlKeyEvent = null;
 			this._previewBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._previewBrowser.Isolator = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._previewBrowser, null);
@@ -124,10 +126,13 @@
 			this._previewBrowser.Size = new System.Drawing.Size(900, 338);
 			this._previewBrowser.TabIndex = 2;
 			this._previewBrowser.VerticalScrollDistance = 0;
+			this._previewBrowser.OnBrowserClick += new System.EventHandler(this._previewBrowser_OnBrowserClick);
 			// 
 			// _readmeBrowser
 			// 
 			this._readmeBrowser.BackColor = System.Drawing.Color.DarkGray;
+			this._readmeBrowser.ContextMenuProvider = null;
+			this._readmeBrowser.ControlKeyEvent = null;
 			this._readmeBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._readmeBrowser.Isolator = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._readmeBrowser, null);

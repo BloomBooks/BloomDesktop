@@ -30,7 +30,7 @@ html
 				span(data-i18n='ReaderSetup.SearchEngine') , the Search Engine for Literacy.
 			ul
 				li: a(href='#dlstabs-0', data-i18n='ReaderSetup.Letters') Letters
-				li: a(href='#dlstabs-1', data-i18n='ReaderSetup.Words') Words
+				li: a(href='#dlstabs-1', data-i18n='ReaderSetup.SampleWords') Sample Words
 				li: a(href='#dlstabs-2', data-i18n='ReaderSetup.DecodableStages') Decodable Stages
 				li: a(href='#dlstabs-3', data-i18n='ReaderSetup.ReaderLevels') Reader Levels
 			#dlstabs-0.reader-setup-tab
@@ -48,20 +48,27 @@ html
 						span(data-i18n='ReaderSetup.Letters.LetterHelp4')
 							= '.'
 			#dlstabs-1.reader-setup-tab
-				p(data-i18n='ReaderSetup.Words.Intro') To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:
-				#more-words-div.floating(style='width: 30%')
-					label(for='dls_more_words', data-i18n='ReaderSetup.Words.TypeWordsHere') 1) Type Words Here
-					br
-					textarea#dls_more_words.book-font(style='height: 328px;width:100%')
-				#word-lists-div.floating
-					label(for='dls_word_lists')
-						span(data-i18n='ReaderSetup.Words.PlaceTextFiles') 2) Place Text Files in Your
-						= ' '
-						a#open-text-folder.blue-link(href='', data-i18n='ReaderSetup.Words.SampleTextFolder') Sample Texts Folder
-					br
-					#dls_word_lists
-					#how_to_export(style="display: none")
-						a(href="", onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');", data-i18n='ReaderSetup.HowToExport') Help exporting and converting files to use as sample texts
+				.flex-column
+					.flex-column-fixed-row
+						p
+							input#use-word-list(type='radio' name='words-or-letters' value='1' checked)
+							label(data-i18n='ReaderSetup.Words.UseAllowedWords' for='use-word-list') We are using lists of allowed words to define stages
+							br
+							input#use-letters(type='radio' name='words-or-letters' value='0')
+							label(data-i18n='ReaderSetup.Words.UseLetters' for='use-letters') We are using letters with sight words to define stages
+						p.disableable(data-i18n='ReaderSetup.Words.Intro') To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:
+					.flex-column-expanding-row
+						#more-words-div.floating.flex-column(style='width: 30%')
+							label.disableable.flex-column-fixed-row(for='dls_more_words', data-i18n='ReaderSetup.Words.TypeWordsHere') 1) Type Words Here
+							textarea#dls_more_words.book-font.disableable.flex-column-expanding-row(style='width:100%')
+						#word-lists-div.floating.flex-column
+							label.disableable.flex-column-fixed-row(for='dls_word_lists')
+								span(data-i18n='ReaderSetup.Words.PlaceTextFiles') 2) Place Text Files in Your
+								= ' '
+								a#open-text-folder.blue-link(href='', data-i18n='ReaderSetup.Words.SampleTextFolder') Sample Texts Folder
+							#dls_word_lists.disableable.flex-column-expanding-row
+							#how_to_export(style="display: none")
+								a(href="", onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');", data-i18n='ReaderSetup.HowToExport') Help exporting and converting files to use as sample texts
 			#dlstabs-2.reader-setup-tab
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
@@ -79,6 +86,7 @@ html
 											th(style='min-width: 25px'): div(data-i18n='ReaderSetup.StageHeader') Stage
 											th(style='min-width: 35px'): div(data-i18n='ReaderSetup.lettersHeader') Letters
 											th(style='width: 100%'): div(data-i18n='ReaderSetup.SightWordsHeader') Sight Words
+											th(style='width: 100%'): div(data-i18n='ReaderSetup.AllowedWordsFileHeader') Allowed Words File
 									tbody
 									tfoot
 										tr
@@ -104,12 +112,23 @@ html
 									= ' '
 									a#first-setup-alphabet(href='', onclick='return firstSetupLetters();', data-i18n='ReaderSetup.SetupAlphabet') set up the alphabet for this language.
 						#click-letters.smaller(style='float: left', data-i18n='ReaderSetup.ClickLetter') Click on letters to add them to this stage.
+					#setup-stage-words-file.sub-float
+						div(style='width: 100%;')
+							label(data-i18n='ReaderSetup.AllowedWordsFile') Allowed Words File
+							br
+							a.blue-link#setup-choose-allowed-words-file(href='', data-i18n='ReaderSetup.ChooseAllowedWordsFile') Choose...
+							#allowed-words-file-div
+								span#allowed-words-file
+								span &nbsp;
+									= ' '
+									a#remove-allowed-word-file.red-x(href='') &#x2717;
 					#setup-stage-matching-words.sub-float
 						div(style='width: 100%; height: calc(100% - 18px);')
 							label
 								span#setup-words-count 0
 								= ' '
-								span(data-i18n='ReaderSetup.MatchingWords') matching words
+								span#matching-words-span(data-i18n='ReaderSetup.MatchingWords') matching words
+								span#allowed-words-span(data-i18n='ReaderSetup.AllowedWords') allowed words
 							.rs-word-container
 								#rs-matching-words.book-font(style='margin-left: 8px')
 			#dlstabs-3.reader-setup-tab
@@ -168,3 +187,4 @@ html
 			label#please-add-texts
 			label#format_not_supported(data-i18n='ReaderSetup.FormatNotSupported') Cannot read this format
 			label#needs_txt_extension(data-i18n='ReaderSetup.FileNeedsTxtExtension') File needs .txt extension
+			label#remove_word_list(data-i18n='ReaderSetup.RemoveWordList') Remove from this stage

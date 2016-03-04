@@ -7,9 +7,12 @@ using System.Xml;
 using Bloom.Collection;
 using Bloom.ReaderTools;
 using Newtonsoft.Json;
-using Palaso.Xml;
-using Palaso.IO;
+using SIL.Xml;
+using SIL.IO;
 using System.Collections.Generic;
+using System.Threading;
+using System.Windows.Forms;
+using L10NSharp;
 
 namespace Bloom.web
 {
@@ -22,6 +25,14 @@ namespace Bloom.web
 	{
 		private static bool _savingReaderWords;
 		private const string kSynphonyFileNameSuffix = "_lang_data.js";
+		private static readonly IEqualityComparer<string> _equalityComparer = new InsensitiveEqualityComparer();
+		private static readonly char[] _allowedWordsDelimiters = {',', ';', ' ', '\t', '\r', '\n'};
+
+		private enum WordFileType
+		{
+			SampleFile,
+			AllowedWordsFile
+		}
 
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
@@ -33,6 +44,7 @@ namespace Bloom.web
 			if (CurrentBook == null || CurrentBook.CollectionSettings == null)
 			{
 				Debug.Fail("BL-836 reproduction?");
+				// ReSharper disable once HeuristicUnreachableCode
 				return false;
 			}
 			var lastSep = localPath.IndexOf("/", StringComparison.Ordinal);
@@ -66,9 +78,8 @@ namespace Bloom.web
 					return true;
 
 				case "getSampleFileContents":
-					var fileName = info.GetQueryString()["data"];
 					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(GetSampleFileContents(fileName, currentCollectionSettings.SettingsFilePath));
+					info.WriteCompleteOutput(GetTextFileContents(info.GetQueryString()["data"], WordFileType.SampleFile));
 					return true;
 
 				case "getTextOfPages":
@@ -89,6 +100,24 @@ namespace Bloom.web
 
 				case "openTextsFolder":
 					OpenTextsFolder();
+					info.ContentType = "text/plain";
+					info.WriteCompleteOutput("OK");
+					return true;
+
+				case "selectStageAllowedWordsFile":
+					lock (info)
+					{
+						ChooseAllowedWordListFile(info);
+					}
+					return true;
+
+				case "getAllowedWordsList":
+					info.ContentType = "text/plain";
+					info.WriteCompleteOutput(RemoveEmptyAndDupes(GetTextFileContents(info.GetQueryString()["data"], WordFileType.AllowedWordsFile)));
+					return true;
+
+				case "recycleAllowedWordsFile":
+					RecycleAllowedWordListFile(info.GetPostData()["data"]);
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput("OK");
 					return true;
@@ -178,13 +207,17 @@ namespace Bloom.web
 			return string.Join("\r", fileList1.ToArray());
 		}
 
-		/// <summary>Gets the contents of a Sample Text file</summary>
+		/// <summary>Gets the contents of a Text file</summary>
 		/// <param name="fileName"></param>
-		/// <param name="settingsFilePath"></param>
-		private static string GetSampleFileContents(string fileName, string settingsFilePath)
+		/// <param name="wordFileType"></param>
+		private static string GetTextFileContents(string fileName, WordFileType wordFileType)
 		{
-			var path = Path.Combine(Path.GetDirectoryName(settingsFilePath), "Sample Texts");
+			var path = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath),
+				wordFileType == WordFileType.AllowedWordsFile ? "Allowed Words" : "Sample Texts");
+
 			path = Path.Combine(path, fileName);
+
+			if (!File.Exists(path)) return string.Empty;
 
 			// first try utf-8/ascii encoding (the .Net default)
 			var text = File.ReadAllText(path);
@@ -222,20 +255,22 @@ namespace Bloom.web
 
 			// format the output
 			var sb = new StringBuilder();
-			sb.AppendLineFormat("Letter and word list for making decodable readers in {0}", CurrentBook.CollectionSettings.Language1Name);
+			var str = LocalizationManager.GetString("DecodableReaderTool.LetterWordReportMessage",
+				"The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.");
+			sb.AppendLineFormat(str, CurrentBook.CollectionSettings.Language1Name);
 
 			var idx = 1;
 			foreach (var stage in settings.Stages)
 			{
 				sb.AppendLine();
-				sb.AppendLineFormat("Stage {0}", idx++);
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportStage", "Stage {0}"), idx++);
 				sb.AppendLine();
-				sb.AppendLineFormat("Letters: {0}", stage.Letters.Replace(" ", ", "));
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportLetters", "Letters: {0}"), stage.Letters.Replace(" ", ", "));
 				sb.AppendLine();
-				sb.AppendLineFormat("New Sight Words: {0}", stage.SightWords.Replace(" ", ", "));
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportSightWords", "New Sight Words: {0}"), stage.SightWords.Replace(" ", ", "));
 
 				Array.Sort(stage.Words);
-				sb.AppendLineFormat("Decodable Words: {0}", string.Join(" ", stage.Words));
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stage.Words));
 				sb.AppendLine();
 
 			}
@@ -244,7 +279,7 @@ namespace Bloom.web
 			var words = allWords.Split(new[] { '\t' });
 			Array.Sort(words);
 			sb.AppendLine();
-			sb.AppendLine("Complete Word List");
+			sb.AppendLine(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportWordList", "Complete Word List"));
 			sb.AppendLine(string.Join(" ", words));
 
 			// write the file
@@ -261,7 +296,7 @@ namespace Bloom.web
 		private static string SaveReaderToolsWordsFile(string jsonString)
 		{
 			while (_savingReaderWords)
-				System.Threading.Thread.Sleep(0);
+				Thread.Sleep(0);
 
 			try
 			{
@@ -298,19 +333,109 @@ namespace Bloom.web
 			PathUtilities.OpenDirectoryInExplorer(path);
 
 			// BL-673: Make sure the folder comes to the front in Linux
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				// allow the external process to execute
-				System.Threading.Thread.Sleep(100);
+				Thread.Sleep(100);
 
 				// if the system has wmctrl installed, use it to bring the folder to the front
 				Process.Start(new ProcessStartInfo()
+				{
+					FileName = "wmctrl",
+					Arguments = "-a \"Sample Texts\"",
+					UseShellExecute = false,
+					ErrorDialog = false // do not show a message if not successful
+				});
+			}
+		}
+
+		private static void ChooseAllowedWordListFile(IRequestInfo info)
+		{
+			var frm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+			// ReSharper disable once PossibleNullReferenceException
+			frm.Invoke(new Action<IRequestInfo>(ShowSelectAllowedWordsFileDialog), info);
+		}
+
+		private static void ShowSelectAllowedWordsFileDialog(IRequestInfo info)
+		{
+			var returnVal = "";
+
+			var destPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Allowed Words");
+			if (!Directory.Exists(destPath)) Directory.CreateDirectory(destPath);
+
+			var textFiles = LocalizationManager.GetString("DecodableReaderTool.FileDialogTextFiles", "Text files");
+			var dlg = new OpenFileDialog
+			{
+				Multiselect = false,
+				CheckFileExists = true,
+				Filter = string.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles)
+			};
+			var result = dlg.ShowDialog();
+			if (result == DialogResult.OK)
+			{
+				var srcFile = dlg.FileName;
+				var destFile = Path.GetFileName(srcFile);
+				if (destFile != null)
+				{
+					// if file is in the "Allowed Words" directory, do not try to copy it again.
+					if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
 					{
-						FileName = "wmctrl",
-						Arguments = "-a \"Sample Texts\"",
-						UseShellExecute = false,
-						ErrorDialog = false // do not show a message if not successful
-					});
+						var i = 0;
+
+						// get a unique destination file name
+						while (File.Exists(Path.Combine(destPath, destFile)))
+						{
+							destFile = Path.GetFileName(srcFile);
+							var fileExt = Path.GetExtension(srcFile);
+							destFile = destFile.Substring(0, destFile.Length - fileExt.Length) + " - Copy";
+							if (++i > 1) destFile += " " + i;
+							destFile += fileExt;
+						}
+
+						File.Copy(srcFile, Path.Combine(destPath, destFile));
+					}
+
+					returnVal = destFile;
+				}
+			}
+
+			// send to browser
+			info.ContentType = "text/plain";
+			info.WriteCompleteOutput(returnVal);
+		}
+
+		private static void RecycleAllowedWordListFile(string fileName)
+		{
+			var folderPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Allowed Words");
+			var fullFileName = Path.Combine(folderPath, fileName);
+
+			if (File.Exists(fullFileName))
+				PathUtilities.DeleteToRecycleBin(fullFileName);
+		}
+
+		private static string RemoveEmptyAndDupes(string fileText)
+		{
+			// this splits the text into an array of individual words and removes empty entries
+			var words = fileText.Split(_allowedWordsDelimiters, StringSplitOptions.RemoveEmptyEntries);
+
+			// this removes duplicates entries from the array using case-insensiteve comparison
+			words = words.Distinct(_equalityComparer).ToArray();
+
+			// join the words back into a delimited string to be sent to the browser
+			return string.Join(",", words);
+		}
+
+		/// <summary>Used when removing duplicates from word lists</summary>
+		private class InsensitiveEqualityComparer : IEqualityComparer<string>
+		{
+			public bool Equals(string x, string y)
+			{
+				return string.Equals(x, y, StringComparison.InvariantCultureIgnoreCase);
+			}
+
+			public int GetHashCode(string obj)
+			{
+				return obj.ToLowerInvariant().GetHashCode();
 			}
 		}
 	}

@@ -7,8 +7,8 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ImageToolbox;
+using SIL.Reporting;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.ImageProcessing
 {
@@ -178,64 +178,79 @@ namespace Bloom.ImageProcessing
 
 		private bool MakePngBackgroundTransparent(string originalPath, string pathToProcessedImage)
 		{
-			using (var originalImage = PalasoImage.FromFile(originalPath))
+			try
 			{
-				//if it's a jpeg, we don't resize, we don't mess with transparency, nothing. These things
-				//are scary in .net. Just send the original back and wash our hands of it.
-				if (ImageUtils.AppearsToBeJpeg(originalImage))
+				using (var originalImage = PalasoImage.FromFile(originalPath))
 				{
-					return false;
-				}
-
-				using (var processedBitmap = new Bitmap(originalImage.Image.Width, originalImage.Image.Height))
-				{
-					using (var g = Graphics.FromImage(processedBitmap))
+					//if it's a jpeg, we don't resize, we don't mess with transparency, nothing. These things
+					//are scary in .net. Just send the original back and wash our hands of it.
+					if (ImageUtils.AppearsToBeJpeg(originalImage))
 					{
-						var destRect = new Rectangle(0, 0, originalImage.Image.Width, originalImage.Image.Height);
-						lock (_convertWhiteToTransparent)
-						{
-							g.DrawImage(originalImage.Image, destRect, 0, 0, originalImage.Image.Width, originalImage.Image.Height,
-								GraphicsUnit.Pixel, _convertWhiteToTransparent);
-						}
-					}
-
-					//Hatton July 2012:
-					//Once or twice I saw a GDI+ error on the Save below, when the app 1st launched.
-					//I verified that if there is an IO error, that's what you get (a GDI+ error).
-					//I looked once, and the %temp%/Bloom directory wasn't there, so that's what I think caused the error.
-					//It's not clear why the temp/bloom directory isn't there... possibly it was there a moment ago
-					//but then some startup thread cleared and deleted it? (we are now running on a thread responding to the http request)
-
-					Exception error = null;
-					for (var i = 0; i < 5; i++) //try up to five times, a second apart
-					{
-						try
-						{
-							error = null;
-							processedBitmap.Save(pathToProcessedImage, originalImage.Image.RawFormat);
-							break;
-						}
-						catch (Exception e)
-						{
-							Logger.WriteEvent("Error in RuntimeImageProcessor while trying to write image.");
-							Logger.WriteEvent(e.Message);
-							error = e;
-							Thread.Sleep(1000); //wait a second before trying again
-						}
-					}
-
-					if (error != null)
-					{
-						//NB: I tested that even though we're in a non-UI thread, this shows up fine (libpalaso marshalls it to the UI thread)
-						ErrorReport.NotifyUserOfProblem(error,
-							"Bloom is having problem saving a processed version to your temp directory, at " + pathToProcessedImage +
-							"\r\n\r\nYou might want to quit and restart Bloom. In the meantime, Bloom will use unprocessed image.");
 						return false;
 					}
-				}
-			}
+					//impose a maximum size because in BL-2871 "Opposites" had about 6k x 6k and we got an ArgumentException
+					//from the new BitMap()
+					var destinationWidth = Math.Min(1000, originalImage.Image.Width);
+					var destinationHeight = (int)((float)originalImage.Image.Height*((float)destinationWidth/ (float)originalImage.Image.Width));
+                    using (var processedBitmap = new Bitmap(destinationWidth, destinationHeight))
+					{
+						using (var g = Graphics.FromImage(processedBitmap))
+						{
+							var destRect = new Rectangle(0, 0, destinationWidth, destinationHeight);
+							lock (_convertWhiteToTransparent)
+							{
+								g.DrawImage(originalImage.Image, destRect, 0, 0, originalImage.Image.Width, originalImage.Image.Height,
+									GraphicsUnit.Pixel, _convertWhiteToTransparent);
+							}
+						}
 
-			return true;
+						//Hatton July 2012:
+						//Once or twice I saw a GDI+ error on the Save below, when the app 1st launched.
+						//I verified that if there is an IO error, that's what you get (a GDI+ error).
+						//I looked once, and the %temp%/Bloom directory wasn't there, so that's what I think caused the error.
+						//It's not clear why the temp/bloom directory isn't there... possibly it was there a moment ago
+						//but then some startup thread cleared and deleted it? (we are now running on a thread responding to the http request)
+
+						Exception error = null;
+						for (var i = 0; i < 3; i++) //try three times
+						{
+							try
+							{
+								error = null;
+								processedBitmap.Save(pathToProcessedImage, originalImage.Image.RawFormat);
+								break;
+							}
+							catch (Exception e)
+							{
+								Logger.WriteEvent("***Error in RuntimeImageProcessor while trying to write image.");
+								Logger.WriteEvent(e.Message);
+								error = e;
+								//in setting the sleep time, keep in mind that this may be one of 20 images
+								//so if the problem happens to all of them, then you're looking 20*retries*sleep-time,
+								//which will look like hung program.
+								//Meanwhile, this transparency thing is actually just a nice-to-have. If we give
+								//up, it's ok.
+								Thread.Sleep(100); //wait a 1/5 second before trying again
+							}
+						}
+
+						if (error != null)
+						{
+							throw error;//will be caught below
+						}
+					}
+				}
+
+				return true;
+
+			}
+			//we want to gracefully degrade if this fails (as it did once, see comment in bl-2871)
+			catch (Exception e)
+			{
+				Logger.WriteEvent("***Error in MakePngBackgroundTransparent({0}):{1} ",originalPath,e.Message);
+				Debug.Fail("DEBUG ONLY"+e.Message);
+				return false;
+			}
 		}
 	}
 }

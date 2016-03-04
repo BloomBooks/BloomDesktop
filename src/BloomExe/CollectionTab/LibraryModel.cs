@@ -16,12 +16,12 @@ using Bloom.ToPalaso.Experimental;
 using DesktopAnalytics;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms;
-using Palaso.Xml;
-using Palaso.UI.WindowsForms.FileSystem;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms;
+using SIL.Xml;
+using SIL.Windows.Forms.FileSystem;
 
 namespace Bloom.CollectionTab
 {
@@ -37,6 +37,7 @@ namespace Bloom.CollectionTab
 		private readonly BookServer _bookServer;
 		private readonly CurrentEditableCollectionSelection _currentEditableCollectionSelection;
 		private List<BookCollection> _bookCollections;
+		private readonly BookThumbNailer _thumbNailer;
 
 		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
 			SendReceiver sendReceiver,
@@ -46,7 +47,8 @@ namespace Bloom.CollectionTab
 			EditBookCommand editBookCommand,
 			CreateFromSourceBookCommand createFromSourceBookCommand,
 			BookServer bookServer,
-			CurrentEditableCollectionSelection currentEditableCollectionSelection)
+			CurrentEditableCollectionSelection currentEditableCollectionSelection,
+			BookThumbNailer thumbNailer)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
@@ -57,6 +59,7 @@ namespace Bloom.CollectionTab
 			_editBookCommand = editBookCommand;
 			_bookServer = bookServer;
 			_currentEditableCollectionSelection = currentEditableCollectionSelection;
+			_thumbNailer = thumbNailer;
 
 			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 		}
@@ -86,7 +89,7 @@ namespace Bloom.CollectionTab
 
 		public List<BookCollection> GetBookCollections()
 		{
-			if(_bookCollections ==null)
+			if(_bookCollections == null)
 			{
 				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 
@@ -98,6 +101,12 @@ namespace Bloom.CollectionTab
 			return _bookCollections;
 		}
 
+		public void ReloadCollections()
+		{
+			_bookCollections = null;
+			GetBookCollections();
+		}
+
 		/// <summary>
 		/// Titles of all the books in the vernacular collection.
 		/// </summary>
@@ -106,7 +115,7 @@ namespace Bloom.CollectionTab
 			get { return TheOneEditableCollection.GetBookInfos().Select(book => book.Title); }
 		}
 
-		private BookCollection TheOneEditableCollection
+		internal BookCollection TheOneEditableCollection
 		{
 			get { return GetBookCollections().First(c => c.Type == BookCollection.CollectionType.TheOneEditableCollection); }
 		}
@@ -232,7 +241,7 @@ namespace Bloom.CollectionTab
 
 		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
 		{
-			book.RebuildThumbNailAsync(thumbnailOptions, callback, errorCallback);
+			_thumbNailer.RebuildThumbNailAsync(book, thumbnailOptions, callback, errorCallback);
 		}
 
 		public void MakeBloomPack(string path, bool forReaderTools = false)
@@ -245,7 +254,7 @@ namespace Bloom.CollectionTab
 					File.Delete(path);
 				}
 
-				Logger.WriteEvent("Making BloomPack");
+				Logger.WriteEvent("Making BloomPack at "+path+" forReaderTools="+forReaderTools.ToString());
 
 				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack...", "Bloom"))
 				{
@@ -263,6 +272,7 @@ namespace Bloom.CollectionTab
 
 						var dirNameOffest = dir.Length - rootName.Length;
 
+						Logger.WriteEvent("BloomPack path will be " + path + ", made from " + dir + " with rootName " + rootName);
 						using (var fsOut = File.Create(path))
 						{
 							using (ZipOutputStream zipStream = new ZipOutputStream(fsOut))
@@ -295,7 +305,7 @@ namespace Bloom.CollectionTab
 		}
 
 		// these files (if encountered) won't be compressed into a BloomPack
-		private static readonly string[] excludedFileExtensions = { ".db", ".pdf" };
+		private static readonly string[] excludedFileExtensions = { ".db", ".pdf", ".BloomPack" };
 
 		/// <summary>
 		/// Adds a directory, along with all files and subdirectories, to the ZipStream.
@@ -310,6 +320,8 @@ namespace Bloom.CollectionTab
 		protected static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffest,
 			bool forReaderTools)
 		{
+			if (Path.GetFileName(directoryPath).ToLowerInvariant() == "audio")
+				return; // don't want audio in bloompack. todo: test
 			var files = Directory.GetFiles(directoryPath);
 			var bookFile = BookStorage.FindBookHtmlInFolder(directoryPath);
 
@@ -385,6 +397,31 @@ namespace Bloom.CollectionTab
 			var match = regex.Match(text);
 			if (match.Success)
 				text = text.Substring(0, match.Index) + text.Substring(match.Index + match.Length);
+
+			// BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
+			regex = new Regex("\\s*<meta\\s+name=(['\\\"])pageTemplateSource\\1 content=(['\\\"])(Leveled|Decodable) Reader\\2>(</meta>)? *");
+			match = regex.Match(text);
+			if (match.Success)
+			{
+				// has the lockFormatting meta tag been added already?
+				var regexSuppress = new Regex("\\s*<meta\\s+name=(['\\\"])lockFormatting\\1 content=(['\\\"])(.*)\\2>(</meta>)? *");
+				var matchSuppress = regexSuppress.Match(text);
+				if (matchSuppress.Success)
+				{
+					// the meta tag already exists, make sure the value is "true"
+					if (matchSuppress.Groups[3].Value.ToLower() != "true")
+					{
+						text = text.Substring(0, matchSuppress.Groups[3].Index) + "true"
+							+  text.Substring(matchSuppress.Groups[3].Index + matchSuppress.Groups[3].Length);
+					}
+				}
+				else
+				{
+					// the meta tag has not been added, add it now
+					text = text.Insert(match.Index + match.Length,
+						"\r\n    <meta name=\"lockFormatting\" content=\"true\"></meta>");
+				}
+			}
 
 			return Encoding.UTF8.GetBytes(text);
 		}
@@ -504,7 +541,7 @@ namespace Bloom.CollectionTab
 			}
 			catch (Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					"Bloom ran into an error while creating that book. (Sorry!)");
 			}
 

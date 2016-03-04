@@ -36,7 +36,7 @@ namespace Bloom
 		}
 		public void Raise(TPayload descriptor)
 		{
-			Palaso.Reporting.Logger.WriteMinorEvent("Event: " + _nameForLogging);
+			SIL.Reporting.Logger.WriteMinorEvent("Event: " + _nameForLogging);
 			foreach (Action<TPayload> subscriber in _subscribers)
 			{
 				((Action<TPayload>)subscriber)(descriptor);
@@ -222,6 +222,16 @@ namespace Bloom
 			: base("LocalizationChangedEvent", LoggingLevel.Major)
 		{
 
+		}
+	}
+
+	public class ControlKeyEvent : Event<object>
+	{
+		public readonly Keys Keys;
+
+		public ControlKeyEvent()
+			: base("ControlKeyEvent", LoggingLevel.Minor)
+		{
 		}
 	}
 }

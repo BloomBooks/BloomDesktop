@@ -9,15 +9,12 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Reporting;
-#if !__MonoCS__
-// This isn't fully satisfactory, as we need this functionality in Linux/Mono,
-// but Bloom doesn't even run with this code in it on Linux/Mono.
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
 using YouTrackSharp.Infrastructure;
 using YouTrackSharp.Issues;
-#endif
+
 
 namespace Bloom.MiscUI
 {
@@ -33,26 +30,37 @@ namespace Bloom.MiscUI
 
 		protected enum State { WaitingForSubmission, ZippingUpBook, Submitting, CouldNotAutomaticallySubmit, Success }
 
-		private readonly BookSelection _bookSelection;
+		public Book.Book Book;
 		private Bitmap _screenshot;
 		protected State _state;
 		private string _emailableReportFilePath;
 		private readonly string YouTrackUrl;
 		protected string _youTrackProjectKey = "BL";
-#if !__MonoCS__
-		Connection _youTrackConnection = new Connection("issues.bloomlibrary.org", 80, false, "youtrack");
-		IssueManagement _issueManagement;
-#endif
+
+		private readonly Connection _youTrackConnection = new Connection("issues.bloomlibrary.org", 80, false, "youtrack");
+		private IssueManagement _issueManagement;
+
 		private string _youTrackIssueId = "unknown";
 		private dynamic _youTrackIssue;
 
+		public ProblemReporterDialog()
+			: this(null)
+		{ }
+
 		public ProblemReporterDialog(Control targetOfScreenshot, BookSelection bookSelection)
+			: this(targetOfScreenshot)
+		{
+			Book = bookSelection.CurrentSelection;
+		}
+
+		public ProblemReporterDialog(Control targetOfScreenshot)
 		{
 			// Haven't tried https here, as we're not using it for live YouTrack. Someday we may want to.
 			// If so, check Linux, as we had problems there with the old Jira reporting. Until
 			// then we use the unsecured URL.
 			YouTrackUrl = "http://issues.bloomlibrary.org";
-			_bookSelection = bookSelection;
+			Summary = "User Problem Report {0}";
+
 
 			InitializeComponent();
 
@@ -77,27 +85,25 @@ namespace Bloom.MiscUI
 				_includeScreenshot.Checked = false;
 			}
 
-			_email.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Email;
-			_name.Text = (Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName + " " +
-						 Palaso.UI.WindowsForms.Registration.Registration.Default.Surname).Trim();
+			_email.Text = SIL.Windows.Forms.Registration.Registration.Default.Email;
+			_name.Text = (SIL.Windows.Forms.Registration.Registration.Default.FirstName + " " +
+						 SIL.Windows.Forms.Registration.Registration.Default.Surname).Trim();
 
 			_screenshotHolder.Image = _screenshot;
 
-			if (bookSelection != null && bookSelection.CurrentSelection != null)
-			{
-				_includeBook.Checked = false;
-				_includeBook.Text = String.Format(_includeBook.Text, bookSelection.CurrentSelection.TitleBestForUserDisplay);
-				const int maxIncludeBookLabelLength = 40;
-				if (_includeBook.Text.Length > maxIncludeBookLabelLength)
-				{
-					_includeBook.Text = _includeBook.Text.Substring(0, maxIncludeBookLabelLength);
-				}
-			}
-			else
-			{
-				_includeBook.Visible = false;
-			}
+		
 			ChangeState(State.WaitingForSubmission);
+		}
+
+		public void SetDefaultIncludeBookSetting(bool include)
+		{
+			_includeBook.Checked = include;
+			UpdateDisplay();
+		}
+		public string Description
+		{
+			get { return _description.Text; }
+			set { _description.Text = value; }
 		}
 
 		private void GetScreenshot(Control targetOfScreenshot)
@@ -160,7 +166,19 @@ namespace Bloom.MiscUI
 
 		protected virtual void UpdateDisplay()
 		{
-			if(!string.IsNullOrWhiteSpace(_email.Text.Trim()))
+			_includeBook.Visible = Book !=null;
+			if (Book != null)
+			{
+				_includeBook.Text = String.Format(_includeBook.Text, Book.TitleBestForUserDisplay);
+				const int maxIncludeBookLabelLength = 40;
+				if (_includeBook.Text.Length > maxIncludeBookLabelLength)
+				{
+					_includeBook.Text = _includeBook.Text.Substring(0, maxIncludeBookLabelLength);
+				}
+			}
+
+		
+			if (!string.IsNullOrWhiteSpace(_email.Text.Trim()))
 			{
 				_email.ForeColor = IsLegalEmail(_email.Text) ? Color.Black : Color.Red;
 			}
@@ -203,7 +221,10 @@ namespace Bloom.MiscUI
 					_status.Visible = true;
 					var message = LocalizationManager.GetString("ReportProblemDialog.CouldNotSendToServer",
 						"Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.");
-					_status.HTML = string.Format("<span style='color:red'>" + message + "</span>", "<a href='file://" + _emailableReportFilePath + "'>" + Path.GetFileName(_emailableReportFilePath) + "</a>", "<a href='mailto:issues@bloomlibrary.org?subject=Problem Report'>issues@bloomlibrary.org</a>");
+					var zipFileName = Path.GetFileName(_emailableReportFilePath);
+					var zipFileLinkHtml = "<a class='showFileLocation' href='file://" + _emailableReportFilePath + "'>" +zipFileName + "</a>";
+					const string mailToLinkHtml = "<a href='mailto:issues@bloomlibrary.org?subject=Problem Report'>issues@bloomlibrary.org</a>";
+					_status.HTML = string.Format("<span style='color:red'>" + message + "</span>", zipFileLinkHtml, mailToLinkHtml);
 
 					_submitButton.Text = LocalizationManager.GetString("ReportProblemDialog.Retry", "Retry",
 						"Shown if there was an error submitting the report. Lets the user try submitting it again.");
@@ -228,6 +249,8 @@ namespace Bloom.MiscUI
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+
+			_privacyLabel.Visible = _seeDetails.Visible;
 		}
 
 		protected void _okButton_Click(object sender, EventArgs e)
@@ -257,12 +280,10 @@ namespace Bloom.MiscUI
 			}
 		}
 
-#if !__MonoCS__
 		private void AddAttachment(string file)
 		{
 			_issueManagement.AttachFileToIssue(_youTrackIssueId, file);
 		}
-#endif
 
 		/// <summary>
 		/// Using YouTrackSharp here. We can't submit
@@ -272,9 +293,6 @@ namespace Bloom.MiscUI
 		/// </summary>
 		private bool SubmitToYouTrack()
 		{
-#if __MonoCS__
-			return false;
-#else
 			try
 			{
 				ChangeState(State.Submitting);
@@ -286,7 +304,7 @@ namespace Bloom.MiscUI
 				_youTrackIssue = new Issue();
 				_youTrackIssue.ProjectShortName = _youTrackProjectKey;
 				_youTrackIssue.Type = "Awaiting Classification";
-				_youTrackIssue.Summary = "User Problem Report " + _name.Text;
+				_youTrackIssue.Summary = string.Format(Summary,_name.Text);
 				_youTrackIssue.Description = GetFullDescriptionContents(false);
 				_youTrackIssueId = _issueManagement.CreateIssue(_youTrackIssue);
 
@@ -306,10 +324,48 @@ namespace Bloom.MiscUI
 					ChangeState(State.ZippingUpBook);
 					using (var bookZip = TempFile.WithExtension(".zip"))
 					{
-						var zip = new BloomZipFile(bookZip.Path);
-						zip.AddDirectory(_bookSelection.CurrentSelection.FolderPath);
-						zip.Save();
-						AddAttachment(bookZip.Path);
+						try
+						{
+							try
+							{
+								var zip = new BloomZipFile(bookZip.Path);
+								zip.AddDirectory(Book.FolderPath);
+								zip.Save();
+
+							}
+							catch (Exception)
+							{
+								// if an error happens in the zipper, the zip file stays locked, so we just leak it
+								bookZip.Detach();
+								throw;
+							}
+							AddAttachment(bookZip.Path);
+						}
+						catch (InvalidRequestException e)
+						{
+							// We get this rather unspecific exception (with the even more unhelpful message 'NoContent') if the attachment is too large.
+							// There might of course be other reasons.
+							var attachmentLength = new FileInfo(bookZip.Path).Length;
+							try
+							{
+								_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description
+									+ "\nGot exception: " + e.Message + " trying to attach book file: " + Book.FolderPath + " of size " + attachmentLength);
+							}
+							catch (Exception error)
+							{
+								Logger.WriteEvent("*** Error as ProblemReporterDialog attempted to add warning to issue. " + error.Message);
+							}
+							if (attachmentLength > 10485760) // This is the limit as of October 20, 3015 (see http://issues.bloomlibrary.org/youtrack/admin/settings)
+							{
+								var msg = LocalizationManager.GetString("ReportProblemDialog.FileTooLarge",
+									"Unfortunately, {0} is too large to upload. If we need the book in order to work on your problem we will contact you.");
+								MessageBox.Show(string.Format(msg, Path.GetFileName(Book.FolderPath)));
+							}
+						}
+						catch (Exception error)
+						{
+                            Logger.WriteEvent("*** Error as ProblemReporterDialog attempted to zip up the book. "+error.Message);
+						}
 					}
 				}
 
@@ -336,8 +392,12 @@ namespace Bloom.MiscUI
 				Debug.Fail(error.Message);
 				return false;
 			}
-#endif
 		}
+
+		/// <summary>
+		/// Will become the summary of the issue. Include {0} for the user name
+		/// </summary>
+		public string Summary { get; set; }
 
 		/// <summary>
 		/// If we are able to directly submit to YouTrack, we do that. But otherwise,
@@ -370,7 +430,7 @@ namespace Bloom.MiscUI
 
 				if (_includeBook.Checked)
 				{
-					zip.AddDirectory(_bookSelection.CurrentSelection.FolderPath);
+					zip.AddDirectory(Book.FolderPath);
 				}
 			}
 			if (_includeScreenshot.Checked)

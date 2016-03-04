@@ -4,6 +4,19 @@
 BODY {
     background-color: @DarkGray;
 }
+
+/* this is handy for debugging page numbering in the thumbnail list
+.bloom-page::after {
+  content: counter(pageNumber);
+  position: absolute;
+  bottom: 7px;
+  left: 10px;
+  color: red;
+  overflow: visible;
+  font-size: 100pt;
+}
+*/
+
 .pageContainer {
     padding: 3px;
     box-sizing: border-box;
@@ -37,6 +50,41 @@ BODY {
         width: 46px;
         .bloom-page {
             transform: scale(0.06);
+        }
+    }
+    &.LetterLandscape {
+        height: 47px;
+        width: 61px;
+        .bloom-page {
+            transform: scale(0.058);
+        }
+    }
+    &.LetterPortrait {
+        height: 61px;
+        width: 47px;
+        .bloom-page {
+            transform: scale(0.058);
+        }
+    }
+    &.HalfLetterPortrait {
+        height: 61px;
+        width: 47px;
+        .bloom-page {
+            transform: scale(0.075);
+        }
+    }
+    &.QuarterLetterLandscape {
+        height: 47px;
+        width: 61px;
+        .bloom-page {
+            transform: scale(0.115);
+        }
+    }
+    &.QuarterLetterPortrait {
+        height: 61px;
+        width: 47px;
+        .bloom-page {
+            transform: scale(0.115);
         }
     }
 
@@ -81,3 +129,9 @@ BODY {
     line-height: 1.3em;
 }
 .placeholder { pointer-events: none; }
+
+#menuIconHolder {
+    position:absolute;
+    bottom:6px;
+    right: 0;
+}
