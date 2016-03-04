@@ -234,7 +234,13 @@ class AudioRecording {
 
         axios.get('/bloom/audio/endRecord').then( response =>{        
             this.updatePlayerStatus();
-            this.changeStateAndSetExpected('play');
+            this.setStatus('record', Status.Disabled);
+            //at the moment, the bakcend is returning when it asks the recorder to stop.
+            //But the actual file isn't available for a few moments after that.
+            //So we delay looking for it.
+            window.setTimeout( ()=>{
+                this.changeStateAndSetExpected('play');
+            }, 1000);
         }).catch( error =>{
              this.changeStateAndSetExpected('record');//record failed, so we expect them to try again
                 toastr.error(error.statusText);

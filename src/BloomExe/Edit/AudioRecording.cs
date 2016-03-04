@@ -13,6 +13,7 @@ using SIL.Media.Naudio;
 #endif
 using SIL.Progress;
 using SIL.Reporting;
+using Timer = System.Windows.Forms.Timer;
 
 // Note: it is for the benefit of this component that Bloom references NAudio. We don't use it directly,
 // but Palaso.Media does, and we need to make sure it gets copied to our output.
@@ -38,6 +39,9 @@ namespace Bloom.Edit
 		/// <summary>
 		/// The file we want to record to
 		/// </summary>
+		public string PathToTemporaryWav;
+
+		//the ultimate destination, after we've cleaned up the recording
 		public string PathToCurrentAudioSegment;
 
 #if __MonoCS__
@@ -235,7 +239,11 @@ namespace Bloom.Edit
 			try
 			{
 				Debug.WriteLine("Stop recording");
-				Recorder.Stop(); //.StopRecordingAndSaveAsWav();
+				Recorder.Stopped += Recorder_Stopped;
+				//note, this doesn't actually stop... more like... starts the stopping. It does mark the time
+				//we requested to stop. A few seconds later (2, looking at the library code today), it will
+				//actually close the file and raise the Stopped event
+				Recorder.Stop(); 
 				//ReportSuccessfulRecordingAnalytics();
 			}
 			catch (Exception)
@@ -244,21 +252,37 @@ namespace Bloom.Edit
 			}
 			if (TestForTooShortAndSendFailIfSo(request))
 				return;
-			else
-			{
-				//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
-				//We could put this off entirely until we make the epub.
-				//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
-				//That's fine so long as it doesn't make the UI unresponsive on slow machines.
-				if(LameEncoder.IsAvailable())
-				{
-					_mp3Encoder.Encode(PathToCurrentAudioSegment, PathToCurrentAudioSegment.Substring(0, PathToCurrentAudioSegment.Length - 4), new NullProgress());
-					// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format (or alternative mp4)
-					// is required for epub. The wav file is a better permanent record of the recording; also,
-					// it is used for playback.
-				}
-			}
+
+
 #endif
+		}
+
+		private void Recorder_Stopped(IAudioRecorder arg1, ErrorEventArgs arg2)
+		{
+			Recorder.Stopped -= Recorder_Stopped;
+			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathToCurrentAudioSegment)); // make sure audio directory exists
+			int millisecondsToTrimFromEndForMouseClick =100;
+			try
+			{
+				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToCurrentAudioSegment, new TimeSpan(), TimeSpan.FromMilliseconds(millisecondsToTrimFromEndForMouseClick));
+			}
+			catch (Exception error)
+			{
+				Logger.WriteEvent(error.Message);
+				File.Copy(PathToTemporaryWav,PathToCurrentAudioSegment, true);
+			}
+
+			//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
+			//We could put this off entirely until we make the epub.
+			//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
+			//That's fine so long as it doesn't make the UI unresponsive on slow machines.
+			if (LameEncoder.IsAvailable())
+			{
+				_mp3Encoder.Encode(PathToCurrentAudioSegment, PathToCurrentAudioSegment.Substring(0, PathToCurrentAudioSegment.Length - 4), new NullProgress());
+				// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format (or alternative mp4)
+				// is required for epub. The wav file is a better permanent record of the recording; also,
+				// it is used for playback.
+			}
 		}
 
 		private bool TestForTooShortAndSendFailIfSo(SimpleHandlerRequest request)
@@ -292,6 +316,7 @@ namespace Bloom.Edit
 
 			string segmentId = request.RequiredParam("id");
 			PathToCurrentAudioSegment = GetPathToSegment(segmentId);
+			PathToTemporaryWav = Path.GetTempFileName();
 
 			if (Recorder.RecordingState == RecordingState.RequestedStop)
 			{
@@ -369,6 +394,8 @@ namespace Bloom.Edit
 #endif
 		}
 
+		
+
 		private string GetPathToSegment(string segmentId)
 		{
 			return System.IO.Path.Combine(GetBookFolderPath(), "audio", segmentId + ".wav");
@@ -393,8 +420,7 @@ namespace Bloom.Edit
 #else
 			_startRecordingTimer.Stop();
 			Debug.WriteLine("Start actual recording");
-			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathToCurrentAudioSegment)); // make sure audio directory exists
-			Recorder.BeginRecording(PathToCurrentAudioSegment);
+			Recorder.BeginRecording(PathToTemporaryWav);
 #endif
 		}
 
