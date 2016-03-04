@@ -272,8 +272,17 @@ namespace Bloom.CollectionChoosing
 					else
 						dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
 
+					//on my windows 10 box, the file we want is in AppData\Local\Dropbox
 					if (!File.Exists(dropboxInfoFile))
-						return; // User appears to not have Dropbox installed
+					{
+						baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+						if (SIL.PlatformUtilities.Platform.IsWindows)
+							dropboxInfoFile = Path.Combine(baseFolder, @"Dropbox\info.json");
+						else
+							dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
+						if (!File.Exists(dropboxInfoFile))
+							return; // User appears to not have Dropbox installed
+					}
 
 					var info = File.ReadAllText(dropboxInfoFile);
 					var matches = Regex.Matches(info, @"{""path"": ""([^""]+)"",");
@@ -302,7 +311,7 @@ namespace Bloom.CollectionChoosing
 						var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InDropboxMessage",
 							"Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.",
 							"");
-						MessageBox.Show(msg);
+						SIL.Reporting.ErrorReport.NotifyUserOfProblem(msg);
 						return;
 					}
 				}

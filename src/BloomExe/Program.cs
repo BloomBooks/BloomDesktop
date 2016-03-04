@@ -412,6 +412,12 @@ namespace Bloom
 				_splashForm = SplashScreen.CreateAndShow();//warning: this does an ApplicationEvents()
 			else if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
 			{
+				// BL-3192. If there is some modal in front (e.g. dropbox or screen DPI warnings), just wait. We'll keep getting called with these
+				// on idle warnings until it closes, then we can proceed.
+				if (_splashForm.Visible && !_splashForm.CanFocus)
+				{
+					return;
+				}
 				_alreadyHadSplashOnce = true;
 				Application.Idle -= CareForSplashScreenAtIdleTime;
 				CloseSplashScreenAndCheckRegistration();
