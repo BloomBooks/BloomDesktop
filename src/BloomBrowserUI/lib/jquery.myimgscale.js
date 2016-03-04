@@ -72,6 +72,9 @@
         });
 
         function scale($img, $parent) {
+
+            $img.removeAttr("style");//hatton added. Else, change of options isn't always going to be reflected, as the old styles stick around
+
             var imgSize = getOriginalImgSize($img),
                 imgW = imgSize.width,
                 imgH = imgSize.height,
