@@ -19,6 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.9.1",
+    "css-element-queries": "^0.3.2",
     "jquery": "^1.11.3",
     "jquery.hotkeys": "^0.1.0",
     "toastr": "^2.1.2"
