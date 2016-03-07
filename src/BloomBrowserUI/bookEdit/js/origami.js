@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     $('div.split-pane').splitPane();
 });
 
@@ -7,7 +7,7 @@ function setupOrigami() {
 
     $('.origami-toggle .onoffswitch').change(layoutToggleClickHandler);
 
-    if($('.customPage .marginBox.origami-layout-mode').length) {
+    if ($('.customPage .marginBox.origami-layout-mode').length) {
         setupLayoutMode();
         $('#myonoffswitch').prop('checked', true);
     }
@@ -39,7 +39,7 @@ function setupLayoutMode() {
 
         $this.append(getButtons());
         var contents = $this.find('.bloom-translationGroup:not(.box-header-off) > .bloom-editable');
-        if(!contents.length || (contents.length && !isEmpty(contents)))
+        if (!contents.length || (contents.length && !isEmpty(contents)))
             return true;
         $this.append(getTextBoxIdentifier());
     });
@@ -56,6 +56,8 @@ function setupLayoutMode() {
             origamiUndo();
         }
     });
+
+    ElementQueries.init();//have  css-element-queries notice the new elements and track them, adding classes that let rules trigger depending on size
 }
 
 function layoutToggleClickHandler() {
@@ -75,14 +77,16 @@ function layoutToggleClickHandler() {
 // Event handler to split the current box in half (vertically or horizontally)
 function splitClickHandler() {
     var myInner = $(this).closest('.split-pane-component-inner');
-    if ($(this).hasClass('splitter-top'))
+    if ($(this).hasClass('add-top'))
         performSplit(myInner, 'horizontal', 'bottom', 'top', true);
-    else if ($(this).hasClass('splitter-right'))
+    else if ($(this).hasClass('add-right'))
         performSplit(myInner, 'vertical', 'left', 'right', false);
-    else if ($(this).hasClass('splitter-bottom'))
+    else if ($(this).hasClass('add-bottom'))
         performSplit(myInner, 'horizontal', 'top', 'bottom', false);
-    else if ($(this).hasClass('splitter-left'))
+    else if ($(this).hasClass('add-left'))
         performSplit(myInner, 'vertical', 'right', 'left', true);
+
+    ElementQueries.init();//notice the new elements and track them, adding classes that let rules trigger depending on size
 }
 
 function performSplit(innerElement, verticalOrHorizontal, existingContentPosition, newContentPosition, prependNew) {
@@ -185,7 +189,7 @@ function closeClickHandler() {
     // The idea here is we need the position-* class from the parent to replace the sibling's position-* class.
     // This is working for now, but should be cleaned up since it could also add other classes.
     sibling.removeClass(function (index, css) {
-        return (css.match (/(^|\s)position-\S+/g) || []).join(' ');
+        return (css.match(/(^|\s)position-\S+/g) || []).join(' ');
     });
     sibling.addClass(positionClass);
     sibling.attr('style', positionStyle);
@@ -208,7 +212,7 @@ function getSplitPaneComponentWithNewContent(position) {
 }
 function getSplitPaneComponentInner() {
     /* the stylesheet will hide this initially; we will have UI later than switches it to box-header-on */
-    var spci = $('<div class="split-pane-component-inner"><div class="box-header-off bloom-translationGroup"></div></div>');
+    var spci = $('<div class="split-pane-component-inner adding"><div class="box-header-off bloom-translationGroup"></div></div>');
     spci.append(getTypeSelectors());
     spci.append(getButtons());
     return spci;
@@ -228,7 +232,7 @@ function getOnOffSwitch() {
 </div>');
 }
 function getButtons() {
-    var buttons = $('<div class="origami-buttons bloom-ui origami-ui"></div>');
+    var buttons = $('<div class="origami-controls bloom-ui origami-ui"></div>');
     buttons
         .append(getHorizontalButtons())
         .append(getCloseButtonWrapper())
@@ -236,24 +240,24 @@ function getButtons() {
     return buttons;
 }
 function getVerticalButtons() {
-    var buttons = $('<div class="vertical-buttons"></div>');
+    var buttons = $('<div class="adders horizontal-adders"></div>');
     buttons
-        .append($('<div></div>').append(getVSplitButton(true)))
+        .append(getVSplitButton(true))
         .append('<div class="separator"></div>')
-        .append($('<div></div>').append(getVSplitButton()));
+        .append(getVSplitButton());
     return buttons;
 }
 function getVSplitButton(left) {
     var vSplitButton;
     if (left)
-        vSplitButton = $('<a class="button bloom-purple splitter-left">&#10010;</a>');
+        vSplitButton = $('<a class="button  add-left">&#10010;</a>');
     else
-        vSplitButton = $('<a class="button bloom-purple splitter-right">&#10010;</a>');
+        vSplitButton = $('<a class="button  add-right">&#10010;</a>');
     vSplitButton.click(splitClickHandler);
     return vSplitButton.wrap('<div></div>');
 }
 function getHorizontalButtons() {
-    var buttons = $('<div class="horizontal-buttons"></div>');
+    var buttons = $('<div class="adders vertical-adders"></div>');
     buttons
         .append(getHSplitButton(true))
         .append('<div class="separator"></div>')
@@ -263,9 +267,9 @@ function getHorizontalButtons() {
 function getHSplitButton(top) {
     var hSplitButton;
     if (top)
-        hSplitButton = $('<a class="button bloom-purple splitter-top">&#10010;</a>');
+        hSplitButton = $('<a class="button  add-top">&#10010;</a>');
     else
-        hSplitButton = $('<a class="button bloom-purple splitter-bottom">&#10010;</a>');
+        hSplitButton = $('<a class="button  add-bottom">&#10010;</a>');
     hSplitButton.click(splitClickHandler);
     return hSplitButton.wrap('<div></div>');
 }
@@ -275,7 +279,7 @@ function getCloseButtonWrapper() {
     return wrapper;
 }
 function getCloseButton() {
-    var closeButton = $('<a class="button bloom-purple close">&#10005;</a>');
+    var closeButton = $('<a class="button  close">&#10005;</a>');
     closeButton.click(closeClickHandler);
     return closeButton;
 }

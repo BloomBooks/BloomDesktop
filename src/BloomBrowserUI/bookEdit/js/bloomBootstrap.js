@@ -2,7 +2,9 @@
 var npmModules = [
     'jquery/dist/jquery.js',
     'toastr/toastr.js',
-    'jquery.hotkeys/jquery.hotkeys.js'
+    'jquery.hotkeys/jquery.hotkeys.js',
+    'css-element-queries/src/ResizeSensor.js',//used by origami
+    'css-element-queries/src/ElementQueries.js'//used by origami
 ];
 
 var scripts = [
@@ -52,7 +54,7 @@ var styleSheets = [
     'lib/jquery.qtip.css',
     'bookEdit/css/qtipOverrides.css',
     'bookEdit/js/toolbar/jquery.toolbars.css',
-    'bookEdit/css/origami.css',
+    //'bookEdit/css/origami.css',
     'bookEdit/css/tab.winclassic.css',
     'bookEdit/StyleEditor/StyleEditor.css',
     'bookEdit/css/bloomDialog.css',
