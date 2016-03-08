@@ -812,11 +812,10 @@ export var theOneAudioRecorder: AudioRecording;
 export function initializeTalkingBookTool() {
     if (theOneAudioRecorder)
         return;
-(??)    audioRecorder = new AudioRecording();
-(??)    libsynphony = new libSynphony();
-(??)    audioRecorder.initializeTalkingBookTool();
+    theOneAudioRecorder = new AudioRecording();
+    //reviewslog: not allowed    theOneLibSynphony = new LibSynphony();
+    theOneAudioRecorder.initializeTalkingBookTool();
 }
-(??)
-(??)function setPeakLevel(level:string) {
-(??)    audioRecorder.setPeakLevel(level);
-(??)}
+
+
+

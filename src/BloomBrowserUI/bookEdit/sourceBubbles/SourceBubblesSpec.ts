@@ -1,7 +1,7 @@
-/// <reference path="../../bookEdit/sourceBubbles/BloomSourceBubbles.ts" />
+/// <reference path="./BloomSourceBubbles.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 
-import BloomSourceBubbles from "../../bookEdit/sourceBubbles/BloomSourceBubbles";
+import BloomSourceBubbles from "./BloomSourceBubbles";
 "use strict";
 
 describe("SourceBubbles", function () {

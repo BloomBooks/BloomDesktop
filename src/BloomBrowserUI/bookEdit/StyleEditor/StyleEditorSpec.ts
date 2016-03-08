@@ -1,4 +1,4 @@
-/// <reference path="../../bookEdit/StyleEditor/StyleEditor.ts" />
+/// <reference path="./StyleEditor.ts" />
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 
 
@@ -6,7 +6,7 @@
 /// <reference path="../../lib/jquery-1.9.1.js"/>
 */
 
-import StyleEditor from "../../bookEdit/StyleEditor/StyleEditor";
+import StyleEditor from "./StyleEditor";
 "use strict";
 
 //this was getting html, but just setting the rules actually doesn't touch the html

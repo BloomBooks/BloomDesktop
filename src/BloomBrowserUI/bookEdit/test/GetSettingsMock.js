@@ -23,20 +23,6 @@ function GetSettings() {
   return v;
 }
 
-(??)//noinspection JSUnusedGlobalSymbols
-(??)/**
-(??) * These functions are called by C#, so the WebStorm code inspection thinks they are unused.
-(??) */
-(??)function ForCodeInspection_UnusedFunctions(): void {
-(??)
-(??)  // don't actually do anything
-(??)  if (1 === 1) return;
-(??)
-(??)  (<InjectorWindow>window).restoreAccordionSettings('');
-(??)
-(??)  var x = model.fontName;
-(??)}
-
 //noinspection JSUnusedGlobalSymbols
 /**
  * Test substitute for RuntimeInformationInjector.cs AddUIDictionaryToDom()
