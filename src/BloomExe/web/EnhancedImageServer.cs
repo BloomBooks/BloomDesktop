@@ -281,6 +281,10 @@ namespace Bloom.web
 					localPath = temp;
 			}
 
+			//Firefox debugger, looking for a source map, was prefixing in this unexpected 
+			//way.
+			localPath = localPath.Replace("output/browser/", "");
+
 			return ProcessContent(info, localPath);
 		}
 
@@ -438,9 +442,10 @@ namespace Bloom.web
 					info.WriteCompleteOutput(ToolboxContent ?? "");
 					return true;
 				case "availableFontNames":
+					info.ContentType = "text/json";
 					var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());
 					list.Sort();
-					info.WriteCompleteOutput(string.Join(",", list.ToArray()));
+					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
 					return true;
 				case "authorMode":
 					info.ContentType = "text/plain";
@@ -528,15 +533,36 @@ namespace Bloom.web
 					// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
 					// can return contents of any file that exists if the URL gives its full path...even ones that
 					// are generated temp files most certainly NOT distributed with the application.
-					path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", modPath);
+					path = FileLocator.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, modPath);
 				}
+				if (localPath.Contains("favicon.ico")) //need something to pacify Chrome
+					path = FileLocator.GetFileDistributedWithApplication("BloomPack.ico");
 			}
 			catch (ApplicationException)
 			{
 				// ignore
 			}
+
+			//There's probably a eventual way to make this problem go away,
+			// but at the moment FF, looking for source maps to go with css, is
+			// looking for those maps where we said the css was, which is in the actual
+			// book folders. So instead redirect to our browser file folder.
 			if (!File.Exists(path))
+			{
+				var startOfBookLayout = localPath.IndexOf("bookLayout");
+				if (startOfBookLayout > 0)
+					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookLayout));
+				var startOfBookEdit = localPath.IndexOf("bookEdit");
+				if (startOfBookEdit > 0)
+					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
+			}
+			if (!File.Exists(path))
+			{
+#if DEBUG
+				MessageBox.Show("(DEBUG ONLY) Not Found"+System.Environment.NewLine+ "localPath=" + localPath+System.Environment.NewLine+"path="+path);
+#endif
 				return false;
+			}
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
@@ -664,7 +690,7 @@ namespace Bloom.web
 			if (string.IsNullOrEmpty(path))
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
-				var lastTry = FileLocator.GetFileDistributedWithApplication(true, "BloomBrowserUI", localPath);
+				var lastTry = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
 				if(File.Exists(lastTry)) path = lastTry;
 			}
 

@@ -1,29 +1,33 @@
-/// <reference path="../../lib/jquery-ui.d.ts" />
+/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="decodableReader/synphonyApi.ts" />
 /// <reference path="decodableReader/readerToolsModel.ts" />
+
+import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
+import '../../lib/jquery.i18n.custom';
+import "../../lib/jquery.onSafe"; 
 
 /**
  * The html code for a check mark character
  * @type String
  */
 var checkMarkString = '&#10004;';
+
 var savedSettings: string;
 
 var keypressTimer: any = null;
 
-
-interface ITabModel {
+export interface ITabModel {
     restoreSettings(settings: string);
     configureElements(container: HTMLElement);
     showTool();
     hideTool();
     updateMarkup();
     name(): string; // without trailing 'Tool'!
-    hasRestoredSettings : boolean;
+    hasRestoredSettings: boolean;
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
-class ToolBox {
+export class ToolBox {
     toolboxIsShowing() { return (<HTMLInputElement>$(parent.window.document).find('#pure-toggle-right').get(0)).checked; }
     configureElementsForTools(container: HTMLElement) {
         for (var i = 0; i < tabModels.length; i++) {
@@ -36,6 +40,18 @@ class ToolBox {
             });
        }
     }
+    /**
+     * Fires an event for C# to handle
+     * @param {String} eventName
+     * @param {String} eventData
+     */
+    static fireCSharpToolboxEvent(eventName: string, eventData: string) {
+
+    var event = new MessageEvent(eventName, {'bubbles' : true, 'cancelable' : true, 'data' : eventData});
+    document.dispatchEvent(event);
+    }
+
+    static getTabModels() { return tabModels;}
 }
 
 var toolbox = new ToolBox();
@@ -46,35 +62,24 @@ var tabModels: ITabModel[] = [];
 var currentTool: ITabModel;
 
 /**
- * Fires an event for C# to handle
- * @param {String} eventName
- * @param {String} eventData
- */
-function fireCSharpToolboxEvent(eventName: string, eventData: string) {
-
-    var event = new MessageEvent(eventName, {'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    document.dispatchEvent(event);
-}
-
-/**
  * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
  * @param chkbox
  */
-function showOrHidePanel_click(chkbox) {
+export function showOrHidePanel_click(chkbox) {
 
     var panel = $(chkbox).data('panel');
 
     if (chkbox.innerHTML === '') {
 
         chkbox.innerHTML = checkMarkString;
-        fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t1");
+        ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t1");
         if (panel) {
             requestPanel(chkbox.id, panel, null, null, null);
         }
     }
     else {
         chkbox.innerHTML = '';
-        fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t0");
+        ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t0");
         $('*[data-panelId]').filter(function() { return $(this).attr('data-panelId') === panel; }).remove();
     }
 
@@ -84,8 +89,7 @@ function showOrHidePanel_click(chkbox) {
 /**
 * Called by C# to restore user settings
 */
-function restoreToolboxSettings(settings: string) {
-
+export function restoreToolboxSettings(settings: string) {
     savedSettings = settings;
     var pageFrame = getPageFrame();
     if (pageFrame.contentWindow.document.readyState === 'loading') {
@@ -93,7 +97,7 @@ function restoreToolboxSettings(settings: string) {
         $(pageFrame.contentWindow.document).ready(e => restoreToolboxSettingsWhenPageReady(settings));
         return;
     }
-    this.restoreToolboxSettingsWhenPageReady(settings); // not loading, we can proceed immediately.
+    restoreToolboxSettingsWhenPageReady(settings); // not loading, we can proceed immediately.
 }
 
 
@@ -107,33 +111,35 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
         return;
     }
     // Once we have a valid page, we can proceed to the next stage.
-    this.restoreToolboxSettingsWhenCkEditorReady(settings);
+    restoreToolboxSettingsWhenCkEditorReady(settings);
 }
 
 function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
-    var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR.instances;
-    // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
-    // This wipes out (at least) our page initialization.
-    // To prevent this we hold our initialization until CKEditor has done initializing.
-    // If any instance on the page (e.g., one per div) is not ready, wait until all are.
-    // (The instances property leads to an object in which a field editorN is defined for each
-    // editor, so we just loop until some value of N which doesn't yield an editor instance.)
-    for (var i = 1; ; i++) {
-        var instance = editorInstances['editor' + i];
-        if (instance == null) {
-            if (i === 0) {
-                // no instance at all...if one is later created, get us invoked.
-                (<any>this.getPageFrame().contentWindow).CKEDITOR.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+    if ((<any>getPageFrame().contentWindow).CKEDITOR) {
+        var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR.instances;
+        // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
+        // This wipes out (at least) our page initialization.
+        // To prevent this we hold our initialization until CKEditor has done initializing.
+        // If any instance on the page (e.g., one per div) is not ready, wait until all are.
+        // (The instances property leads to an object in which a field editorN is defined for each
+        // editor, so we just loop until some value of N which doesn't yield an editor instance.)
+        for (var i = 1;; i++) {
+            var instance = editorInstances['editor' + i];
+            if (instance == null) {
+                if (i === 0) {
+                    // no instance at all...if one is later created, get us invoked.
+                    (<any>this.getPageFrame().contentWindow).CKEDITOR.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+                    return;
+                }
+                break; // if we get here all instances are ready
+            }
+            if (!instance.instanceReady) {
+                instance.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
                 return;
             }
-            break; // if we get here all instances are ready
-        }
-        if (!instance.instanceReady) {
-            instance.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
-            return;
         }
     }
-    // OK, CKEditor is done, we can finally do the real initialization.
+    // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
     var opts = settings;
     var currentPanel = opts['current'] || '';
 
@@ -145,7 +151,7 @@ function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
 }
 
 // Remove any markup the toolbox is inserting (called before saving page)
-function removeToolboxMarkup() {
+export function removeToolboxMarkup() {
     if (currentTool != null) {
         currentTool.hideTool();
     }
@@ -157,14 +163,14 @@ function getPageFrame(): HTMLIFrameElement {
 
     // The body of the editable page, a root for searching for document content.
 function getPage(): JQuery {
-    var page = this.getPageFrame();
+    var page = getPageFrame();
     if (!page) return null;
     return $(page.contentWindow.document.body);
 }
 
 function switchTool(newToolName: string)
 {
-    fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + newToolName); // Have Bloom remember which tool is active. (Might be none)
+    ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + newToolName); // Have Bloom remember which tool is active. (Might be none)
     var newTool = null;
     if (newToolName) {
         for (var i = 0; i < tabModels.length; i++) {
@@ -202,7 +208,6 @@ function activateTool(newTool: ITabModel) {
  * @param {String} currentPanel
  */
 function setCurrentPanel(currentPanel) {
-
     // NOTE: panels without a "data-panelId" attribute (such as the More panel) cannot be the "currentPanel."
     var idx = '0';
     var toolbox = $('#toolbox');
@@ -241,7 +246,7 @@ function setCurrentPanel(currentPanel) {
     // the active panel (if it's already the one we want, typically the first), so we can't rely on
     // the activate event happening in the initial call. Instead, we make SURE to call it for the
     // panel we are making active.
-    toolbox.onOnce('accordionactivate.toolbox', function (event, ui) {
+    toolbox.onSafe('accordionactivate.toolbox', function (event, ui) {
         var newToolName = "";
         if (ui.newHeader.attr('data-panelId')) {
             newToolName = ui.newHeader.attr('data-panelId').toString();
@@ -270,7 +275,7 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
         // The panelIDs all end in 'Tool' but the containing file and folder names don't have this.
         var fileAndFolderName = panelId.substring(0, panelId.length - 4);
 
-        var panelUrl = '/bloom/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + '.htm';
+        var panelUrl = '/bloom/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + '.html';
         var ajaxSettings = {type: 'GET', url: panelUrl};
 
         $.ajax(ajaxSettings)
@@ -383,7 +388,7 @@ function loadToolboxPanel(newContent, panelId) {
     // Where to insert the new panel?
     // NOTE: there will always be at least one panel, the "More..." panel, so there will always be at least one panel
     // in the toolbox. And the "More..." panel will have the highest order so it is always at the bottom of the stack.
-    var insertBefore = toolboxElt.children().filter(function() { return $(this).data('order') > order; }).first();
+    var insertBefore = toolboxElt.children().filter(function () { return $(this).data('order') > order; }).first();
 
     // Insert now.
     tab.insertBefore(insertBefore);

@@ -76,7 +76,7 @@ namespace Bloom.web
 					}
 					else
 					{
-						var imgPath = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", "book.png");
+						var imgPath = BloomFileLocator.GetBrowserFile("book.png");
 						info.ReplyWithImage(imgPath);
 						//book.GetThumbNailOfBookCoverAsync(book.Type != Book.Book.BookType.Publication,image => RefreshOneThumbnail(book, image));
 					}
@@ -90,7 +90,7 @@ namespace Bloom.web
 			else
 			{
 				info.ContentType = GetContentType(Path.GetExtension(r));
-				string path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", r);
+				string path = BloomFileLocator.GetBrowserFile(r);
 
 
 				//request.QueryString.GetValues()

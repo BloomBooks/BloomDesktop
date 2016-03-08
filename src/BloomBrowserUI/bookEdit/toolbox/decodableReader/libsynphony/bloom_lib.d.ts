@@ -1,5 +1,5 @@
 
-declare class DataGPC {
+export declare class DataGPC {
 
     GPC: string;
     GPCuc: string;
@@ -13,7 +13,7 @@ declare class DataGPC {
     Alt: string[];
 }
 
-declare class DataWord {
+export declare class DataWord {
 
     Name: string;
     Count: number;
@@ -29,7 +29,8 @@ declare class DataWord {
     constructor(optionalWord?: string);
 }
 
-declare class textFragment {
+
+export declare class TextFragment {
 
   text: string;
   isSentence: boolean;

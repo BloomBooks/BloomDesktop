@@ -315,7 +315,7 @@ namespace BloomTests.Book
 		{
 			var storage = GetInitialStorage();
 			var locator = (FileLocator) storage.GetFileLocator();
-			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+			string root = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			locator.AddPath(root.CombineForPath("bookLayout"));
 			var folder = storage.FolderPath;
 			var tagsPath = Path.Combine(folder, "tags.txt");
@@ -354,7 +354,7 @@ namespace BloomTests.Book
 			// This seems to be needed to let it locate some kind of collection settings.
 			var folder = storage.FolderPath;
 			var locator = (FileLocator)storage.GetFileLocator();
-			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+			string root = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 
 			locator.AddPath(root.CombineForPath("bookLayout"));
 			var collectionSettings =

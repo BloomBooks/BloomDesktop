@@ -1,18 +1,25 @@
-/// <reference path="../../js/interIframeChannel.ts" />
-/// <reference path="../../js/getIframeChannel.ts" />
 /// <reference path="synphonyApi.ts" />
-/// <reference path="libsynphony/jquery.text-markup.d.ts" />
+/// <reference path="./libSynphony/jquery.text-markup.d.ts" />
 /// <reference path="jquery.div-columns.ts" />
-/// <reference path="../../../lib/jquery-ui.d.ts" />
+/// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="../../js/editableDivUtils.ts" />
-/// <reference path="../../js/directoryWatcher.ts" />
+/// <reference path="./directoryWatcher.ts" />
 /// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
 /// <reference path="../toolbox.ts" />
-
-var iframeChannel = getIframeChannel();
-
-var model: ReaderToolsModel;
+/// <reference path="./libSynphony/synphony_lib.d.ts" />
+import {DirectoryWatcher} from "./directoryWatcher";
+import {resizeWordList} from "./readerTools";
+import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
+import {ToolBox} from "../toolbox";
+import "./libSynphony/jquery.text-markup.ts";
+import './jquery.div-columns.ts';
+import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
+import * as _ from 'underscore';
+import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
+import SynphonyApi from './synphonyApi';
+import {DataWord,TextFragment} from './libSynphony/bloom_lib';
+import axios = require('axios');
 
 var SortType = {
   alphabetic: "alphabetic",
@@ -20,33 +27,34 @@ var SortType = {
   byFrequency: "byFrequency"
 };
 
-var MarkupType = {
+export var MarkupType = {
   None: 0,
   Leveled: 1,
   Decodable: 2
 };
 
-var previousHeight = 0;
-var previousWidth = 0;
-
 var sortIconSelectedClass = "sortIconSelected"; // The class we apply to the selected sort icon
 var disabledIconClass = "disabledIcon"; // The class we apply to icons that are disabled.
 var disabledLimitClass = "disabledLimit"; // The class we apply to max values that are disabled (0).
 
-class DRTState {
+export class DRTState {
   stage: number = 1;
   level: number = 1;
   markupType: number = MarkupType.Decodable;
 }
 
-interface ReaderToolsWindow extends Window {
+export interface ReaderToolsWindow extends Window {
   model: ReaderToolsModel;
   canUndo(): string;
   shouldHandleUndo(): string;
 }
 
-class ReaderToolsModel {
+export class ReaderToolsModel {
 
+  static model: ReaderToolsModel = new ReaderToolsModel(); //reviewslog: is that all it takes to make a singleton?
+  static previousHeight : number = 0;
+  static previousWidth : number = 0;
+  
   stageNumber: number = 1;
   levelNumber: number = 1;
   synphony: SynphonyApi = new SynphonyApi(); // default state
@@ -77,13 +85,10 @@ class ReaderToolsModel {
   wordListLoaded: boolean = false;
   ckEditorLoaded: boolean = false;
   allowedWordFilesRemaining: number = 0;
-
-  constructor() {
-
-    // this happens during testing
-    if (iframeChannel)
-      this.readableFileExtensions = iframeChannel.readableFileExtensions;
+  public static getReadableFileExtensions() {
+      return ['txt', 'js', 'json'];
   }
+
   readyToDoMarkup(): boolean { return this.wordListLoaded && this.ckEditorLoaded; }
   setCkEditorLoaded() : void { this.ckEditorLoaded = true; }
 
@@ -98,7 +103,7 @@ class ReaderToolsModel {
   setStageNumber(val: number): void {
 
     // this may result in a need to resize the word list
-    previousHeight = 0;
+    ReaderToolsModel.previousHeight = 0;
 
     var stages = this.synphony.getStages();
     if (val < 1 || val > stages.length) {
@@ -299,7 +304,8 @@ class ReaderToolsModel {
   updateWordList(): void {
 
     // show the correct headings
-    var useAllowedWords = (this.synphony.source) ? this.synphony.source.useAllowedWords === 1 : false;
+    //reviewSLog
+    var useAllowedWords = (ReaderToolsModel.model.synphony.source) ? ReaderToolsModel.model.synphony.source.useAllowedWords === 1 : false;
 
     // this happens during unit testing
     if (document.getElementById('make-letter-word-list-div')) {
@@ -578,12 +584,12 @@ class ReaderToolsModel {
     EditableDivUtils.makeSelectionIn(this.activeElement, restoreOffset, null, true);
   }
 
-  canUndo(): string {
-    if (!this.activeElement) return 'no';
+  canUndo(): boolean {
+    if (!this.activeElement) return false;
     if (this.undoStack && (this.undoStack.length > 1 || this.activeElement.textContent !== this.undoStack[0].text)) {
-      return 'yes';
+      return true;
     }
-    return 'no';
+    return false;
   }
 
   redo(): void {
@@ -595,6 +601,10 @@ class ReaderToolsModel {
     var restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
     if (restoreOffset < 0) return;
     EditableDivUtils.makeSelectionIn(this.activeElement, restoreOffset, null, true);
+  }
+
+  getPageWindow(): Window {
+      return (<HTMLIFrameElement>document.getElementById('page')).contentWindow;
   }
 
   /**
@@ -628,7 +638,7 @@ class ReaderToolsModel {
           editableElements.checkLeveledReader(options);
 
           // update current page words
-          var pageDiv = $('body', iframeChannel.getPageWindow().document).find('div.bloom-page');
+          var pageDiv = $('body', this.getPageWindow().document).find('div.bloom-page');
           if (pageDiv.length) {
             if (pageDiv[0].id)
               this.bookPageWords[pageDiv[0].id] = editableElements['allWords'];
@@ -664,7 +674,7 @@ class ReaderToolsModel {
         editableElements.checkDecodableReader({
           focusWords: cumulativeWords,
           previousWords: cumulativeWords,
-          // libsynphony lowercases the text, so we must do the same with sight words.  (BL-2550)
+          // theOneLibSynphony lowercases the text, so we must do the same with sight words.  (BL-2550)
           sightWords: sightWords.join(' ').toLowerCase().split(/\s/),
           knownGraphemes: this.stageGraphemes
         });
@@ -722,13 +732,11 @@ class ReaderToolsModel {
   }
 
   static getTextOfWholeBook(): void {
-    iframeChannel.simpleAjaxGet('/bloom/readers/getTextOfPages', ReaderToolsModel.updateWholeBookCounts);
-  }
-
-  static updateWholeBookCounts(pageSource: string): void {
-
-    model.bookPageWords = JSON.parse(pageSource);
-    model.doMarkup();
+    axios.get<string>('/bloom/readers/getTextOfPages').then(result => {
+      var pageSource: string = result.data;
+      ReaderToolsModel.model.bookPageWords = JSON.parse(pageSource);
+      ReaderToolsModel.model.doMarkup();
+    });
   }
 
   displayBookTotals(): void {
@@ -749,7 +757,7 @@ class ReaderToolsModel {
     var total = 0;
     for (var i = 0; i < pageStrings.length; i++) {
       var page = pageStrings[i];
-      var fragments: textFragment[] = libsynphony.stringToSentences(page);
+      var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
 
       // remove inter-sentence space
       fragments = fragments.filter(function (frag) {
@@ -767,7 +775,7 @@ class ReaderToolsModel {
     var wordMap = {};
     for (var i = 0; i < pageStrings.length; i++) {
       var page = pageStrings[i];
-      var fragments: textFragment[] = libsynphony.stringToSentences(page);
+      var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
 
       // remove inter-sentence space
       fragments = fragments.filter(function (frag) {
@@ -791,7 +799,7 @@ class ReaderToolsModel {
       var page = pageStrings[i];
 
       // split into sentences
-      var fragments = libsynphony.stringToSentences(page);
+      var fragments = theOneLibSynphony.stringToSentences(page);
 
       // remove inter-sentence space
       fragments = fragments.filter(function (frag) {
@@ -832,9 +840,9 @@ class ReaderToolsModel {
     this.synphony = val;
   }
 
-  getSynphony(): SynphonyApi {
-    return this.synphony;
-  }
+//   getSynphony(): SynphonyApi {
+//     return this.synphony;
+//   }
 
   /**
    * This group of functions uses jquery (if loaded) to update the real model.
@@ -858,17 +866,21 @@ class ReaderToolsModel {
    */
   addWordsFromFile(fileContents: string): void {
 
+//reviewslog: at the moment, thes first two clauses just do the same things
+
     // is this a Synphony data file?
     if (fileContents.substr(0, 12) === '{"LangName":') {
-      libsynphony.langDataFromString(fileContents);
-      this.getSynphony().loadFromLangData(lang_data);
+      theOneLibSynphony.langDataFromString(fileContents);
+      ReaderToolsModel.model.synphony.loadFromLangData(theOneLanguageDataInstance);
+      //revewslog this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
     }
     else if (fileContents.substr(0, 12) === 'setLangData(') {
-      libsynphony.langDataFromString(fileContents);
-      this.getSynphony().loadFromLangData(lang_data);
+      theOneLibSynphony.langDataFromString(fileContents);
+       ReaderToolsModel.model.synphony.loadFromLangData(theOneLanguageDataInstance);
+      //revewslog this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
     }
     else {
-      var words = libsynphony.getWordsFromHtmlString(fileContents);
+      var words = theOneLibSynphony.getWordsFromHtmlString(fileContents);
 
       // Limit the number of words processed from files.  The program hangs on very long lists.
       var lim = words.length;
@@ -898,14 +910,14 @@ class ReaderToolsModel {
       // the JavaScript version of Application.DoEvents().
       setTimeout(function() {
 
-        model.wordListLoaded = true;
-        model.updateControlContents(); // needed if user deletes all of the stages.
-        model.doMarkup();
-        model.updateWordList();
-        model.processWordListChangedListeners();
+        ReaderToolsModel.model.wordListLoaded = true;
+        ReaderToolsModel.model.updateControlContents(); // needed if user deletes all of the stages.
+        ReaderToolsModel.model.doMarkup();
+        ReaderToolsModel.model.updateWordList();
+        ReaderToolsModel.model.processWordListChangedListeners();
 
         // write out the ReaderToolsWords-xyz.json file
-        iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(lang_data));
+        axios.post('/bloom/readers/saveReaderToolsWords', theOneLanguageDataInstance);
       }, 200);
 
       return;
@@ -915,15 +927,17 @@ class ReaderToolsModel {
     var fileName;
     do {
       var ext = this.texts[this.textCounter].split('.').pop();
-      if (this.readableFileExtensions.indexOf(ext) > -1)
+      if (ReaderToolsModel.getReadableFileExtensions().indexOf(ext) > -1)
         fileName = this.texts[this.textCounter];
       this.textCounter++;
     } while (!fileName && (this.textCounter < this.texts.length));
 
-    if (fileName)
-      iframeChannel.simpleAjaxGet('/bloom/readers/getSampleFileContents', ReaderToolsModel.setSampleFileContents, fileName);
-    else
-      this.getNextSampleFile();
+      if (fileName) {
+          axios.get<string>('/bloom/readers/getSampleFileContents', { params: { data: encodeURIComponent(fileName) } })
+              .then(result => ReaderToolsModel.setSampleFileContents(result.data));
+      } else {
+          this.getNextSampleFile();
+      }
   }
 
   /**
@@ -931,8 +945,8 @@ class ReaderToolsModel {
    * @param fileContents
    */
   static setSampleFileContents(fileContents: string): void {
-    model.addWordsFromFile(fileContents);
-    model.getNextSampleFile();
+    ReaderToolsModel.model.addWordsFromFile(fileContents);
+    ReaderToolsModel.model.getNextSampleFile();
   }
 
   /**
@@ -952,7 +966,7 @@ class ReaderToolsModel {
 
     // add words to the word list
     SynphonyApi.addWords(this.allWords);
-    libsynphony.processVocabularyGroups();
+    theOneLibSynphony.processVocabularyGroups();
   }
 
   /**
@@ -973,7 +987,7 @@ class ReaderToolsModel {
 
     if (!selectedGroups) {
       selectedGroups = [];
-      for (var i = 1; i <= lang_data.VocabularyGroups; i++)
+      for (var i = 1; i <= theOneLanguageDataInstance.VocabularyGroups; i++)
         selectedGroups.push('group' + i);
     }
 
@@ -988,14 +1002,14 @@ class ReaderToolsModel {
       partsOfSpeech = [];
 
     if (justWordName)
-      return libsynphony.selectGPCWordNamesWithArrayCompare(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
+      return theOneLibSynphony.selectGPCWordNamesWithArrayCompare(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
     else
-      return libsynphony.selectGPCWordsFromCache(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
+      return theOneLibSynphony.selectGPCWordsFromCache(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
   }
 
   static selectWordsFromAllowedLists(stageNumber: number): string[] {
 
-    var stages: ReaderStage[] = model.getSynphony().getStages(stageNumber);
+    var stages: ReaderStage[] = ReaderToolsModel.model.synphony.getStages(stageNumber);
 
     var words: string[] = [];
     for (var i=0; i < stages.length; i++) {
@@ -1004,11 +1018,15 @@ class ReaderToolsModel {
     }
 
     // we are limiting the number of words to maxAllowedWords for performance reasons
-    if (words.length > model.maxAllowedWords) {
-      words = words.slice(0, model.maxAllowedWords);
+    if (words.length > ReaderToolsModel.model.maxAllowedWords) {
+      words = words.slice(0, ReaderToolsModel.model.maxAllowedWords);
     }
 
     return words;
+  }
+
+  static getToolboxWindow(): Window {
+      return (<HTMLIFrameElement>document.getElementById('toolbox')).contentWindow;
   }
 
   /**
@@ -1026,15 +1044,15 @@ class ReaderToolsModel {
     }
 
     // inform the user if the list was truncated
-    var toolbox: Document = iframeChannel.getToolboxWindow().document;
+    var toolbox: Document = this.getToolboxWindow().document;
     var msgDiv: JQuery = $(toolbox).find('#allowed-word-list-truncated');
 
     // if the list was truncated, show the message
-    if (words.length < model.maxAllowedWords) {
+    if (words.length < ReaderToolsModel.model.maxAllowedWords) {
       msgDiv.html('');
     }
     else {
-      msgDiv.html(SimpleDotNetFormat($(toolbox).find('#allowed_word_list_truncated_text').html(), [model.maxAllowedWords.toLocaleString()]));
+      msgDiv.html(theOneLocalizationManager.simpleDotNetFormat($(toolbox).find('#allowed_word_list_truncated_text').html(), [ReaderToolsModel.model.maxAllowedWords.toLocaleString()]));
     }
 
     return returnVal;
@@ -1054,9 +1072,9 @@ class ReaderToolsModel {
     state.stage = this.stageNumber;
     state.level = this.levelNumber;
     state.markupType = this.currentMarkupType;
-    fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tdecodableReader\t" + "stage:" + this.stageNumber + ";sort:" + this.sort);
-    fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
-    libsynphony.dbSet('drt_state', state);
+    ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tdecodableReader\t" + "stage:" + this.stageNumber + ";sort:" + this.sort);
+    ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
+    theOneLibSynphony.dbSet('drt_state', state);
   }
 
   restoreState(): void {
@@ -1065,7 +1083,7 @@ class ReaderToolsModel {
     var toolbox = $('#toolbox');
     if (typeof toolbox.accordion !== 'function') return;
 
-    var state = libsynphony.dbGet('drt_state');
+    var state = theOneLibSynphony.dbGet('drt_state');
     if (!state) state = new DRTState();
 
     if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
@@ -1082,7 +1100,8 @@ class ReaderToolsModel {
 
     stages.forEach(function(stage, index) {
       if (stage.allowedWordsFile) {
-        iframeChannel.simpleAjaxGetWithCallbackParam('/bloom/readers/getAllowedWordsList', ReaderToolsModel.setAllowedWordsListList, index, stage.allowedWordsFile);
+          axios.get<string>('/bloom/readers/getAllowedWordsList?data=' + encodeURIComponent(stage.allowedWordsFile))
+              .then(result => this.setAllowedWordsListList(result.data, index));
       }
     });
   }
@@ -1090,15 +1109,15 @@ class ReaderToolsModel {
   static setAllowedWordsListList(fileContents: string, stageIndex: number): void {
 
     // remove this one from the count of files remaining
-    model.allowedWordFilesRemaining--;
+    ReaderToolsModel.model.allowedWordFilesRemaining--;
 
-    model.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
+    ReaderToolsModel.model.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
 
     // if all loaded...
-    if (model.allowedWordFilesRemaining < 1) {
-      model.wordListLoaded = true;
-      model.updateControlContents();
-      model.doMarkup();
+    if (ReaderToolsModel.model.allowedWordFilesRemaining < 1) {
+      ReaderToolsModel.model.wordListLoaded = true;
+      ReaderToolsModel.model.updateControlContents();
+      ReaderToolsModel.model.doMarkup();
     }
   }
 }

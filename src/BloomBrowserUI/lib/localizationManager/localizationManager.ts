@@ -1,6 +1,6 @@
-/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../misc-types.d.ts" />
-/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
+///<reference path="../../typings/bundledFromTSC.d.ts"/>
+import axios = require("axios");
 
 /**
  * L10NSharp LocalizationManager for javascript.
@@ -31,15 +31,15 @@
  *   8. Strings that are generated dynamically by JS can also be localized by the localizationManager. An example of
  *      this is found in StyleEditor.GetToolTip(), where the tip for the font size changer is built.
  */
-class LocalizationManager {
+declare function GetInlineDictionary() : any; //c# injects this
+
+
+export class LocalizationManager {
 
   public dictionary: any;
   private inlineDictionaryLoaded: boolean = false;
 
   constructor() {
-    if (typeof document['getIframeChannel'] === 'function')
-      this.dictionary = document['getIframeChannel']().localizationManagerDictionary;
-    else
       this.dictionary = {};
   }
 
@@ -61,7 +61,7 @@ class LocalizationManager {
 
     $.ajax(ajaxSettings)
       .done(function (data) {
-        localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+        theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
 
         // if callback is passes without a list of elements to localize...
         if (typeof elementsToLocalize === 'function') {
@@ -69,7 +69,7 @@ class LocalizationManager {
         }
         else if (elementsToLocalize) {
           $(elementsToLocalize).each(function() {
-            localizationManager.setElementText(this);
+            theOneLocalizationManager.setElementText(this);
           });
           if (typeof callbackDone === 'function') callbackDone();
         }
@@ -91,18 +91,26 @@ class LocalizationManager {
    * WARNING! This gets the translated text only if it is already loaded. Otherwise it just gives English back and will give translation next time.
    * Instead, use asyncGetTextInLang().
    *
-   * Additional parameters after the englishText are treated as arguments for SimpleDotNetFormat.
+   * Additional parameters after the englishText are treated as arguments for simpleDotNetFormat.
    * @param {String} stringId
    * @param {String} [englishText]
    * @param [args]
    * @returns {String}
    */
-    getText(stringId: string, englishText?: string, ...args): string {
-
+    public getText(stringId: string, englishText?: string, ...args): string {
+        if(typeof stringId === 'undefined')
+        {
+            try { 
+                throw new Error('localizationManager.getText() stringid was undefined');
+            }
+            catch (e) { 
+                    throw(e.message+e.stack); 
+            }
+        }
         if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
             if (Object.keys(this.dictionary).length == 0) {
                 this.inlineDictionaryLoaded = true;
-                $.extend(localizationManager.dictionary, GetInlineDictionary());
+                $.extend(theOneLocalizationManager.dictionary, GetInlineDictionary());
             }
         }
 
@@ -125,7 +133,7 @@ class LocalizationManager {
 
             $.ajax(ajaxSettings)
                 .done(data => {
-                    localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+                    theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
                 });
 
             text = englishText;
@@ -136,7 +144,7 @@ class LocalizationManager {
         if (args.length > 0) {
 
             // Do the formatting.
-            text = SimpleDotNetFormat(text, args);
+            text = this.simpleDotNetFormat(text, args);
         }
 
         return text;
@@ -185,21 +193,26 @@ class LocalizationManager {
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
         var deferred = $.Deferred();
-        var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
+        //var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
         //when the async call comes back, we massage the text
-        promise.done(text => {
-            text = HtmlDecode(text);
+        axios.get("/bloom/i18n/translate",
+        {
+            params:{ key: id, englishText: englishText, langId: langId}
+        })
+        .then(response => {
+           var text = HtmlDecode(response.data);
             // is this a C#-style string.format style request?
             if (args.length > 0) {
-                text = SimpleDotNetFormat(text, args);
+                text = this.simpleDotNetFormat(text, args);
             }
             deferred.resolve(text);
-        });
-        promise.fail(text => {
+        })
+        //reviewslog: verify that this block gets activated when needed
+        .catch(text => {
             if (englishDefault) {
                 text = HtmlDecode(englishText);
                 if (args.length > 0) {
-                    text = SimpleDotNetFormat(text, args);
+                    text = this.simpleDotNetFormat(text, args);
                 }
                 deferred.resolve(text);
             } else {
@@ -258,23 +271,19 @@ class LocalizationManager {
   getLanguageName(iso): string {
     return this.getText(iso);
   }
-}
 
-
-var localizationManager: LocalizationManager = new LocalizationManager();
-
-/**
- * Return a formatted string.
- * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
- * @param {String} format
- * @param {String[]} args
- * @returns {String}
- */
-function SimpleDotNetFormat(format, args) {
-
-  return format.replace(/{(\d+)}/g, function(match: string, index: number) {
-    return (typeof args[index] !== 'undefined') ? args[index] : match;
-  });
+    /**
+     * Return a formatted string.
+     * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
+     * @param {String} format
+     * @param {String[]} args
+     * @returns {String}
+     */
+  simpleDotNetFormat(format:string, args: string[]) {
+    return format.replace(/{(\d+)}/g, function(match: string, index: number) {
+        return (typeof args[index] !== 'undefined') ? args[index] : match;
+    });
+  }
 }
 
 /**
@@ -286,3 +295,6 @@ function HtmlDecode(text): string {
   div.innerHTML = text;
   return div.firstChild.nodeValue;
 }
+
+var theOneLocalizationManager: LocalizationManager = new LocalizationManager();
+export default theOneLocalizationManager;

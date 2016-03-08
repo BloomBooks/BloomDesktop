@@ -5,7 +5,7 @@ interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
 }
 
-class OverflowChecker {
+export default class OverflowChecker {
     // When a div is overfull, these handlers will add the overflow class so it gets a red background or something
     // But this function should just do some basic checks and ADD the HANDLERS!
     public AddOverflowHandlers(container:HTMLElement) {

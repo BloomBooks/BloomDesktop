@@ -273,42 +273,38 @@ namespace Bloom
 		public static IEnumerable<string> GetFactoryFileLocations()
 		{
 			//bookLayout has basepage.css. We have it first because it will find its way to many other folders, but this is the authoritative one
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI", "bookLayout");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot, "bookLayout");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 
 			//hack to get the distfiles folder itself
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
+			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("AndikaNewBasic"));
 
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js/toolbar");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html/font-awesome/css");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/js"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/js/toolbar"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/css"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/html"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/html/font-awesome/css"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/img"));
 			foreach (var dir in ToolboxView.GetToolboxServerDirectories())
 				yield return dir;
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/StyleEditor");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/TopicChooser");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/StyleEditor"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/TopicChooser"));
 
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/html");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookPreview"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"collection"));
 
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/editor");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"themes/bloom-jqueryui-theme"));
 
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/themes/bloom-jqueryui-theme");
-
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/localizationManager");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/long-press");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/split-pane");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/ckeditor/skins/icy_orange");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox/talkingBook");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib"));
+			// not needed: yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/localizationManager"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/long-press"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/split-pane"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/ckeditor/skins/icy_orange"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox/talkingBook"));
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/epub");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"epub"));
 		}
 
 		/// <summary>

@@ -9,11 +9,9 @@ html
 		title Bloom Add Page Chooser Dialog
 		+stylesheet('page-chooser.css')
 		+stylesheet('../bookEdit/css/bloomDialog.css')
-		+script('../node_modules/jquery/dist/jquery.js')
-		+script('../lib/jquery-ui/jquery-ui.min.js')
-		+script('js/page-chooser.js')
-		+script('../lib/localizationManager/localizationManager.js')
-		+script('../bookEdit/js/getIframeChannel.js')
+		+script('../commonBundle.js')
+		+script('../pageChooserBundle.js')
+		//+script('../lib/localizationManager/localizationManager.js')
 	body
 		#mainContainer.bloomDialogContainer
 			.gridItemDisplay

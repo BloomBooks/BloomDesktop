@@ -161,7 +161,7 @@ namespace Bloom.MiscUI
 			{
 				//If we let this box get too full, the user can't type into it (BL-2575). So we clip the tree on some big directories:
 				// The problem reappeared on Linux (BL-2895), so we avoid redundant printing of subdirectory paths in the filenames.
-				string[] bigDirectoriesToSkip = new string[] { "pdf", "Mercurial", "BloomBrowserUI" };
+				string[] bigDirectoriesToSkip = new string[] { "pdf", "Mercurial", BloomFileLocator.BrowserRoot };
 				foreach(var d in Directory.GetDirectories(directory))
 				{
 					if(bigDirectoriesToSkip.Contains(Path.GetFileName(d)))

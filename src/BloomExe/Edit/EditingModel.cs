@@ -154,7 +154,7 @@ namespace Bloom.Edit
 			if (details.From == _view)
 			{
 				SaveNow();
-				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.disconnectForGarbageCollection(); }");
+				_view.RunJavaScript("FrameExports.getPageFrameExports().disconnectForGarbageCollection();");
 				// This bizarre behavior prevents BL-2313 and related problems.
 				// For some reason I cannot discover, switching tabs when focus is in the Browser window
 				// causes Bloom to get deactivated, which prevents various controls from working.
@@ -538,8 +538,8 @@ namespace Bloom.Edit
 			if (_view != null && !_inProcessOfDeleting)
 			{
 				_view.ChangingPages = true;
-				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.pageSelectionChanging();}");
-				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.disconnectForGarbageCollection(); }");
+				_view.RunJavaScript("FrameExports.getPageFrameExports().pageSelectionChanging();");
+				_view.RunJavaScript("FrameExports.getPageFrameExports().disconnectForGarbageCollection();");
 			}
 		}
 
@@ -627,7 +627,7 @@ namespace Bloom.Edit
 		/// <returns></returns>
 		public HtmlDom GetXmlDocumentForEditScreenWebPage()
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
+			var path = FileLocator.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "bookEdit", "EditViewFrame.html"));
 			// {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
 			// We don't really make a file for the page, the contents are just saved in our local server.
 			// But we give it a url that makes it seem to be in the book folder so local urls work.
@@ -664,8 +664,9 @@ namespace Bloom.Edit
 		/// <summary>
 		/// For some reason, we need to call this code OnIdle.
 		/// We couldn't figure out the timing any other way.
-		/// Otherwise, sometimes the calledByCSharp object doesn't exist; then we don't call restoreToolboxSettings.
+		/// Otherwise, sometimes the JS we want to call doesn't exist; then we don't call restoreToolboxSettings.
 		/// If we don't call restoreToolboxSettings, then the more panel stays open without the checkboxes checked.
+		/// reviewSlog: This problem might have gone away with our new efficient loading of code in bundles.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
@@ -1004,9 +1005,13 @@ namespace Bloom.Edit
 		void SavePageFrameState()
 		{
 			var body = _view.GetPageBody();
+			Debug.Assert(body!=null, "(Debug Only) no body when doing SavePageFrameState()" );
+
+			// not worth crashing over a timing problem that means we don't save zoom state
 			if (body == null)
 				return; // BL-3075, not sure how this can happen but it has. Possibly the view is in some state like about:null which has no body.
 			var styleAttr = body.Attributes["style"];
+
 			if (styleAttr == null)
 				return;
 			var style = styleAttr.NodeValue;
@@ -1026,6 +1031,7 @@ namespace Bloom.Edit
 		/// </summary>
 		void SaveToolboxState()
 		{
+			return; //https://silbloom.myjetbrains.com/youtrack/issue/BL-3057
 			var checkbox = _view.GetShowToolboxCheckbox();
 			if (checkbox == null)
 			{

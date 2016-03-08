@@ -1,5 +1,6 @@
 /// <reference path="bloomField.ts" />
-/// <reference path="../../lib/jasmine/jasmine.d.ts"/>
+///<reference path="../../typings/bundledFromTSC.d.ts"/>
+import BloomField from './BloomField';
 
 function WireUp()  {
     $(".bloom-editable").each(function () {

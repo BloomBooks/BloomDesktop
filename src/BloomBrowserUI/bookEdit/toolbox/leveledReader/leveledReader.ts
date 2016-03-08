@@ -1,14 +1,19 @@
 ﻿/// <reference path="../toolbox.ts" />
+import { ReaderToolsModel, DRTState, } from "../decodableReader/readerToolsModel";
+import { initializeLeveledReaderTool} from "../decodableReader/readerTools";
+import {ITabModel} from "../toolbox";
+import {ToolBox} from "../toolbox";
+import {theOneLibSynphony}  from '../decodableReader/libSynphony/synphony_lib';
 
 class LeveledReaderModel implements ITabModel {
     restoreSettings(opts: string) {
-        if (!model) model = new ReaderToolsModel();
+        if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         initializeLeveledReaderTool();
         if (opts['leveledReaderState']) {
-            var state = libsynphony.dbGet('drt_state');
+            var state = theOneLibSynphony.dbGet('drt_state');
             if (!state) state = new DRTState();
             state.level = parseInt(opts['leveledReaderState']);
-            libsynphony.dbSet('drt_state', state);
+            theOneLibSynphony.dbSet('drt_state', state);
         }
     }
 
@@ -16,21 +21,21 @@ class LeveledReaderModel implements ITabModel {
 
     showTool() {
         // change markup based on visible options
-        model.setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!model.setMarkupType(2)) model.doMarkup();
+        ReaderToolsModel.model.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!ReaderToolsModel.model.setMarkupType(2)) ReaderToolsModel.model.doMarkup();
     }
 
     hideTool() {
-        model.setMarkupType(0);
+        ReaderToolsModel.model.setMarkupType(0);
     }
 
     updateMarkup() {
-        model.doMarkup();
+        ReaderToolsModel.model.doMarkup();
     }
 
-    name() {return 'leveledReader';}
+    name() { return 'leveledReader'; }
 
     hasRestoredSettings: boolean;
 }
 
-tabModels.push(new LeveledReaderModel());
+ToolBox.getTabModels().push(new LeveledReaderModel());

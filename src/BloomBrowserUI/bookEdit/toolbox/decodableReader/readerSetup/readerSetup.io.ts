@@ -1,14 +1,21 @@
-/// <reference path="../../../js/getIframeChannel.ts" />
 /// <reference path="../../../toolbox/decodableReader/readerSettings.ts" />
 /// <reference path="readerSetup.ui.ts" />
+import {enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue} from './readerSetup.ui';
+import {ReaderStage, ReaderLevel, ReaderSettings, ReaderSettingsReplacer} from '../ReaderSettings';
+import "../../../../lib/jquery.onSafe.js";
+import axios = require('axios');
+import * as _ from 'underscore';
 
 var previousMoreWords: string;
 
 window.addEventListener('message', process_IO_Message, false);
 
-function toolboxWindow(): Window {
+export interface ToolboxWindow extends Window{
+    FrameExports:any;
+}
+export function toolboxWindow(): ToolboxWindow {
   if (window.parent)
-    return (<HTMLIFrameElement>window.parent.document.getElementById('toolbox')).contentWindow;
+    return (<HTMLIFrameElement>window.parent.document.getElementById('toolbox')).contentWindow as ToolboxWindow;
 }
 
 function process_IO_Message(event: MessageEvent): void {
@@ -27,6 +34,12 @@ function process_IO_Message(event: MessageEvent): void {
 
     default:
   }
+}
+export function setPreviousMoreWords(words: string){
+  previousMoreWords = words;
+}
+export function getPreviousMoreWords():string{
+  return previousMoreWords;
 }
 
 /**
@@ -49,7 +62,7 @@ function loadReaderSetupData(jsonData: string): void {
 
   // language tab
   (<HTMLInputElement>document.getElementById('dls_letters')).value = data.letters;
-  previousMoreWords = data.moreWords.replace(/ /g, '\n');
+  setPreviousMoreWords(data.moreWords.replace(/ /g, '\n'));
   (<HTMLInputElement>document.getElementById('dls_more_words')).value = previousMoreWords;
   $('input[name="words-or-letters"][value="' + data.useAllowedWords + '"]').prop('checked', true);
   enableSampleWords();
@@ -68,7 +81,7 @@ function loadReaderSetupData(jsonData: string): void {
   }
 
   // click event for stage rows
-  tbody.find('tr').onOnce('click', function() {
+  tbody.find('tr').onSafe('click', function() {
     selectStage(this);
     displayLetters();
     selectLetters(this);
@@ -84,7 +97,7 @@ function loadReaderSetupData(jsonData: string): void {
   }
 
   // click event for level rows
-  tbodyLevels.find('tr').onOnce('click', function() {
+  tbodyLevels.find('tr').onSafe('click', function() {
     selectLevel(this);
   });
 }
@@ -113,7 +126,7 @@ function saveClicked(): void {
  * Pass the settings to C# to be saved.
  * @param [callback]
  */
-function saveChangedSettings(callback?: Function): void {
+export function saveChangedSettings(callback?: Function): void {
 
   // get the values
   var s = getChangedSettings();
@@ -124,9 +137,9 @@ function saveChangedSettings(callback?: Function): void {
 
   // save now
   if (callback)
-    getIframeChannel().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', callback, settingsStr);
+    axios.post('/bloom/readers/saveReaderToolSettings', { params: { data: settingsStr } }).then(result => {callback(result.data)});
   else
-    getIframeChannel().simpleAjaxNoCallback('/bloom/readers/saveReaderToolSettings', settingsStr);
+    axios.post('/bloom/readers/saveReaderToolSettings', { params: { data: settingsStr } });
 }
 
 function getChangedSettings(): any {
@@ -184,7 +197,7 @@ function getLevelValue(innerHTML: string): number {
  * @param original
  * @returns {string}
  */
-function cleanSpaceDelimitedList(original: string): string {
+export function cleanSpaceDelimitedList(original: string): string {
 
   var cleaned: string = original.replace(/,/g, ' '); // replace commas
   cleaned = cleaned.trim().replace(/ ( )+/g, ' ');   // remove consecutive spaces

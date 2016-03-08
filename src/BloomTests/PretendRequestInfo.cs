@@ -81,6 +81,11 @@ namespace Bloom.web
 			return new NameValueCollection();
 		}
 
+		public string GetPostJson()
+		{
+			return "";
+		}
+
 		public string RawUrl { get; private set; }
 	}
 }

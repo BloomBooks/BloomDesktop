@@ -103,7 +103,7 @@ namespace Bloom.web
 
 				case "saveReaderToolsWords":
 					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(SaveReaderToolsWordsFile(info.GetPostData()["data"]));
+					info.WriteCompleteOutput(SaveReaderToolsWordsFile(info.GetPostJson()));
 					return true;
 
 				case "makeLetterAndWordList":
@@ -249,7 +249,11 @@ namespace Bloom.web
 
 			// if file exists, return current settings
 			if (File.Exists(settingsPath))
-				return File.ReadAllText(settingsPath, Encoding.UTF8);
+			{
+				var result = File.ReadAllText(settingsPath, Encoding.UTF8);
+				if (!string.IsNullOrWhiteSpace(result))
+					return result;
+			}
 
 			// file does not exist, so make a new one
 			// The literal string here defines our default reader settings for a collection.
