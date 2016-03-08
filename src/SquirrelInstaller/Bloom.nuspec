@@ -29,5 +29,6 @@
 		<file src="..\..\src\BloomBrowserUI\node_modules\jquery.hotkeys\jquery.hotkeys.js" target="\lib\net45\BloomBrowserUI\node_modules\jquery.hotkeys"/>
 		<file src="..\..\src\BloomBrowserUI\node_modules\axios\dist\axios.js" target="\lib\net45\BloomBrowserUI\node_modules\axios\dist"/>
 		<file src="..\..\src\BloomBrowserUI\node_modules\toastr\build\*.*" target="\lib\net45\BloomBrowserUI\node_modules\toastr\build\"/>
+		<file src="..\..\src\BloomBrowserUI\node_modules\css-element-queries\src\*.*" target="\lib\net45\BloomBrowserUI\node_modules\css-element-queries\src"/>
 	</files>
 </package>
