@@ -22,7 +22,7 @@ namespace Bloom
 		{
 			get
 			{
-				return Directory.Exists(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,"output")) ? "output/browser" : "browser";
+				return Directory.Exists(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,"output")) ? "output"+Path.DirectorySeparatorChar+"browser" : "browser";
 			}
 		}
 
