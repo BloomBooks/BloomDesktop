@@ -1,7 +1,7 @@
 //these are in BloomBrowserUI/node_modules. If you're missing one, do "npm install" from the BloomBrowserUI directory
 var npmModules = [
     'jquery/dist/jquery.js',
-    'toastr/toastr.js',
+    'toastr/build/toastr.min.js',
     'jquery.hotkeys/jquery.hotkeys.js',
     'css-element-queries/src/ResizeSensor.js',//used by origami
     'css-element-queries/src/ElementQueries.js'//used by origami
