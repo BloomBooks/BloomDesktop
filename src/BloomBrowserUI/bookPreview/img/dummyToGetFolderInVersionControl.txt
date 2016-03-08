@@ -1,1 +1,0 @@
-ProjectContext.GetFileLocations expects this folder to exist, and it can't unless there is a file in here.

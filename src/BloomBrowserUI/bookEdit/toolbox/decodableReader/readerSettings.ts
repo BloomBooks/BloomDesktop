@@ -3,7 +3,7 @@
 /**
  * Decodable Leveled Reader Settings
  */
-class ReaderSettings {
+export class ReaderSettings {
   levels: ReaderLevel[] = [];
   stages: ReaderStage[] = [];
   letters: string = '';
@@ -12,7 +12,7 @@ class ReaderSettings {
 }
 
 // Defines an object to hold data about one stage in the decodable books tool
-class ReaderStage {
+export class ReaderStage {
 
   name: string;
   sightWords: string = '';
@@ -36,7 +36,7 @@ class ReaderStage {
 }
 
 // Defines an object to hold data about one level in the leveled reader tool
-class ReaderLevel {
+export class ReaderLevel {
 
   name: string;
   thingsToRemember: string[] = [];
@@ -79,7 +79,7 @@ class ReaderLevel {
  * @param value
  * @returns {*}
  */
-function ReaderSettingsReplacer(key: string, value: any): any {
+export function ReaderSettingsReplacer(key: string, value: any): any {
 
   // we do not want to save the "name" value
   if (key === 'name') return undefined;

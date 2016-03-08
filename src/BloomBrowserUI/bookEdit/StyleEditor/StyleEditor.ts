@@ -1,24 +1,23 @@
-/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="../../lib/jquery-ui.d.ts" />
+/// <reference path="../../typings/bundledFromTSC.d.ts"/>
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="../../lib/jquery.alphanum.d.ts"/>
 /// <reference path="../js/toolbar/toolbar.d.ts"/>
-/// <reference path="../js/getIframeChannel.ts"/>
-/// <reference path="../js/interIframeChannel.ts"/>
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
 
-var iframeChannel = getIframeChannel();
 
-interface qtipInterface extends JQuery {
-    qtipSecondary(options: any): JQuery;
-}
+import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+import OverflowChecker from '../OverflowChecker/OverflowChecker';
+import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
+import '../../lib/jquery.alphanum';
+import axios = require("axios");
 
-declare function GetDifferenceBetweenHeightAndParentHeight(JQuery):number;
-
-class StyleEditor {
+declare function GetSettings() : any; //c# injects this
+declare function WebFxTabPane(element:HTMLElement,useCookie:boolean,callback:any) : any; // from tabpane, from a <script> tag
+ 
+export default class StyleEditor {
 
     private _previousBox: Element;
     private _supportFilesRoot: string;
@@ -71,12 +70,12 @@ class StyleEditor {
     // obsolete?
     MakeBigger(target: HTMLElement) {
         this.ChangeSize(target, 2);
-        (<qtipInterface>$("div.bloom-editable, textarea")).qtipSecondary('reposition');
+        $("div.bloom-editable, textarea").qtipSecondary('reposition');
     }
     // obsolete?
     MakeSmaller(target: HTMLElement) {
         this.ChangeSize(target, -2);
-        (<qtipInterface>$("div.bloom-editable, textarea")).qtipSecondary('reposition');
+        $("div.bloom-editable, textarea").qtipSecondary('reposition');
     }
 
     static MigratePreStyleBook(target: HTMLElement): string {
@@ -354,7 +353,7 @@ class StyleEditor {
 
         // localize
         var tipText = "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
-        return localizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
+        return theOneLocalizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
     }
 
     /**
@@ -366,7 +365,7 @@ class StyleEditor {
     AddQtipToElement(element: JQuery, toolTip: string, delay: number = 3000) {
         if (element.length == 0)
             return;
-        (<qtipInterface>element).qtipSecondary({
+        element.qtipSecondary({
             content: toolTip,
             show: {
                 event: 'click mouseenter',
@@ -420,9 +419,9 @@ class StyleEditor {
     }
 
     getWordSpaceOptions() {
-        return [localizationManager.getText('EditTab.FormatDialog.WordSpacingNormal', 'Normal'),
-            localizationManager.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'),
-            localizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
+        return [theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingNormal', 'Normal'),
+            theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'),
+            theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
     }
 
     // Returns an object giving the current selection for each format control.
@@ -522,8 +521,9 @@ class StyleEditor {
         // the user could actually modify a style and thus need the information.
         // More dangerous is using it in getCharTabDescription. But as that is launched by a later
         // async request, I think it should be OK.
-        iframeChannel.simpleAjaxGet('/bloom/authorMode', function(result) {
-            editor.authorMode = result == 'true';
+        
+        axios.get('/bloom/authorMode').then( result=>{
+            editor.authorMode = result.data == true;
         });
         editor.xmatterMode = this.IsPageXMatter(targetBox);
 
@@ -547,7 +547,7 @@ class StyleEditor {
 
         var formatButton = $('#formatButton');
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
-        var txt = localizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
+        var txt = locmang.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
         */
 
@@ -558,7 +558,7 @@ class StyleEditor {
         //(disappear) on Linux when you click on the format button.
         //if (suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true') {
         //    formatButton.click(function () {
-        //        localizationManager.asyncGetText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.')
+        //        locmang.asyncGetText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.')
         //            .done(translation => {
         //                alert(translation);
         //        });
@@ -574,7 +574,7 @@ class StyleEditor {
         // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '#formatButton', function() {
-            iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function(fontData) {
+            axios.get('/bloom/availableFontNames').then( result=>{
                 editor.boxBeingEdited = targetBox;
                 // This line is needed inside the click function to keep from using a stale version of 'styleName'
                 // and chopping off 6 characters each time!
@@ -585,7 +585,7 @@ class StyleEditor {
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
 
-                var fonts = fontData.split(',');
+                var fonts = result.data['fonts'];
                 editor.styles = editor.getFormattingStyles();
                 if (editor.styles.indexOf(styleName) == -1) {
                     editor.styles.push(styleName);
@@ -597,7 +597,7 @@ class StyleEditor {
                 var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">'
                     + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
                 if (noFormatChange) {
-                    var translation = localizationManager.getText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.');
+                    var translation = theOneLocalizationManager.getText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.');
                     html += '<div class="bloomDialogMainPage"><p>' + translation + '</p></div>';
                 }
                 else if (editor.authorMode) {
@@ -671,13 +671,13 @@ class StyleEditor {
                     editor.getMoreTabDescription();
 
                     $('#font-select').change(function() { editor.changeFont(); });
-                    editor.AddQtipToElement($('#font-select'), localizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
+                    editor.AddQtipToElement($('#font-select'), theOneLocalizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
                     $('#size-select').change(function() { editor.changeSize(); });
-                    editor.AddQtipToElement($('#size-select'), localizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
+                    editor.AddQtipToElement($('#size-select'), theOneLocalizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
                     $('#line-height-select').change(function() { editor.changeLineheight(); });
-                    editor.AddQtipToElement($('#line-height-select').parent(), localizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
+                    editor.AddQtipToElement($('#line-height-select').parent(), theOneLocalizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
                     $('#word-space-select').change(function() { editor.changeWordSpace(); });
-                    editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
+                    editor.AddQtipToElement($('#word-space-select').parent(), theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
                     if (editor.authorMode) {
                         if (!editor.xmatterMode) {
                             $('#styleSelect').change(function() { editor.selectStyle(); });
@@ -891,7 +891,7 @@ class StyleEditor {
         }
         // BL-2386 This one should NOT be language-dependent; only style dependent
         if (this.shouldSetDefaultRule()) {
-            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
+            theOneLocalizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
                 .done(translation => {
                     $('#formatCharDesc').html(translation);
                 });
@@ -899,10 +899,10 @@ class StyleEditor {
         }
         //BL-982 Use language name that appears on text windows
         var iso = $(this.boxBeingEdited).attr('lang');
-        var lang = localizationManager.getLanguageName(iso);
+        var lang = theOneLocalizationManager.getLanguageName(iso);
         if (!lang)
             lang = iso;
-        localizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
+        theOneLocalizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
             .done(translation => {
                 $('#formatCharDesc').html(translation);
             });
@@ -916,7 +916,7 @@ class StyleEditor {
             if (index > 0) styleName = styleName.substring(0, index);
         }
         // BL-2386 This one should NOT be language-dependent; only style dependent
-        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
+        theOneLocalizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
             .done(translation => {
                 $('#formatMoreDesc').html(translation);
             });
@@ -1024,7 +1024,7 @@ class StyleEditor {
         rule.style.setProperty("font-family", font, "important");
         this.cleanupAfterStyleChange();
     }
-
+  
     // Return true if font-tab changes (other than font family) for the current element should be applied
     // to the default rule as well as a language-specific rule.
     // Currently this requires that the element's language is the project's first language, which happens
@@ -1034,7 +1034,7 @@ class StyleEditor {
     shouldSetDefaultRule() {
         var target = this.boxBeingEdited;
         // GetSettings is injected into the page by C#.
-        var defLang = GetSettings().languageForNewTextBoxes;
+        var defLang = (<any>GetSettings()).languageForNewTextBoxes;
         if ($(target).attr("lang") !== defLang) return false;
         // We need to some way of detecting that we don't want to set
         // default rule for blocks like the main title, where factory rules do things like

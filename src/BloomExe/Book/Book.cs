@@ -294,7 +294,36 @@ namespace Bloom.Book
 		private void AddJavaScriptForEditing(HtmlDom dom)
 		{
 			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
-			dom.AddJavascriptFile("bookEdit/js/bloomBootstrap.js".ToLocalhost());
+
+			//dom.AddJavascriptFile("lib/ckeditor/ckeditor.js".ToLocalhost());
+
+			//reviewslog: added this to get the "WebFXTabPane()" working in StyleEditor. Previously tried adding "export" to the function and then importing it
+			dom.AddJavascriptFile("lib/tabpane.js".ToLocalhost());
+
+			//reviewslog: four lines are prompted by the qtip "too much recursion" error, which I got on certain pages. The qtip
+			//code in question says it is for when jquery-ui is not found. I "solved" this by loading jquery, jquery-ui,
+			//and finally qtip into the global space here
+			dom.AddJavascriptFile("jquerY.min.js".ToLocalhost());
+			dom.AddJavascriptFile("modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js".ToLocalhost());
+//			dom.AddJavascriptFile("lib/jquery.qtip.js".ToLocalhost());
+//			dom.AddJavascriptFile("lib/jquery.qtipSecondary.js".ToLocalhost());
+
+			// first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
+			//dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
+			
+			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
+			dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
+			// Add this last because currently its document ready function has to execute AFTER the bootstrap call in bloomEditing.ts,
+			// which is compiled into editablePageIFrame.js. The bootstrap function sets CKEDITOR.disableAutoInline = true,
+			// which suppresses a document ready function in CKEditor iself from calling inline() on all content editable
+			// elements, which we don't want (a) because some content editable elements shouldn't have CKEditor functions, and
+			// (b) because it causes crashes when we intentionally do our own inline() calls on the elements where we DO
+			// want CKEditor.
+			// ReviewSlog: It would be much more robust not to depend on the order in which document ready functions
+			// execute, especially if the only control over that is the order of loading files. But I don't know
+			// where we can put the CKEDITOR.disableAutoInline = true so that it will reliably execute AFTER CKEDITOR is
+			// defined and BEFORE its document ready function.
+			dom.AddJavascriptFile("lib/ckeditor/ckeditor.js".ToLocalhost());
 		}
 
 
@@ -360,7 +389,7 @@ namespace Bloom.Book
 			}
 			pageDom.SortStyleSheetLinks();
 
-			AddPreviewJScript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
+			AddPreviewJavascript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
 			return pageDom;
 		}
 
@@ -378,7 +407,7 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.SortStyleSheetLinks();
-			AddPreviewJScript(pageDom);
+			AddPreviewJavascript(pageDom);
 			AddFillerTextToEmptyEditDivs(pageDom);
 			return pageDom;
 		}
@@ -648,7 +677,7 @@ namespace Bloom.Book
 
 			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, _collectionSettings, primaryLanguage, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 
-			AddPreviewJScript(previewDom);
+			AddPreviewJavascript(previewDom);
 			previewDom.AddPublishClassToBody();
 			return previewDom;
 		}
@@ -1456,28 +1485,10 @@ namespace Bloom.Book
 		/// Make stuff readonly, which isn't doable via css, surprisingly
 		/// </summary>
 		/// <param name="dom"></param>
-		internal void AddPreviewJScript(HtmlDom dom)
+		internal void AddPreviewJavascript(HtmlDom dom)
 		{
-//			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.js"));
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.myimgscale.js"));
-//
-//			XmlElement script = dom.CreateElement("script");
-//			script.SetAttribute("type", "text/javascript");
-//			script.InnerText = @"jQuery(function() {
-//						$('textarea').focus(function() {$(this).attr('readonly','readonly');});
-//
-//						//make images scale up to their container without distorting their proportions, while being centered within it.
-//						$('img').scaleImage({ scale: 'fit' }); //uses jquery.myimgscale.js
-//			})";
-//			header.AppendChild(script);
-
-			var pathToJavascript = _storage.GetFileLocator().LocateFileWithThrow("bloomPreviewBootstrap.js");
-			if(string.IsNullOrEmpty(pathToJavascript))
-			{
-				throw new ApplicationException("Could not locate " +"bloomPreviewBootstrap.js");
-			}
-			dom.AddJavascriptFile(pathToJavascript);
+			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
+			dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
 		}
 
 		public IEnumerable<IPage> GetPages()
@@ -1885,7 +1896,7 @@ namespace Bloom.Book
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
 			AddCoverColor(printingDom, Color.White);
-			AddPreviewJScript(printingDom);
+			AddPreviewJavascript(printingDom);
 			return printingDom;
 		}
 

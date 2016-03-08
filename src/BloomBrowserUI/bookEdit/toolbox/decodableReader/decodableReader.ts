@@ -1,49 +1,58 @@
 ﻿/// <reference path="../toolbox.ts" />
+/// <reference path="./directoryWatcher.ts" />
+/// <reference path="./readerToolsModel.ts" />
+
+import {DirectoryWatcher} from "./directoryWatcher";
+import {DRTState, ReaderToolsModel, MarkupType} from "./readerToolsModel";
+import {initializeDecodableReaderTool} from "./readerTools";
+import {ITabModel} from "../toolbox";
+import {ToolBox} from "../toolbox";
+import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
+import {theOneLibSynphony}  from './libSynphony/synphony_lib';
 
 class DecodableReaderModel implements ITabModel {
     restoreSettings(settings: string) {
-        if (!model) model = new ReaderToolsModel();
+        if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         initializeDecodableReaderTool();
         if (settings['decodableReaderState']) {
-            var state = libsynphony.dbGet('drt_state');
+            var state = theOneLibSynphony.dbGet('drt_state');
             if (!state) state = new DRTState();
             var decState = settings['decodableReaderState'];
             if (decState.startsWith("stage:")) {
                 var parts = decState.split(";");
                 state.stage = parseInt(parts[0].substring("stage:".length));
                 var sort = parts[1].substring("sort:".length);
-                model.setSort(sort);
+                ReaderToolsModel.model.setSort(sort);
             } else {
                 // old state
                 state.stage = parseInt(decState);
             }
-            libsynphony.dbSet('drt_state', state);
+            theOneLibSynphony.dbSet('drt_state', state);
         }
     }
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
-        // Enhance: at present, model is a global variable defined by readerToolsModel. Try to encapsulate it, or at least give a more specific name.
         // invoke function when a bloom-editable element loses focus.
         $(container).find('.bloom-editable').focusout(function () {
-            if (model) {
-                model.doMarkup();
+            if (ReaderToolsModel.model) {
+                ReaderToolsModel.model.doMarkup();
             }
         });
 
         $(container).find('.bloom-editable').focusin(function () {
-            if (model) {
-                model.noteFocus(this); // 'This' is the element that just got focus.
+            if (ReaderToolsModel.model) {
+                ReaderToolsModel.model.noteFocus(this); // 'This' is the element that just got focus.
             }
         });
 
         $(container).find('.bloom-editable').keydown(function(e) {
             if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
-                if (model.currentMarkupType !== MarkupType.None) {
+                if (ReaderToolsModel.model.currentMarkupType !== MarkupType.None) {
                     e.preventDefault();
                     if (e.shiftKey || e.keyCode == 89) { // ctrl-shift-z or ctrl-y
-                        model.redo();
+                        ReaderToolsModel.model.redo();
                     } else {
-                        model.undo();
+                        ReaderToolsModel.model.undo();
                     }
                     return false;
                 }
@@ -57,16 +66,16 @@ class DecodableReaderModel implements ITabModel {
 
     showTool() {
         // change markup based on visible options
-        model.setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!model.setMarkupType(1)) model.doMarkup();
+        ReaderToolsModel.model.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!ReaderToolsModel.model.setMarkupType(1)) ReaderToolsModel.model.doMarkup();
     }
 
     hideTool() {
-        model.setMarkupType(0);
+        ReaderToolsModel.model.setMarkupType(0);
     }
 
     updateMarkup() {
-        model.doMarkup();
+        ReaderToolsModel.model.doMarkup();
     }
 
     name() { return 'decodableReader'; }
@@ -74,7 +83,7 @@ class DecodableReaderModel implements ITabModel {
     hasRestoredSettings: boolean;
 }
 
-tabModels.push(new DecodableReaderModel());
+ToolBox.getTabModels().push(new DecodableReaderModel());
 
 
 // "region" ReaderSetup dialog
@@ -83,7 +92,7 @@ function CreateConfigDiv(title) {
 
     var html = '<iframe id="settings_frame" src="/bloom/bookEdit/toolbox/decodableReader/readerSetup/ReaderSetup.html" scrolling="no" ' +
         'style="width: 100%; height: 100%; border-width: 0; margin: 0" ' +
-        'onload="document.getElementById(\'toolbox\').contentWindow.initializeReaderSetupDialog()"></iframe>';
+        'onload="document.getElementById(\'toolbox\').contentWindow.FrameExports.initializeReaderSetupDialog()"></iframe>';
 
     dialogContents.append(html);
 
@@ -98,17 +107,16 @@ function settingsFrameWindow() {
     return (<HTMLIFrameElement>parentDocument().getElementById('settings_frame')).contentWindow;
 }
 
-function showSetupDialog(showWhat) {
+export function showSetupDialog(showWhat) {
 
-    var toolbox = window;
-    var lm: LocalizationManager = (<any>toolbox).localizationManager;
-    lm.loadStrings(getSettingsDialogLocalizedStrings(), null, function () {
+    //var toolbox = window;
+    theOneLocalizationManager.loadStrings(getSettingsDialogLocalizedStrings(), null, function () {
 
         var title;
         if (showWhat == 'stages')
-            title = lm.getText('ReaderSetup.SetUpDecodableReaderTool', 'Set up Decodable Reader Tool');
+            title = theOneLocalizationManager.getText('ReaderSetup.SetUpDecodableReaderTool', 'Set up Decodable Reader Tool');
         else
-            title = lm.getText('ReaderSetup.SetUpLeveledReaderTool', 'Set up Leveled Reader Tool');
+            title = theOneLocalizationManager.getText('ReaderSetup.SetUpLeveledReaderTool', 'Set up Leveled Reader Tool');
 
         var dialogContents = CreateConfigDiv(title);
 
@@ -118,7 +126,7 @@ function showSetupDialog(showWhat) {
         h = size[0];
         w = size[1];
 
-        (<any>toolbox).model.setupType = showWhat;
+        ReaderToolsModel.model.setupType = showWhat;
 
         $(dialogContents).dialog({
             autoOpen: true,
@@ -126,21 +134,21 @@ function showSetupDialog(showWhat) {
             buttons: (<any>{
                 Help: {
                     // For consistency, I would have made this 'Common.Help', but we already had 'HelpMenu.Help Menu' translated
-                    text: lm.getText('HelpMenu.Help Menu', 'Help'),
+                    text: theOneLocalizationManager.getText('HelpMenu.Help Menu', 'Help'),
                     class: 'left-button',
                     click: function () {
                         settingsFrameWindow().postMessage('Help', '*');
                     }
                 },
                 OK: {
-                    text: lm.getText('Common.OK', 'OK'),
+                    text: theOneLocalizationManager.getText('Common.OK', 'OK'),
                     click: function () {
                         settingsFrameWindow().postMessage('OK', '*');
                     }
                 },
 
                 Cancel: {
-                    text: lm.getText('Common.Cancel', 'Cancel'),
+                    text: theOneLocalizationManager.getText('Common.Cancel', 'Cancel'),
                     click: function () {
                         $(this).dialog("close");
                     }
@@ -197,11 +205,14 @@ function getSettingsDialogLocalizedStrings() {
 /**
  * Used by the settings_frame to initialize the setup dialog
  */
-function initializeReaderSetupDialog() {
+export function initializeReaderSetupDialog() {
 
-    var model = (<any>window).model;
+    var model = ReaderToolsModel.model;
 
-    var sourceMsg = 'Data\n' + JSON.stringify(model.getSynphony().source);
+    if(typeof model.synphony.source == 'undefined' || model.synphony.source === null){
+        throw new Error("ReaderToolsModel.model was not loaded with settings");
+    }
+    var sourceMsg = 'Data\n' + JSON.stringify(model.synphony.source);
     var fontMsg = 'Font\n' + model.fontName;
     settingsFrameWindow().postMessage(sourceMsg, '*');
     settingsFrameWindow().postMessage(fontMsg, '*');

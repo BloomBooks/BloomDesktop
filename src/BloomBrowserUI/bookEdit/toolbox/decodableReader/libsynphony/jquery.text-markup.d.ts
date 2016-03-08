@@ -5,7 +5,6 @@ interface JQuery {
     getMaxSentenceLength(): number;
     getTotalWordCount(): number;
     removeSynphonyMarkup(): void;
-    onOnce(eventName: string, data?: any, handler?: any)
 }
 
 interface JQueryStatic {

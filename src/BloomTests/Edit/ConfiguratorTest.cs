@@ -42,9 +42,9 @@ namespace BloomTests.Edit
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Wall Calendar"),
-												FileLocator.GetDirectoryDistributedWithApplication( "BloomBrowserUI"),
-												FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout"),
-												FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css"),
+												FileLocator.GetDirectoryDistributedWithApplication( BloomFileLocator.BrowserRoot),
+												FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookLayout")),
+												FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/css")),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 											});
 

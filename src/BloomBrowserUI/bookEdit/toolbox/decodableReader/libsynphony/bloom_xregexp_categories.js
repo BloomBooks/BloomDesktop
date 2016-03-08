@@ -1,3 +1,5 @@
+import XRegExp from 'xregexp';
+
 /**
  * bloom_xregexp_categories.js
  *

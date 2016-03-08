@@ -5,24 +5,25 @@ html
 		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
 		link(rel='stylesheet', href='readerSetup.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/lib/long-press/longpress.css', type='text/css')
-		script(src='/bloom/node_modules/jquery/dist/jquery.js')
-		script(src='/bloom/lib/jquery-ui/jquery-ui.min.js')
-		script(src='/bloom/lib/errorHandler.js')
-		script(src='/bloom/bookEdit/toolbox/decodableReader/jquery.div-columns.js')
-		script(src='/bloom/bookEdit/toolbox/decodableReader/libsynphony/underscore_min_152.js')
-		script(src='/bloom/bookEdit/toolbox/decodableReader/libsynphony/jquery.text-markup.js')
-		script(src='/bloom/bookEdit/toolbox/decodableReader/libsynphony/synphony_lib.js')
-		script(src='/bloom/bookEdit/toolbox/decodableReader/libsynphony/bloom_lib.js')
-		script(src='/bloom/bookEdit/js/getIframeChannel.js')
-		script(src='/bloom/lib/localizationManager/localizationManager.js')
-		script(src='/bloom/lib/jquery.i18n.custom.js')
-		script(src='/bloom/bloomHelp.js')
-		script(src='/bloom/lib/long-press/jquery.mousewheel.js')
-		script(src='/bloom/lib/long-press/jquery.longpress.js')
-		script(src='/bloom/bookEdit//toolbox/decodableReader/readerSettings.js')
-		script(src='readerSetup.io.js')
-		script(src='readerSetup.ui.js')
-		script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
+		// script(src='/bloom/jquery-min.js')
+		// script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+		// //script(src='/bloom/lib/errorHandler.js')
+		// script(src='/bloom/bookEdit/toolbox/decodableReader/jquery.div-columns.js')
+		// script(src='/bloom/bookEdit/toolbox/decodableReader/libSynphony/underscore_min_152.js')
+		// script(src='/bloom/bookEdit/toolbox/decodableReader/libSynphony/jquery.text-markup.js')
+		// script(src='/bloom/bookEdit/toolbox/decodableReader/libSynphony/synphony_lib.js')
+		// script(src='/bloom/bookEdit/toolbox/decodableReader/libSynphony/bloom_lib.js')
+		// script(src='/bloom/lib/localizationManager/localizationManager.js')
+		// script(src='/bloom/lib/jquery.i18n.custom.js')
+		// script(src='/bloom/lib/long-press/jquery.mousewheel.js')
+		// script(src='/bloom/lib/long-press/jquery.longpress.js')
+		// script(src='/bloom/bookEdit//toolbox/decodableReader/readerSettings.js')s.js')
+		// script(src='/bloom/bookEdit/toolbox/decodableReader/readerSetup/readerSetup.io.js')
+		// script(src='/bloom/bookEdit/toolbox/decodableReader/readerSetup/readerSetup.ui.js')
+		// script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
+		
+		script(src='/bloom/commonBundle.js')
+		script(src='/bloom/readerSetupBundle.js')
 	body
 		#dlstabs.ui-dialog.ui-widget
 			#powered-by.smaller
@@ -69,7 +70,7 @@ html
 								a#open-text-folder.blue-link(href='', data-i18n='ReaderSetup.Words.SampleTextFolder') Sample Texts Folder
 							#dls_word_lists.disableable.flex-column-expanding-row
 							#how_to_export(style="display: none")
-								a(href="", onclick="return BloomHelp.show('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');", data-i18n='ReaderSetup.HowToExport') Help exporting and converting files to use as sample texts
+								a(href="", onclick="return FrameExports.getToolboxFrameExports().BloomHelp.show('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');", data-i18n='ReaderSetup.HowToExport') Help exporting and converting files to use as sample texts
 			#dlstabs-2.reader-setup-tab
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table

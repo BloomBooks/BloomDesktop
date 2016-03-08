@@ -1,3 +1,6 @@
+import XRegExp from 'xregexp';
+import {_} from 'underscore';
+
 /**
  * synphony_lib.js
  *
@@ -10,15 +13,24 @@
 /**
  * @type LanguageData
  */
-var lang_data;
+// var singletonLanguageData = new LanguageData();
+// export var theOneLanguageDataInstance = singletonLanguageData;;
+
+export let theOneLanguageDataInstance = new LanguageData();
+
+export function ResetLanguageDataInstance(){
+    theOneLanguageDataInstance = new LanguageData();
+}
 var alwaysMatch = [];
 
 /**
  * Class to hold language data
- * @param {Object} [optionalObject] Optional. If present, used to initialize the class.
+ * @param {Object} [optionalObject] Optional. If present, used to initialize the class. (We think not used.)
  * @returns {LanguageData}
+ * 
+ * Note: we export it because bloom_lib extends it
  */
-function LanguageData(optionalObject) {
+export function LanguageData(optionalObject) {
 
     this.LangName = '';
     this.LangID = '';
@@ -35,36 +47,18 @@ function LanguageData(optionalObject) {
         _.extend(this, optionalObject);
 }
 
-/**
- * Called by langname_lang_data.js
- * @param {String} data
- */
-function setLangData(data) {
 
-    try {
-        lang_data = new LanguageData(data);
-        libsynphony.processVocabularyGroups();
-    }
-    catch (e) {
-
-        var div = document.getElementById('loading_data');
-        if (div) {
-            // this is running in the SynPhony UI, so show the error message
-            alert('error');
-            div.innerHTML = "Error loading language data: " + e.message;
-        }
-        else {
-            // this is not running in the SynPhony UI, throw the exception
-            throw e;
-        }
-    }
+export function setLangData(data) {
+    theOneLanguageDataInstance = new LanguageData(data);
+    theOneLibSynphony.processVocabularyGroups();
 }
 
 /**
  * Class that holds Synphony-related functions
- * @returns {libSynphony}
+ * @returns {LibSynphony}
  */
-var libSynphony = function() {};
+
+export var LibSynphony = function() {}
 
 /**
  * Returns a list of words that meet the requested criteria.
@@ -77,7 +71,7 @@ var libSynphony = function() {};
  * @param {Array} aPartsOfSpeech
  * @returns {Array} An array of WordObject objects
  */
-libSynphony.prototype.selectGPCWordsWithArrayCompare = function(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech) {
+LibSynphony.prototype.selectGPCWordsWithArrayCompare = function(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech) {
 
     var word_already_exists, aSelectedWordObjects, aWordObjects, aVocabKey, aCriteria;
     var groups = this.chooseVocabGroups(aSelectedGroups);
@@ -108,10 +102,10 @@ libSynphony.prototype.selectGPCWordsWithArrayCompare = function(aDesiredGPCs, aK
         if (allowUpperCase) {//if true then we add uppercase
             for (var k = 0, klen = aKnownGPCs.length; k < klen; k++) {
                 var temp = [];
-                for (var j = 0, jlen = lang_data.GPCS.length; j < jlen; j++) {
-                    if (lang_data.GPCS[j]["GPC"] === aKnownGPCs[k]) {
-                        if (lang_data.GPCS[j]["GPCuc"] !== "") {
-                            temp.push(lang_data.GPCS[j]["GPCuc"]);
+                for (var j = 0, jlen = theOneLanguageDataInstance.GPCS.length; j < jlen; j++) {
+                    if (theOneLanguageDataInstance.GPCS[j]["GPC"] === aKnownGPCs[k]) {
+                        if (theOneLanguageDataInstance.GPCS[j]["GPCuc"] !== "") {
+                            temp.push(theOneLanguageDataInstance.GPCS[j]["GPCuc"]);
                         }
                     }
                 }
@@ -125,17 +119,17 @@ libSynphony.prototype.selectGPCWordsWithArrayCompare = function(aDesiredGPCs, aK
         if (alwaysMatch.length > 0) {
             aCriteria = aCriteria.concat(alwaysMatch);
         } else {
-            if ((typeof lang_data['AlwaysMatch'] !== 'undefined') && (lang_data['AlwaysMatch'] !== '')) {
-                alwaysMatch = alwaysMatch.concat(lang_data['AlwaysMatch']);
+            if ((typeof theOneLanguageDataInstance['AlwaysMatch'] !== 'undefined') && (theOneLanguageDataInstance['AlwaysMatch'] !== '')) {
+                alwaysMatch = alwaysMatch.concat(theOneLanguageDataInstance['AlwaysMatch']);
             }
-            if ((typeof lang_data['SyllableBreak'] !== 'undefined') && (lang_data['SyllableBreak'] !== '')) {
-                alwaysMatch.push(lang_data['SyllableBreak']);
+            if ((typeof theOneLanguageDataInstance['SyllableBreak'] !== 'undefined') && (theOneLanguageDataInstance['SyllableBreak'] !== '')) {
+                alwaysMatch.push(theOneLanguageDataInstance['SyllableBreak']);
             }
-            if ((typeof lang_data['StressSymbol'] !== 'undefined') && (lang_data['StressSymbol'] !== '')) {
-                alwaysMatch.push(lang_data['StressSymbol']);
+            if ((typeof theOneLanguageDataInstance['StressSymbol'] !== 'undefined') && (theOneLanguageDataInstance['StressSymbol'] !== '')) {
+                alwaysMatch.push(theOneLanguageDataInstance['StressSymbol']);
             }
-            if ((typeof lang_data['MorphemeBreak'] !== 'undefined') && (lang_data['MorphemeBreak'] !== '')) {
-                alwaysMatch.push(lang_data['MorphemeBreak']);
+            if ((typeof theOneLanguageDataInstance['MorphemeBreak'] !== 'undefined') && (theOneLanguageDataInstance['MorphemeBreak'] !== '')) {
+                alwaysMatch.push(theOneLanguageDataInstance['MorphemeBreak']);
             }
             aCriteria = aCriteria.concat(alwaysMatch);
         }
@@ -190,7 +184,7 @@ libSynphony.prototype.selectGPCWordsWithArrayCompare = function(aDesiredGPCs, aK
  * @param {Array} aSyllableLengths An array of integers
  * @returns {Boolean|Array} An array of names (string)
  */
-libSynphony.prototype.constructSourceArrayNames = function(aDesiredGPCs, aSyllableLengths) {
+LibSynphony.prototype.constructSourceArrayNames = function(aDesiredGPCs, aSyllableLengths) {
 
     var aArrayNames, aName;
     aName = aDesiredGPCs;
@@ -218,29 +212,29 @@ libSynphony.prototype.constructSourceArrayNames = function(aDesiredGPCs, aSyllab
  * @param {Array} aSelectedGroups An array of strings
  * @returns {Array} An array of arrays containing WordObjects
  */
-libSynphony.prototype.chooseVocabGroups = function(aSelectedGroups) {
+LibSynphony.prototype.chooseVocabGroups = function(aSelectedGroups) {
 
     var groups = [];
 
     for (var i = 0; i < aSelectedGroups.length; i++) {
         switch (aSelectedGroups[i]) {
             case 'group1':
-                groups.push(lang_data.group1);
+                groups.push(theOneLanguageDataInstance.group1);
                 break;
             case 'group2':
-                groups.push(lang_data.group2);
+                groups.push(theOneLanguageDataInstance.group2);
                 break;
             case 'group3':
-                groups.push(lang_data.group3);
+                groups.push(theOneLanguageDataInstance.group3);
                 break;
             case 'group4':
-                groups.push(lang_data.group4);
+                groups.push(theOneLanguageDataInstance.group4);
                 break;
             case 'group5':
-                groups.push(lang_data.group5);
+                groups.push(theOneLanguageDataInstance.group5);
                 break;
             case 'group6':
-                groups.push(lang_data.group6);
+                groups.push(theOneLanguageDataInstance.group6);
                 break;
             default:
                 break;
@@ -252,11 +246,11 @@ libSynphony.prototype.chooseVocabGroups = function(aSelectedGroups) {
 
 /**
  * Processes vocabulary and creates indexes to speed lookups.
- * @param {LanguageData} [optionalLangData] Optional. If missing, the default lang_data is used.
+ * @param {LanguageData} [optionalLangData] Optional. If missing, the default theOneLanguageDataInstance is used.
  */
-libSynphony.prototype.processVocabularyGroups = function(optionalLangData) {
+LibSynphony.prototype.processVocabularyGroups = function(optionalLangData) {
 
-    var data = (typeof optionalLangData === "undefined") ? lang_data : optionalLangData;
+    var data = (typeof optionalLangData === "undefined") ? theOneLanguageDataInstance : optionalLangData;
 
     var n = data["VocabularyGroups"];
     var u, gpc, syll;
@@ -297,7 +291,7 @@ libSynphony.prototype.processVocabularyGroups = function(optionalLangData) {
  * @param {Array} aGPCs An array of GPCs
  * @returns {Array} An array of graphemes with the gpc notation removed
  */
-libSynphony.prototype.fullGPC2Regular = function(aGPCs) {
+LibSynphony.prototype.fullGPC2Regular = function(aGPCs) {
 
     var result = [];
     for (var i = 0; i < aGPCs.length; i++) {
@@ -333,7 +327,7 @@ libSynphony.prototype.fullGPC2Regular = function(aGPCs) {
  * @param {String} [letters]
  * @returns {Array} An array of strings
  */
-libSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
+LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
 
     // replace html break with space
     var regex = /<br><\/br>|<br>|<br \/>|<br\/>|\r?\n/g;
@@ -375,7 +369,7 @@ libSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
  * @param {String} textHTML
  * @returns {Array} An array of strings
  */
-libSynphony.prototype.getUniqueWordsFromHtmlString = function(textHTML) {
+LibSynphony.prototype.getUniqueWordsFromHtmlString = function(textHTML) {
     return _.uniq(this.getWordsFromHtmlString(textHTML));
 };
 
@@ -386,9 +380,9 @@ libSynphony.prototype.getUniqueWordsFromHtmlString = function(textHTML) {
  * @param {Array} aGPCsKnown An array of all the predefined GPCs (aka knownGPCs)
  * @param {String} storyHTML  $('story_input').value
  * @param {String} sightWords $('sight_words').value
- * @returns {checkStoryResults} Statistics
+ * @returns {StoryCheckResults} Statistics
  */
-libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList, aGPCsKnown, storyHTML, sightWords) {
+LibSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList, aGPCsKnown, storyHTML, sightWords) {
 
     var letters;
     var story_vocab;
@@ -415,7 +409,7 @@ libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList,
     // if aGPCsKnown is empty, return now
     // BL-2359: Need to allow stages based on word lists rather than known graphemes
     //if (aGPCsKnown.length === 0)
-    //    return new checkStoryResults([], [], [], [], [], 0, total_words);
+    //    return new StoryCheckResults([], [], [], [], [], 0, total_words);
 
     // first we do diffs on aFocusWordList and aWordCumulativeList with story_vocab words
     var story_focus_words = _.intersection(aFocusWordList, story_vocab_compacted);
@@ -446,7 +440,7 @@ libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList,
     // Why not for full gpc? Once you have covered the regular spelling patterns (in English)
     // you will match all the other words, so everything gets tagged as 'possible'. Not useful!!
     var possible_words = [];
-    if ((typeof lang_data === 'undefined') || (lang_data["UseFullGPCNotation"] === false)) {
+    if ((typeof theOneLanguageDataInstance === 'undefined') || (theOneLanguageDataInstance["UseFullGPCNotation"] === false)) {
 
         // allow punctuation characters in the words
         // BL-1216 Use negative look-ahead to keep letters from being counted as punctuation
@@ -458,10 +452,10 @@ libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList,
         });
 
         // BL-1217: exclude words with unknown graphemes, specifically 'aa' when only 'a' is known
-        if (typeof lang_data !== 'undefined') {
+        if (typeof theOneLanguageDataInstance !== 'undefined') {
 
             // get the unknown letters
-            var unknownGPCs = _.difference(_.pluck(lang_data['GPCS'], 'GPC'), letters.split('|')); // .join('|');
+            var unknownGPCs = _.difference(_.pluck(theOneLanguageDataInstance['GPCS'], 'GPC'), letters.split('|')); // .join('|');
             if (Array.isArray(unknownGPCs) && (unknownGPCs.length > 0)) {
 
                 // remove from the list of unknownGPCs characters used to build multi-graphs in the list aGPCsKnown
@@ -492,14 +486,14 @@ libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList,
     // FIFTH PASS: we handle everything else that's left over
 
     var readable = focus_words.length + cumulative_words.length + possible_words.length;
-    return new checkStoryResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readable, total_words);
+    return new StoryCheckResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readable, total_words);
 };
 
 /**
  * Sorts the array by the length of the string elements, descending
  * @param {Array} arr
  */
-libSynphony.prototype.array_sort_length = function(arr) {
+LibSynphony.prototype.array_sort_length = function(arr) {
 
     arr.sort(function(a, b) {
         return b.length - a.length; // ASC -> a - b; DESC -> b - a
@@ -521,7 +515,7 @@ if (!RegExp.quote) {
  * @param {String} extra
  * @returns {String}
  */
-libSynphony.prototype.wrap_words_extra = function(storyHTML, aWords, cssClass, extra) {
+LibSynphony.prototype.wrap_words_extra = function(storyHTML, aWords, cssClass, extra) {
 
     if ((aWords === undefined) || (aWords.length === 0)) return storyHTML;
 
@@ -564,7 +558,7 @@ libSynphony.prototype.wrap_words_extra = function(storyHTML, aWords, cssClass, e
  * Detects if the browser has the localStorage object.
  * @returns {Boolean}
  */
-libSynphony.prototype.supportsHTML5Storage = function() {
+LibSynphony.prototype.supportsHTML5Storage = function() {
 
     try {
         return 'localStorage' in window && window['localStorage'] !== null;
@@ -578,7 +572,7 @@ libSynphony.prototype.supportsHTML5Storage = function() {
  * @param {String} key
  * @returns {Array|Object}
  */
-libSynphony.prototype.dbGet = function(key) {
+LibSynphony.prototype.dbGet = function(key) {
 
     if (this.supportsHTML5Storage()) {
         var item = localStorage.getItem(key);
@@ -595,7 +589,7 @@ libSynphony.prototype.dbGet = function(key) {
  * @param {string} key
  * @param {Object} value
  */
-libSynphony.prototype.dbSet = function(key, value) {
+LibSynphony.prototype.dbSet = function(key, value) {
 
     if (this.supportsHTML5Storage()) {
         var json = JSON.stringify(value);
@@ -606,7 +600,8 @@ libSynphony.prototype.dbSet = function(key, value) {
 };
 
 /**
- *
+ * Construct a "StoryCheckResults" Class
+ * 
  * @param {Array} focus_words The words used in the story from the current stage
  * @param {Array} cumulative_words The words used in the story from the previous stages
  * @param {Array} possible_words Other words used in the story that may be decodable
@@ -614,9 +609,9 @@ libSynphony.prototype.dbSet = function(key, value) {
  * @param {Array} remaining_words
  * @param {int} readableWordCount
  * @param {int} totalWordCount
- * @returns {checkStoryResults}
+ * @returns {StoryCheckResults}
  */
-function checkStoryResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount) {
+export function StoryCheckResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount) {
 
     // constructor code
     this.focus_words = focus_words;
@@ -632,7 +627,7 @@ function checkStoryResults(focus_words, cumulative_words, possible_words, sight_
  * Searches the remaining_words for words that are numbers.
  * @returns {Array}
  */
-checkStoryResults.prototype.getNumbers = function() {
+StoryCheckResults.prototype.getNumbers = function() {
 
     var nums = [];
     var regex = new XRegExp('^[\\p{N}\\p{P}]+$', 'g');
@@ -645,4 +640,49 @@ checkStoryResults.prototype.getNumbers = function() {
     return nums;
 };
 
-var libsynphony = new libSynphony();
+/**
+ * Parses the langDataString into a theOneLanguageDataInstance object.
+ * NOTE: Split into 2 functions, langDataFromString() and parseLangDataString(), for testing.
+ * @param {String} langDataString
+ * @returns {Boolean}
+ */
+LibSynphony.prototype.langDataFromString = function(langDataString) {
+
+    theOneLanguageDataInstance = this.parseLangDataString(langDataString);
+
+    theOneLibSynphony.processVocabularyGroups();
+
+    return true;
+};
+
+
+/**
+ * Parses the langDataString into a theOneLanguageDataInstance object
+ * @param {String} langDataString
+ * @returns {LanguageData}
+ */
+LibSynphony.prototype.parseLangDataString = function(langDataString) {
+
+    // check for setLangData( ... )
+    var pos = langDataString.indexOf('{');
+    if (pos > 0)
+        langDataString = langDataString.substring(pos);
+
+    // should end with } (closing brace)
+    pos = langDataString.lastIndexOf('}');
+    if (pos < (langDataString.length - 1))
+        langDataString = langDataString.substring(0, pos + 1);
+
+    // fix errors and remove extra characters the JSON parser does not like
+    langDataString = langDataString.replace('GPCS:', '"GPCS":');     // this name may not be inside double-quotes
+    langDataString = langDataString.replace(/\/\/.*\r\n/g, '\r\n');  // remove comments from the file
+
+    // load the data
+    var langData = JSON.parse(langDataString);
+
+    // add the functions from LanguageData
+    return jQuery.extend(true, new LanguageData(), langData);
+};
+
+//TODO: change to something like "theOneLibSynhpony"
+export var theOneLibSynphony = new LibSynphony()

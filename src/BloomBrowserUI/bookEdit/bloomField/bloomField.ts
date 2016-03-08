@@ -20,7 +20,7 @@
 // Next, we have to keep you from accidentally losing the image placeholder when you do ctrl+a DEL. We prevent this deletion 
 // for any element marked with a 'bloom-preventRemoval' class.
 
-class BloomField {
+export default class BloomField {
     static ManageField(bloomEditableDiv:HTMLElement) {
 
         BloomField.PreventRemovalOfSomeElements(bloomEditableDiv);
@@ -120,15 +120,17 @@ class BloomField {
     // make this way to get a special paste by ctrl-clicking on the paste icon and bypassing
     // ckeditor. So I'm leaving this toy example here to save us
     // time if we need to do something similar in the future.
-    public static CalledByCSharp_SpecialPaste(contents: string) {
-        let html = contents.replace(/[b,c,d,f,g,h,j,k,l,m,n,p,q,r,s,t,v,w,x,z]/g, 'C');
-        html = html.replace(/[a,e,i,o,u]/g, 'V');
-        //convert newlines to paragraphs. We're already inside a  <p>, so each
-        //newline finishes that off and starts a new one
-        html = html.replace(/\n/g, '</p><p>');
-        var page = <HTMLIFrameElement>document.getElementById('page');
-        page.contentWindow.document.execCommand("insertHTML", false, html);
-    }
+    // JohnT: disabled when we switched to modules, since to make it work again we'd have to
+    // work it into FrameExports etc.
+    //public static CalledByCSharp_SpecialPaste(contents: string) {
+    //    let html = contents.replace(/[b,c,d,f,g,h,j,k,l,m,n,p,q,r,s,t,v,w,x,z]/g, 'C');
+    //    html = html.replace(/[a,e,i,o,u]/g, 'V');
+    //    //convert newlines to paragraphs. We're already inside a  <p>, so each
+    //    //newline finishes that off and starts a new one
+    //    html = html.replace(/\n/g, '</p><p>');
+    //    var page = <HTMLIFrameElement>document.getElementById('page');
+    //    page.contentWindow.document.execCommand("insertHTML", false, html);
+    //}
 
     // Since embedded images come before the first editable text, going to the beginning of the field and pressing Backspace moves the current paragraph into the caption. Sigh.
     private static PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(field: HTMLElement) {
@@ -331,7 +333,7 @@ class BloomField {
     private static PrepareNonParagraphField(field:HTMLElement) {
         if ($(field).text() === '') {
             //add a span with only a zero-width space in it
-            //enhance: a zero-width placeholder would be a bit better, but libsynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
+            //enhance: a zero-width placeholder would be a bit better, but theOneLibSynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
             $(field).html('&nbsp;');
             //now we tried deleting it immediately, or after a pause, but that doesn't help. So now we don't delete it until they type or paste something.
             // REMOVE: why was this doing it for all of the elements? $(container).find(".bloom-editable").one('paste keypress', FixUpOnFirstInput);
@@ -363,7 +365,8 @@ class BloomField {
             //   $(this).html($(this).html().replace('&nbsp;', ""));
 
             //so now we do the following business, where we select the &nbsp; we want to delete, moments before the character is typed or text pasted
-            var selection: Selection = window.getSelection();
+            
+            var selection: FFSelection = window.getSelection() as FFSelection;
 
             //if we're at the start of the text, we're to the left of the character we want to replace
             if (selection.anchorOffset === 0) {
@@ -396,7 +399,7 @@ class BloomField {
     }
 }
 enum CursorPosition { start, end }
-interface Selection {
+interface FFSelection extends Selection{
     //This is nonstandard, but supported by firefox. So we have to tell typescript about it
     modify(alter:string, direction:string, granularity:string):Selection;
 }

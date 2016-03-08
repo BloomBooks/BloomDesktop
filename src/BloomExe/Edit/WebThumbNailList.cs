@@ -197,13 +197,13 @@ namespace Bloom.Edit
 				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
 				return result;
 			}
-			var frame = BloomFileLocator.GetFileDistributedWithApplication("BloomBrowserUI", "bookEdit", "BookPagesThumbnailList", "BookPagesThumbnailList.htm");
+			var frame = BloomFileLocator.GetBrowserFile("bookEdit", "pageThumbnailList", "pageThumbnailList.html");
 			var backColor = ColorToHtmlCode(BackColor);
 			var htmlText = System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 			_usingTwoColumns = RoomForTwoColumns;
 			if (!RoomForTwoColumns)
 				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
-			var dom = new HtmlDom(htmlText);
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
 			dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(dom);
 			var pageDoc = dom.RawDom;
 
@@ -216,7 +216,7 @@ namespace Bloom.Edit
 			}
 
 			var body = pageDoc.GetElementsByTagName("body")[0];
-			var gridlyParent = body.FirstChild; // too simplistic?
+			var gridlyParent = body.SelectSingleNode("//*[@id='pageGrid']");
 			int pageNumber = 0;
 			_pageMap.Clear();
 			foreach (var page in pages)

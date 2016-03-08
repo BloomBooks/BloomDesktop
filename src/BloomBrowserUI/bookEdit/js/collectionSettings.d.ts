@@ -9,6 +9,6 @@ interface settingsObject {
   defaultSourceLanguage: string;
   currentCollectionLanguage2: string;
   currentCollectionLanguage3: string;
-  bloomBrowserUIFolder: string;
+  browserRoot: string;
   topics: string[];
 }

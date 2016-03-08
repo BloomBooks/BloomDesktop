@@ -227,7 +227,8 @@ namespace Bloom.CollectionTab
 		{
 			var element = (GeckoHtmlElement) (e as DomEventArgs).Target.CastToGeckoElement();
 			//nb: it might not be an actual anchor; could be an input-button that we've stuck href on
-			return element == null ? "" : element.GetAttribute("href");
+			return element == null ? "" : 
+					element.GetAttribute("href") ?? "";
 		}
 	}
 }

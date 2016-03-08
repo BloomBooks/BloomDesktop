@@ -8,36 +8,61 @@ html
 		link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/pageChooser/page-chooser.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/bookEdit/bloomDialog.css', type='text/css')
-		script(src='/bloom/bookEdit/js/interIframeChannel.js')
-		script(src='/bloom/node_modules/jquery/dist/jquery.js')
-		script(src='/bloom/lib/jquery-ui/jquery-ui.min.js')
-		script(src='/bloom/lib/errorHandler.js')
-		script(src='/bloom/bookEdit/js/editViewFrame.js')
-		script(src='/bloom/bookEdit/js/calledByCSharp.js')
-		script(src='/bloom/pageChooser/js/page-chooser.js')
+		link(rel='stylesheet', href='/bloom/lib/pure-drawer.css', type='text/css')
+		//script(src='/bloom/jquery.min.js')
+		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+		//script(src='/bloom/bookEdit/js/jquery.hasAttr.js')
+		
+		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+
+		script(src='/bloom/commonBundle.js')
+		script(src='/bloom/editTabRootBundle.js')
+		//script(src='/bloom/pageChooserBundle.js')
 		script.
-			var calledByCSharp;
-			var interIframeChannel;
-			$().ready(function () {
-				calledByCSharp = new CalledByCSharp();
-				// The iframe communication channel needs to be initialized before the child documents are loaded.
-				interIframeChannel = new interIframeChannel();
-				// {simulatedPageFileInBookFolder} is replaced by EditingModel.GetXmlDocumentForEditScreenWebPage().
-				document.getElementById('page').src = '{simulatedPageFileInBookFolder}';
-				document.getElementById('toolbox').src = '/bloom/toolboxContent';
-			});
+			//$().ready(function () {
+			document.addEventListener('DOMContentLoaded', function() {
+					//setting the src's in code here had the effect of waiting until we have the (obsolete) interIFrameChannel ready for them to use.
+					// May no longer be necessary.
+					//enhance: we could instead bootstrap them here, along with that channel as a parameter, after all three documents are ready
+					// we could do $('iframe').load(function() {.....}) and increment a count and when the count is == number of iframes, then do the bootstraping
+					document.getElementById('page').src = '{simulatedPageFileInBookFolder}';
+					document.getElementById('toolbox').src = '/bloom/toolboxContent';
+				});
 		style.
 			html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
-			iframe { border: 0 none;} // apparently Gecko gives this a default 2 px wide.
-			body { overflow:hidden }
-			.toolbox #left { margin-right: 200px;}
-			.toolbox #right { width: 200px; float: right;}
-			.no-toolbox #left { width: 100%;}
-			.no-toolbox #right { display: none;}
-	body.no-toolbox
-		#right
-			iframe#toolbox(width='100%', height='100%', src='') .
-				Your browser does not support iframes.
-		#left
-			iframe#page(width='100%', height='100%', src='') .
-				Your browser does not support iframes.
+			iframe { border: 0 none;} /* apparently Gecko gives this a default 2 px wide. */
+			body, .pure-pusher { overflow:hidden }
+			#left { width:100%;}
+			div#frameWrap { padding-right: 35px;height: 100%;background-color: #333333;}
+			/* These rules achieve a change in the width of the frame I added just inside the pure-pusher
+			(the main content of the pure-drawer system) when the check-box is checked. The second line
+			gives it more padding (to leave room for the toolbox) when the pure pusher container is
+			a sibling of the checked pure-toggle input. The first line makes it change smoothly
+			when the check box is clicked.
+			There's probably a more elegant way of making this a new 'effect' option for pure-drawer
+			but I wanted to keep the changes to that as simple as possible.
+			Padding works better than margin because it keeps the area 'under' the toolbox dark
+			so it is less noticeable when the two animations are not perfectly in sync.
+			*/
+			[data-effect='pure-effect-slide'] div#frameWrap {transition-duration: 500ms;}
+			.pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container div#frameWrap { padding-right: 200px;}
+	body
+		//.
+			All the pure- stuff here is the required framework for pure-drawer to make the toolbox appear and disappear
+			based on the litle control in the top right. Note particularly that C# code is aware of the pure-toggle-right input,
+			and it has to come first because various css rules depend on things being a following-sibling.
+		div.pure-container(data-effect="pure-effect-slide")
+			input.pure-toggle(type="checkbox" id="pure-toggle-right" data-toggle="right")
+			label.pure-toggle-label(for="pure-toggle-right" data-toggle-label="right")
+				span.pure-toggle-icon
+			nav.pure-drawer(data-position="right")
+				#right
+					iframe#toolbox(width='100%', height='100%', src='') .
+						| Your browser does not support iframes.
+			div.pure-pusher-container
+				div.pure-pusher
+					#frameWrap
+						#left
+							iframe#page(width='100%', height='100%', src='') .
+								| Your browser does not support iframes.
+				label.pure-overlay(for="pure-toggle-right" data-overlay="right")
