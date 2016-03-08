@@ -60,7 +60,6 @@ namespace Bloom.Edit
 		private List<Action> _tasksToDoAfterSaving = new List<Action>();
 
 		readonly List<string> _activeStandardListeners = new List<string>();
-		private AudioRecording _audioRecording;
 
 		//public event EventHandler UpdatePageList;
 
@@ -81,8 +80,7 @@ namespace Bloom.Edit
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
 			SendReceiver sendReceiver,
-			EnhancedImageServer server,
-			AudioRecording audioRecording)
+			EnhancedImageServer server)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
@@ -94,8 +92,6 @@ namespace Bloom.Edit
 			_server = server;
 			_templatePagesDict = null;
 			_lastPageAdded = String.Empty;
-			_audioRecording = audioRecording;
-			_audioRecording.GetBookFolderPath = ()=>  bookSelection.CurrentSelection.FolderPath;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -141,10 +137,6 @@ namespace Bloom.Edit
 
 		private Form _oldActiveForm;
 
-		public string CurrentBookFolder()
-		{
-			return _bookSelection.CurrentSelection.FolderPath;
-		}
 		/// <summary>
 		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
 		/// </summary>

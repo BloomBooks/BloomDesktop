@@ -192,9 +192,9 @@ class AudioRecording {
         var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return;
-        var prev: JQuery = audioElts.eq(currentIndex - 1);
-        if (prev.length === 0) return;
-        this.setCurrentSpan(current, prev);
+        var prev = this.getPreviousSpan();
+        if (prev == null) return;
+        this.setCurrentSpan(current, $(prev));
     }
 
     // Gecko has no way of knowing that we've created or modified the audio file,
@@ -216,7 +216,7 @@ class AudioRecording {
         this.recording = true;
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
         var id = current.attr("id");
-        axios.get("/bloom/audio/startRecord?id="+ id).then(result=>{
+        axios.post("/bloom/audio/startRecord?id="+ id).then(result=>{
             this.setStatus('record', Status.Active);
         }).catch(error=>{
             toastr.error(error.statusText)
@@ -232,7 +232,7 @@ class AudioRecording {
         
         //this.updatePlayerStatus();
 
-        axios.get('/bloom/audio/endRecord').then( response =>{        
+        axios.post('/bloom/audio/endRecord').then( response =>{        
             this.updatePlayerStatus();
             this.setStatus('record', Status.Disabled);
             //at the moment, the bakcend is returning when it asks the recorder to stop.
@@ -257,14 +257,11 @@ class AudioRecording {
         }
         
         this.playingAll = false; // in case it gets clicked after an incomplete play all.
-        //this.setStatus('listen', Status.Enabled); // but no longer active, in case it was
         this.setStatus('play', Status.Active);
         this.playCurrentInternal();
-        //this.changeState('next')
     }
     private playCurrentInternal() {
         (<HTMLMediaElement>document.getElementById('player')).play();
-        //this.setStatus('record', Status.Enabled); // but not 'expected' for now.
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
@@ -293,23 +290,8 @@ class AudioRecording {
             this.changeStateAndSetExpected('listen');
             return;
         }
-        // this.setStatus('play', Status.Enabled); // no longer 'expected' or 'active'
-        // this.setStatus('listen', Status.Enabled); // no longer 'expected' or 'active'
-        // if ($('#audio-next').hasClass('enabled')) {
-        //     this.setStatus('next', Status.Expected);
-        // }
         this.changeStateAndSetExpected('next');
     }
-
-    // private cantPlay(): void {
-    //     if ($('#audio-play').hasClass('expected')) {
-    //         // We just finished a too-short or otherwise unsuccessful recording.
-    //         // We still need to record.
-    //         this.setStatus('record', Status.Expected);
-    //     }
-    //     this.setStatus('play', Status.Disabled);
-    //     this.setStatus('clear', Status.Disabled);
-    // }
 
     private selectInputDevice(): void {
         var thisClass = this;
@@ -335,7 +317,6 @@ class AudioRecording {
                     axios.post("/bloom/audio/setRecordingDevice?"+$(event.target).text()).catch(error=>{
                         toastr.error(error.statusText);
                     });
-                    //thisClass.fireCSharpEvent('changeRecordingDevice', $(event.target).text());
                     thisClass.updateInputDeviceDisplay();
                 })
                 .show().position({
@@ -384,13 +365,10 @@ class AudioRecording {
         }
         //var currentFile = $('#player').attr('src');
         // this.fireCSharpEvent('deleteFile', currentFile);
-        axios.get('/bloom/audio/deleteSegment?id='+this.idOfCurrentSentence).catch(error=>{
+        axios.post('/bloom/audio/deleteSegment?id='+this.idOfCurrentSentence).catch(error=>{
             toastr.error(error.statusText);
         });
         this.updatePlayerStatus();
-        // this.setStatus('record', Status.Expected);
-        // this.setStatus('play', Status.Disabled);
-        // this.setStatus('clear', Status.Disabled);
         this.changeStateAndSetExpected('record');
     }
     public getPageFrame(): HTMLIFrameElement {
@@ -419,16 +397,12 @@ class AudioRecording {
         var firstSentence = editable.find('span.audio-sentence').first();
         if (firstSentence.length === 0) {
             // no recordable sentence found.
-            // this.configureForNothingToRecord();
-            // this.changeState('');
             return;
         }
         thisClass.setCurrentSpan(this.getPage().find('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
     }
 
-    // This gets invoked (via a non-object method of the same name in this file,
-    // and one of the same name in CalledFromCSharp) when a C# event fires indicating
-    // that we should display a different peak level. It draws a series of bars
+    // This gets invoked via websocket message. It draws a series of bars
     // (reminiscent of leds in a hardware level meter) within the canvas in the
     //  top right of the bubble to indicate the current peak level.
     public setstaticPeakLevel(level: string): void {

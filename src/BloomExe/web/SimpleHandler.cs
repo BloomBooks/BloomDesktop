@@ -15,8 +15,6 @@ namespace Bloom.web
 	/// </summary>
 	public class SimpleHandlerRequest
 	{
-		//public delegate SimpleHandlerRequest Factory(Control uiControlForSynchonization);//autofac uses this
-
 		private readonly IRequestInfo Requestinfo;
 		public readonly CollectionSettings CurrentCollectionSettings;
 		public NameValueCollection Parameters;
@@ -43,13 +41,13 @@ namespace Bloom.web
 		}
 		public void Succeeded(string text)
 		{
-			Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + text);
+			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + text);
 			Requestinfo.ContentType = "text/plain";
 			Requestinfo.WriteCompleteOutput(text);
 		}
 		public void Failed(string text)
 		{
-			Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery+": "+text);
+			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery+": "+text);
 			Requestinfo.ContentType = "text/plain";
 			Requestinfo.WriteError(503,text);
 		}
@@ -59,10 +57,10 @@ namespace Bloom.web
 			var request = new SimpleHandlerRequest(info, collectionSettings);
 			try
 			{
-				var formForSynchonizing = Application.OpenForms.Cast<Form>().Last();
-				if (formForSynchonizing.InvokeRequired)
+				var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
+				if (formForSynchronizing.InvokeRequired)
 				{
-					formForSynchonizing.Invoke(simpleHandler, request);
+					formForSynchronizing.Invoke(simpleHandler, request);
 				}
 				else
 				{

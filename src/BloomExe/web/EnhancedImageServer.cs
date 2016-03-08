@@ -233,6 +233,7 @@ namespace Bloom.web
 				}
 			}
 
+			//OK, no more obvious simple API requests, dive into the rat's nest of other possibilities
 			if (base.ProcessRequest(info))
 				return true;
 

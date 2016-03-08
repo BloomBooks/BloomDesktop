@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Book;
 using Bloom.web;
 using L10NSharp;
 #if __MonoCS__
@@ -24,18 +25,17 @@ namespace Bloom.Edit
 	public delegate AudioRecording Factory();//autofac uses this
 
 	/// <summary>
-	/// Manages the process of making an audio recording.
-	/// Adapted from HearThis class AudioButtonsControl; however, in Bloom the UI is in HTML
-	/// (and so is the whole Playback logic).
-	/// Interacts with the logic (and currently embedded HTML) in audioRecording.ts.
-	/// See the comment at the start of that file for various needed enhancements.
+	/// This is a clean back-end service that provides recording to files
+	/// via some http requests from the server.
+	/// It also delivers real time microphone peak level numbers over a WebSocket.
+	/// The client can be found at audioRecording.ts.
 	/// </summary>
 	public class AudioRecording
 	{
+		private readonly BookSelection _bookSelection;
 		private AudioRecorder _recorder;
-		readonly BloomWebSocketServer _peakLevelServer;
-		public Func<string> GetBookFolderPath { get; set; }
-
+		BloomWebSocketServer _peakLevelWebSocketServer;
+		
 		/// <summary>
 		/// The file we want to record to
 		/// </summary>
@@ -44,47 +44,6 @@ namespace Bloom.Edit
 		//the ultimate destination, after we've cleaned up the recording
 		public string PathToCurrentAudioSegment;
 
-#if __MonoCS__
-#else
-		// Palaso component to do the actual recording.
-		private AudioRecorder Recorder
-		{
-			get
-			{
-				// We postpone actually creating a recorder until something uses audio.
-				// Typically it is created when the talking book tool requests AudioDevicesJson
-				// to update the icon. At that point we start really sending volume requests.
-				if (_recorder == null)
-				{
-					Form.ActiveForm.Invoke((Action) (() =>
-					{
-						_recorder = new AudioRecorder(1);
-						_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
-						BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
-						Application.ApplicationExit += (sender, args) =>
-						{
-							if (_recorder != null)
-							{
-								var temp = _recorder;
-								_recorder = null;
-								try
-								{
-									temp.Dispose();
-								}
-								catch (Exception)
-								{
-									// Not sure how this can fail, but we don't need to crash if
-									// something goes wrong trying to free the audio object.
-									Debug.Fail("Something went wrong disposing of AudioRecorder");
-								}
-							}
-						};
-					}));
-				}
-				return _recorder;
-			}
-		}
-#endif
 		private string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
 		private DateTime _startRecording; // For tracking recording length.
 		LameEncoder _mp3Encoder = new LameEncoder();
@@ -107,36 +66,32 @@ namespace Bloom.Edit
 		// call directly since it is static.
 		private static AudioRecording CurrentRecording { get; set; }
 
-		public AudioRecording(EnhancedImageServer server)
+		public AudioRecording(BookSelection bookSelection)
 		{
+			_bookSelection = bookSelection;
 			_startRecordingTimer = new Timer();
 			_startRecordingTimer.Interval = 300; //  ms from click to actual recording
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
 			_backupPath = System.IO.Path.GetTempFileName();
 			CurrentRecording = this;
-			_peakLevelServer = new BloomWebSocketServer();
+		}
+
+		public void RegisterWithServer(EnhancedImageServer server)
+		{
 			server.RegisterSimpleHandler("audio/startRecord", HandleStartRecording);
 			server.RegisterSimpleHandler("audio/endRecord", HandleEndRecord);
 			server.RegisterSimpleHandler("audio/enableListenButton", HandleEnableListenButton);
 			server.RegisterSimpleHandler("audio/deleteSegment", HandleDeleteSegment);
 			server.RegisterSimpleHandler("audio/setRecordingDevice", HandleSetRecordingDevice);
 			server.RegisterSimpleHandler("audio/checkForSegement", HandleCheckForSegment);
+
+			_peakLevelWebSocketServer = new BloomWebSocketServer("8189");
 		}
 
 		// does this page have any audio at all? Used enable the Listen page.
 		private void HandleEnableListenButton(SimpleHandlerRequest request)
 		{
-			var dir = Path.Combine(GetBookFolderPath(), "audio");
-			if(Directory.Exists(dir) &&
-			   Directory.GetFiles(dir).Length > 0)
-			{
-				request.Succeeded("Yes");//currently we're just saying if there is any audio, you can listen to 'um all.
-			}
-			else
-			{
-				request.Succeeded("No");
-			}
-			return; //we handled it
+			request.Succeeded("Yes");// enhance: determine if there is any audio for this page
 		}
 
 		/// <summary>
@@ -214,7 +169,7 @@ namespace Bloom.Edit
 			if(level != _previousLevel)
 			{
 				_previousLevel = level;
-				_peakLevelServer.Send(level.ToString(CultureInfo.InvariantCulture));
+				_peakLevelWebSocketServer.Send(level.ToString(CultureInfo.InvariantCulture));
 			}
 		}
 #endif
@@ -264,7 +219,8 @@ namespace Bloom.Edit
 			int millisecondsToTrimFromEndForMouseClick =100;
 			try
 			{
-				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToCurrentAudioSegment, new TimeSpan(), TimeSpan.FromMilliseconds(millisecondsToTrimFromEndForMouseClick));
+				var minimum = TimeSpan.FromMilliseconds(300); // this is arbitrary
+				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToCurrentAudioSegment, new TimeSpan(), TimeSpan.FromMilliseconds(millisecondsToTrimFromEndForMouseClick), minimum);
 			}
 			catch (Exception error)
 			{
@@ -293,8 +249,6 @@ namespace Bloom.Edit
 				var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.PleaseHoldMessage",
 					"Please hold the button down until you have finished recording",
 					"Appears when the speak/record button is pressed very briefly");
-
-				// Seems sometimes on a very short click the recording actually got started while we were informing the user
 				request.Failed(msg);
 				return true;
 			}
@@ -320,13 +274,9 @@ namespace Bloom.Edit
 
 			if (Recorder.RecordingState == RecordingState.RequestedStop)
 			{
-				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.BadState",
-						"Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart."),
-					LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.BadStateCaption", "Cannot record"));
+				request.Failed(LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.BadState",
+					"Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.","This is very low priority for translation."));
 			}
-			//if (!_recordButton.Enabled)
-			//	return false; //could be fired by keyboard
 
 			// If someone unplugged the microphone we were planning to use switch to another.
 			// This also triggers selecting the first one initially.
@@ -398,7 +348,7 @@ namespace Bloom.Edit
 
 		private string GetPathToSegment(string segmentId)
 		{
-			return System.IO.Path.Combine(GetBookFolderPath(), "audio", segmentId + ".wav");
+			return System.IO.Path.Combine(_bookSelection.CurrentSelection.FolderPath, "audio", segmentId + ".wav");
 		}
 
 		public bool Recording
@@ -533,5 +483,48 @@ namespace Bloom.Edit
 				}
 			}
 		}
+
+
+#if __MonoCS__
+#else
+		// Palaso component to do the actual recording.
+		private AudioRecorder Recorder
+		{
+			get
+			{
+				// We postpone actually creating a recorder until something uses audio.
+				// Typically it is created when the talking book tool requests AudioDevicesJson
+				// to update the icon. At that point we start really sending volume requests.
+				if (_recorder == null)
+				{
+					Form.ActiveForm.Invoke((Action)(() =>
+					{
+						_recorder = new AudioRecorder(1);
+						_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
+						BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
+						Application.ApplicationExit += (sender, args) =>
+						{
+							if (_recorder != null)
+							{
+								var temp = _recorder;
+								_recorder = null;
+								try
+								{
+									temp.Dispose();
+								}
+								catch (Exception)
+								{
+									// Not sure how this can fail, but we don't need to crash if
+									// something goes wrong trying to free the audio object.
+									Debug.Fail("Something went wrong disposing of AudioRecorder");
+								}
+							}
+						};
+					}));
+				}
+				return _recorder;
+			}
+		}
+#endif
 	}
 }
