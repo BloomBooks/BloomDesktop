@@ -116,7 +116,7 @@ namespace Bloom.web
 			}
 			catch (HttpListenerException error)
 			{
-				Logger.WriteEvent(error.Message);
+				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" +error.Message);
 				if (!SIL.PlatformUtilities.Platform.IsWindows) throw;
 
 				//Note: we could as easily *remove* this, as it appears to only needed if there is a registration that is more specific than some other.

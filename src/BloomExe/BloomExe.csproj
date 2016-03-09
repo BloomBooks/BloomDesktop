@@ -494,6 +494,7 @@
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
     <Compile Include="web\CurrentBookHandler.cs" />
+    <Compile Include="web\SimpleHandler.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersHandler.cs" />

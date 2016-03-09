@@ -320,7 +320,6 @@ function makeTextFieldClickHandler(e) {
     //note, we're leaving it to some other part of the system, later, to add the needed .bloom-editable
     //   divs (and set the right classes on them) inside of this new .bloom-translationGroup.
     var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement"></div>');
-    //getIframeChannel().simpleAjaxGetWithCallbackParam('/bloom/getNextBookStyle', setStyle, translationGroup);
     $(translationGroup).addClass('normal-style'); // replaces above to make new text boxes normal
     container.append(translationGroup).append(getTextBoxIdentifier());
     $(this).closest('.selector-links').remove();

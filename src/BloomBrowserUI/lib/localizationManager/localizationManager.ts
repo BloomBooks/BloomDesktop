@@ -193,7 +193,6 @@ export class LocalizationManager {
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
         var deferred = $.Deferred();
-        //var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
         //when the async call comes back, we massage the text
         axios.get("/bloom/i18n/translate",
         {

@@ -101,7 +101,8 @@ namespace Bloom
 							typeof (PageSelection),
 							typeof (LocalizationChangedEvent),
 							typeof (ControlKeyEvent),
-							typeof (EditingModel)
+							typeof (EditingModel),
+							typeof (AudioRecording)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -257,6 +258,7 @@ namespace Bloom
 				Application.Exit();
 			}
 
+			_scope.Resolve<AudioRecording>().RegisterWithServer(_scope.Resolve<EnhancedImageServer>());
 		}
 
 		internal static BloomS3Client CreateBloomS3Client()
