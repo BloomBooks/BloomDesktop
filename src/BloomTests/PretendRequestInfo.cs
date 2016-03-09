@@ -43,6 +43,8 @@ namespace Bloom.web
 			get { return "<root>" + ReplyContents + "</root>"; }
 		}
 
+		public bool HaveOutput { get; }
+
 		public void WriteCompleteOutput(string s)
 		{
 			var buffer = Encoding.UTF8.GetBytes(s);

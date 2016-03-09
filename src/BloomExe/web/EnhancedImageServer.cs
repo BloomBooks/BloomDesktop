@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -41,9 +42,14 @@ namespace Bloom.web
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
 		private readonly BookThumbNailer _thumbNailer;
+		private readonly ProjectContext _projectContext;
 		// This dictionary allows additional request handlers to be injected into the server. If a request's local path starts with one of the keys in this dictionary,
 		// the corresponding function will be called to handle the request. The function should return true if a result is returned from the request.
-		private Dictionary<string, Func<string, IRequestInfo, CollectionSettings, bool>> _additionalRequestHandlers = new Dictionary<string, Func<string, IRequestInfo, CollectionSettings, bool>>();
+
+
+		private Dictionary<string, SimpleHandler> _simpleRequestHandlers = new Dictionary<string, SimpleHandler>();
+
+		private Dictionary<string, Func<string, IRequestInfo, CollectionSettings,bool>> _additionalRequestHandlers = new Dictionary<string, Func<string, IRequestInfo, CollectionSettings,bool>>();
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -53,7 +59,7 @@ namespace Bloom.web
 		internal EnhancedImageServer() : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, null)
 		{ }
 
-		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BloomFileLocator fileLocator = null) : base(cache)
+		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer,  BloomFileLocator fileLocator = null) : base(cache)
 		{
 			_thumbNailer = thumbNailer;
 			_fileLocator = fileLocator;
@@ -69,10 +75,15 @@ namespace Bloom.web
 		/// the server does not have to know about all the components that handle particular kinds of specialized requests.)
 		/// </summary>
 		/// <param name="key"></param>
-		/// <param name="action"></param>
-		public void RegisterRequestHandler(string key, Func<string, IRequestInfo, CollectionSettings, bool> action)
+		/// <param name="function"></param>
+		public void RegisterRequestHandler(string key, Func<string, IRequestInfo, CollectionSettings, bool> function)
 		{
-			_additionalRequestHandlers[key] = action;
+			_additionalRequestHandlers[key] = function;
+		}
+
+		public void RegisterSimpleHandler(string key, SimpleHandler handler)
+		{
+			_simpleRequestHandlers[key] = handler;
 		}
 
 		/// <summary>
@@ -200,10 +211,31 @@ namespace Bloom.web
 		// NOTE: this method gets called on different threads!
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
+			var localPath = GetLocalPathWithoutQuery(info);
+
+			foreach(var pair in _simpleRequestHandlers.Where(pair => localPath.StartsWith(pair.Key)))
+			{
+				lock (SyncObj)
+				{
+					return SimpleHandlerRequest.Handle(pair.Value, info, CurrentCollectionSettings);
+				}
+			}
+
+			// See if an injected request handler wants to handle this one.
+			// Enhance JohnT:  if we get a larger number of injected handlers, and all keys are still a keyword ending in slash,
+			// it might help to extract the part of the localPath before the slash and use it as a key for dictionary lookup.
+			foreach (var pair in _additionalRequestHandlers.Where(pair => localPath.StartsWith(pair.Key)))
+			{
+				lock (SyncObj)
+				{
+					pair.Value(localPath, info, CurrentCollectionSettings);
+					return true;//this is always handled; have these callbacks always 'return true' even if they encountered an error is confusing.
+				}
+			}
+
+			//OK, no more obvious simple API requests, dive into the rat's nest of other possibilities
 			if (base.ProcessRequest(info))
 				return true;
-
-			var localPath = GetLocalPathWithoutQuery(info);
 
 			string content;
 			bool gotSimulatedPage;
@@ -226,21 +258,7 @@ namespace Bloom.web
 				localPath = localPath.Substring(OriginalImageMarker.Length + 1);
 				return ProcessAnyFileContent(info, localPath);
 			}
-			// routing
-			// See if an injected request handler wants to handle this one.
-			// Enhance JohnT:  if we get a larger number of injected handlers, and all keys are still a keyword ending in slash,
-			// it might help to extract the part of the localPath before the slash and use it as a key for dictionary lookup.
-			// There is currently only one so I don't think it is yet.
-			foreach (var kvp in _additionalRequestHandlers)
-			{
-				if (localPath.StartsWith(kvp.Key))
-				{
-					lock (SyncObj)
-					{
-						return kvp.Value(localPath, info, CurrentCollectionSettings);
-					}
-				}
-			}
+
 			if (localPath.StartsWith("error", StringComparison.InvariantCulture))
 			{
 				ProcessError(info);

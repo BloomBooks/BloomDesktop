@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Dynamic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,11 +12,9 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
-using Bloom.MiscUI;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.web;
-using BloomTemp;
 using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
@@ -28,11 +25,6 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Reporting;
-using SIL.Xml;
-#if __MonoCS__
-#else
-using SIL.Media.Naudio;
-#endif
 
 namespace Bloom.Edit
 {
@@ -682,10 +674,6 @@ namespace Bloom.Edit
 				return;
 			}
 			AddStandardEventListeners();
-#if __MonoCS__
-#else
-			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
-#endif
 			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
 				tool.RestoreSettings(_view);
 		}
@@ -703,10 +691,6 @@ namespace Bloom.Edit
 			AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
 			AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
 			AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
-			AddMessageEventListener("startRecordAudio", StartRecordAudio);
-			AddMessageEventListener("endRecordAudio", EndRecordAudio);
-			AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
-			AddMessageEventListener("deleteFile", DeleteFile);
 		}
 
 		private void SaveToolboxSettings(string data)
@@ -779,25 +763,6 @@ namespace Bloom.Edit
 				this._view.ShowAddPageDialog();
 		}
 
-		AudioRecording _audioRecording = new AudioRecording();
-		/// <summary>
-		/// Start recording audio for the current segment (whose ID is the argument)
-		/// </summary>
-		/// <param name="segmentId"></param>
-		private void StartRecordAudio(string segmentId)
-		{
-			_audioRecording.Path = Path.Combine(_currentlyDisplayedBook.FolderPath, "audio", segmentId + ".wav");
-			_audioRecording.StartRecording();
-		}
-		/// <summary>
-		/// Stop recording and save the result.
-		/// </summary>
-		/// <param name="dummy"></param>
-		private void EndRecordAudio(string dummy)
-		{
-			_audioRecording.StopRecording();
-		}
-
 		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
 		{
 			if (_templatePagesDict != null)
@@ -849,31 +814,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void ChangeRecordingDevice(string deviceName)
-		{
-			_audioRecording.ChangeRecordingDevice(deviceName);
-		}
-
-		/// <summary>
-		/// Delete a file (typically a recording, as requested by the Clear button in the talking book tool)
-		/// </summary>
-		/// <param name="fileUrl"></param>
-		private void DeleteFile(string fileUrl)
-		{
-			var filePath = ServerBase.GetLocalPathWithoutQuery(fileUrl);
-			if (File.Exists(filePath))
-			{
-				try
-				{
-					File.Delete(filePath);
-				}
-				catch (IOException e)
-				{
-					var msg = string.Format(LocalizationManager.GetString("Errors.ProblemDeletingFile","Bloom had a problem deleting this file: {0}"), filePath);
-					ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
-				}
-			}
-		}
 
 		//invoked from TopicChooser.ts
 		private void SetTopic(string englishTopicAsKey)

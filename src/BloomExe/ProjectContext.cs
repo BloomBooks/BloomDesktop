@@ -30,7 +30,7 @@ namespace Bloom
 		private ILifetimeScope _scope;
 
 		private EnhancedImageServer _httpServer;
-		private CommandAvailabilityPublisher _commandAvailabilityPublisher;
+//		private CommandAvailabilityPublisher _commandAvailabilityPublisher;
 		public Form ProjectWindow { get; private set; }
 
 		public string SettingsPath { get; private set; }
@@ -101,7 +101,8 @@ namespace Bloom
 							typeof (PageSelection),
 							typeof (LocalizationChangedEvent),
 							typeof (ControlKeyEvent),
-							typeof (EditingModel)
+							typeof (EditingModel),
+							typeof (AudioRecording)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -245,8 +246,11 @@ namespace Bloom
 					});
 				});
 
+				/*
+				this is from spike, which worked, but we aren't using (yet)
 				var allCommands = from c in commandTypes select _scope.Resolve(c) as ICommand;
 				_commandAvailabilityPublisher = new CommandAvailabilityPublisher(allCommands);
+				*/
 			}
 			catch (FileNotFoundException error)
 			{
@@ -254,6 +258,7 @@ namespace Bloom
 				Application.Exit();
 			}
 
+			_scope.Resolve<AudioRecording>().RegisterWithServer(_scope.Resolve<EnhancedImageServer>());
 		}
 
 		internal static BloomS3Client CreateBloomS3Client()
@@ -495,9 +500,9 @@ namespace Bloom
 				_httpServer.Dispose();
 			_httpServer = null;
 
-			if(_commandAvailabilityPublisher != null)
-				_commandAvailabilityPublisher.Dispose();
-			_commandAvailabilityPublisher = null;
+//			if(_commandAvailabilityPublisher != null)
+//				_commandAvailabilityPublisher.Dispose();
+//			_commandAvailabilityPublisher = null;
 
 			GC.SuppressFinalize(this);
 		}

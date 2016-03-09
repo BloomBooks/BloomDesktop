@@ -54,31 +54,34 @@ namespace Bloom.web
 			WriteOutput(Encoding.UTF8.GetBytes(s), _actualContext.Response);
 		}
 
-		private static void WriteOutput(byte[] buffer, HttpListenerResponse response)
+		private void WriteOutput(byte[] buffer, HttpListenerResponse response)
 		{
 			response.ContentLength64 += buffer.Length;
 			Stream output = response.OutputStream;
 			output.Write(buffer, 0, buffer.Length);
 			output.Close();
+			HaveOutput = true;
 		}
+
+		public bool HaveOutput { get; private set; }
 
 		public void ReplyWithFileContent(string path)
 		{
-			var buffer = new byte[1024 * 512]; //512KB
-			var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
-
 			//Deal with BL-3153, where the file was still open in another thread
 			FileStream fs;
+			if(!File.Exists(path))
+			{
+				//for audio, at least, this is not really an error. We constantly are asking if audio already exists for the current segment
+				//enhance: maybe audio should go through a different path, e.g. "/bloom/audio/somefile.wav"
+				//then this path COULD write and error
+				//Logger.WriteError("Server could not find" + path);
+				_actualContext.Response.StatusCode = 404;
+				return;
+			}
+			
 			try
 			{
 				fs = File.OpenRead(path);
-			}
-			catch(System.IO.FileNotFoundException error)
-			{
-
-				Logger.WriteError("Server could not find" + path, error);
-				_actualContext.Response.StatusCode = 404;
-				return;
 			}
 			catch (Exception error)
 			{
@@ -101,6 +104,8 @@ namespace Bloom.web
 				// be reloaded. It is useful when debugging with tools which automatically reload the page when something changes.
 				if (_actualContext.Request.HttpMethod == "HEAD")
 				{
+					var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
+
 					// Originally we were returning the Last-Modified header with every response, but we discovered that this was
 					// causing Geckofx to cache the contents of the files. This made debugging difficult because, even if the file
 					// changed, Geckofx would use the cached file rather than requesting the updated file from the localhost.
@@ -108,6 +113,7 @@ namespace Bloom.web
 				}
 				else
 				{
+					var buffer = new byte[1024 * 512]; //512KB
 					int read;
 					while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
 						_actualContext.Response.OutputStream.Write(buffer, 0, read);
@@ -116,6 +122,7 @@ namespace Bloom.web
 			}
 
 			_actualContext.Response.OutputStream.Close();
+			HaveOutput = true;
 		}
 
 		public void ReplyWithImage(string path)
@@ -132,6 +139,7 @@ namespace Bloom.web
 			_actualContext.Response.StatusCode = errorCode;
 			_actualContext.Response.StatusDescription = errorDescription;
 			_actualContext.Response.Close();
+			HaveOutput = true;
 		}
 
 		public void WriteError(int errorCode)

@@ -1,4 +1,4 @@
-/// <binding BeforeBuild='default' ProjectOpened='default' />
+/// <binding ProjectOpened='default' />
 var gulp = require('gulp');  
 var debug = require('gulp-debug');
 var ts = require('gulp-typescript');

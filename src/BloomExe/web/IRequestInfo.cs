@@ -8,6 +8,7 @@ namespace Bloom.web
 		string LocalPathWithoutQuery { get; }
 		string ContentType { set; }
 		string RawUrl { get; }
+		bool HaveOutput { get; }
 		void WriteCompleteOutput(string s);
 		void ReplyWithFileContent(string path);
 		void ReplyWithImage(string path);

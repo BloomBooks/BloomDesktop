@@ -98,11 +98,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		internal void SetPeakLevel(string level)
-		{
-			if (this.IsHandleCreated)
-				Invoke((Action) (() =>_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.setPeakLevel(" + level + "); }")));
-		}
 
 #if TooExpensive
 		void OnBrowserFocusChanged(object sender, GeckoDomEventArgs e)

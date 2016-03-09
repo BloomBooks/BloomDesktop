@@ -40,7 +40,9 @@
 // - Some more obvious affordance for launching the Record feature
 // - Extract content of bubble HTML into its own file?
 
+///<reference path="../../../typings/jquery/jquery.d.ts"/>
 ///<reference path="../../../typings/axios/axios.d.ts"/>
+///<reference path="../../../typings/toastr/toastr.d.ts"/>
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -48,16 +50,86 @@ enum Status {
     Expected, // The most likely/appropriate button to use next (e.g., Play right after recording)
     Active // Button now active (Play while playing; Record while held down)
 };
+
+
 class AudioRecording {
+    private recording: boolean;
+    private levelCanvas: HTMLCanvasElement;
+    private levelCanvasWidth: number = 15;
+    private levelCanvasHeight: number = 80;
+    private hiddenSourceBubbles: JQuery;
+    private audioDevicesUrl = '/bloom/audioDevices';
+    private playingAll: boolean; // true during listen.
+    private idOfCurrentSentence : string;
+    
+    
+        public initializeTalkingBookTool() {
+        // I've sometimes observed events like click being handled repeatedly for a single click.
+        // Adding thse .off calls seems to help...it's as if something causes this show event to happen
+        // more than once so the event handlers were being added repeatedly, but I haven't caught
+        // that actually happening. However, the off() calls seem to prevent it.
+        $('#audio-next').off().click(e => this.moveToNextSpan());
+        $('#audio-prev').off().click(e => this.moveToPrevSpan());
+        $('#audio-record').off().mousedown(e => this.startRecordCurrent()).mouseup(e => this.endRecordCurrent());
+        $('#audio-play').off().click(e => this.playCurrent());
+        $('#audio-listen').off().click(e => this.listen());
+        $('#audio-clear').off().click(e => this.clearRecording());
+        $('#player').off();
+        $('#player').bind('error', e => alert("There was an error playing the sentence."))//TODO ;//this.cantPlay());
 
-    recording: boolean;
-    levelCanvas: HTMLCanvasElement;
-    levelCanvasWidth: number = 15;
-    levelCanvasHeight: number = 80;
-    hiddenSourceBubbles: JQuery;
-    audioDevicesUrl = '/bloom/audioDevices';
-    playingAll: boolean; // true during listen.
+        $('#player').bind('ended', e => this.playEnded());
+        $('#audio-input-dev').off().click(e => this.selectInputDevice());
+        
+        toastr.options.positionClass = 'toast-toolbox-bottom';
+        toastr.options.timeOut =  10000;
+        toastr.options.preventDuplicates= true;
+    }
+    public setupForRecording(): void {
+        this.updateInputDeviceDisplay();
+        this.hiddenSourceBubbles = this.getPage().find('.uibloomSourceTextsBubble');
+        this.hiddenSourceBubbles.hide();
+        var editable = this.getRecordableDivs();
+        if (editable.length === 0) {
+            // no editable text on this page.
+            this.changeStateAndSetExpected('');
+            return;
+        }
+        this.updateMarkupAndControlsToCurrentText();
 
+        this.changeStateAndSetExpected('record');
+
+        this.getWebSocket().onmessage = event => {
+                this.setstaticPeakLevel(event.data);
+        }
+    }
+    
+    public removeRecordingSetup() {
+        //alert('removeRecordingSetup');
+        this.hiddenSourceBubbles.show();
+        var page = this.getPage();
+        page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
+        
+        try{
+            this.disposeWebSocket();
+        }
+        catch(e) {
+            console.log("Error closing staticPeakLevelSocket: "+e);
+        }
+    }
+    
+    private getWebSocket() : WebSocket {
+        if(typeof window.top["peakLevelSocket"] == "undefined")
+            window.top["peakLevelSocket"] = new WebSocket("ws://127.0.0.1:8189");
+        return window.top["peakLevelSocket"];
+    }
+    private disposeWebSocket(){
+        if(typeof window.top["peakLevelSocket"] != "undefined")
+        {
+            window.top["peakLevelSocket"].close();
+            window.top["peakLevelSocket"] = undefined;
+        }
+    }
+    
     // We only do recording in editable divs in the main content language.
     // This should NOT restrict to ones that already contain audio-sentence spans.
     private getRecordableDivs() : JQuery {
@@ -69,72 +141,60 @@ class AudioRecording {
     }
 
     private moveToNextSpan(): void {
+        toastr.clear();
+
+        var next = this.getNextSpan();
+        if (!next)
+            return;
+        var current: JQuery = this.getPage().find('.ui-audioCurrent');
+        this.setCurrentSpan(current, $(next));
+        this.changeStateAndSetExpected('record');
+    }
+    private getNextSpan(): HTMLElement{
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
         var audioElts = this.getAudioElements();
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
-        if (next.length === 0) return; // enhance: go to next page??
-        this.setCurrentSpan(current, next);
-        this.setStatus('record', Status.Expected);
+        return next.length === 0 ? null : next[0];
+    }
+    
+     private getPreviousSpan(): HTMLElement{
+        var current: JQuery = this.getPage().find('.ui-audioCurrent');
+        var audioElts = this.getAudioElements();
+        var currentIndex = audioElts.index(current);
+        if (currentIndex === 0) return null;
+        var prev: JQuery = audioElts.eq(currentIndex - 1);
+        return (prev.length === 0)  ? null : prev[0];
     }
 
     private setCurrentSpan(current: JQuery, changeTo: JQuery): void {
         if (current)
             current.removeClass('ui-audioCurrent');
         changeTo.addClass('ui-audioCurrent');
-        var id = changeTo.attr("id");
-        var player = $('#player');
-        //  FF can't directly play mp3, try wav. The relevant wav file is in the audio file of the book in the page frame
-        
-        player.attr('src', this.currentAudioUrl(id));
-        var audioElts = this.getAudioElements();
-        var index = audioElts.index(changeTo);
-        this.setStatus('prev', index === 0 ? Status.Disabled : Status.Enabled);
-        this.setStatus('next', index === audioElts.length - 1 ? Status.Disabled : Status.Enabled);
-        
-        this.setStatus('play', Status.Disabled);
-        this.setStatus('clear', Status.Disabled);
-        
-        axios.get(this.currentAudioUrl(id)).then( response => {
-            this.setStatus('play', Status.Enabled);
-            this.setStatus('clear', Status.Enabled);
-        }).catch(error =>{
-            //server couldn't find it, so just leave these buttons disabled
-        });
-
-        
-        // This one we currently just allow the user to try any time there is content in the page.
-        // There's no easy way to test 'is there a recording for any segment'; we're enabling
-        // the play button based on feedback we get as a result of setting the player's src to
-        // the expected file, and that only tells us about that one segment.
-        this.setStatus('listen', Status.Enabled);
+        this.idOfCurrentSentence = changeTo.attr("id");
+        this.updatePlayerStatus();
+        this.changeStateAndSetExpected('record');
     }
 
     private currentAudioUrl(id: string): string{
+        return this.urlPrefix() + id + '.wav';
+    } 
+    
+    private urlPrefix():string{
         var bookSrc = this.getPageFrame().src;
         var index = bookSrc.lastIndexOf('/');
         var bookFolderUrl = bookSrc.substring(0, index + 1);
-        return bookFolderUrl+'audio/' + id + '.wav';
+        return bookFolderUrl+'audio/';
     }
 
     private moveToPrevSpan(): void {
+        toastr.clear();
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
         var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return;
-        var prev: JQuery = audioElts.eq(currentIndex - 1);
-        if (prev.length === 0) return;
-        this.setCurrentSpan(current, prev);
-    }
-
-    private endRecordCurrent(): void {
-        if (!this.recording) return; // sometimes we get bounce?
-        this.recording = false;
-        this.fireCSharpEvent("endRecordAudio", "");
-        this.setStatus('record', Status.Disabled);
-        this.updatePlayerStatus();
-        this.setStatus('record', Status.Enabled);
-        this.setStatus('play', Status.Expected);
-        this.setStatus('listen', Status.Enabled);
+        var prev = this.getPreviousSpan();
+        if (prev == null) return;
+        this.setCurrentSpan(current, $(prev));
     }
 
     // Gecko has no way of knowing that we've created or modified the audio file,
@@ -143,28 +203,65 @@ class AudioRecording {
     // based on the current time so that it asks the server for the file again.
     // Fixes BL-3161
     private updatePlayerStatus() {
-        var player = $('#player');
-        var src = player.attr('src').split("?")[0]; // strip off any previous query string
-        player.attr('src', src+"?nocache="+new Date().getTime());
+        var player  = $('#player');      
+        player.attr('src', this.currentAudioUrl( this.idOfCurrentSentence)+"?nocache="+new Date().getTime());
     }
 
     private startRecordCurrent(): void {
+        if(!this.isEnabledOrExpected('record')){
+            return;
+        }
+        
+        toastr.clear();
         this.recording = true;
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
         var id = current.attr("id");
-        this.fireCSharpEvent("startRecordAudio", id);
-        this.setStatus('record', Status.Active);
+        axios.post("/bloom/audio/startRecord?id="+ id).then(result=>{
+            this.setStatus('record', Status.Active);
+        }).catch(error=>{
+            toastr.error(error.statusText)
+            console.log(error.statusText);
+        });
+    }
+
+
+    private endRecordCurrent(): void {
+        if (!this.recording) return; // will trigger if the button wasn't enabled, so the recording never started
+        
+        this.recording = false;
+        
+        //this.updatePlayerStatus();
+
+        axios.post('/bloom/audio/endRecord').then( response =>{        
+            this.updatePlayerStatus();
+            this.setStatus('record', Status.Disabled);
+            //at the moment, the bakcend is returning when it asks the recorder to stop.
+            //But the actual file isn't available for a few moments after that.
+            //So we delay looking for it.
+            window.setTimeout( ()=>{
+                this.changeStateAndSetExpected('play');
+            }, 1000);
+        }).catch( error =>{
+             this.changeStateAndSetExpected('record');//record failed, so we expect them to try again
+                toastr.error(error.statusText);
+                console.log(error.statusText);
+                this.updatePlayerStatus();
+        });
     }
 
     private playCurrent(): void {
+        toastr.clear();
+
+        if(!this.isEnabledOrExpected('play')){
+            return;
+        }
+        
         this.playingAll = false; // in case it gets clicked after an incomplete play all.
-        this.setStatus('listen', Status.Enabled); // but no longer active, in case it was
         this.setStatus('play', Status.Active);
         this.playCurrentInternal();
     }
     private playCurrentInternal() {
         (<HTMLMediaElement>document.getElementById('player')).play();
-        this.setStatus('record', Status.Enabled); // but not 'expected' for now.
     }
 
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
@@ -190,31 +287,10 @@ class AudioRecording {
                 return;
             }
             this.playingAll = false;
+            this.changeStateAndSetExpected('listen');
+            return;
         }
-        this.setStatus('play', Status.Enabled); // no longer 'expected' or 'active'
-        this.setStatus('listen', Status.Enabled); // no longer 'expected' or 'active'
-        if ($('#audio-next').hasClass('enabled')) {
-            this.setStatus('next', Status.Expected);
-        }
-    }
-
-    private setStatus(which: string, to: Status): void {
-        $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(Status[to].toLowerCase());
-        if (to === Status.Expected) {
-            $('#audio-' + which + '-label').addClass('expected');
-        } else {
-            $('#audio-' + which + '-label').removeClass('expected');
-        }
-    }
-
-    private cantPlay(): void {
-        if ($('#audio-play').hasClass('expected')) {
-            // We just finished a too-short or otherwise unsuccessful recording.
-            // We still need to record.
-            this.setStatus('record', Status.Expected);
-        }
-        this.setStatus('play', Status.Disabled);
-        this.setStatus('clear', Status.Disabled);
+        this.changeStateAndSetExpected('next');
     }
 
     private selectInputDevice(): void {
@@ -236,10 +312,12 @@ class AudioRecording {
             for (var i = 0; i < data.devices.length; i++) {
                 devList.append('<li>' + data.devices[i] + '</li>');
             }
-            devList.one("click", function(event) {
+            (<any>devList).one("click", function(event) {
                     devList.hide();
-                thisClass.fireCSharpEvent('changeRecordingDevice', $(event.target).text());
-                thisClass.updateInputDeviceDisplay();
+                    axios.post("/bloom/audio/setRecordingDevice?"+$(event.target).text()).catch(error=>{
+                        toastr.error(error.statusText);
+                    });
+                    thisClass.updateInputDeviceDisplay();
                 })
                 .show().position({
                     my: "right bottom",
@@ -280,32 +358,19 @@ class AudioRecording {
 
     // Clear the recording for this sentence
     clearRecording(): void {
-        var currentFile = $('#player').attr('src');
-        this.fireCSharpEvent('deleteFile', currentFile);
+        toastr.clear();
+
+        if(!this.isEnabledOrExpected('clear')){
+            return;
+        }
+        //var currentFile = $('#player').attr('src');
+        // this.fireCSharpEvent('deleteFile', currentFile);
+        axios.post('/bloom/audio/deleteSegment?id='+this.idOfCurrentSentence).catch(error=>{
+            toastr.error(error.statusText);
+        });
         this.updatePlayerStatus();
-        this.setStatus('record', Status.Expected);
-        this.setStatus('play', Status.Disabled);
-        this.setStatus('clear', Status.Disabled);
+        this.changeStateAndSetExpected('record');
     }
-
-    public initializeTalkingBookTool() {
-        // I've sometimes observed events like click being handled repeatedly for a single click.
-        // Adding thse .off calls seems to help...it's as if something causes this show event to happen
-        // more than once so the event handlers were being added repeatedly, but I haven't caught
-        // that actually happening. However, the off() calls seem to prevent it.
-        $('#audio-next').off().click(e => this.moveToNextSpan());
-        $('#audio-prev').off().click(e => this.moveToPrevSpan());
-        $('#audio-record').off().mousedown(e => this.startRecordCurrent()).mouseup(e => this.endRecordCurrent());
-        $('#audio-play').off().click(e => this.playCurrent());
-        $('#audio-listen').off().click(e => this.listen());
-        $('#audio-clear').off().click(e => this.clearRecording());
-        $('#player').off();
-        $('#player').bind('error', e => this.cantPlay());
-
-        $('#player').bind('ended', e => this.playEnded());
-        $('#audio-input-dev').off().click(e => this.selectInputDevice());
-    }
-
     public getPageFrame(): HTMLIFrameElement {
         return <HTMLIFrameElement>parent.window.document.getElementById('page');
     }
@@ -317,18 +382,7 @@ class AudioRecording {
         return $(page.contentWindow.document.body);
     }
 
-    public setupForRecording(): void {
-        this.updateInputDeviceDisplay();
-        this.hiddenSourceBubbles = this.getPage().find('.uibloomSourceTextsBubble');
-        this.hiddenSourceBubbles.hide();
-        var editable = this.getRecordableDivs();
-        if (editable.length === 0) {
-            // no editable text on this page.
-            this.configureForNothingToRecord();
-            return;
-        }
-        this.updateMarkupAndControlsToCurrentText();
-    }
+
 
     public updateMarkupAndControlsToCurrentText() {
         var editable = this.getRecordableDivs();
@@ -338,40 +392,20 @@ class AudioRecording {
         editable = editable.has('span.audio-sentence');
         var thisClass = this;
 
-        thisClass.setStatus('record', Status.Expected);
+        //thisClass.setStatus('record', Status.Expected);
         thisClass.levelCanvas = $('#audio-meter').get()[0];
         var firstSentence = editable.find('span.audio-sentence').first();
         if (firstSentence.length === 0) {
             // no recordable sentence found.
-            this.configureForNothingToRecord();
             return;
         }
         thisClass.setCurrentSpan(this.getPage().find('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
     }
 
-    // Disable all buttons...nothing to record on this page
-    configureForNothingToRecord(): void {
-        this.setStatus('record', Status.Disabled);
-        this.setStatus('play', Status.Disabled);
-        this.setStatus('next', Status.Disabled);
-        this.setStatus('prev', Status.Disabled);
-        this.setStatus('listen', Status.Disabled);
-        this.setStatus('clear', Status.Disabled);
-        this.setStatus('listen', Status.Disabled);
-   }
-
-    public removeRecordingSetup() {
-        this.hiddenSourceBubbles.show();
-        var page = this.getPage();
-        page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
-    }
-
-    // This gets invoked (via a non-object method of the same name in this file,
-    // and one of the same name in CalledFromCSharp) when a C# event fires indicating
-    // that we should display a different peak level. It draws a series of bars
+    // This gets invoked via websocket message. It draws a series of bars
     // (reminiscent of leds in a hardware level meter) within the canvas in the
     //  top right of the bubble to indicate the current peak level.
-    public setPeakLevel(level: string): void {
+    public setstaticPeakLevel(level: string): void {
         var ctx = this.levelCanvas.getContext("2d");
         // Erase the whole canvas
         var height = 15;
@@ -792,6 +826,70 @@ class AudioRecording {
         var event = new MessageEvent(eventName, {'bubbles': true, 'cancelable': true, 'data': eventData });
         document.dispatchEvent(event);
     }
+    
+    
+    // ------------ State Machine ----------------
+    
+    private changeStateAndSetExpected(expectedVerb: string){
+        console.log("changeState("+expectedVerb+")");
+        this.setStatus('record', Status.Disabled);
+        this.setStatus('play', Status.Disabled);
+        this.setStatus('next', Status.Disabled);
+        this.setStatus('prev', Status.Disabled);
+        this.setStatus('clear', Status.Disabled);
+        this.setStatus('listen', Status.Disabled);
+        
+        if(this.getPage().find('.ui-audioCurrent').length===0)
+            return;
+                    
+        this.setEnabledOrExpecting('record', expectedVerb);
+            
+        //set play and clear buttons based on whether we have an audio file for this
+        axios.get("/bloom/audio/checkForSegement?id="+this.idOfCurrentSentence).then( response => {
+            if(response.data === "exists")   {
+                this.setStatus('clear', Status.Enabled);
+                this.setEnabledOrExpecting('play',  expectedVerb);
+            }
+        }).catch(error =>{
+            toastr.error("Error checking on audio file "+error.statusText);
+            //server couldn't find it, so just leave these buttons disabled
+        });
+    
+        if(this.getNextSpan())
+        {
+            this.setEnabledOrExpecting('next',  expectedVerb);
+        }
+        if(this.getPreviousSpan())
+        {
+            this.setStatus('prev',  Status.Enabled);
+        }
+                
+        //set listen button based on whether we have an audio at all for this page
+        axios.get("/bloom/audio/enableListenButton").then(response=>{
+            if(response)
+                this.setStatus('listen', Status.Enabled);
+        });
+    }
+    
+    private setEnabledOrExpecting(verb:  string, expectedVerb: string){
+        if(expectedVerb == verb)
+            this.setStatus(verb,Status.Expected);
+        else
+           this.setStatus(verb,Status.Enabled);
+    }
+    
+    private isEnabledOrExpected(verb: string):Boolean{
+        return $('#audio-' + verb).hasClass('enabled') || $('#audio-' + verb).hasClass('expected') ;    
+    }
+    
+    private setStatus(which: string, to: Status): void {
+        $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(Status[to].toLowerCase());
+        if (to === Status.Expected) {
+            $('#audio-' + which + '-label').addClass('expected');
+        } else {
+            $('#audio-' + which + '-label').removeClass('expected');
+        }
+    }
 }
 
 var audioRecorder;
@@ -805,6 +903,3 @@ function initializeTalkingBookTool() {
     audioRecorder.initializeTalkingBookTool();
 }
 
-function setPeakLevel(level:string) {
-    audioRecorder.setPeakLevel(level);
-}
