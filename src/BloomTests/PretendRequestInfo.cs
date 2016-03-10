@@ -43,7 +43,9 @@ namespace Bloom.web
 			get { return "<root>" + ReplyContents + "</root>"; }
 		}
 
-		public bool HaveOutput { get; }
+		// get is required to fulfil interface contract. Not currently used in tests.
+		// set is required to satisfy (Team City version of) compiler for a valid auto-implemented property.
+		public bool HaveOutput { get; set; }
 
 		public void WriteCompleteOutput(string s)
 		{
