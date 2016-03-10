@@ -100,9 +100,7 @@ export default class AudioRecording {
             return;
         }
         this.updateMarkupAndControlsToCurrentText();
-    peakLevelSocket: WebSocket;
-//    peakLevelIntervalId : number;
-
+        
         this.changeStateAndSetExpected('record');
 
         this.getWebSocket().onmessage = event => {
@@ -390,8 +388,6 @@ export default class AudioRecording {
         if (!page) return null;
         return $(page.contentWindow.document.body);
     }
-
-
 
     public updateMarkupAndControlsToCurrentText() {
         var editable = this.getRecordableDivs();

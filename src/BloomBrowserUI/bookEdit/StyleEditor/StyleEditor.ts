@@ -7,7 +7,6 @@
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
 
-
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
 import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
@@ -502,8 +501,8 @@ export default class StyleEditor {
         return typeof ($target.closest('.bloom-frontMatter')[0]) !== 'undefined' || typeof ($target.closest('.bloom-backMatter')[0]) !== 'undefined';
     }
 
-    AdjustFormatButton(jqueryNode: JQuery):void {
-        var newBottom = -1 * GetDifferenceBetweenHeightAndParentHeight(jqueryNode.parent());
+    AdjustFormatButton(element: Element):void {
+        var newBottom = -1 * GetDifferenceBetweenHeightAndParentHeight($(element.parentElement));
         if (newBottom < 0) {
             newBottom = 0;
         }
@@ -540,10 +539,11 @@ export default class StyleEditor {
         $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
 
         //make the button stay at the bottom if we overflow and thus scroll
-        $(targetBox).on("scroll", this.AdjustFormatButton);
+        $(targetBox).on("scroll", n => this.AdjustFormatButton(n.target));
+
 
         // And in case we are starting out on a centerVertically page we might need to adjust it now
-        this.AdjustFormatButton($(targetBox));
+        this.AdjustFormatButton(targetBox);
 
         var formatButton = $('#formatButton');
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened

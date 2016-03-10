@@ -587,7 +587,7 @@ function SetupElements(container) {
         }
         else {
             // already have a format cog, better make sure it's in the right place
-            editor.AdjustFormatButton($(this));
+            editor.AdjustFormatButton(this);
         }
     });
 
