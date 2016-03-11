@@ -158,30 +158,40 @@ namespace Bloom
 		/// <param name="thumbnailOptions"></param>
 		/// <param name="callback"></param>
 		/// <param name="errorCallback"></param>
-		public void RebuildThumbNailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
+		public void RebuildThumbNailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
+			Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
 		{
-			if (!book.Storage.RemoveBookThumbnail(thumbnailOptions.FileName))
+			try
 			{
-				// thumbnail is marked readonly, so just use it
-				Image thumb;
-				book.Storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb);
-				callback(book.BookInfo, thumb);
-				return;
-			}
-
-			_thumbnailProvider.RemoveFromCache(book.Storage.Key);
-
-			thumbnailOptions.BorderStyle = (book.Type == Book.Book.BookType.Publication)?HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid : HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
-			GetThumbNailOfBookCoverAsync(book, thumbnailOptions, image=>callback(book.BookInfo,image),
-				error=>
+				if(!book.Storage.RemoveBookThumbnail(thumbnailOptions.FileName))
 				{
-					//Enhance; this isn't a very satisfying time to find out, because it's only going to happen if we happen to be rebuilding the thumbnail.
-					//It does help in the case where things are bad, so no thumbnail was created, but by then probably the user has already had some big error.
-					//On the other hand, given that they have this bad book in their collection now, it's good to just remind them that it's broken and not
-					//keep showing green error boxes.
-					book.CheckForErrors();
-					errorCallback(book.BookInfo, error);
-				});
+					// thumbnail is marked readonly, so just use it
+					Image thumb;
+					book.Storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb);
+					callback(book.BookInfo, thumb);
+					return;
+				}
+
+				_thumbnailProvider.RemoveFromCache(book.Storage.Key);
+
+				thumbnailOptions.BorderStyle = (book.Type == Book.Book.BookType.Publication)
+					? HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid
+					: HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
+				GetThumbNailOfBookCoverAsync(book, thumbnailOptions, image => callback(book.BookInfo, image),
+					error =>
+					{
+						//Enhance; this isn't a very satisfying time to find out, because it's only going to happen if we happen to be rebuilding the thumbnail.
+						//It does help in the case where things are bad, so no thumbnail was created, but by then probably the user has already had some big error.
+						//On the other hand, given that they have this bad book in their collection now, it's good to just remind them that it's broken and not
+						//keep showing green error boxes.
+						book.CheckForErrors();
+						errorCallback(book.BookInfo, error);
+					});
+			}
+			catch(Exception error)
+			{
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Problem creating book thumbnail ", error);
+			}
 		}
 	}
 }
