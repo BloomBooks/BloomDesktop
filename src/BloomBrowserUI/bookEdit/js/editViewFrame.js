@@ -28,33 +28,33 @@ function showAddPageDialog(templatesJSON) {
     if ($(document).find(".ui-dialog").length) {
         return;
     }
-    parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
-
+    
         var forChooseLayout = templatesJSON.chooseLayout;
+        var key = 'EditTab.AddPageDialog.Title';
+        var english = 'Add Page...';
         if (forChooseLayout) {
-            var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.ChooseLayoutTitle', 'Choose Different Layout...');
-
-        } else {
-            var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.Title', 'Add Page...');
+            key = 'EditTab.AddPageDialog.ChooseLayoutTitle';
+            english = 'Choose Different Layout...';
         }
-        var dialogContents = CreateAddPageDiv(templatesJSON);
+        parentElement.localizationManager.asyncGetText(key, english).done(title => {
+            var dialogContents = CreateAddPageDiv(templatesJSON);
 
-        theDialog = $(dialogContents).dialog({
-            class: "addPageDialog",
-            autoOpen: false,
-            resizable: false,
-            modal: true,
-            width: 795,
-            height: 550,
-            position: {
-                my: "left bottom", at: "left bottom", of: window
-            },
-            title: title,
-            close: function() {
-                $(this).remove();
-                fireCSharpEvent('setModalStateEvent', 'false');
-            },
-        });
+            theDialog = $(dialogContents).dialog({
+                class: "addPageDialog",
+                autoOpen: false,
+                resizable: false,
+                modal: true,
+                width: 795,
+                height: 550,
+                position: {
+                    my: "left bottom", at: "left bottom", of: window
+                },
+                title: "TEST"+title,
+                close: function() {
+                    $(this).remove();
+                    fireCSharpEvent('setModalStateEvent', 'false');
+                },
+            });
 
         //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
         // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
@@ -70,12 +70,6 @@ function showAddPageDialog(templatesJSON) {
     });
 }
 
-function getAddPageDialogLocalizedStrings() {
-    // Without preloading these, they are not available when the dialog is created
-    var pairs = {};
-    pairs['EditTab.AddPageDialog.Title'] = 'Add Page...';
-    return pairs;
-}
 
 //noinspection JSUnusedGlobalSymbols
 // Used by the addPage_frame to initialize the setup dialog with the available template pages
