@@ -90,7 +90,7 @@ namespace Bloom.Book
 			{
 				//For https://silbloom.myjetbrains.com/youtrack/issue/BL-3222  we did a real fix for 3.6.
 				//But this will cover us for future errors here, which are not worth stopping the user from doing work.
-				NonFatalProblem.Handle(ThrowIf.Alpha, InformIf.Release, "Minor book prefs could not be saved to "+_fileName, error);
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Minor book prefs could not be saved to "+_fileName, error);
 			}
 		}
 	}

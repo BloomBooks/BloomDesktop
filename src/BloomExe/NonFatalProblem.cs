@@ -5,8 +5,9 @@ using SIL.Reporting;
 
 namespace Bloom
 {
-	public enum ThrowIf { Alpha, Beta, Release }
-	public enum InformIf { Alpha, Beta, Release }
+	// NB: these must have the exactly the same symbols
+	public enum ModalIf { Alpha, Beta, All }
+	public enum PassiveIf { Alpha, Beta, All }
 
 	/// <summary>
 	/// Provides a way to note a problem in the log and, depending on channel, notify the user.
@@ -17,57 +18,49 @@ namespace Bloom
 		/// <summary>
 		/// Always log, possibly inform the user, possibly throw the exception
 		/// </summary>
-		/// <param name="whenToThrow">Will throw if the channel is this or lower</param>
-		/// <param name="whenToPassivelyInform">Ignored for now</param>
+		/// <param name="modalThreshold">Will show a modal dialog if the channel is this or lower</param>
+		/// <param name="passiveThreshold">Ignored for now</param>
 		/// <param name="shortUserLevelMessage">Should make sense in a small toast notification</param>
 		/// <param name="exception"></param>
-		public static void Handle(ThrowIf whenToThrow, InformIf whenToPassivelyInform, string shortUserLevelMessage = null,
+		public static void Report(ModalIf modalThreshold, PassiveIf passiveThreshold, string shortUserLevelMessage = null,
 			Exception exception = null)
 		{
 			shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
 			Logger.WriteError("NonFatalProblem: " + shortUserLevelMessage, exception);
 
-			var channel = ApplicationUpdateSupport.ChannelName.ToLower();
-
-			if(exception != null && Matches(whenToThrow).Any(s => channel.Contains(s)))
+			if(modalThreshold == ModalIf.Alpha)
 			{
-				throw exception;
+				shortUserLevelMessage = "[Dev/Alpha channel only]: "+shortUserLevelMessage;
 			}
 
-			if (!string.IsNullOrEmpty(shortUserLevelMessage)  && Matches(whenToPassivelyInform).Any(s => channel.Contains(s)))
+			var channel = ApplicationUpdateSupport.ChannelName.ToLower();
+
+			if(exception != null && Matches(modalThreshold).Any(s => channel.Contains(s)))
+			{
+				SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, shortUserLevelMessage);
+				return;
+			}
+
+			//just convert from InformIf to ThrowIf so that we don't have to duplicate code
+			var passive = (ModalIf) ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
+			if (!string.IsNullOrEmpty(shortUserLevelMessage)  && Matches(passive).Any(s => channel.Contains(s)))
 			{
 				//Future
 			}
 		}
 
-		private static string[] Matches(ThrowIf t)
+		private static IEnumerable<string> Matches(ModalIf threshold)
 		{
-			switch (t)
+			switch (threshold)
 			{
-				case ThrowIf.Release:
-					return new string[] {"developer", "alpha", "beta", "release"};
-				case ThrowIf.Beta:
+				case ModalIf.All:
+					return new string[] {"" /*will match anything*/};
+				case ModalIf.Beta:
 					return new string[] { "developer", "alpha", "beta" };
-				case ThrowIf.Alpha:
+				case ModalIf.Alpha:
 					return new string[] { "developer", "alpha" };
-
 				default:
 					return new string[] {};
-			}
-		}
-
-		private static string[] Matches(InformIf t)
-		{
-			switch (t)
-			{
-				case InformIf.Release:
-					return new string[] { "developer", "alpha", "beta", "release" };
-				case InformIf.Beta:
-					return new string[] { "developer", "alpha", "beta" };
-				case InformIf.Alpha:
-					return new string[] { "developer", "alpha" };
-				default:
-					return new string[] { };
 			}
 		}
 	}
