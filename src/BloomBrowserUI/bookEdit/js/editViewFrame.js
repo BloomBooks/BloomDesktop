@@ -49,7 +49,7 @@ function showAddPageDialog(templatesJSON) {
                 position: {
                     my: "left bottom", at: "left bottom", of: window
                 },
-                title: "TEST"+title,
+                title: title,
                 close: function() {
                     $(this).remove();
                     fireCSharpEvent('setModalStateEvent', 'false');
