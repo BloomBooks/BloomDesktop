@@ -177,17 +177,25 @@ namespace Bloom.Book
 		{
 			var licenseImage = metadata.License.GetImage();
 			var imagePath = bookFolderPath.CombineForPath("license.png");
-			if (licenseImage != null)
+			try
 			{
-				using (Stream fs = new FileStream(imagePath, FileMode.Create))
+				if(licenseImage != null)
 				{
-					licenseImage.Save(fs, ImageFormat.Png);
+					using(Stream fs = new FileStream(imagePath, FileMode.Create))
+					{
+						licenseImage.Save(fs, ImageFormat.Png);
+					}
+				}
+				else
+				{
+					if(File.Exists(imagePath))
+						File.Delete(imagePath);
 				}
 			}
-			else
+			catch(Exception error)
 			{
-				if (File.Exists(imagePath))
-					File.Delete(imagePath);
+				//BL-3227 Occasionally get The process cannot access the file '...\license.png' because it is being used by another process
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Could not update license image (BL-3227).", error);
 			}
 		}
 

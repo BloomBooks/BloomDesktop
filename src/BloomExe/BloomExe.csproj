@@ -230,6 +230,7 @@
     <Compile Include="Edit\TalkingBookTool.cs" />
     <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
+    <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
       <SubType>UserControl</SubType>
     </Compile>
