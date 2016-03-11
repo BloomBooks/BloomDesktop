@@ -71,19 +71,28 @@ namespace Bloom.Book
 		{
 			// We're checking this because the deserialization routine calls the property setters which triggers a save. We don't
 			// want to save while loading.
-			if (_loading)
+			if(_loading)
 				return;
 			var prefs = JsonConvert.SerializeObject(this);
+
 			Debug.Assert(!string.IsNullOrWhiteSpace(prefs));
 
-			if (!string.IsNullOrWhiteSpace(prefs))
+			try
 			{
-				var temp = new SIL.IO.TempFileForSafeWriting(_fileName);
-				File.WriteAllText(temp.TempFilePath, prefs);
-				temp.WriteWasSuccessful();
+				if(!string.IsNullOrWhiteSpace(prefs))
+				{
+					var temp = new SIL.IO.TempFileForSafeWriting(_fileName);
+					File.WriteAllText(temp.TempFilePath, prefs);
+					temp.WriteWasSuccessful();
+					throw new ApplicationException("test");
+				}
+			}
+			catch(Exception error)
+			{
+				//For https://silbloom.myjetbrains.com/youtrack/issue/BL-3222  we did a real fix for 3.6.
+				//But this will cover us for future errors here, which are not worth stopping the user from doing work.
+				NonFatalProblem.Handle(ThrowIf.Alpha, InformIf.Release, "Minor book prefs could not be saved to "+_fileName, error);
 			}
 		}
 	}
-
-
 }

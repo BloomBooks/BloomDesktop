@@ -223,6 +223,7 @@
     <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
     <Compile Include="ElementProxy.cs" />
+    <Compile Include="NonFatalProblem.cs" />
     <Compile Include="Publish\EpubMaker.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
