@@ -26,6 +26,19 @@ namespace Bloom
 			Exception exception = null)
 		{
 			shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
+
+			if(exception == null)
+			{
+				try
+				{
+					throw new ApplicationException("Not actually an exception, just a message.");
+				}
+				catch(Exception errorToGetStackTrace)
+				{
+					exception = errorToGetStackTrace;
+				}
+			}
+
 			Logger.WriteError("NonFatalProblem: " + shortUserLevelMessage, exception);
 
 			if(modalThreshold == ModalIf.Alpha)
@@ -35,9 +48,18 @@ namespace Bloom
 
 			var channel = ApplicationUpdateSupport.ChannelName.ToLower();
 
-			if(exception != null && Matches(modalThreshold).Any(s => channel.Contains(s)))
+			if( Matches(modalThreshold).Any(s => channel.Contains(s)))
 			{
-				SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, shortUserLevelMessage);
+				try
+				{
+					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, shortUserLevelMessage);
+				}
+				catch(Exception)
+				{
+					//if we're running when the UI is already shut down, the above is going to throw.
+					//At least if we're running in a debugger, we'll stop here:
+					throw new ApplicationException(shortUserLevelMessage+ "Error trying to report normally.");
+				}
 				return;
 			}
 
