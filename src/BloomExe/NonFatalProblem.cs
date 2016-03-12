@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Windows.Forms;
+using System.Windows.Media;
+using Bloom.MiscUI;
 using SIL.Reporting;
 
 namespace Bloom
@@ -11,7 +15,6 @@ namespace Bloom
 
 	/// <summary>
 	/// Provides a way to note a problem in the log and, depending on channel, notify the user.
-	/// Enhance: wire up to a passive notification "toast" in the UI
 	/// </summary>
 	public class NonFatalProblem
 	{
@@ -20,20 +23,23 @@ namespace Bloom
 		/// </summary>
 		/// <param name="modalThreshold">Will show a modal dialog if the channel is this or lower</param>
 		/// <param name="passiveThreshold">Ignored for now</param>
-		/// <param name="shortUserLevelMessage">Should make sense in a small toast notification</param>
+		/// <param name="shortUserLevelMessage">Simple message that fits in small toast notification</param>
+		/// <param name="detailedMessage">Info describes the problem, which we get if they report the problem</param>
 		/// <param name="exception"></param>
 		public static void Report(ModalIf modalThreshold, PassiveIf passiveThreshold, string shortUserLevelMessage = null,
+			string detailedMessage = null,
 			Exception exception = null)
 		{
 			shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
+			detailedMessage = string.IsNullOrEmpty(detailedMessage) ? shortUserLevelMessage : detailedMessage;
 
-			if(exception == null)
+			if (exception == null)
 			{
 				try
 				{
 					throw new ApplicationException("Not actually an exception, just a message.");
 				}
-				catch(Exception errorToGetStackTrace)
+				catch (Exception errorToGetStackTrace)
 				{
 					exception = errorToGetStackTrace;
 				}
@@ -41,33 +47,36 @@ namespace Bloom
 
 			Logger.WriteError("NonFatalProblem: " + shortUserLevelMessage, exception);
 
-			if(modalThreshold == ModalIf.Alpha)
+			if (modalThreshold == ModalIf.Alpha)
 			{
-				shortUserLevelMessage = "[Dev/Alpha channel only]: "+shortUserLevelMessage;
+				shortUserLevelMessage = "[Alpha]: " + shortUserLevelMessage;
 			}
 
 			var channel = ApplicationUpdateSupport.ChannelName.ToLower();
 
-			if( Matches(modalThreshold).Any(s => channel.Contains(s)))
+			if (Matches(modalThreshold).Any(s => channel.Contains(s)))
 			{
 				try
 				{
-					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, shortUserLevelMessage);
+					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, detailedMessage);
 				}
-				catch(Exception)
+				catch (Exception)
 				{
 					//if we're running when the UI is already shut down, the above is going to throw.
 					//At least if we're running in a debugger, we'll stop here:
-					throw new ApplicationException(shortUserLevelMessage+ "Error trying to report normally.");
+					throw new ApplicationException(detailedMessage + "Error trying to report normally.");
 				}
 				return;
 			}
 
 			//just convert from InformIf to ThrowIf so that we don't have to duplicate code
-			var passive = (ModalIf) ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
-			if (!string.IsNullOrEmpty(shortUserLevelMessage)  && Matches(passive).Any(s => channel.Contains(s)))
+			var passive = (ModalIf)ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
+			if (!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
 			{
-				//Future
+				var toast = new ToastNotifier();
+				toast.ToastClicked += (s, e) => { SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, detailedMessage); };
+				toast.Image.Image = ToastNotifier.WarningBitmap;
+				toast.Show(shortUserLevelMessage, "Report", 5);
 			}
 		}
 
@@ -76,13 +85,13 @@ namespace Bloom
 			switch (threshold)
 			{
 				case ModalIf.All:
-					return new string[] {"" /*will match anything*/};
+					return new string[] { "" /*will match anything*/};
 				case ModalIf.Beta:
 					return new string[] { "developer", "alpha", "beta" };
 				case ModalIf.Alpha:
 					return new string[] { "developer", "alpha" };
 				default:
-					return new string[] {};
+					return new string[] { };
 			}
 		}
 	}
