@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Bloom.MiscUI
@@ -58,6 +59,10 @@ namespace Bloom.MiscUI
 			_pauseTimer.Tick += PauseTimerTick;
 		}
 
+//		public Color BackgroundColor
+//		{
+//			set { this.color}
+//		}
 		/// <summary>
 		/// Stops it stealing focus from the main window even though it will be in front of that window.
 		/// </summary>
@@ -65,6 +70,9 @@ namespace Bloom.MiscUI
 		{
 			get { return true; }
 		}
+
+		//storing this here so that we only make one and don't have to worry about disposing of it
+		public static Image WarningBitmap = SystemIcons.Warning.ToBitmap();
 
 		private void PauseTimerTick(object sender, EventArgs e)
 		{

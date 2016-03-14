@@ -195,7 +195,7 @@ namespace Bloom.Book
 			catch(Exception error)
 			{
 				//BL-3227 Occasionally get The process cannot access the file '...\license.png' because it is being used by another process
-				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Could not update license image (BL-3227).", error);
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Could not update license image (BL-3227).", "Image was at" +imagePath, exception: error);
 			}
 		}
 

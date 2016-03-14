@@ -10,7 +10,7 @@ namespace Bloom.Book
 	public class UserPrefs
 	{
 		private bool _loading = true;
-		private string _fileName;
+		private string _filePath;
 		private int _mostRecentPage;
 
 		private UserPrefs() {}
@@ -39,7 +39,7 @@ namespace Bloom.Book
 			}
 			if(userPrefs == null)
 				userPrefs = new UserPrefs();
-			userPrefs._fileName = fileName;
+			userPrefs._filePath = fileName;
 			userPrefs._loading = false;
 			return userPrefs;
 		}
@@ -50,7 +50,7 @@ namespace Bloom.Book
 		/// <param name="newDirectoryName"></param>
 		public void UpdateFileLocation(string newDirectoryName)
 		{
-			_fileName = Path.Combine(newDirectoryName, Path.GetFileName(_fileName));
+			_filePath = Path.Combine(newDirectoryName, Path.GetFileName(_filePath));
 		}
 
 		[JsonProperty("mostRecentPage")]
@@ -81,7 +81,7 @@ namespace Bloom.Book
 			{
 				if(!string.IsNullOrWhiteSpace(prefs))
 				{
-					var temp = new SIL.IO.TempFileForSafeWriting(_fileName);
+					var temp = new SIL.IO.TempFileForSafeWriting(_filePath);
 					File.WriteAllText(temp.TempFilePath, prefs);
 					temp.WriteWasSuccessful();
 				}
@@ -90,7 +90,7 @@ namespace Bloom.Book
 			{
 				//For https://silbloom.myjetbrains.com/youtrack/issue/BL-3222  we did a real fix for 3.6.
 				//But this will cover us for future errors here, which are not worth stopping the user from doing work.
-				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Minor book prefs could not be saved to "+_fileName, error);
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Problem saving book preferences", "book.userprefs could not be saved to " + _filePath, error);
 			}
 		}
 	}
