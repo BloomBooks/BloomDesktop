@@ -25,7 +25,8 @@ namespace Bloom
 			Exception exception = null)
 		{
 			shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
-			Logger.WriteError("NonFatalProblem: " + shortUserLevelMessage, exception);
+			// not in this version libpalaso: Logger.WriteError("NonFatalProblem: " + shortUserLevelMessage, exception);
+			Logger.WriteEvent("NonFatalProblem: {0}",shortUserLevelMessage);
 
 			var channel = ApplicationUpdateSupport.ChannelName.ToLower();
 
