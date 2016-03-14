@@ -71,7 +71,7 @@ namespace Bloom.MiscUI
 			get { return true; }
 		}
 
-		//storing this hear so that we only make one and don't have to worry about disposing of it
+		//storing this here so that we only make one and don't have to worry about disposing of it
 		public static Image WarningBitmap = SystemIcons.Warning.ToBitmap();
 
 		private void PauseTimerTick(object sender, EventArgs e)

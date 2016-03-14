@@ -24,14 +24,16 @@ namespace Bloom
 		/// <param name="modalThreshold">Will show a modal dialog if the channel is this or lower</param>
 		/// <param name="passiveThreshold">Ignored for now</param>
 		/// <param name="shortUserLevelMessage">Simple message that fits in small toast notification</param>
-		/// <param name="detailedMessage">Info describes the problem, which we get if they report the problem</param>
+		/// <param name="moreDetails">Info adds information about the problem, which we get if they report the problem</param>
 		/// <param name="exception"></param>
 		public static void Report(ModalIf modalThreshold, PassiveIf passiveThreshold, string shortUserLevelMessage = null,
-			string detailedMessage = null,
+			string moreDetails = null,
 			Exception exception = null)
 		{
 			shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
-			detailedMessage = string.IsNullOrEmpty(detailedMessage) ? shortUserLevelMessage : detailedMessage;
+			var fullDetailedMessage = shortUserLevelMessage;
+			if(!string.IsNullOrEmpty(moreDetails))
+				fullDetailedMessage = fullDetailedMessage + System.Environment.NewLine+ moreDetails;
 
 			if (exception == null)
 			{
@@ -45,7 +47,7 @@ namespace Bloom
 				}
 			}
 
-			Logger.WriteError("NonFatalProblem: " + shortUserLevelMessage, exception);
+			Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
 
 			if (modalThreshold == ModalIf.Alpha)
 			{
@@ -58,13 +60,13 @@ namespace Bloom
 			{
 				try
 				{
-					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, detailedMessage);
+					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage);
 				}
 				catch (Exception)
 				{
 					//if we're running when the UI is already shut down, the above is going to throw.
 					//At least if we're running in a debugger, we'll stop here:
-					throw new ApplicationException(detailedMessage + "Error trying to report normally.");
+					throw new ApplicationException(fullDetailedMessage + "Error trying to report normally.");
 				}
 				return;
 			}
@@ -74,7 +76,7 @@ namespace Bloom
 			if (!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
 			{
 				var toast = new ToastNotifier();
-				toast.ToastClicked += (s, e) => { SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, detailedMessage); };
+				toast.ToastClicked += (s, e) => { SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage); };
 				toast.Image.Image = ToastNotifier.WarningBitmap;
 				toast.Show(shortUserLevelMessage, "Report", 5);
 			}
