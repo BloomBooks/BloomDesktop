@@ -75,7 +75,14 @@ class AudioRecording {
         $('#audio-listen').off().click(e => this.listen());
         $('#audio-clear').off().click(e => this.clearRecording());
         $('#player').off();
-        $('#player').bind('error', e => alert("There was an error playing the sentence."))//TODO ;//this.cantPlay());
+        $('#player').bind('error', e => {
+            if (this.playingAll) {
+                // during a "listen", we walk through each segment, but some (or all) may not have audio
+                this.playEnded();//move to the next one
+            } else {
+                toastr.error("There was an error playing the sentence.");
+            }
+        });
 
         $('#player').bind('ended', e => this.playEnded());
         $('#audio-input-dev').off().click(e => this.selectInputDevice());
@@ -218,8 +225,8 @@ class AudioRecording {
         var id = current.attr("id");
         axios.post("/bloom/audio/startRecord?id="+ id).then(result=>{
             this.setStatus('record', Status.Active);
-        }).catch(error=>{
-            toastr.error(error.statusText)
+        }).catch(error=> {
+            toastr.error(error.statusText);
             console.log(error.statusText);
         });
     }
@@ -255,11 +262,11 @@ class AudioRecording {
         if(!this.isEnabledOrExpected('play')){
             return;
         }
-        
         this.playingAll = false; // in case it gets clicked after an incomplete play all.
         this.setStatus('play', Status.Active);
         this.playCurrentInternal();
     }
+
     private playCurrentInternal() {
         (<HTMLMediaElement>document.getElementById('player')).play();
     }
