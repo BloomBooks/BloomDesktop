@@ -30,7 +30,7 @@ namespace Bloom.Edit
 	/// It also delivers real time microphone peak level numbers over a WebSocket.
 	/// The client can be found at audioRecording.ts.
 	/// </summary>
-	public class AudioRecording
+	public class AudioRecording :IDisposable
 	{
 		private readonly BookSelection _bookSelection;
 		private AudioRecorder _recorder;
@@ -57,6 +57,7 @@ namespace Bloom.Edit
 		private  Timer _startRecordingTimer;
 
 		private double _previousLevel;
+		private bool _disposed;
 
 		// This is a bit of a kludge. The server needs to be able to retrieve the data from AudioDevicesJson.
 		// It would be quite messy to give the image server access to the EditingModel which owns the instance of AudioRecording.
@@ -526,5 +527,42 @@ namespace Bloom.Edit
 			}
 		}
 #endif
+
+		public virtual void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					// dispose-only, i.e. non-finalizable logic
+					if (_recorder != null)
+					{
+						_recorder.Dispose();
+						_recorder = null;
+					}
+					if (_peakLevelWebSocketServer != null)
+					{
+						_peakLevelWebSocketServer.Dispose();
+						_peakLevelWebSocketServer = null;
+					}
+				}
+
+				// shared (dispose and finalizable) cleanup logic
+				_disposed = true;
+			}
+		}
+		~AudioRecording()
+		{
+			if (!_disposed)
+			{
+				NonFatalProblem.Report(ModalIf.Alpha,PassiveIf.Alpha,"AudioRecording was not disposed");
+			}
+		}
 	}
 }
