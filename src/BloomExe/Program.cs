@@ -307,6 +307,8 @@ namespace Bloom
 						if (FontInstaller.InstallFont("AndikaNewBasic")) 
 							return;
 
+						SIL.WritingSystems.Sldr.Initialize();
+
 						Run();
 					}
 				}
