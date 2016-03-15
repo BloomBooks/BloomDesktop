@@ -77,10 +77,18 @@ namespace BloomTests
 		//note however that a + sign is really ambiguous, and we've decided that since the method name
 		//says that the input is unencoded, we should then assume it is really a plus sign.
 		[Test]
-		public void UnencodedWithPlus_roundTripable()
+		public void UnencodedWithPlus_RoundTripable()
 		{
 			Assert.AreEqual("test+me", UrlPathString.CreateFromUnencodedString("test+me").NotEncoded);
 		}
+
+		[Test]
+		public void UnencodedWithAmpersand_RoundTripable()
+		{
+			Assert.AreEqual("test&me", UrlPathString.CreateFromUnencodedString("test&me").NotEncoded);
+			Assert.AreEqual("test & me", UrlPathString.CreateFromUnencodedString("test & me").NotEncoded);
+		}
+
 
 		[Test]
 		public void Equals_AreEqual_True()

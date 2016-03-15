@@ -65,6 +65,7 @@ namespace Bloom
 
 		private UrlPathString(string notEncodedString)
 		{
+			Debug.Assert(!notEncodedString.Contains("&amp;"));
 			_notEncoded = notEncodedString;
 		}
 
