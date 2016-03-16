@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+#if !__MonoCS__
 using System.Windows.Media;
+#endif
 using Bloom.MiscUI;
 using SIL.Reporting;
 

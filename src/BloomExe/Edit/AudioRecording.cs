@@ -33,7 +33,9 @@ namespace Bloom.Edit
 	public class AudioRecording :IDisposable
 	{
 		private readonly BookSelection _bookSelection;
+#if !__MonoCS__
 		private AudioRecorder _recorder;
+#endif
 		BloomWebSocketServer _peakLevelWebSocketServer;
 		
 		/// <summary>
@@ -213,6 +215,7 @@ namespace Bloom.Edit
 #endif
 		}
 
+#if !__MonoCS__
 		private void Recorder_Stopped(IAudioRecorder arg1, ErrorEventArgs arg2)
 		{
 			Recorder.Stopped -= Recorder_Stopped;
@@ -241,6 +244,7 @@ namespace Bloom.Edit
 				// it is used for playback.
 			}
 		}
+#endif
 
 		private bool TestForTooShortAndSendFailIfSo(SimpleHandlerRequest request)
 		{
@@ -261,7 +265,7 @@ namespace Bloom.Edit
 		{
 #if __MonoCS__
 						MessageBox.Show("Recording does not yet work on Linux", "Cannot record");
-						return false;
+						return;
 #else
 			if(Recording)
 			{
@@ -384,7 +388,10 @@ namespace Bloom.Edit
 			{
 				try
 				{
+#if __MonoCS__
+#else
 					Recorder.Stop();
+#endif
 					Application.DoEvents();
 				}
 				catch (Exception)
@@ -541,11 +548,14 @@ namespace Bloom.Edit
 				if (disposing)
 				{
 					// dispose-only, i.e. non-finalizable logic
+#if __MonoCS__
+#else
 					if (_recorder != null)
 					{
 						_recorder.Dispose();
 						_recorder = null;
 					}
+#endif
 					if (_peakLevelWebSocketServer != null)
 					{
 						_peakLevelWebSocketServer.Dispose();
