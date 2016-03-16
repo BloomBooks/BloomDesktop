@@ -28,7 +28,10 @@ namespace Bloom.Edit
 	/// </summary>
 	class AudioRecording
 	{
+#if __MonoCS__
+#else
 		private AudioRecorder _recorder;
+#endif
 		/// <summary>
 		/// The file we want to record to
 		/// </summary>
