@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -513,7 +513,7 @@
     <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
     <Compile Include="WebLibraryIntegration\BookTransfer.cs" />
-    <Compile Include="WebLibraryIntegration\KeyManager.cs" />
+    <Compile Include="WebLibraryIntegration\AccessKeys.cs" />
     <Compile Include="WebLibraryIntegration\LoginDialog.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -26,7 +26,7 @@ namespace BloomTests.WebLibraryIntegration
 			var workFolderPath = _workFolder.FolderPath;
 			Assert.AreEqual(0, Directory.GetDirectories(workFolderPath).Count(), "Some stuff was left over from a previous test");
 
-			_client = new BloomS3Client(BloomS3Client.UnitTestBucketName);
+			_client = new BloomS3Client();
 
 			// Now do standard upload/download. We save time by making this whole class do one upload/download sequence
 			// on the assumption that things that should be uploaded were if they make it through the download process too.
@@ -76,13 +76,13 @@ namespace BloomTests.WebLibraryIntegration
 
 		private void UploadBook(string bookFolder)
 		{
-			_client.UploadBook(_storageKeyOfBookFolder, bookFolder, new NullProgress(), "preview.pdf");
+			_client.UploadBook( _storageKeyOfBookFolder, bookFolder, new NullProgress(), "preview.pdf");
 		}
 
 		private void DownloadBook()
 		{
 			var expectedBookDestination = Path.Combine(_destCollectionPath, BookName);
-			var actualDestination = _client.DownloadBook(_storageKeyOfBookFolder, _destCollectionPath);
+			var actualDestination = _client.DownloadBook(BloomS3Client.UnitTestBucketName, _storageKeyOfBookFolder, _destCollectionPath);
 			Assert.AreEqual(expectedBookDestination, actualDestination);
 		}
 
@@ -97,7 +97,7 @@ namespace BloomTests.WebLibraryIntegration
 
 			// Do not count the excluded files (thumbs.db, extra.pdf)
 			// preview.pdf exists in the source, but is not pulled down to the destination.
-			Assert.That(_client.GetBookFileCount(_storageKeyOfBookFolder), Is.EqualTo(srcFileCount - ExcludedFiles.Length + 1));
+			Assert.That(_client.GetBookFileCount(BloomS3Client.UnitTestBucketName, _storageKeyOfBookFolder), Is.EqualTo(srcFileCount - ExcludedFiles.Length + 1));
 			var matching = Directory.GetFiles(fullBookDestPath);
 			Assert.That(matching.Count(), Is.EqualTo(srcFileCount - ExcludedFiles.Length));
 			foreach (var fileName in Directory.GetFiles(fullBookSrcPath)

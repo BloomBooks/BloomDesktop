@@ -23,11 +23,17 @@ namespace Bloom.WebLibraryIntegration
 		{
 			_sessionToken = String.Empty;
 			 _client = new RestClient(kBaseUrl);
+
+			var keys = AccessKeys.GetAccessKeys(BookTransfer.UploadBucketNameForCurrentEnvironment);
+
+			ApiKey = keys.ParseApiKey;
+			ApplicationKey = keys.ParseApplicationKey;
 		}
 
 		// REST key. Unit tests update these.
-		public string ApiKey = KeyManager.ParseApiKey;
-		public string ApplicationKey = KeyManager.ParseApplicationKey;
+		public string ApiKey { get; private set; }
+		public string ApplicationKey { get; private set; }
+
 		// Don't even THINK of making this mutable so each unit test uses a different class.
 		// Those classes hang around, can only be deleted manually, and eventually use up a fixed quota of classes.
 		protected const string ClassesLanguagePath = "classes/language";

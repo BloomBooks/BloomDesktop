@@ -18,12 +18,8 @@ namespace BloomTests.WebLibraryIntegration
 		public void Setup()
 		{
 			_client = new BloomParseClient();
-			// These substitute keys target the "silbloomlibraryunittests" application so testing won't interfere with the real one.
-			_client.ApiKey = KeyManager.ParseUnitTestApiKey;
-			_client.ApplicationKey = KeyManager.ParseUnitTextApplicationKey;
 		}
-
-
+		
 		/// <summary>
 		/// When we restore this, we should also fix it so it deletes the book it creates. The inaccuracies were partly
 		/// caused by accumulating over 1000 books (actually, over 17,000) from repeatedly running this and other tests.
