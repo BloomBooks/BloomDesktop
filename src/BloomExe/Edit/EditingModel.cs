@@ -998,7 +998,7 @@ namespace Bloom.Edit
 		{
 			try
 			{
-				if (_pageSelection.CurrentSelection == null)
+				if (_pageSelection.CurrentSelection == null || _domForCurrentPage ==null)
 					return;
 				XmlElement divElement =
 					_domForCurrentPage.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
@@ -1031,7 +1031,7 @@ namespace Bloom.Edit
 				if (err.StackTrace.Contains("DeletePage"))
 					Logger.WriteEvent("Trying to save a page while executing DeletePage");
 				Logger.WriteEvent("Error: SaveNow(): a mixup occurred in page IDs");
-				throw;
+				throw new ApplicationException("Check Inner Exception", err);//have to embed instead of just rethrow in order to preserve line number
 			}
 		}
 
