@@ -44,7 +44,7 @@ namespace BloomTests
 		[Test]
 		public void UnEncoded_withPercent_toUrlEncoded_PercentRetained()
 		{
-			Assert.AreEqual("OneHundred%25", UrlPathString.CreateFromUrlEncodedString("OneHundred%").UrlEncoded);
+			Assert.AreEqual("OneHundred%25", UrlPathString.CreateFromUnencodedString("OneHundred%").UrlEncoded);
 		}
 		[Test]
 		public void UrlEncoded_withPercent_toNotEncoded_PercentRetained()
@@ -52,7 +52,7 @@ namespace BloomTests
 			Assert.AreEqual("OneHundred%", UrlPathString.CreateFromUrlEncodedString("OneHundred%25").NotEncoded);
 		}
 		[Test]
-		public void UrlEncoded_withSpace_toUrlEncoded_SpaceRetained()
+		public void UrlEncoded_withSpace_toUrlEncoded_SpaceEntityRetained()
 		{
 			Assert.AreEqual("test%20me", UrlPathString.CreateFromUrlEncodedString("test%20me").UrlEncoded);
 		}
@@ -119,7 +119,7 @@ namespace BloomTests
 		}
 
 		[Test]
-		public void URLEncodedWithPlus_RoundTripable()
+		public void UnencodedWithPlus_RoundTripable()
 		{
 			Assert.AreEqual("test + me", UrlPathString.CreateFromUnencodedString("test + me").NotEncoded);
 		}
