@@ -64,7 +64,7 @@ namespace Bloom.Book
 		//keep strings unencoded in this class and DataSet in then encode them as they
 		//get written out to various places. But either of those is too disruptive at this
 		//point so this is a simple solution. Ref BL-3235.
-		public List<string> KeysOfVariablesThatAreUrlEncoded = new List<string>();
+		public HashSet<string> KeysOfVariablesThatAreUrlEncoded = new HashSet<string>();
 
 		/// <param name="dom">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
 		///   Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
@@ -403,7 +403,7 @@ namespace Bloom.Book
 				}
 				else
 				{
-					SafeSetNodeXml(key, form, node);
+					SetNodeXml(key, form, node);
 				}
 				//Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
 				//				languageForm.Form);
@@ -411,7 +411,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private void SafeSetNodeXml(string key, string form, XmlNode node)
+		private void SetNodeXml(string key, string form, XmlNode node)
 		{
 			if(KeysOfVariablesThatAreUrlEncoded.Contains(key))
 			{
@@ -429,7 +429,7 @@ namespace Bloom.Book
 			XmlElement d = _dom.RawDom.CreateElement("div");
 			d.SetAttribute("data-book", key);
 			d.SetAttribute("lang", lang);
-			SafeSetNodeXml(key, form, d);
+			SetNodeXml(key, form, d);
 			GetOrCreateDataDiv().AppendChild(d);
 		}
 
@@ -624,10 +624,7 @@ namespace Bloom.Book
 					if (HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 					{
 						value = HtmlDom.GetImageElementUrl(new ElementProxy(node)).UrlEncoded;
-						if(!KeysOfVariablesThatAreUrlEncoded.Contains(key))
-						{
-							KeysOfVariablesThatAreUrlEncoded.Add(key);
-						}
+						KeysOfVariablesThatAreUrlEncoded.Add(key);
 					}
 					else
 					{
@@ -802,7 +799,7 @@ namespace Bloom.Book
 		private void SetInnerXmlPreservingLabel(string key, XmlElement node, string form)
 		{
 			var labelElement = node.SelectSingleNode("label");
-			SafeSetNodeXml(key, form, node);
+			SetNodeXml(key, form, node);
 			if (labelElement != null)
 				node.AppendChild(labelElement);
 		}
