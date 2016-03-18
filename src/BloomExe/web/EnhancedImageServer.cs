@@ -541,19 +541,18 @@ namespace Bloom.web
 				}
 				else
 				{
-
 					// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
 					// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
 					// can return contents of any file that exists if the URL gives its full path...even ones that
 					// are generated temp files most certainly NOT distributed with the application.
-					path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", modPath);
+					path = FileLocator.GetFileDistributedWithApplication(true,"BloomBrowserUI", modPath);
 				}
 			}
 			catch (ApplicationException)
 			{
-				// ignore
+				// ignore. Assume this means that this class/method cannot serve that request, but something else may.
 			}
-			if (!File.Exists(path))
+			if (string.IsNullOrEmpty(path) || !File.Exists(path))
 				return false;
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);

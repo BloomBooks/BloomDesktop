@@ -9,14 +9,50 @@ namespace BloomTests
 	[TestFixture]
 	public class UrlPathStringTests
 	{
+#if NotAnyMore //We changed the behavior for BL-3259
 		[Test]
-		public void UrlEncodedWithPlus_toUrlEncoded_Retained()
+		public void UrlEncodedWithPlusToMeanSpace_toUrlEncoded_Retained()
 		{
 			//sometimes things encode a space a '+' instead of %20
 			Assert.AreEqual("test%20me", UrlPathString.CreateFromUrlEncodedString("test+me").UrlEncoded);
 		}
+#endif
 		[Test]
-		public void UrlEncoded_toUrlEncoded_Retained()
+		public void Unencoded_RoundTripTortureTest()
+		{
+			var fileName = "bread + cinnamon & sugar = 100% yum.JPG";
+			Assert.AreEqual(fileName, UrlPathString.CreateFromUnencodedString(fileName).NotEncoded);
+		}
+		[Test]
+		public void Encoded_RoundTripTortureTest()
+		{
+			var url = "bread%20%2b%20cinnamon%20%26%20sugar%20%3d%20100%25%20yum.jpg";
+			Assert.AreEqual(url, UrlPathString.CreateFromUrlEncodedString(url).UrlEncoded);
+		}
+
+		[Test]
+		public void UrlEncodedWithPlusToMeanPlus_UnEncoded_PlusRetained()
+		{
+			//sometimes things encode a space a '+' instead of %20
+			Assert.AreEqual("one+one = two", UrlPathString.CreateFromUrlEncodedString("one+one%20=%20two").NotEncoded);
+		}
+		[Test]
+		public void UrlEncoded_withPercent_toUrlEncoded_PercentRetained()
+		{
+			Assert.AreEqual("OneHundred%25", UrlPathString.CreateFromUrlEncodedString("OneHundred%25").UrlEncoded);
+		}
+		[Test]
+		public void UnEncoded_withPercent_toUrlEncoded_PercentRetained()
+		{
+			Assert.AreEqual("OneHundred%25", UrlPathString.CreateFromUnencodedString("OneHundred%").UrlEncoded);
+		}
+		[Test]
+		public void UrlEncoded_withPercent_toNotEncoded_PercentRetained()
+		{
+			Assert.AreEqual("OneHundred%", UrlPathString.CreateFromUrlEncodedString("OneHundred%25").NotEncoded);
+		}
+		[Test]
+		public void UrlEncoded_withSpace_toUrlEncoded_SpaceEntityRetained()
 		{
 			Assert.AreEqual("test%20me", UrlPathString.CreateFromUrlEncodedString("test%20me").UrlEncoded);
 		}
@@ -80,6 +116,12 @@ namespace BloomTests
 		public void UnencodedWithPlus_roundTripable()
 		{
 			Assert.AreEqual("test+me", UrlPathString.CreateFromUnencodedString("test+me").NotEncoded);
+		}
+
+		[Test]
+		public void UnencodedWithPlus_RoundTripable()
+		{
+			Assert.AreEqual("test + me", UrlPathString.CreateFromUnencodedString("test + me").NotEncoded);
 		}
 
 		[Test]
