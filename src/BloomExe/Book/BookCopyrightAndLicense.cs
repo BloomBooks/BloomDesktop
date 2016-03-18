@@ -211,7 +211,6 @@ namespace Bloom.Book
 
 		public static void LogMetdata(HtmlDom dom)
 		{
-			Logger.WriteEvent("For BL-3166 Investigation");
 			Logger.WriteEvent("LicenseUrl: " + dom.GetBookSetting("licenseUrl"));
 			Logger.WriteEvent("LicenseNotes: " + dom.GetBookSetting("licenseNotes"));
 			Logger.WriteEvent("");
