@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -7,6 +8,7 @@ using System.Windows.Forms;
 using System.Windows.Media;
 #endif
 using Bloom.MiscUI;
+using DesktopAnalytics;
 using SIL.Reporting;
 
 namespace Bloom
@@ -32,56 +34,82 @@ namespace Bloom
 			string moreDetails = null,
 			Exception exception = null)
 		{
-			shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
-			var fullDetailedMessage = shortUserLevelMessage;
-			if(!string.IsNullOrEmpty(moreDetails))
-				fullDetailedMessage = fullDetailedMessage + System.Environment.NewLine+ moreDetails;
-
-			if (exception == null)
+			try
 			{
-				try
+				shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
+				var fullDetailedMessage = shortUserLevelMessage;
+				if(!string.IsNullOrEmpty(moreDetails))
+					fullDetailedMessage = fullDetailedMessage + System.Environment.NewLine + moreDetails;
+
+				if(exception == null)
 				{
-					throw new ApplicationException("Not actually an exception, just a message.");
+					try
+					{
+						throw new ApplicationException("Not actually an exception, just a message.");
+					}
+					catch(Exception errorToGetStackTrace)
+					{
+						exception = errorToGetStackTrace;
+					}
 				}
-				catch (Exception errorToGetStackTrace)
+				Analytics.ReportException(exception);
+
+				Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
+
+				if(modalThreshold == ModalIf.Alpha)
 				{
-					exception = errorToGetStackTrace;
+					shortUserLevelMessage = "[Alpha]: " + shortUserLevelMessage;
+				}
+
+				var channel = ApplicationUpdateSupport.ChannelName.ToLower();
+
+				if(Matches(modalThreshold).Any(s => channel.Contains(s)))
+				{
+					try
+					{
+						SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage);
+					}
+					catch(Exception)
+					{
+						//if we're running when the UI is already shut down, the above is going to throw.
+						//At least if we're running in a debugger, we'll stop here:
+						throw new ApplicationException(fullDetailedMessage + "Error trying to report normally.");
+					}
+					return;
+				}
+
+				//just convert from InformIf to ThrowIf so that we don't have to duplicate code
+				var passive = (ModalIf) ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
+				if(!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
+				{
+
+					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage);
 				}
 			}
-
-			Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
-
-			if (modalThreshold == ModalIf.Alpha)
+			catch(Exception errorWhileReporting)
 			{
-				shortUserLevelMessage = "[Alpha]: " + shortUserLevelMessage;
+				Debug.Fail("error in nonfatalError reporting");
+				if(ApplicationUpdateSupport.ChannelName.ToLower().Contains("alpha"))
+					ErrorReport.NotifyUserOfProblem(errorWhileReporting,"Error while reporting non fatal error");
 			}
+		}
 
-			var channel = ApplicationUpdateSupport.ChannelName.ToLower();
-
-			if (Matches(modalThreshold).Any(s => channel.Contains(s)))
+		private static void ShowToast(string shortUserLevelMessage, Exception exception, string fullDetailedMessage)
+		{
+			var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
+			if (formForSynchronizing.InvokeRequired)
 			{
-				try
+				formForSynchronizing.BeginInvoke(new Action(() =>
 				{
-					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage);
-				}
-				catch (Exception)
-				{
-					//if we're running when the UI is already shut down, the above is going to throw.
-					//At least if we're running in a debugger, we'll stop here:
-					throw new ApplicationException(fullDetailedMessage + "Error trying to report normally.");
-				}
+					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage);
+				}));
 				return;
 			}
-
-			//just convert from InformIf to ThrowIf so that we don't have to duplicate code
-			var passive = (ModalIf)ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
-			if (!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
-			{
-				var toast = new ToastNotifier();
-				toast.ToastClicked += (s, e) => { SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage); };
-				toast.Image.Image = ToastNotifier.WarningBitmap;
-				toast.Show(shortUserLevelMessage, "Report", 5);
-			}
+			var toast = new ToastNotifier();
+			toast.ToastClicked +=
+				(s, e) => { SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage); };
+			toast.Image.Image = ToastNotifier.WarningBitmap;
+			toast.Show(shortUserLevelMessage, "Report", 5);
 		}
 
 		private static IEnumerable<string> Matches(ModalIf threshold)
