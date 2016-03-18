@@ -487,7 +487,19 @@ namespace Bloom.Edit
 			//could just deal with the metadata
 			//e.g., var metadata = Metadata.FromFile(path)
 			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
-			using (var imageInfo = PalasoImage.FromFile(path))
+			PalasoImage imageInfo = null;
+			try
+			{
+				imageInfo = PalasoImage.FromFile(path);
+			}
+			catch (TagLib.CorruptFileException e)
+			{
+				ErrorReport.NotifyUserOfProblem(e,
+					"Bloom ran into a problem while trying to read the metadata portion of this image, "+path);
+				return;
+			}
+
+			using (imageInfo)
 			{
 				var hasMetadata = !(imageInfo.Metadata == null || imageInfo.Metadata.IsEmpty);
 				if (hasMetadata)

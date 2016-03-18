@@ -806,7 +806,16 @@ namespace Bloom.Book
 			if (!newImageUrl.Equals(oldImageUrl))
 			{
 				Guard.AgainstNull(_updateImgNode, "_updateImgNode");
-				_updateImgNode(node);
+
+				try
+				{
+					_updateImgNode(node);
+				}
+				catch (TagLib.CorruptFileException e)
+				{
+					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Problem reading image metadata", newImageUrl.NotEncoded, e);
+					return false;
+				}
 			}
 			return true;
 		}

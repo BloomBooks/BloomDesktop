@@ -180,6 +180,10 @@
     <Reference Include="Interop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
     </Reference>
+    <Reference Include="taglib-sharp, Version=2.1.2.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\taglib-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
     </Reference>
