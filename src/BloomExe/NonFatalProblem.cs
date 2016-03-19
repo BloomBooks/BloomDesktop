@@ -14,8 +14,8 @@ using SIL.Reporting;
 namespace Bloom
 {
 	// NB: these must have the exactly the same symbols
-	public enum ModalIf { Alpha, Beta, All }
-	public enum PassiveIf { Alpha, Beta, All }
+	public enum ModalIf { None, Alpha, Beta, All }
+	public enum PassiveIf { None, Alpha, Beta, All }
 
 	/// <summary>
 	/// Provides a way to note a problem in the log and, depending on channel, notify the user.
@@ -52,7 +52,12 @@ namespace Bloom
 						exception = errorToGetStackTrace;
 					}
 				}
-				Analytics.ReportException(exception);
+				//if this isn't going modal even for devs, it's just background noise and we don't want the 
+				//thousands of exceptions we were getting as with BL-3280
+				if(modalThreshold != ModalIf.None)
+				{
+					Analytics.ReportException(exception);
+				}
 
 				Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
 
