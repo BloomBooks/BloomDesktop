@@ -20,7 +20,7 @@ namespace Bloom.Edit
 		public void ChangePicture(string bookFolderPath, ElementProxy imgOrDivWithBackgroundImage, PalasoImage imageInfo,
 			IProgress progress)
 		{
-			var isSameFile = IsSameFilePath(bookFolderPath, HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage).UrlEncoded, imageInfo);
+			var isSameFile = IsSameFilePath(bookFolderPath, HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage), imageInfo);
 			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath, isSameFile);
 			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage,
 				UrlPathString.CreateFromUnencodedString(imageFileName));
@@ -39,11 +39,11 @@ namespace Bloom.Edit
 		/// revised name.  We still need a tool to remove unused picture files from a
 		/// book's folder.  (ie, BL-2351)
 		/// </remarks>
-		private bool IsSameFilePath(string bookFolderPath, string src, PalasoImage imageInfo)
+		private bool IsSameFilePath(string bookFolderPath, UrlPathString src, PalasoImage imageInfo)
 		{
-			if (!String.IsNullOrEmpty(src))
+			if (src!=null)
 			{
-				var path = Path.Combine(bookFolderPath, HttpUtilityFromMono.UrlDecode(src));
+				var path = Path.Combine(bookFolderPath, src.NotEncoded);
 				if (path == imageInfo.OriginalFilePath)
 					return true;
 			}
