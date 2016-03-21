@@ -4,12 +4,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
-using SIL.Extensions;
 using SIL.Linq;
 using SIL.Text;
 using SIL.Xml;
@@ -56,6 +56,15 @@ namespace Bloom.Book
 		private readonly DataSet _dataset;
 		private XmlElement _dataDiv;
 		private Object thisLock = new Object();
+
+		//URLs are encoded in a certain way for the src attributes
+		//If they have certain symbols (namely &), they need to be encoded differently
+		//when saved as xml in the data-div. Ideally, we might use an abstraction over
+		//string which know what encoding things are in. Or we could work hard to always
+		//keep strings unencoded in this class and DataSet in then encode them as they
+		//get written out to various places. But either of those is too disruptive at this
+		//point so this is a simple solution. Ref BL-3235.
+		public HashSet<string> KeysOfVariablesThatAreUrlEncoded = new HashSet<string>();
 
 		/// <param name="dom">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
 		///   Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
@@ -394,7 +403,7 @@ namespace Bloom.Book
 				}
 				else
 				{
-					node.InnerXml = form;
+					SetNodeXml(key, form, node);
 				}
 				//Debug.WriteLine("updating in datadiv: {0}[{1}]={2}", key, languageForm.WritingSystemId,
 				//				languageForm.Form);
@@ -402,12 +411,25 @@ namespace Bloom.Book
 			}
 		}
 
+		private void SetNodeXml(string key, string form, XmlNode node)
+		{
+			if(KeysOfVariablesThatAreUrlEncoded.Contains(key))
+			{
+				// Reference: BL-3235
+				//remove the url path encoding
+				form = UrlPathString.CreateFromUrlEncodedString(form).NotEncoded;
+				//switch to html/xml encoding
+				form = HttpUtility.HtmlEncode(form);
+			}
+			node.InnerXml = form;
+		}
+
 		public void AddDataDivBookVariable(string key, string lang, string form)
 		{
 			XmlElement d = _dom.RawDom.CreateElement("div");
 			d.SetAttribute("data-book", key);
 			d.SetAttribute("lang", lang);
-			d.InnerXml = form;
+			SetNodeXml(key, form, d);
 			GetOrCreateDataDiv().AppendChild(d);
 		}
 
@@ -602,6 +624,7 @@ namespace Bloom.Book
 					if (HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 					{
 						value = HtmlDom.GetImageElementUrl(new ElementProxy(node)).UrlEncoded;
+						KeysOfVariablesThatAreUrlEncoded.Add(key);
 					}
 					else
 					{
@@ -740,7 +763,7 @@ namespace Bloom.Book
 							{
 								s = ""; //don't show it in N2, since it's the same as N1
 							}
-							SetInnerXmlPreservingLabel(node, s);
+							SetInnerXmlPreservingLabel(key, node, s);
 						}
 					}
 					else if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
@@ -751,7 +774,7 @@ namespace Bloom.Book
 							lang = data.WritingSystemAliases[lang];
 						if (itemsToDelete.Contains(Tuple.Create(key, lang)))
 						{
-							SetInnerXmlPreservingLabel(node, "");// a later process may remove node altogether.
+							SetInnerXmlPreservingLabel(key, node, "");// a later process may remove node altogether.
 						}
 					}
 				}
@@ -770,12 +793,13 @@ namespace Bloom.Book
 		/// an xmatter template page and replace the contents with what was in data-book, we don't want to clobber
 		/// the <label></label> elements that are already in there. BL-3078
 		/// </summary>
+		/// <param name="key"></param>
 		/// <param name="node"></param>
-		/// <param name="newInnerXml"></param>
-		private void SetInnerXmlPreservingLabel(XmlElement node, string newInnerXml)
+		/// <param name="form"></param>
+		private void SetInnerXmlPreservingLabel(string key, XmlElement node, string form)
 		{
 			var labelElement = node.SelectSingleNode("label");
-			node.InnerXml = newInnerXml;
+			SetNodeXml(key, form, node);
 			if (labelElement != null)
 				node.AppendChild(labelElement);
 		}
