@@ -418,10 +418,9 @@ namespace Bloom
 				{
 					return;
 				}
-				_alreadyHadSplashOnce = true;
-				Application.Idle -= CareForSplashScreenAtIdleTime;
-				CloseSplashScreenAndCheckRegistration();
-				if (_projectContext!=null && _projectContext.ProjectWindow != null)
+				CloseSplashScreen();
+				CheckRegistration();
+				if (_projectContext != null && _projectContext.ProjectWindow != null)
 				{
 					var shell = _projectContext.ProjectWindow as Shell;
 					if (shell != null)
@@ -432,8 +431,11 @@ namespace Bloom
 			}
 		}
 
-		private static void CloseSplashScreenAndCheckRegistration()
+		private static void CloseSplashScreen()
 		{
+			_alreadyHadSplashOnce = true;
+			Application.Idle -= CareForSplashScreenAtIdleTime;
+
 			if (_splashForm != null)
 			{
 				if (RegistrationDialog.ShouldWeShowRegistrationDialog())
@@ -443,7 +445,10 @@ namespace Bloom
 				_splashForm.FadeAndClose(); //it's going to hang around while it fades,
 				_splashForm = null; //but we are done with it
 			}
+		}
 
+		private static void CheckRegistration()
+		{
 			if (RegistrationDialog.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
 			{
 				using (var dlg = new RegistrationDialog(false))
@@ -631,6 +636,9 @@ namespace Bloom
 		static void ChooseAnotherProject(object sender, EventArgs e)
 		{
 			Application.Idle -= ChooseAnotherProject;
+
+			if (_splashForm != null)
+				CloseSplashScreen();
 
 			while (true)
 			{
