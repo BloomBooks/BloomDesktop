@@ -177,6 +177,9 @@ namespace Bloom.Book
 		{
 			var licenseImage = metadata.License.GetImage();
 			var imagePath = bookFolderPath.CombineForPath("license.png");
+			// Don't try to overwrite the license image for a template book.  (See BL-3284.)
+			if (File.Exists(imagePath) && IsInstalledFile(imagePath))
+				return;
 			try
 			{
 				if(licenseImage != null)
@@ -197,6 +200,14 @@ namespace Bloom.Book
 				//BL-3227 Occasionally get The process cannot access the file '...\license.png' because it is being used by another process
 				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Could not update license image (BL-3227).", "Image was at" +imagePath, exception: error);
 			}
+		}
+
+		private static bool IsInstalledFile(string filepath)
+		{
+			if (Environment.OSVersion.Platform == PlatformID.Unix)
+				return filepath.Contains("/DistFiles/factoryCollections/Templates/");	// works for both users and developers
+			else
+				return filepath.Contains("\\AppData\\Local\\Bloom") || filepath.Contains("\\DistFiles\\factoryCollections\\Templates\\");
 		}
 
 		private static bool ShouldSetToDefaultLicense(HtmlDom dom)
