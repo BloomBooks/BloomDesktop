@@ -119,7 +119,7 @@ namespace BloomTests
 		}
 
 		[Test]
-		public void UnencodedWithPlus_RoundTripable()
+		public void UnencodedWithPlusAndSpace_RoundTripable()
 		{
 			Assert.AreEqual("test + me", UrlPathString.CreateFromUnencodedString("test + me").NotEncoded);
 		}
