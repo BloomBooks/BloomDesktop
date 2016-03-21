@@ -49,7 +49,7 @@ class ReaderToolsModel {
 
   stageNumber: number = 1;
   levelNumber: number = 1;
-  synphony: SynphonyApi = new SynphonyApi(); // default state
+  synphony: SynphonyApi = null; // to ensure detection of async issues, don't init until we load its settings
   sort: string = SortType.alphabetic;
   currentMarkupType: number = MarkupType.None;
   allWords = {};

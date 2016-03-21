@@ -111,68 +111,82 @@ function markLeveledStatus(): void {
   });
 }
 
-function initializeDecodableReaderTool(): void {
+function initializeDecodableReaderTool(): JQueryPromise<void> {
 
-  // load synphony settings
-  loadSynphonySettings();
+    var result = $.Deferred<void>();
+    // load synphony settings and then finish init
+    loadSynphonySettings().then(() => {
 
-  // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
-  $('#incStage').onOnce('click.readerTools', function() {
-    model.incrementStage();
-  });
+        // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
+        $('#incStage').onOnce('click.readerTools', function() {
+            model.incrementStage();
+        });
 
-  $('#decStage').onOnce('click.readerTools', function() {
-    model.decrementStage();
-  });
+        $('#decStage').onOnce('click.readerTools', function() {
+            model.decrementStage();
+        });
 
-  $('#sortAlphabetic').onOnce('click.readerTools', function() {
-    model.sortAlphabetically();
-  });
+        $('#sortAlphabetic').onOnce('click.readerTools', function() {
+            model.sortAlphabetically();
+        });
 
-  $('#sortLength').onOnce('click.readerTools', function() {
-    model.sortByLength();
-  });
+        $('#sortLength').onOnce('click.readerTools', function() {
+            model.sortByLength();
+        });
 
-  $('#sortFrequency').onOnce('click.readerTools', function() {
-    model.sortByFrequency();
-  });
+        $('#sortFrequency').onOnce('click.readerTools', function() {
+            model.sortByFrequency();
+        });
 
-  model.updateControlContents();
-  $("#toolbox").accordion("refresh");
+        model.updateControlContents();
+        $("#toolbox").accordion("refresh");
 
-  $(window).resize(function() {
-    resizeWordList(false);
-  });
+        $(window).resize(function() {
+            resizeWordList(false);
+        });
 
-  setTimeout(function() { resizeWordList(); }, 200);
-  setTimeout(function() { $.divsToColumns('letter'); }, 100);
+        setTimeout(function() { resizeWordList(); }, 200);
+        setTimeout(function () { $.divsToColumns('letter'); }, 100);
+        result.resolve();
+    });
+    return result;
 }
 
-function initializeLeveledReaderTool(): void {
+function initializeLeveledReaderTool(): JQueryPromise <void> {
+    var result = $.Deferred<void>();
 
-  // load synphony settings
-  loadSynphonySettings();
+    // load synphony settings
+    loadSynphonySettings().then(() => {
 
-  $('#incLevel').onOnce('click.readerTools', function() {
-    model.incrementLevel();
-  });
+        $('#incLevel').onOnce('click.readerTools', function() {
+            model.incrementLevel();
+        });
 
-  $('#decLevel').onOnce('click.readerTools', function() {
-    model.decrementLevel();
-  });
+        $('#decLevel').onOnce('click.readerTools', function() {
+            model.decrementLevel();
+        });
 
-  model.updateControlContents();
-  $("#toolbox").accordion("refresh");
+        model.updateControlContents();
+        $("#toolbox").accordion("refresh");
+        result.resolve();
+    });
+    return result;
 }
 
-function loadSynphonySettings(): void {
-
-  // make sure synphony is initialized
-  if (!readerToolsInitialized && !model.getSynphony().source) {
+function loadSynphonySettings(): JQueryPromise<void> {
+    // make sure synphony is initialized
+    var result = $.Deferred<void>();
+    if (readerToolsInitialized) {
+        result.resolve();
+        return result;
+    }
     readerToolsInitialized = true;
     iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-    iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
-  }
+    iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', (settingsFileContent) => {
+        initializeSynphony(settingsFileContent);
+        result.resolve();
+    });
+    return result;
 }
 
 /**
@@ -183,9 +197,9 @@ function loadSynphonySettings(): void {
  * @global {ReaderToolsModel) model
  */
 function initializeSynphony(settingsFileContent: string): void {
-
-  var synphony = model.getSynphony();
+  var synphony = new SynphonyApi();
   synphony.loadSettings(settingsFileContent);
+  model.setSynphony(synphony);
   model.restoreState();
 
   model.updateControlContents();
