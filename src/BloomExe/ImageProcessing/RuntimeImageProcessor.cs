@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using SIL.Reporting;
 using SIL.Windows.Forms.ImageToolbox;
+using File = System.IO.File;
 
 namespace Bloom.ImageProcessing
 {
@@ -245,10 +246,14 @@ namespace Bloom.ImageProcessing
 
 			}
 			//we want to gracefully degrade if this fails (as it did once, see comment in bl-2871)
+			catch (TagLib.CorruptFileException e)
+			{
+				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Problem with image metadata", originalPath, e);
+				return false;
+			}
 			catch (Exception e)
 			{
-				Logger.WriteEvent("***Error in MakePngBackgroundTransparent({0}):{1} ",originalPath,e.Message);
-				Debug.Fail("DEBUG ONLY"+e.Message);
+				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All,"Problem making image transparent.", originalPath,e);
 				return false;
 			}
 		}

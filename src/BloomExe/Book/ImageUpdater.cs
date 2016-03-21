@@ -7,12 +7,9 @@ using System.Xml;
 using SIL.CommandLineProcessing;
 using SIL.Extensions;
 using SIL.IO;
-using SIL.Network;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Windows.Forms.ImageToolbox;
-using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -30,7 +27,16 @@ namespace Bloom.Book
 			{
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / imgElements.Count());
 				progress.WriteStatus("Copying to " + Path.GetFileName(path));
-				metadata.WriteIntellectualPropertyOnly(path);
+
+				try
+				{
+					metadata.WriteIntellectualPropertyOnly(path);
+				}
+				catch (TagLib.CorruptFileException e)
+				{
+					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All,"Image metadata problem", "Bloom had a problem accessing the metadata portion of this image " + path+ "  ref(BL-3214)", e);
+				}
+				
 				++completed;
 			}
 
