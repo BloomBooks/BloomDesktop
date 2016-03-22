@@ -112,10 +112,8 @@ function markLeveledStatus(): void {
 }
 
 function initializeDecodableReaderTool(): JQueryPromise<void> {
-
-    var result = $.Deferred<void>();
     // load synphony settings and then finish init
-    loadSynphonySettings().then(() => {
+    return loadSynphonySettings().then(() => {
 
         // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
         $('#incStage').onOnce('click.readerTools', function() {
@@ -147,9 +145,7 @@ function initializeDecodableReaderTool(): JQueryPromise<void> {
 
         setTimeout(function() { resizeWordList(); }, 200);
         setTimeout(function () { $.divsToColumns('letter'); }, 100);
-        result.resolve();
     });
-    return result;
 }
 
 function initializeLeveledReaderTool(): JQueryPromise <void> {

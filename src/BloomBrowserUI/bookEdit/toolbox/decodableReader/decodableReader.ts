@@ -3,8 +3,7 @@
 class DecodableReaderModel implements ITabModel {
     restoreSettings(settings: string): JQueryPromise<void> {
         if (!model) model = new ReaderToolsModel();
-        var result = $.Deferred<void>();
-        initializeDecodableReaderTool().then(() => {
+        return initializeDecodableReaderTool().then(() => {
             if (settings['decodableReaderState']) {
                 var state = libsynphony.dbGet('drt_state');
                 if (!state) state = new DRTState();
@@ -20,9 +19,7 @@ class DecodableReaderModel implements ITabModel {
                 }
                 libsynphony.dbSet('drt_state', state);
             }
-            result.resolve();
         });
-        return result;
     }
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
