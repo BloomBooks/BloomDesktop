@@ -21,7 +21,7 @@ namespace BloomTests.Publish
 	public class ExportEpubTests : BookTestsBase
 	{
 		private readonly XNamespace _xhtml = "http://www.w3.org/1999/xhtml";
-		private ZipFile _epub; // The epub that the test created, converted to a zip file.
+		private ZipFile _epub; // The ePUB that the test created, converted to a zip file.
 		private string _manifestFile; // The path in _epub to the main manifest file.
 		private string _manifestContent; // the contents of _manifestFile (as a string)
 		private XDocument _manifestDoc; // the contents of _manifestFile as an XDocument.
@@ -52,7 +52,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void HandlesNonRomanFileNames()
 		{
-			// This mysterious string is the filename that will be actually used in the epub.
+			// This mysterious string is the filename that will be actually used in the ePUB.
 			// It comes from UrlEncoding the original name and then replacing % with _ so the reader
 			// doesn't have to be smart about decoding the href.
 			string outputImageName = "_e0_b8_9b_e0_b8_b9_e0_b8_81_e0_b8_b1_e0_b8_9a_e0_b8_a1_e0_b8_94";
@@ -232,10 +232,10 @@ namespace BloomTests.Publish
 		// Do some basic checks and get a path to the main manifest (open package format) file, typically content.opf
 		private string GetManifestFile(ZipFile zip)
 		{
-			// Every epub must have a mimetype at the root
+			// Every ePUB must have a mimetype at the root
 			GetZipContent(zip, "mimetype");
 
-			// Every epub must have a "META-INF/container.xml." (case matters). Most things we could check about its content
+			// Every ePUB must have a "META-INF/container.xml." (case matters). Most things we could check about its content
 			// would be redundant with the code that produces it, but we can at least verify that it is valid
 			// XML and extract the manifest data.
 			var containerData = GetZipContent(zip, "META-INF/container.xml");
@@ -245,7 +245,7 @@ namespace BloomTests.Publish
 		}
 
 		/// <summary>
-		/// Make an epub out of the specified book. Sets up several instance variables with commonly useful parts of the results.
+		/// Make an ePUB out of the specified book. Sets up several instance variables with commonly useful parts of the results.
 		/// </summary>
 		/// <param name="mainFileName"></param>
 		/// <param name="folderName"></param>
@@ -402,7 +402,7 @@ namespace BloomTests.Publish
 
 		/// <summary>
 		/// Motivated by "Look in the sky. What do you see?" from bloom library, if elements with class bloom-ui have
-		/// somehow been left in the book, don't put them in the epub.
+		/// somehow been left in the book, don't put them in the ePUB.
 		/// </summary>
 		[Test]
 		public void BloomUi_IsRemoved()
@@ -449,14 +449,14 @@ namespace BloomTests.Publish
 			CheckBasicsInPage();
 			CheckNavPage();
 			CheckFontStylesheet();
-			// Check that the standard stylesheet, not wanted in the epub, is removed.
+			// Check that the standard stylesheet, not wanted in the ePUB, is removed.
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:head/xhtml:link[@href='basePage.css']", _ns); // standard stylesheet should be removed.
 			Assert.That(_page1Data, Is.Not.StringContaining("basePage.css")); // make sure it's stripped completely
 			Assert.That(_epub.GetEntry("content/basePage.ss"),Is.Null);
 		}
 
 		/// <summary>
-		/// Test that content that shouldn't show up in the epub gets removed.
+		/// Test that content that shouldn't show up in the ePUB gets removed.
 		/// -- display: none
 		/// -- pageDescription
 		/// -- pageLabel

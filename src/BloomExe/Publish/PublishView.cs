@@ -256,12 +256,12 @@ namespace Bloom.Publish
 		{
 			if (IsHandleCreated) // May not be when bulk uploading
 			{
-				// Upload and epub display modes simply depend on the appropriate button being checked.
+				// Upload and ePUB display modes simply depend on the appropriate button being checked.
 				// If any of the other buttons is checked, we display the preview IF we have it.
 				if (_uploadRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
 				else if (_epubRadio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.Epub;
+					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
 				else if (_model.PdfGenerationSucceeded)
 					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
 				else
@@ -350,11 +350,11 @@ namespace Bloom.Publish
 				Controls.Remove(_publishControl);
 				_publishControl = null;
 			}
-			if (displayMode != PublishModel.DisplayModes.Epub && _epubPreviewControl != null && Controls.Contains(_epubPreviewControl))
+			if (displayMode != PublishModel.DisplayModes.EPUB && _epubPreviewControl != null && Controls.Contains(_epubPreviewControl))
 			{
 				Controls.Remove(_epubPreviewControl);
 			}
-			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.Epub)
+			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB)
 				_pdfViewer.Visible = true;
 			switch (displayMode)
 			{
@@ -411,12 +411,12 @@ namespace Bloom.Publish
 
 					break;
 				}
-				case PublishModel.DisplayModes.Epub:
+				case PublishModel.DisplayModes.EPUB:
 				{
-					// We may reuse this for the process of generating the epub staging files. For now, skip it.
+					// We may reuse this for the process of generating the ePUB staging files. For now, skip it.
 					_workingIndicator.Visible = false;
-					_printButton.Enabled = false; // don't know how to print an epub
-					_saveButton.Enabled = true; // lets us save it to an actual epub
+					_printButton.Enabled = false; // don't know how to print an ePUB
+					_saveButton.Enabled = true; // lets us save it to an actual ePUB
 					_pdfViewer.Visible = false;
 					Cursor = Cursors.Default;
 
@@ -431,7 +431,7 @@ namespace Bloom.Publish
 		private void UpdateSaveButton()
 		{
 			if (Controls.Contains(_epubPreviewControl))
-				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveEpub", "&Save EPUB...");
+				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveEpub", "&Save ePUB...");
 			else
 				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveButton", "&Save PDF...");
 		}
@@ -483,7 +483,7 @@ namespace Bloom.Publish
 			_model.PrepareToStageEpub();
 			if (!_publishWithoutAudio && !LameEncoder.IsAvailable() && _model.IsCompressedAudioMissing)
 			{
-				var missingLameModulePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "epub", "MissingLameModule.htm");
+				var missingLameModulePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "ePUB", "MissingLameModule.htm");
 				_epubPreviewBrowser.Navigate(missingLameModulePath, false);
 				_epubPreviewBrowser.OnBrowserClick += (sender, e) =>
 				{
@@ -510,7 +510,7 @@ namespace Bloom.Publish
 			var tempFolder = Path.GetDirectoryName(_model.StagingDirectory);
 			// This is kludge. I hope it can be improved. To make a preview we currently need all the Readium
 			// files in a folder that is a parent of the staging folder containing the book content.
-			// This allows us to tell Readium about the book by passing the name of the folder using the ?epub=
+			// This allows us to tell Readium about the book by passing the name of the folder using the ?ePUB=
 			// URL parameter. It doesn't work to use the original Readium file and make the parameter a full path.
 			// It's possible that there is some variation that would work, e.g., make the param a full file:/// url
 			// to the book folder. It's also possible we could get away with only copying the HTML file itself,
@@ -518,7 +518,7 @@ namespace Bloom.Publish
 			// approach at least works.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
 
-			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "epub",
+			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "ePUB",
 				"bloomEpubPreview.html");
 
 			var audioSituationClass = "noAudioAvailable";
@@ -557,7 +557,7 @@ namespace Bloom.Publish
 				}
 				else if (_epubRadio.Checked)
 				{
-					_model.DisplayMode = PublishModel.DisplayModes.Epub;
+					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
 				}
 				else if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
 				{
@@ -633,8 +633,8 @@ namespace Bloom.Publish
 				// We aren't going to display it, so don't bother generating it.
 				// Unfortunately, the completion of the generation process is normally responsible for putting us into
 				// the right display mode for what we generated (or failed to), after this routine puts us into the
-				// mode that shows generation is pending. For the epub button case, we want to go straight to the epub preview.
-				SetDisplayMode(PublishModel.DisplayModes.Epub);
+				// mode that shows generation is pending. For the ePUB button case, we want to go straight to the ePUB preview.
+				SetDisplayMode(PublishModel.DisplayModes.EPUB);
 				return;
 			}
 
