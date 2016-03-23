@@ -111,9 +111,9 @@ function markLeveledStatus(): void {
   });
 }
 
-function initializeDecodableReaderTool(): JQueryPromise<void> {
+function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
     // load synphony settings and then finish init
-    return loadSynphonySettings().then(() => {
+    return beginLoadSynphonySettings().then(() => {
 
         // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
         $('#incStage').onOnce('click.readerTools', function() {
@@ -148,11 +148,9 @@ function initializeDecodableReaderTool(): JQueryPromise<void> {
     });
 }
 
-function initializeLeveledReaderTool(): JQueryPromise <void> {
-    var result = $.Deferred<void>();
-
+function beginInitializeLeveledReaderTool(): JQueryPromise <void> {
     // load synphony settings
-    loadSynphonySettings().then(() => {
+    return beginLoadSynphonySettings().then(() => {
 
         $('#incLevel').onOnce('click.readerTools', function() {
             model.incrementLevel();
@@ -164,12 +162,10 @@ function initializeLeveledReaderTool(): JQueryPromise <void> {
 
         model.updateControlContents();
         $("#toolbox").accordion("refresh");
-        result.resolve();
     });
-    return result;
 }
 
-function loadSynphonySettings(): JQueryPromise<void> {
+function beginLoadSynphonySettings(): JQueryPromise<void> {
     // make sure synphony is initialized
     var result = $.Deferred<void>();
     if (readerToolsInitialized) {

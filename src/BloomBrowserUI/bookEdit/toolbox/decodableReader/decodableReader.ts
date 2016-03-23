@@ -1,9 +1,9 @@
 ﻿/// <reference path="../toolbox.ts" />
 
 class DecodableReaderModel implements ITabModel {
-    restoreSettings(settings: string): JQueryPromise<void> {
+    beginRestoreSettings(settings: string): JQueryPromise<void> {
         if (!model) model = new ReaderToolsModel();
-        return initializeDecodableReaderTool().then(() => {
+        return beginInitializeDecodableReaderTool().then(() => {
             if (settings['decodableReaderState']) {
                 var state = libsynphony.dbGet('drt_state');
                 if (!state) state = new DRTState();
