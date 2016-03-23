@@ -276,8 +276,8 @@ namespace Bloom.Book
 				imageFiles.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
 			}
 			//Remove from that list each image actually in use
-			var toRemove = (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.RawDom.DocumentElement)
-							select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
+			var element = Dom.RawDom.DocumentElement;
+			var toRemove = GetImagePathsRelativeToBook(element);
 
 			//also, remove from the doomed list anything referenced in the datadiv that looks like an image
 			//This saves us from deleting, for example, cover page images if this is called before the front-matter
@@ -307,6 +307,17 @@ namespace Bloom.Book
 					//We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
 				}		
 			}
+		}
+
+		/// <summary>
+		/// Return the paths, relative to the book folder, of all the images referred to in the element.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
+		internal static List<string> GetImagePathsRelativeToBook(XmlElement element)
+		{
+			return (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
+				select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
 		}
 
 		private string GetNormalizedPathForOS(string path)
