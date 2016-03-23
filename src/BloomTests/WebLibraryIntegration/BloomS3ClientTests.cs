@@ -26,7 +26,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.AreEqual(0, Directory.GetDirectories(workFolderPath).Count(), "Some stuff was left over from a previous test");
 			Assert.AreEqual(0, Directory.GetFiles(workFolderPath).Count(), "Some stuff was left over from a previous test");
 
-			_client = new BloomS3Client(BloomS3Client.UnitTestBucketName);
+			_client = new BloomS3Client();
 		}
 
 		[TearDown]
@@ -55,7 +55,7 @@ namespace BloomTests.WebLibraryIntegration
 		[ExpectedException(typeof(DirectoryNotFoundException))]
 		public void DownloadBook_DoesNotExist_Throws()
 		{
-			_client.DownloadBook("notthere", _workFolder.FolderPath);
+			_client.DownloadBook(BloomS3Client.UnitTestBucketName, "notthere", _workFolder.FolderPath);
 		}
 	}
 }

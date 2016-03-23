@@ -1,17 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
+using System.Windows.Forms;
+#if !__MonoCS__
+using System.Windows.Media;
+#endif
+using Bloom.MiscUI;
+using DesktopAnalytics;
 using SIL.Reporting;
 
 namespace Bloom
 {
 	// NB: these must have the exactly the same symbols
-	public enum ModalIf { Alpha, Beta, All }
-	public enum PassiveIf { Alpha, Beta, All }
+	public enum ModalIf { None, Alpha, Beta, All }
+	public enum PassiveIf { None, Alpha, Beta, All }
 
 	/// <summary>
 	/// Provides a way to note a problem in the log and, depending on channel, notify the user.
-	/// Enhance: wire up to a passive notification "toast" in the UI
 	/// </summary>
 	public class NonFatalProblem
 	{
@@ -20,55 +27,94 @@ namespace Bloom
 		/// </summary>
 		/// <param name="modalThreshold">Will show a modal dialog if the channel is this or lower</param>
 		/// <param name="passiveThreshold">Ignored for now</param>
-		/// <param name="shortUserLevelMessage">Should make sense in a small toast notification</param>
+		/// <param name="shortUserLevelMessage">Simple message that fits in small toast notification</param>
+		/// <param name="moreDetails">Info adds information about the problem, which we get if they report the problem</param>
 		/// <param name="exception"></param>
 		public static void Report(ModalIf modalThreshold, PassiveIf passiveThreshold, string shortUserLevelMessage = null,
+			string moreDetails = null,
 			Exception exception = null)
 		{
-			shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
-
-			if(exception == null)
+			try
 			{
-				try
+				shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
+				var fullDetailedMessage = shortUserLevelMessage;
+				if(!string.IsNullOrEmpty(moreDetails))
+					fullDetailedMessage = fullDetailedMessage + System.Environment.NewLine + moreDetails;
+
+				if(exception == null)
 				{
-					throw new ApplicationException("Not actually an exception, just a message.");
+					try
+					{
+						throw new ApplicationException("Not actually an exception, just a message.");
+					}
+					catch(Exception errorToGetStackTrace)
+					{
+						exception = errorToGetStackTrace;
+					}
 				}
-				catch(Exception errorToGetStackTrace)
+				//if this isn't going modal even for devs, it's just background noise and we don't want the 
+				//thousands of exceptions we were getting as with BL-3280
+				if(modalThreshold != ModalIf.None)
 				{
-					exception = errorToGetStackTrace;
+					Analytics.ReportException(exception);
+				}
+
+				Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
+
+				if(modalThreshold == ModalIf.Alpha)
+				{
+					shortUserLevelMessage = "[Alpha]: " + shortUserLevelMessage;
+				}
+
+				var channel = ApplicationUpdateSupport.ChannelName.ToLower();
+
+				if(Matches(modalThreshold).Any(s => channel.Contains(s)))
+				{
+					try
+					{
+						SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage);
+					}
+					catch(Exception)
+					{
+						//if we're running when the UI is already shut down, the above is going to throw.
+						//At least if we're running in a debugger, we'll stop here:
+						throw new ApplicationException(fullDetailedMessage + "Error trying to report normally.");
+					}
+					return;
+				}
+
+				//just convert from InformIf to ThrowIf so that we don't have to duplicate code
+				var passive = (ModalIf) ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
+				if(!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
+				{
+
+					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage);
 				}
 			}
-
-			Logger.WriteError("NonFatalProblem: " + shortUserLevelMessage, exception);
-
-			if(modalThreshold == ModalIf.Alpha)
+			catch(Exception errorWhileReporting)
 			{
-				shortUserLevelMessage = "[Dev/Alpha channel only]: "+shortUserLevelMessage;
+				Debug.Fail("error in nonfatalError reporting");
+				if(ApplicationUpdateSupport.ChannelName.ToLower().Contains("alpha"))
+					ErrorReport.NotifyUserOfProblem(errorWhileReporting,"Error while reporting non fatal error");
 			}
+		}
 
-			var channel = ApplicationUpdateSupport.ChannelName.ToLower();
-
-			if( Matches(modalThreshold).Any(s => channel.Contains(s)))
+		private static void ShowToast(string shortUserLevelMessage, Exception exception, string fullDetailedMessage)
+		{
+			var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
+			if (formForSynchronizing.InvokeRequired)
 			{
-				try
+				formForSynchronizing.BeginInvoke(new Action(() =>
 				{
-					SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, shortUserLevelMessage);
-				}
-				catch(Exception)
-				{
-					//if we're running when the UI is already shut down, the above is going to throw.
-					//At least if we're running in a debugger, we'll stop here:
-					throw new ApplicationException(shortUserLevelMessage+ "Error trying to report normally.");
-				}
+					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage);
+				}));
 				return;
 			}
-
-			//just convert from InformIf to ThrowIf so that we don't have to duplicate code
-			var passive = (ModalIf) ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
-			if (!string.IsNullOrEmpty(shortUserLevelMessage)  && Matches(passive).Any(s => channel.Contains(s)))
-			{
-				//Future
-			}
+			var toast = new ToastNotifier();
+			toast.ToastClicked +=
+				(s, e) => { SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(exception, fullDetailedMessage); };
+			toast.Image.Image = ToastNotifier.WarningBitmap;
+			toast.Show(shortUserLevelMessage, "Report", 5);
 		}
 
 		private static IEnumerable<string> Matches(ModalIf threshold)
@@ -76,13 +122,13 @@ namespace Bloom
 			switch (threshold)
 			{
 				case ModalIf.All:
-					return new string[] {"" /*will match anything*/};
+					return new string[] { "" /*will match anything*/};
 				case ModalIf.Beta:
 					return new string[] { "developer", "alpha", "beta" };
 				case ModalIf.Alpha:
 					return new string[] { "developer", "alpha" };
 				default:
-					return new string[] {};
+					return new string[] { };
 			}
 		}
 	}

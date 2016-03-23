@@ -539,7 +539,8 @@ export default class StyleEditor {
         $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
 
         //make the button stay at the bottom if we overflow and thus scroll
-        $(targetBox).on("scroll", n => this.AdjustFormatButton(n.target));
+        //review: It's not clear to me that this is actually working (JH 3/19/2016)
+        $(targetBox).on("scroll", e=>{this.AdjustFormatButton(e.target)});
 
 
         // And in case we are starting out on a centerVertically page we might need to adjust it now
@@ -547,7 +548,7 @@ export default class StyleEditor {
 
         var formatButton = $('#formatButton');
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
-        var txt = locmang.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
+        var txt = theOneLocalizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
         */
 

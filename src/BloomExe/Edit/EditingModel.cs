@@ -527,6 +527,7 @@ namespace Bloom.Edit
 		// completed saving it.
 		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
 		{
+			CheckForBL2364("start of page selection changing--should have old IDs");
 			if (_view != null && !_inProcessOfDeleting)
 			{
 				_view.ChangingPages = true;
@@ -578,9 +579,11 @@ namespace Bloom.Edit
 			CheckForBL2364("setup");
 			SetPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
+			CheckForBL2364("made tags safe");
 			if (_currentPage != null)
 				_currentPage.Dispose();
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
+			CheckForBL2364("made simulated page");
 
 			// Enhance JohnT: Can we somehow have a much simpler toolbox content until the user displays it?
 			//if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
@@ -600,6 +603,7 @@ namespace Bloom.Edit
 			var body = _domForCurrentPage.Body;
 			var pageZoom = Settings.Default.PageZoom ?? "1.0";
 			body.SetAttribute("style", string.Format("transform: scale({0},{0})", pageZoom));
+			CheckForBL2364("read page zoom");
 		}
 
 		/// <summary>
@@ -856,6 +860,7 @@ namespace Bloom.Edit
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			CheckForBL2364("reset dom in finish save");
 			_currentlyDisplayedBook.UpdateEditableAreasOfElement(_domForCurrentPage);
+			CheckForBL2364("updated editable areas");
 
 			//Enhance: Probably we could avoid having two saves, by determing what it is that they entail that is required.
 			//But at the moment both of them are required
@@ -883,7 +888,13 @@ namespace Bloom.Edit
 					// CleanHtml already requires that we are on UI thread. But it's worth asserting here too in case that changes.
 					// If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and _inProcessOfSaving,
 					// and would need to be careful about whether any delayed tasks needed to be on the UI thread.
-					Debug.Assert(!_view.InvokeRequired);
+					if (_view.InvokeRequired)
+					{
+						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, "SaveNow called on wrong thread", null);
+						_view.Invoke((Action)(SaveNow));
+						return;
+					}
+					CheckForBL2364("beginning SaveNow");
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
@@ -924,6 +935,7 @@ namespace Bloom.Edit
 					CheckForBL2364("save");
 					//OK, looks safe, time to save.
 					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
+					CheckForBL2364("finished save");
 				}
 				finally
 				{
@@ -988,10 +1000,12 @@ namespace Bloom.Edit
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
 		// to save is not in the book we're trying to save it into.
-		private void CheckForBL2364(string when)
+		internal void CheckForBL2364(string when)
 		{
 			try
 			{
+				if (_pageSelection.CurrentSelection == null || _domForCurrentPage ==null)
+					return;
 				XmlElement divElement =
 					_domForCurrentPage.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
 				string pageDivId = divElement.GetAttribute("id");
@@ -1010,8 +1024,8 @@ namespace Bloom.Edit
 					}
 					throw new ApplicationException(
 						string.Format(
-							"Bl-2634: id of _domForCurrentPage ({0}) is not the same as ID of _pageSelection.CurrentSelection ({1})",
-							pageDivId, _pageSelection.CurrentSelection.Id));
+							"Bl-2634: at {2}, id of _domForCurrentPage ({0}) is not the same as ID of _pageSelection.CurrentSelection ({1})",
+							pageDivId, _pageSelection.CurrentSelection.Id, when));
 				}
 				// By comparing this with the stacks dumped when the check fails, we can hopefully tell whether the DOM or
 				// the Current Selection ID somehow changed, which may help partition the space we need to look in to
@@ -1023,7 +1037,7 @@ namespace Bloom.Edit
 				if (err.StackTrace.Contains("DeletePage"))
 					Logger.WriteEvent("Trying to save a page while executing DeletePage");
 				Logger.WriteEvent("Error: SaveNow(): a mixup occurred in page IDs");
-				throw;
+				throw new ApplicationException("Check Inner Exception", err);//have to embed instead of just rethrow in order to preserve line number
 			}
 		}
 

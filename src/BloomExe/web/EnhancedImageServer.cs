@@ -546,7 +546,6 @@ namespace Bloom.web
 				}
 				else
 				{
-
 					// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
 					// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
 					// can return contents of any file that exists if the URL gives its full path...even ones that
@@ -558,14 +557,14 @@ namespace Bloom.web
 			}
 			catch (ApplicationException)
 			{
-				// ignore
+				// ignore. Assume this means that this class/method cannot serve that request, but something else may.
 			}
 
 			//There's probably a eventual way to make this problem go away,
 			// but at the moment FF, looking for source maps to go with css, is
 			// looking for those maps where we said the css was, which is in the actual
 			// book folders. So instead redirect to our browser file folder.
-			if (!File.Exists(path))
+			if (string.IsNullOrEmpty(path) || !File.Exists(path))
 			{
 				var startOfBookLayout = localPath.IndexOf("bookLayout");
 				if (startOfBookLayout > 0)

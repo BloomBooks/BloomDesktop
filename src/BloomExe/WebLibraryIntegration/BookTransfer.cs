@@ -4,12 +4,12 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
+using System.Reflection;
 using System.Threading;
+using System.Web;
 using System.Windows.Forms;
 using Amazon.Runtime;
 using Amazon.S3;
-using Autofac.Features.Metadata;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
@@ -18,7 +18,6 @@ using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
-using SIL.Network;
 using SIL.Progress;
 using SIL.Windows.Forms.Progress;
 
@@ -64,46 +63,48 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		/// <summary>
+		/// whereas we can *download* from anywhere regardless of production, debug, or unit test,
+		/// or the environment variable "BloomSandbox", we currently only allow *uploading*
+		/// to only one bucket depending on these things. This also does double duty for selecting
+		/// the parse.com keys that are appropriate
+		/// </summary>
+		public static string UploadBucketNameForCurrentEnvironment
+		{
+			get
+			{
+				if(Assembly.GetEntryAssembly() == null)
+				{
+					return BloomS3Client.UnitTestBucketName;
+				}
+					
+				return BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName; 
+			}
+		}
+
+		/// <summary>
+		/// Download a book
+		/// </summary>
+		/// <param name="orderUrl">bloom://localhost/order?orderFile=BloomLibraryBooks-UnitTests/unittest@example.com/a211f07b-2c9f-4b97-b0b1-71eb24fdbed79887cda9_bb1d_4422_aa07_bc8c19285ca9/My Url Book/My Url Book.BloomBookOrder</param>
+		/// <param name="destPath"></param>
+		/// <param name="title"></param>
+		/// <returns></returns>
 		public string DownloadFromOrderUrl(string orderUrl, string destPath, string title = "unknown")
 		{
-			var decoded = HttpUtilityFromMono.UrlDecode(orderUrl);
-			var bucketStart = decoded.IndexOf(_s3Client.BucketName,StringComparison.InvariantCulture);
-			if (bucketStart == -1)
-			{
-#if DEBUG
-				if (decoded.StartsWith(("BloomLibraryBooks")))
-				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-					"The book is from bloomlibrary.org, but you are running the DEBUG version of Bloom, which can only use dev.bloomlibrary.org.");
-				}
-				else
-				{
-					throw new ApplicationException("Can't match URL of bucket of the book being downloaded, and I don't know why.");
-				}
+			var uri = new Uri(orderUrl);
+			var order  = HttpUtility.ParseQueryString(uri.Query)["orderFile"];
+			IEnumerable<string> parts = order.Split(new char[] {'/'});
+			string bucket = parts.First();
+			var s3OrderKey = string.Join("/",parts.Skip(1));
 
-#else
-				if (decoded.StartsWith(("BloomLibraryBooks-Sandbox")))
-				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-						"The book is from the testing version of the bloomlibrary, but you are running the RELEASE version of Bloom. The RELEASE build cannot use the 'dev.bloomlibrary.org' site. If you need to do that for testing purposes, set the windows Environment variable 'BloomSandbox' to 'true'.", decoded);
-				}
-				else
-				{
-					throw new ApplicationException(string.Format("Can't match URL of bucket of the book being downloaded {0}, and I don't know why.", decoded));
-				}
-#endif
-				return null;
-			}
-
-			var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
 			string url = "unknown";
 			try
 			{
-				GetUrlAndTitle(s3orderKey, ref url, ref title);
+				GetUrlAndTitle(bucket,s3OrderKey, ref url, ref title);
 				if (_progressDialog != null)
 					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
 				// downloading the metadata is considered step 1.
-				var destinationPath = DownloadBook(url, destPath);
+				var destinationPath = DownloadBook(bucket, url, destPath);
 				LastBookDownloadedPath = destinationPath;
 
 				Analytics.Track("DownloadedBook-Success",
@@ -138,7 +139,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private void GetUrlAndTitle(string s3orderKey, ref string url, ref string title)
+		private void GetUrlAndTitle(string bucket, string s3orderKey, ref string url, ref string title)
 		{
 			int index = s3orderKey.IndexOf('/');
 			if (index > 0)
@@ -148,7 +149,7 @@ namespace Bloom.WebLibraryIntegration
 			if (url == "unknown" || string.IsNullOrWhiteSpace(title) || title == "unknown")
 			{
 				// not getting the info we want in the expected way. This old algorithm may work.
-				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
+				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey, bucket));
 				url = metadata.DownloadSource;
 				title = metadata.Title;
 			}
@@ -227,7 +228,7 @@ namespace Bloom.WebLibraryIntegration
 			if (IsUrlOrder(_downloadRequest))
 			{
 				var link = new BloomLinkArgs(_downloadRequest);
-				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder, link.Title);
+				DownloadFromOrderUrl(_downloadRequest, DownloadFolder, link.Title);
 			}
 				// If we are passed a bloom book order, download the corresponding book and open it.
 			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookTransfer.BookOrderExtension.ToLowerInvariant()) &&
@@ -365,7 +366,7 @@ namespace Bloom.WebLibraryIntegration
 				{
 					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude);
 					metadata.BaseUrl = _s3Client.BaseUrl;
-					metadata.BookOrder = _s3Client.BookOrderUrl;
+					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database."));
 					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
 					var response = _parseClient.SetBookRecord(metadata.WebDataJson);
@@ -439,7 +440,7 @@ namespace Bloom.WebLibraryIntegration
 			return s3BookId;
 		}
 
-		internal string BookOrderUrl {get { return _s3Client.BookOrderUrl; }}
+		internal string BookOrderUrl {get { return _s3Client.BookOrderUrlOfRecentUpload; }}
 
 		private static string MetaDataText(string bookFolder)
 		{
@@ -461,12 +462,13 @@ namespace Bloom.WebLibraryIntegration
 		/// Probably some API gets a list of BloomInfo objects from the parse.com data, and we pass one of
 		/// them as the argument for the public method.
 		/// </summary>
+		/// <param name="bucket"></param>
 		/// <param name="s3BookId"></param>
 		/// <param name="dest"></param>
 		/// <returns></returns>
-		internal string DownloadBook(string s3BookId, string dest)
+		internal string DownloadBook(string bucket, string s3BookId, string dest)
 		{
-			var destinationPath = _s3Client.DownloadBook(s3BookId, dest, _progressDialog);
+			var destinationPath = _s3Client.DownloadBook(bucket, s3BookId, dest, _progressDialog);
 			if (BookDownLoaded != null)
 			{
 				var bookInfo = new BookInfo(destinationPath, false); // A downloaded book is a template, so never editable.
@@ -495,7 +497,8 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var metadata = BookMetaData.FromString(File.ReadAllText(bookOrderPath));
 			var s3BookId = metadata.DownloadSource;
-			_s3Client.DownloadBook(s3BookId, Path.GetDirectoryName(projectPath));
+			var bucket = BloomS3Client.ProductionBucketName; //TODO
+			_s3Client.DownloadBook(bucket, s3BookId, Path.GetDirectoryName(projectPath));
 		}
 
 		public bool IsBookOnServer(string bookPath)
@@ -507,13 +510,13 @@ namespace Bloom.WebLibraryIntegration
 		// Wait (up to three seconds) for data uploaded to become available.
 		// Currently only used in unit testing.
 		// I have no idea whether 3s is an adequate time to wait for 'eventual consistency'. So far it seems to work.
-		internal void WaitUntilS3DataIsOnServer(string bookPath)
+		internal void WaitUntilS3DataIsOnServer(string bucket, string bookPath)
 		{
 			var s3Id = S3BookId(BookMetaData.FromFolder(bookPath));
 			var count = Directory.GetFiles(bookPath).Length;
 			for (int i = 0; i < 30; i++)
 			{
-				var uploaded = _s3Client.GetBookFileCount(s3Id);
+				var uploaded = _s3Client.GetBookFileCount(bucket, s3Id);
 				if (uploaded >= count)
 					return;
 				Thread.Sleep(100);

@@ -60,7 +60,7 @@ namespace Bloom.ImageProcessing
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
 				var shouldConvertToJpeg = !isEncodedAsJpeg && ShouldChangeFormatToJpeg(imageInfo.Image);
 				string imageFileName;
-				if (isSameFile)
+				if (!shouldConvertToJpeg && isSameFile)
 					imageFileName = imageInfo.FileName;
 				else
 					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
@@ -69,10 +69,8 @@ namespace Bloom.ImageProcessing
 				{
 					SaveAsTopQualityJpeg(imageInfo.Image, destinationPath);
 				}
-				else
-				{
-					imageInfo.Save(destinationPath);
-				}
+				imageInfo.Save(destinationPath);
+
 				return imageFileName;
 
 				/* I (Hatton) have decided to stop compressing images until we have a suite of
@@ -147,7 +145,7 @@ namespace Bloom.ImageProcessing
 			else
 			{
 				// Even pictures that aren't obviously unnamed or temporary may have the same name.
-				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2627 ("Wierd Image Problem").
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2627 ("Weird Image Problem").
 				basename = Path.GetFileNameWithoutExtension(imageInfo.FileName);
 			}
 			var i = 0;

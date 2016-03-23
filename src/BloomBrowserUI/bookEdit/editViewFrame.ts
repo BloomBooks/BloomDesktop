@@ -83,21 +83,24 @@ export function showAddPageDialog(templatesJSON) {
     //it should if anything belong to the root frmate (this one)
     //var parentElement = (<any>document.getElementById('page')).contentWindow;
     //var lm = parentElement.localizationManager;
-      var lm = theOneLocalizationManager;
-      
+       
     // don't show if a dialog already exists
     if ($(document).find(".ui-dialog").length) {
         return;
     }
-        lm.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
+    var forChooseLayout = templatesJSON.chooseLayout;
+    var key = 'EditTab.AddPageDialog.Title';
+    var english = 'Add Page...';
 
-        var forChooseLayout = templatesJSON.chooseLayout;
-        if (forChooseLayout) {
-            var title = lm.getText('EditTab.AddPageDialog.ChooseLayoutTitle', 'Choose Different Layout...');
+    if (forChooseLayout) {
+        var title = theOneLocalizationManager.getText('EditTab.AddPageDialog.ChooseLayoutTitle', 'Choose Different Layout...');
 
-        } else {
-            var title = lm.getText('EditTab.AddPageDialog.Title', 'Add Page...');
-        }
+    } else {
+        key = 'EditTab.AddPageDialog.ChooseLayoutTitle';
+        english = 'Choose Different Layout...';
+    }
+        
+    theOneLocalizationManager.asyncGetText(key, english).done(title => {
         var dialogContents = CreateAddPageDiv(templatesJSON);
 
         theDialog = $(dialogContents).dialog({
@@ -119,7 +122,7 @@ export function showAddPageDialog(templatesJSON) {
 
         //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
         // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
-     
+    
         jQuery(document).on('click', 'body > .ui-widget-overlay', function () {
             $(".ui-dialog-titlebar-close").trigger('click');
             return false;
@@ -129,13 +132,6 @@ export function showAddPageDialog(templatesJSON) {
 
         //parentElement.$.notify("testing notify",{});
     });
-}
-
-function getAddPageDialogLocalizedStrings() {
-    // Without preloading these, they are not available when the dialog is created
-    var pairs = {};
-    pairs['EditTab.AddPageDialog.Title'] = 'Add Page...';
-    return pairs;
 }
 
 //noinspection JSUnusedGlobalSymbols

@@ -294,13 +294,6 @@ namespace Bloom
 			}
 		}
 
-		void OnValidating(object sender, CancelEventArgs e)
-		{
-			Debug.Assert(!InvokeRequired);
-			LoadPageDomFromBrowser();
-			//_afterValidatingTimer.Enabled = true;//LoadPageDomFromBrowser();
-		}
-
 		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
@@ -355,7 +348,6 @@ namespace Bloom
 			_browserIsReadyToNavigate = true;
 
 			UpdateDisplay();
-			_browser.Validating += new CancelEventHandler(OnValidating);
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
 			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
@@ -784,7 +776,7 @@ namespace Bloom
 				}
 
 				var body = contentDocument.GetElementsByTagName("body");
-				if (body.Length ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
+				if (body.Length ==0)	//review: a previous comment said this could happen in OnValidating, but that is gone...may be obsolete
 					return;
 
 				var content = body[0].InnerHtml;
@@ -800,13 +792,13 @@ namespace Bloom
 				var destinationDomPage = _pageEditDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
 				if (destinationDomPage == null)
 					return;
-				var expectedPageId = destinationDomPage["id"];
+				var expectedPageId = destinationDomPage.Attributes["id"].Value;
 
-				var browserPageId = bodyDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
-				if (browserPageId == null)
+				var browserDomPage = bodyDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
+				if (browserDomPage == null)
 					return;//why? but I've seen it happen
 
-				var thisPageId = browserPageId["id"];
+				var thisPageId = browserDomPage.Attributes["id"].Value;
 				if(expectedPageId != thisPageId)
 				{
 					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");

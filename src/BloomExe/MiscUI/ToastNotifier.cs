@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Bloom.MiscUI
@@ -25,6 +26,7 @@ namespace Bloom.MiscUI
 		private int startPosX;
 		private int startPosY;
 		private bool _stayUp;
+		private static string _currentMessage;
 
 		/// <summary>
 		/// The user clicked on the toast popup
@@ -58,6 +60,10 @@ namespace Bloom.MiscUI
 			_pauseTimer.Tick += PauseTimerTick;
 		}
 
+//		public Color BackgroundColor
+//		{
+//			set { this.color}
+//		}
 		/// <summary>
 		/// Stops it stealing focus from the main window even though it will be in front of that window.
 		/// </summary>
@@ -65,6 +71,9 @@ namespace Bloom.MiscUI
 		{
 			get { return true; }
 		}
+
+		//storing this here so that we only make one and don't have to worry about disposing of it
+		public static Image WarningBitmap = SystemIcons.Warning.ToBitmap();
 
 		private void PauseTimerTick(object sender, EventArgs e)
 		{
@@ -113,6 +122,8 @@ namespace Bloom.MiscUI
 				//If the client app starts with a "show dialog" open (e.g., selecting a file to open), this Close() actually closes *that* dialog, which is, um, bad.
 				//So I'm just going to not do the close, figuring that it only runs once per run of the application anyhow
 				//Close();
+
+				_currentMessage = null;
 			}
 			else
 				SetDesktopLocation(startPosX, startPosY);
@@ -135,6 +146,10 @@ namespace Bloom.MiscUI
 		/// <param name="seconds">How long to show before it goes back down</param>
 		public void Show(string message, string callToAction, int seconds)
 		{
+			//avoid showing a blizzard of the same message
+			if(message == _currentMessage)
+				return;
+			_currentMessage = message;
 			_message.Text = message;
 			_callToAction.Text = callToAction;
 			if (seconds < 0)

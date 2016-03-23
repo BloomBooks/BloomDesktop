@@ -190,7 +190,7 @@ namespace Bloom
 			}
 			catch(Exception error)
 			{
-				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Problem creating book thumbnail ", error);
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Problem creating book thumbnail ", exception: error);
 			}
 		}
 	}

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Autofac.Features.Metadata;
 using Bloom;
 using Bloom.Book;
 using Bloom.WebLibraryIntegration;
@@ -11,7 +10,6 @@ using L10NSharp;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.Progress;
-using SIL.Windows.Forms.ImageToolbox;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -51,11 +49,8 @@ namespace BloomTests.WebLibraryIntegration
 			// Todo: Make sure the S3 unit test bucket is empty.
 			// Todo: Make sure the parse.com unit test book table is empty
 			_parseClient = new BloomParseClientDouble(_thisTestId);
-			// These substitute keys target the "silbloomlibraryunittests" application so testing won't interfere with the real one.
-			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
-			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
 			_htmlThumbNailer = new HtmlThumbNailer(new NavigationIsolator());
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer), new BookDownloadStartingEvent());
+			_transfer = new BookTransfer(_parseClient, new BloomS3Client(), new BookThumbNailer(_htmlThumbNailer), new BookDownloadStartingEvent());
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
 		}
 
@@ -120,11 +115,11 @@ namespace BloomTests.WebLibraryIntegration
 				"In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database.")));
 			Assert.That(progress.Text, Is.StringContaining(Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
 
-			_transfer.WaitUntilS3DataIsOnServer(originalBookFolder);
+			_transfer.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, originalBookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 			_downloadedBooks.Clear();
-			var newBookFolder = _transfer.DownloadBook(s3Id, dest);
+			var newBookFolder = _transfer.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
 
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
 
@@ -239,7 +234,7 @@ namespace BloomTests.WebLibraryIntegration
 
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
-			var newBookFolder = _transfer.DownloadBook(s3Id, dest);
+			var newBookFolder = _transfer.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
 
 			var firstData = File.ReadAllText(newBookFolder.CombineForPath("one.htm"));
 			Assert.That(firstData, Is.StringContaining("something new"), "We should have overwritten the changed file");
@@ -260,10 +255,10 @@ namespace BloomTests.WebLibraryIntegration
 
 			Login();
 			string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
-			_transfer.WaitUntilS3DataIsOnServer(bookFolder);
+			_transfer.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
-			var newBookFolder = _transfer.DownloadBook(s3Id, dest);
+			var newBookFolder = _transfer.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
 			var metadata = BookMetaData.FromString(File.ReadAllText(Path.Combine(newBookFolder, BookInfo.MetaDataFileName)));
 			Assert.That(string.IsNullOrEmpty(metadata.Id), Is.False, "should have filled in missing ID");
 			Assert.That(metadata.Uploader.ObjectId, Is.EqualTo(_parseClient.UserId), "should have set uploader to id of logged-in user");
@@ -288,12 +283,25 @@ namespace BloomTests.WebLibraryIntegration
 			int fileCount = Directory.GetFiles(bookFolder).Length;
 			Login();
 			string s3Id = _transfer.UploadBook(bookFolder, new NullProgress());
-			_transfer.WaitUntilS3DataIsOnServer(bookFolder);
+			_transfer.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, bookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 
 			var newBookFolder = _transfer.DownloadFromOrderUrl(_transfer.BookOrderUrl, dest, "nonsense");
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
+		}
+
+		[Test]
+		public void SmokeTest_DownloadKnownBookFromProductionSite()
+		{
+			var dest = _workFolderPath.CombineForPath("output");
+			Directory.CreateDirectory(dest);
+
+			//if this fails, don't panic... maybe the book is gone. If so, just pick another one.
+			var url =
+			"bloom://localhost/order?orderFile=BloomLibraryBooks/cara_ediger%40sil-lead.org%2ff0665264-4f1f-43d3-aa7e-fc832fe45dd0%2fBreakfast%2fBreakfast.BloomBookOrder&title=Breakfast";
+			var destBookFolder = _transfer.DownloadFromOrderUrl(url, dest, "nonsense");
+			Assert.That(Directory.GetFiles(destBookFolder).Length, Is.GreaterThan(3)); 
 		}
 
 		/// <summary>

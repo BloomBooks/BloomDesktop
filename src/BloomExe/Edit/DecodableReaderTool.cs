@@ -67,7 +67,7 @@ namespace Bloom.Edit
 				return;
 			if (File.Exists(readerToolsPath) && File.GetLastWriteTime(readerToolsPath) > File.GetLastWriteTime(newReaderTools))
 				return; // don't overwrite newer existing settings?
-			File.Copy(newReaderTools, readerToolsPath);
+			File.Copy(newReaderTools, readerToolsPath, true);
 		}
 
 		public const string kReaderToolsWordsFileNameFormat = "ReaderToolsWords-{0}.json";

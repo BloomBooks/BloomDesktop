@@ -180,6 +180,10 @@
     <Reference Include="Interop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
     </Reference>
+    <Reference Include="taglib-sharp, Version=2.1.2.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\taglib-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
     </Reference>
@@ -513,7 +517,7 @@
     <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
     <Compile Include="WebLibraryIntegration\BookTransfer.cs" />
-    <Compile Include="WebLibraryIntegration\KeyManager.cs" />
+    <Compile Include="WebLibraryIntegration\AccessKeys.cs" />
     <Compile Include="WebLibraryIntegration\LoginDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -1180,7 +1184,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <Exec Command="cp -p $(SolutionDir)/lib/dotnet/icu%24(icu-config --version|tr -d .|cut -c -2)/icu.net.dll* $(SolutionDir)/lib/dotnet" Condition="'$(OS)'!='Windows_NT'" />
     <Exec Command="[ -e $(SolutionDir)/Mercurial ] || ln -s $(SolutionDir)/Mercurial-%24(uname -m)/Mercurial $(SolutionDir)/Mercurial" Condition="'$(OS)'!='Windows_NT'" />
     <!-- For Linux, compile the various typescript, jade, and less files in BloomBrowserUI. -->
-    <Exec Condition="'$(OS)'!='Windows_NT'" Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; npm install &amp;&amp; npm run build" />
+    <Exec Condition="'$(OS)'!='Windows_NT'" Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; npm install &amp;&amp; ./fixNodejsForLinux.sh &amp;&amp; npm run build" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />

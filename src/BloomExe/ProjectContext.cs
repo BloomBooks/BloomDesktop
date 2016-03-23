@@ -263,8 +263,7 @@ namespace Bloom
 
 		internal static BloomS3Client CreateBloomS3Client()
 		{
-			return new BloomS3Client(BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
-
+			return new BloomS3Client();
 		}
 
 
