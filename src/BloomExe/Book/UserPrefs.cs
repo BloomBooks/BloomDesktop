@@ -84,7 +84,6 @@ namespace Bloom.Book
 					var temp = new SIL.IO.TempFileForSafeWriting(_fileName);
 					File.WriteAllText(temp.TempFilePath, prefs);
 					temp.WriteWasSuccessful();
-					throw new ApplicationException("test");
 				}
 			}
 			catch(Exception error)
