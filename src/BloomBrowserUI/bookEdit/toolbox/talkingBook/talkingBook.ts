@@ -1,5 +1,10 @@
 ﻿class TalkingBookModel implements ITabModel {
-    restoreSettings(settings: string) {}
+    beginRestoreSettings(settings: string): JQueryPromise<void> {
+        // Nothing to do, so return an already-resolved promise.
+        var result = $.Deferred<void>();
+        result.resolve();
+        return result;
+    }
 
     configureElements(container: HTMLElement) {}
 

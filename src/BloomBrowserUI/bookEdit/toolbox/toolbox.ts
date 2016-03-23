@@ -13,7 +13,7 @@ var keypressTimer: any = null;
 
 
 interface ITabModel {
-    restoreSettings(settings: string);
+    beginRestoreSettings(settings: string): JQueryPromise<void>;
     configureElements(container: HTMLElement);
     showTool();
     hideTool();
@@ -190,9 +190,10 @@ function activateTool(newTool: ITabModel) {
         // If we're activating this tool for the first time, restore its settings.
         if (!newTool.hasRestoredSettings) {
             newTool.hasRestoredSettings = true;
-            newTool.restoreSettings(savedSettings);
+            newTool.beginRestoreSettings(savedSettings).then(() => newTool.showTool());
+        } else {
+            newTool.showTool();
         }
-        newTool.showTool();
     }
 }
 
