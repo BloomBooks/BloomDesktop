@@ -191,7 +191,9 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
       return function(event) {
         event.preventDefault();
         var bottom = Math.min(Math.max(lastComponentMinHeight, bottomOffset - pageYof(event)), maxLastComponentHeight);
-        setBottom(firstComponent, divider, lastComponent, (bottom / splitPaneHeight * 100) + '%');
+        var amount = (bottom / splitPaneHeight * 100);
+        setDividerTitle(divider,amount);
+        setBottom(firstComponent, divider, lastComponent, amount + "%");
         $splitPane.resize();
       };
     } else if ($splitPane.is('.fixed-left')) {
@@ -222,7 +224,9 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
       return function(event) {
         event.preventDefault();
         var right = Math.min(Math.max(lastComponentMinWidth, rightOffset - pageXof(event)), maxLastComponentWidth);
-        setRight(firstComponent, divider, lastComponent, (right / splitPaneWidth * 100) + '%');
+        var amount = (right / splitPaneWidth * 100);
+        setDividerTitle(divider, amount);
+        setRight(firstComponent, divider, lastComponent, amount + '%');
         $splitPane.resize();
       };
     }
@@ -255,7 +259,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     divider.style.bottom = bottom;
     lastComponent.style.height = bottom;
   }
-
+  
   function setLeft(firstComponent, divider, lastComponent, left) {
     firstComponent.style.width = left;
     divider.style.left = left;
@@ -268,4 +272,8 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     lastComponent.style.width = right;
   }
 
+  function setDividerTitle(divider, amount){
+        // for displaying to the user, invert percentage (so higher  up the page is a lower number) leave only one decimal place
+        divider.title = Math.round(10*(100-amount))/10 + "%";
+  }
 })(jQuery);
