@@ -196,6 +196,8 @@ namespace Bloom.Book
 				"The contributions made by writers, illustrators, editors, etc., in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt",
 				"Acknowledgments for translated version, in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.NameofTranslatorPrompt",
+				"Name of Translator, in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.FundingAgenciesPrompt",
 				"Use this to acknowledge any funding agencies.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CopyrightPrompt",

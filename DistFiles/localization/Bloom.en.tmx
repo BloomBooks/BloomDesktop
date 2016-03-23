@@ -1350,6 +1350,12 @@
         <seg>Acknowledgments for translated version, in {lang}</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FrontMatter.NameofTranslatorPrompt">
+        <prop type="x-dynamic">true</prop>
+        <tuv xml:lang="en">
+          <seg>Name of Translator, in {lang}</seg>
+        </tuv>
+    </tu>
     <tu tuid="EditTab.Image.ChangeImage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2431,12 +2437,6 @@
       <tuv xml:lang="en">
         <seg>label3</seg>
       </tuv>
-    </tu>
-    <tu tuid="Name of Translator, in {lang}">
-        <prop type="x-dynamic">true</prop>
-        <tuv xml:lang="en">
-          <seg>Name of Translator, in {lang}</seg>
-        </tuv>
     </tu>
     <tu tuid="LoginDialog.ShowPassword">
       <tuv xml:lang="en">
