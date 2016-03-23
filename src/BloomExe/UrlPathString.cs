@@ -49,6 +49,14 @@ namespace Bloom
 			return new UrlPathString(unencoded);
 		}
 
+		/// <summary>
+		/// In these strings, "&" would be &amp;  space would just be " "
+		/// </summary>
+		public static UrlPathString CreateFromHtmlXmlEncodedString(string encoded)
+		{
+			return new UrlPathString(HttpUtility.HtmlDecode(encoded));
+		}
+
 		public string UrlEncoded
 		{
 			get
@@ -64,6 +72,11 @@ namespace Bloom
 				//now do our own encoding for the protected space
 				return x.Replace(standInForSpace,"%20");
 			}
+		}
+
+		public string HtmlXmlEncoded
+		{
+			get { return HttpUtility.HtmlEncode(_notEncoded); }
 		}
 
 		public string NotEncoded
@@ -130,5 +143,7 @@ namespace Bloom
 		{
 			return (_notEncoded != null ? _notEncoded.GetHashCode() : 0);
 		}
+
+
 	}
 }
