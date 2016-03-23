@@ -120,10 +120,9 @@ function markLeveledStatus(): void {
   });
 }
 
-export function initializeDecodableReaderTool(): void {
-
-  // load synphony settings
-  loadSynphonySettings();
+export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
+    // load synphony settings and then finish init
+    return beginLoadSynphonySettings().then(() => {
 
   // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
   $('#incStage').onSafe('click.readerTools', function() {
@@ -154,13 +153,13 @@ export function initializeDecodableReaderTool(): void {
   });
 
   setTimeout(function() { resizeWordList(); }, 200);
-  setTimeout(function() { $.divsToColumns('letter'); }, 100);
+        setTimeout(function () { $.divsToColumns('letter'); }, 100);
+    });
 }
 
-export function initializeLeveledReaderTool(): void {
-
+export function beginInitializeLeveledReaderTool(): JQueryPromise <void> {
   // load synphony settings
-  loadSynphonySettings();
+    return beginLoadSynphonySettings().then(() => {
 
   $('#incLevel').onSafe('click.readerTools', function() {
     ReaderToolsModel.model.incrementLevel();
@@ -172,16 +171,24 @@ export function initializeLeveledReaderTool(): void {
 
   ReaderToolsModel.model.updateControlContents();
   $("#toolbox").accordion("refresh");
+    });
 }
 
-function loadSynphonySettings(): void {
-
+function beginLoadSynphonySettings(): JQueryPromise<void> {
   // make sure synphony is initialized
-  if (!readerToolsInitialized && !ReaderToolsModel.model.synphony.source) {
+    var result = $.Deferred<void>();
+    if (readerToolsInitialized) {
+        result.resolve();
+        return result;
+    }
     readerToolsInitialized = true;
+
     axios.get<string>('/bloom/readers/getDefaultFont').then(result => setDefaultFont(result.data));
-    axios.get<string>('/bloom/readers/loadReaderToolSettings').then(result => initializeSynphony(result.data));
-  }
+    axios.get<string>('/bloom/readers/loadReaderToolSettings').then(settingsFileContent => {
+        initializeSynphony(settingsFileContent.data);
+        result.resolve();
+    });
+    return result;
 }
 
 /**
@@ -192,9 +199,9 @@ function loadSynphonySettings(): void {
  * @global {ReaderToolsModel) ReaderToolsModel.model
  */
 function initializeSynphony(settingsFileContent: string): void {
-
-  var synphony = ReaderToolsModel.model.synphony;
+  var synphony = new SynphonyApi();
   synphony.loadSettings(settingsFileContent);
+  ReaderToolsModel.model.setSynphony(synphony);
   ReaderToolsModel.model.restoreState();
 
   ReaderToolsModel.model.updateControlContents();

@@ -1623,6 +1623,19 @@ namespace Bloom.Book
 			_pageSelection.SelectPage(newPage);
 			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
 
+			// If copied page references images, copy them.
+			foreach (var pathFromBook in BookStorage.GetImagePathsRelativeToBook(newPageDiv))
+			{
+				var path = Path.Combine(FolderPath, pathFromBook);
+				if (!File.Exists(path))
+				{
+					var fileName = Path.GetFileName(path);
+					var sourcePath = Path.Combine(templatePage.Book.FolderPath, fileName);
+					if (File.Exists(sourcePath))
+						File.Copy(sourcePath, path);
+				}
+			}
+
 			Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);

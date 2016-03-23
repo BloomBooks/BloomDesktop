@@ -4,31 +4,32 @@
 
 import {DirectoryWatcher} from "./directoryWatcher";
 import {DRTState, ReaderToolsModel, MarkupType} from "./readerToolsModel";
-import {initializeDecodableReaderTool} from "./readerTools";
+import {beginInitializeDecodableReaderTool} from "./readerTools";
 import {ITabModel} from "../toolbox";
 import {ToolBox} from "../toolbox";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import {theOneLibSynphony}  from './libSynphony/synphony_lib';
 
 class DecodableReaderModel implements ITabModel {
-    restoreSettings(settings: string) {
+    beginRestoreSettings(settings: string): JQueryPromise<void> {
         if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
-        initializeDecodableReaderTool();
-        if (settings['decodableReaderState']) {
-            var state = theOneLibSynphony.dbGet('drt_state');
-            if (!state) state = new DRTState();
-            var decState = settings['decodableReaderState'];
-            if (decState.startsWith("stage:")) {
-                var parts = decState.split(";");
-                state.stage = parseInt(parts[0].substring("stage:".length));
-                var sort = parts[1].substring("sort:".length);
-                ReaderToolsModel.model.setSort(sort);
-            } else {
-                // old state
-                state.stage = parseInt(decState);
+        return beginInitializeDecodableReaderTool().then(() => {
+            if (settings['decodableReaderState']) {
+                var state = theOneLibSynphony.dbGet('drt_state');
+                if (!state) state = new DRTState();
+                var decState = settings['decodableReaderState'];
+                if (decState.startsWith("stage:")) {
+                    var parts = decState.split(";");
+                    state.stage = parseInt(parts[0].substring("stage:".length));
+                    var sort = parts[1].substring("sort:".length);
+                    ReaderToolsModel.model.setSort(sort);
+                } else {
+                    // old state
+                    state.stage = parseInt(decState);
+                }
+                theOneLibSynphony.dbSet('drt_state', state);
             }
-            theOneLibSynphony.dbSet('drt_state', state);
-        }
+        });
     }
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {

@@ -15,6 +15,7 @@ using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 using System;
+using BloomTemp;
 
 namespace BloomTests.Book
 {
@@ -326,6 +327,23 @@ namespace BloomTests.Book
 			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page'  data-page='extra' >hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			Assert.AreEqual("bloom-page A5Portrait", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
+		}
+
+		[Test]
+		public void InsertPageAfter_TemplateRefsPicture_PictureCopied()
+		{
+			var book = CreateBook();
+			var existingPage = book.GetPages().First();
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page'  data-page='extra' >hello<img src='read.png'/></div>");
+			using (var tempFolder = new TemporaryFolder("InsertPageAfter_TemplateRefsPicture_PictureCopied"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.FolderPath, "read.png"),"This is a test");
+				var mockTemplateBook = new Moq.Mock<Bloom.Book.Book>();
+				mockTemplateBook.Setup(x => x.FolderPath).Returns(tempFolder.FolderPath);
+				templatePage.Setup(x => x.Book).Returns(mockTemplateBook.Object);
+				book.InsertPageAfter(existingPage, templatePage.Object);
+			}
+			Assert.That(File.Exists(Path.Combine(book.FolderPath, "read.png")));
 		}
 
 		[Test]

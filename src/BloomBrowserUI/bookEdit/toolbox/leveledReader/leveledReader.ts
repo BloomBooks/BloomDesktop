@@ -1,20 +1,21 @@
 ﻿/// <reference path="../toolbox.ts" />
 import { ReaderToolsModel, DRTState, } from "../decodableReader/readerToolsModel";
-import { initializeLeveledReaderTool} from "../decodableReader/readerTools";
+import { beginInitializeLeveledReaderTool} from "../decodableReader/readerTools";
 import {ITabModel} from "../toolbox";
 import {ToolBox} from "../toolbox";
 import {theOneLibSynphony}  from '../decodableReader/libSynphony/synphony_lib';
 
 class LeveledReaderModel implements ITabModel {
-    restoreSettings(opts: string) {
+    beginRestoreSettings(opts: string): JQueryPromise<void> {
         if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
-        initializeLeveledReaderTool();
-        if (opts['leveledReaderState']) {
-            var state = theOneLibSynphony.dbGet('drt_state');
-            if (!state) state = new DRTState();
-            state.level = parseInt(opts['leveledReaderState']);
-            theOneLibSynphony.dbSet('drt_state', state);
-        }
+        return beginInitializeLeveledReaderTool().then(() => {
+            if (opts['leveledReaderState']) {
+                var state = theOneLibSynphony.dbGet('drt_state');
+                if (!state) state = new DRTState();
+                state.level = parseInt(opts['leveledReaderState']);
+                theOneLibSynphony.dbSet('drt_state', state);
+            }
+        });
     }
 
     configureElements(container: HTMLElement) {}
