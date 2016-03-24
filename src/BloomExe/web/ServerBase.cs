@@ -472,7 +472,7 @@ namespace Bloom.web
 
 						// tell _listenerThread and the worker threads they should stop
 						_stop.Set();
-
+						
 						// wait for _listenerThread to stop
 						if (_listenerThread.ThreadState != ThreadState.Unstarted)
 							_listenerThread.Join();
@@ -484,8 +484,18 @@ namespace Bloom.web
 						}
 
 						// stop listening for incoming http requests
-						_listener.Stop();
+						Debug.Assert(_listener.IsListening);
+						if(_listener.IsListening)
+						{
+							//In BL-3290, a user quitely failed here each time he exited Bloom, with a Cannot access a disposed object.
+							//according to http://stackoverflow.com/questions/11164919/why-httplistener-start-method-dispose-stuff-on-exception,
+							//it's actually just responding to being closed, not disposed.
+							//I don't know *why* for that user the listener was already stopped.
+							_listener.Stop();
+						}
+						//if we keep getting that exception, we could move the Close() into the previous block
 						_listener.Close();
+						_listener = null;
 					}
 				}
 				// ReSharper disable once RedundantCatchClause
@@ -494,8 +504,8 @@ namespace Bloom.web
 					//prompted by the mysterious BL 273, Crash while closing down the imageserver
 #if DEBUG
 					throw;
-#else				//just quietly report this
-					DesktopAnalytics.Analytics.ReportException(e);
+#else             //just quietly report this
+					DesktopAnalytics.Analytics.ReportException(e); 
 #endif
 				}
 			}
