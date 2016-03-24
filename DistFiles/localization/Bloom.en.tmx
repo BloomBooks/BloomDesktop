@@ -968,7 +968,13 @@
             <seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
         </tuv>
     </tu>
-    <tu tuid="EditTab.BackMatter.OutsideBackCoverTextPrompt">
+    <tu tuid="EditTab.FrontMatter.InsideFrontCoverTextPrompt">
+        <prop type="x-dynamic">true</prop>
+        <tuv xml:lang="en">
+            <seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</seg>
+        </tuv>
+     </tu>
+     <tu tuid="EditTab.BackMatter.OutsideBackCoverTextPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
