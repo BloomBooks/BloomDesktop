@@ -1088,7 +1088,15 @@ namespace Bloom.Edit
 						Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
 						throw err;
 					}
-					CheckForBL2364();
+					try
+					{
+						CheckForBL2634();
+					}
+					catch(Exception e)
+					{
+						ErrorReport.NotifyUserOfProblem(e, e.Message);
+						return;
+					}
 					//OK, looks safe, time to save.
 					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
 				}
@@ -1107,16 +1115,22 @@ namespace Bloom.Edit
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
 		// to save is not in the book we're trying to save it into.
-		private void CheckForBL2364()
+		private void CheckForBL2634()
 		{
 			try
 			{
+				if (_pageSelection.CurrentSelection == null || _domForCurrentPage == null)
+					return;
 				XmlElement divElement =
 					_domForCurrentPage.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
 				string pageDivId = divElement.GetAttribute("id");
-				if (pageDivId != _pageSelection.CurrentSelection.Id)
-					throw new ApplicationException(
-						"Bl-2634: id of _domForCurrentPage is not the same as ID of _pageSelection.CurrentSelection");
+				if(pageDivId != _pageSelection.CurrentSelection.Id)
+				{
+					var notice =
+						"There was a problem saving your changes to that page; probably everything was saved, but you should check. This is a known bug in Bloom versions before 3.6, and normally happens if you switch out of the 'Edit' tab soon after changing pages. Please upgrade to a newer Bloom. From the Help menu, choose 'Check For New Version'.";
+					throw new ApplicationException(notice);
+				}
+
 			}
 			catch (Exception err)
 			{
