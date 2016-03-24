@@ -157,5 +157,18 @@ namespace BloomTests
 		{
 			Assert.IsFalse(UrlPathString.CreateFromUrlEncodedString("test me") == null);
 		}
+
+		[Test]
+		public void HtmlEncodedWithAmpersand_RoundTripable()
+		{
+			var s = "one&amp;two";
+			Assert.AreEqual(s, UrlPathString.CreateFromHtmlXmlEncodedString(s).HtmlXmlEncoded);
+		}
+
+		[Test]
+		public void CreateFromHtmlXmlEncodedString_WithAmpersand_UnencodedAsExpected()
+		{
+			Assert.AreEqual("one&two", UrlPathString.CreateFromHtmlXmlEncodedString("one&amp;two").NotEncoded);
+		}
 	}
 }

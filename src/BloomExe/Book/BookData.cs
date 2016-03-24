@@ -629,6 +629,10 @@ namespace Bloom.Book
 					else
 					{
 						value = node.InnerXml.Trim(); //may contain formatting
+						if(KeysOfVariablesThatAreUrlEncoded.Contains(key))
+						{
+							value = UrlPathString.CreateFromHtmlXmlEncodedString(value).UrlEncoded;
+						}
 					}
 
 					string lang = node.GetOptionalStringAttribute("lang", "*");
@@ -672,6 +676,12 @@ namespace Bloom.Book
 							t.SetAlternative(lang, value);
 						}
 					}
+
+					if (KeysOfVariablesThatAreUrlEncoded.Contains(key))
+					{
+						Debug.Assert(!value.Contains("&amp;"), "In memory, all image urls should be encoded such that & is just &.");
+					}
+
 				}
 			}
 			catch (Exception error)
@@ -736,6 +746,10 @@ namespace Bloom.Book
 							//Ideally, we have this string, in this desired language.
 							var s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[] {lang, "*"});
 
+							if(KeysOfVariablesThatAreUrlEncoded.Contains(key))
+							{
+								Debug.Assert(!s.Contains("&amp;"),"In memory, all image urls should be encoded such that & is just &.");
+							}
 							//But if not, maybe we should copy one in from another national language
 							if (string.IsNullOrEmpty(s))
 								s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
