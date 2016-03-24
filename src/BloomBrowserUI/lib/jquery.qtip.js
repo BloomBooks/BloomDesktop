@@ -16,6 +16,7 @@
 
 
 /* hatton removed use of $browser for jquery 1.9... qtip has this fix in the pipeline but it's not out yet*/
+/* JohnT (Bloom) added code marked Adjust for zoom by transform: scale
 
 /* Cache window, document, undefined */
 (function( window, document, undefined ) {
@@ -1226,6 +1227,13 @@ function QTip(target, options, id, attr)
           targetHeight = target.outerHeight(FALSE);
 
           position = PLUGINS.offset(target, container);
+          // Bloom: Adjust for zoom by transform: scale, which affects position as read here but not the position we want to calculate.
+          var targetElem = target.get(0);
+          var bounds = targetElem.getBoundingClientRect();
+          var scaleY = bounds.height / targetElem.offsetHeight;
+          var scaleX = bounds.width / targetElem.offsetWidth;
+          position.left = position.left / scaleX;
+          position.top = position.top / scaleY;
         }
 
         // Parse returned plugin values into proper variables
