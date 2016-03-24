@@ -38,6 +38,14 @@
   right: 50%;
   cursor: col-resize;
   border-right: 3px dashed transparent;
+  
+    &:hover:after, &.dragged:after{
+        content: attr(title);
+        position: absolute;
+        left: 5px;
+        z-index: 1000000;
+        color: @activeColor;
+    }
 }
 
 .split-pane.vertical-percent > .vertical-divider:hover,
@@ -50,12 +58,22 @@
   bottom: 50%;
   cursor: row-resize;
   border-bottom: 3px dashed transparent;
+  
+  &:hover:after, &.dragged:after{
+        content: attr(title);
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        z-index: 1000000;
+        color: @activeColor;
+    }
 }
 
 .split-pane.horizontal-percent > .horizontal-divider:hover,
 .origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
 .horizontal-divider.dragged {
   border-bottom-color: @activeColor !important;
+      
 }
 
 .origami-toggle {
