@@ -15,6 +15,7 @@ using Bloom.Edit;
 using BloomTemp;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Reporting;
 using SIL.Xml;
 
 namespace Bloom.Publish
@@ -137,11 +138,25 @@ namespace Bloom.Publish
 					CopyStyleSheets(pageDom);
 			}
 
-			const string coverPageImageFile = "thumbnail-256.png";
+			string coverPageImageFile = "thumbnail-256.png";
 			// This thumbnail is otherwise only made when uploading, so it may be out of date.
 			// Just remake it every time.
 			_thumbNailer.MakeThumbnailOfCover(Book, 256, Form.ActiveForm);
-			CopyFileToEpub(Path.Combine(Book.FolderPath, coverPageImageFile));
+			var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
+			if (!File.Exists(coverPageImagePath))
+			{
+				// Something went wrong...should have been reported already...use the low-res image we always have
+				coverPageImageFile = "thumbnail.png";
+				coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
+				if (!File.Exists(coverPageImagePath))
+				{
+					// I don't think we can make an epub without a cover page so at this point we've had it.
+					// I suppose we could recover without actually crashing but it doesn't seem worth it unless this
+					// actually happens to real users.
+					throw new FileNotFoundException("Could not find or create thumbnail for cover page", coverPageImageFile);
+				}
+			}
+			CopyFileToEpub(coverPageImagePath);
 
 			EmbedFonts(); // must call after copying stylesheets
 			MakeNavPage();
