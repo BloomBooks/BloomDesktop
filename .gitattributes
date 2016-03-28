@@ -6,12 +6,12 @@
 *.idh   diff=cpp
 
 # Different settings for javascript, typescript, html, tmx, less and css files
-*.js   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
-*.ts   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
-*.htm* whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
-*.tmx  whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
-*.css -whitespace
-*.less -whitespace
+*.js   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
+*.ts   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
+*.htm* whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
+*.tmx  whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2 text
+*.css -whitespace text
+*.less -whitespace text
 
 # Don't check (nor fix) whitespace for generated files
 *.csproj -whitespace
