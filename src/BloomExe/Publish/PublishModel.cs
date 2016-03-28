@@ -36,7 +36,7 @@ namespace Bloom.Publish
 			Working,
 			ShowPdf,
 			Upload,
-			Epub,
+			EPUB,
 			Printing,
 			ResumeAfterPrint
 		}
@@ -86,7 +86,7 @@ namespace Bloom.Publish
 		// True when we are showing the controls for uploading. (Review: does this belong in the model or view?)
 		public bool UploadMode { get; set; }
 
-		// True when showing an epub preview.
+		// True when showing an ePUB preview.
 		public bool EpubMode { get; set; }
 
 		public bool PdfGenerationSucceeded { get; set; }
@@ -293,7 +293,7 @@ namespace Bloom.Publish
 				}
 				catch (Exception err)
 				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the epub.  {0}", err.Message);
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the ePUB.  {0}", err.Message);
 				}
 				return;
 			}
@@ -529,7 +529,7 @@ namespace Bloom.Publish
 				{
 					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
 					_epubMaker.FinishEpub(dlg.FileName);
-					Analytics.Track("Save Epub");
+					Analytics.Track("Save ePUB");
 				}
 			}
 		}

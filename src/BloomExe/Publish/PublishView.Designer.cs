@@ -211,7 +211,7 @@
 			superToolTipInfo5.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo5.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo5.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo5.BodyText = "Make an epub (electronic book) out of this book, allowing it to be read on variou" +
+			superToolTipInfo5.BodyText = "Make an ePUB (electronic book) out of this book, allowing it to be read on variou" +
     "s electronic reading devices.";
 			superToolTipInfo5.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
 			superToolTipInfo5.ShowHeader = false;
@@ -220,7 +220,7 @@
 			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper5);
 			this._epubRadio.TabIndex = 18;
 			this._epubRadio.TabStop = true;
-			this._epubRadio.Text = "Epub";
+			this._epubRadio.Text = "ePUB";
 			this._epubRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._epubRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._epubRadio.UseVisualStyleBackColor = true;

@@ -309,7 +309,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox/talkingBook");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/epub");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/ePUB");
 		}
 
 		/// <summary>
