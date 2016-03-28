@@ -1655,6 +1655,17 @@ namespace Bloom.Book
 			if (currentPageIndex < 0)
 				return;
 
+			foreach (var span in newpageDiv.SafeSelectNodes(".//span[@class='audio-sentence']").Cast<XmlElement>().ToList())
+			{
+				XmlNode after = span;
+				foreach (XmlNode child in span.ChildNodes)
+				{
+					span.ParentNode.InsertAfter(child, after);
+					after = child;
+				}
+				span.ParentNode.RemoveChild(span);
+			}
+
 			body.InsertAfter(newpageDiv, pages[currentPageIndex]);
 
 			ClearPagesCache();
