@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows.Forms;
@@ -14,20 +15,30 @@ namespace Bloom.WebLibraryIntegration
 {
 	public class BloomParseClient
 	{
-		private readonly string kBaseUrl="https://api.parse.com/1/";
-		private readonly RestClient _client;
+		private RestClient _client;
 		private string _sessionToken;
 		private string _userId;
 
 		public BloomParseClient()
 		{
 			_sessionToken = String.Empty;
-			 _client = new RestClient(kBaseUrl);
 
 			var keys = AccessKeys.GetAccessKeys(BookTransfer.UploadBucketNameForCurrentEnvironment);
 
 			ApiKey = keys.ParseApiKey;
 			ApplicationKey = keys.ParseApplicationKey;
+		}
+
+		private RestClient Client
+		{
+			get
+			{
+				if (_client == null)
+				{
+					_client = new RestClient(GetRealUrl());
+				}
+				return _client;
+			}
 		}
 
 		// REST key. Unit tests update these.
@@ -48,6 +59,39 @@ namespace Bloom.WebLibraryIntegration
 			{
 				return !string.IsNullOrEmpty(_sessionToken);
 			}
+		}
+
+		// Get the real URL where the parse.com server lives.
+		// We have made an S3 bucket which redirects there.
+		// We use indirection so that we are free to change the location of the service without breaking existing clients.
+		// We were unable to make the combination of S3-based redirection, restsharp, and SSL work,
+		// so we are just using this initial request to obtain the url to use.
+		// See http://stackoverflow.com/questions/10115799/set-up-dns-based-url-forwarding-in-amazon-route53
+		// for instructions on how to set up AWS to redirect the way we want.
+		// In particular, our AWS Route53 has a record set for parse.bloomlibrary.org that points to
+		// our bucket called parse.bloomlibrary.org, which under Static Website Hosting is enabled,
+		// and has Edit Redirection Rules, in which the values of HostName and ReplaceKeyPrefixWith
+		// add up to the URL we want Bloom to use.
+		public string GetRealUrl()
+		{
+			var request = new RestRequest("aNonExistentTarget", Method.GET); // object doesn't exist anywhere, we just want the site redirect info
+			var client = new RestClient("http://parse.bloomlibrary.org");
+			client.FollowRedirects = false; // We WANT to receive the redirection response, not have the RestClient try to obey it
+			var result = client.Execute(request);
+			var locationHeader = result.Headers.FirstOrDefault(h => h.Name == "Location");
+			if (locationHeader != null && locationHeader.Value is String)
+			{
+				var rawLocation = (String)locationHeader.Value;
+				// S3 returns a location like https://api.parse.com/1/nonsense.
+				var index = rawLocation.LastIndexOf("/aNonExistentTarget");
+				if (index > 0)
+				{
+					var location = rawLocation.Substring(0, index + 1); // keep the slash following the redirect url
+					return location;
+				}
+			}
+			NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "Bloom could not retrieve the parse URL from Amazon", "We will try to continue with the standard URL");
+			return "https://api.parse.com/1/"; // If our attempt to get the redirct URL fails somehow, we'll drop back to using the real parse.com API.
 		}
 
 		private RestRequest MakeRequest(string path, Method requestType)
@@ -91,7 +135,7 @@ namespace Bloom.WebLibraryIntegration
 			var request = MakeGetRequest("classes/books");
 			request.AddParameter("count", "1");
 			request.AddParameter("limit", "0");
-			var response = _client.Execute(request);
+			var response = Client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			return dy.count;
 		}
@@ -100,7 +144,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var request = MakeGetRequest("classes/books");
 			request.AddParameter("where",query, ParameterType.QueryString);
-			return _client.Execute(request);
+			return Client.Execute(request);
 		}
 
 		public dynamic GetSingleBookRecord(string id)
@@ -143,7 +187,7 @@ namespace Bloom.WebLibraryIntegration
 			var request = MakeGetRequest("login");
 			request.AddParameter("username", account.ToLowerInvariant());
 			request.AddParameter("password", password);
-			var response = _client.Execute(request);
+			var response = Client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			_sessionToken = dy.sessionToken;//there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
 			_userId = dy.objectId;
@@ -166,7 +210,7 @@ namespace Bloom.WebLibraryIntegration
 				throw new ApplicationException();
 			var request = MakePostRequest("classes/books");
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
-			var response = _client.Execute(request);
+			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.Created)
 			{
 				var message = new StringBuilder();
@@ -192,7 +236,7 @@ namespace Bloom.WebLibraryIntegration
 
 			var request = MakePutRequest("classes/books/" + book.objectId);
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
-			var response = _client.Execute(request);
+			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
 				throw new ApplicationException(response.StatusDescription + " " + response.Content);
 			return response;
@@ -204,7 +248,7 @@ namespace Bloom.WebLibraryIntegration
 			var metadataJson =
 				"{\"username\":\"" + account.ToLowerInvariant() + "\",\"password\":\"" + password + "\",\"email\":\"" + account + "\"}";
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
-			var response = _client.Execute(request);
+			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.Created)
 				throw new ApplicationException(response.StatusDescription + " " + response.Content);
 		}
@@ -214,7 +258,7 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException("Must be logged in to delete current user");
 			var request = MakeDeleteRequest("users/" + _userId);
-			var response = _client.Execute(request);
+			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.OK)
 				throw new ApplicationException(response.StatusDescription + " " + response.Content);
 			_sessionToken = null;
@@ -226,14 +270,14 @@ namespace Bloom.WebLibraryIntegration
 			if (!LoggedIn)
 				throw new ApplicationException();
 			var getLangs = MakeGetRequest(ClassesLanguagePath);
-			var response1 = _client.Execute(getLangs);
+			var response1 = Client.Execute(getLangs);
 			dynamic json = JObject.Parse(response1.Content);
 			if (json == null || response1.StatusCode != HttpStatusCode.OK)
 				return;
 			foreach (var obj in json.results)
 			{
 				var request = MakeDeleteRequest(ClassesLanguagePath + "/" + obj.objectId);
-				var response = _client.Execute(request);
+				var response = Client.Execute(request);
 				if (response.StatusCode != HttpStatusCode.OK)
 					throw new ApplicationException(response.StatusDescription + " " + response.Content);
 			}
@@ -246,7 +290,7 @@ namespace Bloom.WebLibraryIntegration
 			var request = MakePostRequest(ClassesLanguagePath);
 			var langjson = lang.Json;
 			request.AddParameter("application/json", langjson, ParameterType.RequestBody);
-			var response = _client.Execute(request);
+			var response = Client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.Created)
 			{
 				var message = new StringBuilder();
@@ -270,7 +314,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var getLang = MakeGetRequest(ClassesLanguagePath);
 			getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
-			var response = _client.Execute(getLang);
+			var response = Client.Execute(getLang);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return 0;
 			dynamic json = JObject.Parse(response.Content);
@@ -284,7 +328,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var getLang = MakeGetRequest(ClassesLanguagePath);
 			getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
-			var response = _client.Execute(getLang);
+			var response = Client.Execute(getLang);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return null;
 			dynamic json = JObject.Parse(response.Content);
@@ -296,7 +340,7 @@ namespace Bloom.WebLibraryIntegration
 		internal dynamic GetLanguage(string objectId)
 		{
 			var getLang = MakeGetRequest(ClassesLanguagePath + "/" + objectId);
-			var response = _client.Execute(getLang);
+			var response = Client.Execute(getLang);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return null;
 			return JObject.Parse(response.Content);
@@ -307,14 +351,14 @@ namespace Bloom.WebLibraryIntegration
 			var request = MakePostRequest("requestPasswordReset");
 			request.AddParameter("application/json; charset=utf-8", "{\"email\":\""+account+ "\"}", ParameterType.RequestBody);
 			request.RequestFormat = DataFormat.Json;
-			_client.Execute(request);
+			Client.Execute(request);
 		}
 
 		internal bool UserExists(string account)
 		{
 			var request = MakeGetRequest("users");
 			request.AddParameter("where", "{\"username\":\"" + account.ToLowerInvariant() + "\"}");
-			var response = _client.Execute(request);
+			var response = Client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			// Todo
 			return dy.results.Count > 0;
@@ -323,7 +367,7 @@ namespace Bloom.WebLibraryIntegration
 		internal bool IsThisVersionAllowedToUpload()
 		{
 			var request = MakeGetRequest("classes/version");
-			var response = _client.Execute(request);
+			var response = Client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			var row = dy.results[0];
 			string versionString = row.minDesktopVersion;
