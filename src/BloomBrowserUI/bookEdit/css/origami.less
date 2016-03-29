@@ -247,7 +247,6 @@
 //If wide enough, show the horizontal adders with medium size
 .split-pane-component-inner[min-width~="60px"]{
    .horizontal-adders{
-        display:block;
        width: @mediumClusterThickness;
         height: @mediumSplitterLength;
     }
@@ -257,7 +256,6 @@
 //If tall enough, show the vertical adders with medium size
 .split-pane-component-inner[min-height~="60px"]{
   .vertical-adders {
-      display:block;
         width: @mediumSplitterLength;
         height: @mediumClusterThickness;
     }
@@ -272,7 +270,6 @@
 //If really tall, show the vertical adders with large size
 .split-pane-component-inner[min-height~="250px"]{
      .vertical-adders{
-         display:block;
          height: @largeClusterThickness;		
     }
     .horizontal-adders{
@@ -289,3 +286,13 @@
         width: @largeClusterThickness;
     }
  }
+
+//only show the plus signs that add new blocks for the block that has the mouse
+.origami-layout-mode .origami-ui{
+     &:hover .adders{
+        display:block; 
+     }
+    .adders{
+        display: none;
+    }
+}
