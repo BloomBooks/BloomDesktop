@@ -506,7 +506,8 @@ namespace Bloom.Publish
 		{
 			_model.StageEpub(_publishWithoutAudio);
 
-			var root = _model.BookSelection.CurrentSelection.GetFileLocator().LocateDirectoryWithThrow("Readium");
+			var fileLocator = _model.BookSelection.CurrentSelection.GetFileLocator();
+			var root = fileLocator.LocateDirectoryWithThrow("Readium");
 			var tempFolder = Path.GetDirectoryName(_model.StagingDirectory);
 			// This is kludge. I hope it can be improved. To make a preview we currently need all the Readium
 			// files in a folder that is a parent of the staging folder containing the book content.
@@ -518,8 +519,7 @@ namespace Bloom.Publish
 			// approach at least works.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
 
-			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "ePUB",
-				"bloomEpubPreview.html");
+			var previewHtmlTemplatePath = fileLocator.LocateFileWithThrow("ePUB/bloomEpubPreview.html");
 
 			var audioSituationClass = "noAudioAvailable";
 			if(_publishWithoutAudio)
