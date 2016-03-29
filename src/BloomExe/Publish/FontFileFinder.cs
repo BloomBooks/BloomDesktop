@@ -52,7 +52,7 @@ namespace Bloom.Publish
 				FontNameToFiles = new Dictionary<string, FontGroup>();
 				foreach (var fontFile in Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)))
 				{
-					// Epub only understands these types, so skip anything else.
+					// ePUB only understands these types, so skip anything else.
 					switch (Path.GetExtension(fontFile))
 					{
 						case ".ttf":

@@ -83,7 +83,7 @@ export default class OverflowChecker {
         var shortBoxFudgeFactor = 4;
 
         return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + shortBoxFudgeFactor ||
-            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor
+            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
     }
 
     // Actual testable determination of Type II overflow or not
@@ -99,10 +99,13 @@ export default class OverflowChecker {
         if (!parents) {
             return null;
         }
+        // A zoom on the body affects offset but not outerHeight, which messes things up if we don't account for it.
+        // It's better to correct offset so we don't need to also adjust the fudge factors.
+        var scaleY = element.getBoundingClientRect().height / element.offsetHeight;
         for(var i=0; i < parents.length; i++) { // search ancestors starting with nearest
             var currentAncestor = $(parents[i]);
-            var parentBottom = currentAncestor.offset().top + currentAncestor.outerHeight(true);
-            var elemTop = $(element).offset().top;
+            var parentBottom = currentAncestor.offset().top / scaleY + currentAncestor.outerHeight(true);
+            var elemTop = $(element).offset().top / scaleY;
             var elemBottom = elemTop + $(element).outerHeight(false);
             // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
             // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.

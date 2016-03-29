@@ -305,7 +305,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox/talkingBook"));
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
-			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"epub"));
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"ePUB"));
 		}
 
 		/// <summary>
@@ -491,9 +491,12 @@ namespace Bloom
 			_scope.Dispose();
 			_scope = null;
 
-			if (_httpServer != null)
-				_httpServer.Dispose();
-			_httpServer = null;
+			//REVIEW: by debugging, I see that _httpServer is already (and properly) disposed of by the
+			//_scope.Dispose() above.
+			//
+			//			if (_httpServer != null)
+			//				_httpServer.Dispose();
+			//			_httpServer = null;
 
 //			if(_commandAvailabilityPublisher != null)
 //				_commandAvailabilityPublisher.Dispose();

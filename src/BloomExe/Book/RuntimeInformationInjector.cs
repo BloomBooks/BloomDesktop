@@ -196,6 +196,8 @@ namespace Bloom.Book
 				"The contributions made by writers, illustrators, editors, etc., in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt",
 				"Acknowledgments for translated version, in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.NameofTranslatorPrompt",
+				"Name of Translator, in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.FundingAgenciesPrompt",
 				"Use this to acknowledge any funding agencies.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CopyrightPrompt",
@@ -216,6 +218,9 @@ namespace Bloom.Book
 				"If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.OutsideBackCoverTextPrompt",
 				"If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
+			// Used in Traditional Front matter
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.InsideFrontCoverTextPrompt",
+				"If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.");
 
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image");

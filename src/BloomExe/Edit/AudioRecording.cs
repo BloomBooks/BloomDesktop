@@ -233,14 +233,14 @@ namespace Bloom.Edit
 			}
 
 			//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
-			//We could put this off entirely until we make the epub.
+			//We could put this off entirely until we make the ePUB.
 			//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
 			//That's fine so long as it doesn't make the UI unresponsive on slow machines.
 			if (LameEncoder.IsAvailable())
 			{
 				_mp3Encoder.Encode(PathToCurrentAudioSegment, PathToCurrentAudioSegment.Substring(0, PathToCurrentAudioSegment.Length - 4), new NullProgress());
 				// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format (or alternative mp4)
-				// is required for epub. The wav file is a better permanent record of the recording; also,
+				// is required for ePUB. The wav file is a better permanent record of the recording; also,
 				// it is used for playback.
 			}
 		}

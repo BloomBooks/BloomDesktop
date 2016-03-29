@@ -20,10 +20,10 @@ using SIL.Xml;
 namespace Bloom.Publish
 {
 	/// <summary>
-	/// This class handles the process of creating an epub out of a bloom book.
+	/// This class handles the process of creating an ePUB out of a bloom book.
 	/// The process has two stages, corresponding to the way our UI displays a preview and
-	/// then allows the user to save. We 'stage' the epub by generating all the files into a
-	/// temporary folder. Then, if the user says to save, we actually zip them into an epub.
+	/// then allows the user to save. We 'stage' the ePUB by generating all the files into a
+	/// temporary folder. Then, if the user says to save, we actually zip them into an ePUB.
 	/// </summary>
 	public class EpubMaker : IDisposable
 	{
@@ -49,10 +49,10 @@ namespace Bloom.Publish
 		// Keeps track of the ID actually generated for each resource. This is generally algorithmic,
 		// but in case of duplicates the ID for an item might not be what the algorithm predicts.
 		private Dictionary<string, string> _mapItemToId = new Dictionary<string, string>();
-		// Keep track of the files we already copied to the epub, so we don't copy them again to a new name.
+		// Keep track of the files we already copied to the ePUB, so we don't copy them again to a new name.
 		private Dictionary<string, string>  _mapSrcPathToDestFileName = new Dictionary<string, string>();
 		// Some file names are not allowed in epubs, in which case, we have to rename the file and change the
-		// link in the HTML. This keeps track of files that needed to be renamed when copied into the epub.
+		// link in the HTML. This keeps track of files that needed to be renamed when copied into the ePUB.
 		Dictionary<string, string> _mapChangedFileNames = new Dictionary<string, string>();
 		// All the things (files) we need to list in the manifest
 		private List<string> _manifestItems;
@@ -100,7 +100,7 @@ namespace Bloom.Publish
 		}
 
 		/// <summary>
-		/// Generate all the files we will zip into the epub for the current book into the StagingFolder.
+		/// Generate all the files we will zip into the ePUB for the current book into the StagingFolder.
 		/// It is required that the parent of the StagingFolder is a temporary folder into which we can
 		/// copy the Readium stuff. This folder is deleted when the EpubMaker is disposed.
 		/// </summary>
@@ -108,7 +108,7 @@ namespace Bloom.Publish
 		{
 			_publishWithoutAudio = publishWithoutAudio;
 			Debug.Assert(_stagingFolder == null, "EpubMaker should only be used once");
-			var epubExport = "Epub export";
+			var epubExport = "ePUB export";
 			//I (JH) kept having trouble making epubs because this kept getting locked.
 			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), epubExport));
 
@@ -166,7 +166,7 @@ namespace Bloom.Publish
 
 		private void MakeManifest(string coverPageImageFile)
 		{
-			// content.opf: contains primarily the manifest, listing all the content files of the epub.
+			// content.opf: contains primarily the manifest, listing all the content files of the ePUB.
 			var manifestPath = Path.Combine(_contentFolder, "content.opf");
 			XNamespace opf = "http://www.idpf.org/2007/opf";
 			var rootElt = new XElement(opf + "package",
@@ -324,7 +324,7 @@ namespace Bloom.Publish
 						new XElement(smil + "audio",
 							// Note that we don't need to preserve any audio/ in the path.
 							// We now mangle file names so as to replace any / (with _2f) so all files
-							// are at the top level in the epub. Makes one less complication for readers.
+							// are at the top level in the ePUB. Makes one less complication for readers.
 							new XAttribute("src", Path.GetFileName(epubPath)))));
 			}
 			var overlayPath = Path.Combine(_contentFolder, overlayName);
@@ -378,12 +378,12 @@ namespace Bloom.Publish
 			if (Unpaginated)
 			{
 				RemoveRegularStylesheets(pageDom);
-				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEpub.css").ToLocalhost());
+				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEPUB.css").ToLocalhost());
 			}
 			else
 			{
 				// Review: this branch is not currently used. Very likely we need SOME different stylesheets
-				// from the printed book, possibly including baseEpub.css, if it's even possible to make
+				// from the printed book, possibly including baseEPUB.css, if it's even possible to make
 				// useful fixed-layout books out of Bloom books that will work with current readers.
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
@@ -420,7 +420,7 @@ namespace Bloom.Publish
 			FixChangedFileNames(pageDom);
 			pageDom.AddStyleSheet("fonts.css"); // enhance: could omit if we don't embed any
 
-			// epub validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
+			// ePUB validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
 			pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
 			File.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
 			return pageDom;
@@ -435,7 +435,7 @@ namespace Bloom.Publish
 				if (url == null || url.NotEncoded=="")
 					continue; // very weird, but all we can do is ignore it.
 				// Notice that we use only the path part of the url. For some unknown reason, some bloom books
-				// (e.g., El Nino in the library) have a query in some image sources, and at least some epub readers
+				// (e.g., El Nino in the library) have a query in some image sources, and at least some ePUB readers
 				// can't cope with it.
 				var filename = url.PathOnly.NotEncoded;
 				if (string.IsNullOrEmpty(filename))
@@ -457,7 +457,7 @@ namespace Bloom.Publish
 		}
 
 		/// <summary>
-		/// Finish publishing an epub that has been staged, by zipping it into the desired final file.
+		/// Finish publishing an ePUB that has been staged, by zipping it into the desired final file.
 		/// </summary>
 		/// <param name="destinationEpubPath"></param>
 		public void FinishEpub(string destinationEpubPath)
@@ -529,7 +529,7 @@ namespace Bloom.Publish
 
 		/// <summary>
 		/// Typically pictures are given an absolute size in px, which looks right given
-		/// the current absolute size of the page it is on. For an epub, a percent size
+		/// the current absolute size of the page it is on. For an ePUB, a percent size
 		/// will work better. We calculate it based on the page sizes and margins in
 		/// BasePage.less and commonMixins.less. The page size definitions are unlikely
 		/// to change, but change might be needed here if there is a change to the main
@@ -747,7 +747,7 @@ namespace Bloom.Publish
 			foreach (XmlElement element in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
 			{
 				// Notice that we use only the path part of the url. For some unknown reason, some bloom books
-				// (e.g., El Nino in the library) have a query in some image sources, and at least some epub readers
+				// (e.g., El Nino in the library) have a query in some image sources, and at least some ePUB readers
 				// can't cope with it.
 				var path = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
 
@@ -762,7 +762,7 @@ namespace Bloom.Publish
 			}
 		}
 
-		// Copy a file to the appropriate place in the epub staging area, and note
+		// Copy a file to the appropriate place in the ePUB staging area, and note
 		// that it is a necessary manifest item. Return the path of the copied file
 		// (which may be different in various ways from the original; we suppress various dubious
 		// characters and return something that doesn't depend on url decoding.
@@ -816,7 +816,7 @@ namespace Bloom.Publish
 		}
 
 		// The validator is (probably excessively) upset about IDs that start with numbers.
-		// I don't think we actually use these IDs in the epub so maybe we should just remove them?
+		// I don't think we actually use these IDs in the ePUB so maybe we should just remove them?
 		private void FixIllegalIds(HtmlDom pageDom)
 		{
 			// Xpath results are things that have an id attribute, so MUST be XmlElements (though the signature
@@ -920,7 +920,7 @@ namespace Bloom.Publish
 		}
 
 		/// <summary>
-		/// Since file names often start with numbers, which epub validation won't allow for element IDs,
+		/// Since file names often start with numbers, which ePUB validation won't allow for element IDs,
 		/// stick an 'f' in front. Generally clean up file name to make a valid ID as similar as possible.
 		/// </summary>
 		/// <param name="item"></param>
@@ -949,7 +949,7 @@ namespace Bloom.Publish
 		/// - if it contains spaces remove them
 		/// - if it starts with an invalid character add an initial 'f'
 		/// - change other invalid characters to underlines
-		/// We do this because epub technically uses XHTML and therefore follows XML rules.
+		/// We do this because ePUB technically uses XHTML and therefore follows XML rules.
 		/// I doubt most readers care but validators do and we would like our ebooks to validate.
 		/// </summary>
 		/// <param name="item"></param>
