@@ -456,6 +456,33 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void DuplicatePage_WithAudio_OmitsAudioMarkup()
+		{
+			var book = CreateBook(); // has pages from  BookTestsBase.GetThreePageDom()
+			var original = book.GetPages().Count();
+			var existingPage = book.GetPages().Last();
+			var pageDiv = book.GetPageElements().Cast<XmlElement>().Last();
+			var extraPara = pageDiv.OwnerDocument.CreateElement("p");
+			pageDiv.AppendChild(extraPara);
+			var sentenceSpan = pageDiv.OwnerDocument.CreateElement("span");
+			extraPara.AppendChild(sentenceSpan);
+			sentenceSpan.SetAttribute("class", "audio-sentence");
+			sentenceSpan.SetAttribute("id", Guid.NewGuid().ToString());
+			sentenceSpan.InnerText = "This was a sentence span";
+			book.DuplicatePage(existingPage);
+			AssertPageCount(book, original + 1);
+
+			var newPage = book.GetPages().Last();
+			Assert.AreNotEqual(existingPage, newPage);
+			Assert.AreNotEqual(existingPage.Id, newPage.Id);
+
+			var newDivNode = newPage.GetDivNodeForThisPage();
+
+			var newFirstPara = newDivNode.ChildNodes.Cast<XmlElement>().Last();
+			Assert.That(newFirstPara.InnerXml, Is.EqualTo("This was a sentence span")); // no <span> element wrapped around it
+		}
+
+		[Test]
 		public void DuplicatePageAfterRelocatePage()
 		{
 			var book = CreateBook();
