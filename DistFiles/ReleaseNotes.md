@@ -1,11 +1,20 @@
 ﻿## 3.6
-This version focuses on what we are calling "the toolbox": a panel on the right side that you can open to do specialized tasks like working on decodable and leveled readers or recording audio for "talking books".
+- This version focuses on what we are calling "the toolbox": a panel on the right side that you can open to do specialized tasks like working on decodable and leveled readers or recording audio for "talking books".
 
 - You can now hide or show the toolbox
-- Talking book recording is now controlled from a panel in the toolbox
+- "Talking Book" recording is now controlled from a panel in the toolbox
 
-- (Delayed) Using the "Book Settings" panel, you can now switch between authoring and translation mode, so if you're translating a shell book and need to do things like change a picture, add a page, translate some acknowledgements, whatever... you can switch in to "author mode" and do what you need to do.
+- When you drag the "splitter" control to change the size of a region of the page, a percentage now appears. This is helpful if you want to make that region the same size on facing pages.
 
+- When setting up a new collection, Bloom now allows you to change the font.
+
+- When setting up a collection, Bloom now always allows you to set the name of the project.
+
+- "Add Page" button is now brighter and easier to discover.
+
+- You can now "Undo" when in "Change Layout" mode.
+
+- Many other fixes & tiny improvements.
 
 ## 3.5
 - You can now copy and cut images
