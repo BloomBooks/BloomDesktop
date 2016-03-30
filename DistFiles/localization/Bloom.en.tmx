@@ -3837,5 +3837,11 @@
         <seg>Advanced Program Settings</seg>
       </tuv>
     </tu>
+	<tu tuid="EditTab.AddPageDialog.Title">
+        <prop type="x-dynamic">true</prop>
+        <tuv xml:lang="en">
+            <seg>Add Page...</seg>
+        </tuv>
+    </tu>
   </body>
 </tmx>
