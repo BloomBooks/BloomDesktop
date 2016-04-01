@@ -28,4 +28,4 @@ describe("Stage tests", function() {
         var stage = new ReaderStage("X");
         expect(stage.getName()).toBe("X");
     });
-});                                                             
+});

@@ -1,6 +1,7 @@
 import {ReaderToolsModel} from "./readerToolsModel";
 import {theOneLanguageDataInstance,   ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
-import {_} from "underscore";
+import * as _ from 'underscore'
+import SynphonyApi from './synphonyApi';
 
 describe("readerTools-libSynphony tests", function() {
 
@@ -8,11 +9,11 @@ describe("readerTools-libSynphony tests", function() {
 
         //reviewslog this wasn't allowed  theOneLanguageDataInstance = null;
         ResetLanguageDataInstance();
-        
-        //so we need another way to clear out this global, for testing purposes
-        var model = new ReaderToolsModel();
 
-        var settings = {};
+        //so we need another way to clear out this global, for testing purposes
+        ReaderToolsModel.model = new ReaderToolsModel();
+
+        var settings: any = {};
         settings.letters = 'a b c d e f g h i j k l m n o p q r s t u v w x y z th';
         settings.moreWords = 'one two three';
         settings.stages = [];
@@ -24,25 +25,25 @@ describe("readerTools-libSynphony tests", function() {
         var sampleFileContents = 'The cat sat on the mat. The rat sat on the cat.';
 
         var synphony = new SynphonyApi();
-        model.synphony = synphony;
+        ReaderToolsModel.model.synphony = synphony;
         synphony.loadSettings(settings);
 
-        model.addWordsFromFile(sampleFileContents);
-        model.addWordsToSynphony();
-        model.updateWordList();
+        ReaderToolsModel.model.addWordsFromFile(sampleFileContents);
+        ReaderToolsModel.model.addWordsToSynphony();
+        ReaderToolsModel.model.updateWordList();
 
-        return model;
+        return ReaderToolsModel.model;
     }
 
     function generateSightWordsOnlyTestData() {
 
        //reviewslog this wasn't allowed  theOneLanguageDataInstance = null;
        ResetLanguageDataInstance();
-       
-        //so we need another way to clear out this global, for testing purposes
-       var model = new ReaderToolsModel();
 
-        var settings = {};
+        //so we need another way to clear out this global, for testing purposes
+        ReaderToolsModel.model = new ReaderToolsModel();
+
+        var settings: any = {};
         settings.stages = [];
 
         settings.stages.push({"letters":"","sightWords":"canine feline"});
@@ -50,13 +51,13 @@ describe("readerTools-libSynphony tests", function() {
         settings.stages.push({"letters":"","sightWords":"rodent"});
 
         var synphony = new SynphonyApi();
-        model.synphony = synphony;
+        ReaderToolsModel.model.synphony = synphony;
         synphony.loadSettings(settings);
 
-        model.addWordsToSynphony();
-        model.updateWordList();
+        ReaderToolsModel.model.addWordsToSynphony();
+        ReaderToolsModel.model.updateWordList();
 
-        return model;
+        return ReaderToolsModel.model;
     }
 
     function addDiv(id) {
@@ -84,25 +85,25 @@ describe("readerTools-libSynphony tests", function() {
 
     it("addWordsFromFile", function() {
 
-        var model = new ReaderToolsModel();
+        ReaderToolsModel.model = new ReaderToolsModel();
         var fileContents = 'The cat sat on the mat. The rat sat on the cat.';
 
-        model.addWordsFromFile(fileContents);
-        expect(model.allWords).toEqual({the: 4, cat: 2, sat: 2, on: 2, mat: 1, rat: 1});
+        ReaderToolsModel.model.addWordsFromFile(fileContents);
+        expect(ReaderToolsModel.model.allWords).toEqual({the: 4, cat: 2, sat: 2, on: 2, mat: 1, rat: 1});
     });
 
     it("addWordsToSynphony", function() {
 
-        var model = generateTestData();
-        var synphony = model.synphony;
+        generateTestData();
+        var synphony = ReaderToolsModel.model.synphony;
 
         expect(synphony.stages.length).toBe(3);
-        model.setStageNumber(1);
-        expect(_.pluck(model.getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat']);
-        model.setStageNumber(2);
-        expect(_.pluck(model.getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat', 'sat']);
-        model.setStageNumber(3);
-        expect(_.pluck(model.getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'on', 'one', 'rat', 'sat', 'the', 'three']);
+        ReaderToolsModel.model.setStageNumber(1);
+        expect(_.pluck(ReaderToolsModel.model.getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat']);
+        ReaderToolsModel.model.setStageNumber(2);
+        expect(_.pluck(ReaderToolsModel.model.getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat', 'sat']);
+        ReaderToolsModel.model.setStageNumber(3);
+        expect(_.pluck(ReaderToolsModel.model.getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'on', 'one', 'rat', 'sat', 'the', 'three']);
 
         expect(synphony.stages[0].sightWords).toEqual('canine feline');
         expect(synphony.stages[1].sightWords).toEqual('carnivore omnivore');
