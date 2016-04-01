@@ -138,7 +138,7 @@ readerSettings.js
 bloomHelp.js
 
 # CSS files that are generated from LESS
-bloomEpubPreview.css
+bloomEPUBPreview.css
 TemplatePagesThumbnailList.css
 StyleEditor.css
 topicChooser.css
@@ -154,9 +154,9 @@ readerSetup.css
 readerTools.css
 audioRecording.css
 toolbox.css
-CommonBasePageEpub.css
+CommonBasePageEPUB.css
 basePage.css
-baseEpub.css
+baseEPUB.css
 page-chooser.css
 previewMode.css
 BookPagesThumbnailList.css
