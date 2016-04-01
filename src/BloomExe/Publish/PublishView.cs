@@ -231,7 +231,7 @@ namespace Bloom.Publish
 						//installed, or they had the PDF open in Word, or something like that.
 						ErrorReport.NotifyUserOfProblem(error.Message);
 					}
-					else if (error is FileNotFoundException && ((FileNotFoundException) error).FileName == "GeckofxHtmlToPdf.exe")
+					else if (error is FileNotFoundException && ((FileNotFoundException) error).FileName == "BloomPdfMaker.exe")
 					{
 						ErrorReport.NotifyUserOfProblem(error, error.Message);
 					}
