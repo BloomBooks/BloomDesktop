@@ -23,3 +23,4 @@ After you submit this report, we will contact you and help you work this out. In
 
 * You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see [this image](https://i.imgur.com/dlRrsSN.png).
 
+###Missing Files
