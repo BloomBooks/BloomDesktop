@@ -1,9 +1,10 @@
-bloom-desktop-unstable (3.6.0) stable; urgency=medium
+bloom-desktop-unstable (3.7.0) stable; urgency=medium
 
-  * Up the version number on the Version3.6 (beta) branch to 3.6.
+  * Up the version number on the master (unstable) branch to 3.7.  (Yes, we're
+    skipping 3.6 since it's been so long.)
   * More bug fixes and enhancements: see the source repository log for details.
 
- -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 18 Mar 2016 14:09:56 -0500
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 01 Apr 2016 18:10:07 -0500
 
 bloom-desktop-unstable (3.5.0) stable; urgency=medium
 
