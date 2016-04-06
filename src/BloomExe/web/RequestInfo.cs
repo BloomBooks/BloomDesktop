@@ -10,10 +10,10 @@ using System.Web;
 using SIL.Reporting;
 
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	/// <summary>
-	/// this makes it easier to test without actually going throught he http listener
+	/// this makes it easier to test without actually going through the http listener
 	/// </summary>
 	public class RequestInfo : IRequestInfo
 	{
@@ -23,10 +23,7 @@ namespace Bloom.web
 
 		public string LocalPathWithoutQuery
 		{
-			get
-			{
-				return GetLocalPathWithoutQuery(_actualContext.Request.Url);
-			}
+			get { return GetLocalPathWithoutQuery(_actualContext.Request.Url); }
 		}
 
 		public static string GetLocalPathWithoutQuery(Uri uri)
@@ -42,6 +39,11 @@ namespace Bloom.web
 		public string ContentType
 		{
 			set { _actualContext.Response.ContentType = value; }
+		}
+
+		public string HttpMethod
+		{
+			get { return _actualContext.Request.HttpMethod; }
 		}
 
 		public RequestInfo(HttpListenerContext actualContext)
@@ -78,12 +80,12 @@ namespace Bloom.web
 				_actualContext.Response.StatusCode = 404;
 				return;
 			}
-			
+
 			try
 			{
 				fs = File.OpenRead(path);
 			}
-			catch (Exception error)
+			catch(Exception error)
 			{
 
 				Logger.WriteError("Server could not read " + path, error);
@@ -91,10 +93,11 @@ namespace Bloom.web
 				return;
 			}
 
-			using (fs)
+			using(fs)
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
-				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));//helps with debugging what file is being chosen
+				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
+					//helps with debugging what file is being chosen
 
 				// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
 				// to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
@@ -102,7 +105,7 @@ namespace Bloom.web
 				// are the Content-Length and Last-Modified headers. The requestor can use this information to determine if the
 				// contents of the file have changed, and if they have changed the requestor can then decide if the file needs to
 				// be reloaded. It is useful when debugging with tools which automatically reload the page when something changes.
-				if (_actualContext.Request.HttpMethod == "HEAD")
+				if(_actualContext.Request.HttpMethod == "HEAD")
 				{
 					var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
 
@@ -113,9 +116,9 @@ namespace Bloom.web
 				}
 				else
 				{
-					var buffer = new byte[1024 * 512]; //512KB
+					var buffer = new byte[1024*512]; //512KB
 					int read;
-					while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+					while((read = fs.Read(buffer, 0, buffer.Length)) > 0)
 						_actualContext.Response.OutputStream.Write(buffer, 0, read);
 				}
 
@@ -128,7 +131,7 @@ namespace Bloom.web
 		public void ReplyWithImage(string path)
 		{
 			var pos = path.LastIndexOf('.');
-			if (pos > 0)
+			if(pos > 0)
 				_actualContext.Response.ContentType = ServerBase.GetContentType(path.Substring(pos));
 
 			ReplyWithFileContent(path);
@@ -154,16 +157,16 @@ namespace Bloom.web
 		public NameValueCollection GetQueryString()
 		{
 			// UrlDecode the values, if needed
-			if (_queryStringList == null)
+			if(_queryStringList == null)
 			{
 				var qs = _actualContext.Request.QueryString;
 
 				_queryStringList = new NameValueCollection();
 
-				foreach (var key in qs.AllKeys)
+				foreach(var key in qs.AllKeys)
 				{
 					var val = qs[key];
-					if (val.Contains("%") || val.Contains("+"))
+					if(val.Contains("%") || val.Contains("+"))
 						val = Uri.UnescapeDataString(val.Replace('+', ' '));
 
 					_queryStringList.Add(key, val);
@@ -179,12 +182,12 @@ namespace Bloom.web
 		{
 			var request = _actualContext.Request;
 
-			if (!request.HasEntityBody)
+			if(!request.HasEntityBody)
 				return string.Empty;
 
-			using (var body = request.InputStream)
+			using(var body = request.InputStream)
 			{
-				using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+				using(StreamReader reader = new StreamReader(body, request.ContentEncoding))
 				{
 					var inputString = reader.ReadToEnd();
 					return UnescapeString(inputString);
@@ -192,27 +195,27 @@ namespace Bloom.web
 			}
 		}
 
-		public NameValueCollection GetPostData()
+		public NameValueCollection GetPostDataWhenFormEncoded()
 		{
-			if (_postData == null)
+			if(_postData == null)
 			{
 				var request = _actualContext.Request;
 
-				if (!request.HasEntityBody)
+				if(!request.HasEntityBody)
 					return null;
 
 				_postData = new NameValueCollection();
 
-				using (var body = request.InputStream)
+				using(var body = request.InputStream)
 				{
-					using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+					using(StreamReader reader = new StreamReader(body, request.ContentEncoding))
 					{
 						var inputString = reader.ReadToEnd();
 						var pairs = inputString.Split('&');
-						foreach (var pair in pairs)
+						foreach(var pair in pairs)
 						{
 							var kvp = pair.Split('=');
-							if (kvp.Length == 1)
+							if(kvp.Length == 1)
 								_postData.Add(UnescapeString(kvp[0]), String.Empty);
 							else
 								_postData.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
@@ -233,6 +236,16 @@ namespace Bloom.web
 		public string RawUrl
 		{
 			get { return _actualContext.Request.RawUrl; }
+		}
+
+		HttpMethods IRequestInfo.HttpMethod
+		{
+			get
+			{
+				HttpMethods v;
+				HttpMethods.TryParse(this.HttpMethod, true, out v);
+				return v;
+			}
 		}
 	}
 }

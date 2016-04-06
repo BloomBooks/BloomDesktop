@@ -183,8 +183,8 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
     }
     readerToolsInitialized = true;
 
-    axios.get<string>('/bloom/readers/getDefaultFont').then(result => setDefaultFont(result.data));
-    axios.get<string>('/bloom/readers/loadReaderToolSettings').then(settingsFileContent => {
+    axios.get<string>('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data));
+    axios.get<string>('/bloom/api/readers/readerToolSettings').then(settingsFileContent => {
         initializeSynphony(settingsFileContent.data);
         result.resolve();
     });
@@ -217,7 +217,7 @@ function initializeSynphony(settingsFileContent: string): void {
   }
   else {
     // get the list of sample texts
-    axios.get<string>('/bloom/readers/getSampleTextsList').then(result => setTextsList(result.data));
+    axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => setTextsList(result.data));
   }
 }
 
@@ -253,7 +253,7 @@ function readerSampleFilesChanged(): void {
   synphony.loadSettings(settings);
 
   // reload the sample texts
-  axios.get<string>('/bloom/readers/getSampleTextsList').then(result => setTextsList(result.data));
+  axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => setTextsList(result.data));
 }
 
 /**
@@ -295,7 +295,7 @@ function makeLetterWordList(): void {
   allWords = _.compact(_.pluck(allWords, 'Name'));
 
   // export the word list
-  var ajaxSettings = {type: 'POST', url: '/bloom/readers/makeLetterAndWordList'};
+  var ajaxSettings = {type: 'POST', url: '/bloom/api/readers/makeLetterAndWordList'};
   ajaxSettings['data'] = {
     settings: JSON.stringify(settings),
     allWords: allWords.join('\t')

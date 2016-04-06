@@ -21,7 +21,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace Bloom.Edit
+namespace Bloom.Api
 {
 	public class DynamicJson : DynamicObject
 	{

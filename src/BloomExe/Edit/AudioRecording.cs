@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
-using Bloom.web;
+using Bloom.Api;
 using L10NSharp;
 #if __MonoCS__
 #else
@@ -81,20 +81,20 @@ namespace Bloom.Edit
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterSimpleHandler("audio/startRecord", HandleStartRecording);
-			server.RegisterSimpleHandler("audio/endRecord", HandleEndRecord);
-			server.RegisterSimpleHandler("audio/enableListenButton", HandleEnableListenButton);
-			server.RegisterSimpleHandler("audio/deleteSegment", HandleDeleteSegment);
-			server.RegisterSimpleHandler("audio/setRecordingDevice", HandleSetRecordingDevice);
-			server.RegisterSimpleHandler("audio/checkForSegement", HandleCheckForSegment);
+			server.RegisterEndpointHandler("audio/startRecord", HandleStartRecording);
+			server.RegisterEndpointHandler("audio/endRecord", HandleEndRecord);
+			server.RegisterEndpointHandler("audio/enableListenButton", HandleEnableListenButton);
+			server.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment);
+			server.RegisterEndpointHandler("audio/setRecordingDevice", HandleSetRecordingDevice);
+			server.RegisterEndpointHandler("audio/checkForSegement", HandleCheckForSegment);
 
 			_peakLevelWebSocketServer = new BloomWebSocketServer("8189");//review: we have no dispose (on us or our parent) so this is never disposed
 		}
 
 		// does this page have any audio at all? Used enable the Listen page.
-		private void HandleEnableListenButton(SimpleHandlerRequest request)
+		private void HandleEnableListenButton(ApiRequest request)
 		{
-			request.Succeeded("Yes");// enhance: determine if there is any audio for this page
+			request.ReplyWithText("Yes");// enhance: determine if there is any audio for this page
 		}
 
 		/// <summary>
@@ -177,7 +177,7 @@ namespace Bloom.Edit
 		}
 #endif
 
-		private void HandleEndRecord(SimpleHandlerRequest request)
+		private void HandleEndRecord(ApiRequest request)
 		{
 #if __MonoCS__
 #else
@@ -246,7 +246,7 @@ namespace Bloom.Edit
 		}
 #endif
 
-		private bool TestForTooShortAndSendFailIfSo(SimpleHandlerRequest request)
+		private bool TestForTooShortAndSendFailIfSo(ApiRequest request)
 		{
 			if ((DateTime.Now - _startRecording) < TimeSpan.FromSeconds(0.5))
 			{
@@ -261,7 +261,7 @@ namespace Bloom.Edit
 		}
 
 		/// <returns>true if the recording started successfully</returns>
-		public void HandleStartRecording(SimpleHandlerRequest request)
+		public void HandleStartRecording(ApiRequest request)
 		{
 #if __MonoCS__
 						MessageBox.Show("Recording does not yet work on Linux", "Cannot record");
@@ -344,7 +344,7 @@ namespace Bloom.Edit
 			}
 			_startRecording = DateTime.Now;
 			_startRecordingTimer.Start();
-			request.Succeeded("starting record soon");
+			request.ReplyWithText("starting record soon");
 			return;
 #endif
 		}
@@ -443,7 +443,7 @@ namespace Bloom.Edit
 				LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.NoInput", "No input device"));
 		}
 
-		public void HandleSetRecordingDevice(SimpleHandlerRequest request)
+		public void HandleSetRecordingDevice(ApiRequest request)
 		{ 
 #if __MonoCS__
 #else
@@ -458,10 +458,10 @@ namespace Bloom.Edit
 #endif
 		}
 
-		private void HandleCheckForSegment(SimpleHandlerRequest request)
+		private void HandleCheckForSegment(ApiRequest request)
 		{
 			var path = GetPathToSegment(request.RequiredParam("id"));
-			request.Succeeded(File.Exists(path) ? "exists" : "not found");
+			request.ReplyWithText(File.Exists(path) ? "exists" : "not found");
 		}
 
 
@@ -469,7 +469,7 @@ namespace Bloom.Edit
 		/// Delete a file (typically a recording, as requested by the Clear button in the talking book tool)
 		/// </summary>
 		/// <param name="fileUrl"></param>
-		private void HandleDeleteSegment(SimpleHandlerRequest request)
+		private void HandleDeleteSegment(ApiRequest request)
 		{
 			var path = GetPathToSegment(request.RequiredParam("id"));
 			if(!File.Exists(path))

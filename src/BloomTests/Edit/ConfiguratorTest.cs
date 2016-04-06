@@ -7,6 +7,7 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.Api;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;

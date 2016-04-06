@@ -481,7 +481,7 @@ function tabBeforeActivate(ui): void {
 
       // save the changes and update lists
       var toolbox = toolboxWindow();
-      saveChangedSettings(function() {
+      saveChangedSettings(() => {
         if (typeof toolbox['readerSampleFilesChanged'] === 'function')
           toolbox['readerSampleFilesChanged']();
       });
@@ -699,7 +699,7 @@ function attachEventHandlers(): void {
   if (typeof ($) === "function") {
 
     $("#open-text-folder").onSafe('click', function() {
-      axios.post('/bloom/readers/openTextsFolder');
+      axios.post('/bloom/api/readers/openTextsFolder');
       return false;
     });
 
@@ -755,7 +755,7 @@ function attachEventHandlers(): void {
     });
 
     $('#setup-choose-allowed-words-file').onSafe('click', function() {
-      axios.post<string>('/bloom/readers/selectStageAllowedWordsFile').then(result => {
+      axios.post<string>('/bloom/api/readers/selectStageAllowedWordsFile').then(result => {
         var fileName = result.data;
         if (fileName) setAllowedWordsFile(fileName);
 
@@ -830,7 +830,7 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
   }
 
   // if you are here, the file name is not in use
-  axios.post('/bloom/readers/recycleAllowedWordsFile', { params: { data: fileName } });
+  axios.delete('/bloom/api/readers/allowedWordsList', { params: { 'fileName': fileName } });
 }
 
 export function enableSampleWords() {

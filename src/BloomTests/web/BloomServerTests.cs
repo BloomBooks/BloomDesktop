@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
-using Bloom.web;
+using Bloom.Api;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
@@ -142,7 +144,7 @@ namespace BloomTests.web
 			Assert.That(result, Is.EqualTo(ServerBase.BloomUrlPrefix + path));
 
 			// This tests the condition leading to BL-2932.
-			request = new PretendRequestInfo(url, true);
+			request = new PretendRequestInfo(url, forPrinting: true);
 			result = ServerBase.CorrectedLocalPath(request);
 			Assert.That(result, Is.EqualTo(ServerBase.BloomUrlPrefix + "OriginalImages/" + path));
 		}
@@ -172,7 +174,7 @@ namespace BloomTests.web
 			var result = ServerBase.CorrectedLocalPath(request);
 			Assert.That(result, Is.EqualTo(ServerBase.BloomUrlPrefix + path));
 
-			request = new PretendRequestInfo(url, true);
+			request = new PretendRequestInfo(url, forPrinting: true);
 			result = ServerBase.CorrectedLocalPath(request);
 			Assert.That(result, Is.EqualTo(ServerBase.BloomUrlPrefix + "OriginalImages/" + path));
 
@@ -182,10 +184,9 @@ namespace BloomTests.web
 			result = ServerBase.CorrectedLocalPath(request);
 			Assert.That(result, Is.EqualTo(ServerBase.BloomUrlPrefix + path));
 
-			request = new PretendRequestInfo(url, true);
+			request = new PretendRequestInfo(url, forPrinting: true);
 			result = ServerBase.CorrectedLocalPath(request);
 			Assert.That(result, Is.EqualTo(ServerBase.BloomUrlPrefix + "OriginalImages/" + path));
 		}
-
 	}
 }

@@ -46,7 +46,7 @@ namespace Bloom.Edit
 		/// related to Decodable and Leveled Readers.
 		/// </summary>
 		/// <param name="collectionSettings"></param>
-		public static string GetDecodableLevelPathName(CollectionSettings collectionSettings)
+		public static string GetDecodableLevelFilePath(CollectionSettings collectionSettings)
 		{
 			return Path.Combine(Path.GetDirectoryName(collectionSettings.SettingsFilePath),
 				DecodableReaderTool.ReaderToolsSettingsPrefix + collectionSettings.Language1Iso639Code + ".json");
@@ -60,7 +60,7 @@ namespace Bloom.Edit
 		/// <param name="settings"></param>
 		public static void CopyRelevantNewReaderSettings(CollectionSettings settings)
 		{
-			var readerToolsPath = GetDecodableLevelPathName(settings);
+			var readerToolsPath = GetDecodableLevelFilePath(settings);
 			var bloomFolder = ProjectContext.GetBloomAppDataFolder();
 			var newReaderTools = Path.Combine(bloomFolder, Path.GetFileName(readerToolsPath));
 			if (!File.Exists(newReaderTools))

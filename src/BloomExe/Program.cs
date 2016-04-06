@@ -134,13 +134,17 @@ namespace Bloom
 				propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
 
 #if DEBUG
-				using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), propertiesThatGoWithEveryEvent, true))
+				using(
+					new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(),
+						propertiesThatGoWithEveryEvent, false))
+					_supressRegistrationDialog = true;
 #else
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
 				//default is to allow tracking
 				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
 					|| feedbackSetting.ToLowerInvariant() == "true";
+				_supressRegistrationDialog = _supressRegistrationDialog || !allowTracking;
 
 				using (new DesktopAnalytics.Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), propertiesThatGoWithEveryEvent, allowTracking))
 
@@ -148,7 +152,8 @@ namespace Bloom
 
 				{
 					// do not show the registration dialog if bloom was started for a special purpose
-					if (args.Length > 0) _supressRegistrationDialog = true;
+					if (args.Length > 0)
+						_supressRegistrationDialog = true;
 
 					if (args.Length == 1 && args[0].ToLowerInvariant().EndsWith(".bloompack"))
 					{
@@ -156,7 +161,7 @@ namespace Bloom
 						using (_applicationContainer = new ApplicationContainer())
 						{
 							SetUpLocalization();
-							
+
 							var path = args[0];
 							// This allows local links to bloom packs.
 							if (path.ToLowerInvariant().StartsWith("bloom://"))
@@ -236,7 +241,7 @@ namespace Bloom
 							// - little error checking (e.g., we don't apply the usual constraints that a book must have title and licence info)
 							SetUpLocalization();
 							Browser.SetUpXulRunner();
-								Browser.XulRunnerShutdown += OnXulRunnerShutdown;
+							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 								_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
 							transfer.UploadFolder(args[1], _applicationContainer);
@@ -283,7 +288,7 @@ namespace Bloom
 						StartDebugServer();
 #endif
 
-						if(!BloomIntegrityDialog.CheckIntegrity())
+						if (!BloomIntegrityDialog.CheckIntegrity())
 						{
 							Environment.Exit(-1);
 						}
@@ -291,7 +296,7 @@ namespace Bloom
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
 						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
-						if (FontInstaller.InstallFont("AndikaNewBasic")) 
+						if (FontInstaller.InstallFont("AndikaNewBasic"))
 							return;
 
 						Run();

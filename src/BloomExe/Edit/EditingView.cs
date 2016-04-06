@@ -9,7 +9,7 @@ using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
-using Bloom.web;
+using Bloom.Api;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.Progress;

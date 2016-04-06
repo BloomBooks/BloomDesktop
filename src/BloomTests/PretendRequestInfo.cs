@@ -4,18 +4,20 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	public class PretendRequestInfo : IRequestInfo
 	{
+		public HttpMethods HttpMethod { get; set; }
 		public string ReplyContents;
 		public string ReplyImagePath;
 		//public HttpListenerContext Context; //todo: could we mock a context and then all but do away with this pretend class by subclassing the real one?
 		public long StatusCode;
 		public string StatusDescription;
-
-		public PretendRequestInfo(string url, bool forPrinting = false, bool forSrcAttr = false)
+		
+		public PretendRequestInfo(string url, HttpMethods httpMethod = HttpMethods.Get, bool forPrinting = false, bool forSrcAttr = false)
 		{
+			HttpMethod = httpMethod;
 			if (forPrinting)
 				url = url.Replace("/bloom/", "/bloom/OriginalImages/");
 
@@ -51,12 +53,14 @@ namespace Bloom.web
 		{
 			var buffer = Encoding.UTF8.GetBytes(s);
 			ReplyContents = Encoding.UTF8.GetString(buffer);
+			HaveOutput = true;
 		}
 
 		public void ReplyWithFileContent(string path)
 		{
 			ReplyImagePath = path;
 			WriteCompleteOutput(File.ReadAllText(path));
+			HaveOutput = true;
 		}
 
 		public void ReplyWithImage(string path)
@@ -68,6 +72,7 @@ namespace Bloom.web
 		{
 			StatusCode = errorCode;
 			StatusDescription = errorDescription;
+			HaveOutput = true;
 		}
 
 		public void WriteError(int errorCode)
@@ -80,7 +85,7 @@ namespace Bloom.web
 			return new NameValueCollection();
 		}
 
-		public NameValueCollection GetPostData()
+		public NameValueCollection GetPostDataWhenFormEncoded()
 		{
 			return new NameValueCollection();
 		}

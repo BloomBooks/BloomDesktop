@@ -10,7 +10,7 @@ import {handleBookSettingCheckboxClick} from './bookSettings/bookSettings';
 // reviewslog: is this actually needed? Could these be be directly imported where they are used?
 export {showOrHidePanel_click};
 export {removeToolboxMarkup};
-export {showSetupDialog, initializeReaderSetupDialog} from './decodableReader/decodableReader'
+export {showSetupDialog, initializeReaderSetupDialog, closeSetupDialog} from './decodableReader/decodableReader'
 export {addWordListChangedListener} from './decodableReader/readerTools';
 export {loadLongpressInstructions} from '../js/bloomEditing';
 export {default as BloomHelp} from '../../BloomHelp';

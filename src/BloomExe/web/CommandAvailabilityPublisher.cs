@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using Fleck;
 using SIL.Reporting;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	/// <summary>
 	/// 

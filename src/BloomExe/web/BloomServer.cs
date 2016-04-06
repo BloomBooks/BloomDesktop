@@ -1,23 +1,18 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
-using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
-using SIL.IO;
-using SIL.Reporting;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
-	//Though I didn't use it yet, I've since seen this an insteresting tiny example of a minimal server: https://gist.github.com/369432
+	//Though I didn't use it yet, I've since seen this an interesting tiny example of a minimal server: https://gist.github.com/369432
 
-	// REVIEW: This class doesn't seem to be intented yet for production use
+	// REVIEW: This class doesn't seem to be intended yet for production use
 	public class BloomServer : EnhancedImageServer
 	{
 		private readonly CollectionSettings _collectionSettings;

@@ -3,7 +3,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using Bloom;
 using Bloom.ImageProcessing;
-using Bloom.web;
+using Bloom.Api;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;

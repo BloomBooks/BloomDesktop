@@ -63,7 +63,7 @@ export default class AudioRecording {
     private levelCanvasWidth: number = 15;
     private levelCanvasHeight: number = 80;
     private hiddenSourceBubbles: JQuery;
-    private audioDevicesUrl = '/bloom/audioDevices';
+    private audioDevicesUrl = '/bloom/api/audioDevices';
     private playingAll: boolean; // true during listen.
     private idOfCurrentSentence : string;
     
@@ -228,7 +228,7 @@ export default class AudioRecording {
         this.recording = true;
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
         var id = current.attr("id");
-        axios.post("/bloom/audio/startRecord?id="+ id).then(result=>{
+        axios.post("/bloom/api/audio/startRecord?id="+ id).then(result=>{
             this.setStatus('record', Status.Active);
         }).catch(error=> {
             toastr.error(error.statusText);
@@ -244,7 +244,7 @@ export default class AudioRecording {
         
         //this.updatePlayerStatus();
 
-        axios.post('/bloom/audio/endRecord').then( response =>{        
+        axios.post('/bloom/api/audio/endRecord').then( response =>{        
             this.updatePlayerStatus();
             this.setStatus('record', Status.Disabled);
             //at the moment, the bakcend is returning when it asks the recorder to stop.
@@ -327,7 +327,7 @@ export default class AudioRecording {
             }
             (<any>devList).one("click", function(event) {
                     devList.hide();
-                    axios.post("/bloom/audio/setRecordingDevice?"+$(event.target).text()).catch(error=>{
+                    axios.post("/bloom/api/audio/setRecordingDevice?"+$(event.target).text()).catch(error=>{
                         toastr.error(error.statusText);
                     });
                     thisClass.updateInputDeviceDisplay();
@@ -379,7 +379,7 @@ export default class AudioRecording {
         }
         //var currentFile = $('#player').attr('src');
         // this.fireCSharpEvent('deleteFile', currentFile);
-        axios.post('/bloom/audio/deleteSegment?id='+this.idOfCurrentSentence).catch(error=>{
+        axios.post('/bloom/api/audio/deleteSegment?id='+this.idOfCurrentSentence).catch(error=>{
             toastr.error(error.statusText);
         });
         this.updatePlayerStatus();
@@ -842,7 +842,7 @@ export default class AudioRecording {
         this.setEnabledOrExpecting('record', expectedVerb);
             
         //set play and clear buttons based on whether we have an audio file for this
-        axios.get("/bloom/audio/checkForSegement?id="+this.idOfCurrentSentence).then( response => {
+        axios.get("/bloom/api/audio/checkForSegement?id="+this.idOfCurrentSentence).then( response => {
             if(response.data === "exists")   {
                 this.setStatus('clear', Status.Enabled);
                 this.setEnabledOrExpecting('play',  expectedVerb);
@@ -862,7 +862,7 @@ export default class AudioRecording {
         }
                 
         //set listen button based on whether we have an audio at all for this page
-        axios.get("/bloom/audio/enableListenButton").then(response=>{
+        axios.get("/bloom/api/audio/enableListenButton").then(response=>{
             if(response)
                 this.setStatus('listen', Status.Enabled);
         });

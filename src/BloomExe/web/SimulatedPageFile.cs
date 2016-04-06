@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	/// <summary>
 	/// A SimulatedPageFile is used in connection with simulating a current-page file that needs

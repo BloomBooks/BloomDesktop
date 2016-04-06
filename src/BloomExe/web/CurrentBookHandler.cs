@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bloom.Collection;
-using Newtonsoft.Json;
-using RestSharp.Contrib;
 using SIL.Code;
 using SIL.Reporting;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	/// <summary>
 	/// This class is responsible for handling Server requests that depend on knowledge of the current book.
@@ -27,42 +20,28 @@ namespace Bloom.web
 
 		public static void Init(EnhancedImageServer server)
 		{
-			// Note that there is no slash in this one. Typically it is the whole localPath.
-			server.RegisterRequestHandler("bookSettings", ReplyWithBookSettings);
-			server.RegisterRequestHandler("imageInfo", ReplyWithImageInfo);
-			// Note that there is no slash in this one. Typically it is the whole localPath.
-			server.RegisterRequestHandler("getNextBookStyle", ReplyWithNextBookStyle);
+			server.RegisterEndpointHandler("bookSettings", HandleGetBookSettings);
+			server.RegisterEndpointHandler("imageInfo", HandleGetImageInfo);
 		}
 
 		/// <summary>
 		/// Get a json of the book's settings.
 		/// </summary>
-		/// <param name="dummy1"></param>
-		/// <param name="info"></param>
-		/// <param name="dummy2"></param>
-		/// <returns></returns>
-		private static bool ReplyWithBookSettings(string dummy1, IRequestInfo info, CollectionSettings dummy2)
+		private static void HandleGetBookSettings(ApiRequest request)
 		{
-			info.ContentType = "text/json";
 			dynamic settings = new ExpandoObject();
 			settings.unlockShellBook = CurrentBook.TemporarilyUnlocked;
-			info.WriteCompleteOutput(JsonConvert.SerializeObject(settings));
-			return true;
+			request.ReplyWithJson((object) settings);
 		}
 
 		/// <summary>
 		/// Get a json of stats about the image. It is used to populate a tooltip when you hover over an image container
 		/// </summary>
-		private static bool ReplyWithImageInfo(string localPath, IRequestInfo info, CollectionSettings dummy)
+		private static void HandleGetImageInfo(ApiRequest request)
 		{
 			try
-			{
-				info.ContentType = "text/json";
-				Require.That(info.RawUrl.Contains("?"));
-				var query = info.RawUrl.Split('?')[1];
-				var args = HttpUtility.ParseQueryString(query);
-				Guard.AssertThat(args.Get("image") != null, "problem with image parameter");
-				var fileName = args["image"];
+			{		
+				var fileName = request.RequiredParam("image");
 				Guard.AgainstNull(CurrentBook, "CurrentBook");
 				var path = Path.Combine(CurrentBook.FolderPath, fileName);
 				RequireThat.File(path).Exists();
@@ -104,32 +83,14 @@ namespace Bloom.web
 							break;
 					}
 				}
-
-				info.WriteCompleteOutput(JsonConvert.SerializeObject(result));
-				return true;
+				request.ReplyWithJson((object) result);
 			}
 			catch (Exception e)
 			{
-				Logger.WriteEvent("Error in server imageInfo/: url was " + localPath);
+				Logger.WriteEvent("Error in server imageInfo/: url was " + request.LocalPath());
 				Logger.WriteEvent("Error in server imageInfo/: exception is " + e.Message);
+				request.Failed(e.Message);
 			}
-			return false;
-		}
-
-		/// <summary>
-		/// Not sure whether we should keep this one. Code was migrated as part of isolating the server requests that depened on the
-		/// current book, but I cannot find anywhere it is used except for a commented-out call in Origami's makeTextFieldClickHandler
-		/// method.
-		/// </summary>
-		/// <param name="localPath"></param>
-		/// <param name="info"></param>
-		/// <param name="dummy"></param>
-		/// <returns></returns>
-		private static bool ReplyWithNextBookStyle(string localPath, IRequestInfo info, CollectionSettings dummy)
-		{
-			info.ContentType = "text/html";
-			info.WriteCompleteOutput(CurrentBookHandler.CurrentBook.NextStyleNumber.ToString(CultureInfo.InvariantCulture));
-			return true;
 		}
 	}
 }

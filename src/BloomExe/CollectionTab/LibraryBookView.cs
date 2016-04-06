@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.SendReceive;
-using Bloom.web;
+using Bloom.Api;
 using Gecko;
 using Gecko.DOM;
 

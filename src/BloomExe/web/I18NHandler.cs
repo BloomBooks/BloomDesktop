@@ -6,7 +6,7 @@ using Bloom.Collection;
 using L10NSharp;
 using Newtonsoft.Json;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	/// <summary>
 	/// This class handles requests for internationalization. It uses the L10NSharp LocalizationManager to look up values.
@@ -34,7 +34,7 @@ namespace Bloom.web
 						_localizing = true;
 
 						var d = new Dictionary<string, string>();
-						var post = info.GetPostData();
+						var post = info.GetPostDataWhenFormEncoded();
 
 						if (post != null)
 						{

@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
-using Bloom.web;
+using Bloom.Api;
 using Gecko;
 using SIL.Windows.Forms.Reporting;
 using SIL.Xml;

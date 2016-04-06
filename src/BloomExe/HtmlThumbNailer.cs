@@ -10,7 +10,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.ImageProcessing;
-using Bloom.web;
+using Bloom.Api;
 using DesktopAnalytics;
 using Gecko;
 using Gecko.Events;

@@ -196,6 +196,9 @@ export class LocalizationManager {
         //when the async call comes back, we massage the text
         axios.get("/bloom/i18n/translate",
         {
+            headers:{'Content-Type':'text/plain',//review: should not be needed
+                        'Accept': 'text/plain'},
+            
             params:{ key: id, englishText: englishText, langId: langId}
         })
         .then(response => {

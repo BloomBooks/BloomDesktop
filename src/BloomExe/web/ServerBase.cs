@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using L10NSharp;
@@ -14,7 +15,7 @@ using SIL.Reporting;
 using ThreadState = System.Threading.ThreadState;
 
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	public abstract class ServerBase : IDisposable
 	{
@@ -118,6 +119,8 @@ namespace Bloom.web
 			{
 				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" +error.Message);
 				if (!SIL.PlatformUtilities.Platform.IsWindows) throw;
+				if(Assembly.GetEntryAssembly() == null) // in unit test
+					throw;
 
 				//Note: we could as easily *remove* this, as it appears to only needed if there is a registration that is more specific than some other.
 				//E.g., if there is one for http://localhost:8089/bloom, then we won't be able to access http://localhost:8089/ without first adding it too.
@@ -479,7 +482,7 @@ namespace Bloom.web
 
 		private static void GetIsAbleToUsePort()
 		{
-			var x = new WebClientWithTimeout { Timeout = 3000 };
+			var x = new WebClientWithTimeout {Timeout = 3000 };
 			if ("OK" != x.DownloadString(PathEndingInSlash + "testconnection"))
 			{
 				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.CannotConnectToBloomServer", "Bloom could not connect to the local server.");

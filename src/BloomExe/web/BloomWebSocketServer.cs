@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using Fleck;
 using SIL.Reporting;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	/// <summary>
 	/// Runs a websocket on the given port. Useful for high-frequency messages (like audio levels) and allows the backend to send messages to the client.

@@ -114,36 +114,25 @@ function saveClicked(): void {
     saveChangedSettings(function() {
       if (typeof toolbox['readerSampleFilesChanged'] === 'function')
         toolbox['readerSampleFilesChanged']();
-      toolbox.closeSetupDialog();
+      toolbox.FrameExports.closeSetupDialog();
     });
   }
   else {
-      saveChangedSettings(toolbox.closeSetupDialog);
+      saveChangedSettings(toolbox.FrameExports.closeSetupDialog);
   }
 }
 
 /**
- * Pass the settings to C# to be saved.
- * @param [callback]
+ * Pass the settings to the server to be saved
  */
-export function saveChangedSettings(callback?: Function): void {
-
-  // get the values
-  var s = getChangedSettings();
-
-  // send to parent
-  var settingsStr = JSON.stringify(s, ReaderSettingsReplacer);
+export function saveChangedSettings(callback : Function): void {
+  var settingsStr = JSON.stringify(getChangedSettings(), ReaderSettingsReplacer);
   toolboxWindow().postMessage('Refresh\n' + settingsStr, '*');
-
-  // save now
-  if (callback)
-    axios.post('/bloom/readers/saveReaderToolSettings', { params: { data: settingsStr } }).then(result => {callback(result.data)});
-  else
-    axios.post('/bloom/readers/saveReaderToolSettings', { params: { data: settingsStr } });
+  axios.post('/bloom/api/readers/readerToolSettings', { params: { data: settingsStr } })
+       .then(result => {callback(result.data)});
 }
 
 function getChangedSettings(): any {
-
   var s: ReaderSettings = new ReaderSettings();
   s.letters = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value);
 

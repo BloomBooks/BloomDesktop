@@ -14,7 +14,7 @@ using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
-using Bloom.web;
+using Bloom.Api;
 using DesktopAnalytics;
 using Gecko;
 using L10NSharp;

@@ -13,7 +13,7 @@ using Bloom.ImageProcessing;
 using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
-using Bloom.web;
+using Bloom.Api;
 using Chorus;
 using SIL.Extensions;
 using SIL.IO;
@@ -223,7 +223,7 @@ namespace Bloom
 //				else
 //				{
 					_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent), parentContainer.Resolve<BookThumbNailer>());
-					ReadersHandler.Init(_httpServer);
+					ReadersApi.Init(_httpServer);
 					CurrentBookHandler.Init(_httpServer);
 //				}
 					builder.Register((c => _httpServer)).AsSelf().SingleInstance();

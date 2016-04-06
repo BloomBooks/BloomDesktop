@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Bloom.web;
+using Bloom.Api;
 using SIL.IO;
 using SIL.Reporting;
 using Bloom.Properties;
@@ -56,7 +56,6 @@ namespace Bloom.ImageProcessing
 			}
 			catch (Exception error)
 			{
-				Debug.Fail(error.Message);
 				var e = new ApplicationException("Could not start ImageServer", error);//passing this in will enable the details button
 				ErrorReport.NotifyUserOfProblem(e, "What Happened{0}" +
 					"Bloom could not start its local file server, and cannot work properly without it.{0}{0}" +
