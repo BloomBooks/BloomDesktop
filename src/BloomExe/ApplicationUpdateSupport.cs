@@ -229,10 +229,12 @@ namespace Bloom
 		/// True if it is currently possible to start checking for or getting updates.
 		/// This approach is only relevant for Windows.
 		/// If some bloom update activity is already in progress we must not start another one...that crashes.
+		/// If we were installed in Program Files (using the --allUsers installer command-line argument
+		/// in administrator mode), we don't attempt updates.
 		/// </summary>
 		internal static bool OkToInitiateUpdateManager
 		{
-			get { return Platform.IsWindows && _bloomUpdateManager == null; }
+			get { return Platform.IsWindows && _bloomUpdateManager == null && !InstallerSupport.SharedByAllUsers(); }
 		}
 
 		internal static bool NoUpdatesAvailable(UpdateInfo info)
@@ -274,7 +276,7 @@ namespace Bloom
 				var version = updateInfo.FutureReleaseEntry.Version;
 				var releasesToDownload = updateInfo.ReleasesToApply;
 				var size = releasesToDownload.Sum(x => x.Filesize)/1024;
-				var updatingMsg = String.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading update to {0} ({1}K)"), version, size);
+				var updatingMsg = String.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading update to {0} ({1}K)"), version.ToString(), size);
 				SIL.Reporting.Logger.WriteEvent("Squirrel: "+updatingMsg);
 				updatingNotifier.Show(updatingMsg, "", -1);
 

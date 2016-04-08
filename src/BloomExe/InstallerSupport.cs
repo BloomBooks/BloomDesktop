@@ -91,6 +91,32 @@ namespace Bloom
 				props["channel"] = ApplicationUpdateSupport.ChannelName;
 				Analytics.Track("Update Version", props);
 			}
+			string iconPath = null;
+			if (args[0] == "--squirrel-install")
+			{
+				//Using an icon in the root folder fixes the problem of losing the shortcut icon when we
+				//upgrade, lose the original, and eventually the windows explorer cache loses it.
+				//There was another attempt at fixing this by finding all the shortcuts and updating them, but that didn't work in our testing and this seems simpler and more robust.
+				//There may be some other reason for the old approach of pointing at the icon of the app itself (e.g. could be a different icon)?
+				var exePath = Application.ExecutablePath;
+				var rootAppDirectory = Path.GetDirectoryName(Path.GetDirectoryName(exePath));
+				// directory that holds e.g. /3.6/Bloom.exe
+				var versionIconPath = Path.ChangeExtension(exePath, "ico"); // where this installation has icon
+				iconPath = Path.ChangeExtension(Path.Combine(rootAppDirectory, Path.GetFileName(exePath)), "ico");
+				// where we will put a version-independent icon
+				try
+				{
+					if (File.Exists(versionIconPath))
+						File.Copy(versionIconPath, iconPath, true);
+				}
+				catch (Exception)
+				{
+					// ignore...most likely some earlier version of the icon is locked somehow, fairly harmless.
+				}
+				// Normally this is done on every run of the program, but if we're doing a silent allUsers install,
+				// this is our only time running with admin privileges so we can actually make the entries for all users.
+				MakeBloomRegistryEntries(args);
+			}
 			switch (args[0])
 			{
 				// args[1] is version number
@@ -105,7 +131,11 @@ namespace Bloom
 						// We replace two of the usual calls in order to take control of where shortcuts are installed.
 						SquirrelAwareApp.HandleEvents(
 							onInitialInstall: v => mgr.CreateShortcutsForExecutable(Path.GetFileName(Assembly.GetEntryAssembly().Location),
-								StartMenuLocations, args[0] != "--squirrel-install"),
+								StartMenuLocations,
+								false, // not just an update, since this is case initial install
+								null, // can provide arguments to pass to Update.exe in shortcut, defaults are OK
+								iconPath,
+								SharedByAllUsers()),
 							onAppUpdate: v => mgr.CreateShortcutForThisExe(),
 							onAppUninstall: v => mgr.RemoveShortcutsForExecutable(Path.GetFileName(Assembly.GetEntryAssembly().Location), StartMenuLocations),
 							onFirstRun: () => firstTime = true,
@@ -115,21 +145,45 @@ namespace Bloom
 			}
 		}
 
+		/// <summary>
+		/// True if we consider our install to be shared by all users of the computer.
+		/// We currently detect this based on being in the Program Files folder.
+		/// </summary>
+		/// <returns></returns>
+		public static bool SharedByAllUsers()
+		{
+			// Being a 32-bit app, we expect to get installed in Program Files (x86) on a 64-bit system.
+			// If we are in fact on a 32-bit system, we will be in plain Program Files...but on such a system that's what this code gets.
+			return Application.ExecutablePath.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+		}
+
 		private static ShortcutLocation StartMenuLocations
 		{
 			get { return ShortcutLocation.Desktop | ShortcutLocation.StartMenuPrograms; }
 		}
 
+		static bool IsFirstTimeInstall(string[] programArgs)
+		{
+			if (programArgs.Length < 1)
+				return false;
+			return programArgs[0] == "--squirrel-install";
+		}
+
+		private static bool _installInLocalMachine;
+
 		/// <summary>
 		/// Make the registry entries Bloom requires.
 		/// We do this every time a version of Bloom runs, so that if more than one is installed the latest wins.
 		/// </summary>
-		internal static void MakeBloomRegistryEntries()
+		internal static void MakeBloomRegistryEntries(string[] programArgs)
 		{
 			if (Assembly.GetEntryAssembly() == null)
 				return; // unit testing.
-			// creating this sets some things up so we can download, including relevant registry entries.
-			new BookDownloadSupport();
+			// When installed in program files we only do registry entries when we are first installed,
+			// thus keeping them consistent for all users, stored in HKLM.
+			if (SharedByAllUsers() && !IsFirstTimeInstall(programArgs))
+				return;
+			_installInLocalMachine = SharedByAllUsers();
 			if (Platform.IsLinux)
 			{
 				// This will be done by the package installer.
@@ -164,6 +218,9 @@ namespace Bloom
 
 			BeTheExecutableFor(".BloomCollection", "BloomCollection file");
 			BeTheExecutableFor(".BloomPack", "BloomPack file");
+			// Make the OS run Bloom when it sees bloom://somebooktodownload
+			BookDownloadSupport.RegisterForBloomUrlProtocol(_installInLocalMachine);
+
 		}
 
 		internal static void BeTheExecutableFor(string extension, string description)
@@ -182,7 +239,12 @@ namespace Bloom
 
 		internal static void EnsureRegistryValue(string keyName, string value, string name="")
 		{
-			var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
+			RegistryKey root;
+			if (_installInLocalMachine)
+				root = Registry.LocalMachine.CreateSubKey(@"Software\Classes");
+			else
+				root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
+
 			var key = root.CreateSubKey(keyName); // may also open an existing key with write permission
 			try
 			{
