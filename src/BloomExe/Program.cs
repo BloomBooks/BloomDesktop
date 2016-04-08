@@ -188,7 +188,8 @@ namespace Bloom
 						using (_applicationContainer = new ApplicationContainer())
 						{
 							SetUpLocalization();
-							InstallerSupport.MakeBloomRegistryEntries();
+							InstallerSupport.MakeBloomRegistryEntries(args);
+							BookDownloadSupport.EnsureDownloadFolderExists();
 							Browser.SetUpXulRunner();
 							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 							LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
@@ -243,7 +244,8 @@ namespace Bloom
 							return;
 						}
 
-						InstallerSupport.MakeBloomRegistryEntries();
+						InstallerSupport.MakeBloomRegistryEntries(args);
+						BookDownloadSupport.EnsureDownloadFolderExists();
 
 						SetUpLocalization();
 

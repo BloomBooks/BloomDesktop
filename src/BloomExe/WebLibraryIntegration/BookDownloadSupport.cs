@@ -21,7 +21,7 @@ namespace Bloom.WebLibraryIntegration
 		public delegate BookDownloadSupport Factory();//autofac uses this
 		public const string ArgsPipeName = @"SendBloomArgs";
 
-		public BookDownloadSupport()
+		public static void EnsureDownloadFolderExists()
 		{
 			// We need the download folder to exist if we are asked to download a book.
 			// We also want it to exist, to show the (planned) link that offers to launch the web site.
@@ -43,16 +43,13 @@ namespace Bloom.WebLibraryIntegration
 				};
 				CollectionSettings.CreateNewCollection(settings);
 			}
-
-			// Make the OS run Bloom when it sees bloom://somebooktodownload
-			RegisterForBloomUrlProtocol();
 		}
 
 		/// <summary>
-		/// Make sure this instance is registered (at least for this user) and the program to handle bloom:// urls.
-		/// See also where these registry entries are made by the wix installer (file Installer.wxs).
+		/// Make sure this instance is registered (at least for this user) as the program to handle bloom:// urls.
+		/// If we are installing for all users we can make it in a shared place.
 		/// </summary>
-		private void RegisterForBloomUrlProtocol()
+		public static void RegisterForBloomUrlProtocol(bool allUsers)
 		{
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
@@ -63,10 +60,11 @@ namespace Bloom.WebLibraryIntegration
 				// (and bloom startup wrapper needs to be in the path)
 				return;
 			}
+			var whereToInstall = allUsers ? Registry.LocalMachine : Registry.CurrentUser;
+			var root = whereToInstall.CreateSubKey(@"Software\Classes");
 
-			if (AlreadyRegistered(Registry.ClassesRoot))
+			if (AlreadyRegistered(root))
 				return;
-			var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
 			var key = root.CreateSubKey(@"bloom\shell\open\command");
 			key.SetValue("", CommandToLaunchBloomOnWindows);
 
@@ -75,7 +73,7 @@ namespace Bloom.WebLibraryIntegration
 			key.SetValue("URL Protocol", "");
 		}
 
-		private bool AlreadyRegistered(RegistryKey root)
+		private static bool AlreadyRegistered(RegistryKey root)
 		{
 			var key = root.OpenSubKey(@"bloom\shell\open\command");
 			if (key == null)
@@ -91,7 +89,7 @@ namespace Bloom.WebLibraryIntegration
 			return true;
 		}
 
-		private string CommandToLaunchBloomOnWindows
+		private static string CommandToLaunchBloomOnWindows
 		{
 			get { return Application.ExecutablePath.ToLowerInvariant() + " \"%1\""; }
 		}
