@@ -229,10 +229,12 @@ namespace Bloom
 		/// True if it is currently possible to start checking for or getting updates.
 		/// This approach is only relevant for Windows.
 		/// If some bloom update activity is already in progress we must not start another one...that crashes.
+		/// If we were installed in Program Files (using the --allUsers installer command-line argument
+		/// in administrator mode), we don't attempt updates.
 		/// </summary>
 		internal static bool OkToInitiateUpdateManager
 		{
-			get { return Platform.IsWindows && _bloomUpdateManager == null; }
+			get { return Platform.IsWindows && _bloomUpdateManager == null && !InstallerSupport.SharedByAllUsers(); }
 		}
 
 		internal static bool NoUpdatesAvailable(UpdateInfo info)
