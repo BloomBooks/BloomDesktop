@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -18,14 +19,27 @@ namespace Bloom.web
 {
 	public abstract class ServerBase : IDisposable
 	{
+		private static int portForHttp = 8089;
+		public static string ServerUrl = "http://localhost:"+portForHttp.ToString(CultureInfo.InvariantCulture);
+
 		/// <summary>
-		/// Prefix we add to http://localhost:8089 in all our urls. I'm not sure why...possibly to guard against
-		/// some other program trying to use this port?
+		/// Prefix we add to after the RootUrl in all our urls. This is just a legacy thing we could remove.
 		/// </summary>
 		internal const string BloomUrlPrefix = "/bloom/";
 
+		public static string ServerUrlEndingInSlash
+		{
+			get { return ServerUrl + "/"; }
+		}
+
+		//We may stop using this one... the /bloom is superfluous since we own the port
+		public static string ServerUrlWithBloomPrefixEndingInSlash
+		{
+			get { return ServerUrl + BloomUrlPrefix; }
+		}
+
 		/// <summary>
-		/// Listens for requests on "http://localhost:8089/bloom/"
+		/// Listens for requests"
 		/// </summary>
 		private HttpListener _listener;
 
@@ -119,11 +133,6 @@ namespace Bloom.web
 				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" +error.Message);
 				if (!SIL.PlatformUtilities.Platform.IsWindows) throw;
 
-				//Note: we could as easily *remove* this, as it appears to only needed if there is a registration that is more specific than some other.
-				//E.g., if there is one for http://localhost:8089/bloom, then we won't be able to access http://localhost:8089/ without first adding it too.
-				//But if there are not entries for http://localhost:8089/, then we're ok.
-				//AddUrlAccessControlEntry(RootPathEndingInSlash);
-
 				RemoveUrlAccessControlEntryWeDontUseAnymore();
 				TryStart();
 			}
@@ -133,8 +142,8 @@ namespace Bloom.web
 		{
 			Logger.WriteMinorEvent("Starting Server");
 			_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
-			_listener.Prefixes.Add(RootPathEndingInSlash);
-			_listener.Prefixes.Add(PathEndingInSlash);
+			_listener.Prefixes.Add(ServerUrlEndingInSlash);
+			_listener.Prefixes.Add(ServerUrlWithBloomPrefixEndingInSlash);
 			_listener.Start();
 
 			_listenerThread.Start();
@@ -388,7 +397,7 @@ namespace Bloom.web
 			if (localPath.StartsWith(BloomUrlPrefix))
 				localPath = localPath.Substring(BloomUrlPrefix.Length);
 
-			// and if the file is using localhost:8089/foo.js, at this point it will say "/foo.js", so let's strip off that leading slash
+			// and if the file is using localhost:1234/foo.js, at this point it will say "/foo.js", so let's strip off that leading slash
 			else if (localPath.StartsWith("/"))
 			{
 				localPath = localPath.Substring(1);
@@ -401,16 +410,6 @@ namespace Bloom.web
 					return temp;
 			}
 			return localPath;
-		}
-		public static string RootPathEndingInSlash
-		{
-			get { return "http://localhost:8089/"; }
-		}
-
-		//We may stop using this one... the /bloom is superfluous since we own the port
-		public static string PathEndingInSlash
-		{
-			get { return "http://localhost:8089" + BloomUrlPrefix; }
 		}
 
 		public static string GetContentType(string extension)
@@ -432,6 +431,7 @@ namespace Bloom.web
 			}
 		}
 
+		/* UNUSED but valuable looking if we ever need to do this again
 		/// <summary>
 		/// TODO: Note: doing this at runtime isn't as good as doing it in the installer, because we have no way of
 		/// removing these entries on uninstall (but the installer does).
@@ -454,9 +454,8 @@ namespace Bloom.web
 			Process.Start(startInfo);
 
 			Thread.Sleep(1000);
-		}
+		}*/
 
-		//  url=http://localhost:8089/bloom/ can interfer with accessing  url=http://localhost:8089/
 		// Some users may have this from a previous version.
 		private static void RemoveUrlAccessControlEntryWeDontUseAnymore()
 		{
@@ -469,7 +468,7 @@ namespace Bloom.web
 				//UseShellExecute = false,
 				Verb = "runas",
 				FileName = "netsh",
-				Arguments = string.Format("http delete urlacl url=http://localhost:8089/bloom")
+				Arguments = string.Format("http delete urlacl url="+ServerBase.ServerUrlWithBloomPrefixEndingInSlash)
 			};
 
 			Process.Start(startInfo);
@@ -480,7 +479,7 @@ namespace Bloom.web
 		private static void GetIsAbleToUsePort()
 		{
 			var x = new WebClientWithTimeout { Timeout = 3000 };
-			if ("OK" != x.DownloadString(PathEndingInSlash + "testconnection"))
+			if ("OK" != x.DownloadString(ServerUrlWithBloomPrefixEndingInSlash + "testconnection"))
 			{
 				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.CannotConnectToBloomServer", "Bloom could not connect to the local server.");
 				throw new ApplicationException(msg);

@@ -72,7 +72,7 @@ namespace BloomTests.web
 		public void GetLibaryPage_ReturnsLibraryPage()
 		{
 			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "library/library.htm");
+			var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "library/library.htm");
 			b.MakeReply(transaction);
 			Assert.IsTrue(transaction.ReplyContents.Contains("library.css"));
 		}
@@ -86,7 +86,7 @@ namespace BloomTests.web
 		public void GetVernacularBookList_ThereAreNone_ReturnsNoListItems()
 		{
 			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents");
+			var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "libraryContents");
 			_bookInfoList.Clear();
 			b.MakeReply(transaction);
 			AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasNoMatchForXpath("//li");
@@ -95,7 +95,7 @@ namespace BloomTests.web
 		public void GetVernacularBookList_ThereAre2_Returns2ListItems()
 		{
 			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents");
+			var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "libraryContents");
 			AddBook("1","one");
 			AddBook("2", "two");
 			b.MakeReply(transaction);
@@ -106,7 +106,7 @@ namespace BloomTests.web
 				public void GetStoreBooks_ThereAre2_Returns2CollectionItems()
 				{
 					var b = CreateBloomServer();
-					var transaction = new PretendRequestInfo("http://localhost:8089/bloom/storeCollectionList");
+					var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash+"storeCollectionList");
 					b.MakeReply(transaction);
 					AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasSpecifiedNumberOfMatchesForXpath("//li//h2[text()='alpha']", 1);
 					AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasSpecifiedNumberOfMatchesForXpath("//li//h2[text()='beta']", 1);

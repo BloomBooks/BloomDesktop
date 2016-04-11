@@ -20,7 +20,7 @@ namespace Bloom.web
 				url = url.Replace("/bloom/", "/bloom/OriginalImages/");
 
 			// In the real request, RawUrl does not include this prefix
-			RawUrl = url.Replace("http://localhost:8089", "");
+			RawUrl = url.Replace(ServerBase.ServerUrl, "");
 
 			// When JavaScript inserts a real path into the html it replaces the three magic html characters with these substitutes.
 			// For this PretendRequestInfo we simulate that by doing the replace here in the url.
@@ -28,7 +28,7 @@ namespace Bloom.web
 				url = EnhancedImageServer.SimulateJavaScriptHandlingOfHtml(url);
 
 			// Reducing the /// emulates a behavior of the real HttpListener
-			LocalPathWithoutQuery = url.Replace("http://localhost:8089", "").Replace("/bloom/OriginalImages///", "/bloom/OriginalImages/").Replace("/bloom///", "/bloom/").UnescapeCharsForHttp();
+			LocalPathWithoutQuery = url.Replace(ServerBase.ServerUrl, "").Replace("/bloom/OriginalImages///", "/bloom/OriginalImages/").Replace("/bloom///", "/bloom/").UnescapeCharsForHttp();
 		}
 
 		public string LocalPathWithoutQuery { get; set; }

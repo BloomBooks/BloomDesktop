@@ -9,15 +9,15 @@ namespace Bloom
 		public static string ToLocalhost(this string fileName)
 		{
 			// don't do this if it is done already
-			if (fileName.StartsWith(ServerBase.PathEndingInSlash)) return fileName;
+			if (fileName.StartsWith(ServerBase.ServerUrlWithBloomPrefixEndingInSlash)) return fileName;
 
-			return ServerBase.PathEndingInSlash + fileName.EscapeCharsForHttp().Replace(System.IO.Path.DirectorySeparatorChar, '/');
+			return ServerBase.ServerUrlWithBloomPrefixEndingInSlash + fileName.EscapeCharsForHttp().Replace(System.IO.Path.DirectorySeparatorChar, '/');
 		}
 
 		public static string FromLocalhost(this string uri)
 		{
-			if (uri.StartsWith(ServerBase.PathEndingInSlash))
-				uri = uri.Substring(ServerBase.PathEndingInSlash.Length).UnescapeCharsForHttp();
+			if (uri.StartsWith(ServerBase.ServerUrlWithBloomPrefixEndingInSlash))
+				uri = uri.Substring(ServerBase.ServerUrlWithBloomPrefixEndingInSlash.Length).UnescapeCharsForHttp();
 			return uri;
 		}
 
