@@ -259,6 +259,10 @@ namespace Bloom
 		// Adapted from Squirrel's EasyModeMixin.UpdateApp, but this version yields the new directory.
 		internal static async Task<UpdateResult> UpdateApp(IUpdateManager manager)
 		{
+#if __MonoCS__
+			Debug.Fail("UpdateApp should not run on Linux!");	// and the code below doesn't compile on Linux
+			return null;
+#else
 			bool ignoreDeltaUpdates = false;
 
 			retry:
@@ -339,6 +343,7 @@ namespace Bloom
 				NewInstallDirectory = newInstallDirectory,
 				Outcome = newInstallDirectory == null ? UpdateOutcome.AlreadyUpToDate : UpdateOutcome.GotNewVersion
 			};
+#endif
 		}
 
 		private static void UpdateProgress(ToastNotifier updatingNotifier, string updatingMsg, string progressMsg, int x)
