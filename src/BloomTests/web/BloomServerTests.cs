@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.web;
 using Moq;
 using NUnit.Framework;
@@ -187,5 +189,24 @@ namespace BloomTests.web
 			Assert.That(result, Is.EqualTo(ServerBase.BloomUrlPrefix + "OriginalImages/" + path));
 		}
 
+		//In normal runtime, we can't actually have two servers... a static is used to ease access to the URL
+		//But we can get away with it long enough to test the case where some previous run of Bloom has not
+		//released its port (BL-3313).
+		[Test]
+		public void RunTwoServer_UseDifferentPorts()
+		{
+			using(var x = new ImageServer(null))
+			{
+				x.StartListening();
+				var firstUrl = ServerBase.ServerUrl;
+				using(var y = new ImageServer(null))
+				{
+					y.StartListening();
+					var secondUrl = ServerBase.ServerUrl;
+					Assert.AreNotEqual(firstUrl, secondUrl);
+					Console.WriteLine(firstUrl+", "+secondUrl);
+				}
+			}
+		}
 	}
 }

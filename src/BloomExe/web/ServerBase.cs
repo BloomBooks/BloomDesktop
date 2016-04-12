@@ -7,8 +7,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
+using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
 using SIL.Reporting;
@@ -19,8 +21,12 @@ namespace Bloom.web
 {
 	public abstract class ServerBase : IDisposable
 	{
-		private static int portForHttp = 8089;
-		public static string ServerUrl = "http://localhost:"+portForHttp.ToString(CultureInfo.InvariantCulture);
+		public static int portForHttp;
+
+		public static string ServerUrl
+		{
+			get { return "http://localhost:" + portForHttp.ToString(CultureInfo.InvariantCulture); }
+		}
 
 		/// <summary>
 		/// Prefix we add to after the RootUrl in all our urls. This is just a legacy thing we could remove.
@@ -104,7 +110,7 @@ namespace Bloom.web
 			_queue = new Queue<HttpListenerContext>();
 			_stop = new ManualResetEvent(false);
 			_ready = new ManualResetEvent(false);
-			_listenerThread = new Thread(HandleRequests);
+			_listenerThread = new Thread(EnqueueIncomingRequests);
 		}
 
 #if DEBUG
@@ -117,34 +123,36 @@ namespace Bloom.web
 
 		#region Startup
 
-		public void StartListening()
+		public virtual void StartListening()
 		{
-			StartWithSetupIfNeeded();
-		}
+			const int kStartingPort = 8089;
+			const int kNumberOfPortsToTry = 10;
+			bool success = false;
+			const int kNumberOfPortsWeNeed = 2;//one for http, one for peakLevel webSocket
 
-		protected virtual void StartWithSetupIfNeeded()
-		{
-			try
+			//Note: while this will find a port for the http, it does not actually know if the accompanying
+			//ports are available. It just assume they are.
+			//So while it's an improvement, it's not yet as solid as we would like it
+			//to be.  The ultimate solution is to run the websocket and http on the same port.
+			//This could be done using this proxy thing that internally routes to different ports:
+			// https://github.com/lifeemotions/websocketproxy
+			// Another thing to check on is https://github.com/bryceg/Owin.WebSocket/pull/20 which
+			// would give us an owin-compliant version of the fleck websocket server, and we could
+			// switch to using an owin-compliant http server like NancyFx.
+			for (var i=0; !success && i < kNumberOfPortsToTry; i++)
 			{
-				TryStart();
+				ServerBase.portForHttp = kStartingPort + (i*kNumberOfPortsWeNeed);
+				success = AttemptToOpenPort();
 			}
-			catch (HttpListenerException error)
+
+			if(!success)
 			{
-				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" +error.Message);
-				if (!SIL.PlatformUtilities.Platform.IsWindows) throw;
-
-				RemoveUrlAccessControlEntryWeDontUseAnymore();
-				TryStart();
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+					"Bloom could not start up its own internal HTTP Server. Please try again after restarting your computer.");
+				Logger.WriteEvent("Error: Could not start up internal HTTP Server");
+				Analytics.ReportException(new ApplicationException("Could not start server."));
+				Application.Exit();
 			}
-		}
-
-		private void TryStart()
-		{
-			Logger.WriteMinorEvent("Starting Server");
-			_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
-			_listener.Prefixes.Add(ServerUrlEndingInSlash);
-			_listener.Prefixes.Add(ServerUrlWithBloomPrefixEndingInSlash);
-			_listener.Start();
 
 			_listenerThread.Start();
 
@@ -153,7 +161,53 @@ namespace Bloom.web
 				SpinUpAWorker();
 			}
 
-			GetIsAbleToUsePort();
+			VerifyWeAreNowListening();
+		}
+
+		private bool AttemptToOpenPort()
+		{
+			try
+			{
+				Logger.WriteMinorEvent("Starting Server");
+				_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
+				_listener.Prefixes.Add(ServerUrlEndingInSlash);
+				_listener.Prefixes.Add(ServerUrlWithBloomPrefixEndingInSlash);
+				_listener.Start();
+				return true;
+			}
+			catch(HttpListenerException error)
+			{
+				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" + error.Message);
+				if (Assembly.GetEntryAssembly() != null) // not during unit tests
+					NonFatalProblem.Report(ModalIf.None,PassiveIf.Alpha,"Could not start server on that port");
+				try
+				{
+					if(_listener != null)
+					{
+						//_listener.Stop();
+						_listener.Close();
+					}
+				}
+				catch(Exception)
+				{
+					//that's ok, we're just trying to clean up
+				}
+				finally
+				{
+					_listener = null;
+				}
+				return false;
+			}
+		}
+
+		private static void VerifyWeAreNowListening()
+		{
+			var x = new WebClientWithTimeout { Timeout = 3000 };
+			if ("OK" != x.DownloadString(ServerUrlWithBloomPrefixEndingInSlash + "testconnection"))
+			{
+				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.CannotConnectToBloomServer", "Bloom's built-in HTTP server is not responding.");
+				throw new ApplicationException(msg);
+			}
 		}
 
 		// After the initial startup, this should only be called inside a lock(_queue),
@@ -170,7 +224,7 @@ namespace Bloom.web
 		/// <summary>
 		/// The _listenerThread runs this method, and exits when the _stop event is raised
 		/// </summary>
-		private void HandleRequests()
+		private void EnqueueIncomingRequests()
 		{
 			while (_listener.IsListening)
 			{
@@ -474,16 +528,6 @@ namespace Bloom.web
 			Process.Start(startInfo);
 
 			Thread.Sleep(1000);
-		}
-
-		private static void GetIsAbleToUsePort()
-		{
-			var x = new WebClientWithTimeout { Timeout = 3000 };
-			if ("OK" != x.DownloadString(ServerUrlWithBloomPrefixEndingInSlash + "testconnection"))
-			{
-				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.CannotConnectToBloomServer", "Bloom could not connect to the local server.");
-				throw new ApplicationException(msg);
-			}
 		}
 
 		#region Disposable stuff

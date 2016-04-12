@@ -130,8 +130,11 @@ export default class AudioRecording {
     }
     
     private getWebSocket() : WebSocket {
-        if(typeof window.top["peakLevelSocket"] == "undefined")
-            window.top["peakLevelSocket"] = new WebSocket("ws://127.0.0.1:8189");
+        if (typeof window.top["peakLevelSocket"] == "undefined") {
+            //currently we use a different port for this websocket, and it's the main port + 1
+            const websocketPort = parseInt(window.location.port) + 1;
+            window.top["peakLevelSocket"] = new WebSocket("ws://127.0.0.1:"+websocketPort.toString());
+        }
         return window.top["peakLevelSocket"];
     }
     private disposeWebSocket(){

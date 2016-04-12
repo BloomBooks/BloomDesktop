@@ -466,10 +466,10 @@ namespace Bloom
 
 #if PerProjectMutex
 
-					//NB: initially, you could have multiple blooms, if they were different projects.
-			//however, then we switched to the embedded http image server, which can't share
-			//a port. So we could fix that (get different ports), but for now, I'm just going
-			//to lock it down to a single bloom
+		//NB: initially, you could have multiple blooms, if they were different projects.
+		//however, then we switched to the embedded http image server, which had a fixed
+		//port. That has now been fixed, however in the meantime we switched to using a
+		//differnt mutex approach (UniqueToken), so this code would need some updating.
 
 		private static bool GrabTokenForThisProject(string pathToProject)
 		{

@@ -88,7 +88,7 @@ namespace Bloom.Edit
 			server.RegisterSimpleHandler("audio/setRecordingDevice", HandleSetRecordingDevice);
 			server.RegisterSimpleHandler("audio/checkForSegement", HandleCheckForSegment);
 
-			_peakLevelWebSocketServer = new BloomWebSocketServer("8189");//review: we have no dispose (on us or our parent) so this is never disposed
+			_peakLevelWebSocketServer = new BloomWebSocketServer((ServerBase.portForHttp+1).ToString(CultureInfo.InvariantCulture));//review: we have no dispose (on us or our parent) so this is never disposed
 		}
 
 		// does this page have any audio at all? Used enable the Listen page.
@@ -505,7 +505,13 @@ namespace Bloom.Edit
 				// to update the icon. At that point we start really sending volume requests.
 				if (_recorder == null)
 				{
-					Form.ActiveForm.Invoke((Action)(() =>
+					var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+					if (formToInvokeOn == null)
+					{
+						NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not find a form on which to start the level monitoring code. Please restart Bloom.");
+						return null;
+					}
+					formToInvokeOn.Invoke((Action)(() =>
 					{
 						_recorder = new AudioRecorder(1);
 						_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
