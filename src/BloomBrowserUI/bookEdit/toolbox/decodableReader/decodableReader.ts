@@ -5,19 +5,17 @@ class DecodableReaderModel implements ITabModel {
         if (!model) model = new ReaderToolsModel();
         return beginInitializeDecodableReaderTool().then(() => {
             if (settings['decodableReaderState']) {
-                var state = libsynphony.dbGet('drt_state');
-                if (!state) state = new DRTState();
                 var decState = settings['decodableReaderState'];
                 if (decState.startsWith("stage:")) {
                     var parts = decState.split(";");
-                    state.stage = parseInt(parts[0].substring("stage:".length));
+                    var stage = parseInt(parts[0].substring("stage:".length));
                     var sort = parts[1].substring("sort:".length);
                     model.setSort(sort);
+                    model.setStageNumber(stage);
                 } else {
                     // old state
-                    state.stage = parseInt(decState);
+                    model.setStageNumber(parseInt(decState));
                 }
-                libsynphony.dbSet('drt_state', state);
             }
         });
     }
