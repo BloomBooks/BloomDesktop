@@ -14,6 +14,8 @@
 
 - You can now "Undo" when in "Change Layout" mode.
 
+- Administrators of computer labs can now install Bloom for all users of the machine. From a command prompt running as administrator, run the installer with the "--allUsers" flag. "--silent" is also supported. This will put Bloom in the Program Files(x86) directory. Bloom will not attempt to update itself, nor will users be able to cause an update to happen.
+
 - Many other fixes & tiny improvements.
 
 ## 3.5
