@@ -154,6 +154,7 @@ namespace Bloom.web
 				Application.Exit();
 			}
 
+			Logger.WriteEvent("Server will use " + ServerUrlEndingInSlash);
 			_listenerThread.Start();
 
 			for (var i = 0; i < Math.Max(Environment.ProcessorCount, 2); i++)
@@ -171,7 +172,7 @@ namespace Bloom.web
 		{
 			try
 			{
-				Logger.WriteMinorEvent("Starting Server");
+				Logger.WriteMinorEvent("Attempting to start http listener on "+ ServerUrlEndingInSlash);
 				_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
 				_listener.Prefixes.Add(ServerUrlEndingInSlash);
 				_listener.Prefixes.Add(ServerUrlWithBloomPrefixEndingInSlash);
@@ -512,26 +513,6 @@ namespace Bloom.web
 
 			Thread.Sleep(1000);
 		}*/
-
-		// Some users may have this from a previous version.
-		private static void RemoveUrlAccessControlEntryWeDontUseAnymore()
-		{
-			MessageBox.Show(
-				string.Format("We need to do one more thing before Bloom is ready. Bloom needs temporary administrator privileges to set up part of its communication with the embedded web browser.{0}{0}After you click 'OK', you may be asked to authorize this step.", Environment.NewLine),
-					@"Almost there!", MessageBoxButtons.OK);
-
-			var startInfo = new ProcessStartInfo
-			{
-				//UseShellExecute = false,
-				Verb = "runas",
-				FileName = "netsh",
-				Arguments = string.Format("http delete urlacl url="+ServerBase.ServerUrlWithBloomPrefixEndingInSlash)
-			};
-
-			Process.Start(startInfo);
-
-			Thread.Sleep(1000);
-		}
 
 		#region Disposable stuff
 
