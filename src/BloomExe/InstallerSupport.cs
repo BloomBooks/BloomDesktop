@@ -71,6 +71,10 @@ namespace Bloom
 
 		internal static void HandleSquirrelInstallEvent(string[] args)
 		{
+#if __MonoCS__
+			Debug.Fail("HandleSquirrelInstallEvent should not run on Linux!");	// and the code below doesn't compile on Linux
+			return;
+#else
 			bool firstTime = false;
 			var updateUrlResult = LookupUrlOfSquirrelUpdate();
 			// Should only be null if we're not online. Not sure how squirrel will handle that,
@@ -122,6 +126,7 @@ namespace Bloom
 					}
 					break;
 			}
+#endif
 		}
 
 		/// <summary>
