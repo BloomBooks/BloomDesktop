@@ -20,14 +20,14 @@ class DecodableReaderModel implements ITabModel {
                 var decState = settings['decodableReaderState'];
                 if (decState.startsWith("stage:")) {
                     var parts = decState.split(";");
-                    state.stage = parseInt(parts[0].substring("stage:".length));
+                    var stage = parseInt(parts[0].substring("stage:".length));
                     var sort = parts[1].substring("sort:".length);
                     ReaderToolsModel.model.setSort(sort);
+                    ReaderToolsModel.model.setStageNumber(stage);
                 } else {
                     // old state
-                    state.stage = parseInt(decState);
+                    ReaderToolsModel.model.setStageNumber(parseInt(decState));
                 }
-                theOneLibSynphony.dbSet('drt_state', state);
             }
         });
     }

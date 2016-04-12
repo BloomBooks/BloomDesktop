@@ -18,7 +18,9 @@ using System.Text;
 namespace Bloom.Publish
 {
 	/// <summary>
-	/// This wrapper uses the GeckoFxHtmlToPdf program.  Trying to use the component
+	/// This wrapper uses the GeckoFxHtmlToPdf program, which we rename to
+	/// BloomPdfMaker.exe because AVG likes to quarantine it and we want to
+	/// make it look less scary.  Trying to use the component
 	/// directly leads to obscure bugs, at least on Windows.  Isolating the embedded
 	/// Gecko browser in a separate process appears to at least let us produce the
 	/// desired PDF files.
@@ -96,12 +98,12 @@ namespace Bloom.Publish
 			var loc = Assembly.GetExecutingAssembly().CodeBase.Substring((Platform.IsUnix ? "file://" : "file:///").Length);
 			var execDir = Path.GetDirectoryName(loc);
 			var fromDirectory = String.Empty;
-			var filePath = Path.Combine(execDir, "GeckofxHtmlToPdf.exe");
+			var filePath = Path.Combine(execDir, "BloomPdfMaker.exe");
 			if (!File.Exists(filePath))
 			{
-				var msg = LocalizationManager.GetString("InstallProblem.GeckofxHtmlToPdf",
-					"A component of Bloom, GeckofxHtmlToPdf.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
-				throw new FileNotFoundException(msg, "GeckofxHtmlToPdf.exe"); // must be this class to trigger the right reporting mechanism.
+				var msg = LocalizationManager.GetString("InstallProblem.BloomPdfMaker",
+					"A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
+				throw new FileNotFoundException(msg, "BloomPdfMaker.exe"); // must be this class to trigger the right reporting mechanism.
 			}
 			if (Platform.IsMono)
 			{
@@ -123,7 +125,7 @@ namespace Bloom.Publish
 				Debug.WriteLine(res.StandardOutput);
 #endif
 				var msg = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.Failed",
-					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: GeckofxHtmlToPdf (command line) did not produce the expected document.",
+					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
 					@"Error message displayed in a message dialog box");
 				var except = new ApplicationException(String.Format(msg, outputPdfPath, Environment.NewLine));
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.

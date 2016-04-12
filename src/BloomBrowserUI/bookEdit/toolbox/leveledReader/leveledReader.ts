@@ -10,10 +10,7 @@ export default class LeveledReaderModel implements ITabModel {
         if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         return beginInitializeLeveledReaderTool().then(() => {
             if (opts['leveledReaderState']) {
-                var state = theOneLibSynphony.dbGet('drt_state');
-                if (!state) state = new DRTState();
-                state.level = parseInt(opts['leveledReaderState']);
-                theOneLibSynphony.dbSet('drt_state', state);
+                ReaderToolsModel.model.setLevelNumber(parseInt(opts['leveledReaderState']));
             }
         });
     }

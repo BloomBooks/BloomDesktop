@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -1172,7 +1172,13 @@ copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
-</PostBuildEvent>
+copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
+copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfMaker.exe.config"
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(OS)'!='Windows_NT'">
+cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
+cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfMaker.exe.config"
+    </PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
@@ -1202,8 +1208,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <GeckoBrowserAdapter Include="..\..\lib\dotnet\SIL.Windows.Forms.GeckoBrowserAdapter.dll" />
   </ItemGroup>
   <ItemGroup>
-    <GeckofxHtmlToPdf Include="..\..\lib\dotnet\GeckofxHtmlToPdf.exe" />
-    <GeckofxHtmlToPdf Include="..\..\lib\dotnet\Args.dll" />
+    <BloomPdfMakerArgs Include="..\..\lib\dotnet\Args.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\settingsbw16x16.png" />
@@ -1238,6 +1243,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
-    <Copy SourceFiles="@(GeckofxHtmlToPdf)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>
