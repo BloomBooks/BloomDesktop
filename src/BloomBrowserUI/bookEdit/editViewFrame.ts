@@ -93,9 +93,6 @@ export function showAddPageDialog(templatesJSON) {
     var english = 'Add Page...';
 
     if (forChooseLayout) {
-        var title = theOneLocalizationManager.getText('EditTab.AddPageDialog.ChooseLayoutTitle', 'Choose Different Layout...');
-
-    } else {
         key = 'EditTab.AddPageDialog.ChooseLayoutTitle';
         english = 'Choose Different Layout...';
     }
