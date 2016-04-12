@@ -164,6 +164,9 @@ namespace Bloom.web
 			VerifyWeAreNowListening();
 		}
 
+		/// <summary>
+		/// Tries to start listening on the currently proposed server url
+		/// </summary>
 		private bool AttemptToOpenPort()
 		{
 			try
@@ -184,7 +187,7 @@ namespace Bloom.web
 				{
 					if(_listener != null)
 					{
-						//_listener.Stop();
+						//_listener.Stop();  this will always throw if we failed to start, so skip it and go to the close:
 						_listener.Close();
 					}
 				}
