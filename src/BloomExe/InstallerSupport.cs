@@ -18,7 +18,9 @@ using Microsoft.Win32;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
+#if !__MonoCS__
 using Squirrel;
+#endif
 
 namespace Bloom
 {
@@ -141,10 +143,12 @@ namespace Bloom
 			return Application.ExecutablePath.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
 		}
 
+#if !__MonoCS__
 		private static ShortcutLocation StartMenuLocations
 		{
 			get { return ShortcutLocation.Desktop | ShortcutLocation.StartMenuPrograms; }
 		}
+#endif
 
 		static bool IsFirstTimeInstall(string[] programArgs)
 		{

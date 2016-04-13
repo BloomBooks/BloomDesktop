@@ -10,7 +10,9 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using L10NSharp;
 using SIL.PlatformUtilities;
+#if !__MonoCS__
 using Squirrel;
+#endif
 
 namespace Bloom
 {
@@ -21,13 +23,19 @@ namespace Bloom
 	/// </summary>
 	static class ApplicationUpdateSupport
 	{
+#if !__MonoCS__
 		internal static UpdateManager _bloomUpdateManager;
+#endif
 
 		internal enum BloomUpdateMessageVerbosity { Quiet, Verbose }
 
 		internal static bool BloomUpdateInProgress
 		{
+#if __MonoCS__
+			get { return false; }
+#else
 			get { return _bloomUpdateManager != null; }
+#endif
 		}
 
 		/// <summary>
@@ -39,6 +47,7 @@ namespace Bloom
 		/// </summary>
 		internal static async void CheckForASquirrelUpdate(BloomUpdateMessageVerbosity verbosity, Action<string> restartBloom, bool autoUpdate)
 		{
+#if !__MonoCS__
 			if (OkToInitiateUpdateManager)
 			{
 				string updateUrl;
@@ -132,6 +141,7 @@ namespace Bloom
 				notifier.ToastClicked += (sender, args) => restartBloom(newInstallDir);
 				notifier.Show(msg, action, -1);//Len wants it to stay up until he clicks on it
 			}
+#endif
 		}
 
 		private static void ShowFailureNotification(string failMsg)
@@ -143,6 +153,7 @@ namespace Bloom
 
 		internal static void ArrangeToDisposeSquirrelManagerOnExit()
 		{
+#if !__MonoCS__
 			Application.ApplicationExit += (sender, args) =>
 			{
 				if (_bloomUpdateManager != null)
@@ -152,6 +163,7 @@ namespace Bloom
 					temp.Dispose(); // otherwise squirrel throws a nasty exception.
 				}
 			};
+#endif
 		}
 
 		internal static string ChannelNameForUnitTests;
@@ -189,6 +201,7 @@ namespace Bloom
 
 		private static async void InitiateSquirrelNotifyUpdatesAvailable(string updateUrl, Action<string> restartBloom)
 		{
+#if !__MonoCS__
 			try
 			{
 				if (OkToInitiateUpdateManager)
@@ -223,6 +236,7 @@ namespace Bloom
 				SIL.Reporting.Logger.WriteEvent("Squirrel: Network unreliable - " + e.Message);
 				return;
 			}
+#endif
 		}
 
 		/// <summary>
@@ -234,13 +248,19 @@ namespace Bloom
 		/// </summary>
 		internal static bool OkToInitiateUpdateManager
 		{
+#if __MonoCS__
+			get { return false; }
+#else
 			get { return Platform.IsWindows && _bloomUpdateManager == null && !InstallerSupport.SharedByAllUsers(); }
+#endif
 		}
 
+#if !__MonoCS__
 		internal static bool NoUpdatesAvailable(UpdateInfo info)
 		{
 			return info == null || info.ReleasesToApply.Count == 0;
 		}
+#endif
 
 		internal enum UpdateOutcome
 		{
@@ -256,13 +276,10 @@ namespace Bloom
 
 		}
 
+#if !__MonoCS__
 		// Adapted from Squirrel's EasyModeMixin.UpdateApp, but this version yields the new directory.
 		internal static async Task<UpdateResult> UpdateApp(IUpdateManager manager)
 		{
-#if __MonoCS__
-			Debug.Fail("UpdateApp should not run on Linux!");	// and the code below doesn't compile on Linux
-			return null;
-#else
 			bool ignoreDeltaUpdates = false;
 
 			retry:
@@ -343,8 +360,8 @@ namespace Bloom
 				NewInstallDirectory = newInstallDirectory,
 				Outcome = newInstallDirectory == null ? UpdateOutcome.AlreadyUpToDate : UpdateOutcome.GotNewVersion
 			};
-#endif
 		}
+#endif
 
 		private static void UpdateProgress(ToastNotifier updatingNotifier, string updatingMsg, string progressMsg, int x)
 		{
