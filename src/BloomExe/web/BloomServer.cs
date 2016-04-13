@@ -1,17 +1,12 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
-using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
-using SIL.IO;
-using SIL.Reporting;
 
 namespace Bloom.web
 {

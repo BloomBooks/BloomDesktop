@@ -57,7 +57,7 @@ namespace BloomTests.web
 			using (var server = CreateImageServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
+				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -74,7 +74,7 @@ namespace BloomTests.web
 			using (var server = CreateImageServer())
 			using (var file = TempFile.WithExtension(".pdf"))
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
+				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + file.Path);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -90,7 +90,7 @@ namespace BloomTests.web
 			// Setup
 			using (var server = CreateImageServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "/non-existing-file.pdf");
+				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "/non-existing-file.pdf");
 
 				// Execute
 				server.MakeReply(transaction);
@@ -107,7 +107,7 @@ namespace BloomTests.web
 			// Setup
 			using (var server = CreateImageServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "thisWontWorkWithoutInjectionButWillWithIt");
+				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "thisWontWorkWithoutInjectionButWillWithIt");
 				server.CurrentCollectionSettings = new CollectionSettings();
 				Func<string, IRequestInfo, CollectionSettings, bool> testFunc =
 					(path, info, settings) =>
@@ -145,7 +145,7 @@ namespace BloomTests.web
 		{
 			using (var server = CreateImageServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + query);
+				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + query);
 				server.MakeReply(transaction);
 				Debug.WriteLine(transaction.ReplyContents);
 				return Newtonsoft.Json.JsonConvert.DeserializeObject(transaction.ReplyContents);

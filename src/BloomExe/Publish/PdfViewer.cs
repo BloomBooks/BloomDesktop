@@ -120,7 +120,7 @@ namespace Bloom.Publish
 			if (SIL.PlatformUtilities.Platform.IsUnix)
 				file = file.EscapeCharsForHttp().EscapeCharsForHttp();
 			var url = string.Format("{0}{1}?file=/bloom/{2}",
-				Bloom.web.ServerBase.PathEndingInSlash,
+				Bloom.web.ServerBase.ServerUrlWithBloomPrefixEndingInSlash,
 				FileLocator.GetFileDistributedWithApplication("pdf/web/viewer.html"),
 				file);
 

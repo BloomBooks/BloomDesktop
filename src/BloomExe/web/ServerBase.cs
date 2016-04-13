@@ -3,11 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
+using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
 using SIL.Reporting;
@@ -18,14 +21,31 @@ namespace Bloom.web
 {
 	public abstract class ServerBase : IDisposable
 	{
+		public static int portForHttp;
+
+		public static string ServerUrl
+		{
+			get { return "http://localhost:" + portForHttp.ToString(CultureInfo.InvariantCulture); }
+		}
+
 		/// <summary>
-		/// Prefix we add to http://localhost:8089 in all our urls. I'm not sure why...possibly to guard against
-		/// some other program trying to use this port?
+		/// Prefix we add to after the RootUrl in all our urls. This is just a legacy thing we could remove.
 		/// </summary>
 		internal const string BloomUrlPrefix = "/bloom/";
 
+		public static string ServerUrlEndingInSlash
+		{
+			get { return ServerUrl + "/"; }
+		}
+
+		//We may stop using this one... the /bloom is superfluous since we own the port
+		public static string ServerUrlWithBloomPrefixEndingInSlash
+		{
+			get { return ServerUrl + BloomUrlPrefix; }
+		}
+
 		/// <summary>
-		/// Listens for requests on "http://localhost:8089/bloom/"
+		/// Listens for requests"
 		/// </summary>
 		private HttpListener _listener;
 
@@ -90,7 +110,7 @@ namespace Bloom.web
 			_queue = new Queue<HttpListenerContext>();
 			_stop = new ManualResetEvent(false);
 			_ready = new ManualResetEvent(false);
-			_listenerThread = new Thread(HandleRequests);
+			_listenerThread = new Thread(EnqueueIncomingRequests);
 		}
 
 #if DEBUG
@@ -103,40 +123,38 @@ namespace Bloom.web
 
 		#region Startup
 
-		public void StartListening()
+		public virtual void StartListening()
 		{
-			StartWithSetupIfNeeded();
-		}
+			const int kStartingPort = 8089;
+			const int kNumberOfPortsToTry = 10;
+			bool success = false;
+			const int kNumberOfPortsWeNeed = 2;//one for http, one for peakLevel webSocket
 
-		protected virtual void StartWithSetupIfNeeded()
-		{
-			try
+			//Note: while this will find a port for the http, it does not actually know if the accompanying
+			//ports are available. It just assume they are.
+			//So while it's an improvement, it's not yet as solid as we would like it
+			//to be.  The ultimate solution is to run the websocket and http on the same port.
+			//This could be done using this proxy thing that internally routes to different ports:
+			// https://github.com/lifeemotions/websocketproxy
+			// Another thing to check on is https://github.com/bryceg/Owin.WebSocket/pull/20 which
+			// would give us an owin-compliant version of the fleck websocket server, and we could
+			// switch to using an owin-compliant http server like NancyFx.
+			for (var i=0; !success && i < kNumberOfPortsToTry; i++)
 			{
-				TryStart();
+				ServerBase.portForHttp = kStartingPort + (i*kNumberOfPortsWeNeed);
+				success = AttemptToOpenPort();
 			}
-			catch (HttpListenerException error)
+
+			if(!success)
 			{
-				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" +error.Message);
-				if (!SIL.PlatformUtilities.Platform.IsWindows) throw;
-
-				//Note: we could as easily *remove* this, as it appears to only needed if there is a registration that is more specific than some other.
-				//E.g., if there is one for http://localhost:8089/bloom, then we won't be able to access http://localhost:8089/ without first adding it too.
-				//But if there are not entries for http://localhost:8089/, then we're ok.
-				//AddUrlAccessControlEntry(RootPathEndingInSlash);
-
-				RemoveUrlAccessControlEntryWeDontUseAnymore();
-				TryStart();
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+					"Bloom could not start up its own internal HTTP Server. Please try again after restarting your computer.");
+				Logger.WriteEvent("Error: Could not start up internal HTTP Server");
+				Analytics.ReportException(new ApplicationException("Could not start server."));
+				Application.Exit();
 			}
-		}
 
-		private void TryStart()
-		{
-			Logger.WriteMinorEvent("Starting Server");
-			_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
-			_listener.Prefixes.Add(RootPathEndingInSlash);
-			_listener.Prefixes.Add(PathEndingInSlash);
-			_listener.Start();
-
+			Logger.WriteEvent("Server will use " + ServerUrlEndingInSlash);
 			_listenerThread.Start();
 
 			for (var i = 0; i < Math.Max(Environment.ProcessorCount, 2); i++)
@@ -144,7 +162,56 @@ namespace Bloom.web
 				SpinUpAWorker();
 			}
 
-			GetIsAbleToUsePort();
+			VerifyWeAreNowListening();
+		}
+
+		/// <summary>
+		/// Tries to start listening on the currently proposed server url
+		/// </summary>
+		private bool AttemptToOpenPort()
+		{
+			try
+			{
+				Logger.WriteMinorEvent("Attempting to start http listener on "+ ServerUrlEndingInSlash);
+				_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
+				_listener.Prefixes.Add(ServerUrlEndingInSlash);
+				_listener.Prefixes.Add(ServerUrlWithBloomPrefixEndingInSlash);
+				_listener.Start();
+				return true;
+			}
+			catch(HttpListenerException error)
+			{
+				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" + error.Message);
+				if (Assembly.GetEntryAssembly() != null) // not during unit tests
+					NonFatalProblem.Report(ModalIf.None,PassiveIf.Alpha,"Could not start server on that port");
+				try
+				{
+					if(_listener != null)
+					{
+						//_listener.Stop();  this will always throw if we failed to start, so skip it and go to the close:
+						_listener.Close();
+					}
+				}
+				catch(Exception)
+				{
+					//that's ok, we're just trying to clean up
+				}
+				finally
+				{
+					_listener = null;
+				}
+				return false;
+			}
+		}
+
+		private static void VerifyWeAreNowListening()
+		{
+			var x = new WebClientWithTimeout { Timeout = 3000 };
+			if ("OK" != x.DownloadString(ServerUrlWithBloomPrefixEndingInSlash + "testconnection"))
+			{
+				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.CannotConnectToBloomServer", "Bloom's built-in HTTP server is not responding.");
+				throw new ApplicationException(msg);
+			}
 		}
 
 		// After the initial startup, this should only be called inside a lock(_queue),
@@ -161,7 +228,7 @@ namespace Bloom.web
 		/// <summary>
 		/// The _listenerThread runs this method, and exits when the _stop event is raised
 		/// </summary>
-		private void HandleRequests()
+		private void EnqueueIncomingRequests()
 		{
 			while (_listener.IsListening)
 			{
@@ -388,7 +455,7 @@ namespace Bloom.web
 			if (localPath.StartsWith(BloomUrlPrefix))
 				localPath = localPath.Substring(BloomUrlPrefix.Length);
 
-			// and if the file is using localhost:8089/foo.js, at this point it will say "/foo.js", so let's strip off that leading slash
+			// and if the file is using localhost:1234/foo.js, at this point it will say "/foo.js", so let's strip off that leading slash
 			else if (localPath.StartsWith("/"))
 			{
 				localPath = localPath.Substring(1);
@@ -401,16 +468,6 @@ namespace Bloom.web
 					return temp;
 			}
 			return localPath;
-		}
-		public static string RootPathEndingInSlash
-		{
-			get { return "http://localhost:8089/"; }
-		}
-
-		//We may stop using this one... the /bloom is superfluous since we own the port
-		public static string PathEndingInSlash
-		{
-			get { return "http://localhost:8089" + BloomUrlPrefix; }
 		}
 
 		public static string GetContentType(string extension)
@@ -432,6 +489,7 @@ namespace Bloom.web
 			}
 		}
 
+		/* UNUSED but valuable looking if we ever need to do this again
 		/// <summary>
 		/// TODO: Note: doing this at runtime isn't as good as doing it in the installer, because we have no way of
 		/// removing these entries on uninstall (but the installer does).
@@ -454,38 +512,7 @@ namespace Bloom.web
 			Process.Start(startInfo);
 
 			Thread.Sleep(1000);
-		}
-
-		//  url=http://localhost:8089/bloom/ can interfer with accessing  url=http://localhost:8089/
-		// Some users may have this from a previous version.
-		private static void RemoveUrlAccessControlEntryWeDontUseAnymore()
-		{
-			MessageBox.Show(
-				string.Format("We need to do one more thing before Bloom is ready. Bloom needs temporary administrator privileges to set up part of its communication with the embedded web browser.{0}{0}After you click 'OK', you may be asked to authorize this step.", Environment.NewLine),
-					@"Almost there!", MessageBoxButtons.OK);
-
-			var startInfo = new ProcessStartInfo
-			{
-				//UseShellExecute = false,
-				Verb = "runas",
-				FileName = "netsh",
-				Arguments = string.Format("http delete urlacl url=http://localhost:8089/bloom")
-			};
-
-			Process.Start(startInfo);
-
-			Thread.Sleep(1000);
-		}
-
-		private static void GetIsAbleToUsePort()
-		{
-			var x = new WebClientWithTimeout { Timeout = 3000 };
-			if ("OK" != x.DownloadString(PathEndingInSlash + "testconnection"))
-			{
-				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.CannotConnectToBloomServer", "Bloom could not connect to the local server.");
-				throw new ApplicationException(msg);
-			}
-		}
+		}*/
 
 		#region Disposable stuff
 

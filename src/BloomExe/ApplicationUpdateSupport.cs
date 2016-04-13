@@ -154,16 +154,15 @@ namespace Bloom
 			};
 		}
 
-		internal static string ChannelNameForUnitTests;
+		internal const string kChannelNameForUnitTests ="TestChannel";
 
 		public static string ChannelName
 		{
 			get
 			{
-				if (ChannelNameForUnitTests != null)
-				{
-					return ChannelNameForUnitTests;
-				}
+				if(Assembly.GetEntryAssembly() == null)
+					return kChannelNameForUnitTests;
+
 				var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
 				// Use a very specific channel name on developer machines based on build configuration.
 				if (path.Replace('\\','/').EndsWith("/output/Debug/Bloom.exe"))

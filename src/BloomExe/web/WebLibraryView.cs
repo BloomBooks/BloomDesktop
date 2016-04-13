@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Bloom.web;
 using SIL.IO;
 using SIL.Reporting;
 using Gecko;
@@ -35,9 +36,7 @@ namespace Bloom.Library
 
 		private void WebLibraryView_Load(object sender, EventArgs e)
 		{
-			b.Navigate("http://localhost:8089/bloom/library/library.htm",false);
+			b.Navigate(ServerBase.ServerUrlWithBloomPrefixEndingInSlash+"library/library.htm",false);
 		}
-
-
 	}
 }

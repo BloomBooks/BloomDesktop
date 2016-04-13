@@ -8,12 +8,6 @@ namespace BloomTests
 	[TestFixture]
 	public class UpdateVersionTableTests
 	{
-		[SetUp]
-		public void Setup()
-		{
-			ApplicationUpdateSupport.ChannelNameForUnitTests = "TestChannel";
-		}
-
 		[Test]
 		public void ThisVersionTooLarge_ReturnsEmptyString()
 		{

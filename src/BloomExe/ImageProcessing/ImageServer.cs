@@ -48,27 +48,6 @@ namespace Bloom.ImageProcessing
 			base.Dispose(fDisposing);
 		}
 
-		protected override void StartWithSetupIfNeeded()
-		{
-			try
-			{
-				base.StartWithSetupIfNeeded();
-			}
-			catch (Exception error)
-			{
-				Debug.Fail(error.Message);
-				var e = new ApplicationException("Could not start ImageServer", error);//passing this in will enable the details button
-				ErrorReport.NotifyUserOfProblem(e, "What Happened{0}" +
-					"Bloom could not start its local file server, and cannot work properly without it.{0}{0}" +
-					"What caused this?{0}" +
-					"Possibly another version of Bloom is running, perhaps not very obviously. " +
-					"Possibly Bloom does not know how to get your specific {1} operating system to allow its image server to run.{0}{0}" +
-					"What can you do?{0}" +
-					"Click OK, then exit Bloom and restart your computer.{0}" +
-					"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine,
-					SIL.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux");
-			}
-		}
 
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
