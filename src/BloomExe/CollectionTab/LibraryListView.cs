@@ -884,6 +884,9 @@ namespace Bloom.CollectionTab
 
 		bool IsUsableBook(Button bookButton)
 		{
+			//This caused more problems then it was worth for people editing source books they got off of BloomLibrary, or making a Bloompack of shells, etc.
+			return true;
+
 			// We'd prefer to use collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
 			// but we don't have access to the collection at all the points where we need to evaluate this.
 			// Depending on the parent like this unfortunately means we can't use this method until the button
