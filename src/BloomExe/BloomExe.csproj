@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -115,6 +115,17 @@
       <HintPath>..\..\packages\MarkdownDeep.NET.1.5\lib\.NetFramework 3.5\MarkdownDeep.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <!-- On Windows, Squirrel.dll provides the MarkdownSharp class in addition
+	 to all the Squirrel specific classes.  But Linux/Mono cannot handle
+	 referencing Squirrel.dll because it references some Windows specific
+	 assemblies internally.  So for Linux, we have to provide MarkdownSharp
+	 separately by itself.  (Note that trying to reference both Squirrel
+	 and MarkdownSharp on Windows causes fatal confusion in dereferencing.)
+    -->
+    <Reference Include="MarkdownSharp" Condition="'$(OS)'!='Windows_NT'">
+      <HintPath>..\..\packages\MarkdownSharp.1.13.0.0\lib\35\MarkdownSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="NAudio">
       <HintPath>..\..\lib\dotnet\NAudio.dll</HintPath>
@@ -123,7 +134,7 @@
       <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Squirrel">
+    <Reference Include="NuGet.Squirrel" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
     </Reference>
     <Reference Include="PdfDroplet">
@@ -158,7 +169,7 @@
     <Reference Include="Splat">
       <HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
     </Reference>
-    <Reference Include="Squirrel">
+    <Reference Include="Squirrel" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
