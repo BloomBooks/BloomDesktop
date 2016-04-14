@@ -64,6 +64,10 @@ namespace Bloom.ImageProcessing
 					imageFileName = imageInfo.FileName;
 				else
 					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
+
+				if(!Directory.Exists((bookFolderPath)))
+					throw new DirectoryNotFoundException(bookFolderPath+" does not exist");
+
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 				if (shouldConvertToJpeg)
 				{

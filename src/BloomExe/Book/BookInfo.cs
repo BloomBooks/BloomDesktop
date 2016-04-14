@@ -221,8 +221,16 @@ namespace Bloom.Book
 			string path = Path.Combine(FolderPath, "thumbnail.png");
 			if (File.Exists(path))
 			{
-				image = ImageUtils.GetImageFromFile(path);
-				return true;
+				try
+				{
+					image = ImageUtils.GetImageFromFile(path);
+					return true;
+				}
+				catch(Exception e) // If that file became corrupted, we would not want to lock user out of their book.
+				{
+					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,"Could not read thumbnail.png", "Could not read thumbnail.png at "+FolderPath);
+					//The file will be re-generate now.
+				}
 			}
 			image = null;
 			return false;
