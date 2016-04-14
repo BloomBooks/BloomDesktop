@@ -255,12 +255,10 @@ namespace Bloom
 		{
 			get
 			{
-				RegistryKey root;
 				if (SharedByAllUsers())
-					root = Registry.LocalMachine.CreateSubKey(@"Software\Classes");
+					return Registry.LocalMachine.CreateSubKey(@"Software\Classes");
 				else
-					root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
-				return root;
+					return Registry.CurrentUser.CreateSubKey(@"Software\Classes");
 			}
 		}
 	}
