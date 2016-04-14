@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Newtonsoft.Json;
@@ -69,11 +68,11 @@ namespace Bloom.Api
 			_requestInfo.ContentType = "application/json";
 			_requestInfo.WriteCompleteOutput(json);
 		}
-		public void ReplyWithJson(object settings)
+		public void ReplyWithJson(object objectToMakeJson)
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + json);
 			_requestInfo.ContentType = "application/json";
-			_requestInfo.WriteCompleteOutput(JsonConvert.SerializeObject(settings));
+			_requestInfo.WriteCompleteOutput(JsonConvert.SerializeObject(objectToMakeJson));
 		}
 		
 

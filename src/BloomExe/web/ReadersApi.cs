@@ -131,7 +131,7 @@ namespace Bloom.Api
 				case "chooseAllowedWordsListFile":
 					lock (request)
 					{
-						ChooseAllowedWordListFile(request);
+						ShowSelectAllowedWordsFileDialog(request);
 					}
 					break;
 
@@ -151,9 +151,10 @@ namespace Bloom.Api
 							break;
 					}
 					break;
+				default:
+					request.Failed("Don't understand '" + lastSegment + "' in " + request.LocalPath());
+					break;
 			}
-
-			request.Failed("Don't understand '"+lastSegment+"' in "+ request.LocalPath());
 		}
 
 		/// <summary>
@@ -392,13 +393,6 @@ namespace Bloom.Api
 					ErrorDialog = false // do not show a message if not successful
 				});
 			}
-		}
-
-		private static void ChooseAllowedWordListFile(ApiRequest request)
-		{
-			var frm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-			// ReSharper disable once PossibleNullReferenceException
-			frm.Invoke(new Action<ApiRequest>(ShowSelectAllowedWordsFileDialog), request);
 		}
 
 		private static void ShowSelectAllowedWordsFileDialog(ApiRequest request)

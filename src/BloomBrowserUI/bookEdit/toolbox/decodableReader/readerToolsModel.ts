@@ -751,7 +751,7 @@ export class ReaderToolsModel {
 
   static getTextOfWholeBook(): void {
     axios.get<any[]>('/bloom/api/readers/textOfContentPages').then(result => {
-      //The return looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.} 
+      //The result looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.} 
       ReaderToolsModel.model.pageIDToText = result.data;
       ReaderToolsModel.model.doMarkup();
     });
@@ -892,7 +892,6 @@ export class ReaderToolsModel {
         fileContents.substr(0, 12) === 'setLangData(') {
       theOneLibSynphony.langDataFromString(fileContents);
       ReaderToolsModel.model.synphony.loadFromLangData(theOneLanguageDataInstance);
-      //revewslog this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
    }
     // handle sample texts files that are just a set of space-delimeted words
     else {

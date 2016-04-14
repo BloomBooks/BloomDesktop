@@ -60,7 +60,7 @@ namespace BloomTests.web
 		}
 
 		[Test]
-		public void Get_EnpointHasTwoSegments_Works()
+		public void Get_EndPointHasTwoSegments_Works()
 		{
 			var result = ApiTest.GetString(_server, endPoint: "parent/child", query: "color=blue", returnType: ApiTest.ContentType.Text,
 				 handler: request => request.Succeeded());

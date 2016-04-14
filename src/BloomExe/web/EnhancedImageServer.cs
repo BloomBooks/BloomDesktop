@@ -200,7 +200,7 @@ namespace Bloom.Api
 			var localPath = GetLocalPathWithoutQuery(info);
 			if (localPath.ToLower().StartsWith("api/"))
 			{
-				var endpoint = localPath.Substring(3).ToLower().Trim(new char[] {'/'});
+				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
 				foreach (var pair in _endpointHandlers.Where(pair => Regex.Match(endpoint, pair.Key.ToLower()).Success))
 				{
 					lock(SyncObj)
