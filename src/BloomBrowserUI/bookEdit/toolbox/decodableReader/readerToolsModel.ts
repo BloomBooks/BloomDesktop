@@ -948,7 +948,8 @@ export class ReaderToolsModel {
     } while (!fileName && (this.textCounter < this.texts.length));
 
       if (fileName) {
-          axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: encodeURIComponent(fileName) } })
+//          axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: encodeURIComponent(fileName) } })
+          axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: fileName } })
               .then(result => {
                   //axios get here is giving us an object even though the c# sends a text/plain.
                   //and that would normally be great, but unfortunately the downstream code was written to take a raw
@@ -1065,7 +1066,8 @@ n
     }
 
     // inform the user if the list was truncated
-    var toolbox: Document = this.getToolboxWindow().document;
+    //var toolbox: Document = ReaderToolsModel.getToolboxWindow().document;
+     var toolbox = $('#toolbox');
     var msgDiv: JQuery = $(toolbox).find('#allowed-word-list-truncated');
 
     // if the list was truncated, show the message
@@ -1117,13 +1119,13 @@ n
     var stages = this.synphony.getStages();
 
     // remember how many we are loading so we know when we're finished
-    this.allowedWordFilesRemaining = stages.length;
+    ReaderToolsModel.model.allowedWordFilesRemaining = stages.length;
 
     stages.forEach(function(stage, index) {
       if (stage.allowedWordsFile) {
           //axios.get<string>('/bloom/api/readers/allowedWordsList?fileName=' + encodeURIComponent(stage.allowedWordsFile))
           axios.get<string>('/bloom/api/readers/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
-              .then(result => this.setAllowedWordsListList(result.data, index));
+              .then(result => ReaderToolsModel.setAllowedWordsListList(result.data, index));
       }
     });
   }

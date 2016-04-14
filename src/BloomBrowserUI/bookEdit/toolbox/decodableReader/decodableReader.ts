@@ -218,9 +218,6 @@ export function initializeReaderSetupDialog() {
     settingsFrameWindow().postMessage(fontMsg, '*');
 }
 
-/**
- * Out of date--> (Called by C# after the setup data has been saved, following Save click.)
- */
 export function closeSetupDialog() {
     $(parentDocument()).find('#synphonyConfig').dialog("close");
 }

@@ -80,7 +80,7 @@ namespace Bloom.Api
 			StatusCode = errorCode;
 		}
 
-		public NameValueCollection GetQueryString()
+		public NameValueCollection GetQueryParameters()
 		{
 			return new NameValueCollection();
 		}
@@ -90,7 +90,7 @@ namespace Bloom.Api
 			return new NameValueCollection();
 		}
 
-		public string GetPostJson()
+		public string GetPostStringOrJson()
 		{
 			return "";
 		}

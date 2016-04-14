@@ -128,7 +128,7 @@ function saveClicked(): void {
 export function saveChangedSettings(callback : Function): void {
   var settingsStr = JSON.stringify(getChangedSettings(), ReaderSettingsReplacer);
   toolboxWindow().postMessage('Refresh\n' + settingsStr, '*');
-  axios.post('/bloom/api/readers/readerToolSettings', { params: { data: settingsStr } })
+  axios.post('/bloom/api/readers/readerToolSettings', settingsStr)
        .then(result => {callback(result.data)});
 }
 

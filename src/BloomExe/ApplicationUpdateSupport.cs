@@ -271,7 +271,7 @@ namespace Bloom
 
 				var updatingNotifier = new ToastNotifier();
 				updatingNotifier.Image.Image = Resources.Bloom.ToBitmap();
-				var version = updateInfo.FutureReleaseEntry.Version;
+				var version = 0;//updateInfo.FutureReleaseEntry.Version;
 				var releasesToDownload = updateInfo.ReleasesToApply;
 				var size = releasesToDownload.Sum(x => x.Filesize)/1024;
 				var updatingMsg = String.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading update to {0} ({1}K)"), version, size);

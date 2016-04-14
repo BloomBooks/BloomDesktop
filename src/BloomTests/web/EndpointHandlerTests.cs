@@ -53,7 +53,7 @@ namespace BloomTests.web
 			var result = ApiTest.PostString(_server, endPoint: "test", data: "{\"color\": \"blue\"}", returnType: ApiTest.ContentType.JSON,
 				handler: request =>
 				{
-					var requiredPostJson = request.RequiredPostJson();
+					var requiredPostJson = request.RequiredPostStringOrJson();
 					request.ReplyWithText(DynamicJson.Parse(requiredPostJson).color);
 				});
 			Assert.That(result, Is.EqualTo("blue"));

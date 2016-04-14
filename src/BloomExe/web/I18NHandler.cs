@@ -67,7 +67,7 @@ namespace Bloom.Api
 					break;
 
 				case "translate":
-					var parameters = info.GetQueryString();
+					var parameters = info.GetQueryParameters();
 					string id = parameters["key"];
 					string englishText = parameters["englishText"];
 					string langId = parameters["langId"];

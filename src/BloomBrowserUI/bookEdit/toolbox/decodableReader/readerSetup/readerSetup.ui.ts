@@ -755,7 +755,7 @@ function attachEventHandlers(): void {
     });
 
     $('#setup-choose-allowed-words-file').onSafe('click', function() {
-      axios.post<string>('/bloom/api/readers/selectStageAllowedWordsFile').then(result => {
+      axios.get<string>('/bloom/api/readers/chooseAllowedWordsListFile').then(result => {
         var fileName = result.data;
         if (fileName) setAllowedWordsFile(fileName);
 

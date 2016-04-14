@@ -95,7 +95,7 @@ namespace Bloom.Api
 					else
 					{
 						var path = DecodableReaderTool.GetDecodableLevelFilePath(request.CurrentCollectionSettings);
-						var content = request.RequiredPostJson();
+						var content = request.RequiredPostStringOrJson();
 						File.WriteAllText(path, content, Encoding.UTF8);
 						request.Succeeded();
 					}
@@ -115,7 +115,7 @@ namespace Bloom.Api
 					break;
 
 				case "saveReaderToolsWords":
-					request.ReplyWithText(SaveReaderToolsWordsFile(request.RequiredPostJson()));
+					request.ReplyWithText(SaveReaderToolsWordsFile(request.RequiredPostStringOrJson()));
 					break;
 
 				case "makeLetterAndWordList":
@@ -128,7 +128,7 @@ namespace Bloom.Api
 					request.Succeeded();
 					break;
 
-				case "selectStageAllowedWordsFile":
+				case "chooseAllowedWordsListFile":
 					lock (request)
 					{
 						ChooseAllowedWordListFile(request);
@@ -143,7 +143,8 @@ namespace Bloom.Api
 							request.Succeeded();
 							break;
 						case HttpMethods.Get:
-							request.ReplyWithText(RemoveEmptyAndDupes(GetTextFileContents(request.RequiredParam("fileName"), WordFileType.AllowedWordsFile)));
+							var fileName = request.RequiredParam("fileName");
+							request.ReplyWithText(RemoveEmptyAndDupes(GetTextFileContents(fileName, WordFileType.AllowedWordsFile)));
 							break;
 						default:
 							request.Failed("Http verb not handled");

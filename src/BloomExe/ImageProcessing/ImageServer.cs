@@ -108,7 +108,7 @@ namespace Bloom.ImageProcessing
 			if (processImage)
 			{
 				// thumbnail requests have the thumbnail parameter set in the query string
-				var thumb = info.GetQueryString()["thumbnail"] != null;
+				var thumb = info.GetQueryParameters()["thumbnail"] != null;
 				imageFile = _cache.GetPathToResizedImage(imageFile, thumb);
 
 				if (string.IsNullOrEmpty(imageFile)) return false;

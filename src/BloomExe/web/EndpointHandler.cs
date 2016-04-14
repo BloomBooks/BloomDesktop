@@ -27,7 +27,7 @@ namespace Bloom.Api
 		{
 			_requestInfo = requestinfo;
 			CurrentCollectionSettings = currentCollectionSettings;
-			Parameters = requestinfo.GetQueryString();
+			Parameters = requestinfo.GetQueryParameters();
 		}
 
 		/// <summary>
@@ -126,9 +126,9 @@ namespace Bloom.Api
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have parameter " + name);
 		}
 
-		public string RequiredPostJson()
+		public string RequiredPostStringOrJson()
 		{
-			var json = _requestInfo.GetPostJson();
+			var json = _requestInfo.GetPostStringOrJson();
 			if(!string.IsNullOrWhiteSpace(json))
 			{
 				return json;

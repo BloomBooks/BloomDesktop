@@ -446,10 +446,6 @@ namespace Bloom.Api
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
-				case "audioDevices":
-					info.ContentType = "application/json";
-					info.WriteCompleteOutput(AudioRecording.AudioDevicesJson);
-					return true;
 				case "topics":
 					return GetTopicList(info);
 				case "help":
@@ -518,7 +514,7 @@ namespace Bloom.Api
 				// but it has nothing to do with the actual file location.
 				if (localPath.StartsWith("OriginalImages/"))
 					possibleFullImagePath = localPath.Substring(15);
-				if (info.GetQueryString()["generateThumbnaiIfNecessary"] == "true")
+				if (info.GetQueryParameters()["generateThumbnaiIfNecessary"] == "true")
 					return FindOrGenerateImage(info, localPath);
 				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{

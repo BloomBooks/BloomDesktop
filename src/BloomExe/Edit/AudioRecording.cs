@@ -85,8 +85,9 @@ namespace Bloom.Edit
 			server.RegisterEndpointHandler("audio/endRecord", HandleEndRecord);
 			server.RegisterEndpointHandler("audio/enableListenButton", HandleEnableListenButton);
 			server.RegisterEndpointHandler("audio/deleteSegment", HandleDeleteSegment);
-			server.RegisterEndpointHandler("audio/setRecordingDevice", HandleSetRecordingDevice);
-			server.RegisterEndpointHandler("audio/checkForSegement", HandleCheckForSegment);
+			server.RegisterEndpointHandler("audio/currentRecordingDevice", HandleCurrentRecordingDevice);
+			server.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment);
+			server.RegisterEndpointHandler("audio/devices", HandleAudioDevices);
 
 			_peakLevelWebSocketServer = new BloomWebSocketServer("8189");//review: we have no dispose (on us or our parent) so this is never disposed
 		}
@@ -94,7 +95,7 @@ namespace Bloom.Edit
 		// does this page have any audio at all? Used enable the Listen page.
 		private void HandleEnableListenButton(ApiRequest request)
 		{
-			request.ReplyWithText("Yes");// enhance: determine if there is any audio for this page
+			request.Succeeded();// enhance: determine if there is any audio for this page
 		}
 
 		/// <summary>
@@ -103,43 +104,29 @@ namespace Bloom.Edit
 		/// Devices is a list of product names (of available recording devices), the productName and genericName refer to the
 		/// current selection (or will be null, if no current device).
 		/// </summary>
-		public static string AudioDevicesJson
+		public void HandleAudioDevices(ApiRequest request)
 		{
-			get
-			{
 #if __MonoCS__
-				return String.Empty;
+			request.Failed("Not supported on Linux");
 #else
-				var sb = new StringBuilder("{\"devices\":[");
-				bool first = true;
-				foreach (var device in RecordingDevice.Devices)
-				{
-					if (first)
-					{
-						first = false;
-					}
-					else
-					{
-						sb.Append(",");
-					}
-					sb.Append("\"" + device.ProductName + "\"");
-				}
-				sb.Append("],\"productName\":");
-				if (CurrentRecording.RecordingDevice != null)
-					sb.Append("\"" + CurrentRecording.RecordingDevice.ProductName + "\"");
-				else
-					sb.Append("null");
+			var sb = new StringBuilder("{\"devices\":[");
+			sb.Append(string.Join(",", RecordingDevice.Devices.Select(d => "\""+d.ProductName+"\"")));
+			sb.Append("],\"productName\":");
+			if (CurrentRecording.RecordingDevice != null)
+				sb.Append("\"" + CurrentRecording.RecordingDevice.ProductName + "\"");
+			else
+				sb.Append("null");
 
-				sb.Append(",\"genericName\":");
-				if (CurrentRecording.RecordingDevice != null)
-					sb.Append("\"" + CurrentRecording.RecordingDevice.GenericName + "\"");
-				else
-					sb.Append("null");
+			sb.Append(",\"genericName\":");
+			if (CurrentRecording.RecordingDevice != null)
+				sb.Append("\"" + CurrentRecording.RecordingDevice.GenericName + "\"");
+			else
+				sb.Append("null");
 
-				sb.Append("}");
-				return sb.ToString();
+			sb.Append("}");
+			request.ReplyWithJson(sb.ToString());
 #endif
-			}
+			
 		}
 
 		/// <summary>
@@ -187,6 +174,7 @@ namespace Bloom.Edit
 				if(TestForTooShortAndSendFailIfSo(request))
 				{
 					_startRecordingTimer.Enabled = false;//we don't want it firing in a few milliseconds from now
+					request.Failed("Too Short (had not started yet)");
 					return;
 				}
 
@@ -202,16 +190,15 @@ namespace Bloom.Edit
 				//we requested to stop. A few seconds later (2, looking at the library code today), it will
 				//actually close the file and raise the Stopped event
 				Recorder.Stop(); 
+				request.Succeeded();
 				//ReportSuccessfulRecordingAnalytics();
 			}
 			catch (Exception)
 			{
 				//swallow it. One reason (based on HearThis comment) is that they didn't hold it down long enough, we detect this below.
 			}
-			if (TestForTooShortAndSendFailIfSo(request))
-				return;
 
-
+			TestForTooShortAndSendFailIfSo(request);
 #endif
 		}
 
@@ -443,18 +430,25 @@ namespace Bloom.Edit
 				LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.NoInput", "No input device"));
 		}
 
-		public void HandleSetRecordingDevice(ApiRequest request)
+		public void HandleCurrentRecordingDevice(ApiRequest request)
 		{ 
 #if __MonoCS__
 #else
-			foreach (var dev in RecordingDevice.Devices)
+			if(request.HttpMethod == HttpMethods.Post)
 			{
-				if (dev.ProductName == request.Parameters["deviceName"])
+				var name = request.RequiredPostStringOrJson();
+				foreach (var dev in RecordingDevice.Devices)
 				{
-					RecordingDevice = dev;
-					return;
+					if(dev.ProductName == name)
+					{
+						RecordingDevice = dev;
+						request.Succeeded();
+						return;
+					}
 				}
+				request.Failed("Could not find the device named " + name);
 			}
+			else request.Failed("Only Post is currently supported");
 #endif
 		}
 
@@ -481,6 +475,7 @@ namespace Bloom.Edit
 				try
 				{
 					File.Delete(path);
+					request.Succeeded();
 				}
 				catch(IOException e)
 				{
@@ -505,30 +500,27 @@ namespace Bloom.Edit
 				// to update the icon. At that point we start really sending volume requests.
 				if (_recorder == null)
 				{
-					Form.ActiveForm.Invoke((Action)(() =>
+					_recorder = new AudioRecorder(1);
+					_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
+					BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
+					Application.ApplicationExit += (sender, args) =>
 					{
-						_recorder = new AudioRecorder(1);
-						_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
-						BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
-						Application.ApplicationExit += (sender, args) =>
+						if (_recorder != null)
 						{
-							if (_recorder != null)
+							var temp = _recorder;
+							_recorder = null;
+							try
 							{
-								var temp = _recorder;
-								_recorder = null;
-								try
-								{
-									temp.Dispose();
-								}
-								catch (Exception)
-								{
-									// Not sure how this can fail, but we don't need to crash if
-									// something goes wrong trying to free the audio object.
-									Debug.Fail("Something went wrong disposing of AudioRecorder");
-								}
+								temp.Dispose();
 							}
-						};
-					}));
+							catch (Exception)
+							{
+								// Not sure how this can fail, but we don't need to crash if
+								// something goes wrong trying to free the audio object.
+								Debug.Fail("Something went wrong disposing of AudioRecorder");
+							}
+						}
+					};
 				}
 				return _recorder;
 			}

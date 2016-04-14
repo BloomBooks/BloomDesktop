@@ -154,31 +154,18 @@ namespace Bloom.Api
 		/// Processes the QueryString, decoding the values if needed
 		/// </summary>
 		/// <returns></returns>
-		public NameValueCollection GetQueryString()
+		public NameValueCollection GetQueryParameters()
 		{
-			// UrlDecode the values, if needed
 			if(_queryStringList == null)
 			{
-				var qs = _actualContext.Request.QueryString;
-
-				_queryStringList = new NameValueCollection();
-
-				foreach(var key in qs.AllKeys)
-				{
-					var val = qs[key];
-					if(val.Contains("%") || val.Contains("+"))
-						val = Uri.UnescapeDataString(val.Replace('+', ' '));
-
-					_queryStringList.Add(key, val);
-				}
-
+				_queryStringList = HttpUtility.ParseQueryString(this._actualContext.Request.Url.Query);
 			}
 
 			return _queryStringList;
 		}
 
 
-		public string GetPostJson()
+		public string GetPostStringOrJson()
 		{
 			var request = _actualContext.Request;
 

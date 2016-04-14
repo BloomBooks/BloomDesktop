@@ -22,9 +22,9 @@ namespace Bloom.Api
 		void ReplyWithImage(string path);
 		void WriteError(int errorCode);
 		void WriteError(int errorCode, string errorDescription);
-		System.Collections.Specialized.NameValueCollection GetQueryString();
+		System.Collections.Specialized.NameValueCollection GetQueryParameters();
 		System.Collections.Specialized.NameValueCollection GetPostDataWhenFormEncoded();
-		string GetPostJson();
+		string GetPostStringOrJson();
 		HttpMethods HttpMethod { get; }
 	}
 }
