@@ -293,7 +293,9 @@ namespace Bloom
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
 						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
-						if (FontInstaller.InstallFont("AndikaNewBasic")) 
+						// We don't even want to try to install fonts if we are installed by an admin for all users;
+						// leave it to the admin to install the font if wanted.
+						if ((!InstallerSupport.SharedByAllUsers()) && FontInstaller.InstallFont("AndikaNewBasic"))
 							return;
 
 						Run();
