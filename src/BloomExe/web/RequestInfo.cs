@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -164,12 +165,22 @@ namespace Bloom.Api
 			return _queryStringList;
 		}
 
+		public string GetPostJson()
+		{
+			 Debug.Assert(_actualContext.Request.ContentType.ToLowerInvariant().Contains("application/json"),"The backend expected this post to have content-type application/json. With Axios.Post, this happens if you just give an object as the data. Or you can add the parameter {header: {'Content-Type': 'application/json'}} to the post call.");
+			return GetPostStringInner();
+		}
 
-		public string GetPostStringOrJson()
+		public string GetPostString()
+		{
+			Debug.Assert(_actualContext.Request.ContentType.ToLowerInvariant().Contains("text/plain"), "The backend expected this post to have content-type text/plain.");
+			return GetPostStringInner();
+		}
+
+		private string GetPostStringInner()
 		{
 			var request = _actualContext.Request;
-
-			if(!request.HasEntityBody)
+			if (!request.HasEntityBody)
 				return string.Empty;
 
 			using(var body = request.InputStream)

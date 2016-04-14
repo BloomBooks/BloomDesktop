@@ -24,7 +24,8 @@ namespace Bloom.Api
 		void WriteError(int errorCode, string errorDescription);
 		System.Collections.Specialized.NameValueCollection GetQueryParameters();
 		System.Collections.Specialized.NameValueCollection GetPostDataWhenFormEncoded();
-		string GetPostStringOrJson();
+		string GetPostJson();
+		string GetPostString();
 		HttpMethods HttpMethod { get; }
 	}
 }

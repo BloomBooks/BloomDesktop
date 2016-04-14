@@ -71,18 +71,3 @@ export class ReaderLevel {
     return this.maxUniqueWordsPerBook || 0;
   }
 }
-
-/**
- * This is a callback function passed to JSON.stringify so that the json string returned only contains the fields
- * we wish to write to the hard drive.
- * @param key
- * @param value
- * @returns {*}
- */
-export function ReaderSettingsReplacer(key: string, value: any): any {
-
-  // we do not want to save the "name" value
-  if (key === 'name') return undefined;
-
-  return value;
-}

@@ -1,9 +1,5 @@
-﻿/// <reference path="typings/jquery/jquery.d.ts" />
+///<reference path="typings/axios/axios.d.ts"/>
 import axios = require('axios');
-/**
- * Class to with methods related to invoking bloom help
- * @constructor
- */
 export default class BloomHelp {
     /**
    * Opens the application help topic

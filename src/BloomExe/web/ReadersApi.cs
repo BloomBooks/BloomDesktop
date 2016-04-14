@@ -95,7 +95,7 @@ namespace Bloom.Api
 					else
 					{
 						var path = DecodableReaderTool.GetDecodableLevelFilePath(request.CurrentCollectionSettings);
-						var content = request.RequiredPostStringOrJson();
+						var content = request.RequiredPostJson();
 						File.WriteAllText(path, content, Encoding.UTF8);
 						request.Succeeded();
 					}
@@ -115,7 +115,7 @@ namespace Bloom.Api
 					break;
 
 				case "saveReaderToolsWords":
-					request.ReplyWithText(SaveReaderToolsWordsFile(request.RequiredPostStringOrJson()));
+					request.ReplyWithText(SaveReaderToolsWordsFile(request.RequiredPostJson()));
 					break;
 
 				case "makeLetterAndWordList":

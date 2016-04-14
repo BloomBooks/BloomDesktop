@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -125,19 +126,30 @@ namespace Bloom.Api
 				return Parameters[name];
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have parameter " + name);
 		}
-
-		public string RequiredPostStringOrJson()
+		public string RequiredPostJson()
 		{
-			var json = _requestInfo.GetPostStringOrJson();
-			if(!string.IsNullOrWhiteSpace(json))
+			Debug.Assert(_requestInfo.HttpMethod==HttpMethods.Post);
+			var json = _requestInfo.GetPostJson();
+			if (!string.IsNullOrWhiteSpace(json))
 			{
 				return json;
 			}
 			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have post json");
 		}
+		public string RequiredPostString()
+		{
+			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
+			var s = _requestInfo.GetPostString();
+			if(!string.IsNullOrWhiteSpace(s))
+			{
+				return s;
+			}
+			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have post string");
+		}
 
 		public string RequiredPostValue(string key)
 		{
+			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
 			var values = _requestInfo.GetPostDataWhenFormEncoded().GetValues(key);
 			if(values == null || values.Length != 1)
 				throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have 1 value for "+key);

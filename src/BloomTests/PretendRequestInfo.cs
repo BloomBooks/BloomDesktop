@@ -90,11 +90,14 @@ namespace Bloom.Api
 			return new NameValueCollection();
 		}
 
-		public string GetPostStringOrJson()
+		public string GetPostJson()
 		{
 			return "";
 		}
-
+		public string GetPostString()
+		{
+			return "";
+		}
 		public string RawUrl { get; private set; }
 	}
 }

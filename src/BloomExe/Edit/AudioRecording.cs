@@ -436,7 +436,7 @@ namespace Bloom.Edit
 #else
 			if(request.HttpMethod == HttpMethods.Post)
 			{
-				var name = request.RequiredPostStringOrJson();
+				var name = request.RequiredPostString();
 				foreach (var dev in RecordingDevice.Devices)
 				{
 					if(dev.ProductName == name)
