@@ -17,7 +17,7 @@ namespace Bloom.ToPalaso
 	/// </summary>
 	public static class FontInstaller
 	{
-		public static bool InstallFont(string sourceFolder)
+		public static bool InstallFont(string sourceFolder, bool needsRestart = true)
 		{
 			// This is not needed on Linux - fonts should be installed by adding a package
 			// dependency, in this case fonts-sil-andika, or by installing that particular
@@ -45,7 +45,8 @@ namespace Bloom.ToPalaso
 			try
 			{
 				Process.Start(info);
-				Program.RestartBloom();
+				if (needsRestart)
+					Program.RestartBloom();
 				return true;
 			}
 			// I hate catching 'Exception' but the one that is likely to happen, the user refused the privilege escalation

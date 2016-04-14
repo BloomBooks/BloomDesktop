@@ -294,7 +294,7 @@ namespace Bloom
 
 						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
 						// We don't even want to try to install fonts if we are installed by an admin for all users;
-						// leave it to the admin to install the font if wanted.
+						// it will have been installed already as part of the allUsers install.
 						if ((!InstallerSupport.SharedByAllUsers()) && FontInstaller.InstallFont("AndikaNewBasic"))
 							return;
 
