@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using DesktopAnalytics;
@@ -48,7 +49,7 @@ namespace Bloom
 
 		internal static void RemoveRegistryKey(string parentName, string keyName)
 		{
-			var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
+			var root = HiveToMakeRegistryKeysIn;
 			var key = String.IsNullOrEmpty(parentName) ? root : root.OpenSubKey(parentName);
 			if (key != null)
 			{
@@ -101,6 +102,12 @@ namespace Bloom
 				// Normally this is done on every run of the program, but if we're doing a silent allUsers install,
 				// this is our only time running with admin privileges so we can actually make the entries for all users.
 				MakeBloomRegistryEntries(args);
+				// Normally we can't do this in our quick silent run as part of install, because of the need to escalate
+				// privilege. But if we're being installed for all users we must already be running as admin.
+				// We don't need to do an extra restart of Bloom because this install-setup run of Bloom will finish
+				// right away anyway.
+				if (SharedByAllUsers())
+					FontInstaller.InstallFont("AndikaNewBasic", needsRestart:false);
 			}
 			switch (args[0])
 			{
@@ -120,7 +127,7 @@ namespace Bloom
 								false, // not just an update, since this is case initial install
 								SharedByAllUsers()),
 							onAppUpdate: v => mgr.CreateShortcutForThisExe(),
-							onAppUninstall: v => mgr.RemoveShortcutsForExecutable(Path.GetFileName(Assembly.GetEntryAssembly().Location), StartMenuLocations),
+							onAppUninstall: v => mgr.RemoveShortcutsForExecutable(Path.GetFileName(Assembly.GetEntryAssembly().Location), StartMenuLocations, SharedByAllUsers()),
 							onFirstRun: () => firstTime = true,
 							arguments: args);
 					}
@@ -223,11 +230,7 @@ namespace Bloom
 
 		internal static void EnsureRegistryValue(string keyName, string value, string name="")
 		{
-			RegistryKey root;
-			if (_installInLocalMachine)
-				root = Registry.LocalMachine.CreateSubKey(@"Software\Classes");
-			else
-				root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
+			RegistryKey root = HiveToMakeRegistryKeysIn;
 
 			var key = root.CreateSubKey(keyName); // may also open an existing key with write permission
 			try
@@ -245,6 +248,19 @@ namespace Bloom
 			{
 				// If for some reason we aren't allowed to do it, just don't.
 				Logger.WriteEvent("Unable to set registry entry {0}:{1} to {2}: {3}", keyName, name, value, ex.Message);
+			}
+		}
+
+		private static RegistryKey HiveToMakeRegistryKeysIn
+		{
+			get
+			{
+				RegistryKey root;
+				if (SharedByAllUsers())
+					root = Registry.LocalMachine.CreateSubKey(@"Software\Classes");
+				else
+					root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
+				return root;
 			}
 		}
 	}
