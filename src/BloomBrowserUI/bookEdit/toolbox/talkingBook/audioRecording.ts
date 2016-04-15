@@ -48,6 +48,7 @@ import * as $ from 'jquery';
 import {theOneLibSynphony}  from '../decodableReader/libSynphony/synphony_lib';
 import {TextFragment} from '../decodableReader/libSynphony/bloom_lib';
 import axios = require('axios');
+import * as toastr from 'toastr';
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
