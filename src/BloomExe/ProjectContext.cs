@@ -51,7 +51,6 @@ namespace Bloom
 				AddShortCutInComputersBloomCollections(collectionDirectory);
 			}
 
-			_httpServer.StartListening();
 			ToolboxView.SetupToolboxForCollection(Settings);
 		}
 
@@ -258,6 +257,7 @@ namespace Bloom
 				Application.Exit();
 			}
 
+			_httpServer.StartListening();	// as a side-effect, sets port number needed by RegisterWithServer (BL-3337)
 			_scope.Resolve<AudioRecording>().RegisterWithServer(_scope.Resolve<EnhancedImageServer>());
 		}
 
