@@ -79,7 +79,6 @@ DistFiles/Bloom.chm
 DistFiles/optipng.exe
 build/ChorusInstallerStuff/ChorusMergeModule.msm
 build/JohnsTestInstallerBuild.bat
-src/BloomBrowserUI/bookEdit/js/libsynphony/
 lib/dotnet/
 TestResult.xml
 DistFiles/pdf/
