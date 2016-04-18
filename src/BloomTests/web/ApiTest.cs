@@ -18,8 +18,10 @@ namespace BloomTests
 			var client = new WebClientWithTimeout
 			{
 				Timeout = 3000,
-				Headers = {[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json"}
+				//Mono 3.4's C# compiler can't handle this syntax.
+				//Headers = {[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json"}
 			};
+			client.Headers[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json";
 			if(!string.IsNullOrEmpty(query))
 				query = "?" + query;
 			return client.DownloadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint + query);
@@ -36,8 +38,10 @@ namespace BloomTests
 			var client = new WebClientWithTimeout
 			{
 				Timeout = 3000,
-				Headers = {[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json"}
+				//Mono 3.4's C# compiler can't handle this syntax.
+				//Headers = {[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json"}
 			};
+			client.Headers[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json";
 
 			return client.UploadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint, "POST", data);
 		}
