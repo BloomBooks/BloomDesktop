@@ -6,7 +6,7 @@ import TalkingBookModel from './talkingBook/talkingBook';
 import LeveledReaderModel from './leveledReader/leveledReader';
 import {handleBookSettingCheckboxClick} from './bookSettings/bookSettings';
 
-// each of these exports shows up under this window's FrameExports object (see BloomFrames.ts)
+// each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
 // reviewslog: is this actually needed? Could these be be directly imported where they are used?
 export {showOrHidePanel_click};
 export {removeToolboxMarkup};
