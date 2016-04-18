@@ -4,10 +4,10 @@ import 'jquery-ui/jquery-ui-1.10.3.custom.min.js'; //for dialog()
 export function SayHello() { alert('Hello from editViewFrame'); }
 
 // These functions should be available for calling by non-module code (such as C# directly)
-// using the FrameExports object (see more details in BloomFrames.ts)
-import {getToolboxFrameExports} from './js/BloomFrames';
+// using the FrameExports object (see more details in bloomFrames.ts)
+import {getToolboxFrameExports} from './js/bloomFrames';
 export {getToolboxFrameExports};
-import {getPageFrameExports} from './js/BloomFrames';
+import {getPageFrameExports} from './js/bloomFrames';
 export {getPageFrameExports};
 import {showAddPageDialog} from '../pageChooser/page-chooser';
 export {showAddPageDialog};
