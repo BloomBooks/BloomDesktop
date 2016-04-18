@@ -503,22 +503,33 @@ namespace Bloom.Edit
 					var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 					if (formToInvokeOn == null)
 					{
-						if (_recorder != null)
+						NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not find a form on which to start the level monitoring code. Please restart Bloom.");
+						return null;
+					}
+					formToInvokeOn.Invoke((Action)(() =>
+					{
+						_recorder = new AudioRecorder(1);
+						_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
+						BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
+						Application.ApplicationExit += (sender, args) =>
 						{
-							var temp = _recorder;
-							_recorder = null;
-							try
+							if (_recorder != null)
 							{
-								temp.Dispose();
+								var temp = _recorder;
+								_recorder = null;
+								try
+								{
+									temp.Dispose();
+								}
+								catch (Exception)
+								{
+									// Not sure how this can fail, but we don't need to crash if
+									// something goes wrong trying to free the audio object.
+									Debug.Fail("Something went wrong disposing of AudioRecorder");
+								}
 							}
-							catch (Exception)
-							{
-								// Not sure how this can fail, but we don't need to crash if
-								// something goes wrong trying to free the audio object.
-								Debug.Fail("Something went wrong disposing of AudioRecorder");
-							}
-						}
-					};
+						};
+					}));
 				}
 				return _recorder;
 			}

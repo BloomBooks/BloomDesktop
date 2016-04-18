@@ -1,7 +1,7 @@
 /// <reference path="../../../toolbox/decodableReader/readerSettings.ts" />
 /// <reference path="readerSetup.ui.ts" />
 import {enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue} from './readerSetup.ui';
-import {ReaderStage, ReaderLevel, ReaderSettings, ReaderSettingsReplacer} from '../ReaderSettings';
+import {ReaderStage, ReaderLevel, ReaderSettings} from '../ReaderSettings';
 import "../../../../lib/jquery.onSafe.js";
 import axios = require('axios');
 import * as _ from 'underscore';

@@ -107,7 +107,7 @@ namespace BloomTests.web
 			// Setup
 			using (var server = CreateImageServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "thisWontWorkWithoutInjectionButWillWithIt");
+				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/thisWontWorkWithoutInjectionButWillWithIt");
 				server.CurrentCollectionSettings = new CollectionSettings();
 				EndpointHandler testFunc = (request) =>
 					{
