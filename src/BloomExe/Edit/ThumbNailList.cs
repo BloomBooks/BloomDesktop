@@ -9,7 +9,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
-using Bloom.web;
+using Bloom.Api;
 using L10NSharp;
 
 namespace Bloom.Edit

@@ -70,7 +70,7 @@ export class ReaderToolsModel {
   maxAllowedWords: number = 10000;
 
   // remember words so we can update the counts real-time
-  bookPageWords = [];
+  pageIDToText = [];
 
   // BL-599: Speed up the decodable reader tool
   stageGraphemes = [];
@@ -641,7 +641,7 @@ export class ReaderToolsModel {
           var pageDiv = $('body', this.getPageWindow().document).find('div.bloom-page');
           if (pageDiv.length) {
             if (pageDiv[0].id)
-              this.bookPageWords[pageDiv[0].id] = editableElements['allWords'];
+              this.pageIDToText[pageDiv[0].id] = editableElements['allWords'];
           }
         }
 
@@ -731,22 +731,40 @@ export class ReaderToolsModel {
     return levels[this.levelNumber - 1].getMaxWordsPerPage();
   }
 
+// Though I'm not using this now, it was hard-won, and instructive. So I'm leaving it here
+// as an example for now in case we need to do this transformResponse thing.
+//   static getTextOfWholeBook(): void {
+//       //review: on the server, this is actually a json string
+//     axios.get<string>('/bloom/api/readers/textOfContentPages',
+//     {
+//       //when there are no content pages in the book, the server returns, properly, "{}"
+//       //However the default transformResponse of axios eagerly does a JSON.Parse on everything,
+//       //even if we say we only want text/plain and the server says it gave text/plain.  Sheesh.
+//       //So we specify our own identity transformResponse
+//         transformResponse:  (data: string) => <string>data }
+//     ).then(result => {
+//       //The return looks like {'12547c' : 'hello there', '898af87' : 'words of this page', etc.} 
+//       ReaderToolsModel.model.pageIDToText = JSON.parse(result.data);
+//       ReaderToolsModel.model.doMarkup();
+//     });
+//   }
+
   static getTextOfWholeBook(): void {
-    axios.get<string>('/bloom/readers/getTextOfPages').then(result => {
-      var pageSource: string = result.data;
-      ReaderToolsModel.model.bookPageWords = JSON.parse(pageSource);
+    axios.get<any[]>('/bloom/api/readers/textOfContentPages').then(result => {
+      //The result looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.} 
+      ReaderToolsModel.model.pageIDToText = result.data;
       ReaderToolsModel.model.doMarkup();
     });
   }
-
+  
   displayBookTotals(): void {
 
-    if (this.bookPageWords.length === 0) {
+    if (this.pageIDToText.length === 0) {
       ReaderToolsModel.getTextOfWholeBook();
       return;
     }
 
-    var pageStrings = _.values(this.bookPageWords);
+    var pageStrings = _.values(this.pageIDToText);
 
     ReaderToolsModel.updateActualCount(ReaderToolsModel.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
     ReaderToolsModel.updateActualCount(ReaderToolsModel.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
@@ -869,19 +887,15 @@ export class ReaderToolsModel {
 //reviewslog: at the moment, thes first two clauses just do the same things
 
     // is this a Synphony data file?
-    if (fileContents.substr(0, 12) === '{"LangName":') {
+    if (fileContents.substr(0, 12) === '{"LangName":' ||
+        //TODO remove this is bizarre artifact of the original synphony, where the data file was actually some javascript. Still used in a unit test.
+        fileContents.substr(0, 12) === 'setLangData(') {
       theOneLibSynphony.langDataFromString(fileContents);
       ReaderToolsModel.model.synphony.loadFromLangData(theOneLanguageDataInstance);
-      //revewslog this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
-    }
-    else if (fileContents.substr(0, 12) === 'setLangData(') {
-      theOneLibSynphony.langDataFromString(fileContents);
-       ReaderToolsModel.model.synphony.loadFromLangData(theOneLanguageDataInstance);
-      //revewslog this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
-    }
+   }
+    // handle sample texts files that are just a set of space-delimeted words
     else {
       var words = theOneLibSynphony.getWordsFromHtmlString(fileContents);
-
       // Limit the number of words processed from files.  The program hangs on very long lists.
       var lim = words.length;
       var wordNames = Object.keys(this.allWords);
@@ -917,7 +931,7 @@ export class ReaderToolsModel {
         ReaderToolsModel.model.processWordListChangedListeners();
 
         // write out the ReaderToolsWords-xyz.json file
-        axios.post('/bloom/readers/saveReaderToolsWords', theOneLanguageDataInstance);
+        axios.post('/bloom/api/readers/saveReaderToolsWords', theOneLanguageDataInstance);
       }, 200);
 
       return;
@@ -933,13 +947,20 @@ export class ReaderToolsModel {
     } while (!fileName && (this.textCounter < this.texts.length));
 
       if (fileName) {
-          axios.get<string>('/bloom/readers/getSampleFileContents', { params: { data: encodeURIComponent(fileName) } })
-              .then(result => ReaderToolsModel.setSampleFileContents(result.data));
+//          axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: encodeURIComponent(fileName) } })
+          axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: fileName } })
+              .then(result => {
+                  //axios get here is giving us an object even though the c# sends a text/plain.
+                  //and that would normally be great, but unfortunately the downstream code was written to take a raw
+                  //string (which happpens to be JSON). So for now, we just make it a string.
+                  var resultAsString = JSON.stringify(result.data);
+                  ReaderToolsModel.setSampleFileContents(resultAsString);
+              })
       } else {
           this.getNextSampleFile();
       }
   }
-
+n
   /**
    * Called in response to a request for the contents of a sample text file
    * @param fileContents
@@ -1044,7 +1065,8 @@ export class ReaderToolsModel {
     }
 
     // inform the user if the list was truncated
-    var toolbox: Document = this.getToolboxWindow().document;
+    //var toolbox: Document = ReaderToolsModel.getToolboxWindow().document;
+     var toolbox = $('#toolbox');
     var msgDiv: JQuery = $(toolbox).find('#allowed-word-list-truncated');
 
     // if the list was truncated, show the message
@@ -1096,12 +1118,13 @@ export class ReaderToolsModel {
     var stages = this.synphony.getStages();
 
     // remember how many we are loading so we know when we're finished
-    this.allowedWordFilesRemaining = stages.length;
+    ReaderToolsModel.model.allowedWordFilesRemaining = stages.length;
 
     stages.forEach(function(stage, index) {
       if (stage.allowedWordsFile) {
-          axios.get<string>('/bloom/readers/getAllowedWordsList?data=' + encodeURIComponent(stage.allowedWordsFile))
-              .then(result => this.setAllowedWordsListList(result.data, index));
+          //axios.get<string>('/bloom/api/readers/allowedWordsList?fileName=' + encodeURIComponent(stage.allowedWordsFile))
+          axios.get<string>('/bloom/api/readers/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
+              .then(result => ReaderToolsModel.setAllowedWordsListList(result.data, index));
       }
     });
   }

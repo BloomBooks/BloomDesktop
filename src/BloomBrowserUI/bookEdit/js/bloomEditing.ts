@@ -764,7 +764,14 @@ export var disconnectForGarbageCollection = function () {
 };
 
 export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
-    axios.get('/bloom/windows/useLongpress')
+    axios.get('/bloom/windows/useLongpress',
+            {headers:{'Accept': 'text/plain',
+            //The default transformResponse of axios eagerly does a JSON.Parse on everything,
+            //so in a debugger, it will choke on 'Yes'. That exception gets swallowed, but
+            //I'm sick of running into it.
+            //So we specify our own identity transformResponse
+            transformResponse:  (data: string) => <string>data }
+        })
         .then(response => {
            if (response.data === 'Yes') {
                 theOneLocalizationManager.asyncGetText(

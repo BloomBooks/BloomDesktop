@@ -613,20 +613,6 @@ namespace BloomTests.Book
 			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetDefaultBookletLayout());
 		}
 
-		[Test]
-		public void MissingStyleNumberSequenceIsOne()
-		{
-			var book = CreateBook();
-			Assert.AreEqual(1, book.NextStyleNumber);
-		}
-
-		[Test]
-		public void StyleNumberSequenceIsIncremented()
-		{
-			var book = CreateBook();
-			Assert.AreEqual(1, book.NextStyleNumber);
-			Assert.AreEqual(2, book.NextStyleNumber);
-		}
 
 		[Test]
 		public void BringBookUpToDate_DomHas2ContentLanguages_PulledIntoBookProperties()

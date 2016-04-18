@@ -13,18 +13,17 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Edit;
 using L10NSharp;
-using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using SIL.PlatformUtilities;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	/// <summary>
 	/// This class handles requests from the Decodable and Leveled Readers tools, as well as from the Reader Setup dialog.
 	/// It reads and writes the reader tools settings file, and retrieves files and other information used by the
 	/// reader tools.
 	/// </summary>
-	static class ReadersHandler
+	static class ReadersApi
 	{
 		private static bool _savingReaderWords;
 		private const string kSynphonyFileNameSuffix = "_lang_data.js";
@@ -40,7 +39,19 @@ namespace Bloom.web
 		public static void Init(EnhancedImageServer server)
 		{
 			Server = server;
-			server.RegisterRequestHandler("readers/", HandleRequest);
+			
+			server.RegisterEndpointHandler("collection/defaultFont", request =>
+			{
+				var bookFontName = request.CurrentCollectionSettings.DefaultLanguage1FontName;
+				if(String.IsNullOrEmpty(bookFontName))
+					bookFontName = "sans-serif";
+				request.ReplyWithText(bookFontName);
+			});
+
+			server.RegisterEndpointHandler("readers/.*", HandleRequest);
+
+			//we could do them all like this:
+			//server.RegisterEndpointHandler("readers/loadReaderToolSettings", r=> r.ReplyWithJson(GetDefaultReaderSettings(r.CurrentCollectionSettings)));
 		}
 
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
@@ -53,98 +64,104 @@ namespace Bloom.web
 		/// </summary>
 		public static EnhancedImageServer Server { get; set; }
 
-		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
+		public static void HandleRequest(ApiRequest request)
 		{
-			if (CurrentBook == null || CurrentBook.CollectionSettings == null)
+			if (CurrentBook == null)
 			{
 				Debug.Fail("BL-836 reproduction?");
 				// ReSharper disable once HeuristicUnreachableCode
-				return false;
+				request.Failed("CurrentBook is null");
+				return;
 			}
-			var lastSep = localPath.IndexOf("/", StringComparison.Ordinal);
-			var lastSegment = (lastSep > -1) ? localPath.Substring(lastSep + 1) : localPath;
+			if (request.CurrentCollectionSettings == null)
+			{
+				Debug.Fail("BL-836 reproduction?");
+				// ReSharper disable once HeuristicUnreachableCode
+				request.Failed("CurrentBook.CollectionSettings is null");
+				return;
+			}
+
+			var lastSegment = request.LocalPath().Split(new char[] {'/'}).Last();
 
 			switch (lastSegment)
 			{
-				case "loadReaderToolSettings":
-					info.ContentType = "application/json";
-					info.WriteCompleteOutput(GetDefaultReaderSettings(currentCollectionSettings));
-					return true;
+				case "test":
+					request.Succeeded();
+					break;
 
-				case "saveReaderToolSettings":
-					var path = DecodableReaderTool.GetDecodableLevelPathName(currentCollectionSettings);
-					var content = info.GetPostData()["data"];
-					File.WriteAllText(path, content, Encoding.UTF8);
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput("OK");
-					return true;
+				case "readerToolSettings":
+					if(request.HttpMethod == HttpMethods.Get)
+						request.ReplyWithJson(GetReaderSettings(request.CurrentCollectionSettings));
+					else
+					{
+						var path = DecodableReaderTool.GetDecodableLevelFilePath(request.CurrentCollectionSettings);
+						var content = request.RequiredPostJson();
+						File.WriteAllText(path, content, Encoding.UTF8);
+						request.Succeeded();
+					}
+					break;
 
-				case "getDefaultFont":
-					var bookFontName = currentCollectionSettings.DefaultLanguage1FontName;
-					if (String.IsNullOrEmpty(bookFontName)) bookFontName = "sans-serif";
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(bookFontName);
-					return true;
 
-				case "getSampleTextsList":
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(GetSampleTextsList(currentCollectionSettings.SettingsFilePath));
-					return true;
+				case "sampleTextsList":
+					request.ReplyWithText(GetSampleTextsList(request.CurrentCollectionSettings.SettingsFilePath));
+					break;
 
-				case "getSampleFileContents":
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(GetTextFileContents(info.GetQueryString()["data"], WordFileType.SampleFile));
-					return true;
+				case "sampleFileContents":
+					request.ReplyWithText(GetTextFileContents(request.RequiredParam("fileName"), WordFileType.SampleFile));
+					break;
 
-				case "getTextOfPages":
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(GetTextOfPages());
-					return true;
+				case "textOfContentPages":
+					request.ReplyWithText(GetTextOfContentPagesAsJson());
+					break;
 
 				case "saveReaderToolsWords":
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(SaveReaderToolsWordsFile(info.GetPostJson()));
-					return true;
+					request.ReplyWithText(SaveReaderToolsWordsFile(request.RequiredPostJson()));
+					break;
 
 				case "makeLetterAndWordList":
-					MakeLetterAndWordList(info.GetPostData()["settings"], info.GetPostData()["allWords"]);
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput("OK");
-					return true;
+					MakeLetterAndWordList(request.RequiredPostValue("settings"), request.RequiredParam("allWords"));					
+					request.Succeeded();
+					break;
 
 				case "openTextsFolder":
 					OpenTextsFolder();
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput("OK");
-					return true;
+					request.Succeeded();
+					break;
 
-				case "selectStageAllowedWordsFile":
-					lock (info)
+				case "chooseAllowedWordsListFile":
+					lock (request)
 					{
-						ChooseAllowedWordListFile(info);
+						ShowSelectAllowedWordsFileDialog(request);
 					}
-					return true;
+					break;
 
-				case "getAllowedWordsList":
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(RemoveEmptyAndDupes(GetTextFileContents(info.GetQueryString()["data"], WordFileType.AllowedWordsFile)));
-					return true;
-
-				case "recycleAllowedWordsFile":
-					RecycleAllowedWordListFile(info.GetPostData()["data"]);
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput("OK");
-					return true;
+				case "allowedWordsList":
+					switch (request.HttpMethod)
+					{
+						case HttpMethods.Delete:
+							RecycleAllowedWordListFile(request.RequiredParam("fileName"));
+							request.Succeeded();
+							break;
+						case HttpMethods.Get:
+							var fileName = request.RequiredParam("fileName");
+							request.ReplyWithText(RemoveEmptyAndDupes(GetTextFileContents(fileName, WordFileType.AllowedWordsFile)));
+							break;
+						default:
+							request.Failed("Http verb not handled");
+							break;
+					}
+					break;
+				default:
+					request.Failed("Don't understand '" + lastSegment + "' in " + request.LocalPath());
+					break;
 			}
-
-			return false;
 		}
 
 		/// <summary>
 		/// Needs to return a json string with the page guid and the bloom-content1 text of each non-x-matter page
 		/// </summary>
 		/// <returns></returns>
-		private static string GetTextOfPages()
+		private static string GetTextOfContentPagesAsJson()
 		{
 			var pageTexts = new List<string>();
 
@@ -243,9 +260,9 @@ namespace Bloom.web
 			return text;
 		}
 
-		private static string GetDefaultReaderSettings(CollectionSettings currentCollectionSettings)
+		private static string GetReaderSettings(CollectionSettings currentCollectionSettings)
 		{
-			var settingsPath = DecodableReaderTool.GetDecodableLevelPathName(currentCollectionSettings);
+			var settingsPath = DecodableReaderTool.GetDecodableLevelFilePath(currentCollectionSettings);
 
 			// if file exists, return current settings
 			if (File.Exists(settingsPath))
@@ -378,14 +395,7 @@ namespace Bloom.web
 			}
 		}
 
-		private static void ChooseAllowedWordListFile(IRequestInfo info)
-		{
-			var frm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-			// ReSharper disable once PossibleNullReferenceException
-			frm.Invoke(new Action<IRequestInfo>(ShowSelectAllowedWordsFileDialog), info);
-		}
-
-		private static void ShowSelectAllowedWordsFileDialog(IRequestInfo info)
+		private static void ShowSelectAllowedWordsFileDialog(ApiRequest request)
 		{
 			var returnVal = "";
 
@@ -429,8 +439,7 @@ namespace Bloom.web
 			}
 
 			// send to browser
-			info.ContentType = "text/plain";
-			info.WriteCompleteOutput(returnVal);
+			request.ReplyWithText(returnVal);
 		}
 
 		private static void RecycleAllowedWordListFile(string fileName)

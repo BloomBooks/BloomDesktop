@@ -13,7 +13,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
-using Bloom.web;
+using Bloom.Api;
 using Gecko;
 using Gecko.DOM;
 using Gecko.Events;
@@ -351,6 +351,18 @@ namespace Bloom
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
 			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
+			_browser.ConsoleMessage += OnConsoleMessage;
+
+
+			//Developers can turn this on when you're tracking something, but unfortunately the number of false positives
+			//is extremely high. Even caught exceptions get reported here, e.g. libraries trying to figure out which
+			//browser they are running in intentionally test for things that aren't there, and those get reported.
+			//When we upgrate to Firefox 45, which has a totally different debugging system, we can see if maybe we
+			//can turn this back on. Meanwhile, running in a browser is a good way to see real errors.
+
+			//_browser.JavascriptError += OnJavascriptError;
+
+
 			// This makes any zooming zoom everything, not just enlarge text.
 			// May be obsolete, since I don't think we are using the sort of zooming it controls.
 			// Instead we implement zoom ourselves in a more controlled way using transform: scale
@@ -363,6 +375,36 @@ namespace Bloom
 
 			RaiseGeckoReady();
 	   }
+
+		private void OnJavascriptError(object sender, JavascriptErrorEventArgs e)
+		{
+			if(e.Message.Contains("sourceMapping"))
+				return;
+			var file = e.Filename.Split(new char[] { '/' }).Last();
+			var line = (int) e.Line;
+			var dir = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
+			var mapPath = Path.Combine(dir, file + ".map");
+			if(File.Exists(mapPath))
+			{
+				var consumer = new SourceMapDotNet.SourceMapConsumer(File.ReadAllText(mapPath));
+				foreach(var match in consumer.OriginalPositionsFor(line))
+				{
+					file = match.File;
+					line = match.LineNumber;
+					break;
+				}
+			}
+			Debug.WriteLine("{0} in {1}:{2}", e.Message,file, line);
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, e.Message,
+				string.Format("{0} in {1}:{2}", e.Message, file, line));
+		}
+
+		private void OnConsoleMessage(object sender, ConsoleMessageEventArgs e)
+		{
+			if(e.Message.StartsWith("[JavaScript Warning"))
+				return;
+			Debug.WriteLine(e.Message);
+		}
 
 		private void _browser_DocumentCompleted(object sender, EventArgs e)
 		{
@@ -599,7 +641,7 @@ namespace Bloom
 			Debug.Assert(!InvokeRequired);
 			string url = e.Uri.OriginalString.ToLowerInvariant();
 
-			if ((!url.StartsWith(Bloom.web.ServerBase.ServerUrlWithBloomPrefixEndingInSlash)) && (url.StartsWith("http")))
+			if ((!url.StartsWith(Bloom.Api.ServerBase.ServerUrlWithBloomPrefixEndingInSlash)) && (url.StartsWith("http")))
 			{
 				e.Cancel = true;
 				Process.Start(e.Uri.OriginalString); //open in the system browser instead

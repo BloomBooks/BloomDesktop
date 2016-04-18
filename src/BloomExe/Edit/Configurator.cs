@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
+using Bloom.Api;
 using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;

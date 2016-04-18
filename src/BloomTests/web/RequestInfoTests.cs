@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Text;
-using Bloom.web;
+using Bloom.Api;
 using NUnit.Framework;
 using SIL.IO;
 

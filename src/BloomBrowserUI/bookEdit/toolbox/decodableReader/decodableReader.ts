@@ -1,4 +1,4 @@
-﻿/// <reference path="../toolbox.ts" />
+/// <reference path="../toolbox.ts" />
 /// <reference path="./directoryWatcher.ts" />
 /// <reference path="./readerToolsModel.ts" />
 
@@ -109,7 +109,6 @@ function settingsFrameWindow() {
 }
 
 export function showSetupDialog(showWhat) {
-
     //var toolbox = window;
     theOneLocalizationManager.loadStrings(getSettingsDialogLocalizedStrings(), null, function () {
 
@@ -219,10 +218,7 @@ export function initializeReaderSetupDialog() {
     settingsFrameWindow().postMessage(fontMsg, '*');
 }
 
-/**
- * Called by C# after the setup data has been saved, following Save click.
- */
-function closeSetupDialog() {
+export function closeSetupDialog() {
     $(parentDocument()).find('#synphonyConfig').dialog("close");
 }
 

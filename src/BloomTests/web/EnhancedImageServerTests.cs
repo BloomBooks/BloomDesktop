@@ -14,7 +14,7 @@ using NUnit.Framework;
 using SIL.IO;
 using Bloom;
 using Bloom.ImageProcessing;
-using Bloom.web;
+using Bloom.Api;
 using SIL.Reporting;
 using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
 
@@ -109,16 +109,13 @@ namespace BloomTests.web
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "thisWontWorkWithoutInjectionButWillWithIt");
 				server.CurrentCollectionSettings = new CollectionSettings();
-				Func<string, IRequestInfo, CollectionSettings, bool> testFunc =
-					(path, info, settings) =>
+				EndpointHandler testFunc = (request) =>
 					{
-						Assert.That(path, Is.StringContaining("thisWontWorkWithoutInjectionButWillWithIt"));
-						Assert.That(settings, Is.EqualTo(server.CurrentCollectionSettings));
-						info.ContentType = "text/plain";
-						info.WriteCompleteOutput("Did It!");
-						return true;
+						Assert.That(request.LocalPath(), Is.StringContaining("thisWontWorkWithoutInjection"));
+						Assert.That(request.CurrentCollectionSettings, Is.EqualTo(server.CurrentCollectionSettings));
+						request.ReplyWithText("Did It!");
 					};
-				server.RegisterRequestHandler("thisWontWorkWithoutInjection", testFunc);
+				server.RegisterEndpointHandler("thisWontWorkWithoutInjection", testFunc);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -127,7 +124,6 @@ namespace BloomTests.web
 				Assert.That(transaction.ReplyContents, Is.EqualTo("Did It!"));
 			}
 		}
-
 
 		[Test]
 		public void Topics_ReturnsFrenchFor_NoTopic_()
@@ -248,7 +244,7 @@ namespace BloomTests.web
 				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavascript))
 				{
 					var url = fakeTempFile.Key;
-					transaction = new PretendRequestInfo(url, false, simulateCallingFromJavascript);
+					transaction = new PretendRequestInfo(url, forPrinting: false, forSrcAttr: simulateCallingFromJavascript);
 
 					// Execute
 					server.MakeReply(transaction);
@@ -341,7 +337,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url, true);
+				var transaction = new PretendRequestInfo(url, forPrinting: true);
 
 				server.MakeReply(transaction);
 
@@ -379,7 +375,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url, true);
+				var transaction = new PretendRequestInfo(url, forPrinting: true);
 
 				server.MakeReply(transaction);
 
@@ -445,7 +441,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "customBookStyles.css");
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url, true);
+				var transaction = new PretendRequestInfo(url, forPrinting: true);
 
 				server.MakeReply(transaction);
 

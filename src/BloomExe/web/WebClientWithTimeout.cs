@@ -3,7 +3,7 @@
 using System;
 using System.Net;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	/// <summary>
 	/// the base class waits for 30 seconds, which is too long for local thing like we are doing

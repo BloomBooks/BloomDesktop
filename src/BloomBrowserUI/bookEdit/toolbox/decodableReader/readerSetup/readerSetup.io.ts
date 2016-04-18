@@ -114,47 +114,36 @@ function saveClicked(): void {
     saveChangedSettings(function() {
       if (typeof toolbox['readerSampleFilesChanged'] === 'function')
         toolbox['readerSampleFilesChanged']();
-      toolbox.closeSetupDialog();
+      toolbox.FrameExports.closeSetupDialog();
     });
   }
   else {
-      saveChangedSettings(toolbox.closeSetupDialog);
+      saveChangedSettings(toolbox.FrameExports.closeSetupDialog);
   }
 }
 
 /**
- * Pass the settings to C# to be saved.
- * @param [callback]
+ * Pass the settings to the server to be saved
  */
-export function saveChangedSettings(callback?: Function): void {
-
-  // get the values
-  var s = getChangedSettings();
-
-  // send to parent
-  var settingsStr = JSON.stringify(s, ReaderSettingsReplacer);
-  toolboxWindow().postMessage('Refresh\n' + settingsStr, '*');
-
-  // save now
-  if (callback)
-    axios.post('/bloom/readers/saveReaderToolSettings', { params: { data: settingsStr } }).then(result => {callback(result.data)});
-  else
-    axios.post('/bloom/readers/saveReaderToolSettings', { params: { data: settingsStr } });
+export function saveChangedSettings(callback : Function): void {
+  var settings = getChangedSettings();
+  toolboxWindow().postMessage('Refresh\n' + JSON.stringify(settings), '*');
+  axios.post('/bloom/api/readers/readerToolSettings', settings)
+        .then(result => {callback(result.data)});
 }
 
-function getChangedSettings(): any {
-
-  var s: ReaderSettings = new ReaderSettings();
-  s.letters = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value);
+function getChangedSettings(): ReaderSettings {
+  var settings: ReaderSettings = new ReaderSettings();
+  settings.letters = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value);
 
   // remove duplicates from the more words list
   var moreWords: string[] = _.uniq(((<HTMLInputElement>document.getElementById('dls_more_words')).value).split("\n"));
 
   // remove empty lines from the more words list
   moreWords = _.filter(moreWords, function(a: string) { return a.trim() !== ''; });
-  s.moreWords = moreWords.join(' ');
+  settings.moreWords = moreWords.join(' ');
 
-  s.useAllowedWords = parseInt($('input[name="words-or-letters"]:checked').val());
+  settings.useAllowedWords = parseInt($('input[name="words-or-letters"]:checked').val());
 
   // stages
   var stages: JQuery = $('#stages-table').find('tbody tr');
@@ -167,22 +156,23 @@ function getChangedSettings(): any {
 
     // do not save stage with no data
     if (stage.letters || stage.sightWords || stage.allowedWordsFile)
-      s.stages.push(stage);
+      settings.stages.push(stage);
   }
 
   // levels
   var levels: JQuery = $('#levels-table').find('tbody tr');
   for (var j: number = 0; j < levels.length; j++) {
     var level: ReaderLevel = new ReaderLevel((j + 1).toString());
+    delete level.name;//I don't know why this has a name, but it's apparently just part of the UI that we don't want to save
     var row: HTMLTableRowElement = <HTMLTableRowElement>levels[j];
     level.maxWordsPerSentence = getLevelValue((<HTMLTableCellElement>row.cells[1]).innerHTML);
     level.maxWordsPerPage = getLevelValue((<HTMLTableCellElement>row.cells[2]).innerHTML);
     level.maxWordsPerBook = getLevelValue((<HTMLTableCellElement>row.cells[3]).innerHTML);
     level.maxUniqueWordsPerBook = getLevelValue((<HTMLTableCellElement>row.cells[4]).innerHTML);
     level.thingsToRemember = (<HTMLTableCellElement>row.cells[5]).innerHTML.split('\n');
-    s.levels.push(level);
+    settings.levels.push(level);
   }
-  return s;
+  return settings;
 }
 
 function getLevelValue(innerHTML: string): number {

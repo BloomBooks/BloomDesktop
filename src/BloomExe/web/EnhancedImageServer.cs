@@ -13,6 +13,8 @@ using System.Windows.Forms;
 using Bloom.Book;
 using System.IO;
 using System.Net;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using Bloom.ImageProcessing;
 using BloomTemp;
 using L10NSharp;
@@ -26,7 +28,7 @@ using SIL.Reporting;
 using SIL.Extensions;
 using RestSharp.Contrib;
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	/// <summary>
 	/// A local http server that can serve (low-res) images plus other files.
@@ -43,13 +45,9 @@ namespace Bloom.web
 		private BloomFileLocator _fileLocator;
 		private readonly BookThumbNailer _thumbNailer;
 		private readonly ProjectContext _projectContext;
-		// This dictionary allows additional request handlers to be injected into the server. If a request's local path starts with one of the keys in this dictionary,
-		// the corresponding function will be called to handle the request. The function should return true if a result is returned from the request.
 
-
-		private Dictionary<string, SimpleHandler> _simpleRequestHandlers = new Dictionary<string, SimpleHandler>();
-
-		private Dictionary<string, Func<string, IRequestInfo, CollectionSettings,bool>> _additionalRequestHandlers = new Dictionary<string, Func<string, IRequestInfo, CollectionSettings,bool>>();
+		// This dictionary ties API endpoints to functions that handle the requests.
+		private Dictionary<string, EndpointHandler> _endpointHandlers = new Dictionary<string, EndpointHandler>();
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -65,25 +63,13 @@ namespace Bloom.web
 			_fileLocator = fileLocator;
 			// Storing this in the ReadersHandler means there can only be one instance of EIS, since ReadersHandler is static. But for
 			// now that's true anyway because we use a fixed port. If we need to change this we could just make an instance here.
-			ReadersHandler.Server = this;
+			ReadersApi.Server = this;
 		}
 
-		/// <summary>
-		/// Inject an additional URL handler into the server. The injected handler will handle all requests whose local path
-		/// begins with the key string.
-		/// (Note: we could have handlers injected into the constructor by the regular DI mechanism, but the idea is that
-		/// the server does not have to know about all the components that handle particular kinds of specialized requests.)
-		/// </summary>
-		/// <param name="key"></param>
-		/// <param name="function"></param>
-		public void RegisterRequestHandler(string key, Func<string, IRequestInfo, CollectionSettings, bool> function)
-		{
-			_additionalRequestHandlers[key] = function;
-		}
 
-		public void RegisterSimpleHandler(string key, SimpleHandler handler)
+		public void RegisterEndpointHandler(string key, EndpointHandler handler)
 		{
-			_simpleRequestHandlers[key] = handler;
+			_endpointHandlers[key.Trim(new char[] {'/'})] = handler;
 		}
 
 		/// <summary>
@@ -212,24 +198,15 @@ namespace Bloom.web
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
 			var localPath = GetLocalPathWithoutQuery(info);
-
-			foreach(var pair in _simpleRequestHandlers.Where(pair => localPath.StartsWith(pair.Key)))
+			if (localPath.ToLower().StartsWith("api/"))
 			{
-				lock (SyncObj)
+				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
+				foreach (var pair in _endpointHandlers.Where(pair => Regex.Match(endpoint, pair.Key.ToLower()).Success))
 				{
-					return SimpleHandlerRequest.Handle(pair.Value, info, CurrentCollectionSettings);
-				}
-			}
-
-			// See if an injected request handler wants to handle this one.
-			// Enhance JohnT:  if we get a larger number of injected handlers, and all keys are still a keyword ending in slash,
-			// it might help to extract the part of the localPath before the slash and use it as a key for dictionary lookup.
-			foreach (var pair in _additionalRequestHandlers.Where(pair => localPath.StartsWith(pair.Key)))
-			{
-				lock (SyncObj)
-				{
-					pair.Value(localPath, info, CurrentCollectionSettings);
-					return true;//this is always handled; have these callbacks always 'return true' even if they encountered an error is confusing.
+					lock(SyncObj)
+					{
+						return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings);
+					}
 				}
 			}
 
@@ -343,7 +320,7 @@ namespace Bloom.web
 			// pop-up the error messages if a debugger is attached or an environment variable is set
 			var popUpErrors = Debugger.IsAttached || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DEBUG_BLOOM"));
 
-			var post = info.GetPostData();
+			var post = info.GetPostDataWhenFormEncoded();
 
 			// log the error message
 			var errorMsg = post["message"] + Environment.NewLine + "File: " + post["url"].FromLocalhost()
@@ -367,7 +344,7 @@ namespace Bloom.web
 		private bool ProcessDirectoryWatcher(IRequestInfo info)
 		{
 			// thread synchronization is done in CheckForSampleTextChanges.
-			var dirName = info.GetPostData()["dir"];
+			var dirName = info.GetPostDataWhenFormEncoded()["dir"];
 			if (dirName == "Sample Texts")
 			{
 				if (CheckForSampleTextChanges(info))
@@ -460,7 +437,7 @@ namespace Bloom.web
 					info.WriteCompleteOutput(ToolboxContent ?? "");
 					return true;
 				case "availableFontNames":
-					info.ContentType = "text/json";
+					info.ContentType = "application/json";
 					var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());
 					list.Sort();
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
@@ -469,14 +446,10 @@ namespace Bloom.web
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
-				case "audioDevices":
-					info.ContentType = "text/json";
-					info.WriteCompleteOutput(AudioRecording.AudioDevicesJson);
-					return true;
 				case "topics":
 					return GetTopicList(info);
 				case "help":
-					var post = info.GetPostData();
+					var post = info.GetPostDataWhenFormEncoded();
 					// Help launches a separate process so it doesn't matter that we don't call
 					// it on the UI thread
 					HelpLauncher.Show(null, post["data"]);
@@ -500,7 +473,7 @@ namespace Bloom.web
 				orderby keyToLocalizedTopicDictionary[key]
 				select string.Format("\"{0}\": \"{1}\"",key,keyToLocalizedTopicDictionary[key]);
 			var pairs = arrayOfKeyValuePairs.Concat(",");
-			info.ContentType = "text/json";
+			info.ContentType = "application/json";
 			var data = string.Format("{{\"NoTopic\": \"{0}\", {1} }}", localizedNoTopic, pairs);
 
 			info.WriteCompleteOutput(data);
@@ -529,6 +502,9 @@ namespace Bloom.web
 				modPath = tempPath;
 			try
 			{
+				if (localPath.Contains("favicon.ico")) //need something to pacify Chrome
+					path = FileLocator.GetFileDistributedWithApplication("BloomPack.ico");
+
 				// Is this request the full path to an image file? For most images, we just have the filename. However, in at
 				// least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when 
 				// we are looking at a "folio", a book that gathers up other books into one big PDF. In that case, we want
@@ -538,7 +514,7 @@ namespace Bloom.web
 				// but it has nothing to do with the actual file location.
 				if (localPath.StartsWith("OriginalImages/"))
 					possibleFullImagePath = localPath.Substring(15);
-				if (info.GetQueryString()["generateThumbnaiIfNecessary"] == "true")
+				if (info.GetQueryParameters()["generateThumbnaiIfNecessary"] == "true")
 					return FindOrGenerateImage(info, localPath);
 				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
@@ -552,8 +528,6 @@ namespace Bloom.web
 					// are generated temp files most certainly NOT distributed with the application.
 					path = FileLocator.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, modPath);
 				}
-				if (localPath.Contains("favicon.ico")) //need something to pacify Chrome
-					path = FileLocator.GetFileDistributedWithApplication("BloomPack.ico");
 			}
 			catch (ApplicationException)
 			{

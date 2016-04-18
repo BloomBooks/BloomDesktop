@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.web;
+using Bloom.Api;
 using DesktopAnalytics;
 using SIL.IO;
 using PdfDroplet.LayoutMethods;

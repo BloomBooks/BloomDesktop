@@ -9,6 +9,7 @@ import {getToolboxFrameExports} from './js/BloomFrames';
 export {getToolboxFrameExports};
 import {getPageFrameExports} from './js/BloomFrames';
 export {getPageFrameExports};
+export {default as BloomHelp} from '../BloomHelp';
 import {showAddPageDialog} from '../pageChooser/page-chooser';
 export {showAddPageDialog};
 

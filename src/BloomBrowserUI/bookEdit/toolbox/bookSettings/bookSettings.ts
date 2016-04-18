@@ -2,7 +2,7 @@
 if (typeof ($) === "function") { // have jquery
     $(document).ready(() => {
         // request our model and set the controls
-        axios.get<any>('/bloom/bookSettings').then(result => {
+        axios.get<any>('/bloom/api/bookSettings').then(result => {
             var settings = result.data;
             // enhance: this is just dirt-poor binding of 1 checkbox for now
             $("input[name='unlockShellBook']").prop("checked", settings.unlockShellBook);

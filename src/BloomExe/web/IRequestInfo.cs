@@ -1,8 +1,16 @@
 // Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
-namespace Bloom.web
+namespace Bloom.Api
 {
+	public enum HttpMethods
+	{
+		Get,
+		Put,
+		Post,
+		Delete
+	};
+
 	public interface IRequestInfo
 	{
 		string LocalPathWithoutQuery { get; }
@@ -14,8 +22,10 @@ namespace Bloom.web
 		void ReplyWithImage(string path);
 		void WriteError(int errorCode);
 		void WriteError(int errorCode, string errorDescription);
-		System.Collections.Specialized.NameValueCollection GetQueryString();
-		System.Collections.Specialized.NameValueCollection GetPostData();
+		System.Collections.Specialized.NameValueCollection GetQueryParameters();
+		System.Collections.Specialized.NameValueCollection GetPostDataWhenFormEncoded();
 		string GetPostJson();
+		string GetPostString();
+		HttpMethods HttpMethod { get; }
 	}
 }

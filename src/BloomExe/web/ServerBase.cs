@@ -17,7 +17,7 @@ using SIL.Reporting;
 using ThreadState = System.Threading.ThreadState;
 
 
-namespace Bloom.web
+namespace Bloom.Api
 {
 	public abstract class ServerBase : IDisposable
 	{
