@@ -59,7 +59,7 @@
 .bloomDialogContainer .control-section {
 	margin: 0 0 12px 0;
 }
-.bloomDialogContainer BUTTON, .bloomDialogContainer INPUT, .bloomDialogContainer SELECT {
+.bloomDialogContainer BUTTON, .bloomDialogContainer INPUT{//, .bloomDialogContainer SELECT, .bloomDialogContainer .select2-container--default {
 	background: linear-gradient(@backgroundColorLight, @backgroundColorDark);
 }
 .bloomDialogContainer BUTTON {
@@ -67,7 +67,7 @@
 	border: 1px solid @buttonBorder;
 	box-shadow: 1px 2px 7px @buttonShadow;
 }
-.bloomDialogContainer BUTTON:hover, .bloomDialogContainer INPUT:hover, .bloomDialogContainer SELECT:hover {
+.bloomDialogContainer BUTTON:hover, .bloomDialogContainer INPUT:hover, .bloomDialogContainer SELECT:hover , .bloomDialogContainer .select2-container--default:HOVER, .bloomDialogContainer .select2-container--focus{
 	background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
 }
 .bloomDialogContainer BUTTON[disabled] {
@@ -105,4 +105,21 @@
 	margin-left: 1em;
 	font-family: Segoe UI, Open Sans, Arial, sans-serif;
 	font-size: 10pt;
+}
+
+.bloomDialogContainer .select2-container--default .select2-selection--single{
+	border-radius: 0;
+	border-color: grey;
+	
+}
+
+//the actual dropdown part of select2 controls is appended to the body, rather than our format dialog .iconBox
+.select2-dropdown{
+	border-radius: 0 !important;
+	border-color: black !important;
+	
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered{
+	color: black !important;
 }

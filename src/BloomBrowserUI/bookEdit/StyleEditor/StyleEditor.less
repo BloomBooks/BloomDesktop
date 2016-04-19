@@ -21,7 +21,7 @@
 		width: 150px;
 	}
 	.spacing-fudge {
-		margin: 0px 0px -5px 0px;
+		margin: 0px 0px -2px 0px;
 	}
 	#size-select {
 		width: 43px;
@@ -71,3 +71,30 @@
 		display: none;
 	}
 }
+
+//the select2 dropdown gets appended to the body, not to our dialog, so it needs a really high z-index to show above the dialog.
+.select2-container{
+	z-index: 30000;
+}
+
+#spacingRow{
+	display: flex;
+}
+
+#wordSpacing, #lineSpacing {
+	display: flex;
+	flex-direction: row;
+    align-items: center;
+}
+
+#wordSpacing {
+	margin-left: 15px;
+}
+#wordSpacing img{
+	padding-right:4px;
+} 
+
+#lineSpacing img{
+	padding-right:5px;
+	height: 16px;
+} 

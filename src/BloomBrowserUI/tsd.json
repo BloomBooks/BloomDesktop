@@ -6,13 +6,16 @@
   "bundle": "typings/bundledFromTSC.d.ts",
   "installed": {
     "jquery/jquery.d.ts": {
-      "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
+      "commit": "94d8775a947f626269b06ccadd6f5e61839389d0"
     },
     "jasmine/jasmine.d.ts": {
       "commit": "dc9dabe74a5be62613b17a3605309783a12ff28a"
     },
     "underscore/underscore.d.ts": {
       "commit": "627b6c158b73494c803f36fc2fe00ad75faa8fde"
+    },
+    "select2/select2.d.ts": {
+      "commit": "94d8775a947f626269b06ccadd6f5e61839389d0"
     }
   }
 }

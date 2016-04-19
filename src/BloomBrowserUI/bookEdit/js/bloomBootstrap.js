@@ -3,6 +3,7 @@ var npmModules = [
     'jquery/dist/jquery.js',
     'toastr/build/toastr.min.js',
     'jquery.hotkeys/jquery.hotkeys.js',
+    'select2/dist/js/select2.js',
     'css-element-queries/src/ResizeSensor.js',//used by origami
     'css-element-queries/src/ElementQueries.js'//used by origami
 ];
@@ -73,3 +74,5 @@ for (var i = 0; i < scripts.length; i++) {
 for (var j = 0; j < styleSheets.length; j++) {
     document.write('<link rel="stylesheet" type="text/css" href="/bloom/' + styleSheets[j] + '">');
 }
+
+document.write('<link rel="stylesheet" type="text/css" href="/bloom/node_modules/select2/dist/css/select2.css"/>'); 
