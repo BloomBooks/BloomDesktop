@@ -77,11 +77,18 @@ override_dh_shlibdeps:
 
 # Include mono-sil in cli dirs searched
 override_dh_clideps:
-	dh_clideps -l$(MONO_PREFIX)/lib --exclude-moduleref=Crypt32.dll --exclude-moduleref=libdconf.dll \
-		--exclude-moduleref=connections.dll --exclude-moduleref=icuuc52.dll --exclude-moduleref=icuin52.dll \
-		--exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll --exclude-moduleref=libtidy.dll \
-		--exclude-moduleref=msdelta.dll --exclude-moduleref=mspatcha.dll --exclude-moduleref=mspatchc.dll \
-		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll
+	mkdir -p debian/tmp/usr && ln -s $(MONO_PREFIX)/* debian/tmp/usr/ && \
+	PATH=$(MONO_PREFIX)/bin:$(PATH) \
+	dh_clideps internal-mono -l$(MONO_PREFIX)/lib \
+		--exclude-moduleref=Crypt32.dll --exclude-moduleref=libdconf.dll \
+		--exclude-moduleref=connections.dll \
+		--exclude-moduleref=icuuc55.dll --exclude-moduleref=icuin55.dll \
+		--exclude-moduleref=icuuc52.dll --exclude-moduleref=icuin52.dll \
+		--exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll \
+		--exclude-moduleref=libtidy.dll --exclude-moduleref=msdelta.dll \
+		--exclude-moduleref=mspatcha.dll --exclude-moduleref=mspatchc.dll \
+		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll && \
+	rm -rf debian/tmp/usr
 
 # Don't strip debug symbols -- we want them for informative crash stack traces
 override_dh_strip:
