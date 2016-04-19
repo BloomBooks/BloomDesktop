@@ -18,8 +18,9 @@ namespace BloomTests
 			var client = new WebClientWithTimeout
 			{
 				Timeout = 3000,
-				Headers = {[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json"}
 			};
+			client.Headers[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json";
+
 			if(!string.IsNullOrEmpty(query))
 				query = "?" + query;
 			return client.DownloadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint + query);
@@ -35,9 +36,9 @@ namespace BloomTests
 			server.StartListening();
 			var client = new WebClientWithTimeout
 			{
-				Timeout = 3000,
-				Headers = {[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json"}
+				Timeout = 3000
 			};
+			client.Headers[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json";
 
 			return client.UploadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint, "POST", data);
 		}
