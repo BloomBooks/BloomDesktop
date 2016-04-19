@@ -67,6 +67,11 @@ override_dh_auto_install:
 	# Add bloom-collection mime type
 	install -m 644 debian/bloom-collection.png $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/application-bloom-collection.png
 	install -m 644 debian/bloom-collection.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/application-bloom-collection.svg
+	# Add AppStream metadata file
+	# REVIEW: the specs are not completely clear where the file should go: /usr/share/appdata,
+	# /usr/share/app-info/xmls, or /usr/share/metainfo.
+	install -d $(DESTDIR)/usr/share/appdata
+	install -m 644 debian/bloom.desktop.appdata.xml $(DESTDIR)/usr/share/appdata
 
 # Don't export any assemblies to other packages
 override_dh_makeclilibs:
