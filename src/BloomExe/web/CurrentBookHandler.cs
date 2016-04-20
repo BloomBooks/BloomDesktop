@@ -31,6 +31,7 @@ namespace Bloom.Api
 		{
 			dynamic settings = new ExpandoObject();
 			settings.unlockShellBook = CurrentBook.TemporarilyUnlocked;
+			settings.currentToolBoxTool = CurrentBook.BookInfo.CurrentTool;
 			request.ReplyWithJson((object) settings);
 		}
 

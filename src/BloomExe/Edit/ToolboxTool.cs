@@ -85,8 +85,9 @@ namespace Bloom.Edit
 
 		// May be overridden to restore the tool state during page initialization.
 		// This is run after the page is otherwise idle.
-		internal virtual void RestoreSettings(EditingView _view)
-		{ }
+		//Review: this ultimately didn't seem to run any code
+		//		internal virtual void RestoreSettings(EditingView _view)
+		//		{ }
 	}
 
 	/// <summary>

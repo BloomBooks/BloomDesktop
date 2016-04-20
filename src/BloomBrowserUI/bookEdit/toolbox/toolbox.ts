@@ -1,10 +1,12 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="decodableReader/synphonyApi.ts" />
 /// <reference path="decodableReader/readerToolsModel.ts" />
+///<reference path="../../typings/axios/axios.d.ts"/>
 
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import '../../lib/jquery.i18n.custom';
 import "../../lib/jquery.onSafe"; 
+import axios = require('axios');
 
 /**
  * The html code for a check mark character
@@ -86,18 +88,18 @@ export function showOrHidePanel_click(chkbox) {
     resizeToolbox();
 }
 
-/**
-* Called by C# to restore user settings
-*/
-export function restoreToolboxSettings(settings: string) {
-    savedSettings = settings;
-    var pageFrame = getPageFrame();
-    if (pageFrame.contentWindow.document.readyState === 'loading') {
-        // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
-        $(pageFrame.contentWindow.document).ready(e => restoreToolboxSettingsWhenPageReady(settings));
-        return;
-    }
-    restoreToolboxSettingsWhenPageReady(settings); // not loading, we can proceed immediately.
+
+export function restoreToolboxSettings() {
+    axios.get<any>("/bloom/api/toolbox/settings").then(result=>{
+        savedSettings = result.data;
+        var pageFrame = getPageFrame();
+        if (pageFrame.contentWindow.document.readyState === 'loading') {
+            // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
+            $(pageFrame.contentWindow.document).ready(e => restoreToolboxSettingsWhenPageReady(result.data));
+            return;
+        }
+        restoreToolboxSettingsWhenPageReady(result.data); // not loading, we can proceed immediately.
+    });
 }
 
 

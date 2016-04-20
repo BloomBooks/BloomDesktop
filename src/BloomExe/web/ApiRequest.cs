@@ -21,12 +21,14 @@ namespace Bloom.Api
 	{
 		private readonly IRequestInfo _requestInfo;
 		public readonly CollectionSettings CurrentCollectionSettings;
+		public readonly Book.Book CurrentBook;
 		public NameValueCollection Parameters;
 
-		public ApiRequest(IRequestInfo requestinfo, CollectionSettings currentCollectionSettings)
+		public ApiRequest(IRequestInfo requestinfo, CollectionSettings currentCollectionSettings, Book.Book currentBook)
 		{
 			_requestInfo = requestinfo;
 			CurrentCollectionSettings = currentCollectionSettings;
+			CurrentBook = currentBook;
 			Parameters = requestinfo.GetQueryParameters();
 		}
 
@@ -83,9 +85,9 @@ namespace Bloom.Api
 			_requestInfo.WriteError(503,text);
 		}
 
-		public static bool Handle(EndpointHandler endpointHandler, IRequestInfo info, CollectionSettings collectionSettings)
+		public static bool Handle(EndpointHandler endpointHandler, IRequestInfo info, CollectionSettings collectionSettings, Book.Book currentBook)
 		{
-			var request = new ApiRequest(info, collectionSettings);
+			var request = new ApiRequest(info, collectionSettings, currentBook);
 			try
 			{
 				if(null == Assembly.GetEntryAssembly()) // null during unit tests

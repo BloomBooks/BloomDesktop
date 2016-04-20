@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using BloomTemp;
@@ -20,6 +21,13 @@ namespace Bloom.Edit
 	/// </summary>
 	public class ToolboxView
 	{
+		static readonly string[] IdsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, /*BookSettingsTool.StaticToolId*/ };
+
+		public static void RegisterWithServer(EnhancedImageServer server)
+		{
+			server.RegisterEndpointHandler("toolbox/settings", HandleSettings);
+		}
+
 		/// <summary>
 		/// Some tool settings files may need moving to the correct locations when installing a bloompack.
 		/// Currently only the reader tools needs to do this. We could try to do some trick where
@@ -54,12 +62,8 @@ namespace Bloom.Edit
 
 			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
-			//enhance: this is yet another "place you have to register a new tool"
-			var idsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, /*BookSettingsTool.StaticToolId*/ };
 
-			var toolsToDisplay = GetToolsToDisplay(book, idsOfToolsThisVersionKnowsAbout);
-
-			EmbedSettings(book, toolsToDisplay, domForToolbox);
+			var toolsToDisplay = GetToolsToDisplay(book, IdsOfToolsThisVersionKnowsAbout);
 
 			// get additional tools to load
 			var checkedBoxes = new List<string>();
@@ -95,35 +99,24 @@ namespace Bloom.Edit
 			return toolsToDisplay.Where(t => t.Enabled || t.AlwaysEnabled).ToList();
 		}
 
-		private static void EmbedSettings(Book.Book book, IEnumerable<ToolboxTool> enabledTools, HtmlDom domForToolbox)
+
+		private static void HandleSettings(ApiRequest request)
 		{
-			//enhance: providing settings by injecting javascript is a c# kludge. Let's move to ajax requests that get the data from the server at the point that
-			//it needs it (if ever). See BookSettings.ts
+			if(request.HttpMethod != HttpMethods.Get)
+				throw new ApplicationException(request.LocalPath()+" only implements 'get'");	
+
 			var settings = new Dictionary<string, object>
 			{
-				{"current", book.BookInfo.CurrentTool}
+				{"current", request.CurrentBook.BookInfo.CurrentTool}
 			};
 
-			foreach (var tool in enabledTools)
+			foreach (var tool in GetToolsToDisplay(request.CurrentBook, IdsOfToolsThisVersionKnowsAbout))
 			{
-				RetrieveToolSettings(tool, settings);
+				if (!String.IsNullOrEmpty(tool.State))
+					settings.Add(tool.StateName, tool.State);
 			}
 
-			var settingsStr = JsonConvert.SerializeObject(settings);
-			settingsStr = String.Format("function GetToolboxSettings() {{ return {0};}}", settingsStr);
-			//moved to ts/js so we can require restoreToolboxSettings	: "\n$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });";
-
-			var scriptElement = domForToolbox.RawDom.CreateElement("script");
-			scriptElement.SetAttribute("type", "text/javascript");
-			scriptElement.SetAttribute("id", "ui-accordionSettings");
-			scriptElement.InnerText = settingsStr;
-			domForToolbox.Head.InsertAfter(scriptElement, domForToolbox.Head.LastChild);
-		}
-
-		public static void RetrieveToolSettings(ToolboxTool tool, Dictionary<string, object> settingsObject)
-		{
-			if (tool != null && !String.IsNullOrEmpty(tool.State))
-				settingsObject.Add(tool.StateName, tool.State);
+			request.ReplyWithJson(settings);
 		}
 
 		public static void LoadPanelIntoToolbox(HtmlDom domForToolbox, ToolboxTool tool, List<string> checkedBoxes, string toolboxFolder)

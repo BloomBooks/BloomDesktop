@@ -500,8 +500,10 @@ namespace Bloom.Edit
 				// to update the icon. At that point we start really sending volume requests.
 				if (_recorder == null)
 				{
-					var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-					if (formToInvokeOn == null)
+					_recorder = new AudioRecorder(1);
+					_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
+					BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
+					Application.ApplicationExit += (sender, args) =>
 					{
 						if (_recorder != null)
 						{

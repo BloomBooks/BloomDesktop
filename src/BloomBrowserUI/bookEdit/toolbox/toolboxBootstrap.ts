@@ -26,9 +26,7 @@ export function undo() {
     ReaderToolsModel.model.undo();
 }
 
-//this is currently inserted by c#. Enhance: get settings via ajax
-declare function GetToolboxSettings():any;
 
 $(document).ready(function() { 
-    restoreToolboxSettings(GetToolboxSettings()); 
+    restoreToolboxSettings(); 
 });
