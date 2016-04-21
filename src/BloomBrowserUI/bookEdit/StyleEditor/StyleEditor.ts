@@ -675,11 +675,11 @@ class StyleEditor {
 
                 //make some select boxes permit custom values
                 $('.allowCustom').select2({
-                     width: '50px',
                     tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
                 });
                 $('select:not(.allowCustom)').select2({
-                    tags: false
+                    tags: false,
+                    minimumResultsForSearch: -1 // result is that no search box is shown
                 });
 
                 var toolbar = $('#format-toolbar');
@@ -794,7 +794,7 @@ class StyleEditor {
         return this.makeDiv(null, null, null, null,
                 this.makeDiv(null, null, null, 'EditTab.Font', 'Font')
                 + this.makeDiv(null, "control-section", null, null,
-                    this.makeSelect(fonts, current.fontName, 'font-select', 15) + ' '
+                    this.makeSelect(fonts, current.fontName, 'font-select', 25) + ' '
                     + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select', 99, 'allowCustom'))
                 + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing')
                 + this.makeDiv("spacingRow", null, null, null,
