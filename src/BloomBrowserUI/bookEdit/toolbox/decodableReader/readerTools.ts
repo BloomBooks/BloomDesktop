@@ -9,7 +9,7 @@ import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLangua
 import './libSynphony/synphony_lib.js';
 import SynphonyApi from './synphonyApi';
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
-import {DataWord} from './libSynphony/bloom_lib'; 
+import {DataWord, clearWordCache} from './libSynphony/bloom_lib';
 import "../../../lib/jquery.onSafe";
 import axios = require('axios');
 
@@ -55,20 +55,6 @@ function processDLRMessage(event: MessageEvent): void {
       }
 
       getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');
-      return;
-
-    case 'Refresh': // notification from setup dialog that settings have changed
-      var synphony = ReaderToolsModel.model.synphony;//reviewslog
-      synphony.loadSettings(JSON.parse(params[1]));
-
-      if (synphony.source.useAllowedWords) {
-        ReaderToolsModel.model.getAllowedWordsLists();
-      }
-      else {
-        ReaderToolsModel.model.updateControlContents();
-        ReaderToolsModel.model.doMarkup();
-      }
-
       return;
 
     case 'SetupType':
@@ -217,7 +203,7 @@ function initializeSynphony(settingsFileContent: string): void {
   }
   else {
     // get the list of sample texts
-    axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => setTextsList(result.data));
+    axios.get<string>('/bloom/api/readers/sampleTextsList').then(result =>beginSetTextsList(result.data));
   }
 }
 
@@ -225,10 +211,8 @@ function initializeSynphony(settingsFileContent: string): void {
  * Called in response to a request for the files in the sample texts directory
  * @param textsList List of file names delimited by \r
  */
-function setTextsList(textsList: string): void {
-
-  ReaderToolsModel.model.texts = textsList.split(/\r/).filter(function(e){return e ? true : false;});
-  ReaderToolsModel.model.getNextSampleFile();
+function beginSetTextsList(textsList: string): JQueryPromise<void> {
+  return ReaderToolsModel.beginSetTextsList(textsList.split(/\r/).filter(function(e){return e ? true : false;}));
 }
 
 function setDefaultFont(fontName: string): void {
@@ -238,22 +222,72 @@ function setDefaultFont(fontName: string): void {
 /**
  * This method is called whenever a change is detected in the Sample Files directory
  */
-function readerSampleFilesChanged(): void {
+export function readerSampleFilesChanged(): void {
+    // We have to basically start over; no other way to get things in a consistent state
+    // between the changed sample files and the sample words in the dialog itself.
+    // We can however keep the current version of the settings saved in the model.
+  beginRefreshEverything(ReaderToolsModel.model.synphony.source);
+}
 
+function refreshSettingsExceptSampleWords(newSettings) {
+    var synphony = ReaderToolsModel.model.synphony;
+    synphony.loadSettings(newSettings);
+    if (synphony.source.useAllowedWords) {
+        ReaderToolsModel.model.getAllowedWordsLists();
+    } else {
+        ReaderToolsModel.model.updateControlContents();
+        ReaderToolsModel.model.doMarkup();
+    }
+}
+
+/**
+ * Re-creates the one instance of LanguageData and SynphonyApi, populates them from the supplied or current
+ * settings and sample word files, and updates the UI to match. Because of the convoluted way we build
+ * the indexes inside the LanguageData object, this is the only currently feasible way to get it in
+ * a consistent state after changes to the sample words files or the panel in the settings dialog.
+ * Returns a promise which is resolved when all the sample words files are loaded and the model is ready to use.
+ */
+function beginRefreshEverything(settings: ReaderSettings) : JQueryPromise<void> {
   // reset the file and word list
-  //theOneLanguageDataInstance = new LanguageData();
   ResetLanguageDataInstance();
   ReaderToolsModel.model.allWords = {};
   ReaderToolsModel.model.textCounter = 0;
+  // This helps with updating the matching words panel in the setup dialog. If we switched to the
+  // sample words tab, changed sample words, and switched back, or if the user just edited the sample
+  // words files in the background, nothing will have changed that indicates the cache is invalid;
+  // but in fact the words that should show for the current stage and state of things may need
+  // updating.
+  clearWordCache();
 
-  var settings = ReaderToolsModel.model.synphony.source;
   ReaderToolsModel.model.setSynphony(new SynphonyApi());
 
   var synphony = ReaderToolsModel.model.synphony;
   synphony.loadSettings(settings);
 
   // reload the sample texts
-  axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => setTextsList(result.data));
+  var promise = $.Deferred<void>();
+  axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => beginSetTextsList(result.data).then(() => promise.resolve()));
+  return promise;
+}
+
+export function beginSaveChangedSettings(settings: ReaderSettings, previousMoreWords: string): JQueryPromise<void> {
+  var promise = $.Deferred<void>();
+  axios.post('/bloom/api/readers/readerToolSettings', settings)
+    .then(result => {
+      // reviewslog: following previous logic that we need to reload files if useAllowedWords
+      // is true. Seems we should at least need to do it ALSO if it was PREVIOUSLY true.
+      // But that is a very obscure case...we don't expect users to switch back and forth
+      // in the basic mechanism by which they define stages.
+      if (settings.moreWords !== previousMoreWords || settings.useAllowedWords) {
+        beginRefreshEverything(settings).then(() => {
+          promise.resolve();
+        });
+      } else {
+        refreshSettingsExceptSampleWords(settings);
+        promise.resolve(); // nothing to wait for
+      }
+    });
+  return promise;
 }
 
 /**

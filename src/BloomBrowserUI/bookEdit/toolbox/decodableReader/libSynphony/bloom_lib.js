@@ -11,6 +11,9 @@ require('./bloom_xregexp_categories.js'); // reviewslog should add PEP to XRegEx
 import {theOneLibSynphony, theOneLanguageDataInstance, LanguageData, LibSynphony} from './synphony_lib';
 import * as _ from 'underscore';
 
+export function clearWordCache() {
+    wordCache = null;
+}
 
 
 var wordCache;

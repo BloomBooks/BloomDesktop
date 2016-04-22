@@ -20,7 +20,7 @@ import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synp
 import SynphonyApi from './synphonyApi';
 import {DataWord,TextFragment} from './libSynphony/bloom_lib';
 import axios = require('axios');
-
+import AxiosXhr = Axios.AxiosXHR;
 var SortType = {
   alphabetic: "alphabetic",
   byLength: "byLength",
@@ -908,21 +908,21 @@ export class ReaderToolsModel {
     }
   }
 
-  /**
-   * Called when we have finished processing a sample text file.
-   * If there are more files to load, request the next one.
-   * If there are no more files to load, process the word list.
-   */
-  getNextSampleFile(): void {
-
-    // if there are no more files, process the word lists now
-    if (this.textCounter >= this.texts.length) {
-      this.addWordsToSynphony();
+  static beginSetTextsList(textsArg: string[] ): JQueryPromise<void> {
+    // only save the file types we can read
+    ReaderToolsModel.model.texts = textsArg.filter(t => {
+      var ext = t.split('.').pop();
+      return ReaderToolsModel.getReadableFileExtensions().indexOf(ext) > -1;
+    });
+    ReaderToolsModel.model.textCounter = 0;
+    var result = $.Deferred<void>();
+    ReaderToolsModel.model.beginGetAllSampleFiles().then(() => {
+      ReaderToolsModel.model.addWordsToSynphony();
 
       // The word list has been received. Now we are using setTimeout() to move the remainder of the word
       // list processing to another thread so the UI doesn't appear frozen as long. This is essentially
       // the JavaScript version of Application.DoEvents().
-      setTimeout(function() {
+      setTimeout(function () {
 
         ReaderToolsModel.model.wordListLoaded = true;
         ReaderToolsModel.model.updateControlContents(); // needed if user deletes all of the stages.
@@ -933,41 +933,47 @@ export class ReaderToolsModel {
         // write out the ReaderToolsWords-xyz.json file
         axios.post('/bloom/api/readers/saveReaderToolsWords', theOneLanguageDataInstance);
       }, 200);
+      result.resolve(); // main point is, after we got all the samples and did addWordsToSynphony
+    });
+    return result;
+  }
 
-      return;
+
+  /**
+   * Called to start processing sample data files, if there are any left it reads
+   * from one and then calls itself recursively to read the rest.
+   * When all of them are read, the promise is resolved.
+   * Enhance: is there a more elegant way than passing the promise as an optional argument?
+   * We ought to be able to just return the axios.get.then, but I don't know how to return
+   * a pre-resolved one when we get down to none left.
+   */
+  beginGetAllSampleFiles(promiseIn? : JQueryDeferred<void>): JQueryPromise<void> {
+    var promise = promiseIn || $.Deferred<void>(); // first call makes the promise
+    if (this.textCounter >= this.texts.length) {
+      promise.resolve(); // either there were none, or this is the most deeply nested recursion after we processed the last one.
+      return promise;
     }
 
-    // only get the contents of the file types we can read
-    var fileName;
-    do {
-      var ext = this.texts[this.textCounter].split('.').pop();
-      if (ReaderToolsModel.getReadableFileExtensions().indexOf(ext) > -1)
-        fileName = this.texts[this.textCounter];
-      this.textCounter++;
-    } while (!fileName && (this.textCounter < this.texts.length));
-
-      if (fileName) {
-//          axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: encodeURIComponent(fileName) } })
-          axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: fileName } })
-              .then(result => {
-                  //axios get here is giving us an object even though the c# sends a text/plain.
-                  //and that would normally be great, but unfortunately the downstream code was written to take a raw
-                  //string (which happpens to be JSON). So for now, we just make it a string.
-                  var resultAsString = JSON.stringify(result.data);
-                  ReaderToolsModel.setSampleFileContents(resultAsString);
-              })
-      } else {
-          this.getNextSampleFile();
-      }
+    var fileName = this.texts[this.textCounter++];
+    axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: fileName } })
+      .then(result => {
+        //axios get here is giving us an object even though the c# sends a text/plain.
+        //and that would normally be great, but unfortunately the downstream code was written to take a raw
+        //string (which happpens to be JSON). So for now, we just make it a string.
+        var resultAsString = JSON.stringify(result.data);
+        ReaderToolsModel.setSampleFileContents(resultAsString);
+        // recursive call to get another
+        this.beginGetAllSampleFiles(promise);
+      });
+    return promise;
   }
-n
+
   /**
    * Called in response to a request for the contents of a sample text file
    * @param fileContents
    */
   static setSampleFileContents(fileContents: string): void {
     ReaderToolsModel.model.addWordsFromFile(fileContents);
-    ReaderToolsModel.model.getNextSampleFile();
   }
 
   /**
