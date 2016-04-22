@@ -57,6 +57,7 @@ namespace Bloom.Book
 		event EventHandler FolderPathChanged;
 		void CleanupUnusedImageFiles();
         BookInfo MetaData { get; set; }
+		string NormalBaseForRelativepaths { get; }
 	}
 
 	public class BookStorage : IBookStorage
@@ -589,6 +590,19 @@ namespace Bloom.Book
 
 		public static void SetBaseForRelativePaths(HtmlDom dom, string folderPath)
 		{
+			dom.BaseForRelativePaths = GetBaseForRelativePaths(folderPath);
+		}
+
+		/// <summary>
+		/// Base for relative paths when editing the book (not generating PDF or anything special).
+		/// </summary>
+		public string NormalBaseForRelativepaths
+		{
+			get {  return GetBaseForRelativePaths(_folderPath);}
+		}
+
+		private static string GetBaseForRelativePaths(string folderPath)
+		{
 			string path = "";
 			if (!string.IsNullOrEmpty(folderPath))
 			{
@@ -600,7 +614,7 @@ namespace Bloom.Book
 				var uri = folderPath + Path.DirectorySeparatorChar;
 				path = uri.ToLocalhost();
 			}
-			dom.BaseForRelativePaths = path; // We actually don't WANT any base elements in the DOM
+			return path;
 		}
 
 

@@ -547,6 +547,17 @@ namespace Bloom.Api
 				if (startOfBookEdit > 0)
 					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
 			}
+
+			if (localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
+			{
+				var templatePath = Path.Combine(CurrentBookHandler.CurrentBook.FindTemplateBook().FolderPath,
+					localPath.Substring("pageChooser/".Length));
+				if (File.Exists(templatePath))
+				{
+					info.ReplyWithImage(templatePath);
+					return true;
+				}
+			}
 			if (!File.Exists(path))
 			{
 				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Server could not find the file "+path,"LocalPath was "+localPath);

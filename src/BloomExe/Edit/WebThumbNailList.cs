@@ -28,6 +28,7 @@ namespace Bloom.Edit
 		private Bloom.Browser _browser;
 		private int _verticalScrollDistance;
 		private static string _thumbnailInterval;
+		private string _baseForRelativePaths;
 
 		internal class MenuItemSpec
 		{
@@ -275,6 +276,7 @@ namespace Bloom.Edit
 
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 			_verticalScrollDistance = _browser.VerticalScrollDistance;
+			_baseForRelativePaths = dom.BaseForRelativePaths;
 			_browser.Navigate(dom);
 			return result;
 		}
@@ -482,6 +484,13 @@ namespace Bloom.Edit
 
 		public void UpdateThumbnailAsync(IPage page)
 		{
+			if (page.Book.Storage.NormalBaseForRelativepaths != _baseForRelativePaths)
+			{
+				// book has been renamed! can't go on with old document that pretends to be in the wrong place.
+				// Regenerate completely.
+				UpdateItems(_pages);
+				return;
+			}
 			var targetClass = "bloom-page";
 			var gridElt = GetGridElementForPage(page);
 			var pageContainerElt = GetFirstChildWithClass(gridElt, PageContainerClass) as GeckoElement;
