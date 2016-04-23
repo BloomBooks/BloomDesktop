@@ -278,7 +278,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 
 			//hack to get the distfiles folder itself
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("AndikaNewBasic"));
+			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"));
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/js"));
