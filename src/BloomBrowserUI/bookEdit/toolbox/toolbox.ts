@@ -408,9 +408,10 @@ function loadToolboxPanel(newContent, panelId) {
     }
 }
 
-function showToolboxChanged(showing: boolean): void {
+function showToolboxChanged(wasShowing: boolean): void {
+  ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "visibility\t" + (wasShowing ? "" : "visible"));
     if (currentTool) {
-        if (showing) currentTool.hideTool();
+      if (wasShowing) currentTool.hideTool();
         else activateTool(currentTool);
     } else {
         // starting up for the very first time in this book...no tool is current,
