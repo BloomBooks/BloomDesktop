@@ -898,7 +898,6 @@ namespace Bloom.Edit
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
-					SaveToolboxState();
 					SavePageFrameState();
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
@@ -976,26 +975,6 @@ namespace Bloom.Edit
 				Settings.Default.PageZoom = pageZoom;
 				Settings.Default.Save();
 			}
-		}
-
-		/// <summary>
-		/// Saves stuff (currently just the visibility of the toolbox) which is best read from the state of the HTML
-		/// </summary>
-		void SaveToolboxState()
-		{
-			return; //https://silbloom.myjetbrains.com/youtrack/issue/BL-3057
-			var checkbox = _view.GetShowToolboxCheckbox();
-			if (checkbox == null)
-			{
-				Debug.Fail("Unexpectedly the toolbox checkbox could not be found to read its state");
-				return; // In production if we can't find the current state just leave it unchanged.
-			}
-			var showToolbox = checkbox.Checked;
-			_currentlyDisplayedBook.BookInfo.ToolboxIsOpen = showToolbox;
-			_currentlyDisplayedBook.BookInfo.Save();
-
-			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
-				tool.SaveSettings(_view.ToolBoxElement);
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying

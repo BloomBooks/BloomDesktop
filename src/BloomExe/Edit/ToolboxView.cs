@@ -213,7 +213,16 @@ namespace Bloom.Edit
 				case "state":
 					UpdateToolState(book, args[1], args[2]);
 					return;
+				case "visibility":
+					UpdateToolboxVisibility(book, args[1]);
+					return;
 			}
+		}
+
+		private static void UpdateToolboxVisibility(Book.Book book, string visibility)
+		{
+			book.BookInfo.ToolboxIsOpen = (visibility=="visible");
+			book.BookInfo.Save();
 		}
 
 		private static void UpdateToolState(Book.Book book, string toolName, string state)
