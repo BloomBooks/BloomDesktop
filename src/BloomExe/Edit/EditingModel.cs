@@ -676,9 +676,6 @@ namespace Bloom.Edit
 				return;
 			}
 			AddStandardEventListeners();
-			//Review: this ultimately didn't seem to run any code
-			//foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
-			//				tool.RestoreSettings(_view);
 		}
 
 		/// <summary>

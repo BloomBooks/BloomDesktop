@@ -82,12 +82,6 @@ namespace Bloom.Edit
 		// Default does nothing.
 		internal virtual void SaveSettings(ElementProxy toolbox)
 		{ }
-
-		// May be overridden to restore the tool state during page initialization.
-		// This is run after the page is otherwise idle.
-		//Review: this ultimately didn't seem to run any code
-		//		internal virtual void RestoreSettings(EditingView _view)
-		//		{ }
 	}
 
 	/// <summary>
