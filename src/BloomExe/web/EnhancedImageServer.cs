@@ -550,6 +550,9 @@ namespace Bloom.Api
 
 			if (!File.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
 			{
+				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
+				// template page, look for that thumbnail in the book that is the template source,
+				// rather than in the folder that stores the page choose dialog HTML and code.
 				var templatePath = Path.Combine(CurrentBookHandler.CurrentBook.FindTemplateBook().FolderPath,
 					localPath.Substring("pageChooser/".Length));
 				if (File.Exists(templatePath))
