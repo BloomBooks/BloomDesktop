@@ -71,7 +71,7 @@ override_dh_auto_install:
 	# REVIEW: the specs are not completely clear where the file should go: /usr/share/appdata,
 	# /usr/share/app-info/xmls, or /usr/share/metainfo.
 	install -d $(DESTDIR)/usr/share/appdata
-	install -m 644 debian/bloom.desktop.appdata.xml $(DESTDIR)/usr/share/appdata
+	install -m 644 debian/bloom.appdata.xml $(DESTDIR)/usr/share/appdata
 
 # Don't export any assemblies to other packages
 override_dh_makeclilibs:
