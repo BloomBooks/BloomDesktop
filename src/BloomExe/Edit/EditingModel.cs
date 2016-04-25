@@ -979,11 +979,11 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// Saves stuff (currently just the visibility of the toolbox) which is best read from the state of the HTML
+		/// Saves stuff (currently just the visibility of the toolbox) which is best read from the state of the HTML.
+		/// Enhance: we'd like all this stuff to be handled by API calls.
 		/// </summary>
 		void SaveToolboxState()
 		{
-			return; //https://silbloom.myjetbrains.com/youtrack/issue/BL-3057
 			var checkbox = _view.GetShowToolboxCheckbox();
 			if (checkbox == null)
 			{
@@ -993,9 +993,6 @@ namespace Bloom.Edit
 			var showToolbox = checkbox.Checked;
 			_currentlyDisplayedBook.BookInfo.ToolboxIsOpen = showToolbox;
 			_currentlyDisplayedBook.BookInfo.Save();
-
-			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
-				tool.SaveSettings(_view.ToolBoxElement);
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
