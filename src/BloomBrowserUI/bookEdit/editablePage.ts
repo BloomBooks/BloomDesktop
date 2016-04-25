@@ -18,7 +18,6 @@ import {origamiCanUndo} from './js/origami';
 export {origamiCanUndo}
 import {origamiUndo} from './js/origami';
 export {origamiUndo}
-// this ended up embedding ckeditor in our big bundle, which then caused ckeditor to look for its support files in the wrong places (c[a] undefined): import '../lib/ckeditor/ckeditor.js';
 
 var styleSheets = [
     'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
@@ -31,7 +30,8 @@ var styleSheets = [
     'StyleEditor/StyleEditor.css',
     'bookEdit/css/bloomDialog.css',
     'lib/long-press/longpress.css',
-    'bookEdit/toolbox/talkingBook/audioRecording.css'
+    'bookEdit/toolbox/talkingBook/audioRecording.css',
+    'node_modules/select2/dist/css/select2.css'
 ];
 
 

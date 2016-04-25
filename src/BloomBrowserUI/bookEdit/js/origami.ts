@@ -4,7 +4,7 @@
 import {fireCSharpEditEvent} from './bloomEditing';
 import {SetupImage} from './bloomImages';
 import 'split-pane/split-pane.js';
-import {ElementQueries} from 'css-element-queries';
+import {ElementQueries} from 'css-element-queries'; //nb: this in turn loads resizesensor.js from the same module
 
 $(function () {
     $('div.split-pane').splitPane();

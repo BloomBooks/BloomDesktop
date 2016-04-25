@@ -1,4 +1,6 @@
 /// <reference path="../../typings/bundledFromTSC.d.ts"/>
+/// <reference path="../../typings/jquery/jquery.d.ts" />
+/// <reference path="../../typings/select2/select2.d.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
@@ -6,6 +8,7 @@
 /// <reference path="../js/toolbar/toolbar.d.ts"/>
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
+//import select2 = require('select2');
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
@@ -430,8 +433,15 @@ export default class StyleEditor {
         var pxSize = parseInt(sizeString);
         var ptSize = this.ConvertPxToPt(pxSize, false);
         var sizes = this.getPointSizes();
-        ptSize = StyleEditor.GetClosestValueInList(sizes, ptSize);
+        
+        // This was a good idea but we need custom values now
+        //ptSize = StyleEditor.GetClosestValueInList(sizes, ptSize);
 
+        // if(ptSize != StyleEditor.GetClosestValueInList(sizes, ptSize)){
+        //     //TODO: we probably need to do rounding
+        // }
+        
+        ptSize = Math.round(ptSize);
         var fontName = box.css('font-family');
         if (fontName[0] == '\'' || fontName[0] == '"') {
             fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
@@ -661,7 +671,17 @@ export default class StyleEditor {
                 }
                 html += '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
-                $('body').after(html);
+                $('body').append(html);
+
+                //make some select boxes permit custom values
+                $('.allowCustom').select2({
+                    tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
+                });
+                $('select:not(.allowCustom)').select2({
+                    tags: false,
+                    minimumResultsForSearch: -1 // result is that no search box is shown
+                });
+
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
                 toolbar.draggable({ distance: 10, scroll: false, containment: $('html') });
@@ -774,16 +794,16 @@ export default class StyleEditor {
         return this.makeDiv(null, null, null, null,
                 this.makeDiv(null, null, null, 'EditTab.Font', 'Font')
                 + this.makeDiv(null, "control-section", null, null,
-                    this.makeSelect(fonts, current.fontName, 'font-select', 15) + ' '
-                    + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select'))
+                    this.makeSelect(fonts, current.fontName, 'font-select', 25) + ' '
+                    + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select', 99, 'allowCustom'))
                 + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing')
-                + this.makeDiv(null, null, null, null,
-                    '<span style="white-space: nowrap">'
-                    + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">'
+                + this.makeDiv("spacingRow", null, null, null,
+                    '<span  id="lineSpacing" style="white-space: nowrap">'
+                    + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.svg">'
                     + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' '
                     + '</span>' + ' '
-                    + '<span style="white-space: nowrap">'
-                    + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">'
+                    + '<span id="wordSpacing" style="white-space: nowrap">'
+                    + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.svg">'
                     + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
                     + '</span>'))
             + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, null);
@@ -976,8 +996,16 @@ export default class StyleEditor {
         $('#styleSelect').append(newOption);
     }
 
-    makeSelect(items, current, id, maxlength?) {
-        var result = '<select id="' + id + '">';
+    makeSelect(items :string[], current, id, maxlength?, classes?: string) {
+        classes = classes || "";
+        var result = '<select id="' + id + '" class="'+classes+'">';
+        if(current && items.indexOf(current.toString()) == -1){
+            //we have a custom point size, so make that an option in addition to the standard ones
+            items.push(current.toString());
+        }
+
+        items.sort( (a:string,b:string) => Number(a) - Number(b));
+        
         for (var i = 0; i < items.length; i++) {
             var selected: string = "";
             if (current == items[i]) selected = ' selected';
@@ -1045,6 +1073,7 @@ export default class StyleEditor {
 
     changeSize() {
         if (this.ignoreControlChanges) return;
+        
         var fontSize = $('#size-select').val();
         var units = 'pt';
         var sizeString = fontSize.toString();

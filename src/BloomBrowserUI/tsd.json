@@ -28,6 +28,9 @@
     },
     "query-string/query-string.d.ts": {
       "commit": "4ec3c5bf291bc02f49eb30c1077340b235165c67"
+    },
+    "select2/select2.d.ts": {
+      "commit": "94d8775a947f626269b06ccadd6f5e61839389d0"
     }
   }
 }
