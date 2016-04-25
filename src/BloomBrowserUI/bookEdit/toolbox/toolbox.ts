@@ -234,9 +234,12 @@ function setCurrentPanel(currentPanel) {
     var ani = toolbox.accordion('option', 'animate');
     toolbox.accordion('option', 'animate', false);
 
-    // the index must be passed as an int, a string will not work. Also, H3 elements have indexes 1, 3, 5, 7,
-    // since an ID is generated for the intermediate content divs also. We need 0, 1, 2, 3.
-    var toolIndex = Math.floor(parseInt(idx) / 2);
+    // the index must be passed as an int, a string will not work.
+    // (May be worth retaining a note that in an earlier version of accordion, H3 elements had indexes 1, 3, 5, 7,
+    // since an ID was generated for the intermediate content divs also. We need 0, 1, 2, 3.
+    // Currently however it seems the generated IDs are 0, 1, and 2 as would be expected; the 'more' header doesn't
+    // seem to get a numbered ID which is not a problem since it can't be a persisted current tool.)
+    var toolIndex = parseInt(idx);
     toolbox.accordion('option', 'active', toolIndex);
 
     // turn animation back on
