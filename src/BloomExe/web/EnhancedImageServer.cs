@@ -548,13 +548,25 @@ namespace Bloom.Api
 					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
 			}
 
-			if (localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
+			if (!File.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
 			{
 				var templatePath = Path.Combine(CurrentBookHandler.CurrentBook.FindTemplateBook().FolderPath,
 					localPath.Substring("pageChooser/".Length));
 				if (File.Exists(templatePath))
 				{
 					info.ReplyWithImage(templatePath);
+					return true;
+				}
+			}
+			if (!File.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
+			{
+				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
+				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
+				// altering the main book title.
+				var currentFolderPath = Path.Combine(CurrentBookHandler.CurrentBook.FolderPath, Path.GetFileName(localPath));
+				if (File.Exists(currentFolderPath))
+				{
+					info.ReplyWithImage(currentFolderPath);
 					return true;
 				}
 			}
