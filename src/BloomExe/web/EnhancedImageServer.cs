@@ -547,6 +547,32 @@ namespace Bloom.Api
 				if (startOfBookEdit > 0)
 					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
 			}
+
+			if (!File.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
+			{
+				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
+				// template page, look for that thumbnail in the book that is the template source,
+				// rather than in the folder that stores the page choose dialog HTML and code.
+				var templatePath = Path.Combine(CurrentBookHandler.CurrentBook.FindTemplateBook().FolderPath,
+					localPath.Substring("pageChooser/".Length));
+				if (File.Exists(templatePath))
+				{
+					info.ReplyWithImage(templatePath);
+					return true;
+				}
+			}
+			if (!File.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
+			{
+				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
+				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
+				// altering the main book title.
+				var currentFolderPath = Path.Combine(CurrentBookHandler.CurrentBook.FolderPath, Path.GetFileName(localPath));
+				if (File.Exists(currentFolderPath))
+				{
+					info.ReplyWithImage(currentFolderPath);
+					return true;
+				}
+			}
 			if (!File.Exists(path))
 			{
 				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Server could not find the file "+path,"LocalPath was "+localPath);

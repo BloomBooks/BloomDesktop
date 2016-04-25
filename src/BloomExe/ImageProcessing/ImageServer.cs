@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -105,6 +106,13 @@ namespace Bloom.ImageProcessing
 				extension = extension.ToLower();
 			//note, we're omitting SVG
 			return (new[] { ".png", ".jpg", ".jpeg"}.Contains(extension));
+		}
+
+		static HashSet<string> _imageExtentions = new HashSet<string>(new[] { ".jpg", "jpeg", ".png", ".svg" });
+
+		internal static bool IsImageTypeThatCanBeReturned(string path)
+		{
+			return _imageExtentions.Contains((Path.GetExtension(path) ?? "").ToLowerInvariant());
 		}
 	}
 }
