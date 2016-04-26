@@ -84,8 +84,12 @@ namespace Bloom.Api
 					else
 					{
 						//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
+						// And return the English string, which is what we would do the next time anyway.  (BL-3374)
 						LocalizationManager.GetDynamicString("Bloom", id, englishText);
-						return false;
+						SIL.Reporting.Logger.WriteEvent("**I18NHandler: Added missing translatable string (\"{0}\")", englishText);
+						info.ContentType = "text/plain";
+						info.WriteCompleteOutput(englishText);
+						return true;
 					}
 					break;
 			}
