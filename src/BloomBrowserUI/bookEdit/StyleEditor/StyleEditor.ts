@@ -8,7 +8,8 @@
 /// <reference path="../js/toolbar/toolbar.d.ts"/>
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
-//import select2 = require('select2');
+
+import '../../node_modules/select2/dist/js/select2.js';
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';

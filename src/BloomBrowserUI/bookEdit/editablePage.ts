@@ -30,8 +30,7 @@ var styleSheets = [
     'StyleEditor/StyleEditor.css',
     'bookEdit/css/bloomDialog.css',
     'lib/long-press/longpress.css',
-    'bookEdit/toolbox/talkingBook/audioRecording.css',
-    'node_modules/select2/dist/css/select2.css'
+    'bookEdit/toolbox/talkingBook/audioRecording.css'
 ];
 
 
