@@ -174,7 +174,6 @@ namespace Bloom.Edit
 				if(TestForTooShortAndSendFailIfSo(request))
 				{
 					_startRecordingTimer.Enabled = false;//we don't want it firing in a few milliseconds from now
-					request.Failed("Too Short (had not started yet)");
 					return;
 				}
 
@@ -500,41 +499,48 @@ namespace Bloom.Edit
 				// to update the icon. At that point we start really sending volume requests.
 				if (_recorder == null)
 				{
-					_recorder = new AudioRecorder(1);
-					_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
-					BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
-					Application.ApplicationExit += (sender, args) =>
+					var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+					if (formToInvokeOn == null)
 					{
 						NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not find a form on which to start the level monitoring code. Please restart Bloom.");
 						return null;
 					}
-					formToInvokeOn.Invoke((Action)(() =>
+					if(formToInvokeOn.InvokeRequired)
 					{
-						_recorder = new AudioRecorder(1);
-						_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
-						BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
-						Application.ApplicationExit += (sender, args) =>
-						{
-							if (_recorder != null)
-							{
-								var temp = _recorder;
-								_recorder = null;
-								try
-								{
-									temp.Dispose();
-								}
-								catch (Exception)
-								{
-									// Not sure how this can fail, but we don't need to crash if
-									// something goes wrong trying to free the audio object.
-									Debug.Fail("Something went wrong disposing of AudioRecorder");
-								}
-							}
-						};
-					}));
+						formToInvokeOn.Invoke((Action)(CreateRecorder));
+					}
+					else
+					{
+						CreateRecorder();
+					}
 				}
 				return _recorder;
 			}
+		}
+
+		private void CreateRecorder()
+		{
+			_recorder = new AudioRecorder(1);
+			_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
+			BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
+			Application.ApplicationExit += (sender, args) =>
+			{
+				if(_recorder != null)
+				{
+					var temp = _recorder;
+					_recorder = null;
+					try
+					{
+						temp.Dispose();
+					}
+					catch(Exception)
+					{
+						// Not sure how this can fail, but we don't need to crash if
+						// something goes wrong trying to free the audio object.
+						Debug.Fail("Something went wrong disposing of AudioRecorder");
+					}
+				}
+			};
 		}
 #endif
 
