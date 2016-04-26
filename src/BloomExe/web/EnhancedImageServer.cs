@@ -205,7 +205,7 @@ namespace Bloom.Api
 				{
 					lock(SyncObj)
 					{
-						return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings);
+						return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, CurrentBookHandler.CurrentBook);
 					}
 				}
 			}
