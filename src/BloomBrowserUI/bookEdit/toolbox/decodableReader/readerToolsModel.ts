@@ -20,7 +20,6 @@ import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synp
 import SynphonyApi from './synphonyApi';
 import {DataWord,TextFragment} from './libSynphony/bloom_lib';
 import axios = require('axios');
-import AxiosXhr = Axios.AxiosXHR;
 var SortType = {
   alphabetic: "alphabetic",
   byLength: "byLength",
