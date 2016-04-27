@@ -12,11 +12,11 @@ import {theOneLibSynphony, theOneLanguageDataInstance, LanguageData, LibSynphony
 import * as _ from 'underscore';
 
 export function clearWordCache() {
-    wordCache = null;
+    theOneWordCache = null;
 }
 
 
-var wordCache;
+var theOneWordCache;
 
 /**
  * Grapheme data in LanguageData.GPCS
@@ -245,28 +245,28 @@ LibSynphony.prototype.selectGPCWordNamesWithArrayCompare = function(aDesiredGPCs
 LibSynphony.prototype.selectGPCWordsFromCache = function(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech) {
 
     // check if the list of graphemes changed
-    if (!wordCache) {
-        wordCache = new WordCache();
+    if (!theOneWordCache) {
+        theOneWordCache = new WordCache();
     }
     else {
-        if ((wordCache.desiredGPCs.length !== aDesiredGPCs.length) ||
-            (wordCache.knownGPCs.length !== aKnownGPCs.length) ||
-            (_.intersection(wordCache.desiredGPCs, aDesiredGPCs).length !== aDesiredGPCs.length) ||
-            (_.intersection(wordCache.knownGPCs, aKnownGPCs).length !== aKnownGPCs.length)) {
-                wordCache = new WordCache();
+        if ((theOneWordCache.desiredGPCs.length !== aDesiredGPCs.length) ||
+            (theOneWordCache.knownGPCs.length !== aKnownGPCs.length) ||
+            (_.intersection(theOneWordCache.desiredGPCs, aDesiredGPCs).length !== aDesiredGPCs.length) ||
+            (_.intersection(theOneWordCache.knownGPCs, aKnownGPCs).length !== aKnownGPCs.length)) {
+            theOneWordCache = new WordCache();
         }
         else {
 
             // return the cached list
-            return wordCache.selectedWords;
+            return theOneWordCache.selectedWords;
         }
     }
 
-    wordCache.desiredGPCs = aDesiredGPCs;
-    wordCache.knownGPCs = aKnownGPCs;
-    wordCache.selectedWords = theOneLibSynphony.selectGPCWordsWithArrayCompare(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech);
+    theOneWordCache.desiredGPCs = aDesiredGPCs;
+    theOneWordCache.knownGPCs = aKnownGPCs;
+    theOneWordCache.selectedWords = theOneLibSynphony.selectGPCWordsWithArrayCompare(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech);
 
-    return wordCache.selectedWords;
+    return theOneWordCache.selectedWords;
 };
 
 /**

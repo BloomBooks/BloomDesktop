@@ -211,7 +211,7 @@ function initializeSynphony(settingsFileContent: string): void {
  * Called in response to a request for the files in the sample texts directory
  * @param textsList List of file names delimited by \r
  */
-function beginSetTextsList(textsList: string): JQueryPromise<void> {
+function beginSetTextsList(textsList: string): Promise<void> {
   return ReaderToolsModel.beginSetTextsList(textsList.split(/\r/).filter(function(e){return e ? true : false;}));
 }
 
@@ -247,11 +247,10 @@ function refreshSettingsExceptSampleWords(newSettings) {
  * a consistent state after changes to the sample words files or the panel in the settings dialog.
  * Returns a promise which is resolved when all the sample words files are loaded and the model is ready to use.
  */
-function beginRefreshEverything(settings: ReaderSettings) : JQueryPromise<void> {
+function beginRefreshEverything(settings: ReaderSettings) : Promise<void> {
   // reset the file and word list
   ResetLanguageDataInstance();
   ReaderToolsModel.model.allWords = {};
-  ReaderToolsModel.model.textCounter = 0;
   // This helps with updating the matching words panel in the setup dialog. If we switched to the
   // sample words tab, changed sample words, and switched back, or if the user just edited the sample
   // words files in the background, nothing will have changed that indicates the cache is invalid;
@@ -259,35 +258,28 @@ function beginRefreshEverything(settings: ReaderSettings) : JQueryPromise<void> 
   // updating.
   clearWordCache();
 
-  ReaderToolsModel.model.setSynphony(new SynphonyApi());
-
-  var synphony = ReaderToolsModel.model.synphony;
+  var synphony = new SynphonyApi();
   synphony.loadSettings(settings);
+  ReaderToolsModel.model.setSynphony(synphony);
 
   // reload the sample texts
-  var promise = $.Deferred<void>();
-  axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => beginSetTextsList(result.data).then(() => promise.resolve()));
-  return promise;
+  return <any>axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => beginSetTextsList(result.data));
 }
 
-export function beginSaveChangedSettings(settings: ReaderSettings, previousMoreWords: string): JQueryPromise<void> {
-  var promise = $.Deferred<void>();
-  axios.post('/bloom/api/readers/readerToolSettings', settings)
+export function beginSaveChangedSettings(settings: ReaderSettings, previousMoreWords: string): Promise<void> {
+  return <any>axios.post('/bloom/api/readers/readerToolSettings', settings)
     .then(result => {
       // reviewslog: following previous logic that we need to reload files if useAllowedWords
       // is true. Seems we should at least need to do it ALSO if it was PREVIOUSLY true.
       // But that is a very obscure case...we don't expect users to switch back and forth
       // in the basic mechanism by which they define stages.
       if (settings.moreWords !== previousMoreWords || settings.useAllowedWords) {
-        beginRefreshEverything(settings).then(() => {
-          promise.resolve();
-        });
+        return beginRefreshEverything(settings); // caller will resolve when everything is refreshed
       } else {
         refreshSettingsExceptSampleWords(settings);
-        promise.resolve(); // nothing to wait for
+        return null;
       }
     });
-  return promise;
 }
 
 /**

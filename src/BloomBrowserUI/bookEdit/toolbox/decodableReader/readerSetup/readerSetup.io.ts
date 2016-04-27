@@ -110,7 +110,7 @@ function saveClicked(): void {
 /**
  * Pass the settings to the server to be saved
  */
-export function beginSaveChangedSettings(): JQueryPromise<void> {
+export function beginSaveChangedSettings(): Promise<void> {
   var settings = getChangedSettings();
   // Be careful here! After we return this promise, this dialog (and its iframe) my close and the iframe code
   // (including this method here) gets unloaded. So it's important that the block of code that saves the settings and updates things

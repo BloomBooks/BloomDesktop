@@ -62,7 +62,6 @@ export class ReaderToolsModel {
   currentMarkupType: number = MarkupType.None;
   allWords = {};
   texts = [];
-  textCounter: number = 0;
   setupType: string = '';
   fontName: string = '';
   readableFileExtensions: string[] = [];
@@ -908,20 +907,17 @@ export class ReaderToolsModel {
     }
   }
 
-  static beginSetTextsList(textsArg: string[] ): JQueryPromise<void> {
+  static beginSetTextsList(textsArg: string[] ): Promise<void> {
     // only save the file types we can read
     ReaderToolsModel.model.texts = textsArg.filter(t => {
       var ext = t.split('.').pop();
       return ReaderToolsModel.getReadableFileExtensions().indexOf(ext) > -1;
     });
-    ReaderToolsModel.model.textCounter = 0;
-    var result = $.Deferred<void>();
-    ReaderToolsModel.model.beginGetAllSampleFiles().then(() => {
+    return ReaderToolsModel.model.beginGetAllSampleFiles().then(() => {
       ReaderToolsModel.model.addWordsToSynphony();
 
-      // The word list has been received. Now we are using setTimeout() to move the remainder of the word
-      // list processing to another thread so the UI doesn't appear frozen as long. This is essentially
-      // the JavaScript version of Application.DoEvents().
+      // The word list has been received. Now we are using setTimeout() to delay the remainder of the word
+      // list processing so the UI doesn't appear frozen as long.
       setTimeout(function () {
 
         ReaderToolsModel.model.wordListLoaded = true;
@@ -933,9 +929,7 @@ export class ReaderToolsModel {
         // write out the ReaderToolsWords-xyz.json file
         axios.post('/bloom/api/readers/saveReaderToolsWords', theOneLanguageDataInstance);
       }, 200);
-      result.resolve(); // main point is, after we got all the samples and did addWordsToSynphony
     });
-    return result;
   }
 
 
@@ -947,25 +941,18 @@ export class ReaderToolsModel {
    * We ought to be able to just return the axios.get.then, but I don't know how to return
    * a pre-resolved one when we get down to none left.
    */
-  beginGetAllSampleFiles(promiseIn? : JQueryDeferred<void>): JQueryPromise<void> {
-    var promise = promiseIn || $.Deferred<void>(); // first call makes the promise
-    if (this.textCounter >= this.texts.length) {
-      promise.resolve(); // either there were none, or this is the most deeply nested recursion after we processed the last one.
-      return promise;
-    }
-
-    var fileName = this.texts[this.textCounter++];
-    axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: fileName } })
-      .then(result => {
-        //axios get here is giving us an object even though the c# sends a text/plain.
-        //and that would normally be great, but unfortunately the downstream code was written to take a raw
-        //string (which happpens to be JSON). So for now, we just make it a string.
-        var resultAsString = JSON.stringify(result.data);
-        ReaderToolsModel.setSampleFileContents(resultAsString);
-        // recursive call to get another
-        this.beginGetAllSampleFiles(promise);
-      });
-    return promise;
+  beginGetAllSampleFiles(): Promise<void> {
+    // The <any> works around a flaw in the declaration of axios.all in axios.d.ts.
+    return (<any>axios).all(this.texts.map(fileName => {
+      return axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: fileName } })
+        .then(result => {
+          //axios get here is giving us an object even though the c# sends a text/plain.
+          //and that would normally be great, but unfortunately the downstream code was written to take a raw
+          //string (which happpens to be JSON). So for now, we just make it a string.
+          var resultAsString = JSON.stringify(result.data);
+          ReaderToolsModel.setSampleFileContents(resultAsString);
+        });
+    }));
   }
 
   /**
