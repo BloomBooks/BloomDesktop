@@ -35,6 +35,10 @@ namespace Bloom
 			string moreDetails = null,
 			Exception exception = null)
 		{
+			// Simplify some checks below by tweaking the channel name on Linux.
+			var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
+			if (channel.EndsWith("-unstable"))
+				channel = channel.Replace("unstable", "alpha");
 			try
 			{
 				shortUserLevelMessage = shortUserLevelMessage == null ? "" : shortUserLevelMessage;
@@ -79,8 +83,6 @@ namespace Bloom
 					shortUserLevelMessage = "[Alpha]: " + shortUserLevelMessage;
 				}
 
-				var channel = ApplicationUpdateSupport.ChannelName.ToLower();
-
 				if(Matches(modalThreshold).Any(s => channel.Contains(s)))
 				{
 					try
@@ -107,7 +109,7 @@ namespace Bloom
 			catch(Exception errorWhileReporting)
 			{
 				Debug.Fail("error in nonfatalError reporting");
-				if(ApplicationUpdateSupport.ChannelName.ToLower().Contains("alpha"))
+				if (channel.Contains("alpha"))
 					ErrorReport.NotifyUserOfProblem(errorWhileReporting,"Error while reporting non fatal error");
 			}
 		}
