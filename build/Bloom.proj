@@ -216,7 +216,7 @@
 
 		<!-- Bloom expects an icon with a name corresponding to the EXE, which gets used for the desktop shortcut.
 		If we one day make distinct icons for the channels, we'll need to revise this to get the right channel-specific icon.-->
-		<Copy SourceFiles="$(RootDir)\src\BloomExe\Resources\Bloom.ico"  DestinationFiles="$(RootDir)\output\Release\Bloom$(channelRelease).ico"/>
+		<Copy SourceFiles="$(RootDir)\src\SquirrelInstaller\Bloom.ico"  DestinationFiles="$(RootDir)\output\Release\Bloom$(channelRelease).ico"/>
 
 		<Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
 
