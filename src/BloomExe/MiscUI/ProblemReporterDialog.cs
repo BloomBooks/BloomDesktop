@@ -543,7 +543,7 @@ namespace Bloom.MiscUI
 			base.OnHandleCreated(e);
 
 			// BL-832: a bug in Mono requires us to wait to set Icon until handle created.
-			this.Icon = global::Bloom.Properties.Resources.Bloom;
+			this.Icon = global::Bloom.Properties.Resources.BloomIcon;
 			this.ShowIcon = false;
 		}
 

@@ -788,7 +788,7 @@ namespace Bloom
 				// so I'm not very worried.
 				var fakeLocalDir = new TemporaryFolder("Bloom fake localization").FolderPath;
 				_applicationContainer.LocalizationManager = LocalizationManager.Create("en", "Bloom", "Bloom", Application.ProductVersion, fakeLocalDir, "SIL/Bloom",
-										   Resources.Bloom, "issues@bloomlibrary.org",
+										   Resources.BloomIcon, "issues@bloomlibrary.org",
 											//the parameters that follow are namespace beginnings:
 										   "Bloom");
 				return;
@@ -800,7 +800,7 @@ namespace Bloom
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
 										   "SIL/Bloom",
-										   Resources.Bloom, "issues@bloomlibrary.org",
+										   Resources.BloomIcon, "issues@bloomlibrary.org",
 										   //the parameters that follow are namespace beginnings:
 										   "Bloom");
 
@@ -821,7 +821,7 @@ namespace Bloom
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,
 											"SIL/Bloom",
-											Resources.Bloom, "issues@bloomlibrary.org", "SIL");
+											Resources.BloomIcon, "issues@bloomlibrary.org", "SIL");
 
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 			}
