@@ -47,7 +47,7 @@
 			this.pictureBox1.Image = global::Bloom.Properties.Resources.LogoForSplashScreen;
 			this.pictureBox1.Location = new System.Drawing.Point(57, 71);
 			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(300, 67);
+			this.pictureBox1.Size = new System.Drawing.Size(301, 66);
 			this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
 			this.pictureBox1.TabIndex = 0;
 			this.pictureBox1.TabStop = false;
@@ -64,7 +64,7 @@
 			this._longVersionInfo.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this._longVersionInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(104)))), ((int)(((byte)(166)))));
 			this._longVersionInfo.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-			this._longVersionInfo.Location = new System.Drawing.Point(55, 253);
+			this._longVersionInfo.Location = new System.Drawing.Point(53, 253);
 			this._longVersionInfo.Name = "_longVersionInfo";
 			this._longVersionInfo.Size = new System.Drawing.Size(69, 15);
 			this._longVersionInfo.TabIndex = 13;
@@ -76,7 +76,7 @@
 			this._feedbackStatusLabel.AutoSize = true;
 			this._feedbackStatusLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this._feedbackStatusLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(104)))), ((int)(((byte)(166)))));
-			this._feedbackStatusLabel.Location = new System.Drawing.Point(55, 223);
+			this._feedbackStatusLabel.Location = new System.Drawing.Point(53, 223);
 			this._feedbackStatusLabel.Name = "_feedbackStatusLabel";
 			this._feedbackStatusLabel.Size = new System.Drawing.Size(105, 15);
 			this._feedbackStatusLabel.TabIndex = 17;
@@ -90,7 +90,7 @@
 			this.label2.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(104)))), ((int)(((byte)(166)))));
 			this.label2.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-			this.label2.Location = new System.Drawing.Point(55, 268);
+			this.label2.Location = new System.Drawing.Point(53, 268);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(162, 15);
 			this.label2.TabIndex = 19;
@@ -104,7 +104,7 @@
 			this._shortVersionLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this._shortVersionLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(104)))), ((int)(((byte)(166)))));
 			this._shortVersionLabel.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-			this._shortVersionLabel.Location = new System.Drawing.Point(55, 238);
+			this._shortVersionLabel.Location = new System.Drawing.Point(53, 238);
 			this._shortVersionLabel.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
 			this._shortVersionLabel.Name = "_shortVersionLabel";
 			this._shortVersionLabel.Size = new System.Drawing.Size(49, 15);
@@ -127,7 +127,7 @@
 			// 
 			this._channelLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this._channelLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(104)))), ((int)(((byte)(166)))));
-			this._channelLabel.Location = new System.Drawing.Point(179, 141);
+			this._channelLabel.Location = new System.Drawing.Point(173, 141);
 			this._channelLabel.Margin = new System.Windows.Forms.Padding(0);
 			this._channelLabel.Name = "_channelLabel";
 			this._channelLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
