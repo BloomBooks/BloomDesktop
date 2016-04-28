@@ -702,6 +702,7 @@ class StyleEditor {
                     if (editor.authorMode) {
                         if (!editor.xmatterMode) {
                             $('#styleSelect').change(function() { editor.selectStyle(); });
+                            $('#styleSelect + ').change(function() { editor.selectStyle(); });
                             (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
                             $('#style-select-input').on('input', function () { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
                             // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
@@ -1223,6 +1224,8 @@ class StyleEditor {
         this.ignoreControlChanges = true;
         $('#font-select').val(current.fontName);
         $('#size-select').val(current.ptSize.toString());
+        $("#size-select").select2(current.ptSize.toString());
+        //$("#size-select").select2(current.ptSize.toString());.trigger("change");
         $('#line-height-select').val(current.lineHeight);
         $('#word-space-select').val(current.wordSpacing);
         var buttonIds = this.getButtonIds();
