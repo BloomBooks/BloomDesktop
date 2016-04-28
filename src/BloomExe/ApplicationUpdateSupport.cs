@@ -120,7 +120,7 @@ namespace Bloom
 					{
 						// Enhance: bring this in quiet mode, but only show it after an update.
 						var noneNotifier = new ToastNotifier();
-						noneNotifier.Image.Image = Resources.Bloom;
+						noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
 						string message;
 						if (outcome == UpdateOutcome.AlreadyUpToDate)
 							message = LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");

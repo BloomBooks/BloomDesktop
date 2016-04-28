@@ -66,7 +66,7 @@ namespace Bloom
 
 		private void SplashScreen_Paint(object sender, PaintEventArgs e)
 		{
-			var borderWidth = 1;
+			var borderWidth = 0;
 			var color = Palette.BloomRed;
 			ControlPaint.DrawBorder(e.Graphics, ClientRectangle, color,borderWidth, ButtonBorderStyle.Solid,
 										color,borderWidth, ButtonBorderStyle.Solid,
