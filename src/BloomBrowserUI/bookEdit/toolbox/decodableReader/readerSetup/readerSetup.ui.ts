@@ -4,7 +4,6 @@ import theOneLocalizationManager from '../../../../lib/localizationManager/local
 import '../../../../lib/jquery.onSafe.ts';
 import {beginSaveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
 import {DataWord} from '../libSynphony/bloom_lib';
-import BloomHelp from '../../../../BloomHelp.ts';
 import axios = require('axios');
 //import {ReaderToolsModel} from '../readerToolsModel';
 import * as _ from 'underscore';
@@ -118,7 +117,7 @@ function process_UI_Message(event: MessageEvent): void {
         default:
       }
       if (helpFile)
-        BloomHelp.show(helpFile);
+        axios.get("/bloom/api/help/"+helpFile);
       return;
 
     default:
