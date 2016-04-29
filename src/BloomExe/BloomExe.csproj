@@ -253,6 +253,11 @@
     <Compile Include="MiscUI\LanguageFontDetails.Designer.cs">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Publish\EpubMaker.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
@@ -367,11 +372,6 @@
     </Compile>
     <Compile Include="MiscUI\ProblemReporterDialog.Designer.cs">
       <DependentUpon>ProblemReporterDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Publish\AdobeReaderControl.cs">
       <SubType>UserControl</SubType>

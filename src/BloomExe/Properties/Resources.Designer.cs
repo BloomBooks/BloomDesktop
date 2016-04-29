@@ -363,16 +363,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Favicon16x16 {
-            get {
-                object obj = ResourceManager.GetObject("Favicon16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap feedback24x24 {
             get {
                 object obj = ResourceManager.GetObject("feedback24x24", resourceCulture);
@@ -473,16 +463,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Logo16x16 {
-            get {
-                object obj = ResourceManager.GetObject("Logo16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap LogoForSplashScreen {
             get {
                 object obj = ResourceManager.GetObject("LogoForSplashScreen", resourceCulture);
@@ -516,16 +496,6 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap newBook {
             get {
                 object obj = ResourceManager.GetObject("newBook", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap newBook1 {
-            get {
-                object obj = ResourceManager.GetObject("newBook1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
