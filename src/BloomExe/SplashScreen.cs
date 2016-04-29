@@ -66,10 +66,12 @@ namespace Bloom
 
 		private void SplashScreen_Paint(object sender, PaintEventArgs e)
 		{
-			ControlPaint.DrawBorder(e.Graphics, ClientRectangle, Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
-										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
-										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
-										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid);
+			var borderWidth = 0;
+			var color = Palette.BloomRed;
+			ControlPaint.DrawBorder(e.Graphics, ClientRectangle, color,borderWidth, ButtonBorderStyle.Solid,
+										color,borderWidth, ButtonBorderStyle.Solid,
+										color,borderWidth, ButtonBorderStyle.Solid,
+										color,borderWidth, ButtonBorderStyle.Solid);
 		}
 
 		protected override void OnHandleCreated(EventArgs e)
@@ -77,7 +79,12 @@ namespace Bloom
 			base.OnHandleCreated(e);
 
 			// BL-552, BL-779: a bug in Mono requires us to wait to set Icon until handle created.
-			this.Icon = global::Bloom.Properties.Resources.Bloom;
+			this.Icon = global::Bloom.Properties.Resources.BloomIcon;
+		}
+
+		private void label2_Click(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

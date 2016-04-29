@@ -682,7 +682,7 @@ export default class StyleEditor {
                     tags: false,
                     minimumResultsForSearch: -1 // result is that no search box is shown
                 });
-
+                
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
                 toolbar.draggable({ distance: 10, scroll: false, containment: $('html') });
@@ -964,7 +964,8 @@ export default class StyleEditor {
         // Insert it into our list and the option control on the second page.
         this.insertOption(typedStyle);
         //$('#styleSelect option:eq(' + typedStyle + ')').prop('selected', true);
-        $('#styleSelect').val(typedStyle);
+        this.setValueAndUpdateSelect2Control('styleSelect',typedStyle);
+        
         // This control has been hidden, but the user could show it again.
         // And showing it does not run the duplicate style check, since we expect it to be empty
         // at that point, so that made a loophole for creating duplicate styles.
@@ -1222,10 +1223,11 @@ export default class StyleEditor {
         // Now update all the controls to reflect the effect of applying this style.
         var current = this.getFormatValues();
         this.ignoreControlChanges = true;
-        $('#font-select').val(current.fontName);
-        $('#size-select').val(current.ptSize.toString());
-        $('#line-height-select').val(current.lineHeight);
-        $('#word-space-select').val(current.wordSpacing);
+        
+        this.setValueAndUpdateSelect2Control('font-select', current.fontName);
+        this.setValueAndUpdateSelect2Control('size-select', current.ptSize.toString());
+        this.setValueAndUpdateSelect2Control('line-height-select', current.lineHeight);
+        this.setValueAndUpdateSelect2Control('word-space-select', current.wordSpacing);
         var buttonIds = this.getButtonIds();
         for (var i = 0; i < buttonIds.length; i++) {
             $('#' + buttonIds[i]).removeClass('selectedIcon');
@@ -1235,6 +1237,13 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
+    //work around a bug in select2 where, when we change the value programmatically,
+    //the select control still shows the old value (though if you click on it, the correct
+    //value is highlighted.) See BL-2324
+    setValueAndUpdateSelect2Control(id:string, value:string){
+        $(id).val(value);
+        $('#select2-'+id+'-container').text(value);
+    }
 
     getStyleRule(ignoreLanguage:boolean) {
         var target = this.boxBeingEdited;

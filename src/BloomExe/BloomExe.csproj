@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -61,7 +61,7 @@
     <RootNamespace>Bloom</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\Bloom.ico</ApplicationIcon>
+    <ApplicationIcon>desktopAndTaskBar.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyName>Bloom</AssemblyName>
@@ -257,6 +257,11 @@
     <Compile Include="MiscUI\LanguageFontDetails.Designer.cs">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Publish\EpubMaker.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
@@ -371,11 +376,6 @@
     </Compile>
     <Compile Include="MiscUI\ProblemReporterDialog.Designer.cs">
       <DependentUpon>ProblemReporterDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Publish\AdobeReaderControl.cs">
       <SubType>UserControl</SubType>
@@ -898,9 +898,6 @@
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Bloom.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1148,14 +1145,12 @@
     <None Include="Resources\cropMarks.png" />
     <None Include="Resources\SILLogoBlue132x184.png" />
     <None Include="Resources\sil logo on dark 132x127.png" />
-    <None Include="Resources\BloomLargeOnWhite.png" />
     <None Include="Resources\SILBlueWithTagline100x140.png" />
     <None Include="Resources\SILBlueWithTagline101x141.png" />
     <None Include="Resources\SILBlueWithTagline102x142.png" />
     <None Include="Resources\SILInBlueNoTagLineWithTrademark100x50.png" />
     <None Include="Resources\SILInBlueNoTagLineWithTrademark100x113.png" />
     <None Include="Resources\SILInBlueNoTagLineWithTrademark80x90.png" />
-    <None Include="Resources\BloomDarkGrey300-ish.png" />
     <None Include="Resources\SILInBlue76.png" />
     <None Include="Resources\SILInBlue100.png" />
     <None Include="Resources\SIL_Logo_FadedBlue_Small_Transparent.png" />
@@ -1163,7 +1158,6 @@
     <None Include="Resources\cloud.png" />
     <None Include="Resources\upload.png" />
     <None Include="Resources\SIL_Logo_2014Small1.png" />
-    <None Include="Resources\betatag2.png" />
     <None Include="Resources\unstable.png" />
     <None Include="Resources\duplicatePage32x32.png" />
     <None Include="Resources\duplicatePageDisabled32x32.png" />
@@ -1249,6 +1243,12 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\epubPublishButton.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="desktopAndTaskBar.ico" />
+    <Content Include="desktopAndTaskBar.svg.ico" />
+    <None Include="Resources\normal.svg.ico" />
+    <None Include="Resources\bloom.png" />
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />

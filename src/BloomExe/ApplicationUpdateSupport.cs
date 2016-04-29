@@ -120,7 +120,7 @@ namespace Bloom
 					{
 						// Enhance: bring this in quiet mode, but only show it after an update.
 						var noneNotifier = new ToastNotifier();
-						noneNotifier.Image.Image = Resources.Bloom.ToBitmap();
+						noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
 						string message;
 						if (outcome == UpdateOutcome.AlreadyUpToDate)
 							message = LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");
@@ -137,7 +137,7 @@ namespace Bloom
 				// Unfortunately, there's no good time to dispose of this object...according to its own comments
 				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
 				var notifier = new ToastNotifier();
-				notifier.Image.Image = Resources.Bloom.ToBitmap();
+				notifier.Image.Image = Resources.Bloom;
 				notifier.ToastClicked += (sender, args) => restartBloom(newInstallDir);
 				notifier.Show(msg, action, -1);//Len wants it to stay up until he clicks on it
 			}
@@ -147,7 +147,7 @@ namespace Bloom
 		private static void ShowFailureNotification(string failMsg)
 		{
 			var failNotifier = new ToastNotifier();
-			failNotifier.Image.Image = Resources.Bloom.ToBitmap();
+			failNotifier.Image.Image = Resources.Bloom;
 			failNotifier.Show(failMsg, "", 5);
 		}
 
@@ -225,7 +225,7 @@ namespace Bloom
 					// Unfortunately, there's no good time to dispose of this object...according to its own comments
 					// it's not even safe to close it. It moves itself out of sight eventually if ignored.
 					var notifier = new ToastNotifier();
-					notifier.Image.Image = Resources.Bloom.ToBitmap();
+					notifier.Image.Image = Resources.Bloom;
 					notifier.ToastClicked += (sender, args) => CheckForASquirrelUpdate(BloomUpdateMessageVerbosity.Verbose, restartBloom, true);
 					notifier.Show(msg, action, 10);
 				}
@@ -292,7 +292,7 @@ namespace Bloom
 					return new UpdateResult() { NewInstallDirectory = null, Outcome = UpdateOutcome.AlreadyUpToDate }; // none available.
 
 				var updatingNotifier = new ToastNotifier();
-				updatingNotifier.Image.Image = Resources.Bloom.ToBitmap();
+				updatingNotifier.Image.Image = Resources.Bloom;
 				var version = updateInfo.FutureReleaseEntry.Version;
 				var releasesToDownload = updateInfo.ReleasesToApply;
 				var size = releasesToDownload.Sum(x => x.Filesize)/1024;
