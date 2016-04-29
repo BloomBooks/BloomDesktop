@@ -253,31 +253,51 @@ LibSynphony.prototype.processVocabularyGroups = function(optionalLangData) {
     var data = (typeof optionalLangData === "undefined") ? theOneLanguageDataInstance : optionalLangData;
 
     var n = data["VocabularyGroups"];
-    var u, gpc, syll;
     for (var a = 1; a < (n + 1); a++) {
         var group = "group" + a;
         for (var i = 0, len = data[group].length; i < len; i++) {
+            this.buildIndexDataForWord(data[group], i);
+        }
+    }
+};
 
-            //creates a unique array of all gpcs in a word
-            var temp = _.clone(data[group][i]["GPCForm"]);
-            u = _.uniq(temp);
-            data[group][i]["GPCS"] = u;
-            data[group][i]["GPCcount"] = u.length;
 
-            //creates a reverse form of the word's gpcs
-            data[group][i]["Reverse"] = temp.reverse().join('');
+/**
+ * Build our standard index data for a single word in a wordlist.
+ * A wordlist is a very subtle trick object. It is fundamentally an array of words, each of which is an
+ * object with a Name (the word), a GPCForm (the array of teachable letters that make up the word), and
+ * "Syllables", the number of syllables in the word.
+ * In addition, a wordlist is an object, with dynamic properties whose names are made up of a
+ * teachable letter (GPC), two underlines, and a word length in syllables. Each such key has a list of words
+ * which contain that GPC and have that many syllables.
+ * This function updates our indexing information for the word at index i. It first adds some properties
+ * to that word...a list of unique letters in it (GPCS), a count of those unique letters (GPCcount),
+ * and a reversed letter list (Reverse).
+ * Then it adds the word to the appropriate dynamic properties (creating them if necessary).
+ * @param {} wordList
+ * @param {} i
+ * @returns {}
+ */
+LibSynphony.prototype.buildIndexDataForWord = function(wordList, i) {
+    //creates a unique array of all gpcs in a word
+    var temp = _.clone(wordList[i].GPCForm);
+    var syll = wordList[i]["Syllables"];
+    var u = _.uniq(temp);
+    var gpc;
+    wordList[i].GPCS = u;
+    wordList[i].GPCcount = u.length;
 
-            if (data[group][i]["GPCS"] !== undefined) {
-                //creates arrays grouped by gpc and syllable length
-                for (var j = 0, jlen = u.length; j < jlen; j++) {
-                    gpc = u[j].toLowerCase();
-                    syll = data[group][i]["Syllables"];
-                    if (!data[group][gpc + '__' + syll]) {
-                        data[group][gpc + '__' + syll] = [];
-                    }
-                    data[group][gpc + '__' + syll].push(data[group][i]);
-                }
+    //creates a reverse form of the word's gpcs
+    wordList[i].Reverse = temp.reverse().join('');
+
+    if (wordList[i].GPCS !== undefined) {
+        //creates arrays grouped by gpc and syllable length
+        for (var j = 0, jlen = u.length; j < jlen; j++) {
+            gpc = u[j].toLowerCase();
+            if (!wordList[gpc + '__' + syll]) {
+                wordList[gpc + '__' + syll] = [];
             }
+            wordList[gpc + '__' + syll].push(wordList[i]);
         }
     }
 };

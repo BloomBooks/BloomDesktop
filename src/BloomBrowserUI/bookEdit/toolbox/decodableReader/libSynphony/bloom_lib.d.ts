@@ -41,3 +41,5 @@ export declare class TextFragment {
 
   wordCount(): number;
 }
+
+export declare function clearWordCache();

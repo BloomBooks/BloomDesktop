@@ -20,7 +20,6 @@ import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synp
 import SynphonyApi from './synphonyApi';
 import {DataWord,TextFragment} from './libSynphony/bloom_lib';
 import axios = require('axios');
-
 var SortType = {
   alphabetic: "alphabetic",
   byLength: "byLength",
@@ -62,7 +61,6 @@ export class ReaderToolsModel {
   currentMarkupType: number = MarkupType.None;
   allWords = {};
   texts = [];
-  textCounter: number = 0;
   setupType: string = '';
   fontName: string = '';
   readableFileExtensions: string[] = [];
@@ -908,21 +906,18 @@ export class ReaderToolsModel {
     }
   }
 
-  /**
-   * Called when we have finished processing a sample text file.
-   * If there are more files to load, request the next one.
-   * If there are no more files to load, process the word list.
-   */
-  getNextSampleFile(): void {
+  static beginSetTextsList(textsArg: string[] ): Promise<void> {
+    // only save the file types we can read
+    ReaderToolsModel.model.texts = textsArg.filter(t => {
+      var ext = t.split('.').pop();
+      return ReaderToolsModel.getReadableFileExtensions().indexOf(ext) > -1;
+    });
+    return ReaderToolsModel.model.beginGetAllSampleFiles().then(() => {
+      ReaderToolsModel.model.addWordsToSynphony();
 
-    // if there are no more files, process the word lists now
-    if (this.textCounter >= this.texts.length) {
-      this.addWordsToSynphony();
-
-      // The word list has been received. Now we are using setTimeout() to move the remainder of the word
-      // list processing to another thread so the UI doesn't appear frozen as long. This is essentially
-      // the JavaScript version of Application.DoEvents().
-      setTimeout(function() {
+      // The word list has been received. Now we are using setTimeout() to delay the remainder of the word
+      // list processing so the UI doesn't appear frozen as long.
+      setTimeout(function () {
 
         ReaderToolsModel.model.wordListLoaded = true;
         ReaderToolsModel.model.updateControlContents(); // needed if user deletes all of the stages.
@@ -933,41 +928,34 @@ export class ReaderToolsModel {
         // write out the ReaderToolsWords-xyz.json file
         axios.post('/bloom/api/readers/saveReaderToolsWords', theOneLanguageDataInstance);
       }, 200);
-
-      return;
-    }
-
-    // only get the contents of the file types we can read
-    var fileName;
-    do {
-      var ext = this.texts[this.textCounter].split('.').pop();
-      if (ReaderToolsModel.getReadableFileExtensions().indexOf(ext) > -1)
-        fileName = this.texts[this.textCounter];
-      this.textCounter++;
-    } while (!fileName && (this.textCounter < this.texts.length));
-
-      if (fileName) {
-//          axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: encodeURIComponent(fileName) } })
-          axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: fileName } })
-              .then(result => {
-                  //axios get here is giving us an object even though the c# sends a text/plain.
-                  //and that would normally be great, but unfortunately the downstream code was written to take a raw
-                  //string (which happpens to be JSON). So for now, we just make it a string.
-                  var resultAsString = JSON.stringify(result.data);
-                  ReaderToolsModel.setSampleFileContents(resultAsString);
-              })
-      } else {
-          this.getNextSampleFile();
-      }
+    });
   }
-n
+
+
+  /**
+   * Called to process sample data files.
+   * When all of them are read and processed, the promise is resolved.
+   */
+  beginGetAllSampleFiles(): Promise<void> {
+    // The <any> works around a flaw in the declaration of axios.all in axios.d.ts.
+    return (<any>axios).all(this.texts.map(fileName => {
+      return axios.get<string>('/bloom/api/readers/sampleFileContents', { params: { fileName: fileName } })
+        .then(result => {
+          //axios get here is giving us an object even though the c# sends a text/plain.
+          //and that would normally be great, but unfortunately the downstream code was written to take a raw
+          //string (which happpens to be JSON). So for now, we just make it a string.
+          var resultAsString = JSON.stringify(result.data);
+          ReaderToolsModel.setSampleFileContents(resultAsString);
+        });
+    }));
+  }
+
   /**
    * Called in response to a request for the contents of a sample text file
    * @param fileContents
    */
   static setSampleFileContents(fileContents: string): void {
     ReaderToolsModel.model.addWordsFromFile(fileContents);
-    ReaderToolsModel.model.getNextSampleFile();
   }
 
   /**

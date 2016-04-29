@@ -103,33 +103,21 @@ function loadReaderSetupData(jsonData: string): void {
 }
 
 function saveClicked(): void {
-
-  var toolbox:any = toolboxWindow();
-  // update more words
-  if (((<HTMLInputElement>document.getElementById('dls_more_words')).value !== previousMoreWords)
-    || (parseInt($('input[name="words-or-letters"]:checked').val()) != 0)) {
-
-
-    // save the changes and update lists
-    saveChangedSettings(function() {
-      if (typeof toolbox['readerSampleFilesChanged'] === 'function')
-        toolbox['readerSampleFilesChanged']();
-      toolbox.FrameExports.closeSetupDialog();
-    });
-  }
-  else {
-      saveChangedSettings(toolbox.FrameExports.closeSetupDialog);
-  }
+  beginSaveChangedSettings();  // don't wait for full refresh
+  toolboxWindow().FrameExports.closeSetupDialog();
 }
 
 /**
  * Pass the settings to the server to be saved
  */
-export function saveChangedSettings(callback : Function): void {
+export function beginSaveChangedSettings(): Promise<void> {
   var settings = getChangedSettings();
-  toolboxWindow().postMessage('Refresh\n' + JSON.stringify(settings), '*');
-  axios.post('/bloom/api/readers/readerToolSettings', settings)
-        .then(result => {callback(result.data)});
+  // Be careful here! After we return this promise, this dialog (and its iframe) my close and the iframe code
+  // (including this method here) gets unloaded. So it's important that the block of code that saves the settings and updates things
+  // is part of the main toolbox code, NOT part of this method. When it was in this method, bizarre things
+  // happened, such as calling the axios post method to save the settings...but C# never received them,
+  // and the 'then' clause never got invoked.
+  return toolboxWindow().FrameExports.beginSaveChangedSettings(settings, previousMoreWords);
 }
 
 function getChangedSettings(): ReaderSettings {

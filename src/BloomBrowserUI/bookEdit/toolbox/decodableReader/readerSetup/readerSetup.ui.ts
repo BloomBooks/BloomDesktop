@@ -2,7 +2,7 @@
 /// <reference path="../../../../lib/jquery.onSafe.d.ts" />
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 import '../../../../lib/jquery.onSafe.ts';
-import {saveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
+import {beginSaveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
 import {DataWord} from '../libSynphony/bloom_lib';
 import BloomHelp from '../../../../BloomHelp.ts';
 import axios = require('axios');
@@ -475,16 +475,16 @@ function tabBeforeActivate(ui): void {
 
     // update more words
     if ((<HTMLInputElement>document.getElementById('dls_more_words')).value !== getPreviousMoreWords()) {
-
       // remember the new list of more words
       setPreviousMoreWords((<HTMLInputElement>document.getElementById('dls_more_words')).value);
 
       // save the changes and update lists
       var toolbox = toolboxWindow();
-      saveChangedSettings(() => {
-        if (typeof toolbox['readerSampleFilesChanged'] === 'function')
-          toolbox['readerSampleFilesChanged']();
-      });
+      // Note, this means that changes to sample words (and any other changes we already made) will persist,
+      // even if the user eventually cancels the dialog. Not sure if this is desirable. However, if we
+      // want updated matching words in the other tab, it will be difficult to achieve without doing this.
+      // We'd probably need our own copy of theOneLanguageDataInstance.
+      beginSaveChangedSettings().then(() => requestWordsForSelectedStage());
     }
   }
 }

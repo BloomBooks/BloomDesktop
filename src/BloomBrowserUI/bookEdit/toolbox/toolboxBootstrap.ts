@@ -11,7 +11,7 @@ import {handleBookSettingCheckboxClick} from './bookSettings/bookSettings';
 export {showOrHidePanel_click};
 export {removeToolboxMarkup};
 export {showSetupDialog, initializeReaderSetupDialog, closeSetupDialog} from './decodableReader/decodableReader'
-export {addWordListChangedListener} from './decodableReader/readerTools';
+export {addWordListChangedListener, beginSaveChangedSettings} from './decodableReader/readerTools';
 export {loadLongpressInstructions} from '../js/bloomEditing';
 export {default as BloomHelp} from '../../BloomHelp';
 export {TalkingBookModel}; // one function is called by CSharp; also, exporting something from it gets it included in the bundle.
