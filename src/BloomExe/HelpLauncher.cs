@@ -30,7 +30,8 @@ namespace Bloom
 			{
 				var topic = request.LocalPath().ToLowerInvariant().Replace("api/help","");
 				Show(Application.OpenForms.Cast<Form>().Last(), topic);
-				request.Cancel();
+				//if this is called from a simple html anchor, we don't want the browser to do anything
+				request.SucceededDoNotNavigate();
 			});
 		}
 	}
