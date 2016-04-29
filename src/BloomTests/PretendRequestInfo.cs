@@ -9,6 +9,7 @@ namespace Bloom.Api
 	public class PretendRequestInfo : IRequestInfo
 	{
 		public HttpMethods HttpMethod { get; set; }
+
 		public string ReplyContents;
 		public string ReplyImagePath;
 		//public HttpListenerContext Context; //todo: could we mock a context and then all but do away with this pretend class by subclassing the real one?
@@ -98,6 +99,8 @@ namespace Bloom.Api
 		{
 			return "";
 		}
+		public void SucceededDoNotNavigate(){}
+
 		public string RawUrl { get; private set; }
 	}
 }

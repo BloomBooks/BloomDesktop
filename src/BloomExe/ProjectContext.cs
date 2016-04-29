@@ -260,8 +260,10 @@ namespace Bloom
 			_httpServer.StartListening();	// as a side-effect, sets port number needed by RegisterWithServer (BL-3337)
 			var server = _scope.Resolve<EnhancedImageServer>();
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
+			HelpLauncher.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
 		}
+
 
 		internal static BloomS3Client CreateBloomS3Client()
 		{

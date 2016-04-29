@@ -2,31 +2,23 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Dynamic;
-using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Bloom.ImageProcessing;
 using BloomTemp;
 using L10NSharp;
 using Microsoft.Win32;
-using SIL.Code;
 using SIL.IO;
 using Bloom.Collection;
-using Bloom.Edit;
 using Newtonsoft.Json;
 using SIL.Reporting;
 using SIL.Extensions;
-using RestSharp.Contrib;
 
 namespace Bloom.Api
 {
@@ -448,12 +440,6 @@ namespace Bloom.Api
 					return true;
 				case "topics":
 					return GetTopicList(info);
-				case "help":
-					var post = info.GetPostDataWhenFormEncoded();
-					// Help launches a separate process so it doesn't matter that we don't call
-					// it on the UI thread
-					HelpLauncher.Show(null, post["data"]);
-					return true;
 			}
 			return ProcessAnyFileContent(info, localPath);
 		}

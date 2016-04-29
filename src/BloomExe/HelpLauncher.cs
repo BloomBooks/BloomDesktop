@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Api;
 using SIL.IO;
 
 namespace Bloom
@@ -21,6 +22,16 @@ namespace Bloom
 		public static void Show(Control parent, string helpFileName, string topic)
 		{
 			Help.ShowHelp(parent, FileLocator.GetFileDistributedWithApplication(helpFileName), topic);
+		}
+
+		public static void RegisterWithServer(EnhancedImageServer server)
+		{
+			server.RegisterEndpointHandler("help/.*", (request) =>
+			{
+				var topic = request.LocalPath().ToLowerInvariant().Replace("api/help","");
+				Show(Application.OpenForms.Cast<Form>().Last(), topic);
+				request.Cancel();
+			});
 		}
 	}
 }

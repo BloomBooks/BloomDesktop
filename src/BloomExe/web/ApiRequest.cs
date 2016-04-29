@@ -54,10 +54,18 @@ namespace Bloom.Api
 
 		public void Succeeded()
 		{
-			//review: not sure what is proper if we have nothing to say. This will work.
 			_requestInfo.ContentType = "text/plain";
 			_requestInfo.WriteCompleteOutput("OK");
 		}
+
+		//Used when an anchor has given us info, but we don't actually want the browser to navigate
+		//For example, anchors that lead to help lead to an api handler that opens help but then
+		//calls this so that the browser just stays where it was.
+		public void SucceededDoNotNavigate()
+		{
+			_requestInfo.SucceededDoNotNavigate();
+		}
+
 		public void ReplyWithText(string text)
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + text);

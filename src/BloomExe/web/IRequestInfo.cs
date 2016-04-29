@@ -27,5 +27,6 @@ namespace Bloom.Api
 		string GetPostJson();
 		string GetPostString();
 		HttpMethods HttpMethod { get; }
+		void SucceededDoNotNavigate();
 	}
 }
