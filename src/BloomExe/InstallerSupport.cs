@@ -104,12 +104,6 @@ namespace Bloom
 				// Normally this is done on every run of the program, but if we're doing a silent allUsers install,
 				// this is our only time running with admin privileges so we can actually make the entries for all users.
 				MakeBloomRegistryEntries(args);
-				// Normally we can't do this in our quick silent run as part of install, because of the need to escalate
-				// privilege. But if we're being installed for all users we must already be running as admin.
-				// We don't need to do an extra restart of Bloom because this install-setup run of Bloom will finish
-				// right away anyway.
-				if (SharedByAllUsers())
-					FontInstaller.InstallFont("AndikaNewBasic", needsRestart:false);
 			}
 			switch (args[0])
 			{
@@ -134,6 +128,17 @@ namespace Bloom
 							arguments: args);
 					}
 					break;
+			}
+			if (args[0] == "--squirrel-install")
+			{
+				// Normally we can't do this in our quick silent run as part of install, because of the need to escalate
+				// privilege. But if we're being installed for all users we must already be running as admin.
+				// We don't need to do an extra restart of Bloom because this install-setup run of Bloom will finish
+				// right away anyway. We do this last because we've had some trouble (BL-3342) with timeouts
+				// if this install somehow ties up the CPU until Squirrel thinks Bloom is taking too long to do its
+				// install-only run.
+				if (SharedByAllUsers())
+					FontInstaller.InstallFont("AndikaNewBasic", needsRestart: false);
 			}
 #endif
 		}
