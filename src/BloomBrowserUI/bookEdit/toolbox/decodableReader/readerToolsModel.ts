@@ -933,12 +933,8 @@ export class ReaderToolsModel {
 
 
   /**
-   * Called to start processing sample data files, if there are any left it reads
-   * from one and then calls itself recursively to read the rest.
-   * When all of them are read, the promise is resolved.
-   * Enhance: is there a more elegant way than passing the promise as an optional argument?
-   * We ought to be able to just return the axios.get.then, but I don't know how to return
-   * a pre-resolved one when we get down to none left.
+   * Called to process sample data files.
+   * When all of them are read and processed, the promise is resolved.
    */
   beginGetAllSampleFiles(): Promise<void> {
     // The <any> works around a flaw in the declaration of axios.all in axios.d.ts.
