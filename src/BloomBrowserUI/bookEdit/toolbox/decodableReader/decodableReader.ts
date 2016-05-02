@@ -1,4 +1,4 @@
-/// <reference path="../toolbox.ts" />
+﻿/// <reference path="../toolbox.ts" />
 /// <reference path="./directoryWatcher.ts" />
 /// <reference path="./readerToolsModel.ts" />
 
@@ -9,6 +9,7 @@ import {ITabModel} from "../toolbox";
 import {ToolBox} from "../toolbox";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import {theOneLibSynphony}  from './libSynphony/synphony_lib';
+import {getEditViewFrameExports} from '../../js/bloomFrames';
 
 class DecodableReaderModel implements ITabModel {
     beginRestoreSettings(settings: string): JQueryPromise<void> {
@@ -108,6 +109,8 @@ function settingsFrameWindow() {
     return (<HTMLIFrameElement>parentDocument().getElementById('settings_frame')).contentWindow;
 }
 
+var setupDialogElement: JQuery;
+
 export function showSetupDialog(showWhat) {
     //var toolbox = window;
     theOneLocalizationManager.loadStrings(getSettingsDialogLocalizedStrings(), null, function () {
@@ -128,7 +131,10 @@ export function showSetupDialog(showWhat) {
 
         ReaderToolsModel.model.setupType = showWhat;
 
-        $(dialogContents).dialog({
+        // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
+        // where it is displayed. The main dialog() function doesn't work quite right (can't drag or resize it), and other functions
+        // like dialog("close") don't do anything, if the wrapper is created in the toolbox frame.
+        setupDialogElement = getEditViewFrameExports().showDialog(dialogContents, {
             autoOpen: true,
             modal: true,
             buttons: (<any>{
@@ -150,7 +156,7 @@ export function showSetupDialog(showWhat) {
                 Cancel: {
                     text: theOneLocalizationManager.getText('Common.Cancel', 'Cancel'),
                     click: function () {
-                        $(this).dialog("close");
+                      setupDialogElement.dialog("close");
                     }
                 }
             }),
@@ -219,7 +225,7 @@ export function initializeReaderSetupDialog() {
 }
 
 export function closeSetupDialog() {
-    $(parentDocument()).find('#synphonyConfig').dialog("close");
+  setupDialogElement.dialog("close");
 }
 
 /**
