@@ -36,6 +36,15 @@ export function handleUndo(): void {
     }
 }
 
+// This function allows code in the toolbox (or other) frame to create a dialog with dynamic content in the root frame
+// (so that it can be dragged anywhere in the gecko window). The dialog() function behaves strangely (e.g., draggable doesn't work)
+// if the jquery wrapper for the element is created in a different frame than the parent of the dialog element.
+export function showDialog(dialogContents: string, options: any) : JQuery {
+  var dialogElement = $(dialogContents).appendTo($('body'));
+  dialogElement.dialog(options);
+  return dialogElement;
+}
+
 //Called by c# using FrameExports.canUndo()
 export function canUndo(): string {
     // See comments on handleUndo()

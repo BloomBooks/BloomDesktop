@@ -27,7 +27,7 @@ export function getPageFrameExports(){
     return getFrameExports('page');
 }
 export function getEditViewFrameExports(){
-    return getFrameExports('toolbox');
+  return (<any>getRootWindow()).FrameExports;
 }
 
 function getRootWindow(): Window{
