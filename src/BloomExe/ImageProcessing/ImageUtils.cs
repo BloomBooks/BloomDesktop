@@ -218,27 +218,36 @@ namespace Bloom.ImageProcessing
 
 		/// <summary>
 		/// When images are copied from LibreOffice, images that were jpegs there are converted to bitmaps for the clipboard.
-		/// So when we just saved them as bitmpas (pngs), we dramatically inflated the size of user's image files (and
+		/// So when we just saved them as bitmaps (pngs), we dramatically inflated the size of user's image files (and
 		/// this then led to memory problems).
 		/// So the idea here is just to try and detect that we should would be better off saving the image as a jpeg.
 		/// Note that even at 100%, we're still going to lose some quality. So this method is only going to recommend
 		/// doing that if the size would be at least 50% less.
 		/// </summary>
-		public static Boolean ShouldChangeFormatToJpeg(Image image)
+		public static bool ShouldChangeFormatToJpeg(Image image)
 		{
-			using (var safetyImage = new Bitmap(image)) //nb: there are cases (notibly http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
+			try
 			{
-				using (var jpegFile = new TempFile())
-				using (var pngFile = new TempFile())
+				using(var safetyImage = new Bitmap(image))
+					//nb: there are cases (notably http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
 				{
-					image.Save(pngFile.Path, ImageFormat.Png);
-					SaveAsTopQualityJpeg(safetyImage, jpegFile.Path);
-					var jpegInfo = new FileInfo(jpegFile.Path);
-					var pngInfo = new FileInfo(pngFile.Path);
-					// this is just our heurstic. 
-					const double fractionOfTheOriginalThatWouldWarrantChangingToJpeg = .5;
-					return jpegInfo.Length < ( pngInfo.Length  * (1.0-fractionOfTheOriginalThatWouldWarrantChangingToJpeg));
+					using(var jpegFile = new TempFile())
+					using(var pngFile = new TempFile())
+					{
+						image.Save(pngFile.Path, ImageFormat.Png);
+						SaveAsTopQualityJpeg(safetyImage, jpegFile.Path);
+						var jpegInfo = new FileInfo(jpegFile.Path);
+						var pngInfo = new FileInfo(pngFile.Path);
+						// this is just our heuristic. 
+						const double fractionOfTheOriginalThatWouldWarrantChangingToJpeg = .5;
+						return jpegInfo.Length < (pngInfo.Length*(1.0 - fractionOfTheOriginalThatWouldWarrantChangingToJpeg));
+					}
 				}
+			}
+			catch(OutOfMemoryException e)
+			{
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,"Could not attempt conversion to jpeg.", "ref BL-3387", exception: e);
+				return false;
 			}
 		}
 
