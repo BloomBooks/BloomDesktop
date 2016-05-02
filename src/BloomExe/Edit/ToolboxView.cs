@@ -126,7 +126,7 @@ namespace Bloom.Edit
 			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(
 				toolboxFolder,
 				tool.ToolId,
-				tool.ToolId + ".html")));
+				tool.ToolId + "ToolboxPanel.html")));
 			checkedBoxes.Add(tool.ToolId + "Check");
 		}
 
