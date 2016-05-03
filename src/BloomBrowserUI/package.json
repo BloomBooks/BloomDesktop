@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "karma start --browsers Firefox",
-    "teamcitytest": "karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
+    "teamcitytest": "karma start karma.conf.js  --reporters teamcity --single-run",
     "build": "gulp",
     "gitClean": "git clean -X --dry-run --exclude='!node_modules'",
     "gitCleanForReal": "git clean -fX --exclude='!node_modules'"
