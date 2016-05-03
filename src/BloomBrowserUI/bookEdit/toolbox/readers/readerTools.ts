@@ -1,16 +1,16 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
-/// <reference path="../../../../typings/jquery.qtip.d.ts" />
-/// <reference path="../../../../typings/jqueryui/jqueryui.d.ts" />
+/// <reference path="../../../typings/jquery.qtip.d.ts" />
+/// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 import {DirectoryWatcher} from "./directoryWatcher";
 import {ReaderToolsModel} from "./readerToolsModel";
-import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
-import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLanguageDataInstance}  from '../libSynphony/synphony_lib';
-import '../libSynphony/synphony_lib.js';
-import ReadersSynphonyWrapper from '../ReadersSynphonyWrapper';
-import {ReaderStage, ReaderLevel, ReaderSettings} from '../ReaderSettings';
-import {DataWord, clearWordCache} from '../libSynphony/bloomSynphonyExtensions';
-import "../../../../lib/jquery.onSafe";
+import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
+import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
+import './libSynphony/synphony_lib.js';
+import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
+import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
+import {DataWord, clearWordCache} from './libSynphony/bloomSynphonyExtensions';
+import "../../../lib/jquery.onSafe";
 import axios = require('axios');
 
 interface textMarkup extends JQueryStatic {

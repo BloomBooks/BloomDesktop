@@ -1,24 +1,24 @@
-/// <reference path="../ReadersSynphonyWrapper.ts" />
-/// <reference path="../libSynphony/jquery.text-markup.d.ts" />
-/// <reference path="../jquery.div-columns.ts" />
-/// <reference path="../../../../typings/jqueryui/jqueryui.d.ts" />
-/// <reference path="../../../js/editableDivUtils.ts" />
+/// <reference path="./ReadersSynphonyWrapper.ts" />
+/// <reference path="./libSynphony/jquery.text-markup.d.ts" />
+/// <reference path="./jquery.div-columns.ts" />
+/// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
+/// <reference path="../../js/editableDivUtils.ts" />
 /// <reference path="./directoryWatcher.ts" />
-/// <reference path="../../../../lib/localizationManager/localizationManager.ts" />
+/// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
-/// <reference path="../../toolbox.ts" />
-/// <reference path="../libSynphony/synphony_lib.d.ts" />
+/// <reference path="../toolbox.ts" />
+/// <reference path="./libSynphony/synphony_lib.d.ts" />
 import {DirectoryWatcher} from "./directoryWatcher";
 import {resizeWordList} from "./readerTools";
-import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
-import {ToolBox} from "../../toolbox";
-import "../libSynphony/jquery.text-markup.ts";
-import '../jquery.div-columns.ts';
-import {ReaderStage, ReaderLevel, ReaderSettings} from '../ReaderSettings';
+import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
+import {ToolBox} from "../toolbox";
+import "./libSynphony/jquery.text-markup.ts";
+import './jquery.div-columns.ts';
+import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 import * as _ from 'underscore';
-import {theOneLanguageDataInstance, theOneLibSynphony}  from '../libSynphony/synphony_lib';
-import ReadersSynphonyWrapper from '../ReadersSynphonyWrapper';
-import {DataWord,TextFragment} from '../libSynphony/bloomSynphonyExtensions';
+import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
+import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
+import {DataWord,TextFragment} from './libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
 var SortType = {
   alphabetic: "alphabetic",

@@ -1,6 +1,6 @@
 ﻿/// <reference path="../../toolbox.ts" />
-import { ReaderToolsModel, DRTState, } from "../decodableReader/readerToolsModel";
-import { beginInitializeLeveledReaderTool} from "../decodableReader/readerTools";
+import { ReaderToolsModel, DRTState, } from "../readerToolsModel";
+import { beginInitializeLeveledReaderTool} from "../readerTools";
 import {ITabModel} from "../../toolbox";
 import {ToolBox} from "../../toolbox";
 import {theOneLibSynphony}  from '../libSynphony/synphony_lib';
