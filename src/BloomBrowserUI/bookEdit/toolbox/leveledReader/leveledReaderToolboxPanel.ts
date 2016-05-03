@@ -5,7 +5,7 @@ import {ITabModel} from "../toolbox";
 import {ToolBox} from "../toolbox";
 import {theOneLibSynphony}  from '../decodableReader/libSynphony/synphony_lib';
 
-export default class LeveledReaderModel implements ITabModel {
+export default class LeveledReaderModelToolboxPanel implements ITabModel {
     beginRestoreSettings(opts: string): JQueryPromise<void> {
         if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         return beginInitializeLeveledReaderTool().then(() => {
@@ -36,4 +36,4 @@ export default class LeveledReaderModel implements ITabModel {
     hasRestoredSettings: boolean;
 }
 
-ToolBox.getTabModels().push(new LeveledReaderModel());
+ToolBox.getTabModels().push(new LeveledReaderModelToolboxPanel());

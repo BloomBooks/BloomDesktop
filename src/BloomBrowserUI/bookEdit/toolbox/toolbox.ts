@@ -281,7 +281,7 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
         // The panelIDs all end in 'Tool' but the containing file and folder names don't have this.
         var fileAndFolderName = panelId.substring(0, panelId.length - 4);
 
-        var panelUrl = '/bloom/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + '.html';
+        var panelUrl = '/bloom/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + 'ToolboxPanel.html';
         var ajaxSettings = {type: 'GET', url: panelUrl};
 
         $.ajax(ajaxSettings)

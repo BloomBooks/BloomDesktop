@@ -11,7 +11,7 @@ import theOneLocalizationManager from '../../../lib/localizationManager/localiza
 import {theOneLibSynphony}  from './libSynphony/synphony_lib';
 import {getEditViewFrameExports} from '../../js/bloomFrames';
 
-class DecodableReaderModel implements ITabModel {
+class DecodableReaderModelToolboxPanel implements ITabModel {
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         return beginInitializeDecodableReaderTool().then(() => {
@@ -85,7 +85,7 @@ class DecodableReaderModel implements ITabModel {
     hasRestoredSettings: boolean;
 }
 
-ToolBox.getTabModels().push(new DecodableReaderModel());
+ToolBox.getTabModels().push(new DecodableReaderModelToolboxPanel());
 
 
 // "region" ReaderSetup dialog
