@@ -5,7 +5,7 @@ import {ITabModel} from "../../toolbox";
 import {ToolBox} from "../../toolbox";
 import {theOneLibSynphony}  from '../libSynphony/synphony_lib';
 
-export default class LeveledReaderModelToolboxPanel implements ITabModel {
+export default class LeveledReaderToolboxPanel implements ITabModel {
     beginRestoreSettings(opts: string): JQueryPromise<void> {
         if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         return beginInitializeLeveledReaderTool().then(() => {
@@ -36,4 +36,4 @@ export default class LeveledReaderModelToolboxPanel implements ITabModel {
     hasRestoredSettings: boolean;
 }
 
-ToolBox.getTabModels().push(new LeveledReaderModelToolboxPanel());
+ToolBox.getTabModels().push(new LeveledReaderToolboxPanel());

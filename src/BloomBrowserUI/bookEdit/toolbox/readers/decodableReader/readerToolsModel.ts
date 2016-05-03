@@ -602,7 +602,7 @@ export class ReaderToolsModel {
   }
 
   getPageWindow(): Window {
-      return (<HTMLIFrameElement>document.getElementById('page')).contentWindow;
+      return (<HTMLIFrameElement>top.document.getElementById('page')).contentWindow;
   }
 
   /**

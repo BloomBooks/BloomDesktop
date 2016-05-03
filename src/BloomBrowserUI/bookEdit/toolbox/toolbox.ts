@@ -1,6 +1,4 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-/// <reference path="readers/readersSynphonyWrapper.ts" />
-/// <reference path="readers/decodableReader/readerToolsModel.ts" />
 ///<reference path="../../typings/axios/axios.d.ts"/>
 
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
