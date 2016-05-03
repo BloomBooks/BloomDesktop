@@ -17,7 +17,7 @@ using Squirrel;
 namespace Bloom
 {
 	/// <summary>
-	/// This class conctains code to work with the Squirrel package to handle automatic updating of
+	/// This class contains code to work with the Squirrel package to handle automatic updating of
 	/// Bloom to new versions. The key methods are called from WorkspaceView when Bloom is first idle or
 	/// when the user requests an update.
 	/// </summary>
@@ -79,7 +79,7 @@ namespace Bloom
 						{
 							var failMsg = LocalizationManager.GetString("CollectionTab.UnableToCheckForUpdate",
 								"Could not connect to the server to check for an update. Are you connected to the internet?",
-								"Shown when Bloom tries to check for an update but can't, for example becuase it can't connect to the internet, or a problems with our server, etc.");
+								"Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.");
 							ShowFailureNotification(failMsg);
 						}
 						else if (result.Error == null || string.IsNullOrWhiteSpace(result.Error.Message))
@@ -216,7 +216,7 @@ namespace Bloom
 					_bloomUpdateManager = null;
 					if (NoUpdatesAvailable(info))
 					{
-						SIL.Reporting.Logger.WriteEvent("Squirrel: No updateavailable.");
+						SIL.Reporting.Logger.WriteEvent("Squirrel: No update available.");
 						return; // none available.
 					}
 					var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available.");
