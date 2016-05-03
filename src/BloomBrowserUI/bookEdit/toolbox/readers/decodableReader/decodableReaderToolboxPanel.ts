@@ -1,17 +1,13 @@
 ﻿/// <reference path="../../toolbox.ts" />
-/// <reference path="../directoryWatcher.ts" />
 /// <reference path="../readerToolsModel.ts" />
 
-import {DirectoryWatcher} from "../directoryWatcher";
 import {DRTState, ReaderToolsModel, MarkupType} from "../readerToolsModel";
 import {beginInitializeDecodableReaderTool} from "../readerTools";
 import {ITabModel} from "../../toolbox";
 import {ToolBox} from "../../toolbox";
-import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 import {theOneLibSynphony}  from './../libSynphony/synphony_lib';
-import {getEditViewFrameExports} from '../../../js/bloomFrames';
 
-class DecodableReaderModelToolboxPanel implements ITabModel {
+export default class DecodableReaderToolboxPanel implements ITabModel {
     beginRestoreSettings(settings: string): JQueryPromise<void> {
         if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         return beginInitializeDecodableReaderTool().then(() => {
@@ -85,161 +81,5 @@ class DecodableReaderModelToolboxPanel implements ITabModel {
     hasRestoredSettings: boolean;
 }
 
-ToolBox.getTabModels().push(new DecodableReaderModelToolboxPanel());
+ToolBox.getTabModels().push(new DecodableReaderToolboxPanel());
 
-
-// "region" ReaderSetup dialog
-function CreateConfigDiv(title) {
-    var dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($(parentDocument()).find("body"));
-
-    var html = '<iframe id="settings_frame" src="/bloom/bookEdit/toolbox/decodableReader/readerSetup/ReaderSetup.html" scrolling="no" ' +
-        'style="width: 100%; height: 100%; border-width: 0; margin: 0" ' +
-        'onload="document.getElementById(\'toolbox\').contentWindow.FrameExports.initializeReaderSetupDialog()"></iframe>';
-
-    dialogContents.append(html);
-
-    return dialogContents;
-}
-
-function parentDocument() {
-    return window.parent.document;
-}
-
-function settingsFrameWindow() {
-    return (<HTMLIFrameElement>parentDocument().getElementById('settings_frame')).contentWindow;
-}
-
-var setupDialogElement: JQuery;
-
-export function showSetupDialog(showWhat) {
-    //var toolbox = window;
-    theOneLocalizationManager.loadStrings(getSettingsDialogLocalizedStrings(), null, function () {
-
-        var title;
-        if (showWhat == 'stages')
-            title = theOneLocalizationManager.getText('ReaderSetup.SetUpDecodableReaderTool', 'Set up Decodable Reader Tool');
-        else
-            title = theOneLocalizationManager.getText('ReaderSetup.SetUpLeveledReaderTool', 'Set up Leveled Reader Tool');
-
-        var dialogContents = CreateConfigDiv(title);
-
-        var h = 580;
-        var w = 720;
-        var size = getAppropriateDialogSize(h, w);
-        h = size[0];
-        w = size[1];
-
-        ReaderToolsModel.model.setupType = showWhat;
-
-        // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
-        // where it is displayed. The main dialog() function doesn't work quite right (can't drag or resize it), and other functions
-        // like dialog("close") don't do anything, if the wrapper is created in the toolbox frame.
-        setupDialogElement = getEditViewFrameExports().showDialog(dialogContents, {
-            autoOpen: true,
-            modal: true,
-            buttons: (<any>{
-                Help: {
-                    // For consistency, I would have made this 'Common.Help', but we already had 'HelpMenu.Help Menu' translated
-                    text: theOneLocalizationManager.getText('HelpMenu.Help Menu', 'Help'),
-                    class: 'left-button',
-                    click: function () {
-                        settingsFrameWindow().postMessage('Help', '*');
-                    }
-                },
-                OK: {
-                    text: theOneLocalizationManager.getText('Common.OK', 'OK'),
-                    click: function () {
-                        settingsFrameWindow().postMessage('OK', '*');
-                    }
-                },
-
-                Cancel: {
-                    text: theOneLocalizationManager.getText('Common.Cancel', 'Cancel'),
-                    click: function () {
-                      setupDialogElement.dialog("close");
-                    }
-                }
-            }),
-            close: function () {
-                $(this).remove();
-                fireCSharpEvent('setModalStateEvent', 'false');
-            },
-            open: function () {
-                $('#synphonyConfig').css('overflow', 'hidden');
-                $('button span:contains("Help")').prepend('<i class="fa fa-question-circle"></i> ');
-            },
-            height: h,
-            width: w
-        });
-
-        fireCSharpEvent('setModalStateEvent', 'true');
-    });
-}
-
-function getAppropriateDialogSize(preferredHeight, preferredWidth) {
-    var h = preferredHeight;
-    var w = preferredWidth;
-
-    // This height and width will fit inside the "800 x 600" settings
-    var sw = parentDocument().body.scrollWidth;
-    if (sw < 583) {
-        h = 460;
-        w = 390;
-    }
-
-    // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Task bar" settings
-    else if ((sw < 723) || (window.parent.innerHeight < 583)) {
-        h = 460;
-        w = 580;
-    }
-
-    return [h, w];
-}
-
-function getSettingsDialogLocalizedStrings() {
-    // Without preloading these, they are not available when the dialog is created
-    var pairs = {};
-    pairs['ReaderSetup.SetUpDecodableReaderTool'] = 'Set up Decodable Reader Tool';
-    pairs['ReaderSetup.SetUpLeveledReaderTool'] = 'Set up Leveled Reader Tool';
-    pairs['HelpMenu.Help Menu'] = 'Help';
-    pairs['Common.OK'] = 'OK';
-    pairs['Common.Cancel'] = 'Cancel';
-    return pairs;
-}
-
-//noinspection JSUnusedGlobalSymbols
-/**
- * Used by the settings_frame to initialize the setup dialog
- */
-export function initializeReaderSetupDialog() {
-
-    var model = ReaderToolsModel.model;
-
-    if(typeof model.synphony.source == 'undefined' || model.synphony.source === null){
-        throw new Error("ReaderToolsModel.model was not loaded with settings");
-    }
-    var sourceMsg = 'Data\n' + JSON.stringify(model.synphony.source);
-    var fontMsg = 'Font\n' + model.fontName;
-    settingsFrameWindow().postMessage(sourceMsg, '*');
-    settingsFrameWindow().postMessage(fontMsg, '*');
-}
-
-export function closeSetupDialog() {
-  setupDialogElement.dialog("close");
-}
-
-/**
- * Fires an event for C# to handle
- * @param {String} eventName
- * @param {String} eventData
- */
-// Enhance: JT notes that this method pops up from time to time; can we consolidate?
-function fireCSharpEvent(eventName, eventData) {
-
-    var event = new MessageEvent(eventName, {'bubbles': true, 'cancelable': true, 'data': eventData });
-    document.dispatchEvent(event);
-    // For when we someday change this file to TypeScript... since the above ctor is not declared anywhere.
-    // Solution III (works)
-    //var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
-}
-// "endregion" ReaderSetup dialog
