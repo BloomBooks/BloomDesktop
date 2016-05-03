@@ -1,17 +1,17 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import * as $ from 'jquery';
 import {restoreToolboxSettings, showOrHidePanel_click, removeToolboxMarkup} from './toolbox';
-import {ReaderToolsModel} from './decodableReader/readerToolsModel'
+import {ReaderToolsModel} from './readers/decodableReader/readerToolsModel'
 import TalkingBookModel from './talkingBook/talkingBook';
-import LeveledReaderModelToolboxPanel from './leveledReader/leveledReaderToolboxPanel';
+import LeveledReaderModelToolboxPanel from './readers/leveledReader/leveledReaderToolboxPanel';
 import {handleBookSettingCheckboxClick} from './bookSettings/bookSettings';
 
 // each of these exports shows up under this window's FrameExports object (see bloomFrames.ts)
 // reviewslog: is this actually needed? Could these be be directly imported where they are used?
 export {showOrHidePanel_click};
 export {removeToolboxMarkup};
-export {showSetupDialog, initializeReaderSetupDialog, closeSetupDialog} from './decodableReader/decodableReaderToolboxPanel'
-export {addWordListChangedListener, beginSaveChangedSettings} from './decodableReader/readerTools';
+export {showSetupDialog, initializeReaderSetupDialog, closeSetupDialog} from './readers/decodableReader/decodableReaderToolboxPanel'
+export {addWordListChangedListener, beginSaveChangedSettings} from './readers/decodableReader/readerTools';
 export {loadLongpressInstructions} from '../js/bloomEditing';
 export {TalkingBookModel}; // one function is called by CSharp; also, exporting something from it gets it included in the bundle.
 export {LeveledReaderModelToolboxPanel}; // just to make sure it gets included in the bundle (and adds an instance of itself to the collection in toolbox.ts)

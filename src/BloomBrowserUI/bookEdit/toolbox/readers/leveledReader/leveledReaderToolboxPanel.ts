@@ -1,9 +1,9 @@
-﻿/// <reference path="../toolbox.ts" />
+﻿/// <reference path="../../toolbox.ts" />
 import { ReaderToolsModel, DRTState, } from "../decodableReader/readerToolsModel";
 import { beginInitializeLeveledReaderTool} from "../decodableReader/readerTools";
-import {ITabModel} from "../toolbox";
-import {ToolBox} from "../toolbox";
-import {theOneLibSynphony}  from '../decodableReader/libSynphony/synphony_lib';
+import {ITabModel} from "../../toolbox";
+import {ToolBox} from "../../toolbox";
+import {theOneLibSynphony}  from '../libSynphony/synphony_lib';
 
 export default class LeveledReaderModelToolboxPanel implements ITabModel {
     beginRestoreSettings(opts: string): JQueryPromise<void> {

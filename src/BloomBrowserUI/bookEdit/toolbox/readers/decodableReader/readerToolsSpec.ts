@@ -1,6 +1,6 @@
-import {theOneLanguageDataInstance, ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
+import {theOneLanguageDataInstance, ResetLanguageDataInstance}  from '../libSynphony/synphony_lib';
 import {ReaderToolsModel} from './readerToolsModel';
-import SynphonyApi from './synphonyApi';
+import SynphonyApi from '../synphonyApi';
 
 describe("Bloom Edit Controls tests", function() {
     var classValues;

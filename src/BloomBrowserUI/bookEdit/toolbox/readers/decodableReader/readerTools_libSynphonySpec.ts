@@ -1,7 +1,7 @@
 import {ReaderToolsModel} from "./readerToolsModel";
-import {theOneLanguageDataInstance,   ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
+import {theOneLanguageDataInstance,   ResetLanguageDataInstance}  from '../libSynphony/synphony_lib';
 import * as _ from 'underscore'
-import SynphonyApi from './synphonyApi';
+import SynphonyApi from '../synphonyApi';
 
 describe("readerTools-libSynphony tests", function() {
 

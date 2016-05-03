@@ -1,15 +1,15 @@
-﻿/// <reference path="../toolbox.ts" />
+﻿/// <reference path="../../toolbox.ts" />
 /// <reference path="./directoryWatcher.ts" />
 /// <reference path="./readerToolsModel.ts" />
 
 import {DirectoryWatcher} from "./directoryWatcher";
 import {DRTState, ReaderToolsModel, MarkupType} from "./readerToolsModel";
 import {beginInitializeDecodableReaderTool} from "./readerTools";
-import {ITabModel} from "../toolbox";
-import {ToolBox} from "../toolbox";
-import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
-import {theOneLibSynphony}  from './libSynphony/synphony_lib';
-import {getEditViewFrameExports} from '../../js/bloomFrames';
+import {ITabModel} from "../../toolbox";
+import {ToolBox} from "../../toolbox";
+import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
+import {theOneLibSynphony}  from './../libSynphony/synphony_lib';
+import {getEditViewFrameExports} from '../../../js/bloomFrames';
 
 class DecodableReaderModelToolboxPanel implements ITabModel {
     beginRestoreSettings(settings: string): JQueryPromise<void> {
