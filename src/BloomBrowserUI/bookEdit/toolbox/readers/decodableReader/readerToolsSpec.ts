@@ -1,6 +1,6 @@
 import {theOneLanguageDataInstance, ResetLanguageDataInstance}  from '../libSynphony/synphony_lib';
 import {ReaderToolsModel} from './readerToolsModel';
-import SynphonyApi from '../synphonyApi';
+import ReadersSynphonyWrapper from '../ReadersSynphonyWrapper';
 
 describe("Bloom Edit Controls tests", function() {
     var classValues;
@@ -26,7 +26,7 @@ describe("Bloom Edit Controls tests", function() {
         settings.levels.push({"maxWordsPerSentence":"5","maxWordsPerPage":"10","maxWordsPerBook":"100","maxUniqueWordsPerBook":"","thingsToRemember":[""]});
         settings.levels.push({"maxWordsPerSentence":"7","maxWordsPerPage":"14","maxWordsPerBook":"110","maxUniqueWordsPerBook":"","thingsToRemember":[""]});
 
-        var api = new SynphonyApi();
+        var api = new ReadersSynphonyWrapper();
         ReaderToolsModel.model.synphony = api;
         api.loadSettings(settings);
 

@@ -8,7 +8,7 @@ import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 import * as _ from 'underscore';
 
 
-export default class SynphonyApi {
+export default class ReadersSynphonyWrapper {
 
   stages: ReaderStage[] = [];
   levels: ReaderLevel[] = [];

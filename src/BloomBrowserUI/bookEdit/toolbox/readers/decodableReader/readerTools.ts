@@ -7,7 +7,7 @@ import {ReaderToolsModel} from "./readerToolsModel";
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLanguageDataInstance}  from '../libSynphony/synphony_lib';
 import '../libSynphony/synphony_lib.js';
-import SynphonyApi from '../synphonyApi';
+import ReadersSynphonyWrapper from '../ReadersSynphonyWrapper';
 import {ReaderStage, ReaderLevel, ReaderSettings} from '../ReaderSettings';
 import {DataWord, clearWordCache} from '../libSynphony/bloom_lib';
 import "../../../../lib/jquery.onSafe";
@@ -185,7 +185,7 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
  * @global {ReaderToolsModel) ReaderToolsModel.model
  */
 function initializeSynphony(settingsFileContent: string): void {
-  var synphony = new SynphonyApi();
+  var synphony = new ReadersSynphonyWrapper();
   synphony.loadSettings(settingsFileContent);
   ReaderToolsModel.model.setSynphony(synphony);
   ReaderToolsModel.model.restoreState();
@@ -241,7 +241,7 @@ function refreshSettingsExceptSampleWords(newSettings) {
 }
 
 /**
- * Re-creates the one instance of LanguageData and SynphonyApi, populates them from the supplied or current
+ * Re-creates the one instance of LanguageData and ReadersSynphonyWrapper, populates them from the supplied or current
  * settings and sample word files, and updates the UI to match. Because of the convoluted way we build
  * the indexes inside the LanguageData object, this is the only currently feasible way to get it in
  * a consistent state after changes to the sample words files or the panel in the settings dialog.
@@ -258,7 +258,7 @@ function beginRefreshEverything(settings: ReaderSettings) : Promise<void> {
   // updating.
   clearWordCache();
 
-  var synphony = new SynphonyApi();
+  var synphony = new ReadersSynphonyWrapper();
   synphony.loadSettings(settings);
   ReaderToolsModel.model.setSynphony(synphony);
 

@@ -1,17 +1,17 @@
-import SynphonyApi from "./synphonyApi";
+import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import {ReaderStage} from './ReaderSettings';
 
-describe("SynphonyApi tests", function() {
+describe("ReadersSynphonyWrapper tests", function() {
     it("loads a file with a specified name", function() {
         // Todo PhilH: this test should load a data file and check that the expected stages are present
         expect(true).toBe(true);
     });
     it("initially has empty list of stages", function() {
-        var api = new SynphonyApi();
+        var api = new ReadersSynphonyWrapper();
         expect(api.getStages()).toEqual([]);
     });
     it("remembers added stages", function() {
-        var api = new SynphonyApi();
+        var api = new ReadersSynphonyWrapper();
         var stage1 = new ReaderStage("1");
         api.AddStage(stage1);
         expect(api.getStages()[0]).toBe(stage1);
