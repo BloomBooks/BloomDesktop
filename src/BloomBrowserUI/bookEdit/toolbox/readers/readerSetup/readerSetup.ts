@@ -12,7 +12,7 @@ import "../libSynphony/jquery.text-markup.ts";
 import {ReaderStage, ReaderLevel, ReaderSettings} from '../ReaderSettings';
 import {theOneLanguageDataInstance, theOneLibSynphony}  from '../libSynphony/synphony_lib';
 
-import {DataWord,TextFragment} from '../libSynphony/bloom_lib';
+import {DataWord,TextFragment} from '../libSynphony/bloomSynphonyExtensions';
 import './readerSetup.io';
 import './readerSetup.ui';
 
@@ -21,7 +21,7 @@ import './readerSetup.ui';
 		// script(src='/bloom/bookEdit/toolbox/decodableReader/libSynphony/underscore_min_152.js')
 		// script(src='/bloom/bookEdit/toolbox/decodableReader/libSynphony/jquery.text-markup.js')
 		// script(src='/bloom/bookEdit/toolbox/decodableReader/libSynphony/synphony_lib.js')
-		// script(src='/bloom/bookEdit/toolbox/decodableReader/libSynphony/bloom_lib.js')
+		// script(src='/bloom/bookEdit/toolbox/decodableReader/libSynphony/bloomSynphonyExtensions.js')
 		// script(src='/bloom/lib/localizationManager/localizationManager.js')
 		// script(src='/bloom/lib/jquery.i18n.custom.js')
 		// script(src='/bloom/lib/long-press/jquery.mousewheel.js')

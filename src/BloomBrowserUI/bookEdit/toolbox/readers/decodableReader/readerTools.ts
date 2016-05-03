@@ -9,7 +9,7 @@ import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLangua
 import '../libSynphony/synphony_lib.js';
 import ReadersSynphonyWrapper from '../ReadersSynphonyWrapper';
 import {ReaderStage, ReaderLevel, ReaderSettings} from '../ReaderSettings';
-import {DataWord, clearWordCache} from '../libSynphony/bloom_lib';
+import {DataWord, clearWordCache} from '../libSynphony/bloomSynphonyExtensions';
 import "../../../../lib/jquery.onSafe";
 import axios = require('axios');
 

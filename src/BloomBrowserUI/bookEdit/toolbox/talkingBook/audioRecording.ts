@@ -46,7 +46,7 @@
 import * as JQuery from 'jquery';
 import * as $ from 'jquery';
 import {theOneLibSynphony}  from '../readers/libSynphony/synphony_lib';
-import {TextFragment} from '../readers/libSynphony/bloom_lib';
+import {TextFragment} from '../readers/libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
 import * as toastr from 'toastr';
 

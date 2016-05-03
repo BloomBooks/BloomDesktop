@@ -9,7 +9,7 @@
 
 import * as _ from 'underscore';
 import {theOneLibSynphony, LibSynphony}  from './synphony_lib';
-import './bloom_lib.js'; //add several functions to LanguageData
+import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
 
 /**
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().

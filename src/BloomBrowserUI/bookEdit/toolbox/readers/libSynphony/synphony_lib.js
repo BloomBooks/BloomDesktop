@@ -28,7 +28,7 @@ var alwaysMatch = [];
  * @param {Object} [optionalObject] Optional. If present, used to initialize the class. (We think not used.)
  * @returns {LanguageData}
  * 
- * Note: we export it because bloom_lib extends it
+ * Note: we export it because bloomSynphonyExtensions extends it
  */
 export function LanguageData(optionalObject) {
 

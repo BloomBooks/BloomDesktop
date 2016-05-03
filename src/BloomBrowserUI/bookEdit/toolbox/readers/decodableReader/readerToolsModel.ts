@@ -18,7 +18,7 @@ import {ReaderStage, ReaderLevel, ReaderSettings} from '../ReaderSettings';
 import * as _ from 'underscore';
 import {theOneLanguageDataInstance, theOneLibSynphony}  from '../libSynphony/synphony_lib';
 import ReadersSynphonyWrapper from '../ReadersSynphonyWrapper';
-import {DataWord,TextFragment} from '../libSynphony/bloom_lib';
+import {DataWord,TextFragment} from '../libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
 var SortType = {
   alphabetic: "alphabetic",
