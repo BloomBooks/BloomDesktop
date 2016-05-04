@@ -24,7 +24,7 @@ module.exports = {
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
     entry: { editTabRootBundle:  './bookEdit/editViewFrame.ts',
              //editablePageBootstrap: './bookEdit/editablePageBootstrap.ts',
-             readerSetupBundle: './bookEdit/toolbox/decodableReader/readerSetup/readerSetup.ts',
+             readerSetupBundle: './bookEdit/toolbox/readers/readerSetup/readerSetup.ts',
              editablePageBundle: './bookEdit/editablePage.ts',
              bookPreviewBundle: './bookPreview/bookPreview.ts',
              toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.ts',

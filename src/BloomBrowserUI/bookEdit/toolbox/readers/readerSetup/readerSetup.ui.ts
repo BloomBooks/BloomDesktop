@@ -3,9 +3,8 @@
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 import '../../../../lib/jquery.onSafe.ts';
 import {beginSaveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
-import {DataWord} from '../libSynphony/bloom_lib';
+import {DataWord} from '../libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
-//import {ReaderToolsModel} from '../readerToolsModel';
 import * as _ from 'underscore';
 
 var desiredGPCs: string[];

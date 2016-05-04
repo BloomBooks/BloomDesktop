@@ -7,7 +7,7 @@
  *
  */
 import {theOneLibSynphony, LanguageData} from './synphony_lib.js';
-import './bloom_lib.js'; //add several functions to LanguageData
+import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
 
 describe("LanguageData", function() {
 

@@ -1,6 +1,6 @@
-/// <reference path="synphonyApi.ts" />
+/// <reference path="./ReadersSynphonyWrapper.ts" />
 /// <reference path="./libSynphony/jquery.text-markup.d.ts" />
-/// <reference path="jquery.div-columns.ts" />
+/// <reference path="./jquery.div-columns.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="../../js/editableDivUtils.ts" />
 /// <reference path="./directoryWatcher.ts" />
@@ -17,8 +17,8 @@ import './jquery.div-columns.ts';
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 import * as _ from 'underscore';
 import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
-import SynphonyApi from './synphonyApi';
-import {DataWord,TextFragment} from './libSynphony/bloom_lib';
+import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
+import {DataWord,TextFragment} from './libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
 var SortType = {
   alphabetic: "alphabetic",
@@ -56,7 +56,7 @@ export class ReaderToolsModel {
   
   stageNumber: number = 1;
   levelNumber: number = 1;
-  synphony: SynphonyApi = null; // to ensure detection of async issues, don't init until we load its settings
+  synphony: ReadersSynphonyWrapper = null; // to ensure detection of async issues, don't init until we load its settings
   sort: string = SortType.alphabetic;
   currentMarkupType: number = MarkupType.None;
   allWords = {};
@@ -852,11 +852,11 @@ export class ReaderToolsModel {
   }
 
   /** Should be called early on, before other init. */
-  setSynphony(val: SynphonyApi): void {
+  setSynphony(val: ReadersSynphonyWrapper): void {
     this.synphony = val;
   }
 
-//   getSynphony(): SynphonyApi {
+//   getSynphony(): ReadersSynphonyWrapper {
 //     return this.synphony;
 //   }
 
@@ -974,7 +974,7 @@ export class ReaderToolsModel {
   addWordsToSynphony() {
 
     // add words to the word list
-    SynphonyApi.addWords(this.allWords);
+    ReadersSynphonyWrapper.addWords(this.allWords);
     theOneLibSynphony.processVocabularyGroups();
   }
 

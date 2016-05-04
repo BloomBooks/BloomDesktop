@@ -1,7 +1,7 @@
 import {ReaderToolsModel} from "./readerToolsModel";
 import {theOneLanguageDataInstance,   ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
 import * as _ from 'underscore'
-import SynphonyApi from './synphonyApi';
+import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
 
 describe("readerTools-libSynphony tests", function() {
 
@@ -24,7 +24,7 @@ describe("readerTools-libSynphony tests", function() {
 
         var sampleFileContents = 'The cat sat on the mat. The rat sat on the cat.';
 
-        var synphony = new SynphonyApi();
+        var synphony = new ReadersSynphonyWrapper();
         ReaderToolsModel.model.synphony = synphony;
         synphony.loadSettings(settings);
 
@@ -50,7 +50,7 @@ describe("readerTools-libSynphony tests", function() {
         settings.stages.push({"letters":"","sightWords":"carnivore omnivore"});
         settings.stages.push({"letters":"","sightWords":"rodent"});
 
-        var synphony = new SynphonyApi();
+        var synphony = new ReadersSynphonyWrapper();
         ReaderToolsModel.model.synphony = synphony;
         synphony.loadSettings(settings);
 

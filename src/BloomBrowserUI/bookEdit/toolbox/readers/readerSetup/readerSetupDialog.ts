@@ -1,94 +1,20 @@
-﻿/// <reference path="../toolbox.ts" />
-/// <reference path="./directoryWatcher.ts" />
-/// <reference path="./readerToolsModel.ts" />
-
-import {DirectoryWatcher} from "./directoryWatcher";
-import {DRTState, ReaderToolsModel, MarkupType} from "./readerToolsModel";
-import {beginInitializeDecodableReaderTool} from "./readerTools";
-import {ITabModel} from "../toolbox";
-import {ToolBox} from "../toolbox";
-import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
-import {theOneLibSynphony}  from './libSynphony/synphony_lib';
-import {getEditViewFrameExports} from '../../js/bloomFrames';
-
-class DecodableReaderModelToolboxPanel implements ITabModel {
-    beginRestoreSettings(settings: string): JQueryPromise<void> {
-        if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
-        return beginInitializeDecodableReaderTool().then(() => {
-            if (settings['decodableReaderState']) {
-                var state = theOneLibSynphony.dbGet('drt_state');
-                if (!state) state = new DRTState();
-                var decState = settings['decodableReaderState'];
-                if (decState.startsWith("stage:")) {
-                    var parts = decState.split(";");
-                    var stage = parseInt(parts[0].substring("stage:".length));
-                    var sort = parts[1].substring("sort:".length);
-                    ReaderToolsModel.model.setSort(sort);
-                    ReaderToolsModel.model.setStageNumber(stage);
-                } else {
-                    // old state
-                    ReaderToolsModel.model.setStageNumber(parseInt(decState));
-                }
-            }
-        });
-    }
-
-    setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
-        // invoke function when a bloom-editable element loses focus.
-        $(container).find('.bloom-editable').focusout(function () {
-            if (ReaderToolsModel.model) {
-                ReaderToolsModel.model.doMarkup();
-            }
-        });
-
-        $(container).find('.bloom-editable').focusin(function () {
-            if (ReaderToolsModel.model) {
-                ReaderToolsModel.model.noteFocus(this); // 'This' is the element that just got focus.
-            }
-        });
-
-        $(container).find('.bloom-editable').keydown(function(e) {
-            if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
-                if (ReaderToolsModel.model.currentMarkupType !== MarkupType.None) {
-                    e.preventDefault();
-                    if (e.shiftKey || e.keyCode == 89) { // ctrl-shift-z or ctrl-y
-                        ReaderToolsModel.model.redo();
-                    } else {
-                        ReaderToolsModel.model.undo();
-                    }
-                    return false;
-                }
-            }
-        });
-    }
-
-    configureElements(container: HTMLElement) {
-        this.setupReaderKeyAndFocusHandlers(container);
-    }
-
-    showTool() {
-        // change markup based on visible options
-        ReaderToolsModel.model.setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!ReaderToolsModel.model.setMarkupType(1)) ReaderToolsModel.model.doMarkup();
-    }
-
-    hideTool() {
-        ReaderToolsModel.model.setMarkupType(0);
-    }
-
-    updateMarkup() {
-        ReaderToolsModel.model.doMarkup();
-    }
-
-    name() { return 'decodableReader'; }
-
-    hasRestoredSettings: boolean;
-}
-
-ToolBox.getTabModels().push(new DecodableReaderModelToolboxPanel());
+/* 
+ * The methods here are refugees that had been encamped with DecodableReader
+ * (which becaues DecodableReaderToolboxPanel), but which are used just as much for the
+ * leveled reader.
+ * Note that that these methods just get the dialog created and in the right home and able
+ * to respond to Help, OK, and Cancel, whereas the
+ * ReaderSetupUI is concerned with the inner workings of the dialog.
+ */
 
 
-// "region" ReaderSetup dialog
+/// <reference path="../readerToolsModel.ts" />
+
+import {ReaderToolsModel} from "../readerToolsModel";
+import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
+import {getEditViewFrameExports} from '../../../js/bloomFrames';
+
+
 function CreateConfigDiv(title) {
     var dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($(parentDocument()).find("body"));
 
@@ -156,6 +82,9 @@ export function showSetupDialog(showWhat) {
                 Cancel: {
                     text: theOneLocalizationManager.getText('Common.Cancel', 'Cancel'),
                     click: function () {
+                        //nb: the element pointed to here by setupDialogElement is the same as "this"
+                        //however, the jquery that you'd get by saying $(this) is *not* the same one as
+                        //that stored in setupDialogElement. Ref BL-3331.
                       setupDialogElement.dialog("close");
                     }
                 }
@@ -242,4 +171,3 @@ function fireCSharpEvent(eventName, eventData) {
     // Solution III (works)
     //var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
 }
-// "endregion" ReaderSetup dialog

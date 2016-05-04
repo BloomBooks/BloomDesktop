@@ -1,10 +1,5 @@
 /**
- * bloom_lib.js
- *
  * Extensions to the LibSynphony class to support Bloom.
- *
- * Created Apr 14, 2014 by Phil Hopper
- *
  */
 import XRegExp from 'xregexp';
 require('./bloom_xregexp_categories.js'); // reviewslog should add PEP to XRegExp, but it's not working

@@ -1,5 +1,5 @@
-/// <reference path="bloom_lib.d.ts" />
-import {TextFragment} from './bloom_lib';
+/// <reference path="bloomSynphonyExtensions.d.ts" />
+import {TextFragment} from './bloomSynphonyExtensions';
 
 export class LanguageData {
 
