@@ -523,6 +523,32 @@ class StyleEditor {
     }
 
     AttachToBox(targetBox: HTMLElement) {
+        // This method is called when the window gets focus. This may be before CkEditor has finished loading.
+        // Somewhere in the course of loading, it detects editable divs that are empty except for our gear icon.
+        // It decides to insert some content...typically <p><br></p>, and in doing so, replaces the gear icon div.
+        // Attempts to suppress this with  config.fillEmptyBlocks, config.protectedSource,
+        // config.allowedContent, and data-cke-survive did not work.
+        // The only solution we have found is to postpone adding the gear icon until CkEditor has done
+        // its nefarious work. The following block achieves this.
+        // Enhance: this logic is roughly duplicated in toolbox.ts restoreToolboxSettingsWhenCkEditorReady.
+        // There may be some way to refactor it into a common place, but I don't know where.
+        var editorInstances = (<any>window).CKEDITOR.instances;
+        for (var i = 1; ; i++) {
+          var instance = editorInstances['editor' + i];
+          if (instance == null) {
+            if (i === 0) {
+              // no instance at all...if one is later created, get us invoked.
+              (<any>window).CKEDITOR.on('instanceReady', e => this.AttachToBox(targetBox));
+              return;
+            }
+            break; // if we get here all instances are ready
+          }
+          if (!instance.instanceReady) {
+            instance.on('instanceReady', e => this.AttachToBox(targetBox));
+            return;
+          }
+        }
+
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
             return;
