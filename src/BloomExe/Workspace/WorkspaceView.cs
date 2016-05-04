@@ -584,6 +584,11 @@ namespace Bloom.Workspace
 			{
 				MessageBox.Show(this, "Sorry, you cannot check for updates from the debugger.");
 			}
+			else if (InstallerSupport.SharedByAllUsers())
+			{
+				MessageBox.Show(this, LocalizationManager.GetString("CollectionTab.AdminManagesUpdates",
+						"Your system administrator manages Bloom updates for this computer."));
+			}
 			else
 			{
 				ApplicationUpdateSupport.CheckForASquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose,
