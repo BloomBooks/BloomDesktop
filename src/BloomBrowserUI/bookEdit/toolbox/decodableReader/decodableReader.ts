@@ -122,6 +122,7 @@ function showSetupDialog(showWhat) {
         $(dialogContents).dialog({
             autoOpen: true,
             modal: true,
+            resizable: false, // Do NOT merge into 3.7! There's a problem with resizing (BL-3386) in 3.6 which is already fixed in 3.7
             buttons: (<any>{
                 Help: {
                     // For consistency, I would have made this 'Common.Help', but we already had 'HelpMenu.Help Menu' translated
