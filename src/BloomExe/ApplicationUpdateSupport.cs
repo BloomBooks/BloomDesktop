@@ -97,7 +97,7 @@ namespace Bloom
 				}
 				if (!autoUpdate)
 				{
-					ApplicationUpdateSupport.InitiateSquirrelNotifyUpdatesAvailable(updateUrl, restartBloom);
+					ApplicationUpdateSupport.InitiateSquirrelNotifyUpdatesAvailable(verbosity, updateUrl, restartBloom);
 					return;
 				}
 
@@ -199,7 +199,7 @@ namespace Bloom
 			}
 		}
 
-		private static async void InitiateSquirrelNotifyUpdatesAvailable(string updateUrl, Action<string> restartBloom)
+		private static async void InitiateSquirrelNotifyUpdatesAvailable(BloomUpdateMessageVerbosity verbosity, string updateUrl, Action<string> restartBloom)
 		{
 #if !__MonoCS__
 			try
@@ -218,7 +218,15 @@ namespace Bloom
 					if (NoUpdatesAvailable(info))
 					{
 						SIL.Reporting.Logger.WriteEvent("Squirrel: No update available.");
-						return; // none available.
+						if (verbosity == BloomUpdateMessageVerbosity.Verbose)
+						{
+							// Only show this if the user manually initiated the check.
+							var message = LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");
+							var noneNotifier = new ToastNotifier();
+							noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
+							noneNotifier.Show(message, "", 5);
+						}
+						return;
 					}
 					var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available.");
 					var action = LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now");
