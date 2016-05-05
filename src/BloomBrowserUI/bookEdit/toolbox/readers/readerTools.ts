@@ -330,13 +330,6 @@ function makeLetterWordList(): void {
   $.ajax(<JQueryAjaxSettings>ajaxSettings)
 }
 
-function loadExternalLink(url: string): void {
-  $.get(url, function() {
-    // ignore response
-    // in this case, we just want to open an external browser with a link, so we don't want to process the response
-  });
-}
-
 /**
  * We need to check the size of the decodable reader tool pane periodically so we can adjust the height of the word list
  * @global {number} previousHeight
