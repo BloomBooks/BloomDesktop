@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -8,6 +9,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using BloomTemp;
 using Newtonsoft.Json;
+using SIL.Code;
 using SIL.IO;
 using SIL.Xml;
 
@@ -21,7 +23,7 @@ namespace Bloom.Edit
 	/// </summary>
 	public class ToolboxView
 	{
-		static readonly string[] IdsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, /*BookSettingsTool.StaticToolId*/ };
+		static readonly string[] IdsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, BookSettingsTool.StaticToolId };
 
 		public static void RegisterWithServer(EnhancedImageServer server)
 		{
@@ -55,7 +57,7 @@ namespace Bloom.Edit
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/leveledReader");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/decodableReader");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/talkingBook");
-			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/settings");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/bookSettings");
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/readerSetup");
 		}
 
@@ -127,7 +129,9 @@ namespace Bloom.Edit
 		{
 			// For all the toolbox tools, the tool name is used as the name of both the folder where the
 			// assets for that tool are kept, and the name of the main htm file that represents the tool.
-			var path = BloomFileLocator.sTheMostRecentBloomFileLocator.LocateFile(tool.ToolId + "ToolboxPanel.html");
+			var fileName = tool.ToolId + "ToolboxPanel.html";
+			var path = BloomFileLocator.sTheMostRecentBloomFileLocator.LocateFile(fileName);
+			Debug.Assert(!string.IsNullOrEmpty(path));
 			AppendToolboxPanel(domForToolbox, path);
 			checkedBoxes.Add(tool.ToolId + "Check");
 		}

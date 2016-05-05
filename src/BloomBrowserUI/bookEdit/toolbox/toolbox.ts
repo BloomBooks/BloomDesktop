@@ -70,11 +70,10 @@ export function showOrHidePanel_click(chkbox) {
     var panel = $(chkbox).data('panel');
 
     if (chkbox.innerHTML === '') {
-
         chkbox.innerHTML = checkMarkString;
         ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t1");
         if (panel) {
-            requestPanel(chkbox.id, panel, null, null, null);
+            beginAddPanel(chkbox.id, panel);
         }
     }
     else {
@@ -264,35 +263,28 @@ function setCurrentPanel(currentPanel) {
 
 /**
  * Requests a panel from localhost and loads it into the toolbox.
- * @param {String} checkBoxId
- * @param {String} panelId
- * @param {Function} loadNextCallback
- * @param {Array} panels
- * @param {String} currentPanel
+ * This is used when the user ticks a previously unticked checkbox of a tool.
+ * Normally that job goes to an equivalent c# function. Enhance: remove the c# one. 
  */
-function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPanel) {
-
+// these last three parameters were never used: function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPanel) {
+function beginAddPanel(checkBoxId:string, panelId:string): Promise<void> {    
     var chkBox = document.getElementById(checkBoxId);
     if (chkBox) {
         chkBox.innerHTML = checkMarkString;
 
-        // The panelIDs all end in 'Tool' but the containing file and folder names don't have this.
-        var fileAndFolderName = panelId.substring(0, panelId.length - 4);
-
-        var panelUrl = '/bloom/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + 'ToolboxPanel.html';
-        var ajaxSettings = {type: 'GET', url: panelUrl};
-
-        $.ajax(ajaxSettings)
-            .done(function (data) {
-                loadToolboxPanel(data, panelId);
-                if (typeof loadNextCallback === 'function')
-                    loadNextCallback(panels, currentPanel);
+        var subpath = {
+            'decodableReaderTool': 'readers/decodableReader/decodableReaderToolboxPanel.html',
+            'leveledReaderTool': 'readers/leveledReader/leveledReaderToolboxPanel.html',
+            'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
+            'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html'
+        }
+        return axios.get<any>("/bloom/bookEdit/toolbox/"+ subpath[panelId]).then(result=>{
+                loadToolboxPanel(result.data, panelId);
             });
     }
 }
 
 function doKeypressMarkup(): void {
-
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
     // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)

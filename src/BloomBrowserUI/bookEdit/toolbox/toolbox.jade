@@ -12,14 +12,7 @@ html
 		//reviewslog: since we only access the ckeditor on the page, we should be able to reference that one, not addd one to this iframe script(src='/bloom/lib/ckeditor/ckeditor.js')
 		script(src='/bloom/commonBundle.js')
 		script(src='/bloom/toolboxBundle.js')
-
-	
-		//TODO: get these raw script calls out of here, should be part of toolboxIFrame.js
-
-		// not sure we need all three qtip files are needed. qtips are only in the toolbox so far.
-		// Something is needed so that $(...).qtip works when manipulating the main page DOM.
-		// script(src='/bloom/lib/jquery.qtip.js')
-		// script(src='/bloom/lib/jquery.qtipSecondary.js')
+		
 	body
 		.toolboxRoot
 			#toolbox

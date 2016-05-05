@@ -15,10 +15,10 @@ import theOneLocalizationManager from '../../../../lib/localizationManager/local
 import {getEditViewFrameExports} from '../../../js/bloomFrames';
 
 
-function CreateConfigDiv(title) {
+function getDialogHtml(title) {
     var dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($(parentDocument()).find("body"));
 
-    var html = '<iframe id="settings_frame" src="/bloom/bookEdit/toolbox/decodableReader/readerSetup/ReaderSetup.html" scrolling="no" ' +
+    var html = '<iframe id="settings_frame" src="/bloom/bookEdit/toolbox/readers/readerSetup/ReaderSetup.html" scrolling="no" ' +
         'style="width: 100%; height: 100%; border-width: 0; margin: 0" ' +
         'onload="document.getElementById(\'toolbox\').contentWindow.FrameExports.initializeReaderSetupDialog()"></iframe>';
 
@@ -47,8 +47,6 @@ export function showSetupDialog(showWhat) {
         else
             title = theOneLocalizationManager.getText('ReaderSetup.SetUpLeveledReaderTool', 'Set up Leveled Reader Tool');
 
-        var dialogContents = CreateConfigDiv(title);
-
         var h = 580;
         var w = 720;
         var size = getAppropriateDialogSize(h, w);
@@ -60,7 +58,7 @@ export function showSetupDialog(showWhat) {
         // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
         // where it is displayed. The main dialog() function doesn't work quite right (can't drag or resize it), and other functions
         // like dialog("close") don't do anything, if the wrapper is created in the toolbox frame.
-        setupDialogElement = getEditViewFrameExports().showDialog(dialogContents, {
+        setupDialogElement = getEditViewFrameExports().showDialog( getDialogHtml(title), {
             autoOpen: true,
             modal: true,
             buttons: (<any>{
