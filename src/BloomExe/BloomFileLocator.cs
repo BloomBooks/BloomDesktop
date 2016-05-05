@@ -26,6 +26,8 @@ namespace Bloom
 			}
 		}
 
+		public static BloomFileLocator sTheMostRecentBloomFileLocator;
+
 		public BloomFileLocator(CollectionSettings collectionSettings, XMatterPackFinder xMatterPackFinder, IEnumerable<string> factorySearchPaths, IEnumerable<string> userInstalledSearchPaths,
 			IEnumerable<string> afterXMatterSearchPaths = null)
 			: base(factorySearchPaths.Concat( userInstalledSearchPaths))//review: is this even used, since we override GetSearchPaths()?
@@ -40,6 +42,8 @@ namespace Bloom
 			_factorySearchPaths = factorySearchPaths;
 			_userInstalledSearchPaths = userInstalledSearchPaths;
 			_afterXMatterSearchPaths = afterXMatterSearchPaths;
+
+			sTheMostRecentBloomFileLocator = this;
 		}
 
 		public override void AddPath(string path)

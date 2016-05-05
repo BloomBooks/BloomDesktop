@@ -52,7 +52,11 @@ namespace Bloom.Edit
 		public static IEnumerable<string> GetToolboxServerDirectories()
 		{
 			yield return BloomFileLocator.GetBrowserDirectory("bookEdit","toolbox");
-			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/decodableReader/readerSetup");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/leveledReader");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/decodableReader");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/talkingBook");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/settings");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/readers/readerSetup");
 		}
 
 		public static string MakeToolboxContent(Book.Book book)
@@ -73,7 +77,7 @@ namespace Bloom.Edit
 			}
 
 			// Load settings into the toolbox panel
-			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(toolboxFolder, "settings", "Settings.html")));
+			AppendToolboxPanel(domForToolbox, BloomFileLocator.GetFileDistributedWithApplication(Path.Combine(toolboxFolder, "settings", "Settings.html")));
 
 			// check the appropriate boxes
 			foreach (var checkBoxId in checkedBoxes)
@@ -123,10 +127,8 @@ namespace Bloom.Edit
 		{
 			// For all the toolbox tools, the tool name is used as the name of both the folder where the
 			// assets for that tool are kept, and the name of the main htm file that represents the tool.
-			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(
-				toolboxFolder,
-				tool.ToolId,
-				tool.ToolId + "ToolboxPanel.html")));
+			var path = BloomFileLocator.sTheMostRecentBloomFileLocator.LocateFile(tool.ToolId + "ToolboxPanel.html");
+			AppendToolboxPanel(domForToolbox, path);
 			checkedBoxes.Add(tool.ToolId + "Check");
 		}
 
