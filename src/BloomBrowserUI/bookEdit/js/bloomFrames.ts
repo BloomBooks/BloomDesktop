@@ -13,9 +13,6 @@
     to hide the details so that we can easily change it later. 
 */
 
-/// <reference path="../../typings/jquery/jquery.d.ts" />
-// import * as $ from 'jquery';
-// import { ReaderToolsWindow} from "../toolbox/decodableReader/readerToolsModel";
 
 interface WindowWithExports extends Window {
     FrameExports: any;
