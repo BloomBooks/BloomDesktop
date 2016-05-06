@@ -243,7 +243,7 @@ namespace Bloom.CollectionTab
 		{
 			if (!(book is ErrorBook))
 			{
-				_thumbNailer.RebuildThumbNailAsync(book, thumbnailOptions, callback, errorCallback);
+				_thumbNailer.RebuildThumbNail(book, thumbnailOptions, callback, errorCallback, true);
 			}
 			
 		}

@@ -150,8 +150,8 @@ namespace Bloom.Edit
 				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid,
 				CenterImageUsingTransparentPadding = true
 			};
-			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom, thumbnailOptions, image => RefreshOneThumbnailCallback(page, image),
-													  error=> HandleThumbnailerError(page, error));
+			Thumbnailer.GetThumbnail(String.Empty, page.Id, pageDom, thumbnailOptions, image => RefreshOneThumbnailCallback(page, image),
+													  error=> HandleThumbnailerError(page, error), true);
 		}
 
 		private void HandleThumbnailerError(IPage page, Exception error)
