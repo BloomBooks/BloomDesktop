@@ -20,11 +20,11 @@ export {DecodableReaderToolboxPanel}; // just to make sure it gets included in t
 export {handleBookSettingCheckboxClick}; // called by click handler in jade; also, exporting something from it gets it included in the bundle.
 
 export function canUndo() :boolean {
-    return (typeof ReaderToolsModel.model != 'undefined') && ReaderToolsModel.model.shouldHandleUndo() && ReaderToolsModel.model.canUndo();
+    return ReaderToolsModel.shouldHandleUndo() && ReaderToolsModel.canUndo();
 }
 
 export function undo() {
-    ReaderToolsModel.model.undo();
+    ReaderToolsModel.undo();
 }
 
 

@@ -39,13 +39,13 @@ function processDLRMessage(event: MessageEvent): void {
 
   switch(params[0]) {
     case 'Texts': // request from setup dialog for the list of sample texts
-      if (ReaderToolsModel.model.texts)
-        getSetupDialogWindow().postMessage('Files\n' + ReaderToolsModel.model.texts.join("\r"), '*');
+      if (ReaderToolsModel.texts)
+        getSetupDialogWindow().postMessage('Files\n' + ReaderToolsModel.texts.join("\r"), '*');
       return;
 
     case 'Words': // request from setup dialog for a list of words for a stage
       var words: any;
-      if (ReaderToolsModel.model.synphony.source.useAllowedWords) {//reviewslog
+      if (ReaderToolsModel.synphony.source.useAllowedWords) {//reviewslog
         // params[1] is the stage number
         words = ReaderToolsModel.selectWordsFromAllowedLists(parseInt(params[1]));
       }
@@ -58,11 +58,11 @@ function processDLRMessage(event: MessageEvent): void {
       return;
 
     case 'SetupType':
-      getSetupDialogWindow().postMessage('SetupType\n' + ReaderToolsModel.model.setupType, '*');
+      getSetupDialogWindow().postMessage('SetupType\n' + ReaderToolsModel.setupType, '*');
       return;
 
     case 'SetMarkupType':
-      ReaderToolsModel.model.setMarkupType(parseInt(params[1]));
+      ReaderToolsModel.setMarkupType(parseInt(params[1]));
       return;
 
     case 'Qtips': // request from toolbox to add qtips to marked-up spans
@@ -112,26 +112,26 @@ export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
 
   // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
   $('#incStage').onSafe('click.readerTools', function() {
-    ReaderToolsModel.model.incrementStage();
+    ReaderToolsModel.incrementStage();
   });
 
   $('#decStage').onSafe('click.readerTools', function() {
-    ReaderToolsModel.model.decrementStage();
+    ReaderToolsModel.decrementStage();
   });
 
   $('#sortAlphabetic').onSafe('click.readerTools', function() {
-    ReaderToolsModel.model.sortAlphabetically();
+    ReaderToolsModel.sortAlphabetically();
   });
 
   $('#sortLength').onSafe('click.readerTools', function() {
-    ReaderToolsModel.model.sortByLength();
+    ReaderToolsModel.sortByLength();
   });
 
   $('#sortFrequency').onSafe('click.readerTools', function() {
-    ReaderToolsModel.model.sortByFrequency();
+    ReaderToolsModel.sortByFrequency();
   });
 
-  ReaderToolsModel.model.updateControlContents();
+  ReaderToolsModel.updateControlContents();
   $("#toolbox").accordion("refresh");
 
   $(window).resize(function() {
@@ -148,14 +148,14 @@ export function beginInitializeLeveledReaderTool(): JQueryPromise <void> {
     return beginLoadSynphonySettings().then(() => {
 
   $('#incLevel').onSafe('click.readerTools', function() {
-    ReaderToolsModel.model.incrementLevel();
+    ReaderToolsModel.incrementLevel();
   });
 
   $('#decLevel').onSafe('click.readerTools', function() {
-    ReaderToolsModel.model.decrementLevel();
+    ReaderToolsModel.decrementLevel();
   });
 
-  ReaderToolsModel.model.updateControlContents();
+  ReaderToolsModel.updateControlContents();
   $("#toolbox").accordion("refresh");
     });
 }
@@ -182,24 +182,24 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
  * Note: settingsFileContent may be empty.
  *
  * @param settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
- * @global {ReaderToolsModel) ReaderToolsModel.model
+ * @global {ReaderToolsModel) ReaderToolsModel
  */
 function initializeSynphony(settingsFileContent: string): void {
   var synphony = new ReadersSynphonyWrapper();
   synphony.loadSettings(settingsFileContent);
-  ReaderToolsModel.model.setSynphony(synphony);
-  ReaderToolsModel.model.restoreState();
+  ReaderToolsModel.setSynphony(synphony);
+  ReaderToolsModel.restoreState();
 
-  ReaderToolsModel.model.updateControlContents();
+  ReaderToolsModel.updateControlContents();
 
   // set up a DirectoryWatcher on the Sample Texts directory
-  ReaderToolsModel.model.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);
-  ReaderToolsModel.model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
-  ReaderToolsModel.model.directoryWatcher.start();
+  ReaderToolsModel.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);
+  ReaderToolsModel.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
+  ReaderToolsModel.directoryWatcher.start();
 
   if (synphony.source.useAllowedWords) {
     // get the allowed words for each stage
-    ReaderToolsModel.model.getAllowedWordsLists();
+    ReaderToolsModel.getAllowedWordsLists();
   }
   else {
     // get the list of sample texts
@@ -216,7 +216,7 @@ function beginSetTextsList(textsList: string): Promise<void> {
 }
 
 function setDefaultFont(fontName: string): void {
-  ReaderToolsModel.model.fontName = fontName;
+  ReaderToolsModel.fontName = fontName;
 }
 
 /**
@@ -226,17 +226,17 @@ export function readerSampleFilesChanged(): void {
     // We have to basically start over; no other way to get things in a consistent state
     // between the changed sample files and the sample words in the dialog itself.
     // We can however keep the current version of the settings saved in the model.
-  beginRefreshEverything(ReaderToolsModel.model.synphony.source);
+  beginRefreshEverything(ReaderToolsModel.synphony.source);
 }
 
 function refreshSettingsExceptSampleWords(newSettings) {
-    var synphony = ReaderToolsModel.model.synphony;
+    var synphony = ReaderToolsModel.synphony;
     synphony.loadSettings(newSettings);
     if (synphony.source.useAllowedWords) {
-        ReaderToolsModel.model.getAllowedWordsLists();
+        ReaderToolsModel.getAllowedWordsLists();
     } else {
-        ReaderToolsModel.model.updateControlContents();
-        ReaderToolsModel.model.doMarkup();
+        ReaderToolsModel.updateControlContents();
+        ReaderToolsModel.doMarkup();
     }
 }
 
@@ -250,7 +250,7 @@ function refreshSettingsExceptSampleWords(newSettings) {
 function beginRefreshEverything(settings: ReaderSettings) : Promise<void> {
   // reset the file and word list
   ResetLanguageDataInstance();
-  ReaderToolsModel.model.allWords = {};
+  ReaderToolsModel.allWords = {};
   // This helps with updating the matching words panel in the setup dialog. If we switched to the
   // sample words tab, changed sample words, and switched back, or if the user just edited the sample
   // words files in the background, nothing will have changed that indicates the cache is invalid;
@@ -260,7 +260,7 @@ function beginRefreshEverything(settings: ReaderSettings) : Promise<void> {
 
   var synphony = new ReadersSynphonyWrapper();
   synphony.loadSettings(settings);
-  ReaderToolsModel.model.setSynphony(synphony);
+  ReaderToolsModel.setSynphony(synphony);
 
   // reload the sample texts
   return <any>axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => beginSetTextsList(result.data));
@@ -286,13 +286,13 @@ export function beginSaveChangedSettings(settings: ReaderSettings, previousMoreW
  * Adds a function to the list of functions to call when the word list changes
  */
 export function addWordListChangedListener(listenerNameAndContext: string, callback: () => {}) {
-  ReaderToolsModel.model.wordListChangedListeners[listenerNameAndContext] = callback;
+  ReaderToolsModel.wordListChangedListeners[listenerNameAndContext] = callback;
 }
 
 function makeLetterWordList(): void {
 
   // get a copy of the current settings
-  var settings: ReaderSettings = <ReaderSettings>jQuery.extend(true, {}, ReaderToolsModel.model.synphony.source);
+  var settings: ReaderSettings = <ReaderSettings>jQuery.extend(true, {}, ReaderToolsModel.synphony.source);
 
   // remove levels
   if (typeof settings.levels !== null)
@@ -358,7 +358,7 @@ export function resizeWordList(startTimeout: boolean = true): void {
 
     var top = wordList.parent().position().top;
 
-    var synphony = ReaderToolsModel.model.synphony;
+    var synphony = ReaderToolsModel.synphony;
     if (synphony.source) {
 
       var ht = currentHeight - top;

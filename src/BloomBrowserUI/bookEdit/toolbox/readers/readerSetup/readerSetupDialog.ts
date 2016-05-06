@@ -53,7 +53,7 @@ export function showSetupDialog(showWhat) {
         h = size[0];
         w = size[1];
 
-        ReaderToolsModel.model.setupType = showWhat;
+        ReaderToolsModel.setupType = showWhat;
 
         // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
         // where it is displayed. The main dialog() function doesn't work quite right (can't drag or resize it), and other functions
@@ -139,16 +139,13 @@ function getSettingsDialogLocalizedStrings() {
  * Used by the settings_frame to initialize the setup dialog
  */
 export function initializeReaderSetupDialog() {
-
-    var model = ReaderToolsModel.model;
-
-    if(typeof model.synphony.source == 'undefined' || model.synphony.source === null){
-        throw new Error("ReaderToolsModel.model was not loaded with settings");
-    }
-    var sourceMsg = 'Data\n' + JSON.stringify(model.synphony.source);
-    var fontMsg = 'Font\n' + model.fontName;
-    settingsFrameWindow().postMessage(sourceMsg, '*');
-    settingsFrameWindow().postMessage(fontMsg, '*');
+  if (typeof ReaderToolsModel.synphony.source == 'undefined' || ReaderToolsModel.synphony.source === null) {
+    throw new Error("ReaderToolsModel was not loaded with settings");
+  }
+  var sourceMsg = 'Data\n' + JSON.stringify(ReaderToolsModel.synphony.source);
+  var fontMsg = 'Font\n' + ReaderToolsModel.fontName;
+  settingsFrameWindow().postMessage(sourceMsg, '*');
+  settingsFrameWindow().postMessage(fontMsg, '*');
 }
 
 export function closeSetupDialog() {

@@ -7,10 +7,9 @@ import {theOneLibSynphony}  from '../libSynphony/synphony_lib';
 
 export default class LeveledReaderToolboxPanel implements ITabModel {
     beginRestoreSettings(opts: string): JQueryPromise<void> {
-        if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         return beginInitializeLeveledReaderTool().then(() => {
             if (opts['leveledReaderState']) {
-                ReaderToolsModel.model.setLevelNumber(parseInt(opts['leveledReaderState']));
+                ReaderToolsModel.setLevelNumber(parseInt(opts['leveledReaderState']));
             }
         });
     }
@@ -19,16 +18,16 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
 
     showTool() {
         // change markup based on visible options
-        ReaderToolsModel.model.setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!ReaderToolsModel.model.setMarkupType(2)) ReaderToolsModel.model.doMarkup();
+        ReaderToolsModel.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!ReaderToolsModel.setMarkupType(2)) ReaderToolsModel.doMarkup();
     }
 
     hideTool() {
-        ReaderToolsModel.model.setMarkupType(0);
+        ReaderToolsModel.setMarkupType(0);
     }
 
     updateMarkup() {
-        ReaderToolsModel.model.doMarkup();
+        ReaderToolsModel.doMarkup();
     }
 
     name() { return 'leveledReader'; }
