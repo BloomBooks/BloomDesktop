@@ -3,7 +3,7 @@
 /// <reference path="../../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 import {DirectoryWatcher} from "./directoryWatcher";
-import {ReaderToolsModel} from "./readerToolsModel";
+import {theOneReaderToolsModel} from "./readerToolsModel";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
 import './libSynphony/synphony_lib.js';
@@ -39,30 +39,30 @@ function processDLRMessage(event: MessageEvent): void {
 
   switch(params[0]) {
     case 'Texts': // request from setup dialog for the list of sample texts
-      if (ReaderToolsModel.texts)
-        getSetupDialogWindow().postMessage('Files\n' + ReaderToolsModel.texts.join("\r"), '*');
+      if (theOneReaderToolsModel.texts)
+        getSetupDialogWindow().postMessage('Files\n' + theOneReaderToolsModel.texts.join("\r"), '*');
       return;
 
     case 'Words': // request from setup dialog for a list of words for a stage
       var words: any;
-      if (ReaderToolsModel.synphony.source.useAllowedWords) {//reviewslog
+      if (theOneReaderToolsModel.synphony.source.useAllowedWords) {//reviewslog
         // params[1] is the stage number
-        words = ReaderToolsModel.selectWordsFromAllowedLists(parseInt(params[1]));
+        words = theOneReaderToolsModel.selectWordsFromAllowedLists(parseInt(params[1]));
       }
       else {
         // params[1] is a list of known graphemes
-        words = ReaderToolsModel.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
+        words = theOneReaderToolsModel.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
       }
 
       getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');
       return;
 
     case 'SetupType':
-      getSetupDialogWindow().postMessage('SetupType\n' + ReaderToolsModel.setupType, '*');
+      getSetupDialogWindow().postMessage('SetupType\n' + theOneReaderToolsModel.setupType, '*');
       return;
 
     case 'SetMarkupType':
-      ReaderToolsModel.setMarkupType(parseInt(params[1]));
+      theOneReaderToolsModel.setMarkupType(parseInt(params[1]));
       return;
 
     case 'Qtips': // request from toolbox to add qtips to marked-up spans
@@ -112,26 +112,26 @@ export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
 
   // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
   $('#incStage').onSafe('click.readerTools', function() {
-    ReaderToolsModel.incrementStage();
+    theOneReaderToolsModel.incrementStage();
   });
 
   $('#decStage').onSafe('click.readerTools', function() {
-    ReaderToolsModel.decrementStage();
+    theOneReaderToolsModel.decrementStage();
   });
 
   $('#sortAlphabetic').onSafe('click.readerTools', function() {
-    ReaderToolsModel.sortAlphabetically();
+    theOneReaderToolsModel.sortAlphabetically();
   });
 
   $('#sortLength').onSafe('click.readerTools', function() {
-    ReaderToolsModel.sortByLength();
+    theOneReaderToolsModel.sortByLength();
   });
 
   $('#sortFrequency').onSafe('click.readerTools', function() {
-    ReaderToolsModel.sortByFrequency();
+    theOneReaderToolsModel.sortByFrequency();
   });
 
-  ReaderToolsModel.updateControlContents();
+  theOneReaderToolsModel.updateControlContents();
   $("#toolbox").accordion("refresh");
 
   $(window).resize(function() {
@@ -148,14 +148,14 @@ export function beginInitializeLeveledReaderTool(): JQueryPromise <void> {
     return beginLoadSynphonySettings().then(() => {
 
   $('#incLevel').onSafe('click.readerTools', function() {
-    ReaderToolsModel.incrementLevel();
+    theOneReaderToolsModel.incrementLevel();
   });
 
   $('#decLevel').onSafe('click.readerTools', function() {
-    ReaderToolsModel.decrementLevel();
+    theOneReaderToolsModel.decrementLevel();
   });
 
-  ReaderToolsModel.updateControlContents();
+  theOneReaderToolsModel.updateControlContents();
   $("#toolbox").accordion("refresh");
     });
 }
@@ -182,24 +182,24 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
  * Note: settingsFileContent may be empty.
  *
  * @param settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
- * @global {ReaderToolsModel) ReaderToolsModel
+ * @global {theOneReaderToolsModel) ReaderToolsModel
  */
 function initializeSynphony(settingsFileContent: string): void {
   var synphony = new ReadersSynphonyWrapper();
   synphony.loadSettings(settingsFileContent);
-  ReaderToolsModel.setSynphony(synphony);
-  ReaderToolsModel.restoreState();
+  theOneReaderToolsModel.setSynphony(synphony);
+  theOneReaderToolsModel.restoreState();
 
-  ReaderToolsModel.updateControlContents();
+  theOneReaderToolsModel.updateControlContents();
 
   // set up a DirectoryWatcher on the Sample Texts directory
-  ReaderToolsModel.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);
-  ReaderToolsModel.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
-  ReaderToolsModel.directoryWatcher.start();
+  theOneReaderToolsModel.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);
+  theOneReaderToolsModel.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
+  theOneReaderToolsModel.directoryWatcher.start();
 
   if (synphony.source.useAllowedWords) {
     // get the allowed words for each stage
-    ReaderToolsModel.getAllowedWordsLists();
+    theOneReaderToolsModel.getAllowedWordsLists();
   }
   else {
     // get the list of sample texts
@@ -212,11 +212,11 @@ function initializeSynphony(settingsFileContent: string): void {
  * @param textsList List of file names delimited by \r
  */
 function beginSetTextsList(textsList: string): Promise<void> {
-  return ReaderToolsModel.beginSetTextsList(textsList.split(/\r/).filter(function(e){return e ? true : false;}));
+  return theOneReaderToolsModel.beginSetTextsList(textsList.split(/\r/).filter(function(e){return e ? true : false;}));
 }
 
 function setDefaultFont(fontName: string): void {
-  ReaderToolsModel.fontName = fontName;
+  theOneReaderToolsModel.fontName = fontName;
 }
 
 /**
@@ -226,17 +226,17 @@ export function readerSampleFilesChanged(): void {
     // We have to basically start over; no other way to get things in a consistent state
     // between the changed sample files and the sample words in the dialog itself.
     // We can however keep the current version of the settings saved in the model.
-  beginRefreshEverything(ReaderToolsModel.synphony.source);
+  beginRefreshEverything(theOneReaderToolsModel.synphony.source);
 }
 
 function refreshSettingsExceptSampleWords(newSettings) {
-    var synphony = ReaderToolsModel.synphony;
+    var synphony = theOneReaderToolsModel.synphony;
     synphony.loadSettings(newSettings);
     if (synphony.source.useAllowedWords) {
-        ReaderToolsModel.getAllowedWordsLists();
+        theOneReaderToolsModel.getAllowedWordsLists();
     } else {
-        ReaderToolsModel.updateControlContents();
-        ReaderToolsModel.doMarkup();
+        theOneReaderToolsModel.updateControlContents();
+        theOneReaderToolsModel.doMarkup();
     }
 }
 
@@ -250,7 +250,7 @@ function refreshSettingsExceptSampleWords(newSettings) {
 function beginRefreshEverything(settings: ReaderSettings) : Promise<void> {
   // reset the file and word list
   ResetLanguageDataInstance();
-  ReaderToolsModel.allWords = {};
+  theOneReaderToolsModel.allWords = {};
   // This helps with updating the matching words panel in the setup dialog. If we switched to the
   // sample words tab, changed sample words, and switched back, or if the user just edited the sample
   // words files in the background, nothing will have changed that indicates the cache is invalid;
@@ -260,7 +260,7 @@ function beginRefreshEverything(settings: ReaderSettings) : Promise<void> {
 
   var synphony = new ReadersSynphonyWrapper();
   synphony.loadSettings(settings);
-  ReaderToolsModel.setSynphony(synphony);
+  theOneReaderToolsModel.setSynphony(synphony);
 
   // reload the sample texts
   return <any>axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => beginSetTextsList(result.data));
@@ -286,13 +286,13 @@ export function beginSaveChangedSettings(settings: ReaderSettings, previousMoreW
  * Adds a function to the list of functions to call when the word list changes
  */
 export function addWordListChangedListener(listenerNameAndContext: string, callback: () => {}) {
-  ReaderToolsModel.wordListChangedListeners[listenerNameAndContext] = callback;
+  theOneReaderToolsModel.wordListChangedListeners[listenerNameAndContext] = callback;
 }
 
 function makeLetterWordList(): void {
 
   // get a copy of the current settings
-  var settings: ReaderSettings = <ReaderSettings>jQuery.extend(true, {}, ReaderToolsModel.synphony.source);
+  var settings: ReaderSettings = <ReaderSettings>jQuery.extend(true, {}, theOneReaderToolsModel.synphony.source);
 
   // remove levels
   if (typeof settings.levels !== null)
@@ -304,7 +304,7 @@ function makeLetterWordList(): void {
 
     var stageGPCS: string[] = settings.stages[i].letters.split(' ');
     knownGPCS = _.union(knownGPCS, stageGPCS);
-    var stageWords: string[] = ReaderToolsModel.selectWordsFromSynphony(true, stageGPCS, knownGPCS, true, true);
+    var stageWords: string[] = theOneReaderToolsModel.selectWordsFromSynphony(true, stageGPCS, knownGPCS, true, true);
     settings.stages[i].words = <string[]>_.toArray(stageWords);
   }
 
@@ -351,14 +351,14 @@ export function resizeWordList(startTimeout: boolean = true): void {
   var currentWidth: number = wordList.width();
 
   // resize the word list if the size of the pane changed
-  if ((ReaderToolsModel.previousHeight !== currentHeight) || (ReaderToolsModel.previousWidth !== currentWidth)) {
+  if ((theOneReaderToolsModel.previousHeight !== currentHeight) || (theOneReaderToolsModel.previousWidth !== currentWidth)) {
 
-    ReaderToolsModel.previousHeight = currentHeight;
-    ReaderToolsModel.previousWidth = currentWidth;
+    theOneReaderToolsModel.previousHeight = currentHeight;
+    theOneReaderToolsModel.previousWidth = currentWidth;
 
     var top = wordList.parent().position().top;
 
-    var synphony = ReaderToolsModel.synphony;
+    var synphony = theOneReaderToolsModel.synphony;
     if (synphony.source) {
 
       var ht = currentHeight - top;

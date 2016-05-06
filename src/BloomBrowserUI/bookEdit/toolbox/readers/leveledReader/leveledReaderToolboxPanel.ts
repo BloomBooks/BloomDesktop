@@ -1,5 +1,5 @@
 ﻿/// <reference path="../../toolbox.ts" />
-import { ReaderToolsModel, DRTState, } from "../readerToolsModel";
+import { theOneReaderToolsModel, DRTState, } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool} from "../readerTools";
 import {ITabModel} from "../../toolbox";
 import {ToolBox} from "../../toolbox";
@@ -9,7 +9,7 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
     beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
             if (opts['leveledReaderState']) {
-                ReaderToolsModel.setLevelNumber(parseInt(opts['leveledReaderState']));
+                theOneReaderToolsModel.setLevelNumber(parseInt(opts['leveledReaderState']));
             }
         });
     }
@@ -18,16 +18,16 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
 
     showTool() {
         // change markup based on visible options
-        ReaderToolsModel.setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!ReaderToolsModel.setMarkupType(2)) ReaderToolsModel.doMarkup();
+        theOneReaderToolsModel.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!theOneReaderToolsModel.setMarkupType(2)) theOneReaderToolsModel.doMarkup();
     }
 
     hideTool() {
-        ReaderToolsModel.setMarkupType(0);
+        theOneReaderToolsModel.setMarkupType(0);
     }
 
     updateMarkup() {
-        ReaderToolsModel.doMarkup();
+        theOneReaderToolsModel.doMarkup();
     }
 
     name() { return 'leveledReader'; }
