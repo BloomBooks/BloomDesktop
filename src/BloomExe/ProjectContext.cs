@@ -177,7 +177,7 @@ namespace Bloom
 					builder.Register<XMatterPackFinder>(c =>
 					{
 						var locations = new List<string>();
-						locations.Add(FileLocator.GetDirectoryDistributedWithApplication("xMatter"));
+						locations.Add(BloomFileLocator.GetBrowserDirectory("xMatter"));
 						locations.Add(XMatterAppDataFolder);
 						locations.Add(XMatterCommonDataFolder);
 						return new XMatterPackFinder(locations);
@@ -308,7 +308,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/ckeditor/skins/icy_orange"));
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox/talkingBook"));
 
-			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "xMatter"));
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"ePUB"));
 		}
 
