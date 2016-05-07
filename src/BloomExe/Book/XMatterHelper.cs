@@ -51,11 +51,16 @@ namespace Bloom.Book
 				//NB: we don't want to put up a dialog for each one; one failure here often means 20 more are coming as the other books are loaded!
 				throw new ApplicationException(msg);
 			}
-			string htmName = nameOfXMatterPack + "-XMatter.htm";
+			var htmName = nameOfXMatterPack + "-XMatter.html";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			if(!File.Exists(PathToXMatterHtml))
 			{
-				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", htmName, directoryPath);
+				htmName = nameOfXMatterPack + "-XMatter.htm"; // pre- Bloom 3.7
+				PathToXMatterHtml = directoryPath.CombineForPath(htmName);
+			}
+			if (!File.Exists(PathToXMatterHtml))
+			{
+				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1} (also checked .html)", htmName, directoryPath);
 				throw new ApplicationException();
 			}
 			PathToStyleSheetForPaperAndOrientation = directoryPath.CombineForPath(GetStyleSheetFileName());
