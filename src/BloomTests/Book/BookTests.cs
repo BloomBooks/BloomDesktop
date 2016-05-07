@@ -632,7 +632,7 @@ namespace BloomTests.Book
 			_bookDom = new HtmlDom(@"
 				<html>
 					<head>
-						<meta name='xmatter' content='BigBook'/>
+						<meta name='xmatter' content='Traditional'/>
 					</head>
 					<body>
 						<div class='bloom-page cover coverColor bloom-frontMatter A4Landscape' data-page='required'>
@@ -642,7 +642,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 		   // AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 5);
 			book.BringBookUpToDate(new NullProgress());
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 5);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A4Landscape') and contains(@class,'bloom-page')]", 6);
 		}
 
 
