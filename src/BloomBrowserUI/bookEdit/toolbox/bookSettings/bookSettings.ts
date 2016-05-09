@@ -5,8 +5,15 @@ $(document).ready(() => {
     // request our model and set the controls
     axios.get<any>('/bloom/api/bookSettings').then(result => {
         var settings = result.data;
-        // enhance: this is just dirt-poor binding of 1 checkbox for now
-        $("input[name='unlockShellBook']").prop("checked", settings.unlockShellBook);
+
+        // Only show this if we are editing a shell book. Otherwise, it's already not locked.
+        if(!settings.isRecordedAsLockedDown){
+            $(".showOnlyWhenBookWouldNormallyBeLocked").css("display","none");
+        }
+        else{
+            // enhance: this is just dirt-poor binding of 1 checkbox for now
+            $("input[name='unlockShellBook']").prop("checked", settings.unlockShellBook);
+        }
     });
 });
 

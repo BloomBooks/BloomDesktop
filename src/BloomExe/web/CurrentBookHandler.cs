@@ -41,6 +41,7 @@ namespace Bloom.Api
 			{
 				case HttpMethods.Get:
 					dynamic settings = new ExpandoObject();
+					settings.isRecordedAsLockedDown = _bookSelection.CurrentSelection.RecordedAsLockedDown;
 					settings.unlockShellBook = _bookSelection.CurrentSelection.TemporarilyUnlocked;
 					settings.currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool;
 					request.ReplyWithJson((object)settings);
