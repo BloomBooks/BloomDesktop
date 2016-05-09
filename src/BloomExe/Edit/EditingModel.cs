@@ -131,7 +131,6 @@ namespace Bloom.Edit
 			});
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
-			CurrentBookHandler.CurrentBook = CurrentBook;
 			_templateInsertionCommand = templateInsertionCommand;
 		}
 
@@ -181,7 +180,6 @@ namespace Bloom.Edit
 			var wasNull = _domForCurrentPage == null;
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
-			CurrentBookHandler.CurrentBook = CurrentBook;
 			_templatePagesDict = null;
 			if (Visible)
 			{
@@ -591,7 +589,6 @@ namespace Bloom.Edit
 			//else
 			//	_server.ToolboxContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
-			CurrentBookHandler.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = CanAddPages;
 		}
 
@@ -686,7 +683,6 @@ namespace Bloom.Edit
 			AddMessageEventListener("saveToolboxSettingsEvent", SaveToolboxSettings);
 			AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			AddMessageEventListener("setTopic", SetTopic);
-			AddMessageEventListener("setBookSettings", SetBookSettings);
 			AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
 			AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
@@ -696,17 +692,6 @@ namespace Bloom.Edit
 		private void SaveToolboxSettings(string data)
 		{
 			ToolboxView.SaveToolboxSettings(_currentlyDisplayedBook,data);
-		}
-
-		private void SetBookSettings(string json)
-		{
-			//note: since we only have this one value, it's not clear yet whether the panel involved here will be more of a
-			//and "edit settings", or a "book settings", or a combination of them.
-			//enhance: if this gets much beyond single value, we should create a BookEditSettingsModel (or whatever name fits)
-			//and move all handling there
-			dynamic settings = DynamicJson.Parse(json);
-			_currentlyDisplayedBook.TemporarilyUnlocked = settings.unlockShellBook;
-			RefreshDisplayOfCurrentPage();
 		}
 
 		private void AddMessageEventListener(string name, Action<string> listener)

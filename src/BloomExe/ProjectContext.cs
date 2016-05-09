@@ -101,6 +101,7 @@ namespace Bloom
 							typeof (ControlKeyEvent),
 							typeof (EditingModel),
 							typeof (AudioRecording),
+							typeof(CurrentBookHandler),
 							typeof(ReadersApi)
 						}.Contains(t));
 
@@ -258,8 +259,10 @@ namespace Bloom
 			var server = _scope.Resolve<EnhancedImageServer>();
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
+
 			HelpLauncher.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
+			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 		}
 
