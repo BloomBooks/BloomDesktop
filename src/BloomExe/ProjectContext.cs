@@ -29,7 +29,6 @@ namespace Bloom
 		/// </summary>
 		private ILifetimeScope _scope;
 
-		private EnhancedImageServer _httpServer;
 //		private CommandAvailabilityPublisher _commandAvailabilityPublisher;
 		public Form ProjectWindow { get; private set; }
 
@@ -221,11 +220,9 @@ namespace Bloom
 //				}
 //				else
 //				{
-					_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent), parentContainer.Resolve<BookThumbNailer>());
-					ReadersApi.Init(_httpServer);
-					CurrentBookHandler.Init(_httpServer);
-//				}
-					builder.Register((c => _httpServer)).AsSelf().SingleInstance();
+					builder.Register<EnhancedImageServer>(
+						c =>
+							new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent), c.Resolve<BookThumbNailer>(), c.Resolve<BookSelection>() )).SingleInstance();
 
 					builder.Register<Func<WorkspaceView>>(c => () =>
 					{
@@ -257,8 +254,8 @@ namespace Bloom
 				Application.Exit();
 			}
 
-			_httpServer.StartListening();	// as a side-effect, sets port number needed by RegisterWithServer (BL-3337)
 			var server = _scope.Resolve<EnhancedImageServer>();
+			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
 			HelpLauncher.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);

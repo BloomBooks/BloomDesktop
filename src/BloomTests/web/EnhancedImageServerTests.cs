@@ -150,7 +150,9 @@ namespace BloomTests.web
 
 		private EnhancedImageServer CreateImageServer()
 		{
-			return new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), _fileLocator);
+			var bookSelection = new BookSelection();
+			bookSelection.SelectBook(new Bloom.Book.Book());
+			return new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection, _fileLocator);
 		}
 
 		private TempFile MakeTempImage()

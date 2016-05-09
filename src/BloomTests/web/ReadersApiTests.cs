@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Bloom.Edit;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
 
@@ -18,12 +19,13 @@ namespace BloomTests.web
 		[SetUp]
 		public void Setup()
 		{
-			_server = new EnhancedImageServer();
+			var bookSelection = new BookSelection();
+			bookSelection.SelectBook(new Bloom.Book.Book());
+			_server = new EnhancedImageServer(bookSelection);
 			//needed to avoid a check in the server
 			_server.CurrentCollectionSettings = new CollectionSettings();
-			CurrentBookHandler.CurrentBook = new Bloom.Book.Book();
-
-			ReadersApi.Init(_server); //this won't get us far, as there is no project context setup
+			var controller = new ReadersApi(bookSelection);
+			controller.RegisterWithServer(_server);
 		}
 
 		[TearDown]
@@ -34,9 +36,8 @@ namespace BloomTests.web
 		}
 
 		[Test]
-		public void Get_Test_Works()
+		public void IsReceivingApiCalls()
 		{
-
 			var result = ApiTest.GetString(_server,"readers/test");
 			Assert.That(result, Is.EqualTo("OK"));
 		}

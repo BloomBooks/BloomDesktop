@@ -215,7 +215,6 @@
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="web\ReadersApiTests.cs" />
     <Compile Include="web\ApiTest.cs" />
-    <Compile Include="web\BloomServerTests.cs" />
     <Compile Include="ImageProcessing\ImageServerTests.cs" />
     <Compile Include="web\EndpointHandlerTests.cs" />
     <Compile Include="web\RequestInfoTests.cs" />

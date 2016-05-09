@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Bloom.Api;
+using Bloom.Book;
 using NUnit.Framework;
 
 namespace BloomTests.web
@@ -22,7 +23,7 @@ namespace BloomTests.web
 			// as long as we're only using one, fixed port number, we need to prevent unit test runner
 			// from running these tests in parallel.
 			Monitor.Enter(_portMonitor);
-			_server = new EnhancedImageServer();
+			_server = new EnhancedImageServer(new BookSelection());
 		}
 
 		[TearDown]

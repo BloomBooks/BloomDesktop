@@ -552,7 +552,6 @@
     <Compile Include="Workspace\FeedbackDialog.Designer.cs">
       <DependentUpon>FeedbackDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="web\BloomServer.cs" />
     <Compile Include="web\WebLibraryView.cs">
       <SubType>UserControl</SubType>
     </Compile>

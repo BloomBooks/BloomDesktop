@@ -36,6 +36,7 @@ namespace Bloom.Api
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
 		private readonly BookThumbNailer _thumbNailer;
+		private readonly BookSelection _bookSelection;
 		private readonly ProjectContext _projectContext;
 
 		// This dictionary ties API endpoints to functions that handle the requests.
@@ -46,12 +47,13 @@ namespace Bloom.Api
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>
-		internal EnhancedImageServer() : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, null)
+		internal EnhancedImageServer(BookSelection bookSelection) : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection)
 		{ }
 
-		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer,  BloomFileLocator fileLocator = null) : base(cache)
+		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BookSelection bookSelection,  BloomFileLocator fileLocator = null) : base(cache)
 		{
 			_thumbNailer = thumbNailer;
+			_bookSelection = bookSelection;
 			_fileLocator = fileLocator;
 			// Storing this in the ReadersHandler means there can only be one instance of EIS, since ReadersHandler is static. But for
 			// now that's true anyway because we use a fixed port. If we need to change this we could just make an instance here.
