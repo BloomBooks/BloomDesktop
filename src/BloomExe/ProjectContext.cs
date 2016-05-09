@@ -100,7 +100,8 @@ namespace Bloom
 							typeof (LocalizationChangedEvent),
 							typeof (ControlKeyEvent),
 							typeof (EditingModel),
-							typeof (AudioRecording)
+							typeof (AudioRecording),
+							typeof(ReadersApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -259,6 +260,7 @@ namespace Bloom
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
 			HelpLauncher.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
+			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 		}
 
 
