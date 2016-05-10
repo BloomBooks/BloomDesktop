@@ -1147,6 +1147,10 @@ export class ReaderToolsModel {
   }
 }
 
-// Note: if at some point we load this code into more than one iframe, we probably need to do
-// something to make sure they both use the same instance
-export var theOneReaderToolsModel = new ReaderToolsModel();
+// In case this code is loaded into more than one iframe, we want them to share a single instance.
+// So, we will put it in the top window, and let the first instance which executes this block create it.
+if (!(<any>top).theOneReaderToolsModel) {
+  (<any>top).theOneReaderToolsModel = new ReaderToolsModel();
+}
+
+export function getTheOneReaderToolsModel()  {return (<any>top).theOneReaderToolsModel;}

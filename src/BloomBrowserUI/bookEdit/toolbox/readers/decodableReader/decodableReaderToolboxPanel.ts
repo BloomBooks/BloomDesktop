@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../toolbox.ts" />
 /// <reference path="../readerToolsModel.ts" />
 
-import {DRTState, theOneReaderToolsModel, MarkupType} from "../readerToolsModel";
+import {DRTState, getTheOneReaderToolsModel, MarkupType} from "../readerToolsModel";
 import {beginInitializeDecodableReaderTool} from "../readerTools";
 import {ITabModel} from "../../toolbox";
 import {ToolBox} from "../../toolbox";
@@ -18,11 +18,11 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
                     var parts = decState.split(";");
                     var stage = parseInt(parts[0].substring("stage:".length));
                     var sort = parts[1].substring("sort:".length);
-                    theOneReaderToolsModel.setSort(sort);
-                    theOneReaderToolsModel.setStageNumber(stage);
+                    getTheOneReaderToolsModel().setSort(sort);
+                    getTheOneReaderToolsModel().setStageNumber(stage);
                 } else {
                     // old state
-                    theOneReaderToolsModel.setStageNumber(parseInt(decState));
+                    getTheOneReaderToolsModel().setStageNumber(parseInt(decState));
                 }
             }
         });
@@ -31,21 +31,21 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // invoke function when a bloom-editable element loses focus.
         $(container).find('.bloom-editable').focusout(function () {
-            theOneReaderToolsModel.doMarkup();
+            getTheOneReaderToolsModel().doMarkup();
         });
 
         $(container).find('.bloom-editable').focusin(function () {
-            theOneReaderToolsModel.noteFocus(this); // 'This' is the element that just got focus.
+            getTheOneReaderToolsModel().noteFocus(this); // 'This' is the element that just got focus.
         });
 
         $(container).find('.bloom-editable').keydown(function(e) {
             if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
-                if (theOneReaderToolsModel.currentMarkupType !== MarkupType.None) {
+                if (getTheOneReaderToolsModel().currentMarkupType !== MarkupType.None) {
                     e.preventDefault();
                     if (e.shiftKey || e.keyCode == 89) { // ctrl-shift-z or ctrl-y
-                        theOneReaderToolsModel.redo();
+                        getTheOneReaderToolsModel().redo();
                     } else {
-                        theOneReaderToolsModel.undo();
+                        getTheOneReaderToolsModel().undo();
                     }
                     return false;
                 }
@@ -59,16 +59,16 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
 
     showTool() {
         // change markup based on visible options
-        theOneReaderToolsModel.setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!theOneReaderToolsModel.setMarkupType(1)) theOneReaderToolsModel.doMarkup();
+        getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!getTheOneReaderToolsModel().setMarkupType(1)) getTheOneReaderToolsModel().doMarkup();
     }
 
     hideTool() {
-        theOneReaderToolsModel.setMarkupType(0);
+        getTheOneReaderToolsModel().setMarkupType(0);
     }
 
     updateMarkup() {
-        theOneReaderToolsModel.doMarkup();
+        getTheOneReaderToolsModel().doMarkup();
     }
 
     name() { return 'decodableReader'; }
