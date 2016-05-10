@@ -84,13 +84,12 @@ namespace Bloom
 				FileName = "thumbnail-" + height + ".png"
 			};
 
-			RebuildThumbNail(book, options, (info, image) => done = true,
+			RebuildThumbNailNow(book, options, (info, image) => done = true,
 				(info, ex) =>
 				{
 					done = true;
 					throw ex;
-				},
-				false); // NOT async; we need this now.
+				});
 
 			if (!done)
 			{
@@ -152,7 +151,34 @@ namespace Bloom
 		/// <param name="thumbnailOptions"></param>
 		/// <param name="callback"></param>
 		/// <param name="errorCallback"></param>
-		public void RebuildThumbNail(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
+		public void RebuildThumbNailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
+			Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
+		{
+			RebuildThumbNail(book, thumbnailOptions, callback, errorCallback, true);
+		}
+
+		/// <summary>
+		/// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="thumbnailOptions"></param>
+		/// <param name="callback"></param>
+		/// <param name="errorCallback"></param>
+		public void RebuildThumbNailNow(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
+			Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
+		{
+			RebuildThumbNail(book, thumbnailOptions, callback, errorCallback, false);
+		}
+
+
+		/// <summary>
+		/// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="thumbnailOptions"></param>
+		/// <param name="callback"></param>
+		/// <param name="errorCallback"></param>
+		private void RebuildThumbNail(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
 			Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback, bool async)
 		{
 			try

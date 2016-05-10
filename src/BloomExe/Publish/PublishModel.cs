@@ -452,7 +452,7 @@ namespace Bloom.Publish
 				Width = width
 			};
 			dom.UseOriginalImages = true; // apparently these thumbnails can be big...anyway we want printable images.
-			_thumbNailer.HtmlThumbNailer.GetThumbnail(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError, true);
+			_thumbNailer.HtmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError);
 		}
 
 		public IEnumerable<ToolStripItem> GetExtensionMenuItems()

@@ -146,6 +146,19 @@ namespace Bloom
 			return thumbnail;
 		}
 
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="key">whatever system you want... just used for caching</param>
+		/// <param name="document"></param>
+		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
+		/// <param name="drawBorderDashed"></param>
+		/// <returns></returns>
+		public void GetThumbnailAsync(string folderForThumbNailCache, string key, HtmlDom document,
+			ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback)
+		{
+			GetThumbnail(folderForThumbNailCache, key, document, options, callback, errorCallback, true);
+		}
 
 		/// <summary>
 		///
