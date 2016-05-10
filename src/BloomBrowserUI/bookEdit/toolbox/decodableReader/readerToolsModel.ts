@@ -743,6 +743,8 @@ class ReaderToolsModel {
     ReaderToolsModel.updateActualCount(ReaderToolsModel.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
     ReaderToolsModel.updateActualCount(ReaderToolsModel.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
     ReaderToolsModel.updateActualCount(ReaderToolsModel.uniqueWordsInBook(pageStrings), this.maxUniqueWordsPerBook(), 'actualUniqueWords');
+    // Enhance: eventually the 0 below will be this.maxAverageWordsInSentence.
+    ReaderToolsModel.updateActualCount(ReaderToolsModel.averageWordsInSentence(pageStrings), 0, 'actualAverageWordsPerSentence');
   }
 
   static countWordsInBook(pageStrings: string[]): number {
@@ -782,6 +784,30 @@ class ReaderToolsModel {
       }
     }
     return Object.keys(wordMap).length;
+  }
+
+  static averageWordsInSentence(pageStrings: string[]): number {
+    var sentenceCount = 0;
+    var wordCount = 0;
+    for (var i = 0; i < pageStrings.length; i++) {
+      var page = pageStrings[i];
+      var fragments: textFragment[] = libsynphony.stringToSentences(page);
+
+      // remove inter-sentence space
+      fragments = fragments.filter(function (frag) {
+        return frag.isSentence;
+      });
+
+      for (var j = 0; j < fragments.length; j++) {
+        wordCount += fragments[j].words.length;
+        sentenceCount++;
+      }
+    }
+    if (sentenceCount == 0) {
+      return 0;
+    }
+    return Math.round(wordCount / sentenceCount);
+    //return Math.round(10 * wordCount / sentenceCount) / 10; // for one decimal place
   }
 
   static maxWordsPerPageInBook(pageStrings: string[]): number {
