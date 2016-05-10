@@ -781,6 +781,8 @@ export class ReaderToolsModel {
     this.updateActualCount(this.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
     this.updateActualCount(this.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
     this.updateActualCount(this.uniqueWordsInBook(pageStrings), this.maxUniqueWordsPerBook(), 'actualUniqueWords');
+    // Enhance: eventually the 0 below will be this.maxAverageWordsInSentence.
+    this.updateActualCount(this.averageWordsInSentence(pageStrings), 0, 'actualAverageWordsPerSentence');
   }
 
   countWordsInBook(pageStrings: string[]): number {
@@ -824,12 +826,11 @@ export class ReaderToolsModel {
 
   maxWordsPerPageInBook(pageStrings: string[]): number {
     var maxWords = 0;
-
     for (var i = 0; i < pageStrings.length; i++) {
       var page = pageStrings[i];
 
       // split into sentences
-      var fragments = theOneLibSynphony.stringToSentences(page);
+      var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
 
       // remove inter-sentence space
       fragments = fragments.filter(function (frag) {
@@ -845,6 +846,30 @@ export class ReaderToolsModel {
     }
 
     return maxWords;
+  }
+
+ averageWordsInSentence(pageStrings: string[]): number {
+   var sentenceCount = 0;
+   var wordCount = 0;
+   for (var i = 0; i < pageStrings.length; i++) {
+     var page = pageStrings[i];
+     var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
+
+     // remove inter-sentence space
+     fragments = fragments.filter(function (frag) {
+       return frag.isSentence;
+     });
+
+     for (var j = 0; j < fragments.length; j++) {
+       wordCount += fragments[j].words.length;
+       sentenceCount++;
+     }
+   }
+   if (sentenceCount == 0) {
+     return 0;
+   }
+   return Math.round(wordCount / sentenceCount);
+    //return Math.round(10 * wordCount / sentenceCount) / 10; // for one decimal place
   }
 
   updateActualCount(actual: number, max: number, id: string): void {

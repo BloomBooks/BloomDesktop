@@ -197,13 +197,18 @@ namespace Bloom.Book
 			}
 			catch(Exception error)
 			{
-				//BL-3227 Occasionally get The process cannot access the file '...\license.png' because it is being used by another process
+				// BL-3227 Occasionally get The process cannot access the file '...\license.png' because it is being used by another process.
+				// That's worth a toast, since the user might like a hint why the license image isn't up to date.
+				// However, if the problem is a MISSING icon in the installed templates, which on Linux or if an allUsers install
+				// the system will never let us write, is not worth bothering the user at all. We can't fix it. Too bad.
+				if (IsInstalledFile(imagePath))
+					return;
 				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Could not update license image (BL-3227).", "Image was at" +imagePath, exception: error);
 			}
 		}
 
 		/// <summary>
-		/// Check whether this file was installed with Bloom (and likely to be read-only on Linux).
+		/// Check whether this file was installed with Bloom (and likely to be read-only on Linux or for allUsers install).
 		/// </summary>
 		private static bool IsInstalledFile(string filepath)
 		{

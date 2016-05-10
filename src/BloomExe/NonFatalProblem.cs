@@ -78,11 +78,6 @@ namespace Bloom
 
 				Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
 
-				if(modalThreshold == ModalIf.Alpha)
-				{
-					shortUserLevelMessage = "[Alpha]: " + shortUserLevelMessage;
-				}
-
 				if(Matches(modalThreshold).Any(s => channel.Contains(s)))
 				{
 					try

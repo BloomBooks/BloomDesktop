@@ -340,13 +340,18 @@ namespace Bloom.CollectionTab
 				entryName = ZipEntry.CleanName(entryName);          // Removes drive from name and fixes slash direction
 				ZipEntry newEntry = new ZipEntry(entryName) { DateTime = fi.LastWriteTime };
 				newEntry.IsUnicodeText = true; // encode filename and comment in UTF8
-				byte[] bookContent = {};
+				byte[] modifiedContent = {};
 
 				// if this is a ReaderTools book, call GetBookReplacedWithTemplate() to get the contents
 				if (forReaderTools && (bookFile == filePath))
 				{
-					bookContent = GetBookReplacedWithTemplate(filePath);
-					newEntry.Size = bookContent.Length;
+					modifiedContent = Encoding.UTF8.GetBytes(GetBookReplacedWithTemplate(filePath));
+					newEntry.Size = modifiedContent.Length;
+				}
+				else if (forReaderTools && (Path.GetFileName(filePath)=="meta.json"))
+				{
+					modifiedContent = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(filePath));
+					newEntry.Size = modifiedContent.Length;
 				}
 				else
 				{
@@ -355,11 +360,11 @@ namespace Bloom.CollectionTab
 
 				zipStream.PutNextEntry(newEntry);
 
-				if (bookContent.Length > 0)
+				if (modifiedContent.Length > 0)
 				{
-					using (var memStream = new MemoryStream(bookContent))
+					using (var memStream = new MemoryStream(modifiedContent))
 					{
-						StreamUtils.Copy(memStream, zipStream, new byte[bookContent.Length]);
+						StreamUtils.Copy(memStream, zipStream, new byte[modifiedContent.Length]);
 					}
 				}
 				else
@@ -387,14 +392,24 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		private static string GetMetaJsonModfiedForTemplate(string path)
+		{
+			var meta = BookMetaData.FromString(File.ReadAllText(path));
+			meta.IsSuitableForMakingShells = true;
+			return meta.Json;
+		}
+
 		/// <summary>
 		/// Does some pre-processing on reader files
 		/// </summary>
-		/// <param name="bookFile"></param>
-		/// <returns>A UTF8-encoded byte array filled with the contents of the bookFile</returns>
-		private static byte[] GetBookReplacedWithTemplate(string bookFile)
+		/// <param name="bookPath"></param>
+		private static string GetBookReplacedWithTemplate(string bookPath)
 		{		
-			var text = File.ReadAllText(bookFile, Encoding.UTF8);
+			//TODO: the following, which is the original code before late in 3.6, just modified the tags in the HTML
+			//Whereas currently, we use the meta.json as the authoritative source.
+			//TODO Should we just get rid of these tags in the HTML? Can they be accessed from javascript? If so,
+			//then they will be needed eventually (as we involve c# less in the UI)
+			var text = File.ReadAllText(bookPath, Encoding.UTF8);
 			// Note that we're getting rid of preceding newline but not following one. Hopefully we cleanly remove a whole line.
 			// I'm not sure the </meta> ever occurs in html files, but just in case we'll match if present.
 			var regex = new Regex("\\s*<meta\\s+name=(['\\\"])lockedDownAsShell\\1 content=(['\\\"])true\\2>(</meta>)? *");
@@ -427,7 +442,7 @@ namespace Bloom.CollectionTab
 				}
 			}
 
-			return Encoding.UTF8.GetBytes(text);
+			return text;
 		}
 
 		public string GetSuggestedBloomPackPath()
