@@ -1,7 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import * as $ from 'jquery';
 import {restoreToolboxSettings, showOrHidePanel_click, removeToolboxMarkup} from './toolbox';
-import {ReaderToolsModel} from './readers/readerToolsModel'
+import {getTheOneReaderToolsModel} from './readers/readerToolsModel'
 import TalkingBookModel from './talkingBook/talkingBook';
 import DecodableReaderToolboxPanel from './readers/decodableReader/decodableReaderToolboxPanel';
 import LeveledReaderToolboxPanel from './readers/leveledReader/leveledReaderToolboxPanel';
@@ -20,11 +20,11 @@ export {DecodableReaderToolboxPanel}; // just to make sure it gets included in t
 export {handleBookSettingCheckboxClick}; // called by click handler in jade; also, exporting something from it gets it included in the bundle.
 
 export function canUndo() :boolean {
-    return (typeof ReaderToolsModel.model != 'undefined') && ReaderToolsModel.model.shouldHandleUndo() && ReaderToolsModel.model.canUndo();
+    return getTheOneReaderToolsModel().shouldHandleUndo() && getTheOneReaderToolsModel().canUndo();
 }
 
 export function undo() {
-    ReaderToolsModel.model.undo();
+    getTheOneReaderToolsModel().undo();
 }
 
 

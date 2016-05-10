@@ -1,5 +1,5 @@
 ﻿/// <reference path="../../toolbox.ts" />
-import { ReaderToolsModel, DRTState, } from "../readerToolsModel";
+import { getTheOneReaderToolsModel, DRTState, } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool} from "../readerTools";
 import {ITabModel} from "../../toolbox";
 import {ToolBox} from "../../toolbox";
@@ -7,10 +7,9 @@ import {theOneLibSynphony}  from '../libSynphony/synphony_lib';
 
 export default class LeveledReaderToolboxPanel implements ITabModel {
     beginRestoreSettings(opts: string): JQueryPromise<void> {
-        if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         return beginInitializeLeveledReaderTool().then(() => {
             if (opts['leveledReaderState']) {
-                ReaderToolsModel.model.setLevelNumber(parseInt(opts['leveledReaderState']));
+                getTheOneReaderToolsModel().setLevelNumber(parseInt(opts['leveledReaderState']));
             }
         });
     }
@@ -19,16 +18,16 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
 
     showTool() {
         // change markup based on visible options
-        ReaderToolsModel.model.setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!ReaderToolsModel.model.setMarkupType(2)) ReaderToolsModel.model.doMarkup();
+        getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!getTheOneReaderToolsModel().setMarkupType(2)) getTheOneReaderToolsModel().doMarkup();
     }
 
     hideTool() {
-        ReaderToolsModel.model.setMarkupType(0);
+        getTheOneReaderToolsModel().setMarkupType(0);
     }
 
     updateMarkup() {
-        ReaderToolsModel.model.doMarkup();
+        getTheOneReaderToolsModel().doMarkup();
     }
 
     name() { return 'leveledReader'; }
