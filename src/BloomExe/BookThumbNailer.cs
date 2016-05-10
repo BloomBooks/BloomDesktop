@@ -71,7 +71,6 @@ namespace Bloom
 
 		public void MakeThumbnailOfCover(Book.Book book, int height, Control invokeTarget)
 		{
-			bool done = false;
 			string error = null;
 
 			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
@@ -84,18 +83,11 @@ namespace Bloom
 				FileName = "thumbnail-" + height + ".png"
 			};
 
-			RebuildThumbNailNow(book, options, (info, image) => done = true,
+			RebuildThumbNailNow(book, options,
 				(info, ex) =>
 				{
-					done = true;
 					throw ex;
 				});
-
-			if (!done)
-			{
-				// I don't think this can happen
-				throw new ApplicationException(String.Format("Gave up waiting for the {0} to be created. This usually means Bloom is busy making thumbnails for other things. Wait a bit, and try again.", options.FileName));
-			}
 		}
 
 		///   <summary>
@@ -162,12 +154,11 @@ namespace Bloom
 		/// </summary>
 		/// <param name="book"></param>
 		/// <param name="thumbnailOptions"></param>
-		/// <param name="callback"></param>
 		/// <param name="errorCallback"></param>
 		public void RebuildThumbNailNow(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
-			Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
+			Action<BookInfo, Exception> errorCallback)
 		{
-			RebuildThumbNail(book, thumbnailOptions, callback, errorCallback, false);
+			RebuildThumbNail(book, thumbnailOptions, (info, image) => { }, errorCallback, false);
 		}
 
 
