@@ -23,14 +23,14 @@ namespace Bloom.web
 		const string kPrefix = "externalLink";
 		public static void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.Handle);
+			server.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.HandleRequest);
 		}
 
 		/// <summary>
 		/// Handles a url starting with api/kPrefix by stripping off that prefix, searching for the file
 		/// named in the remainder of the url, and opening it in some browser (passing on any anchor specified).
 		/// </summary>
-		public static void Handle(ApiRequest request)
+		public static void HandleRequest(ApiRequest request)
 		{
 			//NB: be careful not to lose case, as at least chrome is case-sensitive with anchors (e.g. #ChoiceOfTopic)
 			var localPath = Regex.Replace(request.LocalPath(), "api/"+ kPrefix+"/", "", RegexOptions.IgnoreCase);
@@ -82,7 +82,7 @@ namespace Bloom.web
 			var queryPart = "";
 			if (request.Parameters.Count > 0)
 			{
-				//reconstruct the query part, this time minus an fragment parameter (which we removed previously, if it was there)
+				//reconstruct the query part, this time minus any fragment parameter (which we removed previously, if it was there)
 				queryPart = "?" + request.Parameters.AllKeys.Aggregate("", (total, key) => total + key + "=" + request.Parameters.Get(key) + "&");
 				queryPart = queryPart.TrimEnd(new[] { '&' });
 			}
