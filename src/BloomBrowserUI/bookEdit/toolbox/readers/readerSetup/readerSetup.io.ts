@@ -93,7 +93,7 @@ function loadReaderSetupData(jsonData: string): void {
   tbodyLevels.html('');
   for (var j = 0; j < levels.length; j++) {
     var level = levels[j];
-    tbodyLevels.append('<tr class="linked"><td>' + (j + 1) + '</td><td class="words-per-sentence">' +  setLevelValue(level.maxWordsPerSentence) + '</td><td class="words-per-page">' +  setLevelValue(level.maxWordsPerPage) + '</td><td class="words-per-book">' +  setLevelValue(level.maxWordsPerBook) + '</td><td class="unique-words-per-book">' +  setLevelValue(level.maxUniqueWordsPerBook) + '</td><td style="display: none">' + level.thingsToRemember.join('\n') + '</td></tr>');
+    tbodyLevels.append('<tr class="linked"><td>' + (j + 1) + '</td><td class="words-per-sentence">' + setLevelValue(level.maxWordsPerSentence) + '</td><td class="words-per-page">' + setLevelValue(level.maxWordsPerPage) + '</td><td class="words-per-book">' + setLevelValue(level.maxWordsPerBook) + '</td><td class="unique-words-per-book">' + setLevelValue(level.maxUniqueWordsPerBook) + '</td><td class="average-words-per-sentence">' + setLevelValue(level.maxAverageWordsPerSentence) + '</td><td style="display: none">' + level.thingsToRemember.join('\n') + '</td></tr>');
   }
 
   // click event for level rows
@@ -157,7 +157,8 @@ function getChangedSettings(): ReaderSettings {
     level.maxWordsPerPage = getLevelValue((<HTMLTableCellElement>row.cells[2]).innerHTML);
     level.maxWordsPerBook = getLevelValue((<HTMLTableCellElement>row.cells[3]).innerHTML);
     level.maxUniqueWordsPerBook = getLevelValue((<HTMLTableCellElement>row.cells[4]).innerHTML);
-    level.thingsToRemember = (<HTMLTableCellElement>row.cells[5]).innerHTML.split('\n');
+    level.maxAverageWordsPerSentence = getLevelValue((<HTMLTableCellElement>row.cells[5]).innerHTML);
+    level.thingsToRemember = (<HTMLTableCellElement>row.cells[6]).innerHTML.split('\n');
     settings.levels.push(level);
   }
   return settings;

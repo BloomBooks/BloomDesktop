@@ -301,9 +301,10 @@ export function selectLevel(tr: HTMLTableRowElement) {
   setLevelCheckBoxValue('words-per-page', getCellInnerHTML(tr, 2));
   setLevelCheckBoxValue('words-per-book', getCellInnerHTML(tr, 3));
   setLevelCheckBoxValue('unique-words-per-book', getCellInnerHTML(tr, 4));
+  setLevelCheckBoxValue('average-words-per-sentence', getCellInnerHTML(tr, 5));
 
   // things to remember
-  var vals = getCellInnerHTML(tr, 5).split('\n');
+  var vals = getCellInnerHTML(tr, 6).split('\n');
   var val = vals.join('</li><li contenteditable="true">');
   document.getElementById('things-to-remember').innerHTML = '<li contenteditable="true">' + val + '</li>';
 }
@@ -430,7 +431,7 @@ function addNewStage(): void {
 function addNewLevel(): void {
 
   var tbody: JQuery = $('#levels-table').find('tbody');
-  tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="words-per-sentence">-</td><td class="words-per-page">-</td><td class="words-per-book">-</td><td class="unique-words-per-book">-</td><td style="display: none"></td></tr>');
+  tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="words-per-sentence">-</td><td class="words-per-page">-</td><td class="words-per-book">-</td><td class="unique-words-per-book">-</td><td class="average-words-per-sentence">-</td><td style="display: none"></td></tr>');
 
   // click event for stage rows
   tbody.find('tr:last').onSafe('click', function() {
@@ -627,7 +628,7 @@ function resetLevelDetail(): void {
   setLevelCheckBoxValue('words-per-page', '-');
   setLevelCheckBoxValue('words-per-book', '-');
   setLevelCheckBoxValue('unique-words-per-book', '-');
-
+  setLevelCheckBoxValue('average-words-per-sentence', '-');
   document.getElementById('things-to-remember').innerHTML = '<li contenteditable="true"></li>';
 }
 
@@ -645,7 +646,7 @@ function storeThingsToRemember(): void {
   vals = vals.filter(function(e){ var x = e.trim(); return (x.length > 0 && x !== '&nbsp;'); });
 
   // store
-  $('#levels-table').find('tbody tr.selected td:nth-child(6)').html(vals.join('\n'));
+  $('#levels-table').find('tbody tr.selected td:nth-child(7)').html(vals.join('\n'));
 }
 
 function updateNumbers(tableId: string): void {
