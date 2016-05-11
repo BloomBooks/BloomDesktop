@@ -14,6 +14,7 @@ using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
+using Bloom.web;
 using Chorus;
 using SIL.Extensions;
 using SIL.IO;
@@ -261,6 +262,7 @@ namespace Bloom
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
 
 			HelpLauncher.RegisterWithServer(server);
+			ExternalLinkController.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
 			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);

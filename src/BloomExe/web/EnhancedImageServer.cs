@@ -172,7 +172,6 @@ namespace Bloom.Api
 				_urlToSimulatedPageContent.Remove(key.FromLocalhost());
 			}
 		}
-		const string OpenFileInBrowser = "openFileInBrowser/";
 
 		// Every path should return false or send a response.
 		// Otherwise we can get a timeout error as the browser waits for a response.
@@ -184,7 +183,11 @@ namespace Bloom.Api
 			if (localPath.ToLower().StartsWith("api/"))
 			{
 				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
-				foreach (var pair in _endpointHandlers.Where(pair => Regex.Match(endpoint, pair.Key.ToLower()).Success))
+				foreach (var pair in _endpointHandlers.Where(pair => 
+						Regex.Match(endpoint,
+							"^" + //must match the beginning
+							pair.Key.ToLower()
+						).Success))
 				{
 					lock(SyncObj)
 					{
@@ -250,8 +253,6 @@ namespace Bloom.Api
 			}
 			else if (localPath.StartsWith("directoryWatcher/", StringComparison.InvariantCulture))
 				return ProcessDirectoryWatcher(info);
-			else if (localPath.StartsWith(OpenFileInBrowser, StringComparison.InvariantCulture))
-				return ProcessOpenFileInBrowser(info, localPath);
 			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
 				var temp = LocalHostPathToFilePath(localPath);
@@ -336,71 +337,6 @@ namespace Bloom.Api
 			return false;
 		}
 
-		/// <summary>
-		/// Handles a url starting with openfileinbrowser by stripping off that prefix, searching for the file
-		/// named in the remainder of the url, and opening it in some browser (passing on any anchor specified).
-		/// </summary>
-		/// <param name="info"></param>
-		/// <param name="localPath1"></param>
-		/// <returns></returns>
-		private bool ProcessOpenFileInBrowser(IRequestInfo info, string localPath1)
-		{
-			string localPath = localPath1.Substring(OpenFileInBrowser.Length);
-			lock (SyncObj)
-			{
-				var queryPart = string.Empty;
-				if (info.RawUrl.Contains("?"))
-					queryPart = "#" + info.RawUrl.Split('?')[1];
-				var langCode = LocalizationManager.UILanguageId;
-				var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
-				var completeUiLangPath = GetUiLanguageFileVersion(completeEnglishPath, langCode);
-				string url;
-				if (langCode != "en" && File.Exists(completeUiLangPath))
-					url = completeUiLangPath;
-				else
-					url = completeEnglishPath;
-				var cleanUrl = url.Replace("\\", "/"); // allows jump to file to work
-
-				string browser = string.Empty;
-				if (SIL.PlatformUtilities.Platform.IsLinux)
-				{
-					// REVIEW: This opens HTML files in the browser. Do we have any non-html
-					// files that this code needs to open in the browser? Currently they get
-					// opened in whatever application the user has selected for that file type
-					// which might well be an editor.
-					browser = "xdg-open";
-				}
-				else
-				{
-					// If we don't provide the path of the browser, i.e. Process.Start(url + queryPart), we get file not found exception.
-					// If we prepend "file:///", the anchor part of the link (#xxx) is not sent unless we provide the browser path too.
-					// This is the same behavior when simply typing a url into the Run command on Windows.
-					// If we fail to get the browser path for some reason, we still load the page, just without navigating to the anchor.
-					string defaultBrowserPath;
-					if (TryGetDefaultBrowserPath(out defaultBrowserPath))
-					{
-						browser = defaultBrowserPath;
-					}
-				}
-
-				if (!string.IsNullOrEmpty(browser))
-				{
-					try
-					{
-						Process.Start(browser, "\"file:///" + cleanUrl + queryPart + "\"");
-						return false;
-					}
-					catch (Exception)
-					{
-						Debug.Fail("Jumping to browser with anchor failed.");
-						// Don't crash Bloom because we can't open an external file.
-					}
-				}
-				// If the above failed, either for lack of default browser or exception, try this:
-				Process.Start("\"" + cleanUrl + "\"");
-				return false;
-			}
-		}
 
 		private bool ProcessContent(IRequestInfo info, string localPath)
 		{
@@ -694,26 +630,6 @@ namespace Bloom.Api
 			return true;
 		}
 
-		private static bool TryGetDefaultBrowserPath(out string defaultBrowserPath)
-		{
-			try
-			{
-				string key = @"HTTP\shell\open\command";
-				using (RegistryKey registrykey = Registry.ClassesRoot.OpenSubKey(key, false))
-					defaultBrowserPath = ((string)registrykey.GetValue(null, null)).Split('"')[1];
-				return true;
-			}
-			catch
-			{
-				defaultBrowserPath = null;
-				return false;
-			}
-		}
-
-		private string GetUiLanguageFileVersion(string englishFileName, string langCode)
-		{
-			return englishFileName.Replace("-en.htm", "-" + langCode + ".htm");
-		}
 
 		private bool CheckForSampleTextChanges(IRequestInfo info)
 		{
