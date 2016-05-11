@@ -146,5 +146,9 @@ namespace Bloom
 			parts[0] = Path.Combine(BrowserRoot, parts[0]);
 			return FileLocator.GetDirectoryDistributedWithApplication(false, parts);
 		}
+		public static string GetInstalledXMatterDirectory()
+		{
+			return BloomFileLocator.GetBrowserDirectory("xMatter");
+		}
 	}
 }

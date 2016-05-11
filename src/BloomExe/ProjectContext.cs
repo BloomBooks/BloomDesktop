@@ -177,7 +177,7 @@ namespace Bloom
 					builder.Register<XMatterPackFinder>(c =>
 					{
 						var locations = new List<string>();
-						locations.Add(BloomFileLocator.GetBrowserDirectory("xMatter"));
+						locations.Add(BloomFileLocator.GetInstalledXMatterDirectory());
 						locations.Add(XMatterAppDataFolder);
 						locations.Add(XMatterCommonDataFolder);
 						return new XMatterPackFinder(locations);

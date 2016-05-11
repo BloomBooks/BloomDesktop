@@ -60,7 +60,7 @@ namespace BloomTests.Book
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
 			string root = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
-			string xMatter = BloomFileLocator.GetBrowserDirectory("xMatter");
+			string xMatter = BloomFileLocator.GetInstalledXMatterDirectory();
 			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
 			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout", "languageDisplayTemplate.css"));

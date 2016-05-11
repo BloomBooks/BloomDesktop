@@ -28,7 +28,7 @@ namespace BloomTests
 		public void Setup()
 		{
 			var locations = new List<string>();
-			locations.Add(BloomFileLocator.GetBrowserDirectory("xMatter"));
+			locations.Add(BloomFileLocator.GetInstalledXMatterDirectory());
 			_xMatterParentFolder = new TemporaryFolder("UserCollection");
 			_xMatterFolder = new TemporaryFolder(_xMatterParentFolder, "User-XMatter");
 			locations.Add(_xMatterParentFolder.Path);
