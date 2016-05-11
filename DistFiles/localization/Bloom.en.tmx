@@ -2342,10 +2342,10 @@
         <seg>per page</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerSentence">
+    <tu tuid="EditTab.Toolbox._bookSelection.LongestSentence">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>per sentence</seg>
+        <seg>longest sentence</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Toolbox.LeveledReaderTool.Predictability">
@@ -2400,7 +2400,7 @@
     <tu tuid="EditTab.Toolbox.LeveledReaderTool.WordCounts">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Word counts</seg>
+        <seg>Word Counts</seg>
       </tuv>
     </tu>
     <tu tuid="LoginDialog.AgreeToTerms">
