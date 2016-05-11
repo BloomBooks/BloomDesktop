@@ -41,7 +41,9 @@ gulp.task('jade', function () {
   var jade = require('gulp-jade');
   return gulp.src(paths.jade)
     .pipe(debug({title: 'jade:'}))
-    .pipe(jade())
+    .pipe(jade({
+        pretty: true
+    }))
     .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
 });
 

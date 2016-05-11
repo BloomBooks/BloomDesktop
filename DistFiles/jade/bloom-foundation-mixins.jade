@@ -1,10 +1,8 @@
 //- ---------------------------------------------------------------------------------------
 //- Notes on Mixin use
-//- 		If you get the error : "You should not have jade tags with multiple attributes."
-//- 	1) check that you don't have something like (class='foo')(attributes), which should
-//-			be (class='bloom-combinedPage', attributes)
-//-		2) make sure the mixin name is spelled correctly and capitalized correctly.
-//-		In WebStorm, ctrl+/ will comment out a large section so you can narrow it down
+//- 	If you get the error : "You should not have jade tags with multiple attributes."
+//-		make sure the mixin name is spelled correctly and capitalized correctly.
+//-		Use ctrl+/ in good editors to comment out a large section so you can narrow it down
 //- ---------------------------------------------------------------------------------------
 
 - const kLanguageForPrototypeOnly = 'z';
@@ -33,11 +31,11 @@ mixin bookVariable-title(langCode, title)
 //- Copy this into your own template if you need a different
 //- default page size
 mixin pageWithJustPageSize
-	.A5Portrait(attributes)
+	.A5Portrait&attributes(attributes)
 		block
 
 mixin page(englishLabel, englishDescription)
-	+pageWithJustPageSize.bloom-page(attributes)
+	+pageWithJustPageSize.bloom-page&attributes(attributes)
 		+page-label-english(englishLabel, englishDescription)
 		.marginBox
 			block
@@ -48,7 +46,7 @@ mixin page-choice(englishLabel, englishDescription)
 		block
 
 mixin page-layout(englishLabel, englishDescription)
-	+pageWithJustPageSize.bloom-page(attributes)
+	+pageWithJustPageSize.bloom-page&attributes(attributes)
 		+page-label-english(englishLabel, englishDescription)
 		.marginBox.origami-layout-mode
 			block
@@ -60,7 +58,7 @@ mixin page-choice-layout(englishLabel, englishDescription)
 
 //- This is a page that is always in the book and can't be removed, like a cover page.
 mixin page-required(englishLabel, englishDescription)
-	+page(englishLabel, englishDescription)(data-page='required', attributes)
+	+page(englishLabel, englishDescription)(data-page='required')&attributes(attributes)
 		block
 
 mixin page-label-english(englishLabel, englishDescription)
@@ -73,13 +71,13 @@ mixin page-label-english(englishLabel, englishDescription)
 //-		label.placeholder question
 mixin field
 	-requireZeroArguments('field');
-	.bloom-translationGroup(attributes)
+	.bloom-translationGroup&attributes(attributes)
 		block //this is where <label>s go
 		+editable(kLanguageForPrototypeOnly)
 
 mixin field-withSampleText
 	-requireZeroArguments('field-withSampleText');
-	.bloom-translationGroup(attributes)
+	.bloom-translationGroup&attributes(attributes)
 		+editable(kLanguageForPrototypeOnly)
 			block
 
@@ -88,12 +86,12 @@ mixin field-withSampleText
 //- This one lets us do that
 mixin field-prototypeDeclaredExplicity
 	- requireZeroArguments('field-prototypeDeclaredExplicity', arguments);
-	.bloom-translationGroup(attributes)
+	.bloom-translationGroup&attributes(attributes)
 		block
 
 //- deprecated. Starting with version 2.0, we've changed how placeholders are handled
 mixin field-version1(placeholder)
-	+field-withSampleText(data-placeholder=placeholder,attributes)
+	+field-withSampleText(data-placeholder=placeholder)&attributes(attributes)
 		block
 
 //- Example usage: This would give us a user-changeable image inside a rounded border, with 2 movable labels
@@ -103,14 +101,14 @@ mixin field-version1(placeholder)
 //-			+field.bloom-draggableLabel
 mixin image
 	- requireZeroArguments('image', arguments);
-	.bloom-imageContainer(attributes)
+	.bloom-imageContainer&attributes(attributes)
 		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the picture')
 		block
 
 //- Will show a table. Bloom's basePage.css should style it with a border around each cell
 mixin grid(rows, columns)
 	- requireTwoArguments("grid", arguments);
-	table.bloomGrid(attributes)
+	table.bloomGrid&attributes(attributes)
 		- for (var r = 0; r < rows; r++)
 			tr
 				- for(var c = 0; c < columns; c++)
@@ -119,7 +117,7 @@ mixin grid(rows, columns)
 
 mixin gridxy(columns, rows)
 	- requireTwoArguments("grid", arguments);
-	table.bloomGrid(attributes)
+	table.bloomGrid&attributes(attributes)
 		- for (var r = 0; r < rows; r++)
 			tr
 				- for(var c = 0; c < columns; c++)
@@ -149,32 +147,32 @@ mixin list-numbered(count)
 //- Use this to have an element that repeats on multiple pages with the same value
 mixin field-common(key)
 	- requireOneArgument('field-common', arguments);
-	+field(data-book=key, attributes)
+	+field(data-book=key)&attributes(attributes)
 		block
 
 //- REVIEW: How are we going to allow placeholders/bubbles on these mono fields in the new <label> style, unless there is a wrapping element to hold  both?
 //- use this for fields that are always in the specified language, no translation possible
 mixin field-mono-version1(language, bubbleText)
 	- requireTwoArguments('field-mono-version1', arguments);
-	+editable(language)(data-hint=bubbleText, attributes)
+	+editable(language)(data-hint=bubbleText)&attributes(attributes)
 
 //- These are useful for front-back matter that will never be translated.
 //- When used in frontMatter, the dataBookName is mandatory.
 //- Language is always mandatory, but you can use '*' to mean "Don't worry what language it is"
 mixin field-mono-meta(language, dataBookName)
 	- requireTwoArguments('field-mono-meta', arguments);
-	+editable(language)(data-book=dataBookName,data-metalanguage=language,attributes)
+	+editable(language)(data-book=dataBookName,data-metalanguage=language)&attributes(attributes)
 		block
 
 mixin  page-splittable-choice-custom(englishLabel, englishDescription)
-	+page-choice(englishLabel, englishDescription).customPage.bloom-combinedPage(attributes)
+	+page-choice(englishLabel, englishDescription).customPage.bloom-combinedPage&attributes(attributes)
 			block
 
 //- A splittable page is one that has each element tagged with either 'bloom-leadingElement' or 'bloom-trailingElement'.
 //- The css for the page should then respond to the page having either bloom-combined (when not split) and
 //- either bloom-leadingPage or bloom-trailingPage (when split). See "Split Page Support" in the Bloom Format Documentation.
 mixin  page-splittable-choice(englishLabel, englishDescription)
-	+page-choice(englishLabel, englishDescription)(class='bloom-combinedPage', attributes)
+	+page-choice(englishLabel, englishDescription)(class='bloom-combinedPage')&attributes(attributes)
 		block
 
 mixin script(javascriptfileName)
@@ -191,7 +189,7 @@ mixin dataDiv
 //- +editable should rarely if ever be used directly in a template; it is for other mixins
 mixin editable(language)
 	- requireOneArgument('editable', arguments)
-	.bloom-content1.bloom-editable(lang=language, contenteditable="true", attributes)
+	.bloom-content1.bloom-editable(lang=language, contenteditable="true")&attributes(attributes)
 		block
 
 

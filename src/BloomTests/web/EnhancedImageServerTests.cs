@@ -39,7 +39,7 @@ namespace BloomTests.web
 			ErrorReport.IsOkToInteractWithUser = false;
 			_collectionPath = Path.Combine(_folder.Path, "TestCollection");
 			var cs = new CollectionSettings(Path.Combine(_folder.Path, "TestCollection.bloomCollection"));
-			_fileLocator = new BloomFileLocator(cs, new XMatterPackFinder(new string[] { FileLocator.GetDirectoryDistributedWithApplication("xMatter") }), ProjectContext.GetFactoryFileLocations(),
+			_fileLocator = new BloomFileLocator(cs, new XMatterPackFinder(new string[] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 		}
 

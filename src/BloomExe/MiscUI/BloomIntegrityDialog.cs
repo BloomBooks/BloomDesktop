@@ -28,9 +28,9 @@ namespace Bloom.MiscUI
 
 			string[] dirs;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
-				dirs = new[] { "AndikaNewBasic", "factoryCollections", "localization", "xMatter", "xslts" };
+				dirs = new[] { "AndikaNewBasic", "factoryCollections", "localization", "xslts" };
 			else
-				dirs = new[] { "factoryCollections", "localization", "xMatter", "xslts" };
+				dirs = new[] { "factoryCollections", "localization", "xslts" };
 
 			foreach(var fileName in files)
 			{

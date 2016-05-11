@@ -1,6 +1,6 @@
 /********************** THIS frontmatter IS NO LONGER USED *****************/
 
-include ../../jade/bloom-xmatter-mixins.jade
+include ../bloom-xmatter-mixins.jade
 doctype html
 
 mixin pageWithJustPageSize

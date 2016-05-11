@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
 
@@ -30,7 +31,7 @@ namespace BloomTests.Book
 		}
 		private XMatterHelper CreateHelper()
 		{
-			var factoryXMatter = FileLocator.GetDirectoryDistributedWithApplication("xMatter");
+			var factoryXMatter = BloomFileLocator.GetInstalledXMatterDirectory();
 			return new XMatterHelper(_dom, "Factory", new FileLocator(new string[] { factoryXMatter }));
 		}
 
