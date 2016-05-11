@@ -89,6 +89,7 @@ namespace Bloom.Edit
 			server.RegisterEndpointHandler("audio/checkForSegment", HandleCheckForSegment);
 			server.RegisterEndpointHandler("audio/devices", HandleAudioDevices);
 
+			Debug.Assert(ServerBase.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
 			_peakLevelWebSocketServer = new BloomWebSocketServer((ServerBase.portForHttp+1).ToString(CultureInfo.InvariantCulture));//review: we have no dispose (on us or our parent) so this is never disposed
 		}
 

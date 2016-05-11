@@ -324,7 +324,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
 				domForLocking = new HtmlDom(xmlDomFromHtmlFile);
-				wasLocked = Book.Book.IsLockedDown(domForLocking);
+				wasLocked = Book.Book.HtmlHasLockedDownFlag(domForLocking);
 				allowLocking = !metadata.IsSuitableForMakingShells;
 				if (allowLocking && !wasLocked)
 				{

@@ -36,6 +36,7 @@ namespace Bloom.Api
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
 		private readonly BookThumbNailer _thumbNailer;
+		private readonly BookSelection _bookSelection;
 		private readonly ProjectContext _projectContext;
 
 		// This dictionary ties API endpoints to functions that handle the requests.
@@ -46,30 +47,20 @@ namespace Bloom.Api
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>
-		internal EnhancedImageServer() : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, null)
+		internal EnhancedImageServer(BookSelection bookSelection) : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, bookSelection)
 		{ }
 
-		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer,  BloomFileLocator fileLocator = null) : base(cache)
+		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BookSelection bookSelection,  BloomFileLocator fileLocator = null) : base(cache)
 		{
 			_thumbNailer = thumbNailer;
+			_bookSelection = bookSelection;
 			_fileLocator = fileLocator;
-			// Storing this in the ReadersHandler means there can only be one instance of EIS, since ReadersHandler is static. But for
-			// now that's true anyway because we use a fixed port. If we need to change this we could just make an instance here.
-			ReadersApi.Server = this;
 		}
 
 
 		public void RegisterEndpointHandler(string key, EndpointHandler handler)
 		{
 			_endpointHandlers[key.Trim(new char[] {'/'})] = handler;
-		}
-
-		/// <summary>
-		/// This constructor is used for unit testing
-		/// </summary>
-		public EnhancedImageServer(RuntimeImageProcessor cache, BloomFileLocator fileLocator)
-			: this(cache, null, fileLocator)
-		{
 		}
 
 		// We use two different locks to synchronize access to the methods of this class.
@@ -197,7 +188,7 @@ namespace Bloom.Api
 				{
 					lock(SyncObj)
 					{
-						return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, CurrentBookHandler.CurrentBook);
+						return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
 					}
 				}
 			}
@@ -539,7 +530,7 @@ namespace Bloom.Api
 				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
 				// template page, look for that thumbnail in the book that is the template source,
 				// rather than in the folder that stores the page choose dialog HTML and code.
-				var templatePath = Path.Combine(CurrentBookHandler.CurrentBook.FindTemplateBook().FolderPath,
+				var templatePath = Path.Combine(_bookSelection.CurrentSelection.FindTemplateBook().FolderPath,
 					localPath.Substring("pageChooser/".Length));
 				if (File.Exists(templatePath))
 				{
@@ -552,7 +543,7 @@ namespace Bloom.Api
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
 				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
 				// altering the main book title.
-				var currentFolderPath = Path.Combine(CurrentBookHandler.CurrentBook.FolderPath, Path.GetFileName(localPath));
+				var currentFolderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, Path.GetFileName(localPath));
 				if (File.Exists(currentFolderPath))
 				{
 					info.ReplyWithImage(currentFolderPath);
@@ -608,9 +599,9 @@ namespace Bloom.Api
 			// Unfortunately it is part of a complex bit of logic that mostly doesn't have to do with current book,
 			// so it doesn't feel right to move it to CurrentBookHandler, especially as it's not possible to
 			// identify the queries which need the knowledge in the usual way (by a leading URL fragment).
-			if (CurrentBookHandler.CurrentBook == null)
+			if (_bookSelection.CurrentSelection == null)
 				return false; // paranoia
-			var template = CurrentBookHandler.CurrentBook.FindTemplateBook();
+			var template = _bookSelection.CurrentSelection.FindTemplateBook();
 			if (template == null)
 				return false; // paranoia
 			var caption = Path.GetFileNameWithoutExtension(path).Trim();

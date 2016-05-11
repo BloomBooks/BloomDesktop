@@ -11,6 +11,7 @@ using SIL.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Book;
 using Bloom.Edit;
 using L10NSharp;
 using Newtonsoft.Json.Linq;
@@ -23,12 +24,18 @@ namespace Bloom.Api
 	/// It reads and writes the reader tools settings file, and retrieves files and other information used by the
 	/// reader tools.
 	/// </summary>
-	static class ReadersApi
+	class ReadersApi
 	{
+		private readonly BookSelection _bookSelection;
 		private static bool _savingReaderWords;
 		private const string kSynphonyFileNameSuffix = "_lang_data.js";
 		private static readonly IEqualityComparer<string> _equalityComparer = new InsensitiveEqualityComparer();
 		private static readonly char[] _allowedWordsDelimiters = {',', ';', ' ', '\t', '\r', '\n'};
+
+		public ReadersApi(BookSelection _bookSelection)
+		{
+			this._bookSelection = _bookSelection;
+		}
 
 		private enum WordFileType
 		{
@@ -36,10 +43,8 @@ namespace Bloom.Api
 			AllowedWordsFile
 		}
 
-		public static void Init(EnhancedImageServer server)
+		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			Server = server;
-			
 			server.RegisterEndpointHandler("collection/defaultFont", request =>
 			{
 				var bookFontName = request.CurrentCollectionSettings.DefaultLanguage1FontName;
@@ -57,14 +62,10 @@ namespace Bloom.Api
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
 		// some similar change. But by then, we may have the whole book in the main DOM, anyway, and getTextOfPages may be obsolete.
-		private static Book.Book CurrentBook { get { return CurrentBookHandler.CurrentBook; } }
+		private Book.Book CurrentBook { get { return _bookSelection.CurrentSelection; } }
 
-		/// <summary>
-		/// Needs to know the one and only image server to get the current book from it.
-		/// </summary>
-		public static EnhancedImageServer Server { get; set; }
 
-		public static void HandleRequest(ApiRequest request)
+		public void HandleRequest(ApiRequest request)
 		{
 			if (CurrentBook == null)
 			{
@@ -161,7 +162,7 @@ namespace Bloom.Api
 		/// Needs to return a json string with the page guid and the bloom-content1 text of each non-x-matter page
 		/// </summary>
 		/// <returns></returns>
-		private static string GetTextOfContentPagesAsJson()
+		private string GetTextOfContentPagesAsJson()
 		{
 			var pageTexts = new List<string>();
 
@@ -190,7 +191,7 @@ namespace Bloom.Api
 			return value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
 		}
 
-		private static string GetSampleTextsList(string settingsFilePath)
+		private string GetSampleTextsList(string settingsFilePath)
 		{
 			var path = Path.Combine(Path.GetDirectoryName(settingsFilePath), "Sample Texts");
 			if (!Directory.Exists(path))
@@ -241,7 +242,7 @@ namespace Bloom.Api
 		/// <summary>Gets the contents of a Text file</summary>
 		/// <param name="fileName"></param>
 		/// <param name="wordFileType"></param>
-		private static string GetTextFileContents(string fileName, WordFileType wordFileType)
+		private string GetTextFileContents(string fileName, WordFileType wordFileType)
 		{
 			var path = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath),
 				wordFileType == WordFileType.AllowedWordsFile ? "Allowed Words" : "Sample Texts");
@@ -291,7 +292,7 @@ namespace Bloom.Api
 		/// <summary>
 		/// The SaveFileDialog must run on a STA thread.
 		/// </summary>
-		private static void MakeLetterAndWordList(string jsonSettings, string allWords)
+		private void MakeLetterAndWordList(string jsonSettings, string allWords)
 		{
 			// load the settings
 			dynamic settings = JsonConvert.DeserializeObject(jsonSettings);
@@ -339,7 +340,7 @@ namespace Bloom.Api
 		/// <summary></summary>
 		/// <param name="jsonString">The contents of the ReaderToolsWords file</param>
 		/// <returns>OK</returns>
-		private static string SaveReaderToolsWordsFile(string jsonString)
+		private string SaveReaderToolsWordsFile(string jsonString)
 		{
 			while (_savingReaderWords)
 				Thread.Sleep(0);
@@ -368,7 +369,7 @@ namespace Bloom.Api
 			return "OK";
 		}
 
-		private static void OpenTextsFolder()
+		private void OpenTextsFolder()
 		{
 			if (CurrentBook.CollectionSettings.SettingsFilePath == null)
 				return;
@@ -395,7 +396,7 @@ namespace Bloom.Api
 			}
 		}
 
-		private static void ShowSelectAllowedWordsFileDialog(ApiRequest request)
+		private void ShowSelectAllowedWordsFileDialog(ApiRequest request)
 		{
 			var returnVal = "";
 
@@ -442,7 +443,7 @@ namespace Bloom.Api
 			request.ReplyWithText(returnVal);
 		}
 
-		private static void RecycleAllowedWordListFile(string fileName)
+		private void RecycleAllowedWordListFile(string fileName)
 		{
 			var folderPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Allowed Words");
 			var fullFileName = Path.Combine(folderPath, fileName);

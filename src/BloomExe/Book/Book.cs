@@ -1200,14 +1200,14 @@ namespace Bloom.Book
 		/// </summary>
 		public bool RecordedAsLockedDown
 		{
-			get { return IsLockedDown(OurHtmlDom); }
+			get { return HtmlHasLockedDownFlag(OurHtmlDom); }
 			set
 			{
 				RecordAsLockedDown(OurHtmlDom, value);
 			}
 		}
 
-		public static bool IsLockedDown(HtmlDom dom)
+		public static bool HtmlHasLockedDownFlag(HtmlDom dom)
 		{
 			var node = dom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
 			return node.Count > 0;
