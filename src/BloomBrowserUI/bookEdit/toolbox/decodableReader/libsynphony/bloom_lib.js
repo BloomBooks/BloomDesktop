@@ -94,6 +94,7 @@ libSynphony.prototype.stringToSentences = function(textHTML) {
     var tagHolderClose = String.fromCharCode(5);   // u0005 is a replacement character for all other closing html tags
     var tagHolderSelf = String.fromCharCode(6);    // u0006 is a replacement character for all other self-closing html tags
     var tagHolderEmpty = String.fromCharCode(7);   // u0007 is a replacement character for empty html tags
+    var nbsp = String.fromCharCode(8);             // u0008 is a replacement character for &nbsp;
     if (textHTML === null) textHTML = '';
 
     // look for html break tags, replace them with the htmlLineBreak place holder
@@ -120,6 +121,9 @@ libSynphony.prototype.stringToSentences = function(textHTML) {
     var emptyTags = textHTML.match(/\u0004\u0005/g);
     textHTML = textHTML.replace(/\u0004\u0005/g, tagHolderEmpty);
 
+    // replace &nbsp; with nbsp
+    textHTML = textHTML.replace(/&nbsp;/g, nbsp);
+
     // look for paragraph ending sequences
     regex = XRegExp(
         '[^\\p{PEP}]*[\\p{PEP}]+' // break on all paragraph ending punctuation (PEP)
@@ -134,7 +138,7 @@ libSynphony.prototype.stringToSentences = function(textHTML) {
         '([\\p{SEP}]+'                      // sentence ending punctuation (SEP)
         + '[\'"\\p{Pf}\\p{Pe}\\u0005]*)'    // characters that can follow the SEP
         + '([\\u0004]*)'                    // opening tag between sentences
-        + '([\\s\\p{PEP}\\u0006\\u0007]+)'  // inter-sentence space
+        + '([\\s\\p{PEP}\\u0006\\u0007\\u0008]+)'  // inter-sentence space
         + '([\\u0005]*)'                    // closing tag between sentences
         + '(?![^\\p{L}]*'                   // may be followed by non-letter chars
         + '[\\p{Ll}\\p{SCP}]+)',            // first letter following is not lower case
@@ -171,6 +175,9 @@ libSynphony.prototype.stringToSentences = function(textHTML) {
             // put the self-closing html tags back in
             while (fragment.indexOf('\u0006') > - 1)
                 fragment = fragment.replace(/\u0006/, selfTags.shift());
+
+            // put nbsp back in
+            fragment = fragment.replace(/\u0008/g, "&nbsp;");
 
             // check to avoid blank segments at the end
             if ((j < (fragments.length - 1)) || (fragment.length > 0)) {
