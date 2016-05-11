@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
-using System.Globalization;
 using System.IO;
 using Bloom.Book;
 using SIL.Code;
@@ -13,7 +12,7 @@ namespace Bloom.Api
 	/// <summary>
 	/// This class is responsible for handling Server requests that depend on knowledge of the current book.
 	/// An exception is some reader tools requests, which have their own handler, though most of them depend
-	/// on knowing the current book. This class provides that information to the ReadersHandler.
+	/// on knowing the current book.
 	/// </summary>
 	public class CurrentBookHandler
 	{
@@ -28,14 +27,14 @@ namespace Bloom.Api
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("bookSettings", HandleGetBookSettings);
-			server.RegisterEndpointHandler("imageInfo", HandleGetImageInfo);
+			server.RegisterEndpointHandler("bookSettings", HandleBookSettings);
+			server.RegisterEndpointHandler("imageInfo", HandleImageInfo);
 		}
 
 		/// <summary>
 		/// Get a json of the book's settings.
 		/// </summary>
-		private  void HandleGetBookSettings(ApiRequest request)
+		private  void HandleBookSettings(ApiRequest request)
 		{
 			switch (request.HttpMethod)
 			{
@@ -62,7 +61,7 @@ namespace Bloom.Api
 		/// <summary>
 		/// Get a json of stats about the image. It is used to populate a tooltip when you hover over an image container
 		/// </summary>
-		private void HandleGetImageInfo(ApiRequest request)
+		private void HandleImageInfo(ApiRequest request)
 		{
 			try
 			{
