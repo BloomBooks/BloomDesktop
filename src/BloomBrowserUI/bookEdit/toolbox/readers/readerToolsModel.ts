@@ -283,6 +283,7 @@ export class ReaderToolsModel {
     this.updateLevelLimit("maxWordsPerSentence", level.getMaxWordsPerSentence());
     this.updateLevelLimit("maxWordsPerBook", level.getMaxWordsPerBook());
     this.updateLevelLimit("maxUniqueWordsPerBook", level.getMaxUniqueWordsPerBook());
+    this.updateLevelLimit("maxAverageWordsPerSentence", level.getMaxAverageWordsPerSentence());
 
     if (level.thingsToRemember.length) {
 
@@ -735,6 +736,14 @@ export class ReaderToolsModel {
     return levels[this.levelNumber - 1].getMaxUniqueWordsPerBook();
   }
 
+  maxAverageWordsPerSentence(): number {
+    var levels: ReaderLevel[] = this.synphony.getLevels();
+    if (levels.length <= 0) {
+      return 99999;
+    }
+    return levels[this.levelNumber - 1].getMaxAverageWordsPerSentence();
+  }
+
   maxWordsPerPage(): number {
     var levels: ReaderLevel[] = this.synphony.getLevels();
     if (levels.length <= 0) {
@@ -781,8 +790,7 @@ export class ReaderToolsModel {
     this.updateActualCount(this.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
     this.updateActualCount(this.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
     this.updateActualCount(this.uniqueWordsInBook(pageStrings), this.maxUniqueWordsPerBook(), 'actualUniqueWords');
-    // Enhance: eventually the 0 below will be this.maxAverageWordsInSentence.
-    this.updateActualCount(this.averageWordsInSentence(pageStrings), 0, 'actualAverageWordsPerSentence');
+    this.updateActualCount(this.averageWordsInSentence(pageStrings), this.maxAverageWordsPerSentence(), 'actualAverageWordsPerSentence');
   }
 
   countWordsInBook(pageStrings: string[]): number {
