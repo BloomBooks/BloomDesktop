@@ -83,11 +83,7 @@ namespace Bloom
 				FileName = "thumbnail-" + height + ".png"
 			};
 
-			RebuildThumbNailNow(book, options,
-				(info, ex) =>
-				{
-					throw ex;
-				});
+			RebuildThumbNailNow(book, options);
 		}
 
 		///   <summary>
@@ -150,15 +146,17 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+		/// Will make a new thumbnail (or throw) UNLESS the thumbnail is readonly, in which case it will do nothing.
 		/// </summary>
 		/// <param name="book"></param>
 		/// <param name="thumbnailOptions"></param>
-		/// <param name="errorCallback"></param>
-		public void RebuildThumbNailNow(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
-			Action<BookInfo, Exception> errorCallback)
+		public void RebuildThumbNailNow(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions)
 		{
-			RebuildThumbNail(book, thumbnailOptions, (info, image) => { }, errorCallback, false);
+			RebuildThumbNail(book, thumbnailOptions, (info, image) => { },
+				(info, ex) =>
+				{
+					throw ex;
+				}, false);
 		}
 
 
