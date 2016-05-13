@@ -31,7 +31,7 @@ namespace Bloom
 
 		public HtmlThumbNailer HtmlThumbNailer { get { return _thumbnailProvider;} }
 
-		public void GetThumbNailOfBookCoverAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback)
+		public void GetThumbNailOfBookCover(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback, bool async)
 		{
 			if (book is ErrorBook)
 			{
@@ -60,7 +60,7 @@ namespace Bloom
 				string folderForCachingThumbnail;
 
 				folderForCachingThumbnail = book.Storage.FolderPath;
-				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, book.Storage.Key, dom, thumbnailOptions, callback, errorCallback);
+				_thumbnailProvider.GetThumbnail(folderForCachingThumbnail, book.Storage.Key, dom, thumbnailOptions, callback, errorCallback, async);
 			}
 			catch (Exception err)
 			{
@@ -71,7 +71,6 @@ namespace Bloom
 
 		public void MakeThumbnailOfCover(Book.Book book, int height, Control invokeTarget)
 		{
-			bool done = false;
 			string error = null;
 
 			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
@@ -84,25 +83,7 @@ namespace Bloom
 				FileName = "thumbnail-" + height + ".png"
 			};
 
-			RebuildThumbNailAsync(book, options, (info, image) => done = true,
-				(info, ex) =>
-				{
-					done = true;
-					throw ex;
-				});
-			var giveUpTime = DateTime.Now.AddSeconds(15);
-			while (!done && DateTime.Now < giveUpTime)
-			{
-				Thread.Sleep(100);
-				Application.DoEvents();
-				// In the context of bulk upload, when a model dialog is the only window, apparently Application.Idle is never invoked.
-				// So we need a trick to allow the thumbnailer to actually make some progress, since it usually works while idle.
-				_thumbnailProvider.Advance(invokeTarget);
-			}
-			if (!done)
-			{
-				throw new ApplicationException(String.Format("Gave up waiting for the {0} to be created. This usually means Bloom is busy making thumbnails for other things. Wait a bit, and try again.", options.FileName));
-			}
+			RebuildThumbNailNow(book, options);
 		}
 
 		///   <summary>
@@ -161,6 +142,34 @@ namespace Bloom
 		public void RebuildThumbNailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
 			Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
 		{
+			RebuildThumbNail(book, thumbnailOptions, callback, errorCallback, true);
+		}
+
+		/// <summary>
+		/// Will make a new thumbnail (or throw) UNLESS the thumbnail is readonly, in which case it will do nothing.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="thumbnailOptions"></param>
+		public void RebuildThumbNailNow(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions)
+		{
+			RebuildThumbNail(book, thumbnailOptions, (info, image) => { },
+				(info, ex) =>
+				{
+					throw ex;
+				}, false);
+		}
+
+
+		/// <summary>
+		/// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="thumbnailOptions"></param>
+		/// <param name="callback"></param>
+		/// <param name="errorCallback"></param>
+		private void RebuildThumbNail(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
+			Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback, bool async)
+		{
 			try
 			{
 				if(!book.Storage.RemoveBookThumbnail(thumbnailOptions.FileName))
@@ -177,7 +186,7 @@ namespace Bloom
 				thumbnailOptions.BorderStyle = (book.Type == Book.Book.BookType.Publication)
 					? HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid
 					: HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
-				GetThumbNailOfBookCoverAsync(book, thumbnailOptions, image => callback(book.BookInfo, image),
+				GetThumbNailOfBookCover(book, thumbnailOptions, image => callback(book.BookInfo, image),
 					error =>
 					{
 						//Enhance; this isn't a very satisfying time to find out, because it's only going to happen if we happen to be rebuilding the thumbnail.
@@ -186,7 +195,7 @@ namespace Bloom
 						//keep showing green error boxes.
 						book.CheckForErrors();
 						errorCallback(book.BookInfo, error);
-					});
+					}, async);
 			}
 			catch(Exception error)
 			{

@@ -146,7 +146,6 @@ namespace Bloom
 			return thumbnail;
 		}
 
-
 		/// <summary>
 		///
 		/// </summary>
@@ -157,6 +156,20 @@ namespace Bloom
 		/// <returns></returns>
 		public void GetThumbnailAsync(string folderForThumbNailCache, string key, HtmlDom document,
 			ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback)
+		{
+			GetThumbnail(folderForThumbNailCache, key, document, options, callback, errorCallback, true);
+		}
+
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="key">whatever system you want... just used for caching</param>
+		/// <param name="document"></param>
+		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
+		/// <param name="drawBorderDashed"></param>
+		/// <returns></returns>
+		public void GetThumbnail(string folderForThumbNailCache, string key, HtmlDom document,
+			ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback, bool async)
 		{
 			//review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
 
@@ -195,7 +208,12 @@ namespace Bloom
 				FolderForThumbNailCache = folderForThumbNailCache,
 				Key = key
 			};
-			QueueOrder(order);
+			if (async)
+				QueueOrder(order);
+			else
+			{
+				ProcessOrder(order);
+			}
 		}
 
 		private void QueueOrder(ThumbnailOrder order)
@@ -211,22 +229,24 @@ namespace Bloom
 		{
 			var order = (ThumbnailOrder) browser.Tag;
 			bool navigationHappened = true;
-			using (var waitHandle = new AutoResetEvent(false))
+			if (_syncControl.InvokeRequired)
 			{
-				order.WaitHandle = waitHandle;
-				_syncControl.BeginInvoke(new Action<string>(path =>
+				using (var waitHandle = new AutoResetEvent(false))
 				{
-					if (!_isolator.NavigateIfIdle(browser, path))
-						navigationHappened = false; // some browser is busy, try again later.
-				}), filePath);
-				waitHandle.WaitOne(10000);
-			}
-			if (_disposed || !navigationHappened)
-				return false;
-			if (!order.Done)
-			{
-				Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
-					Thread.CurrentThread.ManagedThreadId);
+					order.WaitHandle = waitHandle;
+					_syncControl.BeginInvoke(new Action<string>(path =>
+					{
+						if (!_isolator.NavigateIfIdle(browser, path))
+							navigationHappened = false; // some browser is busy, try again later.
+					}), filePath);
+					waitHandle.WaitOne(10000);
+				}
+				if (_disposed || !navigationHappened)
+					return false;
+				if (!order.Done)
+				{
+					Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
+						Thread.CurrentThread.ManagedThreadId);
 #if DEBUG
 				if (!_thumbnailTimeoutAlreadyDisplayed)
 				{
@@ -234,8 +254,16 @@ namespace Bloom
 					_syncControl.Invoke((Action) (() => Debug.Fail("(debug only) Make thumbnail timed out (won't show again)")));
 				}
 #endif
-				return false;
+					return false;
+				}
 			}
+			else
+			{
+				_isolator.Navigate(browser, filePath); // main thread, not async, we really need it now.
+				while (!order.Done)
+					Application.DoEvents();
+			}
+
 			return true;
 		}
 
@@ -449,7 +477,8 @@ namespace Bloom
 			Debug.WriteLine("_browser_OnDocumentCompleted ({0})", Thread.CurrentThread.ManagedThreadId);
 			var order = (ThumbnailOrder)((GeckoWebBrowser)sender).Tag;
 			order.Done = true;
-			order.WaitHandle.Set();
+			if (order.WaitHandle != null)
+				order.WaitHandle.Set();
 		}
 
 		private GeckoWebBrowser GetBrowserForPaperSize(XmlDocument document)
