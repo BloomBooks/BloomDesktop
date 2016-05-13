@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using Bloom.Book;
 using Bloom.Collection;
-using BloomTemp;
-using Newtonsoft.Json;
-using SIL.IO;
 
 namespace Bloom.Edit
 {
@@ -46,7 +37,7 @@ namespace Bloom.Edit
 		/// related to Decodable and Leveled Readers.
 		/// </summary>
 		/// <param name="collectionSettings"></param>
-		public static string GetDecodableLevelFilePath(CollectionSettings collectionSettings)
+		public static string GetReaderToolsSettingsFilePath(CollectionSettings collectionSettings)
 		{
 			return Path.Combine(Path.GetDirectoryName(collectionSettings.SettingsFilePath),
 				DecodableReaderTool.ReaderToolsSettingsPrefix + collectionSettings.Language1Iso639Code + ".json");
@@ -55,12 +46,12 @@ namespace Bloom.Edit
 		/// <summary>
 		/// If the collection has no reader tools at all, or if ones that came with the program are newer,
 		/// copy the ones that came with the program.
-		/// This is language-dependent, we'll typcially only overwrite settings for an English collection.
+		/// This is language-dependent, we'll typically only overwrite settings for an English collection.
 		/// </summary>
 		/// <param name="settings"></param>
 		public static void CopyRelevantNewReaderSettings(CollectionSettings settings)
 		{
-			var readerToolsPath = GetDecodableLevelFilePath(settings);
+			var readerToolsPath = GetReaderToolsSettingsFilePath(settings);
 			var bloomFolder = ProjectContext.GetBloomAppDataFolder();
 			var newReaderTools = Path.Combine(bloomFolder, Path.GetFileName(readerToolsPath));
 			if (!File.Exists(newReaderTools))
@@ -70,6 +61,11 @@ namespace Bloom.Edit
 			File.Copy(newReaderTools, readerToolsPath, true);
 		}
 
-		public const string kReaderToolsWordsFileNameFormat = "ReaderToolsWords-{0}.json";
+		/// <remarks>About this file (e.g. ReaderToolsWords-en.json).
+		/// In one sense, it is a confusing name because if you look in it, it's much more than words (e.g. orthography).
+		/// On the other hand, if I (JH) am reading things correctly, only the sample word aspect of this is used by Bloom.
+		/// See the API handler for more remarks on it.
+		/// </remarks>
+		public const string kSynphonyLanguageDataFileNameFormat = "ReaderToolsWords-{0}.json";
 	}
 }

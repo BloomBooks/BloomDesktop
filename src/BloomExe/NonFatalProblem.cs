@@ -58,7 +58,7 @@ namespace Bloom
 					}
 				}
 
-				if(Assembly.GetEntryAssembly() == null) // if in unit test
+				if(Program.RunningUnitTests) 
 				{
 					//It's not clear to me what we can do that works for all unit test scenarios...
 					//We can imagine those for which throwing an exception at this point would be helpful,

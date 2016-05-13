@@ -73,7 +73,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			get
 			{
-				if(Assembly.GetEntryAssembly() == null)
+				if(Program.RunningUnitTests)
 				{
 					return BloomS3Client.UnitTestBucketName;
 				}

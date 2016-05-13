@@ -27,7 +27,6 @@ namespace Bloom.Api
 	class ReadersApi
 	{
 		private readonly BookSelection _bookSelection;
-		private static bool _savingReaderWords;
 		private const string kSynphonyFileNameSuffix = "_lang_data.js";
 		private static readonly IEqualityComparer<string> _equalityComparer = new InsensitiveEqualityComparer();
 		private static readonly char[] _allowedWordsDelimiters = {',', ';', ' ', '\t', '\r', '\n'};
@@ -95,7 +94,7 @@ namespace Bloom.Api
 						request.ReplyWithJson(GetReaderSettings(request.CurrentCollectionSettings));
 					else
 					{
-						var path = DecodableReaderTool.GetDecodableLevelFilePath(request.CurrentCollectionSettings);
+						var path = DecodableReaderTool.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
 						var content = request.RequiredPostJson();
 						File.WriteAllText(path, content, Encoding.UTF8);
 						request.Succeeded();
@@ -103,7 +102,16 @@ namespace Bloom.Api
 					break;
 
 
+				//note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
+				//This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
+				case "synphonyLanguageData":
+					//This is the "post". There is no direct "get", but the name of the file is given in the "sampleTextList" reply, below:
+					SaveSynphonyLanguageData(request.RequiredPostJson());
+					request.Succeeded();
+					break;
+
 				case "sampleTextsList":
+					//note, as part of this reply, we send the path of the "ReaderToolsWords-xyz.json" which is *written* by the "synphonyLanguageData" endpoint above
 					request.ReplyWithText(GetSampleTextsList(request.CurrentCollectionSettings.SettingsFilePath));
 					break;
 
@@ -113,10 +121,6 @@ namespace Bloom.Api
 
 				case "textOfContentPages":
 					request.ReplyWithText(GetTextOfContentPagesAsJson());
-					break;
-
-				case "saveReaderToolsWords":
-					request.ReplyWithText(SaveReaderToolsWordsFile(request.RequiredPostJson()));
 					break;
 
 				case "makeLetterAndWordList":
@@ -132,7 +136,7 @@ namespace Bloom.Api
 				case "chooseAllowedWordsListFile":
 					lock (request)
 					{
-						ShowSelectAllowedWordsFileDialog(request);
+						request.ReplyWithText(ShowSelectAllowedWordsFileDialog());
 					}
 					break;
 
@@ -198,7 +202,7 @@ namespace Bloom.Api
 				Directory.CreateDirectory(path);
 
 			var fileList1 = new List<string>();
-			var langFileName = String.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFileName = String.Format(DecodableReaderTool.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -263,7 +267,7 @@ namespace Bloom.Api
 
 		private static string GetReaderSettings(CollectionSettings currentCollectionSettings)
 		{
-			var settingsPath = DecodableReaderTool.GetDecodableLevelFilePath(currentCollectionSettings);
+			var settingsPath = DecodableReaderTool.GetReaderToolsSettingsFilePath(currentCollectionSettings);
 
 			// if file exists, return current settings
 			if (File.Exists(settingsPath))
@@ -338,35 +342,21 @@ namespace Bloom.Api
 		}
 
 		/// <summary></summary>
-		/// <param name="jsonString">The contents of the ReaderToolsWords file</param>
+		/// <param name="jsonString">The theOneLanguageDataInstance as json</param>
 		/// <returns>OK</returns>
-		private string SaveReaderToolsWordsFile(string jsonString)
+		private void SaveSynphonyLanguageData(string jsonString)
 		{
-			while (_savingReaderWords)
-				Thread.Sleep(0);
+			// insert LangName and LangID if missing
+			if (jsonString.Contains("\"LangName\":\"\""))
+				jsonString = jsonString.Replace("\"LangName\":\"\"", "\"LangName\":\"" + CurrentBook.CollectionSettings.Language1Name + "\"");
 
-			try
-			{
-				_savingReaderWords = true;
+			if (jsonString.Contains("\"LangID\":\"\""))
+				jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
 
-				// insert LangName and LangID if missing
-				if (jsonString.Contains("\"LangName\":\"\""))
-					jsonString = jsonString.Replace("\"LangName\":\"\"", "\"LangName\":\"" + CurrentBook.CollectionSettings.Language1Name + "\"");
+			var fileName = String.Format(DecodableReaderTool.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
-				if (jsonString.Contains("\"LangID\":\"\""))
-					jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
-
-				var fileName = String.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
-				fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
-
-				File.WriteAllText(fileName, jsonString, Encoding.UTF8);
-			}
-			finally
-			{
-				_savingReaderWords = false;
-			}
-
-			return "OK";
+			File.WriteAllText(fileName, jsonString, Encoding.UTF8);
 		}
 
 		private void OpenTextsFolder()
@@ -396,7 +386,7 @@ namespace Bloom.Api
 			}
 		}
 
-		private void ShowSelectAllowedWordsFileDialog(ApiRequest request)
+		private string ShowSelectAllowedWordsFileDialog()
 		{
 			var returnVal = "";
 
@@ -439,8 +429,7 @@ namespace Bloom.Api
 				}
 			}
 
-			// send to browser
-			request.ReplyWithText(returnVal);
+			return returnVal;
 		}
 
 		private void RecycleAllowedWordListFile(string fileName)

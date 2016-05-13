@@ -67,5 +67,28 @@ namespace BloomTests.web
 				 handler: request => request.Succeeded());
 			Assert.That(result, Is.EqualTo("OK"));
 		}
+
+
+		[Test]
+		public void Get_EndPointCaseIsIgnored()
+		{
+			var result = ApiTest.GetString(_server, endPoint: "fooBAR", endOfUrlForTest:"FOObar",
+				 handler: request => request.Succeeded());
+			Assert.That(result, Is.EqualTo("OK"));
+		}
+
+		[Test,ExpectedException]
+		public void Get_Unrecognized_Throws()
+		{
+			var result = ApiTest.GetString(_server, endPoint: "foo[0-9]bar", endOfUrlForTest: "foobar",
+				 handler: request => request.Succeeded());
+		}
+		[Test]
+		public void Get_RegexEndPoint()
+		{
+			var result = ApiTest.GetString(_server, endPoint: "foo[0-9]bar", endOfUrlForTest: "foo7bar",
+				 handler: request => request.Succeeded());
+			Assert.That(result, Is.EqualTo("OK"));
+		}
 	}
 }
