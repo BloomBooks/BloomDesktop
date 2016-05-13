@@ -763,7 +763,7 @@ export class ReaderToolsModel {
 
   getTextOfWholeBook(): void {
     axios.get<any[]>('/bloom/api/readers/textOfContentPages').then(result => {
-      //The result looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.} 
+      //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.} 
       this.pageIDToText = result.data;
       this.doMarkup();
     });
@@ -964,8 +964,9 @@ export class ReaderToolsModel {
         this.updateWordList();
         this.processWordListChangedListeners();
 
-        // write out the ReaderToolsWords-xyz.json file
-        axios.post('/bloom/api/readers/saveReaderToolsWords', theOneLanguageDataInstance);
+        //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
+        //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
+        axios.post('/bloom/api/readers/synphonyLanguageData', theOneLanguageDataInstance);
       }, 200);
     });
   }

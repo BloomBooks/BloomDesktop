@@ -258,15 +258,13 @@ namespace Bloom
 			}
 
 			var server = _scope.Resolve<EnhancedImageServer>();
-			
+			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
-
 			HelpLauncher.RegisterWithServer(server);
 			ExternalLinkController.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
 			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
-			server.StartListening();
 		}
 
 

@@ -1150,7 +1150,7 @@ namespace Bloom.Edit
 
 			//Why the check for null? In bl-283, user had been in settings dialog, which caused a closing down, but something
 			//then did a callback to this view, such that ParentForm was null, and this died
-			Debug.Assert(ParentForm != null);
+			//This assert was driving me crazy (which is a short trip). I'd hit it every time I quit Bloom, but this things are fine. Debug.Assert(ParentForm != null);
 			if (ParentForm != null)
 			{
 				ParentForm.Activated += new EventHandler(ParentForm_Activated);
