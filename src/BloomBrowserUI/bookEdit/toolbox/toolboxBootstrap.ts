@@ -1,6 +1,6 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import * as $ from 'jquery';
-import {restoreToolboxSettings, showOrHidePanel_click, removeToolboxMarkup} from './toolbox';
+import {getTheOneToolbox, restoreToolboxSettings, showOrHidePanel_click, removeToolboxMarkup} from './toolbox';
 import {getTheOneReaderToolsModel} from './readers/readerToolsModel'
 import TalkingBookModel from './talkingBook/talkingBook';
 import DecodableReaderToolboxPanel from './readers/decodableReader/decodableReaderToolboxPanel';
@@ -18,6 +18,7 @@ export {TalkingBookModel}; // one function is called by CSharp; also, exporting 
 export {LeveledReaderToolboxPanel}; // just to make sure it gets included in the bundle (and adds an instance of itself to the collection in toolbox.ts)
 export {DecodableReaderToolboxPanel}; // just to make sure it gets included in the bundle (and adds an instance of itself to the collection in toolbox.ts)
 export {handleBookSettingCheckboxClick}; // called by click handler in jade; also, exporting something from it gets it included in the bundle.
+export {getTheOneToolbox};
 
 export function canUndo() :boolean {
     return getTheOneReaderToolsModel().shouldHandleUndo() && getTheOneReaderToolsModel().canUndo();

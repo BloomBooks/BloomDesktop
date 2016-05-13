@@ -1,6 +1,6 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 
-class EditableDivUtils {
+export class EditableDivUtils {
 
   static getElementSelectionIndex(element: HTMLElement): number {
 
