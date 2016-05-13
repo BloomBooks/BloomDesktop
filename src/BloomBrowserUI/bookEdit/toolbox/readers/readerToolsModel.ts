@@ -20,6 +20,7 @@ import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synp
 import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
 import {DataWord,TextFragment} from './libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
+import {EditableDivUtils} from '../../js/editableDivUtils';
 var SortType = {
   alphabetic: "alphabetic",
   byLength: "byLength",

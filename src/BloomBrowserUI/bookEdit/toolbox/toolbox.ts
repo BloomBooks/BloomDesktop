@@ -5,6 +5,7 @@ import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import '../../lib/jquery.i18n.custom';
 import "../../lib/jquery.onSafe"; 
 import axios = require('axios');
+import {EditableDivUtils} from '../js/editableDivUtils';
 
 /**
  * The html code for a check mark character
@@ -55,6 +56,10 @@ export class ToolBox {
 }
 
 var toolbox = new ToolBox();
+
+export function getTheOneToolbox() {
+  return toolbox;
+}
 
 // Array of models, typically one for each tab. The code for each tab inserts an appropriate model
 // into this array in order to be interact with the overall toolbox code.
