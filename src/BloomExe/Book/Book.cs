@@ -337,18 +337,25 @@ namespace Bloom.Book
 
 		private HtmlDom GetHtmlDomWithJustOnePage(IPage page)
 		{
+			var divNodeForThisPage = page.GetDivNodeForThisPage();
+			if (divNodeForThisPage == null)
+			{
+				throw new ApplicationException(String.Format("The requested page {0} from book {1} isn't in this book {2}.", page.Id,
+															 page.Book.FolderPath, FolderPath));
+			}
+
+			return GetHtmlDomWithJustOnePage(divNodeForThisPage);
+		}
+
+		public HtmlDom GetHtmlDomWithJustOnePage(XmlElement divNodeForThisPage)
+		{
 			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
 			dom = _storage.MakeDomRelocatable(dom, _log);
 			// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 			dom.RawDom.PreserveWhitespace = true;
 			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
-			var divNodeForThisPage = page.GetDivNodeForThisPage();
-			if(divNodeForThisPage==null)
-			{
-				throw new ApplicationException(String.Format("The requested page {0} from book {1} isn't in this book {2}.", page.Id,
-															 page.Book.FolderPath, FolderPath));
-			}
+
 			var pageDom = dom.RawDom.ImportNode(divNodeForThisPage, true);
 			body.AppendChild(pageDom);
 

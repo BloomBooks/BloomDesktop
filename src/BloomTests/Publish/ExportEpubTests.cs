@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom;
+using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
+using Bloom.ImageProcessing;
 using Bloom.Publish;
 using BloomTemp;
 using BloomTests.Book;
@@ -69,6 +73,7 @@ namespace BloomTests.Publish
 		{
 			return SetupBookLong(text, lang, images: images);
 		}
+
 		/// <summary>
 		/// Set up a book with the typical content most of our tests need. It has the standard three stylesheets
 		/// (and empty files for them). It has one bloom editable div, in the specified language, with the specified text.
@@ -84,10 +89,15 @@ namespace BloomTests.Publish
 		/// <param name="extraContent"></param>
 		/// <param name="extraImages"></param>
 		/// <param name="extraStyleSheet"></param>
+		/// <param name="extraPages"></param>
 		/// <param name="images"></param>
+		/// <param name="extraEditGroupClasses"></param>
+		/// <param name="extraEditDivClasses"></param>
+		/// <param name="parentDivId"></param>
 		/// <returns></returns>
 		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraImages = "",
-			string extraStyleSheet= "", string parentDivId = "somewrapper", string extraPages="", string[] images = null)
+			string extraStyleSheet= "", string parentDivId = "somewrapper", string extraPages="", string[] images = null,
+			string extraEditGroupClasses = "", string extraEditDivClasses = "")
 		{
 			if (images == null)
 				images = new string[0];
@@ -96,8 +106,8 @@ namespace BloomTests.Publish
 				imageDivs += "<div><img src='" + image + ".png'></img></div>\n";
 			var body = string.Format(@"<div class='bloom-page" + extraPageClass + @"'>
 						<div id='" + parentDivId + @"' class='marginBox'>
-							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
-								<div aria-describedby='qtip-1' class='bloom-editable' lang='{0}'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {7}' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable {6}' lang='{0}'>
 									{1}
 								</div>
 								{2}
@@ -108,7 +118,7 @@ namespace BloomTests.Publish
 						</div>
 					</div>
 					{5}",
-				lang, text, extraContent, imageDivs, extraImages, extraPages);
+				lang, text, extraContent, imageDivs, extraImages, extraPages, extraEditDivClasses, extraEditGroupClasses);
 			SetDom(body,
 				string.Format(@"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
 							{0}
@@ -494,22 +504,80 @@ namespace BloomTests.Publish
 		[Test]
 		public void National1_InXMatter_IsNotRemoved()
 		{
-			var book = SetupBookLong("English text should only display when that language is active.", "en",
-				extraPageClass: " bloom-frontMatter",
-				extraContent: @"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text should always display</div>
-								<div class='bloom-editable' lang='fr'>French text should only display if configured</div>
-								<div class='bloom-editable' lang='de'>German should never display in this collection</div>");
-			MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
-			CheckBasicsInManifest();
-			CheckBasicsInPage();
+			// This test does some real navigation so needs the server to be running.
+			using (GetTestServer())
+			{
+				// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
+				var book = SetupBookLong("English text (bloom-contentNational1) should display in title.", "en",
+					extraPageClass: " bloom-frontMatter frontCover",
+					extraContent:
+						@"<div class='bloom-editable bloom-content1' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
+								<div class='bloom-editable bloom-contentNational2' lang='fr'>French text (national2) should not display</div>
+								<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+					extraStyleSheet: "<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter.css' type='text/css'></link>",
+					extraEditGroupClasses: "bookTitle",
+					extraEditDivClasses: "bloom-contentNational1");
+				MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
+				CheckBasicsInManifest();
+				CheckBasicsInPage();
 
-			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
-			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
-			assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
-			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
+				var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
+				assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
+				assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
+				assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
+			}
+		}
+
+		private static EnhancedImageServer GetTestServer()
+		{
+			var server = new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, new BookSelection(), GetTestFileLocator());
+			server.StartListening();
+			return server;
+		}
+
+		private static BloomFileLocator GetTestFileLocator()
+		{
+			return new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[] { }), ProjectContext.GetFactoryFileLocations(),
+				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
+		}
+
+		/// <summary>
+		/// Content whose display properties resolves to display:None should be removed.
+		/// The default rules on a credits page show original acknowledgements only in national language.
+		/// </summary>
+		[Test]
+		public void OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved()
+		{
+			// This test does some real navigation so needs the server to be running.
+			using (GetTestServer())
+			{
+				// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
+				var book = SetupBookLong("Acknowledgements should only show in national 1.", "en",
+					extraPageClass: " bloom-frontMatter credits",
+					extraContent:
+						@"<div class='bloom-editable bloom-content1' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>acknowledgements in vernacular not displayed</div>
+								<div class='bloom-editable bloom-contentNational2 bloom-content2' lang='fr'>National 2 should not be displayed</div>
+								<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+					extraStyleSheet:
+						"<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter.css' type='text/css'></link>",
+					extraEditGroupClasses: "originalAcknowledgments",
+					extraEditDivClasses: "bloom-contentNational1");
+				MakeEpub("output", "OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved", book);
+				CheckBasicsInManifest();
+				CheckBasicsInPage();
+				//Thread.Sleep(20000);
+
+				var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
+				assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
+				assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
+			}
 		}
 
 		[Test]
@@ -808,7 +876,7 @@ namespace BloomTests.Publish
 
 	class EpubMakerAdjusted : EpubMaker
 	{
-		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer) : base(thumbNailer)
+		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer) : base(thumbNailer, new NavigationIsolator())
 		{
 			this.Book = book;
 		}
