@@ -98,7 +98,7 @@ namespace Bloom.Api
 			var request = new ApiRequest(info, collectionSettings, currentBook);
 			try
 			{
-				if(Program.RunningUnitTests) // null during unit tests
+				if(Program.RunningUnitTests) 
 				{
 					endpointHandler(request);
 				}
