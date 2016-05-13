@@ -1088,5 +1088,12 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 				}
 			}
 		}
+
+		public static bool RunningUnitTests {
+			get
+			{
+				return Assembly.GetEntryAssembly() == null;
+			}
+		}
 	}
 }

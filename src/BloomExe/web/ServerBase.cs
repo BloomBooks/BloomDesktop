@@ -182,7 +182,7 @@ namespace Bloom.Api
 			catch(HttpListenerException error)
 			{
 				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" + error.Message);
-				if (Assembly.GetEntryAssembly() != null) // not during unit tests
+				if (!Program.RunningUnitTests)
 					NonFatalProblem.Report(ModalIf.None,PassiveIf.Alpha,"Could not start server on that port");
 				try
 				{

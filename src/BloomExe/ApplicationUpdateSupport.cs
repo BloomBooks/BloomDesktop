@@ -172,7 +172,7 @@ namespace Bloom
 		{
 			get
 			{
-				if(Assembly.GetEntryAssembly() == null)
+				if(Program.RunningUnitTests)
 					return kChannelNameForUnitTests;
 
 				var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;

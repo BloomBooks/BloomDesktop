@@ -98,13 +98,12 @@ namespace Bloom.Api
 			var request = new ApiRequest(info, collectionSettings, currentBook);
 			try
 			{
-				if(null == Assembly.GetEntryAssembly()) // null during unit tests
+				if(Program.RunningUnitTests) // null during unit tests
 				{
 					endpointHandler(request);
 				}
 				else
 				{
-
 					var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
 					if(formForSynchronizing.InvokeRequired)
 					{

@@ -199,7 +199,7 @@ namespace Bloom
 		/// </summary>
 		internal static void MakeBloomRegistryEntries(string[] programArgs)
 		{
-			if (Assembly.GetEntryAssembly() == null)
+			if (Program.RunningUnitTests)
 				return; // unit testing.
 			// When installed in program files we only do registry entries when we are first installed,
 			// thus keeping them consistent for all users, stored in HKLM.
