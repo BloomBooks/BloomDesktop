@@ -8,7 +8,7 @@ namespace BloomTests
 		public enum ContentType  {Text, JSON}
 
 		public static string GetString(EnhancedImageServer server, string endPoint, string query = "",
-			ContentType returnType = ContentType.Text, EndpointHandler handler = null)
+			ContentType returnType = ContentType.Text, EndpointHandler handler = null, string endOfUrlForTest = null)
 		{
 			if(handler != null)
 			{
@@ -21,9 +21,16 @@ namespace BloomTests
 			};
 			client.Headers[HttpRequestHeader.ContentType] = returnType == ContentType.Text ? "text/plain" : "application/json";
 
-			if(!string.IsNullOrEmpty(query))
-				query = "?" + query;
-			return client.DownloadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint + query);
+			if(endOfUrlForTest != null)
+			{
+				return client.DownloadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endOfUrlForTest);
+			}
+			else
+			{
+				if(!string.IsNullOrEmpty(query))
+					query = "?" + query;
+				return client.DownloadString(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + "api/" + endPoint + query);
+			}
 		}
 
 		public static string PostString(EnhancedImageServer server, string endPoint, string data, ContentType returnType,

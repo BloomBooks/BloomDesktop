@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bloom.Edit;
-using Bloom.Api;
+﻿using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
@@ -22,6 +15,7 @@ namespace BloomTests.web
 			var bookSelection = new BookSelection();
 			bookSelection.SelectBook(new Bloom.Book.Book());
 			_server = new EnhancedImageServer(bookSelection);
+
 			//needed to avoid a check in the server
 			_server.CurrentCollectionSettings = new CollectionSettings();
 			var controller = new ReadersApi(bookSelection);
