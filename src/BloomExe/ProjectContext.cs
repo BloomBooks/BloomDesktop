@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
@@ -193,7 +194,7 @@ namespace Bloom
 					builder.Register<SourceCollectionsList>(c =>
 					{
 						var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(),
-							editableCollectionDirectory, new string[] { FactoryCollectionsDirectory, GetInstalledCollectionsDirectory() });
+							 editableCollectionDirectory, new string[] {BloomFileLocator.FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()});
 						return l;
 					}).InstancePerLifetimeScope();
 
@@ -293,7 +294,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 
 			//hack to get the distfiles folder itself
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"));
+			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/js"));
@@ -319,7 +320,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/ckeditor/skins/icy_orange"));
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox/talkingBook"));
 
-			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "xMatter"));
+			yield return BloomFileLocator.GetInstalledXMatterDirectory();
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"ePUB"));
 		}
 
@@ -330,7 +331,7 @@ namespace Bloom
 		/// <returns></returns>
 		public static IEnumerable<string> GetAfterXMatterFileLocations()
 		{
-			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
+			var templatesDir = BloomFileLocator.FactoryTemplateBookDirectory;
 
 			yield return templatesDir;
 
@@ -339,7 +340,7 @@ namespace Bloom
 				yield return templateDir;
 			}
 
-			yield return FactoryCollectionsDirectory;
+			yield return BloomFileLocator.FactoryCollectionsDirectory;
 		}
 
 		/// <summary>
@@ -347,10 +348,9 @@ namespace Bloom
 		/// </summary>
 		public static IEnumerable<string> GetFoundFileLocations()
 		{
-			var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
-			if (Directory.Exists(samplesDir))
+			if (Directory.Exists(BloomFileLocator.SampleShellsDirectory))
 			{
-				foreach (var dir in Directory.GetDirectories(samplesDir))
+				foreach (var dir in Directory.GetDirectories(BloomFileLocator.SampleShellsDirectory))
 				{
 					yield return dir;
 				}
@@ -408,13 +408,6 @@ namespace Bloom
 			}
 		}
 
-		/// <summary>
-		/// Directory that contains both Templates and Sample Shells factory installed with Bloom
-		/// </summary>
-		public static string FactoryCollectionsDirectory
-		{
-			get { return FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"); }
-		}
 
 		public static string GetInstalledCollectionsDirectory()
 		{

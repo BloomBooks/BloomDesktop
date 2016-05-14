@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
@@ -148,7 +149,42 @@ namespace Bloom
 		}
 		public static string GetInstalledXMatterDirectory()
 		{
-			return BloomFileLocator.GetBrowserDirectory("xMatter");
+			return BloomFileLocator.GetBrowserDirectory("templates","xMatter");
+		}
+
+		public static string FactoryTemplateBookDirectory
+		{
+			get { return BloomFileLocator.GetBrowserDirectory("templates", "template books"); }
+		}
+
+		public static string SampleShellsDirectory
+		{
+			get { return GetBrowserDirectory("templates", "Sample Shells"); }
+		}
+
+		/// <summary>
+		/// contains both the template books and the sample shells
+		/// </summary>
+		public static string FactoryCollectionsDirectory {
+			get
+			{
+				return GetBrowserDirectory("templates");
+			}
+		}
+		
+
+		public static string GetFactoryBookTemplateDirectory(params string[] parts)
+		{
+			return Path.Combine(FactoryTemplateBookDirectory, parts[0]);
+		}
+
+
+		/// <summary>
+		/// Check whether this file was installed with Bloom (and likely to be read-only on Linux or for allUsers install).
+		/// </summary>
+		public static bool IsInstalledFileOrDirectory(string filepath)
+		{
+			return filepath.Contains(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase));
 		}
 	}
 }

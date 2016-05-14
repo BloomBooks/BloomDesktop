@@ -31,8 +31,8 @@ namespace BloomTests.Book
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
 											{
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
+												//FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+												BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book"),
 												BloomFileLocator.GetInstalledXMatterDirectory()
 											});
 			_fixtureFolder = new TemporaryFolder("BloomBookStorageTest");

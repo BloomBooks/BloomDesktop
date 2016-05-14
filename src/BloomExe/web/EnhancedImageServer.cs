@@ -109,7 +109,7 @@ namespace Bloom.Api
 		/// <returns></returns>
 		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool forSrcAttr = false)
 		{
-			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".htm");
+			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".html");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
 			if (dom.BaseForRelativePaths != null)
 			{
@@ -259,10 +259,6 @@ namespace Bloom.Api
 				if (File.Exists(temp))
 					localPath = temp;
 			}
-
-			//Firefox debugger, looking for a source map, was prefixing in this unexpected 
-			//way.
-			localPath = localPath.Replace("output/browser/", "");
 
 			return ProcessContent(info, localPath);
 		}

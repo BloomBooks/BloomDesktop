@@ -3,6 +3,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using Bloom.Collection;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -178,7 +179,7 @@ namespace Bloom.Book
 			var licenseImage = metadata.License.GetImage();
 			var imagePath = bookFolderPath.CombineForPath("license.png");
 			// Don't try to overwrite the license image for a template book.  (See BL-3284.)
-			if (File.Exists(imagePath) && IsInstalledFile(imagePath))
+			if (File.Exists(imagePath) && BloomFileLocator.IsInstalledFileOrDirectory(imagePath))
 				return;
 			try
 			{
@@ -201,19 +202,12 @@ namespace Bloom.Book
 				// That's worth a toast, since the user might like a hint why the license image isn't up to date.
 				// However, if the problem is a MISSING icon in the installed templates, which on Linux or if an allUsers install
 				// the system will never let us write, is not worth bothering the user at all. We can't fix it. Too bad.
-				if (IsInstalledFile(imagePath))
+				if (BloomFileLocator.IsInstalledFileOrDirectory(imagePath))
 					return;
 				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Could not update license image (BL-3227).", "Image was at" +imagePath, exception: error);
 			}
 		}
 
-		/// <summary>
-		/// Check whether this file was installed with Bloom (and likely to be read-only on Linux or for allUsers install).
-		/// </summary>
-		private static bool IsInstalledFile(string filepath)
-		{
-			return filepath.Contains(ProjectContext.FactoryCollectionsDirectory);
-		}
 
 		private static bool ShouldSetToDefaultLicense(HtmlDom dom)
 		{

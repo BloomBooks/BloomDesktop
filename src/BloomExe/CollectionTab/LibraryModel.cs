@@ -94,7 +94,7 @@ namespace Bloom.CollectionTab
 				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 
 				//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
-				var templates = _bookCollections.First(c => c.Name.ToLowerInvariant() == "templates");
+				var templates = _bookCollections.First(c => c.Name == "Templates");
 				_bookCollections.Remove(templates);
 				_bookCollections.Insert(1,templates);
 			}

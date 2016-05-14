@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
@@ -63,7 +61,7 @@ namespace BloomTests.Book
 //        [Test]
 //        public void CreateBookOnDiskFromTemplate_HasConfigurationPage_xxxxxxxxxxxx()
 //        {
-//            var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+//            var source = FileLocator.GetDirectoryDistributedWithApplication("Sample Shells",
 //                                                                            "Calendar");
 //
 //            var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
@@ -72,7 +70,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_OriginalHasISBN_CopyDoesNotHaveISBN()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells","Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory,"Vaccinations");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
@@ -84,8 +82,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_CoverHasOneVisibleVernacularTitle()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
-																			"Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
@@ -96,8 +93,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_DoesNotLoseTokPisinTitle()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
-																			"Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
@@ -125,8 +121,7 @@ namespace BloomTests.Book
 		/*[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsCalledVaccinations()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
-																			"Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory,"Vaccinations");
 
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			Assert.AreEqual("Vaccinations", Path.GetFileName(path));
@@ -138,8 +133,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsJustBook()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
-																			"Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
 
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			Assert.AreEqual("Book", Path.GetFileName(path));
@@ -175,8 +169,7 @@ namespace BloomTests.Book
 
 		private string GetNewVaccinationsBookPath()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
-																			"Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 			return path;
@@ -185,8 +178,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_Validates()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
 
 			_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 		}
@@ -194,8 +186,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_OriginalIsTemplate_CopyIsNotTemplate()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
 			var originalMetaData = BookMetaData.FromFolder(source);
 			Assert.That(originalMetaData.IsSuitableForMakingShells);
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
@@ -206,8 +197,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_OriginalIsTemplate_CopyHasNoTitle()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
 			var server = CreateBookServer();
@@ -219,8 +209,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_CreatesWithCoverAndTitle()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
@@ -233,8 +222,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5AndXMatter_CoverTitleIsIntiallyEmpty()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
-																			"Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
@@ -244,7 +232,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryBasicBook_CreatesWithCorrectStylesheets()
 		{
-				 var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+				 var source = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
 
 				 var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 				AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
@@ -436,7 +424,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedFileName()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
 
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			var path = GetPathToHtml(bookFolderPath);
@@ -446,25 +434,25 @@ namespace BloomTests.Book
 			Assert.IsTrue(File.Exists(path));
 		}
 
-//		[Test]
-//		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDivAndJson()
-//		{
-//			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
-//
-//			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
-//			var path = GetPathToHtml(bookFolderPath);
-//
-//			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
-//			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
-//
-//			var metadata = new BookInfo(bookFolderPath, false);
-//			Assert.That(metadata.Title, Is.EqualTo("My Book"));
-//		}
+		//		[Test]
+		//		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDivAndJson()
+		//		{
+		//			var source = BloomFileLocator.GetBookTemplateDirectory("Basic Book");
+		//
+		//			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+		//			var path = GetPathToHtml(bookFolderPath);
+		//
+		//			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
+		//			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
+		//
+		//			var metadata = new BookInfo(bookFolderPath, false);
+		//			Assert.That(metadata.Title, Is.EqualTo("My Book"));
+		//		}
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsNoDefaultNameMetaElement()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
 
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
@@ -475,7 +463,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_CreatesCorrectMetaJson()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
 
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
@@ -489,7 +477,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_AllowUploadIsTrue()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			 var metadata = new BookInfo(bookFolderPath, false);
 			Assert.IsTrue(metadata.AllowUploading);
@@ -498,7 +486,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_BookletMakingIsAppropriateIsTrue()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			var metadata = new BookInfo(bookFolderPath, false);
 			Assert.IsTrue(metadata.BookletMakingIsAppropriate);
@@ -506,7 +494,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_BookLineageSetToIdOfSourceBook()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
 
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
@@ -566,7 +554,7 @@ namespace BloomTests.Book
 			Directory.CreateDirectory(_projectFolder.Combine("Book1"));
 			Directory.CreateDirectory(_projectFolder.Combine("Book3"));
 
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory(
 																			"Basic Book");
 
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
@@ -579,7 +567,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_CreationFailsForSomeReason_DoesNotLeaveIncompleteFolderAround()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
 			var goodPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			Directory.Delete(goodPath, true); //remove that good one. We just did it to get an idea of what the path is
 
@@ -723,8 +711,7 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_CoverHasVariousBookTitles()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
-																			"Vaccinations");
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory,"Vaccinations");
 
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 

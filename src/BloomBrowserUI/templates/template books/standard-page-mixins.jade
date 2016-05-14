@@ -1,0 +1,79 @@
+include ../bloom-foundation-mixins.jade
+
+mixin standardStyles
+  style(type="text/css" title="userModifiedStyles")
+    | .BigWords-style { font-size: 45pt !important; text-align: center !important; }
+
+mixin imagex
+   +image.bloom-leadingElement&attributes(attributes)
+mixin fieldx
+   +field.bloom-trailingElement.normal-style&attributes(attributes)
+mixin upper(percent)
+   - requireOneArgument('percent', arguments);
+   .split-pane-component.position-top(style='bottom: ' + percent + '%')
+      .split-pane-component-inner
+         block
+   .split-pane-divider.horizontal-divider(style='bottom: ' + percent + '%')
+   //NB: this split percent has to be the same as that used for upper!!!!!!
+
+mixin lower(percent)
+   - requireOneArgument('percent', arguments);
+   .split-pane-component.position-bottom(style='height: ' + percent + '%')
+      .split-pane-component-inner
+         block
+
+mixin stack
+   .split-pane.horizontal-percent
+      block
+      .split-pane-resize-shim
+
+mixin standardPage-JustText
+   +page-choice('Just Text').customPage#a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb
+      .split-pane-component-inner
+         +fieldx
+
+mixin standardPage-JustPicture
+   +page-choice('Just a Picture').customPage#adcd48df-e9ab-4a07-afd4-6a24d0398385
+      .split-pane-component-inner
+         +image
+
+mixin standardPage-Custom
+   +page-choice-layout('Custom','A blank page that allows you to add items.').customPage#5dcd48df-e9ab-4a07-afd4-6a24d0398386
+      .split-pane-component-inner
+         .box-header-off.bloom-translationGroup
+
+
+//The following list all the pages in Basic Book, Decodable Reader, & Leveled Reader
+mixin include-standard-pages
+   +page-splittable-choice-custom('Basic Text & Picture')#adcd48df-e9ab-4a07-afd4-6a24d0398382
+     +stack
+       +upper(50)
+         +imagex
+       +lower(50)
+         +fieldx
+   +page-splittable-choice-custom('Picture in Middle')#adcd48df-e9ab-4a07-afd4-6a24d0398383
+     +stack
+       +upper(76)
+         +fieldx
+       +lower(76)
+         +stack
+           +upper(30)
+             +imagex
+           +lower(30)
+             +fieldx
+   +page-splittable-choice-custom('Picture on Bottom')#adcd48df-e9ab-4a07-afd4-6a24d0398384
+     +stack
+       +upper(50)
+         +fieldx
+       +lower(50)
+         +image
+   +standardPage-JustPicture
+   +standardPage-JustText
+
+   +page-splittable-choice-custom('Picture & Word', 'Page with a picture on top and a large, centered word below.').customPage#aD115DFF-0415-4444-8E76-3D2A18DBBD27
+     +stack
+       +upper(50)
+         +imagex
+       +lower(50)
+         +field.bloom-trailingElement.BigWords-style
+   +standardPage-Custom

@@ -232,7 +232,7 @@ namespace Bloom.CollectionChoosing
 		public static bool IsInvalidCollectionToEdit(string path)
 		{
 			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
-				|| path.StartsWith(ProjectContext.FactoryCollectionsDirectory);
+				|| path.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory);
 		}
 
 		/// <summary>

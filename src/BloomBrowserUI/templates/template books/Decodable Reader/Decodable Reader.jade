@@ -1,0 +1,24 @@
+include ../standard-page-mixins.jade
+
+
+doctype html
+html
+	head
+		+metadata-standard()
+		meta(name='defaultNameForDerivedBooks', content='My Book')
+		//- TODO remove this when we move to json metadata
+		meta(name='SuitableForMakingShells', content='yes')
+
+		meta(name='bloomBookId', content='f0434a0b-791f-408e-b6e6-ee92f0f02f2d')
+
+		//- Eventually, we'll remove Bloom's need for this.
+		meta(name='pageTemplateSource', content='Decodable Reader')
+		title 'Decodable Reader'
+		+stylesheets('Basic Book.css')
+		+stylesheet('Decodable Reader.css')
+		+standardStyles
+	body
+		+dataDiv
+			+bookVariable-title('en', 'Decodable Reader')
+
+		+include-standard-pages

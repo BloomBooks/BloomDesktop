@@ -20,11 +20,11 @@ var outputDir = "../../output/browser";
 //todo: can remove these output exlusions now that output/ is now 2 levels up with the c# outpuuts
 var paths = {
    less: ['./**/*.less',  '!./node_modules/**/*.less','!./output/**/*.*'],
-   jade: ['./**/*.jade',  '!./node_modules/**/*.jade','!./output/**/*.*'],
+   jade: ['./**/*.jade',  '!./node_modules/**/*.jade','!./**/*mixins.jade','!./output/**/*.*'],
    //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*','!./output/**/*.*'],
    
    //files we are *not* running through some compiler that need to make it into the outputDir directory.
-   filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts','!./**/node_modules/**/*.*','!./output/**/*.*'],
+   filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts','!./**/*.jade','!./**/*.less','!./**/*.bat','!./**/node_modules/**/*.*','!./output/**/*.*'],
 };
 
 gulp.task('less', function () {

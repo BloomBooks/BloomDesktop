@@ -1,0 +1,437 @@
+@import "../common-mixins.less";
+@import "BloomXMatterEPUBCommon.less";
+
+@XMatterPackName: "unknown";
+
+.bloom-frontMatter, .bloom-backMatter {
+    .pageLabel:after {
+        content: ": @{XMatterPackName} Front/Back Matter";
+    }
+}
+
+@BottomMargin-SmallerForCover: 10mm;
+//normally the marginBox sizing is done by the basePage, but for the front and back cover, we want to cheat to have
+//a smaller bottom margin, since there is no page number
+.outsideFrontCover .marginBox, .outsideBackCover .marginBox {
+    .SetMarginBoxCover(@PageHeight, @PageWidth) {
+        /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+        height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
+        //Just center the margin box, (for now, we're ignoring the binding)
+        left: @MarginOuter;
+        width: @PageWidth - (2 * @MarginOuter);
+        IMG {
+            /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+            max-width: @PageWidth - (2 * @MarginOuter);
+        }
+    }
+    .A4Portrait& {
+        .SetMarginBoxCover(@A4Portrait-Height, @A4Portrait-Width);
+    }
+    .A4Landscape& {
+        .SetMarginBoxCover(@A4Landscape-Height, @A4Landscape-Width);
+    }
+    .A5Portrait& {
+        .SetMarginBoxCover(@A5Portrait-Height, @A5Portrait-Width);
+    }
+    .A5Landscape& {
+        .SetMarginBoxCover(@A5Landscape-Height, @A5Landscape-Width);
+    }
+    .A6Portrait& {
+        .SetMarginBoxCover(@A6Portrait-Height, @A6Portrait-Width);
+    }
+    .A6Landscape& {
+        .SetMarginBoxCover(@A6Landscape-Height, @A6Landscape-Width);
+    }
+    .B5Portrait& {
+        .SetMarginBoxCover(@B5Portrait-Height, @B5Portrait-Width);
+    }
+    .LetterPortrait& {
+        .SetMarginBoxCover(@LetterPortrait-Height, @LetterPortrait-Width);
+    }
+    .LetterLandscape& {
+        .SetMarginBoxCover(@LetterLandscape-Height, @LetterLandscape-Width);
+    }
+    .HalfLetterPortrait& {
+        .SetMarginBoxCover(@HalfLetterPortrait-Height, @HalfLetterPortrait-Width);
+    }
+    .HalfLetterLandscape& {
+        .SetMarginBoxCover(@HalfLetterLandscape-Height, @HalfLetterLandscape-Width);
+    }
+    .QuarterLetterPortrait& {
+        .SetMarginBoxCover(@QuarterLetterPortrait-Height, @QuarterLetterPortrait-Width);
+    }
+    .QuarterLetterLandscape& {
+        .SetMarginBoxCover(@QuarterLetterLandscape-Height, @QuarterLetterLandscape-Width);
+    }
+}
+
+.insideFrontCover {
+    .bloom-content1 {
+        display: inherit;
+    }
+    .bloom-editable {
+        height: 100%;
+    }
+}
+
+.iso693Code * {
+    display: inline;
+}
+
+.frontCover {
+    @BottomRowHeight: 20px;
+    @MarginBetweenMajorItems: 15px;
+
+    .marginBox {
+        display: flex;
+        flex-direction: column;
+    }
+    // This gives AuthorIllustrator, LanguageName and Topic all the same styling
+    .Cover-Default-style {
+        font-size: 12pt;
+    }
+    .bloom-translationGroup.bookTitle {
+        flex: 0 0 auto; // how this behaves for the marginBox flex layout
+        //within this, we also need flex, so we can set the order the child edit boxes
+        //independently of their appearance order in the html
+        display: flex;
+        flex-direction: column;
+
+        .bloom-editable {
+            order: 0;
+            height: auto;
+            //a bit confusingly (for me), text-align:center stops working because of the flex layout, so we need this:
+            justify-content: center;
+
+            //NB: THe order here is important. bloom-content1 should be last so that if a box is *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections), we want the  bloom-content1 rule to win.
+            &.bloom-contentNational1 {
+                //NB: we show the national language even if this is a monolingual book
+                order: 1;
+                display: block; // don't want to inherit flex (BL-2681), but need to override display:none for inactive languages
+            }
+            //...but we show the regional language only if the book is tri-lingual,
+            //   which we can tell because Bloom will stick a "bloom-content3" on the appropriate element
+            //NOPE: .bloom-contentNational2 {
+            &.bloom-content3 {
+                display: block; // don't want to inherit flex (BL-2681), but need to override display:none for inactive languages
+                order: 2;
+            }
+            &.bloom-content1 {
+                //main title
+                order: 0;
+                display: block; // don't want to inherit flex (BL-2681), but need to override display:none for inactive languages
+            }
+        }
+    }
+    .placeholder, .bloom-imageContainer {
+        order: 1;
+        flex: 1 1 auto;
+        margin-top: @MarginBetweenMajorItems;
+        margin-bottom: @MarginBetweenMajorItems;
+    }
+    .creditsWrapper {
+        order: 2;
+        flex: 0 0 auto;
+        .bloom-editable.smallCoverCredits {
+            display: inherit;
+            text-align: center;
+            line-height: 1.7em;
+            min-height: 1.7em;
+            height: auto;
+        }
+    }
+    .bottomBlock {
+        flex: 0 0 auto;
+        order: 4;
+        height: 2em;
+        .coverBottomBookTopic {
+            position: absolute;
+            bottom: 7px;
+            right: 0;
+            height: @BottomRowHeight;
+
+            text-align: right;
+            width: 6cm;
+            .bloom-contentNational1 {
+                display: inline !important;
+                bottom: -4px;
+                padding-right: 1px;
+                text-align: right;
+            }
+        }
+
+        .coverBottomBookTopic {
+            .bloom-editable {
+                margin-top: 0;
+            }
+            .bloom-contentNational2 {
+                color: gray;
+            }
+            .bloom-content1 {
+                &:not(.bloom-contentNational1) {
+                    color: gray;
+                }
+            }
+        }
+
+        .publishMode {
+            .coverBottomBookTopic {
+                .bloom-contentNational2 {
+                    display: none;
+                }
+                .bloom-content1 {
+                    &:not(.bloom-contentNational1) {
+                        display: none;
+                    }
+                }
+            }
+        }
+
+        .coverBottomLangName {
+            position: absolute;
+            left: 0;
+            line-height: 1.6em !important;
+        }
+    }
+}
+
+.xfrontCover {
+    @BottomRowHeight: 20px;
+    @MarginBetweenMinorItems: 5px;
+    @MarginBetweenMajorItems: 15px;
+    .bookTitle {
+        //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
+        &.bloom-contentNational1 {
+            //NB: we show the national language even if this is a monolingual book
+            display: inherit;
+            font-size: 120%;
+            //min-height: 2em;
+            line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnท             line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test
+            margin-bottom: @MarginBetweenMinorItems;
+        }
+        //...but we show the regional language only if the book is tri-lingual,
+        //   which we can tell because Bloom will stick a "bloom-content3" on the appropriate element
+        //NOPE: .bloom-contentNational2 {
+        &.bloom-content3 {
+            display: inherit;
+        }
+        &.bloom-content1 {
+            //main title
+            display: inherit;
+            font-size: 250%;
+            line-height: 1.4em; //1.4em is the minimum to show ทไปทั่วพื้  without clipping. (Which we don't really *have* to support by default; the user could change the line-height.)
+            margin-bottom: @MarginBetweenMinorItems;
+        }
+
+        margin-bottom: @MarginBetweenMajorItems;
+    }
+    .bloom-imageContainer {
+        height: 60%;
+        margin-bottom: @MarginBetweenMajorItems;
+    }
+    .bloom-editable.smallCoverCredits {
+        display: inherit;
+        text-align: center;
+        line-height: 1.7em;
+        min-height: 20px;
+        height: auto;
+    }
+    .coverBottomBookTopic {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        height: @BottomRowHeight;
+
+        text-align: right;
+        width: 6cm;
+        .bloom-contentNational1 {
+            display: inline !important;
+            height: 25px !important;
+            padding-right: 1px;
+            text-align: right;
+        }
+    }
+
+    .coverBottomBookTopic {
+        .bloom-contentNational2 {
+            color: gray;
+        }
+        .bloom-content1 {
+            &:not(.bloom-contentNational1) {
+                color: gray;
+            }
+        }
+    }
+
+    .publishMode {
+        .coverBottomBookTopic {
+            .bloom-contentNational2 {
+                display: none;
+            }
+            .bloom-content1 {
+                &:not(.bloom-contentNational1) {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    .coverBottomLangName {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: @BottomRowHeight;
+    }
+}
+
+//note that we allow ".verso" for historical reasons (verso means something like "backside of title page") but we can
+//put the credits page anywhere.
+.credits {
+    .Credits-Page-style {
+        font-size: 10pt;
+        //min-height: 5em;
+        line-height: 1.4em; // supports ไปทั่วพื้ ที่นั่ ชื่ ปู ช้ต่างป
+    }
+
+    .originalAcknowledgments .bloom-contentNational1 {
+        display: block !important;
+        margin-bottom: @MarginBetweenBlocks;
+    }
+    .versionAcknowledgments {
+        display: block !important;
+        height: auto;
+    }
+    .licenseUrl {
+        display: none;
+    }
+
+    @MarginBetweenBlocks_SmallPaper: .5em;
+    &.A6Landscape, &.A6Portrait, &.QuarterLetterLandscape, &.QuarterLetterPortrait {
+        .licenseImage {width: 65px};
+
+        .copyright, .ISBNContainer, .licenseBlock, .originalAcknowledgments .bloom-contentNational1{
+            margin-bottom: @MarginBetweenBlocks_SmallPaper;
+        }
+        //.licenseAndCopyrightBlock {
+        //    .licenseBlock{margin-bottom: 1em;}
+        //}
+    }
+}
+
+BODY[bookcreationtype="original"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-content1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+        #funding {
+            .bloom-content1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+    }
+}
+
+BODY[bookcreationtype="translation"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-contentNational1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+        #funding {
+            .bloom-contentNational1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+    }
+}
+
+.titlePage {
+    @MarginBetweenMinorItems: .5em;
+    @MarginBetweenTitleAndFunding: 3em;
+
+    .Title-On-Title-Page-style {
+        font-size: 14pt;
+    }
+    .Title-On-Title-Page-style.bloom-content1 {
+        font-size: 20pt;
+    }
+    text-align: center;
+
+    //enhance: this is necessary because we're showing langs that aren't chosen for the content of the book
+    #titlePageTitleBlock {
+        .bloom-editable {
+            //min-height: 1.4em; messes up BL-1200
+            line-height: 1.4em; // supports ไปทั่วพื้ ที่นั่ ชื่ ปู ช้ต่างป
+        }
+        .bloom-content1 {
+            display: inherit;
+            //margin-bottom: @MarginBetweenMinorItems; messes up BL-1200
+        }
+        //NB: we show the national language even if this is a monolingual book
+        .bloom-contentNational1 {
+            display: inherit;
+            //margin-bottom: @MarginBetweenMinorItems; messes up BL-1200
+        }
+        //...but we show the regional language only if the book is tri-lingual,
+        //   which we can tell because Bloom will stick a "bloom-content3" on the appropriate element
+        //NOPE: .bloom-contentNational2 {
+        .bloom-content3 {
+            display: inherit;
+        }
+        margin-bottom: @MarginBetweenTitleAndFunding;
+    }
+
+    #originalContributions {
+        margin-bottom: @MarginBetweenMinorItems;
+    }
+
+    #languageInformation {
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+        .languagesOfBook {
+        }
+        //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
+        .langName.bloom-content1 {
+            display: none;
+        }
+        .langName.bloom-contentNational2 {
+            display: none;
+        }
+        .langName.bloom-contentNational1 {
+            display: inherit;
+        }
+    }
+}
+
+.insideBackCover .bloom-editable {
+    height: 100%;
+}
+
+.outsideBackCover .bloom-editable {
+    height: 100%;
+    text-align: center;
+}
+
+//don't put this under any particular page, you don't know where some xmatter pack will want it
+.ISBNContainer {
+    .bloom-editable {
+        text-align: left !important; //even if everything else is centered (including the ISBN Block) this needs to be tight against the label
+        width: 4.3cm !important;
+        display: inline-block;
+        vertical-align: text-top;
+        max-height: 1.8em;
+        min-height: 1.8em;
+    }
+    .ISBNContainer SPAN {
+        vertical-align: top;
+    }
+    margin-bottom: @MarginBetweenBlocks;
+}

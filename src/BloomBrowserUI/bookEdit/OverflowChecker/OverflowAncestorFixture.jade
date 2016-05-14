@@ -3,16 +3,16 @@ doctype html
 // Tests of overflow feature in Bloom that puts a red background in a field if there's too much content
 //- This is modified from the page that tested marginBox, but here we test generic ancestor divs.
 mixin testTarget
-	.myTest(attributes)
+	.myTest&attributes(attributes)
 		block
 
 mixin standardTestField
-	+testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+	+testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true')&attributes(attributes)
 		block
 
 mixin standardTranslationGroup
 	.bloom-translationGroup
-		.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+		.bloom-editable.bloom-content1(lang='z', contenteditable='true')&attributes(attributes)
 			block
 
 head

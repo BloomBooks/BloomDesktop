@@ -128,7 +128,7 @@ namespace Bloom_ChorusPlugin
 			if (extension[0] != '.')
 				return false;
 
-			return FileUtils.CheckValidPathname(pathToFile, ".htm");
+			return FileUtils.CheckValidPathname(pathToFile, ".htm") || FileUtils.CheckValidPathname(pathToFile, ".html");
 		}
 		public bool CanDiffFile(string pathToFile)
 		{
@@ -165,7 +165,7 @@ namespace Bloom_ChorusPlugin
 
 		public IEnumerable<string> GetExtensionsOfKnownTextFileTypes()
 		{
-			return new[] {"htm"};
+			return new[] {"htm","html"};
 		}
 
 		public uint MaximumFileSize

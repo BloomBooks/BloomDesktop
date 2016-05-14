@@ -1,0 +1,168 @@
+include ../bloom-foundation-mixins
+
+//- -------------------------------------------------------------------------------
+//-	This first group of mixins should be used to construct the factory as well
+//- as custom xmatter templates.
+//- -------------------------------------------------------------------------------
+
+mixin field-xmatter(key)
+	- requireOneArgument('field-xmatter', arguments);
+	+field-common(key)&attributes(attributes)
+
+//- NB: In Bloom-alpha days we called the shared stuff the "library", then that became "collection" for Version 1.0.  However the
+//- model of "collections" doesn't work for the new web-library approach, so this is slated to be changed to "profile".
+//- Hence the mixin name is "profile" but the data it is setting is currently "data-library"
+mixin field-xmatter-profile(key)
+	+field(data-library=key, )&attributes(attributes)
+		block
+mixin image-common(key)
+	+image(data-book=key)&attributes(attributes)
+		block
+//- in xmatter, everything must be keyed
+
+mixin image-xmatter(key)
+	+image-common(key)&attributes(attributes)
+
+mixin page-xmatter(label)
+	+page(label)(data-page="required singleton")&attributes(attributes)
+		block
+
+mixin page-cover(label)
+	- requireOneArgument('page-cover',arguments)
+	+page-xmatter(label).cover.coverColor.bloom-frontMatter&attributes(attributes)
+		block
+
+mixin chooser-topic
+	//- TODO: Somehow the data-functionOnHintClick doesn't interact well with the new label.bubble method.
+	.coverBottomBookTopic.bloom-readOnlyInTranslationMode.bloom-userCannotModifyStyles.bloom-alwaysShowBubble.Cover-Default-style(data-derived="topic", data-functionOnHintClick="ShowTopicChooser()", data-hint = "Click to choose topic")
+
+mixin field-ISBN
+	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")
+		span.bloom-doNotPublishIfParentOtherwiseEmpty.Credits-Page-style
+			| ISBN
+		div.bloom-editable(data-book="ISBN", lang="*").Credits-Page-style.bloom-userCannotModifyStyles
+
+mixin field-acknowledgments-localizedVersion
+	// readOnlyInAuthorMode: we want to leave this blank for if/when someone takes this doc and is translating it.
+	//- Why both versionAcknowledgments && inside-cover-version-Credits-Page-style?
+	//-   versionAcknowledgments governs placement on the page, inside-cover-version-Credits-Page-style is a
+	//-   holding place for user style adjustments (like font-size)
+	+editable("N1").versionAcknowledgments.Credits-Page-style.bloom-readOnlyInAuthorMode(data-book="versionAcknowledgments", data-hint="Name of Translator, in {lang}")
+
+// TODO: this is a mess
+mixin field-acknowledgments-originalVersion
+	+field-prototypeDeclaredExplicity().originalAcknowledgments
+		label.bubble Original (or Shell) Acknowledgments in {lang}
+		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')
+			| {Original Acknowledgments}
+
+mixin block-licenseAndCopyright
+	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
+		.copyright(data-derived="copyright", lang="*").Credits-Page-style
+			| {copyright}
+		.licenseBlock
+			img.licenseImage(src="license.png" data-derived="licenseImage")
+			.licenseUrl(data-derived="licenseUrl", lang="en") http://creativecommons.org/licenses/by/4.0/
+			.licenseDescription(data-derived="licenseDescription",lang="en").Credits-Page-style You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
+			.licenseNotes(data-derived="licenseNotes", lang="en").Credits-Page-style
+				| {License Notes}
+
+
+
+//- -------------------------------------------------------------------------------
+//-	Unless every page of your xmatter pack needs to be different than the "factory"
+//-	one that comes with Bloom, use the following mixins to reuse the pages that
+//-	don't have to be customized.
+//-	HOWEVER: at this point you'd still have to copy the CSS from factory-xmatter.css
+//-	for them to be useful. In the future, Bloom may make it easier to just borrow
+//-	pages along with the stylesheets that are needed.
+//- -------------------------------------------------------------------------------
+
+//- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//- If you copy any of these and paste them into your own custom xmatter template,
+//- be sure to change the ids to your own unique ones!
+//- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+mixin factoryStandard-outsideFrontCover
+	// FRONT COVER
+	+page-cover('Front Cover')(data-export='front-matter-cover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
+
+		//- enhance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
+		//- 	+field-matter('bookTitle').Title-On-Cover-style
+		//- 		label.bubble Book title in {lang}
+		//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
+		//- light of jade it is overly complicated.
+
+		+field-prototypeDeclaredExplicity.bookTitle
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
+
+		.bloom-imageContainer.bloom-backgroundImage(data-book='coverImage', style="background-image:url('placeHolder.png')")
+
+			//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
+			// because it is never empty
+		.creditsWrapper(data-hint='You may use this space for author/illustrator, or anything else.')
+			//- 'V' means this field is only available in the vernacular
+			+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.bloom-copyFromOtherLanguageIfNecessary.Cover-Default-style
+		.bottomBlock.test
+			.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook',lang="N1")
+			+chooser-topic.coverBottomBookTopic
+
+mixin factoryStandard-creditsInsideFrontCover
+	// Inside Front Cover CREDITS PAGE
+	+page-cover("Credits Page").credits(data-export='front-matter-credits')&attributes(attributes)#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
+		+credits-contents
+
+mixin factoryStandard-credits-interiorPage
+	// CREDITS PAGE
+	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits')&attributes(attributes)#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
+		+credits-contents
+
+mixin credits-contents
+		+block-licenseAndCopyright
+		+field-ISBN
+		+field-acknowledgments-originalVersion
+		+field-acknowledgments-localizedVersion
+
+mixin factoryStandard-titlePage
+	// TITLE PAGE
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+		+field-prototypeDeclaredExplicity#titlePageTitleBlock
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).Title-On-Title-Page-style(data-book='bookTitle')
+		+field-prototypeDeclaredExplicity#originalContributions
+			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
+			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Original-Contributors-On-Title-Page-style(data-book='originalContributions')
+		+field-prototypeDeclaredExplicity#funding
+			label.bubble Use this to acknowledge any funding agencies.
+			+editable(kLanguageForPrototypeOnly).funding.Funding-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+		#languageInformation
+			.languagesOfBook(data-book='languagesOfBook')
+			//- review: can we get rid of these "langName" classes?
+			.langName('data-library'='dialect')
+			.langName(data-library='languageLocation').bloom-writeOnly
+
+mixin standard-blankInsideFrontCover
+	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
+		+field-mono-meta("N1","insideFontCover").Inside-Front-Cover-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.
+
+mixin factoryStandard-insideBackCover
+	// Inside Back Cover
+	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')&attributes(attributes)#502BE62F-A4D0-4225-A598-1A203FA73239
+		+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
+
+mixin factoryStandard-outsideBackCover
+	// Outside Back Cover
+	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
+		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
+		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
+
+mixin standard-ISOLanguageCode
+	.iso693Code
+		// TODO we need this to be localizable, so we can have "ISO 639-3 Language Code" or "Code langue ISO 639-3"
+		| ISO 639 Language Code:
+		DIV(data-collection='iso639Code')
+
