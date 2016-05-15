@@ -15,6 +15,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
 using Bloom.web;
+using Bloom.web.controllers;
 using Chorus;
 using SIL.Extensions;
 using SIL.IO;
@@ -103,6 +104,7 @@ namespace Bloom
 							typeof (EditingModel),
 							typeof (AudioRecording),
 							typeof(CurrentBookHandler),
+							typeof(PageTemplatesApi),
 							typeof(ReadersApi)
 						}.Contains(t));
 
@@ -263,6 +265,7 @@ namespace Bloom
 			HelpLauncher.RegisterWithServer(server);
 			ExternalLinkController.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
+			_scope.Resolve <PageTemplatesApi>().RegisterWithServer(server);
 			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 		}

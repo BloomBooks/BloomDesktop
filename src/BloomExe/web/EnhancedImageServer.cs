@@ -60,7 +60,7 @@ namespace Bloom.Api
 
 		public void RegisterEndpointHandler(string key, EndpointHandler handler)
 		{
-			_endpointHandlers[key.Trim(new char[] {'/'})] = handler;
+			_endpointHandlers[key.ToLowerInvariant().Trim(new char[] {'/'})] = handler;
 		}
 
 		// We use two different locks to synchronize access to the methods of this class.

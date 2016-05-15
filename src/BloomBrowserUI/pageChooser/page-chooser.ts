@@ -1,9 +1,10 @@
-﻿/// <reference path="../lib/localizationManager/localizationManager.ts" />
+﻿///<reference path="../typings/axios/axios.d.ts"/>
+/// <reference path="../lib/localizationManager/localizationManager.ts" />
 import * as $ from 'jquery';
 import * as jQuery from 'jquery';
 import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
-        
+import axios = require('axios');
         
 window.addEventListener("message", process_EditFrame_Message, false);
 
@@ -218,6 +219,7 @@ class PageChooser {
         var pageButton = $("#addPageButton", document);
         var okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
         var okButtonLabelText = 'Add This Page';
+        
         if (this._forChooseLayout) {
             okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
             okButtonLabelText = 'Use This Layout';
@@ -330,59 +332,67 @@ class PageChooser {
 }
 
 // for 'templatesJSON', see property EditingModel.GetJsonTemplatePageObject
-export function showAddPageDialog(templatesJSON) {
+export function showAddPageDialog(forChooseLayout:boolean) {
 
-    var theDialog;
-    
-    //reviewSlog. I don't see why the localiationManager should live on the page. Where stuff is equally relevant to all frames,
-    //it should if anything belong to the root frmate (this one)
-    //var parentElement = (<any>document.getElementById('page')).contentWindow;
-    //var lm = parentElement.localizationManager;
-       
-    // don't show if a dialog already exists
-    if ($(document).find(".ui-dialog").length) {
-        return;
-    }
-    var forChooseLayout = templatesJSON.chooseLayout;
-    var key = 'EditTab.AddPageDialog.Title';
-    var english = 'Add Page...';
-
-    if (forChooseLayout) {
-        key = 'EditTab.AddPageDialog.ChooseLayoutTitle';
-        english = 'Choose Different Layout...';
-    }
+    //enhance: might look nicer to start opening the dialog while we get this info
+    axios.get("/bloom/api/pageTemplates").then(result =>{
+        var templatesJSON= result.data;
+         
+        var theDialog;
         
-    theOneLocalizationManager.asyncGetText(key, english).done(title => {
-        var dialogContents = CreateAddPageDiv(templatesJSON);
+        //reviewSlog. I don't see why the localiationManager should live on the page. Where stuff is equally relevant to all frames,
+        //it should if anything belong to the root frmate (this one)
+        //var parentElement = (<any>document.getElementById('page')).contentWindow;
+        //var lm = parentElement.localizationManager;
+        
+        // don't show if a dialog already exists
+        if ($(document).find(".ui-dialog").length) {
+            return;
+        }
 
-        theDialog = $(dialogContents).dialog({
-            //reviewslog Typescript didn't like this class: "addPageDialog",
-            autoOpen: false,
-            resizable: false,
-            modal: true,
-            width: 795,
-            height: 550,
-            position: {
-                my: "left bottom", at: "left bottom", of: window
-            },
-            title: title,
-            close: function() {
-                $(this).remove();
-                fireCSharpEvent('setModalStateEvent', 'false');
-            },
+        var key = 'EditTab.AddPageDialog.Title';
+        var english = 'Add Page...';
+
+        //TODO before commit: in the context of the methods that happen as a result of the message, this._forChooseLayout is still undefined (but I don't konw why)!!!!        
+        this._forChooseLayout = forChooseLayout;
+            
+        if (forChooseLayout) {
+            key = 'EditTab.AddPageDialog.ChooseLayoutTitle';
+            english = 'Choose Different Layout...';
+        }
+            
+        theOneLocalizationManager.asyncGetText(key, english).done(title => {
+            var dialogContents = CreateAddPageDiv(templatesJSON);
+
+            theDialog = $(dialogContents).dialog({
+                //reviewslog Typescript didn't like this class: "addPageDialog",
+                autoOpen: false,
+                resizable: false,
+                modal: true,
+                width: 795,
+                height: 550,
+                position: {
+                    my: "left bottom", at: "left bottom", of: window
+                },
+                title: title,
+                close: function() {
+                    $(this).remove();
+                    fireCSharpEvent('setModalStateEvent', 'false');
+                },
+            });
+
+            //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
+            // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
+        
+            jQuery(document).on('click', 'body > .ui-widget-overlay', function () {
+                $(".ui-dialog-titlebar-close").trigger('click');
+                return false;
+            });
+            fireCSharpEvent('setModalStateEvent', 'true');
+            theDialog.dialog('open');
+
+            //parentElement.$.notify("testing notify",{});
         });
-
-        //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
-        // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
-    
-        jQuery(document).on('click', 'body > .ui-widget-overlay', function () {
-            $(".ui-dialog-titlebar-close").trigger('click');
-            return false;
-        });
-        fireCSharpEvent('setModalStateEvent', 'true');
-        theDialog.dialog('open');
-
-        //parentElement.$.notify("testing notify",{});
     });
 }
 
