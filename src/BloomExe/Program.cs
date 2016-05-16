@@ -177,8 +177,9 @@ namespace Bloom
 							using (var dlg = new BloomPackInstallDialog(path))
 							{
 								dlg.ShowDialog();
+								if (dlg.ExitWithoutRunningBloom)
+									return;
 							}
-							return;
 						}
 					}
 					if (IsBloomBookOrder(args))
@@ -852,11 +853,13 @@ namespace Bloom
 			}
 		}
 
-
+		private static bool _errorHandlingHasBeenSetUp;
 
 		/// ------------------------------------------------------------------------------------
 		private static void SetUpErrorHandling()
 		{
+			if (_errorHandlingHasBeenSetUp)
+				return;
 			ExceptionReportingDialog.PrivacyNotice = @"If you don't care who reads your bug report, you can skip this notice.
 
 When you submit a crash report or other issue, the contents of your email go in our issue tracking system, ""YouTrack"", which is available via the web at https://silbloom.myjetbrains.com. This is the normal way to handle issues in an open-source project.
@@ -870,6 +873,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			SIL.Reporting.ExceptionHandler.Init();
 
 			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
+			_errorHandlingHasBeenSetUp = true;
 		}
 
 
@@ -1022,7 +1026,10 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 		/// <returns>The number of running Bloom instances</returns>
 		public static int GetRunningBloomProcessCount()
 		{
-			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLowerInvariant().Contains("bloom"));
+			// The second test prevents counting the Bloom.vshost.exe process which Visual Studio and similar tools
+			// create to speed up launching the program in debug mode. It's only useful for developers.
+			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLowerInvariant().Contains("bloom")
+				&& !p.ProcessName.ToLowerInvariant().Contains("vshost"));
 
 			// This is your count on Windows.
 			if (SIL.PlatformUtilities.Platform.IsWindows)

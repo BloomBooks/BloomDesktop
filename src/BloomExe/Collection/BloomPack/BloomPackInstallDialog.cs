@@ -40,6 +40,9 @@ namespace Bloom.Collection.BloomPack
 			Close();
 		}
 
+		// This gets set if Bloom is already running so this process should exit when done rather than continuing to start up.
+		public bool ExitWithoutRunningBloom { get; set; }
+
 		private void BeginInstall()
 		{
 			if (!File.Exists(_path))
@@ -286,6 +289,7 @@ namespace Bloom.Collection.BloomPack
 				_message.Text += Environment.NewLine + Environment.NewLine +
 					L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",
 					"Bloom is already running, but the contents will not show up until the next time you run Bloom");
+				ExitWithoutRunningBloom = true;
 			}
 			//Analytics.Track("Install Bloom Pack");
 		}
