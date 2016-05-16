@@ -168,8 +168,12 @@ namespace Bloom
 	/// <summary>
 	/// Anything displaying a book should re-load it the current page
 	/// </summary>
-	public class PageRefreshEvent : Event<object>
+	public class PageRefreshEvent : Event<PageRefreshEvent.SaveBehavior>
 	{
+		public enum SaveBehavior
+		{
+			SaveBeforeRefresh, JustRedisplay
+		}
 		public PageRefreshEvent()
 			: base("PageRefreshEvent", LoggingLevel.Minor)
 		{

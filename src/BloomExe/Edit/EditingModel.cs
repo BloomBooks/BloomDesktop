@@ -32,7 +32,6 @@ namespace Bloom.Edit
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
-		private readonly LanguageSettings _languageSettings;
 		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
@@ -50,7 +49,6 @@ namespace Bloom.Edit
 		private bool _inProcessOfDeleting;
 		private string _toolboxFolder;
 		private EnhancedImageServer _server;
-		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private Dictionary<string, IPage> _templatePagesDict;
 		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
 
@@ -65,7 +63,6 @@ namespace Bloom.Edit
 		public delegate EditingModel Factory();//autofac uses this
 
 		public EditingModel(BookSelection bookSelection, PageSelection pageSelection,
-			LanguageSettings languageSettings,
 			TemplateInsertionCommand templateInsertionCommand,
 			PageListChangedEvent pageListChangedEvent,
 			RelocatePageEvent relocatePageEvent,
@@ -83,7 +80,6 @@ namespace Bloom.Edit
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
-			_languageSettings = languageSettings;
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
 			_collectionSettings = collectionSettings;
@@ -97,7 +93,20 @@ namespace Bloom.Edit
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
-			pageRefreshEvent.Subscribe((book) => RethinkPageAndReloadIt(null));
+			pageRefreshEvent.Subscribe((PageRefreshEvent.SaveBehavior behavior) =>
+			{
+				switch (behavior)
+				{
+					case PageRefreshEvent.SaveBehavior.SaveBeforeRefresh:
+						RethinkPageAndReloadIt(null);
+						break;
+
+					case PageRefreshEvent.SaveBehavior.JustRedisplay:
+						RefreshDisplayOfCurrentPage();
+						break;
+				}
+			});
+
 			selectedTabChangedEvent.Subscribe(OnTabChanged);
 			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
 			duplicatePageCommand.Implementer = OnDuplicatePage;
@@ -129,7 +138,6 @@ namespace Bloom.Edit
 			});
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
-			_templateInsertionCommand = templateInsertionCommand;
 		}
 
 		private Form _oldActiveForm;
@@ -682,9 +690,6 @@ namespace Bloom.Edit
 			AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			AddMessageEventListener("setTopic", SetTopic);
 			AddMessageEventListener("finishSavingPage", FinishSavingPage);
-			AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
-			AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
-			AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
 		}
 
 		private void SaveToolboxSettings(string data)
@@ -717,84 +722,37 @@ namespace Bloom.Edit
 		/// 2) Else, make a new page of the same type as the current one
 		/// </summary>
 		/// <param name="unused"></param>
-		public void HandleAddNewPageKeystroke(string unused)
-		{
-			if (!HaveCurrentEditableBook || _currentlyDisplayedBook.LockedDown)
-				return;
-
-			try
-			{
-				if (CanDuplicatePage)
-				{
-					if (AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor))
-						return;
-				}
-				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
-				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
-					return;
-			}
-			catch (Exception error)
-			{
-				Logger.WriteEvent(error.Message);
-				//this is not worth bothering the user about
-#if DEBUG
-				throw error;
-#endif
-			}
-			//there was some error figuring out a default page, let's just let the user choose what they want
-			if(this._view!=null)
-				this._view.ShowAddPageDialog();
-		}
-
-		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
-		{
-			if (_templatePagesDict != null)
-				return _templatePagesDict;
-
-			var templateBook = CurrentBook.FindTemplateBook();
-			if (templateBook == null)
-				return null;
-			_templatePagesDict = templateBook.GetTemplatePagesIdDictionary();
-			return _templatePagesDict;
-		}
-
-		private bool AddNewPageBasedOnTemplate(string pageId)
-		{
-			IPage page;
-			var dict = GetTemplatePagesForThisBook();
-			if (dict != null && dict.TryGetValue(pageId, out page))
-			{
-				_templateInsertionCommand.Insert(page as Page);
-				return true;
-			}
-			return false;
-		}
-
-		private void ChangePageLayoutBasedOnTemplate(string layoutId)
-		{
-			SaveNow();
-
-			IPage page;
-			var dict = GetTemplatePagesForThisBook();
-			if (dict != null && dict.TryGetValue(layoutId, out page))
-			{
-				var templatePage = page.GetDivNodeForThisPage();
-				var book = _pageSelection.CurrentSelection.Book;
-				var pageToChange = PageChangingLayout ?? _pageSelection.CurrentSelection;
-				book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, pageToChange.Id);
-				// The Page objects are cached in the page list and may be used if we issue another
-				// change layout command. We must update their lineage so the right "current layout"
-				// will be shown if the user changes the layout of the same page again.
-				var pageChanged = pageToChange as Page;
-				if (pageChanged != null)
-					pageChanged.UpdateLineage(new[] {layoutId});
-				if (pageToChange.Id == _pageSelection.CurrentSelection.Id)
-					_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-				else
-					_pageSelection.SelectPage(pageToChange);
-			}
-		}
-
+		/// 
+		/// This is, for now, a TODO
+		/// 
+//		public void HandleAddNewPageKeystroke(string unused)
+//		{
+//			if (!HaveCurrentEditableBook || _currentlyDisplayedBook.LockedDown)
+//				return;
+//
+//			try
+//			{
+//				if (CanDuplicatePage)
+//				{
+//					if (AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor))
+//						return;
+//				}
+//				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
+//				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
+//					return;
+//			}
+//			catch (Exception error)
+//			{
+//				Logger.WriteEvent(error.Message);
+//				//this is not worth bothering the user about
+//#if DEBUG
+//				throw error;
+//#endif
+//			}
+//			//there was some error figuring out a default page, let's just let the user choose what they want
+//			if(this._view!=null)
+//				this._view.ShowAddPageDialog();
+//		}
 
 		//invoked from TopicChooser.ts
 		private void SetTopic(string englishTopicAsKey)
@@ -1169,6 +1127,7 @@ namespace Bloom.Edit
 		internal void ChangePageLayout(IPage page)
 		{
 			PageChangingLayout = page;
+			SaveNow();// need to preserve any typing they've done but not yet saved
 			_view.ShowChangeLayoutDialog(page);
 		}
 

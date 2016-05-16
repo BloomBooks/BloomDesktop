@@ -46,16 +46,16 @@ class PageChooser {
             try {
                 initializationObject = $.parseJSON(initializationJsonString);
             } catch (e) {
-                console.log("Received bad JSON string: " + e);
+                alert("Received bad JSON string: " + e);
                 return;
             }
             this._templateBookUrls = initializationObject["groups"];
             this._defaultPageToSelect = initializationObject["defaultPageToSelect"];
             this._orientation = initializationObject["orientation"];
-            this._forChooseLayout = initializationObject["chooseLayout"];
             this._currentPageLayout = initializationObject['currentLayout'];
+            this._forChooseLayout = initializationObject['forChooseLayout'];
         } else {
-            console.log("Expected url in PageChooser ctor!");
+            alert("Expected url in PageChooser ctor!");
         }
 
         this._selectedGridItem = undefined;
@@ -99,7 +99,7 @@ class PageChooser {
     willLoseData(): boolean {
         var selected = $(this._selectedGridItem);
         var selectedEditableDivs = parseInt(selected.attr('data-textDivCount'));
-        var selectedPictures = parseInt(selected.attr('data-picureCount'));
+        var selectedPictures = parseInt(selected.attr('data-pictureCount'));
 
         var current = $((<HTMLIFrameElement>window.parent.document.getElementById('page')).contentWindow.document);
         var currentEditableDivs = current.find(".bloom-translationGroup").length;
@@ -169,15 +169,16 @@ class PageChooser {
     addPageClickHandler() : void {
         if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) return;
         if (this._forChooseLayout && !$('#convertAnywayCheckbox').is(':checked')) return;
-        this.fireCSharpEvent("setModalStateEvent", "false");
-        var id = this._selectedGridItem.attr("data-pageId");
-        if (this._forChooseLayout) {
-            this.fireCSharpEvent("chooseLayout", id);
 
+        const id = this._selectedGridItem.attr("data-pageId");
+        const templateBookPath = this._selectedGridItem.closest(".group").attr("data-template-book-path");
+        if (this._forChooseLayout) {
+            axios.post("/bloom/api/changeLayout", {pageId:id, templateBookPath: templateBookPath})
         } else {
-            this.fireCSharpEvent("addPage", id);
+            axios.post("/bloom/api/addPage", {templateBookPath: templateBookPath, pageId:id})
         }
-    } // addPageClickHandler
+        fireCSharpEvent("setModalStateEvent", "false");
+    } 
 
     continueCheckBoxChanged(): void {
         if (!this._forChooseLayout) return;
@@ -189,7 +190,6 @@ class PageChooser {
     // This is the starting-point method that is invoked to initialize the dialog.
     // At the point where it is called, the json parameters that control what will be displayed
     loadPageGroups(): void {
-
         // Save a reference to the scrolling div that contains the various page items.
         this._scrollingDiv = $(".gridItemDisplay", document);
 
@@ -205,10 +205,7 @@ class PageChooser {
         if ($(this._templateBookUrls).length > 0) {
             // Remove original stub section
             $(".outerGroupContainer", document).empty();
-            $.each(this._templateBookUrls, (index, item) => {
-                //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                this.beginLoadPageGroup(item["templateBookFolderUrl"], item["templateBookUrl"], groupHtml, gridItemHtml, this._defaultPageToSelect);
-            });
+            this.loadNextPageGroup(this._templateBookUrls, groupHtml, gridItemHtml, this._defaultPageToSelect);
         }
         $("#addPageButton", document).button().click(() => {
             this.addPageClickHandler();
@@ -236,42 +233,69 @@ class PageChooser {
         }
     } // loadPageGroups
 
-    beginLoadPageGroup(pageFolderUrl, pageUrl, groupHTML, gridItemHTML, defaultPageToSelect:string): void {
-        var request = $.get(pageUrl);
+
+    // This pops one template book ordre from the queue, does the async get, 
+    // loads it in the dialog, then recursively goes back for another.
+    // Doing one at a time does two things for us. First, it makes the
+    // books get added in the order we want (which we couldn't control if we ask for them all
+    // at once). Secondly, it ensures we get the most important template pages shown and ready
+    // to use as quickly as possible. 
+    loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect:string): void {
+        var order = queue.shift();
+        if(!order)
+            return; // no more to get
+        var request = $.get("/bloom/" + order.templateBookPath);
+        
         request.done( pageData => {
-             var dataBookArray = $( "div[data-book='bookTitle']", pageData );
-            var groupTitle = $( dataBookArray.first() ).text();
-            // Add title and container to dialog
-            var groupToAdd = $(groupHTML).clone();
-            this.setLocalizedText($(groupToAdd).find(".groupCaption"), 'TemplateBooks.BookName.', groupTitle);
-            $( ".outerGroupContainer", document).append(groupToAdd);
             // Grab all pages in this group
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
+            
+            if(pages.length ==0)
+            {
+                console.log("Could not find any template pages in "+order.templateBookPath);
+                return; //don't add a group for books that don't have template pages
+            }
+                
+            var dataBookArray = $( "div[data-book='bookTitle']", pageData );
+            var groupTitle = $( dataBookArray.first() ).text();
+            // Add title and container to dialog
+            var groupToAdd = $(groupHTML).clone();
+            groupToAdd.attr("data-template-book-path", order.templateBookPath);
+            this.setLocalizedText($(groupToAdd).find(".groupCaption"), 'TemplateBooks.BookName.', groupTitle);
+            $( ".outerGroupContainer", document).append(groupToAdd);
+
             if (this._forChooseLayout) {
                // This filters out the (empty) custom page, which is currently never a useful layout change, since all data would be lost.
                pages = pages.not('.bloom-page[id="5dcd48df-e9ab-4a07-afd4-6a24d0398386"]');
             }
-            this._indexOfPageToSelect = this.loadPageFromGroup(groupToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, defaultPageToSelect);
+            //console.log("loadPageFromGroup("+order.templateBookFolderUrl+")");
+            this._indexOfPageToSelect = this.loadPageFromGroup(groupToAdd, pages, gridItemHTML, order.templateBookFolderUrl, defaultPageToSelect);
             this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
         });
         request.fail( function(jqXHR, textStatus, errorThrown) {
-            console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
+            console.log("There was a problem reading: " + order.templateBookPath + " see documentation on : " +
                 jqXHR.status + " " + textStatus + " " + errorThrown);
         });
-    } // beginLoadPageGroup
+        request.always( () =>
+             this.loadNextPageGroup(queue,  groupHTML, gridItemHTML, defaultPageToSelect)
+        );
+    } 
 
     
-    loadPageFromGroup(currentGroup, pageArray, gridItemTemplate, pageFolderUrl, pageUrl, defaultPageToSelect:string ) : number {
+    loadPageFromGroup(currentGroup, pageArray, gridItemTemplate, templateBookFolderUrl,  defaultPageToSelect:string ) : number {
         if ($(pageArray).length < 1) {
+            console.log("pageArray empty for "+templateBookFolderUrl);
             return 0;
         }
+        
         // Remove default template page
         $(".innerGroupContainer", currentGroup).empty();
 
         var indexToSelect = 0;
         // insert a template page for each page with the correct #id on the url
         $(pageArray).each((index, div) => {
+
 
             if ($(div).attr("data-page") === "singleton")
                 return;// skip this one
@@ -281,7 +305,7 @@ class PageChooser {
             var currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
             $(currentGridItemHtml).attr("data-textDivCount", $(div).find(".bloom-translationGroup").length);
-            $(currentGridItemHtml).attr("data-picureCount", $(div).find(".bloom-imageContainer").length);
+            $(currentGridItemHtml).attr("data-pictureCount", $(div).find(".bloom-imageContainer").length);
 
             if (currentId === defaultPageToSelect)
                 indexToSelect = index;
@@ -294,7 +318,9 @@ class PageChooser {
             var pageLabel = $(".pageLabel", div).first().text().trim();
             $(".gridItemCaption", currentGridItemHtml).first().text(pageLabel);
 
-            $("img", currentGridItemHtml).attr("src", this.buildThumbSrcFilename(pageFolderUrl, pageLabel));
+            var possibleImageUrl = this.getPossibleImageUrl(templateBookFolderUrl, pageLabel);
+            $("img", currentGridItemHtml).attr("src",possibleImageUrl);
+            
             $(".innerGroupContainer", currentGroup).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
@@ -310,33 +336,24 @@ class PageChooser {
         return indexToSelect;
     } // loadPageFromGroup
 
-    // any changes to how we tweak the page label to get a file name
-    // must also be made in EnhancedImageServer.FindOrGenerateImage().
-    buildThumbSrcFilename(pageFolderUrl: string, pageLabel: string): string {
+
+    getPossibleImageUrl(templateBookFolderUrl: string, pageLabel: string): string {
         var label = pageLabel.replace('&', '+'); //ampersands don't work in the svg file names, so we use "+" instead
-        // ?generateThumbnaiIfNecessary=true triggers logic in EnhancedImageServer.FindOrGenerateImage.
         // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
-        return pageFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg?generateThumbnaiIfNecessary=true';
+        
+        //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
+        //See EnhancedImageServer.IsRecursiveRequestContext
+        return "/bloom/api/pageTemplateThumbnail/" + templateBookFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg?generateThumbnaiIfNecessary=true';
     }
+} // End OF PageChooserClass
 
-    /**
-     * Fires an event for C# to handle
-     * @param {String} eventName
-     * @param {String} eventData
-     */
-    fireCSharpEvent(eventName, eventData) : void {
-        //console.log('firing CSharp event: ' + eventName);
-        var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
-        document.dispatchEvent(event);
-    }
-}
 
-// for 'templatesJSON', see property EditingModel.GetJsonTemplatePageObject
-export function showAddPageDialog(forChooseLayout:boolean) {
-
+    //NB: this function does not have access to the PageChooser object which will eventually be created and called.
+   export function showAddPageDialog(forChooseLayout:boolean) {   
     //enhance: might look nicer to start opening the dialog while we get this info
     axios.get("/bloom/api/pageTemplates").then(result =>{
         var templatesJSON= result.data;
+        (<any>templatesJSON).forChooseLayout = forChooseLayout;
          
         var theDialog;
         
@@ -352,9 +369,6 @@ export function showAddPageDialog(forChooseLayout:boolean) {
 
         var key = 'EditTab.AddPageDialog.Title';
         var english = 'Add Page...';
-
-        //TODO before commit: in the context of the methods that happen as a result of the message, this._forChooseLayout is still undefined (but I don't konw why)!!!!        
-        this._forChooseLayout = forChooseLayout;
             
         if (forChooseLayout) {
             key = 'EditTab.AddPageDialog.ChooseLayoutTitle';

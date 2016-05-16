@@ -94,7 +94,8 @@ namespace Bloom.Edit
 		{
 			if(_visible && (Keys)keyData == (Keys.Control | Keys.N))
 			{
-				_model.HandleAddNewPageKeystroke(null);
+				// This is for now a TODO
+				//_model.HandleAddNewPageKeystroke(null);
 			}
 		}
 

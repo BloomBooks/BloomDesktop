@@ -148,7 +148,7 @@ namespace BloomTests.Book
 		private XmlDocument GetThreePageDom()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml(@"<html ><head></head><body>
+			dom.LoadXml(@"<html><head></head><body>
 				<div class='bloom-page' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='bookTitle'>tree</textarea>

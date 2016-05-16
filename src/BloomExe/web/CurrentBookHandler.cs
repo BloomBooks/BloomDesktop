@@ -50,7 +50,7 @@ namespace Bloom.Api
 					//an "edit settings", or a "book settings", or a combination of them.
 					settings = DynamicJson.Parse(request.RequiredPostJson());
 					_bookSelection.CurrentSelection.TemporarilyUnlocked = settings["unlockShellBook"];
-					_pageRefreshEvent.Raise(null);
+					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 					request.Succeeded();
 					break;
 				default:
