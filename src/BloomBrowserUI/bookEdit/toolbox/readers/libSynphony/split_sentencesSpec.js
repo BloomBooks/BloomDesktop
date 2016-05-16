@@ -10,7 +10,7 @@
 //dump it in (how else to activate the jquery extensions it adds?)
 import './synphony_lib';
 import {_} from "underscore";
-import {theOneLibSynphony, LanguageData, libSynphony} from './synphony_lib';
+import {theOneLibSynphony, LanguageData} from './synphony_lib';
 
 describe("Splitting text into sentences", function() {
 
@@ -88,7 +88,7 @@ describe("Splitting text into sentences", function() {
 
     it("Nbsp between sentences extra space", function () {
         var inputText = "This is sentence 1.&nbsp; This is sentence 2.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
 
         expect(fragments.length).toBe(3);
         expect(fragments[0].text).toBe('This is sentence 1.');
