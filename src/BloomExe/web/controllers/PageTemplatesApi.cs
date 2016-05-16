@@ -46,12 +46,13 @@ namespace Bloom.web.controllers
 		{
 			dynamic addPageSettings = new ExpandoObject();
 
-			addPageSettings.lastPageAdded = _templateInsertionCommand.MostRecentInsertedTemplatePage;
+			addPageSettings.defaultPageToSelect = _templateInsertionCommand.MostRecentInsertedTemplatePage == null ? "" : _templateInsertionCommand.MostRecentInsertedTemplatePage.Id;
+
 			addPageSettings.orientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
 
 			var groups = new List<dynamic>();
 			groups.Add(GetPageGroup(GetPathToCurrentTemplateHtml));
-			addPageSettings.collections = groups.ToArray();
+			addPageSettings.groups = groups.ToArray();
 			addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor;
 			var settingsString = JsonConvert.SerializeObject(addPageSettings);
 			return settingsString;

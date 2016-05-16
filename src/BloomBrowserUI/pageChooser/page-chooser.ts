@@ -15,7 +15,7 @@ function process_EditFrame_Message(event: MessageEvent): void {
     switch(params[0]) {
         case "Data":
             var pageChooser = new PageChooser(params[1]);
-            pageChooser.loadInstalledCollections();
+            pageChooser.loadPageGroups();
             return;
 
         default:
@@ -23,15 +23,15 @@ function process_EditFrame_Message(event: MessageEvent): void {
 }
 
 // latest version of the expected JSON initialization string (from EditingModel.GetTemplateBookInfo)
-// "{\"lastPageAdded\":\"(guid of template page)\",
+// "{\"defaultPageToSelect\":\"(guid of template page)\",
 //   \"orientation\":\"landscape\",
-//   \"collections\":[{\"templateBookFolderUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book\",
-//                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\"}]}"
+//   \"groups\":[{\"templateBookFolderUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book\",
+//                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book/Basic Book.htm\"}]}"
 
 class PageChooser {
 
     private _templateBookUrls: string;
-    private _lastPageAdded: string;
+    private _defaultPageToSelect: string;
     private _orientation: string;
     private _selectedGridItem: JQuery;
     private _indexOfPageToSelect: number;
@@ -49,8 +49,8 @@ class PageChooser {
                 console.log("Received bad JSON string: " + e);
                 return;
             }
-            this._templateBookUrls = initializationObject["collections"];
-            this._lastPageAdded = initializationObject["lastPageAdded"];
+            this._templateBookUrls = initializationObject["groups"];
+            this._defaultPageToSelect = initializationObject["defaultPageToSelect"];
             this._orientation = initializationObject["orientation"];
             this._forChooseLayout = initializationObject["chooseLayout"];
             this._currentPageLayout = initializationObject['currentLayout'];
@@ -188,26 +188,26 @@ class PageChooser {
 
     // This is the starting-point method that is invoked to initialize the dialog.
     // At the point where it is called, the json parameters that control what will be displayed
-    loadInstalledCollections(): void {
+    loadPageGroups(): void {
 
         // Save a reference to the scrolling div that contains the various page items.
         this._scrollingDiv = $(".gridItemDisplay", document);
 
-        // Originally (now maybe YAGNI) the dialog handled more than one collection of template pages.
+        // Originally (now maybe YAGNI) the dialog handled more than one group of template pages.
         // Right now it only handles one, so the cloning of stub html is perhaps unnecessary,
         // but I've left it in case we need it later.
 
         // Save html sections that will get cloned later
-        // there should only be one 'collection' at this point; a stub with one default template page
-        var collectionHtml =  $(".collection", document).first().clone();
+        // there should only be one 'group' at this point; a stub with one default template page
+        var groupHtml =  $(".group", document).first().clone();
         // there should only be the one default 'gridItem' at this point
-        var gridItemHtml = $( ".gridItem", collectionHtml).first().clone();
+        var gridItemHtml = $( ".gridItem", groupHtml).first().clone();
         if ($(this._templateBookUrls).length > 0) {
             // Remove original stub section
-            $(".outerCollectionContainer", document).empty();
+            $(".outerGroupContainer", document).empty();
             $.each(this._templateBookUrls, (index, item) => {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                this.loadCollection(item["templateBookFolderUrl"], item["templateBookUrl"], collectionHtml, gridItemHtml, this._lastPageAdded);
+                this.beginLoadPageGroup(item["templateBookFolderUrl"], item["templateBookUrl"], groupHtml, gridItemHtml, this._defaultPageToSelect);
             });
         }
         $("#addPageButton", document).button().click(() => {
@@ -234,40 +234,40 @@ class PageChooser {
         if (this._orientation === 'landscape') {
             $("#mainContainer").addClass("landscape");
         }
-    } // LoadInstalledCollections
+    } // loadPageGroups
 
-    loadCollection(pageFolderUrl, pageUrl, collectionHTML, gridItemHTML, lastPageAdded:string): void {
+    beginLoadPageGroup(pageFolderUrl, pageUrl, groupHTML, gridItemHTML, defaultPageToSelect:string): void {
         var request = $.get(pageUrl);
         request.done( pageData => {
              var dataBookArray = $( "div[data-book='bookTitle']", pageData );
-            var collectionTitle = $( dataBookArray.first() ).text();
+            var groupTitle = $( dataBookArray.first() ).text();
             // Add title and container to dialog
-            var collectionToAdd = $(collectionHTML).clone();
-            this.setLocalizedText($(collectionToAdd).find(".collectionCaption"), 'TemplateBooks.BookName.', collectionTitle);
-            $( ".outerCollectionContainer", document).append(collectionToAdd);
-            // Grab all pages in this collection
+            var groupToAdd = $(groupHTML).clone();
+            this.setLocalizedText($(groupToAdd).find(".groupCaption"), 'TemplateBooks.BookName.', groupTitle);
+            $( ".outerGroupContainer", document).append(groupToAdd);
+            // Grab all pages in this group
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
             if (this._forChooseLayout) {
                // This filters out the (empty) custom page, which is currently never a useful layout change, since all data would be lost.
                pages = pages.not('.bloom-page[id="5dcd48df-e9ab-4a07-afd4-6a24d0398386"]');
             }
-            this._indexOfPageToSelect = this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
+            this._indexOfPageToSelect = this.loadPageFromGroup(groupToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, defaultPageToSelect);
             this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
         });
         request.fail( function(jqXHR, textStatus, errorThrown) {
             console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
                 jqXHR.status + " " + textStatus + " " + errorThrown);
         });
-    } // LoadCollection
+    } // beginLoadPageGroup
 
     
-    loadPagesFromCollection(currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl, lastPageAdded:string ) : number {
+    loadPageFromGroup(currentGroup, pageArray, gridItemTemplate, pageFolderUrl, pageUrl, defaultPageToSelect:string ) : number {
         if ($(pageArray).length < 1) {
             return 0;
         }
         // Remove default template page
-        $(".innerCollectionContainer", currentCollection).empty();
+        $(".innerGroupContainer", currentGroup).empty();
 
         var indexToSelect = 0;
         // insert a template page for each page with the correct #id on the url
@@ -283,7 +283,7 @@ class PageChooser {
             $(currentGridItemHtml).attr("data-textDivCount", $(div).find(".bloom-translationGroup").length);
             $(currentGridItemHtml).attr("data-picureCount", $(div).find(".bloom-imageContainer").length);
 
-            if (currentId === lastPageAdded)
+            if (currentId === defaultPageToSelect)
                 indexToSelect = index;
             if (currentId === this._currentPageLayout)
                 $(currentGridItemHtml).addClass('disabled');
@@ -295,10 +295,10 @@ class PageChooser {
             $(".gridItemCaption", currentGridItemHtml).first().text(pageLabel);
 
             $("img", currentGridItemHtml).attr("src", this.buildThumbSrcFilename(pageFolderUrl, pageLabel));
-            $(".innerCollectionContainer", currentCollection).append(currentGridItemHtml);
+            $(".innerGroupContainer", currentGroup).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
-        $(".invisibleThumbCover", currentCollection).each((index, div) => {
+        $(".invisibleThumbCover", currentGroup).each((index, div) => {
             $(div).dblclick(() => {
                 this.addPageClickHandler();
             }); // invisibleThumbCover double click
@@ -308,7 +308,7 @@ class PageChooser {
             }); // invisibleThumbCover click
         }); // each
         return indexToSelect;
-    } // LoadPagesFromCollection
+    } // loadPageFromGroup
 
     // any changes to how we tweak the page label to get a file name
     // must also be made in EnhancedImageServer.FindOrGenerateImage().
@@ -417,8 +417,8 @@ function CreateAddPageDiv(templatesJSON) {
 //noinspection JSUnusedGlobalSymbols
 // Used by the addPage_frame to initialize the setup dialog with the available template pages
 // 'templatesJSON' will be something like:
-//([{ "templateBookFolderUrl": "/bloom/localhost//...(path to files).../factoryCollections/Templates/Basic Book/", 
-//      "templateBookUrl": "/bloom/localhost/...(path to files).../factoryCollections/Templates/Basic Book/Basic Book.htm" }])
+//([{ "templateBookFolderUrl": "/bloom/localhost//...(path to files).../factoryGroups/Templates/Basic Book/", 
+//      "templateBookUrl": "/bloom/localhost/...(path to files).../factoryGroups/Templates/Basic Book/Basic Book.htm" }])
 // See property EditingModel.GetJsonTemplatePageObject
 function initializeAddPageDialog(templatesJSON) {
     var templateMsg = 'Data\n' + JSON.stringify(templatesJSON);
