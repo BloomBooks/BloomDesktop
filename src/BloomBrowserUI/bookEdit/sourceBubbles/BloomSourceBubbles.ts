@@ -8,6 +8,7 @@
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from '../js/bloomQtipUtils';
+import '../../lib/jquery.easytabs.js'; //load into global space
 
 declare function GetSettings() : any; //c# injects this
 

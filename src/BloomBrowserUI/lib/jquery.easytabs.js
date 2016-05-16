@@ -100,7 +100,7 @@
         }
 
         targetId = targetId.match(/#([^\?]+)/)[0].substr(1);
-        $matchingPanel = $container.find("*[lang='"+ targetId+"']");//hatton changed to find by lang instead of id
+        var $matchingPanel = $container.find("*[lang='"+ targetId+"']");//hatton changed to find by lang instead of id
         if ( $matchingPanel.size() > 0 ) {
           // Store panel height before hiding
           $matchingPanel.data('easytabs', {position: $matchingPanel.css('position'), visibility: $matchingPanel.css('visibility')});
