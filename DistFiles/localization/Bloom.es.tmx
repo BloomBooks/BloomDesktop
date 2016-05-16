@@ -2872,10 +2872,10 @@
         <seg>por página</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerSentence">
+    <tu tuid="EditTab.Toolbox._bookSelection.LongestSentence">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>per sentence</seg>
+        <seg>longest sentence</seg>
       </tuv>
       <tuv xml:lang="es">
         <seg>por frase</seg>
@@ -2947,7 +2947,7 @@
     <tu tuid="EditTab.Toolbox.LeveledReaderTool.WordCounts">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Word counts</seg>
+        <seg>Word Counts</seg>
       </tuv>
       <tuv xml:lang="es">
         <seg>Conteo de palabras</seg>

@@ -192,7 +192,10 @@ namespace Bloom.Api
 
 		private static string EscapeJsonValue(string value)
 		{
-			return value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
+			// As http://stackoverflow.com/questions/42068/how-do-i-handle-newlines-in-json attempts to explain,
+			// it takes TWO backslashes before r or n in JSON to get an actual embedded newline into the string.
+			// (And of course FOUR here in the C# source to produce two in the literal passed to Replace.)
+			return value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\\\r").Replace("\n", "\\\\n");
 		}
 
 		private string GetSampleTextsList(string settingsFilePath)

@@ -1634,10 +1634,10 @@
         <seg>每页</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerSentence">
+    <tu tuid="EditTab.Toolbox._bookSelection.LongestSentence">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>per sentence</seg>
+        <seg>longest sentence</seg>
       </tuv>
       <tuv xml:lang="zh-Hans">
         <seg>每句</seg>
@@ -1691,7 +1691,7 @@
     <tu tuid="EditTab.Toolbox.LeveledReaderTool.WordCounts">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Word counts</seg>
+        <seg>Word Counts</seg>
       </tuv>
       <tuv xml:lang="zh-Hans">
         <seg>词句计数</seg>

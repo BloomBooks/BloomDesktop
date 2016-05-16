@@ -1,5 +1,10 @@
 /**
- * Unit tests for various sentence-related code
+ * split_sentences.test.js
+ *
+ * Trying out the unit tests for javascript
+ *
+ * Created Apr 22, 2014 by Phil Hopper
+ *
  */
 
 //dump it in (how else to activate the jquery extensions it adds?)
@@ -79,6 +84,16 @@ describe("Splitting text into sentences", function() {
         expect(fragments[2].text).toBe('<span class=\"test\"> </span> This is sentence 2.');
         expect(fragments[3].text).toBe(' ');
         expect(fragments[4].text).toBe('This is sentence 3.');
+    });
+
+    it("Nbsp between sentences extra space", function () {
+        var inputText = "This is sentence 1.&nbsp; This is sentence 2.";
+        var fragments = libsynphony.stringToSentences(inputText);
+
+        expect(fragments.length).toBe(3);
+        expect(fragments[0].text).toBe('This is sentence 1.');
+        expect(fragments[1].text).toBe('&nbsp; ');
+        expect(fragments[2].text).toBe('This is sentence 2.');
     });
 
     it("Empty tag between sentences", function() {

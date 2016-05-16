@@ -19,9 +19,9 @@ html
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incLevel
 			table.statistics.clear(style='margin-left: 6px')
 				tr
-					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.WordCounts') Word counts
+					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.WordCounts') Word Counts
 				tr
-					td(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPage') This Page
+					td.tableTitle.thisPageSection(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPage') This Page
 				tr
 					td.statistics-label
 					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
@@ -31,12 +31,12 @@ html
 					td.statistics-max#maxWordsPerPage
 					td.statistics-actual#actualWordsPerPage -
 				tr
-					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerSentence') per sentence
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerSentence') longest sentence
 					td.statistics-max#maxWordsPerSentence
 					td.statistics-actual#actualWordsPerSentence -
 			table.statistics.clear(style='margin-left: 6px')
 				tr
-					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisBook') This Book
+					td.tableTitle(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisBook') This Book
 				tr
 					td.statistics-label
 					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max

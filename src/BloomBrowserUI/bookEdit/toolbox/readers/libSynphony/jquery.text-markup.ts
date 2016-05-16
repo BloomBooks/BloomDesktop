@@ -77,6 +77,11 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
                 }
             }
 
+            // If this element represents a paragraph, then the overall page text needs a paragraph break here.
+            if (leaf.tagName === "P") {
+                allWords += "\r\n";
+            }
+
             // set the html
             $(leaf).html(newHtml);
             restoreNonTextUIElementsInEditBox(leaf);
