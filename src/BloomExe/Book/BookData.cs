@@ -231,21 +231,28 @@ namespace Bloom.Book
 
 			NamedMutliLingualValue creditsData;
 			string credits = "";
-			if (_dataset.TextVariables.TryGetValue("originalAcknowledgments", out creditsData))
+			var idsToTry = WritingSystemIdsToTry.ToList();
+			while (string.IsNullOrWhiteSpace(credits) && idsToTry.Count > 0)
 			{
-				credits = creditsData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
-			}
-			try
-			{
-				// This cleans out various kinds of markup, especially <br >, <p>, <b>, etc.
-				var elt = XElement.Parse("<div>" + credits + "</div>", LoadOptions.PreserveWhitespace);
-				// For some reason Value yields \n rather than platform newlines, even when the original
-				// has \r\n.
-				credits = elt.Value.Replace("\n", Environment.NewLine);
-			}
-			catch (XmlException ex)
-			{
-				// If we can't parse it...maybe the user really did type some XML? Just keep what we have
+				if (_dataset.TextVariables.TryGetValue("originalAcknowledgments", out creditsData))
+				{
+					credits = creditsData.TextAlternatives.GetBestAlternativeString(idsToTry);
+				}
+				try
+				{
+					// This cleans out various kinds of markup, especially <br >, <p>, <b>, etc.
+					var elt = XElement.Parse("<div>" + credits + "</div>", LoadOptions.PreserveWhitespace);
+					// For some reason Value yields \n rather than platform newlines, even when the original
+					// has \r\n.
+					credits = elt.Value.Replace("\n", Environment.NewLine);
+				}
+				catch (XmlException ex)
+				{
+					// If we can't parse it...maybe the user really did type some XML? Just keep what we have
+				}
+				// If the most promising alternative is empty (e.g., vernacular usually is <p>\r\n</p>)
+				// try again.
+				idsToTry.RemoveAt(0);
 			}
 			info.Credits = credits;
 		}
