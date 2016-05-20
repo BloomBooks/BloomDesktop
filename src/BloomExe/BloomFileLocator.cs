@@ -117,8 +117,8 @@ namespace Bloom
 				yield return searchPath;
 			}
 
-
-			yield return _collectionSettings.FolderPath;
+			if (_collectionSettings.FolderPath != null) // typically only in tests, but makes more robust anyway
+				yield return _collectionSettings.FolderPath;
 		}
 
 		public override IFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)

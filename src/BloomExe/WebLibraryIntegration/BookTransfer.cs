@@ -629,7 +629,7 @@ namespace Bloom.WebLibraryIntegration
 						bookSelection);
 					currentEditableCollectionSelection.SelectCollection(collection);
 				}
-				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _thumbnailer);
+				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _thumbnailer, null);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null);
 				string dummy;

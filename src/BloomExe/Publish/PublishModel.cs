@@ -65,9 +65,10 @@ namespace Bloom.Publish
 		private readonly BookServer _bookServer;
 		private readonly BookThumbNailer _thumbNailer;
 		private string _lastDirectory;
+		private NavigationIsolator _isoloator;
 
 		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings,
-			BookServer bookServer, BookThumbNailer thumbNailer)
+			BookServer bookServer, BookThumbNailer thumbNailer, NavigationIsolator isolator)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
@@ -78,6 +79,7 @@ namespace Bloom.Publish
 			_bookServer = bookServer;
 			_thumbNailer = thumbNailer;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+			_isoloator = isolator;
 			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 		}
 
@@ -501,7 +503,7 @@ namespace Bloom.Publish
 				_epubMaker.Dispose();
 				_epubMaker = null;
 			}
-			_epubMaker = new EpubMaker(_thumbNailer);
+			_epubMaker = new EpubMaker(_thumbNailer, _isoloator);
 			_epubMaker.Book = BookSelection.CurrentSelection;
 			_epubMaker.Unpaginated = true; // Enhance: UI?
 		}

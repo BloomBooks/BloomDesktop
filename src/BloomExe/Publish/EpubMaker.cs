@@ -73,7 +73,7 @@ namespace Bloom.Publish
 		private BookThumbNailer _thumbNailer;
 		private bool _publishWithoutAudio;
 		LameEncoder _mp3Encoder;
-
+		Browser _browser = new Browser();
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -84,9 +84,10 @@ namespace Bloom.Publish
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
-		public EpubMaker(BookThumbNailer thumbNailer)
+		public EpubMaker(BookThumbNailer thumbNailer, NavigationIsolator _isolator)
 		{
 			_thumbNailer = thumbNailer;
+			_browser.Isolator = _isolator;
 		}
 
 		public bool IsCompressedAudioMissing
@@ -701,18 +702,44 @@ namespace Bloom.Publish
 		/// <param name="pageDom"></param>
 		private void RemoveUnwantedContent(HtmlDom pageDom)
 		{
+			var pageElt = (XmlElement) pageDom.Body.FirstChild;
+			var isXMatter = HasClass(pageElt, "bloom-frontMatter") || HasClass(pageElt, "bloom-backMatter");
+			if (isXMatter)
+			{
+				// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
+				// browser figure out what is visible. So we can easily match elements in the browser DOM
+				// with the one we are manipulating, make sure they ALL have IDs.
+				EnsureEditableDivsHaveIds(pageElt);
+				var normalDom = Book.GetHtmlDomWithJustOnePage(pageElt);
+				bool done = false;
+				var dummy = _browser.Handle; // gets WebBrowser created along with handle
+				_browser.WebBrowser.DocumentCompleted += (sender, args) => done = true;
+				_browser.Navigate(normalDom);
+				while (!done)
+					Application.DoEvents();
+			}
 			// Remove bloom-editable material not in one of the interesting languages
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div").Cast<XmlElement>().ToArray())
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes(".//div").Cast<XmlElement>().ToArray())
 			{
 				if (!HasClass(elt, "bloom-editable"))
 					continue;
 				var langAttr = elt.Attributes["lang"];
 				var lang = langAttr == null ? null : langAttr.Value;
-				if (lang == Book.MultilingualContentLanguage2 || lang == Book.MultilingualContentLanguage3 ||
+				if (isXMatter)
+				{
+					var id = elt.Attributes["id"].Value;
+					var display = _browser.RunJavaScript("getComputedStyle(document.getElementById('" + id + "'), null).display");
+					if (display != "none")
+						continue; // keep it if not hidden.
+				}
+				else
+				{
+					// normal content page. What will be displayed here is predictable enough without
+					// the overhead of navigating a real browser to a real page.
+					if (lang == Book.MultilingualContentLanguage2 || lang == Book.MultilingualContentLanguage3 ||
 					lang == Book.CollectionSettings.Language1Iso639Code)
 					continue; // keep these
-				if (lang == Book.CollectionSettings.Language2Iso639Code && IsInXMatterPage(elt))
-					continue;
+				}
 				elt.ParentNode.RemoveChild(elt);
 			}
 			// Remove any left-over bubbles
@@ -729,17 +756,36 @@ namespace Bloom.Publish
 				if (HasClass(elt, "pageDescription"))
 					elt.ParentNode.RemoveChild(elt);
 			}
+			if (isXMatter)
+				RemoveTempIds(pageElt); // don't need temporary IDs any more.
 		}
 
-		private bool IsInXMatterPage(XmlElement elt)
+		private const string tempIdMarker = "EpubTempIdXXYY";
+
+		void EnsureEditableDivsHaveIds(XmlElement pageElt)
 		{
-			while (elt != null)
+			int count = 1;
+			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
 			{
-				if (HasClass(elt, "bloom-page"))
-					return HasClass(elt, "bloom-frontMatter") || HasClass(elt, "bloom-backMatter");
-				elt = elt.ParentNode as XmlElement;
+				if (!HasClass(elt, "bloom-editable"))
+					continue;
+				if (elt.Attributes["id"] != null)
+					continue;
+				elt.SetAttribute("id", tempIdMarker + count++);
 			}
-			return false;
+		}
+
+		void RemoveTempIds(XmlElement pageElt)
+		{
+			int count = 1;
+			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
+			{
+				if (!HasClass(elt, "bloom-editable"))
+					continue;
+				if (!elt.Attributes["id"].Value.StartsWith(tempIdMarker))
+					continue;
+				elt.RemoveAttribute("id");
+			}
 		}
 
 		bool HasClass(XmlElement elt, string className)
