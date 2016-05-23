@@ -502,11 +502,10 @@ namespace BloomTests.Publish
 		/// This should not include National1 in XMatter.
 		/// </summary>
 		[Test]
-		[Category("SkipOnTeamCity")] // epub generation inexplicably gives wrong result on TC.
 		public void National1_InXMatter_IsNotRemoved()
 		{
 			// This test does some real navigation so needs the server to be running.
-			using (GetTestServer())
+			using (var server = GetTestServer())
 			{
 				// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
 				var book = SetupBookLong("English text (bloom-contentNational1) should display in title.", "en",
@@ -518,6 +517,7 @@ namespace BloomTests.Publish
 					extraStyleSheet: "<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter.css' type='text/css'></link>",
 					extraEditGroupClasses: "bookTitle",
 					extraEditDivClasses: "bloom-contentNational1");
+				CopyFactoryXMatter(server, book);
 				MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
 				CheckBasicsInManifest();
 				CheckBasicsInPage();
@@ -530,6 +530,14 @@ namespace BloomTests.Publish
 				assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
 				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
 			}
+		}
+
+		private static void CopyFactoryXMatter(EnhancedImageServer server, Bloom.Book.Book book)
+		{
+			// We need the book folder to have a Factory-xMatter.css, since there isn't guaranteed to be one in the search
+			// path, and its rules are needed to get the right output.
+			var factoryXMatter = server.TestFileLocator.LocateFileWithThrow("Factory-XMatter/Factory-XMatter.css");
+			File.Copy(factoryXMatter, Path.Combine(book.FolderPath, "Factory-XMatter.css"));
 		}
 
 		private static EnhancedImageServer GetTestServer()
@@ -550,11 +558,10 @@ namespace BloomTests.Publish
 		/// The default rules on a credits page show original acknowledgements only in national language.
 		/// </summary>
 		[Test]
-		[Category("SkipOnTeamCity")] // epub generation inexplicably gives wrong result on TC.
 		public void OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved()
 		{
 			// This test does some real navigation so needs the server to be running.
-			using (GetTestServer())
+			using (var server = GetTestServer())
 			{
 				// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
 				var book = SetupBookLong("Acknowledgements should only show in national 1.", "en",
@@ -567,6 +574,7 @@ namespace BloomTests.Publish
 						"<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter.css' type='text/css'></link>",
 					extraEditGroupClasses: "originalAcknowledgments",
 					extraEditDivClasses: "bloom-contentNational1");
+				CopyFactoryXMatter(server, book);
 				MakeEpub("output", "OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved", book);
 				CheckBasicsInManifest();
 				CheckBasicsInPage();

@@ -39,6 +39,8 @@ namespace Bloom.Api
 		private readonly BookSelection _bookSelection;
 		private readonly ProjectContext _projectContext;
 
+		internal BloomFileLocator TestFileLocator {get { return _fileLocator;} } // for tests
+
 		// This dictionary ties API endpoints to functions that handle the requests.
 		private Dictionary<string, EndpointHandler> _endpointHandlers = new Dictionary<string, EndpointHandler>();
 
