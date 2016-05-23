@@ -505,7 +505,7 @@ namespace BloomTests.Publish
 		public void National1_InXMatter_IsNotRemoved()
 		{
 			// This test does some real navigation so needs the server to be running.
-			using (var server = GetTestServer())
+			using (GetTestServer())
 			{
 				// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
 				var book = SetupBookLong("English text (bloom-contentNational1) should display in title.", "en",
@@ -514,10 +514,10 @@ namespace BloomTests.Publish
 						@"<div class='bloom-editable bloom-content1' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
 								<div class='bloom-editable bloom-contentNational2' lang='fr'>French text (national2) should not display</div>
 								<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
-					extraStyleSheet: "<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter.css' type='text/css'></link>",
+					extraStyleSheet: "<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 					extraEditGroupClasses: "bookTitle",
 					extraEditDivClasses: "bloom-contentNational1");
-				CopyFactoryXMatter(server, book);
+				//CopyFactoryXMatter(server, book);
 				MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
 				CheckBasicsInManifest();
 				CheckBasicsInPage();
@@ -532,14 +532,6 @@ namespace BloomTests.Publish
 			}
 		}
 
-		private static void CopyFactoryXMatter(EnhancedImageServer server, Bloom.Book.Book book)
-		{
-			// We need the book folder to have a Factory-xMatter.css, since there isn't guaranteed to be one in the search
-			// path, and its rules are needed to get the right output.
-			var factoryXMatter = server.TestFileLocator.LocateFileWithThrow("Factory-XMatter/Factory-XMatter.css");
-			File.Copy(factoryXMatter, Path.Combine(book.FolderPath, "Factory-XMatter.css"));
-		}
-
 		private static EnhancedImageServer GetTestServer()
 		{
 			var server = new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, new BookSelection(), GetTestFileLocator());
@@ -549,7 +541,7 @@ namespace BloomTests.Publish
 
 		private static BloomFileLocator GetTestFileLocator()
 		{
-			return new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[] { }), ProjectContext.GetFactoryFileLocations(),
+			return new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new [] { BloomFileLocator.GetInstalledXMatterDirectory() }), ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 		}
 
@@ -561,7 +553,7 @@ namespace BloomTests.Publish
 		public void OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved()
 		{
 			// This test does some real navigation so needs the server to be running.
-			using (var server = GetTestServer())
+			using (GetTestServer())
 			{
 				// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
 				var book = SetupBookLong("Acknowledgements should only show in national 1.", "en",
@@ -571,10 +563,9 @@ namespace BloomTests.Publish
 								<div class='bloom-editable bloom-contentNational2 bloom-content2' lang='fr'>National 2 should not be displayed</div>
 								<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
 					extraStyleSheet:
-						"<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter.css' type='text/css'></link>",
+						"<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 					extraEditGroupClasses: "originalAcknowledgments",
 					extraEditDivClasses: "bloom-contentNational1");
-				CopyFactoryXMatter(server, book);
 				MakeEpub("output", "OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved", book);
 				CheckBasicsInManifest();
 				CheckBasicsInPage();

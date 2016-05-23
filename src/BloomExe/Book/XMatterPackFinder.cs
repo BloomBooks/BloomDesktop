@@ -42,9 +42,12 @@ namespace Bloom.Book
 		{
 			get
 			{
-				if (_factoryXMatters == null)
-					FindAll();
-				return _factoryXMatters;
+				lock (this)
+				{
+					if (_factoryXMatters == null)
+						FindAll();
+					return _factoryXMatters;
+				}
 			}
 		}
 
