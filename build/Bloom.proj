@@ -100,7 +100,9 @@
 
   <Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
 	<ItemGroup>
-	  <AssemblyInfoFiles Include="$(RootDir)/src/**/AssemblyInfo.cs"/>
+	<!-- warning... using wildcards wil break if it has to search deeper than MAX_PATHS, which can easily happen in node_modules
+	after npm shrinkwrapping (locking down dependencies). -->
+	  <AssemblyInfoFiles Include="$(RootDir)/src/BloomExe/*/AssemblyInfo.cs;$(RootDir)/src/Bloom-ChorusPlugin/*/AssemblyInfo.cs"/>
 	</ItemGroup>
 	<StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
 	  <!--the product name also needs to have the channel in it. This controls (at least) the name used for the desktop icon.-->
