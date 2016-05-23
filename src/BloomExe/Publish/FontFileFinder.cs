@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-#if !__MonoCS__
-using System.Windows.Media;
+#if __MonoCS__
+using SharpFont;				// Linux only (interface to libfreetype.so.6)
+#else
+using System.Windows.Media;		// Windows .Net only
 #endif
 
 namespace Bloom.Publish
@@ -50,6 +52,39 @@ namespace Bloom.Publish
 			if (FontNameToFiles == null)
 			{
 				FontNameToFiles = new Dictionary<string, FontGroup>();
+#if __MonoCS__
+				using (var lib = new SharpFont.Library())
+				{
+					// Find all the font files in the standard system location (/usr/share/font) and $HOME/.font (if it exists)
+					foreach (var fontFile in FindLinuxFonts())
+					{
+						try
+						{
+							using (var face = new SharpFont.Face(lib, fontFile))
+							{
+								var embeddingTypes = face.GetFSTypeFlags();
+								if ((embeddingTypes & EmbeddingTypes.RestrictedLicense) == EmbeddingTypes.RestrictedLicense ||
+									(embeddingTypes & EmbeddingTypes.BitmapOnly) == EmbeddingTypes.BitmapOnly)
+								{
+									continue;
+								}
+								var name = face.FamilyName;
+								// If you care about bold, italic, etc, you can filter here.
+								FontGroup files;
+								if (!FontNameToFiles.TryGetValue(name, out files))
+								{
+									files = new FontGroup();
+									FontNameToFiles[name] = files;
+								}
+								files.Add(face, fontFile);
+							}
+						}
+						catch (Exception)
+						{
+						}
+					}
+				}
+#else
 				foreach (var fontFile in Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)))
 				{
 					// ePUB only understands these types, so skip anything else.
@@ -62,9 +97,6 @@ namespace Bloom.Publish
 						default:
 							continue;
 					}
-#if __MonoCS__
-					// Mono doesn't have the System.Windows.Media namespace.
-#else
 					GlyphTypeface gtf;
 					try
 					{
@@ -86,7 +118,7 @@ namespace Bloom.Publish
 						default:
 							continue; // not allowed to embed (enhance: warn user?)
 					}
-#endif
+
 					var fc = new PrivateFontCollection();
 					try
 					{
@@ -104,16 +136,39 @@ namespace Bloom.Publish
 						files = new FontGroup();
 						FontNameToFiles[name] = files;
 					}
-#if __MonoCS__
-					// Mono doesn't have the System.Windows.Media namespace.
-#else
 					files.Add(gtf, fontFile);
-#endif
 				}
+#endif
 			}
 			FontGroup result;
 			FontNameToFiles.TryGetValue(fontName, out result);
 			return result;
 		}
+
+#if __MonoCS__
+		IEnumerable<string> FindLinuxFonts()
+		{
+			var fontFiles = new List<string>();
+			fontFiles.AddRange(FindLinuxFonts("/usr/share/fonts"));
+			fontFiles.AddRange(FindLinuxFonts(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)));	// $HOME/.fonts
+			return fontFiles;
+		}
+
+		IEnumerable<string> FindLinuxFonts(string folder)
+		{
+			var fontFiles = new List<string>();
+			if (Directory.Exists(folder))
+			{
+				foreach (var subfolder in Directory.EnumerateDirectories(folder))
+					fontFiles.AddRange(FindLinuxFonts(subfolder));
+				foreach (var file in Directory.EnumerateFiles(folder))
+				{
+					if (file.EndsWith(".ttf") || file.EndsWith(".otf"))
+						fontFiles.Add(file);
+				}
+			}
+			return fontFiles;
+		}
+#endif
 	}
 }
