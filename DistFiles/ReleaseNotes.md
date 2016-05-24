@@ -8,17 +8,14 @@
 
 - Leveled Readers now display the average sentence length, and you can set a maximum average sentence length for the book.
 
-- In the Format box, you can now type in any arbitrary font size. Previously, you were limited to choosing from the offered set of sizes. Note: you must press Enter after typing in size you want.
-
 - When you drag the splitters to resize elements on the page, Bloom now shows a percentage indicator. You can use this number to set splitters to the same value on different pages, so that elements line up when they are on facing pages in the printed book.
 
 ## 3.6
 - This version focuses on what we are calling "the toolbox": a panel on the right side that you can open to do specialized tasks like working on decodable and leveled readers or recording audio for "talking books".
 
 - You can now hide or show the toolbox
-- "Talking Book" recording is now controlled from a panel in the toolbox
 
-- When you drag the "splitter" control to change the size of a region of the page, a percentage now appears. This is helpful if you want to make that region the same size on facing pages.
+- "Talking Book" recording is now controlled from a panel in the toolbox
 
 - When setting up a new collection, Bloom now allows you to change the font.
 
@@ -28,7 +25,7 @@
 
 - You can now "Undo" when in "Change Layout" mode.
 
-- The Format box now lets you enter custom font sizes.
+- In the Format box, you can now type in any arbitrary font size. Previously, you were limited to choosing from the offered set of sizes. Note: you must press Enter after typing in size you want.
 
 - Administrators of computer labs can now install Bloom for all users of the machine. From a command prompt running as administrator, run the installer with the "--allUsers" flag. "--silent" is also supported. This will put Bloom in the Program Files(x86) directory. Bloom will not attempt to update itself, nor will users be able to cause an update to happen.
 
