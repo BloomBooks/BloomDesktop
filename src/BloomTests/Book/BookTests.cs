@@ -943,6 +943,9 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			var acksElt = _bookDom.SelectSingleNode("//textarea");
+#if __MonoCS__	// may not be needed for Mono 4.x
+			acksElt.OwnerDocument.PreserveWhitespace = true;	// Does not preserve newlines on Linux without this
+#endif
 			acksElt.InnerXml = "<p>changed</p>" + Environment.NewLine + "<p>more changes</p>";
 			book.Save();
 			Assert.That(_metadata.Credits, Is.EqualTo("changed" + Environment.NewLine + "more changes"));
