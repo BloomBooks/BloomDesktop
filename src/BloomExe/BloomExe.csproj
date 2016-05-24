@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -148,6 +148,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\RestSharp.105.0.1\lib\net4-client\RestSharp.dll</HintPath>
     </Reference>
+    <Reference Include="SharpFont, Version=3.1.0, Culture=neutral, processorArchitecture=MSIL" Condition="'$(OS)'!='Windows_NT'">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>../../packages/SharpFont.3.1.0/lib/net20/SharpFont.dll</HintPath>
+    </Reference>
     <Reference Include="SIL.Core">
       <HintPath>..\..\lib\dotnet\SIL.Core.dll</HintPath>
     </Reference>
@@ -190,6 +194,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="gtk-sharp" Condition="'$(OS)'!='Windows_NT'" />
     <Reference Include="AxInterop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
     </Reference>
@@ -1207,6 +1212,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </ItemGroup>
   <ItemGroup>
     <SourceFiles Include="..\..\lib\dotnet\*.config" />
+    <SourceFiles Include="..\..\packages\SharpFont.3.1.0\config\SharpFont.dll.config" Condition="'$(OS)'!='Windows_NT'" />
   </ItemGroup>
   <ItemGroup>
     <RemoteDebugFiles Include="..\..\remoteDebugging\**" />

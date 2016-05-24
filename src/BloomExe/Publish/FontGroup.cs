@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-#if !__MonoCS__
+#if __MonoCS__
+using SharpFont;
+#else
 using System.Windows.Media;
 #endif
 
@@ -21,7 +23,19 @@ namespace Bloom.Publish
 		public string BoldItalic;
 
 #if __MonoCS__
-		// Mono doesn't have the System.Windows.Media namespace.
+		public void Add(Face face, string path)
+		{
+			if (Normal == null)
+				Normal = path;
+			if (face.StyleFlags == (StyleFlags.Bold | StyleFlags.Italic))
+				BoldItalic = path;
+			else if (face.StyleFlags == StyleFlags.Bold)
+				Bold = path;
+			else if (face.StyleFlags == StyleFlags.Italic)
+				Italic = path;
+			else
+				Normal = path;
+		}
 #else
 		public void Add(GlyphTypeface gtf, string path)
 		{
