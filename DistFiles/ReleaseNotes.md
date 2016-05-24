@@ -3,9 +3,6 @@
 
 - You can now hide or show the toolbox
 - "Talking Book" recording is now controlled from a panel in the toolbox
-
-- When you drag the "splitter" control to change the size of a region of the page, a percentage now appears. This is helpful if you want to make that region the same size on facing pages.
-
 - When setting up a new collection, Bloom now allows you to change the font.
 
 - When setting up a collection, Bloom now always allows you to set the name of the project.
@@ -14,7 +11,7 @@
 
 - You can now "Undo" when in "Change Layout" mode.
 
-- The Format box now lets you enter custom font sizes.
+- In the Format box, you can now type in any arbitrary font size. Previously, you were limited to choosing from the offered set of sizes. Note: you must press Enter after typing in size you want.
 
 - Administrators of computer labs can now install Bloom for all users of the machine. From a command prompt running as administrator, run the installer with the "--allUsers" flag. "--silent" is also supported. This will put Bloom in the Program Files(x86) directory. Bloom will not attempt to update itself, nor will users be able to cause an update to happen.
 
