@@ -421,14 +421,14 @@ namespace Bloom.Edit
 				{
 					var msg = LocalizationManager.GetString("EditTab.PageList.CantMoveXMatter",
 						"That change is not allowed. Front matter and back matter pages must remain where they are");
-					var caption = LocalizationManager.GetString("EditTab.PageList.CantMoveXMatterCaption",
-						"Invalid Move");
+					//previously had a caption that didn't add value, just more translation work
 					if (_pages[i].Book.LockedDown)
 					{
 						msg = LocalizationManager.GetString("PageList.CantMoveWhenTranslating",
-							"Pages can not be re-ordered when you are translating a book");
+							"Pages can not be re-ordered when you are translating a book.");
+						msg = msg + System.Environment.NewLine+ EditingView.GetInstructionsForUnlockingBook();
 					}
-					MessageBox.Show(msg, caption);
+					MessageBox.Show(msg);
 					UpdateItems(_pages); // reset to old state
 					return;
 				}

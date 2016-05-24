@@ -180,9 +180,7 @@ namespace Bloom.Edit
 			else
 			{
 				// TODO: localize buttons
-				var message = "At this time, Bloom does not allow adding pages to a shell book.";
-				message = LocalizationManager.GetDynamicString("Bloom", "EditTab.DisabledAddPageMessage", message);
-				MessageBox.Show(message, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				MessageBox.Show(EditingView.GetInstructionsForUnlockingBook()  , "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}
 		}
 	}
