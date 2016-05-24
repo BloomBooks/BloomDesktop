@@ -1,4 +1,18 @@
-﻿## 3.6
+﻿## 3.7
+- You can now "unlock" a shell book that you are translating, so that you can do things like:
+ - add pages
+ - delete pages
+ - edit fields that are normally locked during translation
+
+    To unlock the book, go into the toolbox (which lives to the right of the page in the Edit Tab). Click on the icon of gear, and tick the checkbox there. The book will remain unlocked only during the current editing session; the next time you come back to this book, it will be locked again.
+
+- Leveled Readers now display the average sentence length, and you can set a maximum average sentence length for the book.
+
+- In the Format box, you can now type in any arbitrary font size. Previously, you were limited to choosing from the offered set of sizes. Note: you must press Enter after typing in size you want.
+
+- When you drag the splitters to resize elements on the page, Bloom now shows a percentage indicator. You can use this number to set splitters to the same value on different pages, so that elements line up when they are on facing pages in the printed book.
+
+## 3.6
 - This version focuses on what we are calling "the toolbox": a panel on the right side that you can open to do specialized tasks like working on decodable and leveled readers or recording audio for "talking books".
 
 - You can now hide or show the toolbox
