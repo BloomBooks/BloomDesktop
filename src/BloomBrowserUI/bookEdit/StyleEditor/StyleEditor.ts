@@ -987,10 +987,10 @@ export default class StyleEditor {
         StyleEditor.SetStyleNameForElement(this.boxBeingEdited, typedStyle + '-style');
         this.updateStyle();
 
-        // Insert it into our list and the option control on the second page.
-        this.insertOption(typedStyle);
-        //$('#styleSelect option:eq(' + typedStyle + ')').prop('selected', true);
-        this.setValueAndUpdateSelect2Control('styleSelect',typedStyle);
+        // Recommended way to insert an item into a select2 control and select it (one of the trues makes it selected)
+        // See http://codepen.io/alexweissman/pen/zremOV
+        var newState = new Option(typedStyle, typedStyle, true, true);
+        $('#styleSelect').append(newState).trigger('change');
         
         // This control has been hidden, but the user could show it again.
         // And showing it does not run the duplicate style check, since we expect it to be empty
@@ -1010,18 +1010,6 @@ export default class StyleEditor {
         this.changeBackground();
         this.changePosition();
         this.styleStateChange('initial'); // go back to initial state so user knows it worked
-    }
-
-    insertOption(typedStyle) {
-        var newOption = $('<option value="' + typedStyle + '">' + typedStyle + '</option>');
-        for (var j = 0; j < this.styles.length; j++) {
-            if (typedStyle.toLowerCase() < this.styles[j].toLowerCase()) {
-                this.styles.splice(j, 0, typedStyle);
-                newOption.insertBefore('#styleSelect :nth-child(' + (j + 1) + ')');
-                return;
-            }
-        }
-        $('#styleSelect').append(newOption);
     }
 
     makeSelect(items :string[], current, id, maxlength?, classes?: string) {
@@ -1263,12 +1251,14 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    //work around a bug in select2 where, when we change the value programmatically,
-    //the select control still shows the old value (though if you click on it, the correct
-    //value is highlighted.) See BL-2324
-    setValueAndUpdateSelect2Control(id:string, value:string){
-        $(id).val(value);
-        $('#select2-'+id+'-container').text(value);
+    // Doc indicates this is the correct way to programmatically select an item with select2.
+    // Previous comments indicated this was buggy and referenced BL-2324, which appears to be
+    // the wrong issue number; I think it should have been BL-3371. However, I suspect the problem
+    // was actually neglecting to prepend # before the id. The old solution left the problem BL-3422
+    // which was eventually fixed by changing createStyle so that it doesn't need to use this
+    // method at all. As far as I can tell, doing this works.
+    setValueAndUpdateSelect2Control(id: string, value: string) {
+      $('#' + id).val(value).trigger('change');
     }
 
     getStyleRule(ignoreLanguage:boolean) {
