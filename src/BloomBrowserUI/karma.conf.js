@@ -42,7 +42,6 @@ module.exports = function (config) {
         // - Chrome IF YOU USE CHROME, NOTE THAT IF YOU MINIMIZE CHROME, IT WILL RUN TESTS SUPER SLOWLY
         // - Firefox
         // - PhantomJS
-        //NB: as of Feb 2016, the all pass in Phantom & Chrome, but only 98 are found, compared to 101 with Firefox
         browsers: ['Firefox'],
 
         // If browser does not capture in given timeout [ms], kill it
