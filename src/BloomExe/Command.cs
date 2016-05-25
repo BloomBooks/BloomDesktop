@@ -40,8 +40,32 @@ namespace Bloom
 
 		public void Execute()
 		{
+			if (Bouncing())
+				return;
 			Implementer();
+			SetBounceTime();	// Start bounce timing here in case implementer is slow.
 		}
+
+		private readonly static TimeSpan _bounceWait = TimeSpan.FromMilliseconds(500);
+		private static DateTime _previousClickTime = DateTime.MinValue;
+		/// <summary>
+		/// Check whether the click activating this command came too quickly to be a separate command.
+		/// This handles people double-clicking when they should single click (or clicking again while
+		/// a command is executing that takes longer than they think it should).
+		/// </summary>
+		private static bool Bouncing()
+		{
+			var now = DateTime.Now;
+			var bouncing = now - _previousClickTime < _bounceWait;
+			_previousClickTime = now;
+			return bouncing;
+		}
+
+		private static void SetBounceTime()
+		{
+			_previousClickTime = DateTime.Now;
+		}
+
 		protected virtual void RaiseEnabledChanged()
 		{
 			var handler = EnabledChanged;
