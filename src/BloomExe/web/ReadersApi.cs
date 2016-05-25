@@ -124,7 +124,7 @@ namespace Bloom.Api
 					break;
 
 				case "makeLetterAndWordList":
-					MakeLetterAndWordList(request.RequiredPostValue("settings"), request.RequiredParam("allWords"));					
+					MakeLetterAndWordList(request.RequiredPostValue("settings"), request.RequiredPostValue("allWords"));
 					request.Succeeded();
 					break;
 

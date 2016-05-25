@@ -12,7 +12,7 @@ import {handleBookSettingCheckboxClick} from './bookSettings/bookSettings';
 export {showOrHidePanel_click};
 export {removeToolboxMarkup};
 export {showSetupDialog, initializeReaderSetupDialog, closeSetupDialog} from './readers/readerSetup/readerSetupDialog';
-export {addWordListChangedListener, beginSaveChangedSettings} from './readers/readerTools';
+export {addWordListChangedListener, beginSaveChangedSettings, makeLetterWordList} from './readers/readerTools';
 export {loadLongpressInstructions} from '../js/bloomEditing';
 export {TalkingBookModel}; // one function is called by CSharp; also, exporting something from it gets it included in the bundle.
 export {LeveledReaderToolboxPanel}; // just to make sure it gets included in the bundle (and adds an instance of itself to the collection in toolbox.ts)
