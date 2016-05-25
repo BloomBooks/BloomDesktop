@@ -1010,6 +1010,10 @@ namespace Bloom.Book
 				name = name.Replace(c, ' ');
 			}
 			name = name.TrimStart(new [] {'.',' ','\t'});
+			// Windows does not allow directory names ending in period.
+			// If we give it a chance, it will make a directory without the dots,
+			// but all our code that thinks the folder name has the dots will break (e.g., BL-
+			name = name.TrimEnd(new[] {'.'});
 			return name.Trim();
 		}
 

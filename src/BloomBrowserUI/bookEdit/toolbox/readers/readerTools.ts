@@ -12,6 +12,7 @@ import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 import {DataWord, clearWordCache} from './libSynphony/bloomSynphonyExtensions';
 import "../../../lib/jquery.onSafe";
 import axios = require('axios');
+import * as _ from 'underscore';
 
 interface textMarkup extends JQueryStatic {
   cssSentenceTooLong(): JQuery;
@@ -289,7 +290,7 @@ export function addWordListChangedListener(listenerNameAndContext: string, callb
   getTheOneReaderToolsModel().wordListChangedListeners[listenerNameAndContext] = callback;
 }
 
-function makeLetterWordList(): void {
+export function makeLetterWordList(): void {
 
   // get a copy of the current settings
   var settings: ReaderSettings = <ReaderSettings>jQuery.extend(true, {}, getTheOneReaderToolsModel().synphony.source);
