@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="16.631784mm"
-   height="16.468609mm"
-   viewBox="0 0 58.93152 58.353338"
+   width="16.399689mm"
+   height="16.244881mm"
+   viewBox="0 0 58.109134 57.5606"
    id="svg5354"
    version="1.1"
    inkscape:version="0.91 r13725"
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="-362.80828"
-     inkscape:cy="-19.278531"
+     inkscape:zoom="11.2"
+     inkscape:cx="-4.4537557"
+     inkscape:cy="32.108528"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -35,10 +35,10 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1719"
-     inkscape:window-height="1177"
-     inkscape:window-x="1192"
-     inkscape:window-y="468"
+     inkscape:window-width="1200"
+     inkscape:window-height="1867"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata5359">
@@ -48,7 +48,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -56,15 +56,16 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-1061.9628,-317.47125)">
+     transform="translate(-1062.2833,-317.84534)">
     <path
+       id="path7127"
        inkscape:connector-curvature="0"
-       id="path5697-5"
-       d="m 1095.5161,356.58864 c 0.3371,-20.9806 -7.2596,-25.8853 -11.7861,-29.24279 -3.9588,-2.9367 -11.9383,-5.9839 -17.7055,-7.073 -4.2176,29.16329 1.7679,51.23409 25.9266,52.75009 27.5407,-3.9089 26.9956,-19.6044 25.5829,-52.15559 -15.1765,1.334 -19.8051,5.9246 -19.8051,5.9246 l -3.2638,2.76389"
-       style="fill:none;fill-opacity:1;stroke:#d65649;stroke-width:5.60329962;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:export-filename="X:\dev\b36\src\BloomExe\Resources\LogoForSplashScreen.png"
        inkscape:export-xdpi="108.54"
        inkscape:export-ydpi="108.54"
-       sodipodi:nodetypes="ccccccc" />
+       sodipodi:nodetypes="ccccccc"
+       class="st1"
+       d="m 1095.1258,355.83531 c 0.3453,-19.34039 -6.6771,-23.83013 -10.8214,-26.9384 -3.6839,-2.64779 -11.0517,-5.52583 -16.3473,-6.56192 -3.9141,26.82328 1.6118,47.19976 23.8302,48.58122 25.3266,-3.56876 24.8661,-18.07405 23.5998,-48.00561 -13.9296,1.26633 -18.1892,5.4107 -18.1892,5.4107 l -0.8058,0.57561"
+       style="fill:none;stroke:#d65649;stroke-width:8.97946739;stroke-linejoin:round" />
   </g>
 </svg>

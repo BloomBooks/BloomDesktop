@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -61,7 +61,7 @@
     <RootNamespace>Bloom</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>desktopAndTaskBar.ico</ApplicationIcon>
+    <ApplicationIcon>bloom.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyName>Bloom</AssemblyName>
@@ -1251,6 +1251,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <None Include="Resources\epubPublishButton.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bloom.ico" />
     <Content Include="desktopAndTaskBar.ico" />
     <Content Include="desktopAndTaskBar.svg.ico" />
     <None Include="Resources\normal.svg.ico" />
