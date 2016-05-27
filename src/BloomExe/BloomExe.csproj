@@ -1212,7 +1212,6 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </ItemGroup>
   <ItemGroup>
     <SourceFiles Include="..\..\lib\dotnet\*.config" />
-    <SourceFiles Include="..\..\packages\SharpFont.3.1.0\config\SharpFont.dll.config" Condition="'$(OS)'!='Windows_NT'" />
   </ItemGroup>
   <ItemGroup>
     <RemoteDebugFiles Include="..\..\remoteDebugging\**" />

@@ -220,14 +220,15 @@ namespace Bloom
 			{
 				// Note: this is only used for the Undo button in the toolbar;
 				// ctrl-z is handled in JavaScript directly.
-				var result = RunJavaScript("(typeof FrameExports === 'undefined' || typeof FrameExports.handleUndo === 'undefined') ? 'undefined' : 'ok'");
-				if (result == "ok")
+				switch (CanUndoWithJavaScript)
 				{
-					RunJavaScript("FrameExports.handleUndo()");
-				}
-				else
-				{
-					_browser.Undo();
+					case JavaScriptUndoState.Disabled: break; // this should not even have been called
+					case JavaScriptUndoState.DependsOnBrowser:
+						_browser.Undo();
+						break;
+					case JavaScriptUndoState.Enabled:
+						RunJavaScript("FrameExports.handleUndo()");
+						break;
 				}
 			};
 		}
@@ -276,21 +277,54 @@ namespace Bloom
 			}
 		}
 
-		private bool CanUndo
+		enum JavaScriptUndoState
+		{
+			Disabled,
+			Enabled,
+			DependsOnBrowser
+		}
+
+		// Answer what we can determine about Undo from our JavaScript canUndo method.
+		// Some Undo tasks are best handled in JavaScript; others, the best we can do is to use the browser's
+		// built-in CanUndo and Undo. This method is used by both CanUndo and the actual Undo code (in SetEditingCommands)
+		// to make sure that consistently we call FrameExports.handleUndo to implement undo if FrameExports.canUndo()
+		// returns "yes"; if it returns "fail" we let the browser both determine whether Undo is possible and
+		// implement Undo if so.
+		// (Currently these are the only two things canUndo returns. However, it seemed marginally worth keeping the
+		// previous logic that it could also return something else indicating that Undo is definitely not possible.)
+		private JavaScriptUndoState CanUndoWithJavaScript
 		{
 			get
 			{
 				if (_browser == null)
-					return false;
+					return JavaScriptUndoState.Disabled;
 				var result = RunJavaScript("(typeof FrameExports === 'undefined' || typeof FrameExports.canUndo === 'undefined') ? 'f' : 'y'");
 				if (result == "y")
 				{
 					result = RunJavaScript("FrameExports.canUndo()");
 					if (result == "fail")
-						return _browser.CanUndo; // not using special Undo.
-					return result == "yes";
+						return JavaScriptUndoState.DependsOnBrowser; // not using special Undo.
+					return result == "yes" ? JavaScriptUndoState.Enabled : JavaScriptUndoState.Disabled;
 				}
-				return _browser.CanUndo;
+				return JavaScriptUndoState.DependsOnBrowser;
+			}
+		}
+
+		private bool CanUndo
+		{
+			get
+			{
+				switch (CanUndoWithJavaScript)
+				{
+					case JavaScriptUndoState.Enabled:
+						return true;
+					case JavaScriptUndoState.Disabled:
+						return false;
+					case JavaScriptUndoState.DependsOnBrowser:
+						return _browser.CanUndo;
+					default:
+						throw new ApplicationException("Illegal JavaScriptUndoState");
+				}
 			}
 		}
 
