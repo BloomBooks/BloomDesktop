@@ -17,7 +17,7 @@ namespace Bloom.Api
 	/// Alternatively, you could have multiple instances of this class, each with its own "port" parameter, and intended for use by a single, simple end point.
 	/// That is the case as this is introduced in Bloom 3.6, for getting the peak level of the audio coming from a microphone.
 	/// </summary>
-	class BloomWebSocketServer : IDisposable
+	public class BloomWebSocketServer : IDisposable
 	{
 		//Note, in normal web apps, you'd have any number of clients opening sockets to this single server. It would be 1 to n. In Bloom, where there is
 		//only a single client, we think more in terms of 1 to 1.  However there's nothing preventing multiple parts of the Bloom client from opening their
@@ -25,7 +25,7 @@ namespace Bloom.Api
 		private WebSocketServer _server;
 		private List<IWebSocketConnection> _allSockets;
 
-		public BloomWebSocketServer(string port)
+		public void Init(string port)
 		{
 			FleckLog.Level = LogLevel.Warn;
 			_allSockets = new List<IWebSocketConnection>();
@@ -58,13 +58,17 @@ namespace Bloom.Api
 			}
 		}
 
-		public void Send(string message)
+		public void Send(string eventId, string eventData)
 		{
+			dynamic e = new DynamicJson();
+			e.id = eventId;
+			e.payload = eventData;
+
 			//note, if there is no open socket, this isn't going to do anything, and
 			//that's (currently) fine.
 			foreach (var socket in _allSockets)
 			{
-				socket.Send(message);
+				socket.Send(e.ToString());
 			}
 		}
 

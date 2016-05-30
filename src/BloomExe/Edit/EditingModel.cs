@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -50,6 +51,7 @@ namespace Bloom.Edit
 		private bool _inProcessOfDeleting;
 		private string _toolboxFolder;
 		private EnhancedImageServer _server;
+		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private Dictionary<string, IPage> _templatePagesDict;
 		private string _lastPageAdded;
@@ -80,7 +82,8 @@ namespace Bloom.Edit
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
 			SendReceiver sendReceiver,
-			EnhancedImageServer server)
+			EnhancedImageServer server,
+			BloomWebSocketServer webSocketServer)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
@@ -90,6 +93,7 @@ namespace Bloom.Edit
 			_collectionSettings = collectionSettings;
 			_sendReceiver = sendReceiver;
 			_server = server;
+			_webSocketServer = webSocketServer;
 			_templatePagesDict = null;
 			_lastPageAdded = String.Empty;
 
@@ -865,6 +869,8 @@ namespace Bloom.Edit
 			{
 				try
 				{
+					_webSocketServer.Send("saving", "");
+
 					// CleanHtml already requires that we are on UI thread. But it's worth asserting here too in case that changes.
 					// If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and _inProcessOfSaving,
 					// and would need to be careful about whether any delayed tasks needed to be on the UI thread.
