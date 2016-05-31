@@ -566,11 +566,6 @@ namespace Bloom.Edit
 						_recorder = null;
 					}
 #endif
-					if (_webSocketServer != null)
-					{
-						_webSocketServer.Dispose();
-						_webSocketServer = null;
-					}
 				}
 
 				// shared (dispose and finalizable) cleanup logic
