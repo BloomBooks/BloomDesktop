@@ -93,7 +93,7 @@ namespace BloomTests
 		public void BloomBrowserUIIsPrefferedOverFactorXMatter()
 		{
 			var path = _fileLocator.LocateFile("editMode.css");
-			Assert.That(Path.GetDirectoryName(path), Is.StringContaining(BloomFileLocator.BrowserRoot));
+			Assert.That(Path.GetDirectoryName(path).Replace("\\", "/"), Is.StringContaining(BloomFileLocator.BrowserRoot.Replace("\\", "/")));
 		}
 
 		/// <summary>

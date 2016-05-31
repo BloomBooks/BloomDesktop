@@ -165,7 +165,7 @@ namespace Bloom.Publish
 			Debug.Assert(browser.Window != null);
 			if (browser.Window != null)
 			{
-				using (var context = new AutoJSContext(browser.Window.JSContext))
+				using (var context = new AutoJSContext(browser.Window))
 				{
 					string result;
 					context.EvaluateScript(script, (nsISupports)browser.Document.DomObject, out result);
@@ -192,7 +192,7 @@ namespace Bloom.Publish
 				return;
 
 			var browser = ((GeckoWebBrowser)_pdfViewerControl);
-			using (AutoJSContext context = new AutoJSContext(browser.Window.JSContext))
+			using (AutoJSContext context = new AutoJSContext(browser.Window))
 			{
 				string result;
 				context.EvaluateScript(@"window.print()", (nsISupports)browser.Document.DomObject, out result);
@@ -311,7 +311,7 @@ namespace Bloom.Publish
 		public void BrowserPrint()
 		{
 			var browser = ((GeckoWebBrowser)_pdfViewerControl);
-			using (AutoJSContext context = new AutoJSContext (browser.Window.JSContext)) {
+			using (AutoJSContext context = new AutoJSContext (browser.Window)) {
 				nsIDOMWindow domWindow = browser.Window.DomWindow;
 				nsIWebBrowserPrint print = Xpcom.QueryInterface<nsIWebBrowserPrint> (domWindow);
 

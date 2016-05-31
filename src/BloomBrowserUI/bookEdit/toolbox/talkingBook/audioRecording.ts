@@ -428,6 +428,8 @@ export default class AudioRecording {
     // (reminiscent of leds in a hardware level meter) within the canvas in the
     //  top right of the bubble to indicate the current peak level.
     public setstaticPeakLevel(level: string): void {
+        if (!this.levelCanvas)
+            return; // just in case C# calls this unexpectedly
         var ctx = this.levelCanvas.getContext("2d");
         // Erase the whole canvas
         var height = 15;
@@ -831,7 +833,7 @@ export default class AudioRecording {
         // not like this. It seems to work fine without it, and I don't know why we had it, so I am just
         // leaving it out.
         var event = new MessageEvent(eventName, {'bubbles': true, 'cancelable': true, 'data': eventData });
-        document.dispatchEvent(event);
+        top.document.dispatchEvent(event);
     }
     
     

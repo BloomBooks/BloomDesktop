@@ -37,7 +37,7 @@ $(window).ready(function(){
 function fireCSharpEvent(eventName, eventData) {
 
     var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
-    document.dispatchEvent(event);
+    top.document.dispatchEvent(event);
 }
 
 function loadNextThumbnail() {
