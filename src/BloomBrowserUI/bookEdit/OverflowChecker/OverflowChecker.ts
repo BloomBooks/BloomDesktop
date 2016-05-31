@@ -1,6 +1,8 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../StyleEditor/StyleEditor.ts" />
 
+import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
 }
@@ -136,12 +138,29 @@ export default class OverflowChecker {
 
         // Type 1 Overflow
         var $box = $(box);
+        if ($box.hasClass('overflow')) {
+          // The restriction is an attempt not to remove other qtips, like the bloom hint bubbles.
+          $box.qtip("destroy");
+        }
         $box.removeClass('overflow');
         $box.removeClass('thisOverflowingParent');
+        $box.off('mousemove.overflow');
+        $box.off('mouseleave.overflow');
+        $box.parents('.childOverflowingThis').each((dummy, parent) => {
+          $(parent).qtip("destroy");
+        });
         $box.parents().removeClass('childOverflowingThis');
 
         if (OverflowChecker.IsOverflowingSelf(box)) {
-            $box.addClass('overflow');
+          $box.addClass('overflow');
+          theOneLocalizationManager.asyncGetText('EditTab.Overflow', 'This box has more text than will fit').done(overflowText => {
+            $box.qtip({
+              content: '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' + overflowText,
+              show: { event: 'mouseenter' },
+              hide: { event: 'mouseleave' },
+              position: { my: 'top right', at: 'right bottom' }
+            });
+          });
         }
 
         var container = $box.closest('.marginBox');
@@ -153,19 +172,49 @@ export default class OverflowChecker {
         editablePageElements.each(function() {
             var $this = $(this);
             var overflowingAncestor = OverflowChecker.overflowingAncestor($this[0]);
-            if (overflowingAncestor == null) {
-                if (!OverflowChecker.IsOverflowingSelf($this[0])) {
-                    $this.removeClass('overflow'); // might be a remnant from earlier overflow
-                    $this.removeClass('thisOverflowingParent');
-                }
-           }
-            else {
-                // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
-                // go past the margins
-                // $box.addClass('overflow'); // probably typing in the focused element caused this
-                $this.addClass('thisOverflowingParent'); // but it's this one that is actually overflowing
-                $(overflowingAncestor).addClass('childOverflowingThis');
+          if (overflowingAncestor == null) {
+            if (!OverflowChecker.IsOverflowingSelf($this[0])) {
+              $this.removeClass('overflow'); // might be a remnant from earlier overflow
+              $this.removeClass('thisOverflowingParent');
             }
+          } else {
+            // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
+            // go past the margins
+            // $box.addClass('overflow'); // probably typing in the focused element caused this
+            $this.addClass('thisOverflowingParent'); // but it's this one that is actually overflowing
+            var $overflowingAncestor = $(overflowingAncestor);
+            $overflowingAncestor.addClass('childOverflowingThis');
+            theOneLocalizationManager.asyncGetText('EditTab.OverflowContainer', 'A container on this page is overflowing').done(overflowText => {
+              $overflowingAncestor.qtip({
+                content: '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' + overflowText,
+                show: { event: 'enterBorder' }, // nonstandard events triggered by mouse move in code below
+                hide: { event: 'leaveBorder' },
+                position: { my: 'top right', at: 'right bottom' }
+              });
+            });
+            var showing = false;
+            $overflowingAncestor.on('mousemove.overflow', event => {
+              var bounds = overflowingAncestor.getBoundingClientRect();
+              var scaleY = bounds.height / overflowingAncestor.offsetHeight;
+              var offsetY = (event.clientY - bounds.top) / scaleY;
+              // The cursor is likely to be a text cursor at this point, so it's hard to point exactly at the line. If the mouse is close,
+              // show the tooltip.
+              var shouldShow = offsetY >= $overflowingAncestor.innerHeight() - 10 && offsetY <= $overflowingAncestor.outerHeight(false) + 10;
+              if (shouldShow && !showing) {
+                showing = true;
+                $overflowingAncestor.trigger('enterBorder');
+              } else if (!shouldShow && showing) {
+                showing = false;
+                $overflowingAncestor.trigger('leaveBorder');
+              }
+            });
+            $overflowingAncestor.on('mouseleave.overflow', () => {
+              if (showing) {
+                showing = false;
+                $overflowingAncestor.trigger('leaveBorder');
+              }
+            });
+          }
         });
         OverflowChecker.UpdatePageOverflow(container.closest('.bloom-page'));
     } // end MarkOverflowInternal

@@ -1985,6 +1985,18 @@
         <seg>There are no other layout options for this template.</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Overflow">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This box has more text than will fit</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.OverflowContainer">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A container on this page is overflowing</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
       <tuv xml:lang="en">
         <seg>Picture Intellectual Property Information</seg>
