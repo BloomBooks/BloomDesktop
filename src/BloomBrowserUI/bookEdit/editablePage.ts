@@ -33,6 +33,25 @@ var styleSheets = [
     'bookEdit/toolbox/talkingBook/audioRecording.css'
 ];
 
+// This is using an implementation secret of a particular version of ckeditor; but it seems to
+// be the only way to get at whether ckeditor thinks there is something it can undo.
+// And we really NEED to get at the ckeditor undo mechanism, since ckeditor intercepts paste
+// in such a way that after a paste the C# browser object answers false to CanUndo.
+export function ckeditorCanUndo(): boolean {
+  // review: do we need to examine all instances?
+  if (CKEDITOR && CKEDITOR.currentInstance
+    && (<any>CKEDITOR.currentInstance).undoManager
+    && (<any>CKEDITOR.currentInstance).undoManager.undoable()) {
+    return true;
+  }
+  return false;
+}
+
+export function ckeditorUndo() {
+  // review: do we need to examine all instances?
+  (<any>CKEDITOR.currentInstance).undoManager.undo();
+}
+
 
 for (var j = 0; j < styleSheets.length; j++) {
     document.write('<link rel="stylesheet" type="text/css" href="/bloom/' + styleSheets[j] + '">');
