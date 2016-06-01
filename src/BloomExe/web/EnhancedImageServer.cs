@@ -488,13 +488,42 @@ namespace Bloom.Api
 			}
 			if (!File.Exists(path))
 			{
-				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Server could not find the file "+path,"LocalPath was "+localPath);
+#if DEBUG
+				ReportMissingFile(localPath, path);
+#endif
 				return false;
 			}
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
 		}
+
+#if DEBUG
+		// Our Redium shell is a crudely cut-down version of a larger page and tries to load all kinds of stuff we don't need
+		// and don't have.
+		bool FileMayBeMissing(string path)
+		{
+			if (string.IsNullOrEmpty(path))
+				return false;
+			if (!path.Contains("Epub export"))
+				return false;
+			if (path.EndsWith(".png"))
+				return true;
+			if (path.EndsWith("display-options.xml"))
+				return true;
+			if (path.EndsWith("encryption.xml"))
+				return true;
+			return false;
+		}
+
+		// overridden in tests
+		internal virtual void ReportMissingFile(string localPath, string path)
+		{
+			if (!FileMayBeMissing(localPath))
+				Console.WriteLine("(DEBUG ONLY) Not Found" + System.Environment.NewLine + "localPath=" + localPath + System.Environment.NewLine + "path=" + path);
+
+		}
+#endif
 
 		/// <summary>
 		/// Requests with ?generateThumbnaiIfNecessary=true are potentially recursive in that we may have to navigate

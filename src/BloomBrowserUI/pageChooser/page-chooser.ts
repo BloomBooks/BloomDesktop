@@ -325,7 +325,7 @@ class PageChooser {
     fireCSharpEvent(eventName, eventData) : void {
         //console.log('firing CSharp event: ' + eventName);
         var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
-        document.dispatchEvent(event);
+        top.document.dispatchEvent(event);
     }
 }
 

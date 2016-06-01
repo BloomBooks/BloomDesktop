@@ -125,7 +125,7 @@
         e.preventDefault();
         $container.data("easytabs").opts.cycle = false;
         $container.data("easytabs").skipUpdateToHash = false;
-        $clicked = $(this);
+        var $clicked = $(this);
         $.fn.easytabs.methods.selectTab.apply($clicked, [$container]);
       });
     },

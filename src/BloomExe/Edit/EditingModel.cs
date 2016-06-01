@@ -48,6 +48,7 @@ namespace Bloom.Edit
 		private List<ContentLanguage> _contentLanguages;
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
+		private bool _inProcessOfLoading;
 		private string _toolboxFolder;
 		private EnhancedImageServer _server;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
@@ -145,7 +146,7 @@ namespace Bloom.Edit
 			if (details.From == _view)
 			{
 				SaveNow();
-				_view.RunJavaScript("FrameExports.getPageFrameExports().disconnectForGarbageCollection();");
+				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
 				// This bizarre behavior prevents BL-2313 and related problems.
 				// For some reason I cannot discover, switching tabs when focus is in the Browser window
 				// causes Bloom to get deactivated, which prevents various controls from working.
@@ -493,13 +494,20 @@ namespace Bloom.Edit
 
 			// BL-2339: try to choose the last edited page
 			var page = _currentlyDisplayedBook.GetPageByIndex(_currentlyDisplayedBook.UserPrefs.MostRecentPage) ?? _currentlyDisplayedBook.FirstPage;
-
-			if (page != null)
-				_pageSelection.SelectPage(page);
-
-			if (_view != null)
+			try
 			{
-				_view.UpdatePageList(false);
+				_inProcessOfLoading = true;
+				if (page != null)
+					_pageSelection.SelectPage(page);
+
+				if (_view != null)
+				{
+					_view.UpdatePageList(false);
+				}
+			}
+			finally
+			{
+				_inProcessOfLoading = false;
 			}
 		}
 
@@ -526,11 +534,12 @@ namespace Bloom.Edit
 		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
 		{
 			CheckForBL2364("start of page selection changing--should have old IDs");
-			if (_view != null && !_inProcessOfDeleting)
+			if (_view != null && !_inProcessOfDeleting && !_inProcessOfLoading)
 			{
 				_view.ChangingPages = true;
-				_view.RunJavaScript("FrameExports.getPageFrameExports().pageSelectionChanging();");
-				_view.RunJavaScript("FrameExports.getPageFrameExports().disconnectForGarbageCollection();");
+				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().pageSelectionChanging();}");
+				FinishSavingPage();
+				_view.RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().disconnectForGarbageCollection();}");
 			}
 		}
 

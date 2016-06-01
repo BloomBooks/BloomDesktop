@@ -3,7 +3,7 @@
 
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import '../../lib/jquery.i18n.custom';
-import "../../lib/jquery.onSafe"; 
+import "../../lib/jquery.onSafe";
 import axios = require('axios');
 import {EditableDivUtils} from '../js/editableDivUtils';
 
@@ -49,7 +49,7 @@ export class ToolBox {
     static fireCSharpToolboxEvent(eventName: string, eventData: string) {
 
     var event = new MessageEvent(eventName, {'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    document.dispatchEvent(event);
+    top.document.dispatchEvent(event);
     }
 
     static getTabModels() { return tabModels;}

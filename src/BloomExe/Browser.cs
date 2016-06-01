@@ -61,35 +61,11 @@ namespace Bloom
 		{
 			if (Xpcom.IsInitialized)
 				return;
-
 			string xulRunnerPath = Environment.GetEnvironmentVariable("XULRUNNER");
 			if (!Directory.Exists(xulRunnerPath))
 			{
-				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
-				if (!Directory.Exists(xulRunnerPath))
-				{
-					//if this is a programmer, go look in the lib directory
-					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-						Path.Combine("lib", "xulrunner"));
-
-					//on my build machine, I really like to have the dir labelled with the version.
-					//but it's a hassle to update all the other parts (installer, build machine) with this number,
-					//so we only use it if we don't find the unnumbered alternative.
-					if (!Directory.Exists(xulRunnerPath))
-					{
-						xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-							Path.Combine("lib", "xulrunner" + XulRunnerVersion));
-					}
-
-					if (!Directory.Exists(xulRunnerPath))
-					{
-						throw new ConfigurationException(
-							"Can't find the directory where xulrunner (version {0}) is installed",
-							XulRunnerVersion);
-					}
-				}
+				xulRunnerPath = "Firefox";
 			}
-
 			Xpcom.Initialize(xulRunnerPath);
 
 			var errorsToHide = new List<string>
@@ -173,20 +149,6 @@ namespace Bloom
 			// This suppresses the normal zoom-whole-window behavior that Gecko normally does when using the mouse while
 			// while holding crtl. Code in bloomEditing.js provides a more controlled zoom of just the body.
 			GeckoPreferences.User["mousewheel.with_control.action"] = 0;
-
-			Application.ApplicationExit += OnApplicationExit;
-		}
-
-		private static void OnApplicationExit(object sender, EventArgs e)
-		{
-			// We come here iff we initialized Xpcom. In that case we want to call shutdown,
-			// otherwise the app might not exit properly.
-			if (XulRunnerShutdown != null)
-				XulRunnerShutdown(null, EventArgs.Empty);
-
-			if (Xpcom.IsInitialized)
-				Xpcom.Shutdown();
-			Application.ApplicationExit -= OnApplicationExit;
 		}
 
 		public Browser()
@@ -406,6 +368,8 @@ namespace Bloom
 			// the page, all are check with English
 			// until we get past that, it's just annoying
 			GeckoPreferences.User["layout.spellcheckDefault"] = 0;
+
+			_browser.FrameEventsPropagateToMainWindow = true; // we want clicks in iframes to propagate all the way up to C#
 
 			RaiseGeckoReady();
 	   }
@@ -833,7 +797,8 @@ namespace Bloom
 					var frameElement = _browser.Window.Document.GetElementById("page") as GeckoIFrameElement;
 					if (frameElement == null)
 						return;
-					contentDocument = frameElement.ContentDocument;
+					// contentDocument = frameElement.ContentDocument; unreliable in Gecko45
+					contentDocument = (GeckoDocument) frameElement.ContentWindow.Document; // TomH says this will always succeed
 				}
 				if (contentDocument == null)
 					return; // can this happen?
@@ -1023,7 +988,7 @@ namespace Bloom
 			// Review JohnT: does this require integration with the NavigationIsolator?
 			if (_browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
 			{
-				using (var context = new AutoJSContext(_browser.Window.JSContext))
+				using (var context = new AutoJSContext(_browser.Window))
 				{
 					string result;
 					context.EvaluateScript(script, (nsISupports)_browser.Document.DomObject, out result);
