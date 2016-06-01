@@ -63,11 +63,6 @@ namespace Bloom.Book
 		//for moq'ing only
 		public Book()
 		{
-#if __MonoCS__
-			// TODO: Fixme - refactor ErrorBook not to use this constructor.
-			// Removing libtidy package from system is an easy way to get an ErrorBook.
-			throw new ApplicationException("This should only be used for test code. ErrorBook uses it and causes uninitalized Books.");
-#endif
 		}
 
 		public Book(BookInfo info, IBookStorage storage, ITemplateFinder templateFinder,
