@@ -111,7 +111,9 @@ export default class AudioRecording {
         this.changeStateAndSetExpected('record');
 
         this.getWebSocket().onmessage = event => {
-                this.setstaticPeakLevel(event.data);
+            var e = JSON.parse(event.data);
+            if(e.id == "peakAudioLevel")
+                    this.setstaticPeakLevel(e.payload);
         }
     }
     
@@ -120,31 +122,18 @@ export default class AudioRecording {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
         page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
-        
-        try{
-            this.disposeWebSocket();
-        }
-        catch(e) {
-            console.log("Error closing staticPeakLevelSocket: "+e);
-        }
     }
     
     private getWebSocket() : WebSocket {
-        if (typeof window.top["peakLevelSocket"] == "undefined") {
+        if (typeof window.top["webSocket"] == "undefined") {
             //currently we use a different port for this websocket, and it's the main port + 1
             const websocketPort = parseInt(window.location.port) + 1;
-            window.top["peakLevelSocket"] = new WebSocket("ws://127.0.0.1:"+websocketPort.toString());
+            //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
+            window.top["webSocket"] = new WebSocket("ws://127.0.0.1:"+websocketPort.toString());
         }
-        return window.top["peakLevelSocket"];
-    }
-    private disposeWebSocket(){
-        if(typeof window.top["peakLevelSocket"] != "undefined")
-        {
-            window.top["peakLevelSocket"].close();
-            window.top["peakLevelSocket"] = undefined;
-        }
-    }
-    
+        return window.top["webSocket"];
+    } 
+        
     // We only do recording in editable divs in the main content language.
     // This should NOT restrict to ones that already contain audio-sentence spans.
     private getRecordableDivs() : JQuery {

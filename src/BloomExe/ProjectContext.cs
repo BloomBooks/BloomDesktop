@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -103,7 +104,8 @@ namespace Bloom
 							typeof (EditingModel),
 							typeof (AudioRecording),
 							typeof(CurrentBookHandler),
-							typeof(ReadersApi)
+							typeof(ReadersApi),
+							typeof(BloomWebSocketServer)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -260,6 +262,8 @@ namespace Bloom
 			var server = _scope.Resolve<EnhancedImageServer>();
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
+
+			_scope.Resolve<BloomWebSocketServer>().Init((ServerBase.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
 			HelpLauncher.RegisterWithServer(server);
 			ExternalLinkController.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
