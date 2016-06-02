@@ -23,15 +23,21 @@ namespace Bloom.web.controllers
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private readonly BookThumbNailer _thumbNailer;
 
+		//these two factories are needed to instantiate template books if we need to generate thumbnails for them
+		private readonly Book.Book.Factory _bookFactory;
+		private readonly BookStorage.Factory _storageFactory;
+
 		public PageTemplatesApi(SourceCollectionsList  sourceCollectionsList,BookSelection bookSelection, 
 			PageSelection pageSelection, TemplateInsertionCommand templateInsertionCommand,
-			BookThumbNailer thumbNailer)
+			BookThumbNailer thumbNailer, Book.Book.Factory bookFactory, BookStorage.Factory storageFactory)
 		{
 			_sourceCollectionsList = sourceCollectionsList;
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
 			_templateInsertionCommand = templateInsertionCommand;
 			_thumbNailer = thumbNailer;
+			_bookFactory = bookFactory;
+			_storageFactory = storageFactory;
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -44,16 +50,14 @@ namespace Bloom.web.controllers
 		/// Returns a json string for initializing the AddPage dialog. It gives paths to our current TemplateBook
 		/// and specifies whether the dialog is to be used for adding pages or choosing a different layout.
 		/// </summary>
-		/// <remarks>If forChooseLayout is true, page argument is required.</remarks>
 		public void HandleTemplatesRequest(ApiRequest request)
 		{
 			dynamic addPageSettings = new ExpandoObject();
 			addPageSettings.defaultPageToSelect = _templateInsertionCommand.MostRecentInsertedTemplatePage == null ? "" : _templateInsertionCommand.MostRecentInsertedTemplatePage.Id;
 			addPageSettings.orientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
 
-			var groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), _sourceCollectionsList.GetSourceBookPaths())
-				.Select(bookTemplatePath => GetPageGroup(bookTemplatePath)).ToList();
-			addPageSettings.groups = groups.ToArray();
+			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), _sourceCollectionsList.GetSourceBookPaths())
+				.Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
 			addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor;
 
 			request.ReplyWithJson(JsonConvert.SerializeObject(addPageSettings));
@@ -79,11 +83,11 @@ namespace Bloom.web.controllers
 		/// be found and returned. Failing this we try for one ending in .png. If this still fails we
 		/// start a process to generate an image from the template page content.
 		/// </summary>
-		/// <param name="path"></param>
+		/// <param name="expectedPathOfThumbnailImage"></param>
 		/// <returns>Should always return true, unless we really can't come up with an image at all.</returns>
-		private string FindOrGenerateThumbnail(string path)
+		private string FindOrGenerateThumbnail(string expectedPathOfThumbnailImage)
 		{
-			var localPath = AdjustPossibleLocalHostPathToFilePath(path);
+			var localPath = AdjustPossibleLocalHostPathToFilePath(expectedPathOfThumbnailImage);
 			var svgpath = Path.ChangeExtension(localPath, "svg");
 			if (File.Exists(svgpath))
 			{
@@ -96,33 +100,31 @@ namespace Bloom.web.controllers
 			}
 			
 			// We don't have an image; try to make one.
-			// This is the one remaining place where the EIS is aware that there is such a thing as a current book.
-			// Unfortunately it is part of a complex bit of logic that mostly doesn't have to do with current book,
-			// so it doesn't feel right to move it to CurrentBookHandler, especially as it's not possible to
-			// identify the queries which need the knowledge in the usual way (by a leading URL fragment).
-			if (_bookSelection.CurrentSelection == null)
-				return ""; // paranoia
-			var template = _bookSelection.CurrentSelection.FindTemplateBook();
-			if (template == null)
-				return ""; // paranoia
-			var caption = Path.GetFileNameWithoutExtension(path).Trim();
+			var templatesDirectoryInTemplateBook = Path.GetDirectoryName(expectedPathOfThumbnailImage);
+			var bookPath = Path.GetDirectoryName(templatesDirectoryInTemplateBook);
+			var templateBook = _bookFactory(new BookInfo(bookPath,false), _storageFactory(bookPath));
+
+			//note: the caption is used here as a key to find the template page.
+			var caption = Path.GetFileNameWithoutExtension(expectedPathOfThumbnailImage).Trim();
 			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
 			if (isLandscape)
 				caption = caption.Substring(0, caption.Length - "-landscape".Length);
 
 			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
-			var templatePage = template.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
+						var templatePage = templateBook.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
 			if (templatePage == null)
-				templatePage = template.GetPages().FirstOrDefault(); // may get something useful?? or throw??
+				templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-			var image = _thumbNailer.GetThumbnailForPage(template, templatePage, isLandscape);
+			var image = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape);
 
 			// The clone here is an attempt to prevent an unexplained exception complaining that the source image for the bitmap is in use elsewhere.
 			using (var b = new Bitmap((Image)image.Clone()))
 			{
 				try
 				{
-					Directory.CreateDirectory(Path.GetDirectoryName(pngpath));
+					//if the directory doesn't exist in the template's directory, make it (i.e. "templates/").
+					Directory.CreateDirectory(templatesDirectoryInTemplateBook);
+					//save this thumbnail so that we don't have to generate it next time
 					b.Save(pngpath);
 					return pngpath;
 				}

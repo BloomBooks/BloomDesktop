@@ -984,18 +984,18 @@ namespace Bloom.Book
 
 		public static void AddStylesheetFromAnotherBook(HtmlDom sourceBookDom, HtmlDom targetBookDom)
 		{
-			var userModifiedStyleSheets = new List<string>();
+			var addedModifiedStyleSheets = new List<string>();
 			//This was refactored from book, where there was these notes:
 			//     NB: at this point this code can't handle the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
 			//     NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
 
-			//At this point, this targetUserModifiedStyleSheets is just used as a place to track which stylesheets we already have
+			//At this point, this addedModifiedStyleSheets is just used as a place to track which stylesheets we already have
 			foreach (string sheetName in sourceBookDom.GetTemplateStyleSheets())
 			{
-				if (!userModifiedStyleSheets.Contains(sheetName))
+				if (!addedModifiedStyleSheets.Contains(sheetName))
 				//nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
 				{
-					userModifiedStyleSheets.Add(sheetName);
+					addedModifiedStyleSheets.Add(sheetName);
 					targetBookDom.AddStyleSheetIfMissing(sheetName);
 				}
 			}

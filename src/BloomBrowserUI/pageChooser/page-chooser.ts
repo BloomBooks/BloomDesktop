@@ -234,7 +234,7 @@ class PageChooser {
     } // loadPageGroups
 
 
-    // This pops one template book ordre from the queue, does the async get, 
+    // This pops one template book order from the queue, does the async get, 
     // loads it in the dialog, then recursively goes back for another.
     // Doing one at a time does two things for us. First, it makes the
     // books get added in the order we want (which we couldn't control if we ask for them all

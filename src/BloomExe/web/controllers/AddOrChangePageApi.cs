@@ -67,25 +67,25 @@ namespace Bloom.web.controllers
 
 		private IPage GetPageTemplate(ApiRequest request)
 		{
-			var p = DynamicJson.Parse(request.RequiredPostJson());
+			var requestData = DynamicJson.Parse(request.RequiredPostJson());
 			//var templateBookUrl = request.RequiredParam("templateBookUrl");
-			var templateBookPath = HttpUtility.HtmlDecode(p.templateBookPath);
+			var templateBookPath = HttpUtility.HtmlDecode(requestData.templateBookPath);
 			var templateBook = _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(templateBookPath);
 			if(templateBook == null)
 			{
-				request.Failed("Could not find template book " + p.templateBookUrl);
+				request.Failed("Could not find template book " + requestData.templateBookUrl);
 				return null;
 			}
 
 			var pageDictionary = templateBook.GetTemplatePagesIdDictionary();
 			IPage page = null;
-			if(pageDictionary.TryGetValue(p.pageId, out page))
+			if(pageDictionary.TryGetValue(requestData.pageId, out page))
 			{
 				return page;
 			}
 			else
 			{
-				request.Failed("Could not find the page " + p.pageId + " in the template book " + p.templateBookUrl);
+				request.Failed("Could not find the page " + requestData.pageId + " in the template book " + requestData.templateBookUrl);
 				return null;
 			}
 		}

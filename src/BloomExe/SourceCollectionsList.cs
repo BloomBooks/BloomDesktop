@@ -68,11 +68,6 @@ namespace Bloom
 			return GetCollectionFolders().SelectMany(Directory.GetDirectories);
 		}
 
-
-		/// <summary>
-		/// Creates actual book collection objects for each source collection
-		/// EXPENSIVE
-		/// </summary>
 		public virtual IEnumerable<string> GetSourceCollectionsFolders()
 		{
 			return from dir in GetCollectionFolders()

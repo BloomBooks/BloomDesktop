@@ -27,14 +27,19 @@ namespace Bloom.web.controllers
 		{
 			var pathToCurrentTemplateHtml = "c:\\some\\templates\\here\\originalTemplate.html";
 			var pathToBasicBook = "c:\\installation dir\\templates\\basic book.htm";
-			var sourceBookPaths = new [] {	"c:\\some\\templates\\here\\alphabet.htm",
+			var pathToAlphabet = "c:\\some\\templates\\here\\alphabet.htm";
+			var pathToZebra = "c:\\some\\templates\\here\\zebras.htm";
+			var sourceBookPaths = new [] {  pathToAlphabet,
 											pathToBasicBook,
 											pathToCurrentTemplateHtml,
-										"c:\\some\\templates\\here\\zebras.htm" };
+											 pathToZebra
+										};
 			var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
 			Assert.AreEqual(sourceBookPaths.Length, result.Count);
 			Assert.AreEqual(0, result.IndexOf(pathToCurrentTemplateHtml), "Template used to make the book should be first in the list.");
-			Assert.AreEqual(1, result.IndexOf(pathToBasicBook), "Basic Book should be second in list when it is not first.");
+			Assert.AreEqual(1, result.IndexOf(pathToBasicBook), "Basic Book should move ahead of Arithmetic to be second in list when it is not first.");
+			Assert.AreEqual(2, result.IndexOf(pathToAlphabet), "Arithmetic should be third.");
+			Assert.AreEqual(3, result.IndexOf(pathToZebra), "Zebra should be last.");
 		}
 	}
 }
