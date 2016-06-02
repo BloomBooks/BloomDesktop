@@ -97,7 +97,7 @@ namespace BloomTests.web
 
 				// Verify
 				Assert.That(transaction.StatusCode, Is.EqualTo(404));
-				Assert.That(Logger.LogText, Contains.Substring("**TestImageServer: File Missing: /non-existing-file.pdf"));
+				Assert.That(Logger.LogText, Contains.Substring("**EnhancedImageServer: File Missing: /non-existing-file.pdf"));
 			}
 		}
 
