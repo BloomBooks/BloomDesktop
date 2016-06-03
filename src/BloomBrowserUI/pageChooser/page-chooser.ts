@@ -244,9 +244,9 @@ class PageChooser {
         var order = queue.shift();
         if(!order)
             return; // no more to get
-        var request = $.get("/bloom/" + order.templateBookPath);
-        
-        request.done( pageData => {
+        axios.get("/bloom/" + order.templateBookPath).then( result =>{
+            var pageData = result.data;
+            
             // Grab all pages in this group
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
@@ -270,20 +270,22 @@ class PageChooser {
                pages = pages.not('.bloom-page[id="5dcd48df-e9ab-4a07-afd4-6a24d0398386"]');
             }
             //console.log("loadPageFromGroup("+order.templateBookFolderUrl+")");
-            this._indexOfPageToSelect = this.loadPageFromGroup(groupToAdd, pages, gridItemHTML, order.templateBookFolderUrl, defaultPageToSelect);
+            this.loadPageFromGroup(groupToAdd, pages, gridItemHTML, order.templateBookFolderUrl, defaultPageToSelect);
+
             this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
+            
+            this.loadNextPageGroup(queue,  groupHTML, gridItemHTML, defaultPageToSelect);
+            
+        }).catch(e=>{
+            //we don't really want to let one bad template keep us from showing others
+            alert("There was a problem reading: " + order.templateBookPath + ". " + e);            
+
+            this.loadNextPageGroup(queue,  groupHTML, gridItemHTML, defaultPageToSelect)
         });
-        request.fail( function(jqXHR, textStatus, errorThrown) {
-            console.log("There was a problem reading: " + order.templateBookPath + " see documentation on : " +
-                jqXHR.status + " " + textStatus + " " + errorThrown);
-        });
-        request.always( () =>
-             this.loadNextPageGroup(queue,  groupHTML, gridItemHTML, defaultPageToSelect)
-        );
     } 
 
     
-    loadPageFromGroup(currentGroup, pageArray, gridItemTemplate, templateBookFolderUrl,  defaultPageToSelect:string ) : number {
+    loadPageFromGroup(currentGroup, pageArray, gridItemTemplate, templateBookFolderUrl,  defaultPageToSelect:string )  {
         if ($(pageArray).length < 1) {
             console.log("pageArray empty for "+templateBookFolderUrl);
             return 0;
@@ -292,10 +294,9 @@ class PageChooser {
         // Remove default template page
         $(".innerGroupContainer", currentGroup).empty();
 
-        var indexToSelect = 0;
+        var indexToSelect = -1;
         // insert a template page for each page with the correct #id on the url
         $(pageArray).each((index, div) => {
-
 
             if ($(div).attr("data-page") === "singleton")
                 return;// skip this one
@@ -308,8 +309,10 @@ class PageChooser {
             $(currentGridItemHtml).attr("data-pictureCount", $(div).find(".bloom-imageContainer").length);
 
             if (currentId === defaultPageToSelect)
-                indexToSelect = index;
-            if (currentId === this._currentPageLayout)
+                this._indexOfPageToSelect = index;
+                
+            // if we're looking to change the layout, grey out thumbnail corresponding to the layotu we already have
+            if (this._forChooseLayout && currentId === this._currentPageLayout)
                 $(currentGridItemHtml).addClass('disabled');
             
             var pageDescription = $(".pageDescription", div).first().text();
@@ -332,8 +335,7 @@ class PageChooser {
             $(div).click((evt) => {
                 this.thumbnailClickHandler(div, evt);
             }); // invisibleThumbCover click
-        }); // each
-        return indexToSelect;
+        }); // each 
     } // loadPageFromGroup
 
 
