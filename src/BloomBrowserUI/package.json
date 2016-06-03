@@ -75,6 +75,7 @@
     "jasmine": "^2.4.1",
     "jasmine-jquery": "^2.1.1",
 
+    "karma-firefox-launcher": "^0.1.7",
     "less-loader": "^2.2.2",
     "path": "^0.12.7",
     "querystring": "^0.2.0",
