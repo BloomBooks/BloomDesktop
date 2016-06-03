@@ -657,6 +657,7 @@ namespace Bloom.WebLibraryIntegration
 		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null)
 		{
 			var bookFolder = book.FolderPath;
+			parseId = ""; // in case of early return
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 			// These bits of data can't easily be set while saving the book because we save one page at a time
 			// and they apply to the book as a whole.
@@ -667,7 +668,11 @@ namespace Bloom.WebLibraryIntegration
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
 			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget);
+			if (progressBox.CancelRequested)
+				return "";
 			_thumbnailer.MakeThumbnailOfCover(book, 256, invokeTarget);
+			if (progressBox.CancelRequested)
+				return "";
 			var uploadPdfPath = UploadPdfPath(bookFolder);
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
@@ -681,6 +686,8 @@ namespace Bloom.WebLibraryIntegration
 					File.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
 				}
 			}
+			if (progressBox.CancelRequested)
+				return "";
 			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath));
 		}
 

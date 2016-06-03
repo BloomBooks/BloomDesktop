@@ -11,6 +11,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using L10NSharp;
 using SIL.IO;
 using SIL.Windows.Forms.ClearShare;
@@ -32,6 +33,8 @@ namespace Bloom.Publish
 		private bool _usingNotesLabel = true;
 		private bool _usingNotesSuggestion = true;
 		private bool _usingCcControls = true;
+		private BackgroundWorker _uploadWorker;
+		private string _originalUploadText;
 
 		private string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
 			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
@@ -261,9 +264,39 @@ namespace Bloom.Publish
 			UpdateDisplay();
 		}
 
+		void EnableNonUploadControls(bool enable)
+		{
+			if (enable)
+			{
+				_uploadButton.Text = _originalUploadText;
+			}
+			else
+			{
+				_originalUploadText = _uploadButton.Text;
+				_uploadButton.Text = LocalizationManager.GetString("Common.Cancel", "Cancel");
+			}
+			var parent = this.Parent;
+			while (parent != null && !(parent is PublishView))
+				parent = parent.Parent;
+			if (parent == null)
+				return;
+			((PublishView)parent).EnableNonUploadRadios(enable);
+			while (parent != null && !(parent is WorkspaceView))
+				parent = parent.Parent;
+			if (parent == null)
+				return;
+			((WorkspaceView)parent).EnableNonPublishTabs(enable);
+		}
+
 		private void _uploadButton_Click(object sender, EventArgs e)
 		{
-			_uploadButton.Enabled = false; // can't start another until done.
+			if (_uploadWorker != null)
+			{
+				// We're already doing an upload, this is now the Cancel button.
+				_progressBox.CancelRequested = true;
+				return;
+			}
+			_progressBox.CancelRequested = false;
 			ScrollControlIntoView(_progressBox);
 			_progressBox.Clear();
 			var info = _book.BookInfo;
@@ -314,31 +347,43 @@ namespace Bloom.Publish
 				}
 			}
 			_progressBox.WriteMessage("Starting...");
-			var worker = new BackgroundWorker();
-			worker.DoWork += BackgroundUpload;
-			worker.WorkerReportsProgress = true;
-			worker.RunWorkerCompleted += (theWorker, completedEvent) =>
+			_uploadWorker = new BackgroundWorker();
+			_uploadWorker.DoWork += BackgroundUpload;
+			_uploadWorker.WorkerReportsProgress = true;
+			_uploadWorker.RunWorkerCompleted += (theWorker, completedEvent) =>
 			{
-				if (completedEvent.Error != null)
+				if (_progressBox.CancelRequested)
 				{
-					string errorMessage = LocalizationManager.GetString("PublishTab.Upload.ErrorUploading","Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.");
-					_progressBox.WriteError(errorMessage,_book.Title);
-					_progressBox.WriteException(completedEvent.Error);
-				}
-				else if (string.IsNullOrEmpty((string)completedEvent.Result))
-				{
-					// Something went wrong, typically already reported.
-					string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice", "Sorry, \"{0}\" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.");
-					_progressBox.WriteError(sorryMessage, _book.Title);
+					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.Cancelled", "Upload was cancelled"));
 				}
 				else {
-					var url = BloomLibraryUrlPrefix + "/browse/detail/" + _parseId;
-					string congratsMessage = LocalizationManager.GetString("PublishTab.Upload.UploadCompleteNotice", "Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
-					_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title, url);
+					if (completedEvent.Error != null)
+					{
+						string errorMessage = LocalizationManager.GetString("PublishTab.Upload.ErrorUploading",
+							"Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.");
+						_progressBox.WriteError(errorMessage, _book.Title);
+						_progressBox.WriteException(completedEvent.Error);
+					}
+					else if (string.IsNullOrEmpty((string) completedEvent.Result))
+					{
+						// Something went wrong, typically already reported.
+						string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice",
+							"Sorry, \"{0}\" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.");
+						_progressBox.WriteError(sorryMessage, _book.Title);
+					}
+					else
+					{
+						var url = BloomLibraryUrlPrefix + "/browse/detail/" + _parseId;
+						string congratsMessage = LocalizationManager.GetString("PublishTab.Upload.UploadCompleteNotice",
+							"Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
+						_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title, url);
+					}
 				}
-				_uploadButton.Enabled = true; // Don't call UpdateDisplay, it will wipe out the progress messages.
+				EnableNonUploadControls(true); // Don't call UpdateDisplay, it will wipe out the progress messages.
+				_uploadWorker = null;
 			};
-			worker.RunWorkerAsync(_book);
+			EnableNonUploadControls(false);
+			_uploadWorker.RunWorkerAsync(_book);
 			//_bookTransferrer.UploadBook(_book.FolderPath, AddNotification);
 		}
 
