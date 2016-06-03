@@ -222,7 +222,7 @@ namespace Bloom.Collection
 			Close();
 			if (!AnyReasonToRestart())
 			{
-				_pageRefreshEvent.Raise(null);
+				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 			}
 			DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
 		}

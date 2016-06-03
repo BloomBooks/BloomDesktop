@@ -528,6 +528,8 @@
     <Compile Include="web\ApiRequest.cs" />
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
+    <Compile Include="web\controllers\AddOrChangePageApi.cs" />
+    <Compile Include="web\controllers\PageTemplatesApi.cs" />
     <Compile Include="web\CurrentBookHandler.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />

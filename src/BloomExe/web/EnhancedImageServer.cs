@@ -60,7 +60,7 @@ namespace Bloom.Api
 
 		public void RegisterEndpointHandler(string key, EndpointHandler handler)
 		{
-			_endpointHandlers[key.Trim(new char[] {'/'})] = handler;
+			_endpointHandlers[key.ToLowerInvariant().Trim(new char[] {'/'})] = handler;
 		}
 
 		// We use two different locks to synchronize access to the methods of this class.
@@ -273,7 +273,7 @@ namespace Bloom.Api
 		/// </summary>
 		/// <param name="localPath"></param>
 		/// <returns></returns>
-		private static string LocalHostPathToFilePath(string localPath)
+		public static string LocalHostPathToFilePath(string localPath)
 		{
 #if __MonoCS__
 			// The JSON format may use a string like this to reference a local path.
@@ -292,12 +292,6 @@ namespace Bloom.Api
 #endif
 		}
 
-		private static string AdjustPossibleLocalHostPathToFilePath(string path)
-		{
-			if (!path.StartsWith("localhost/", StringComparison.InvariantCulture))
-				return path;
-			return LocalHostPathToFilePath(path);
-		}
 
 		private static void ProcessError(IRequestInfo info)
 		{
@@ -427,8 +421,6 @@ namespace Bloom.Api
 				// but it has nothing to do with the actual file location.
 				if (localPath.StartsWith("OriginalImages/"))
 					possibleFullImagePath = localPath.Substring(15);
-				if (info.GetQueryParameters()["generateThumbnaiIfNecessary"] == "true")
-					return FindOrGenerateImage(info, localPath);
 				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
 					path = possibleFullImagePath;
@@ -461,19 +453,6 @@ namespace Bloom.Api
 					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
 			}
 
-			if (!File.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
-			{
-				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
-				// template page, look for that thumbnail in the book that is the template source,
-				// rather than in the folder that stores the page choose dialog HTML and code.
-				var templatePath = Path.Combine(_bookSelection.CurrentSelection.FindTemplateBook().FolderPath,
-					localPath.Substring("pageChooser/".Length));
-				if (File.Exists(templatePath))
-				{
-					info.ReplyWithImage(templatePath);
-					return true;
-				}
-			}
 			if (!File.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
@@ -536,73 +515,6 @@ namespace Bloom.Api
 			return base.IsRecursiveRequestContext(context) || context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
 		}
 
-		/// <summary>
-		/// Currently used in the Add Page dialog, a path with ?generateThumbnaiIfNecessary=true indicates a thumbnail for
-		/// a template page. Usually we expect that a file at the same path but with extension .svg will
-		/// be found and returned. Failing this we try for one ending in .png. If this still fails we
-		/// start a process to generate an image from the template page content.
-		/// </summary>
-		/// <param name="path"></param>
-		/// <returns>Should always return true, unless we really can't come up with an image at all.</returns>
-		private bool FindOrGenerateImage(IRequestInfo info, string path)
-		{
-			var localPath = AdjustPossibleLocalHostPathToFilePath(path);
-			var svgpath = Path.ChangeExtension(localPath, "svg");
-			if (File.Exists(svgpath))
-			{
-				ReplyWithFileContentAndType(info, svgpath);
-				return true;
-			}
-			var pngpath = Path.ChangeExtension(localPath, "png");
-			if (File.Exists(pngpath))
-			{
-				ReplyWithFileContentAndType(info, pngpath);
-				return true;
-			}
-			// We don't have an image; try to make one.
-			// This is the one remaining place where the EIS is aware that there is such a thing as a current book.
-			// Unfortunately it is part of a complex bit of logic that mostly doesn't have to do with current book,
-			// so it doesn't feel right to move it to CurrentBookHandler, especially as it's not possible to
-			// identify the queries which need the knowledge in the usual way (by a leading URL fragment).
-			if (_bookSelection.CurrentSelection == null)
-				return false; // paranoia
-			var template = _bookSelection.CurrentSelection.FindTemplateBook();
-			if (template == null)
-				return false; // paranoia
-			var caption = Path.GetFileNameWithoutExtension(path).Trim();
-			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
-			if (isLandscape)
-				caption = caption.Substring(0, caption.Length - "-landscape".Length);
-			int dummy = 0;
-			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
-			var templatePage = template.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
-			if (templatePage == null)
-				templatePage = template.GetPages().FirstOrDefault(); // may get something useful?? or throw??
-
-			Image image = _thumbNailer.GetThumbnailForPage(template, templatePage, isLandscape);
-
-			// The clone here is an attempt to prevent an unexplained exception complaining that the source image for the bitmap is in use elsewhere.
-			using (Bitmap b = new Bitmap((Image)image.Clone()))
-			{
-				try
-				{
-					{
-						Directory.CreateDirectory(Path.GetDirectoryName(pngpath));
-						b.Save(pngpath);
-					}
-					ReplyWithFileContentAndType(info, pngpath);
-				}
-				catch (Exception)
-				{
-					using (var file = new TempFile())
-					{
-						b.Save(file.Path);
-						ReplyWithFileContentAndType(info, file.Path);
-					}
-				}
-			}
-			return true; // We came up with some reply
-		}
 
 		private static void ReplyWithFileContentAndType(IRequestInfo info, string path)
 		{

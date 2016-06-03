@@ -95,7 +95,8 @@ namespace Bloom.Edit
 		{
 			if(_visible && (Keys) keyData == (Keys.Control | Keys.N))
 			{
-				_model.HandleAddNewPageKeystroke(null);
+				// This is for now a TODO
+				//_model.HandleAddNewPageKeystroke(null);
 			}
 		}
 
@@ -1218,19 +1219,14 @@ namespace Bloom.Edit
 
 		public void ShowAddPageDialog()
 		{
-//			if(_view == null || _inProcessOfDeleting || _addPageDialogShowing)
-//				return;
-			//_addPageDialogShowing = true;
-			var jsonTemplates = _model.GetAddPageArguments(false);
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.showAddPageDialog(" + jsonTemplates + ");}");
+			RunJavaScript("FrameExports.showAddPageDialog(false);");
 		}
 
 		internal void ShowChangeLayoutDialog(IPage page)
 		{
-			var jsonTemplates = _model.GetAddPageArguments(true, page);
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.showAddPageDialog(" + jsonTemplates + ");}");
+			RunJavaScript("FrameExports.showAddPageDialog(true);");
 		}
 
 

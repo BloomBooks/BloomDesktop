@@ -215,10 +215,11 @@
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
-    <Compile Include="web\ReadersApiTests.cs" />
-    <Compile Include="web\ApiTest.cs" />
+    <Compile Include="web\controllers\PageTemplatesApiTests.cs" />
+    <Compile Include="web\controllers\ReadersApiTests.cs" />
+    <Compile Include="web\controllers\ApiTest.cs" />
     <Compile Include="ImageProcessing\ImageServerTests.cs" />
-    <Compile Include="web\EndpointHandlerTests.cs" />
+    <Compile Include="web\controllers\EndpointHandlerTests.cs" />
     <Compile Include="web\RequestInfoTests.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
     <Compile Include="web\EnhancedImageServerTests.cs" />

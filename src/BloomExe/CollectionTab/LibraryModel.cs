@@ -142,8 +142,8 @@ namespace Bloom.CollectionTab
 			_currentEditableCollectionSelection.SelectCollection(editableCllection);
 			yield return editableCllection;
 
-			foreach (var bookCollection in _sourceCollectionsList.GetSourceCollections())
-				yield return bookCollection;
+			foreach (var bookCollection in _sourceCollectionsList.GetSourceCollectionsFolders())
+				yield return _bookCollectionFactory(bookCollection, BookCollection.CollectionType.SourceCollection);
 		}
 
 

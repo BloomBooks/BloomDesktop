@@ -16,6 +16,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
 using Bloom.web;
+using Bloom.web.controllers;
 using Chorus;
 using SIL.Extensions;
 using SIL.IO;
@@ -105,7 +106,8 @@ namespace Bloom
 							typeof (AudioRecording),
 							typeof(CurrentBookHandler),
 							typeof(ReadersApi),
-							typeof(BloomWebSocketServer)
+							typeof(PageTemplatesApi),
+							typeof(AddOrChangePageApi),
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -190,8 +192,7 @@ namespace Bloom
 					builder.Register<SourceCollectionsList>(c =>
 					{
 						var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(),
-							c.Resolve<BookCollection.Factory>(), editableCollectionDirectory);
-						l.RepositoryFolders = new string[] {FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()};
+							editableCollectionDirectory, new string[] { FactoryCollectionsDirectory, GetInstalledCollectionsDirectory() });
 						return l;
 					}).InstancePerLifetimeScope();
 
@@ -267,6 +268,8 @@ namespace Bloom
 			HelpLauncher.RegisterWithServer(server);
 			ExternalLinkController.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
+			_scope.Resolve<PageTemplatesApi>().RegisterWithServer(server);
+			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
 			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 		}

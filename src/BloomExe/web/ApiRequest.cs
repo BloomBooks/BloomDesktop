@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -84,7 +85,10 @@ namespace Bloom.Api
 			_requestInfo.ContentType = "application/json";
 			_requestInfo.WriteCompleteOutput(JsonConvert.SerializeObject(objectToMakeJson));
 		}
-		
+		public void ReplyWithImage(string localPath)
+		{
+			_requestInfo.ReplyWithImage(localPath);
+		}
 
 		public void Failed(string text)
 		{
