@@ -24,16 +24,11 @@ export function handleUndo(): void {
     var toolboxWindow = getToolboxFrameExports();
     if(toolboxWindow && (<any>toolboxWindow).canUndo()) {
         (<any>toolboxWindow).undo();
-    } // elsewhere, we try to ask ckEditor to undo, else just the document
-    else {
-        // reviewslog: I don't think this will ever be executed given the current definition of canUndo.
-        // I've tried to update it to the FrameExports world but am not confident it is right.
-        var ckEditorUndo = this.ckEditorUndoCommand();
-        if(ckEditorUndo === null || !ckEditorUndo.exec()) {
-            //sometimes ckEditor isn't active, so it wasn't paying attention, so it can't do the undo. So ask the document to do an undo:
-            (<any>contentWindow).document.execCommand('undo', false, null);
-        }
+    } 
+    else if (contentWindow && contentWindow.ckeditorCanUndo()) {
+        contentWindow.ckeditorUndo();
     }
+    // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
 }
 
 // This function allows code in the toolbox (or other) frame to create a dialog with dynamic content in the root frame
@@ -54,14 +49,9 @@ export function canUndo(): string {
     if (toolboxWindow && (<any>toolboxWindow).canUndo()) {
         return 'yes';
     }
-    /* I couldn't find a way to ask ckeditor if it is ready to do an undo.
-      The "canUndo()" is misleading; what it appears to mean is, can this command (undo) be undone?*/
-
-    /*  var ckEditorUndo = this.ckEditorUndoCommand();
-        if (ckEditorUndo === null) return 'fail';
-        return ckEditorUndo.canUndo() ? 'yes' : 'no';
-    */
-
+    if (contentWindow && contentWindow.ckeditorCanUndo()) {
+      return 'yes';
+    }
     return "fail"; //go ask the browser
 }
 
