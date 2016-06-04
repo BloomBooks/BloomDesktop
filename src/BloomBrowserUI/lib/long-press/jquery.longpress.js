@@ -9,7 +9,7 @@
  *  Modified August 2015 to add instructions at the bottom
  *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
-
+import {EditableDivUtils} from "../../bookEdit/js/editableDivUtils"; 
 require("./jquery.mousewheel.js");
 
 (function ($, window, undefined) {
