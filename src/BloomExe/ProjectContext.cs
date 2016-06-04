@@ -108,6 +108,7 @@ namespace Bloom
 							typeof(ReadersApi),
 							typeof(PageTemplatesApi),
 							typeof(AddOrChangePageApi),
+							typeof(KeybordingConfigApi),
 							typeof(BloomWebSocketServer)
 						}.Contains(t));
 
@@ -271,6 +272,7 @@ namespace Bloom
 			ToolboxView.RegisterWithServer(server);
 			_scope.Resolve<PageTemplatesApi>().RegisterWithServer(server);
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
+			_scope.Resolve<KeybordingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 		}
