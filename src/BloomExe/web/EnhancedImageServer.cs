@@ -180,6 +180,7 @@ namespace Bloom.Api
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
 			var localPath = GetLocalPathWithoutQuery(info);
+
 			if (localPath.ToLower().StartsWith("api/"))
 			{
 				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
@@ -231,25 +232,6 @@ namespace Bloom.Api
 			{
 				if (ProcessI18N(localPath, info))
 					return true;
-			}
-			else if (localPath.StartsWith("windows/useLongpress"))
-			{
-				var usingIP = false;
-
-				if (SIL.PlatformUtilities.Platform.IsWindows)
-				{
-					// In order to detect an input processor, we need to execute this on the main UI thread.
-					var frm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-					if (frm != null)
-					{
-						usingIP = SIL.Windows.Forms.Keyboarding.KeyboardController.IsFormUsingInputProcessor(frm);
-					}
-				}
-
-				// Send to browser
-				info.ContentType = "text/plain";
-				info.WriteCompleteOutput(usingIP ? "No" : "Yes");
-				return true;
 			}
 			else if (localPath.StartsWith("directoryWatcher/", StringComparison.InvariantCulture))
 				return ProcessDirectoryWatcher(info);
