@@ -19,6 +19,7 @@ using Chorus;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
+using Bloom.web.controllers;
 
 namespace Bloom
 {
@@ -103,7 +104,8 @@ namespace Bloom
 							typeof (EditingModel),
 							typeof (AudioRecording),
 							typeof(CurrentBookHandler),
-							typeof(ReadersApi)
+							typeof(ReadersApi),
+							typeof(KeybordingConfigApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -263,6 +265,7 @@ namespace Bloom
 			HelpLauncher.RegisterWithServer(server);
 			ExternalLinkController.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
+			_scope.Resolve<KeybordingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 		}
