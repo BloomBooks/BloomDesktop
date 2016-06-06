@@ -748,16 +748,9 @@ export var disconnectForGarbageCollection = function () {
 };
 
 export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
-    axios.get('/bloom/windows/useLongpress',
-            {headers:{'Accept': 'text/plain',
-            //The default transformResponse of axios eagerly does a JSON.Parse on everything,
-            //so in a debugger, it will choke on 'Yes'. That exception gets swallowed, but
-            //I'm sick of running into it.
-            //So we specify our own identity transformResponse
-            transformResponse:  (data: string) => <string>data }
-        })
+    axios.get<boolean>('/bloom/api/keyboarding/useLongpress')
         .then(response => {
-           if (response.data === 'Yes') {
+           if (response.data) {
                 theOneLocalizationManager.asyncGetText(
                     'BookEditor.CharacterMap.Instructions',
                     'To select, use your mouse wheel or point at what you want, then release the key.')
@@ -767,7 +760,7 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
                         );
                 });
             };
-        })
+        }).catch(e=>alert("useLongPress query failed:"+e));
 }
 
 
