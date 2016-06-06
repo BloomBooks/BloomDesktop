@@ -461,7 +461,7 @@
         <seg>You must keep the copyright and credits for authors, illustrators, etc.</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Debe mantener el derecho de autor y créditos de autores, ilustradores, etc..</seg>
+        <seg>Debe mantener el derecho de autor y créditos de autores, ilustradores, etc...</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed">
