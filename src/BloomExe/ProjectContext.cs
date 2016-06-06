@@ -21,6 +21,7 @@ using Chorus;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
+using Bloom.web.controllers;
 
 namespace Bloom
 {
@@ -109,6 +110,7 @@ namespace Bloom
 							typeof(PageTemplatesApi),
 							typeof(AddOrChangePageApi),
 							typeof(BloomWebSocketServer)
+							typeof(KeybordingConfigApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -271,6 +273,7 @@ namespace Bloom
 			ToolboxView.RegisterWithServer(server);
 			_scope.Resolve<PageTemplatesApi>().RegisterWithServer(server);
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
+			_scope.Resolve<KeybordingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 		}
