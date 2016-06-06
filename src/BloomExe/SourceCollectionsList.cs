@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Bloom.Collection;
 
@@ -8,90 +10,94 @@ namespace Bloom
 {
 	public interface ITemplateFinder
 	{
-		Book.Book FindTemplateBook(string key);
+		Book.Book FindAndCreateTemplateBookByFileName(string key);
 	}
 
 	public class SourceCollectionsList : ITemplateFinder
 	{
 		private readonly Book.Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
-		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly string _editableCollectionDirectory;
+		private readonly IEnumerable<string> _sourceRootFolders;
 
 		//for moq'ing
 		public SourceCollectionsList(){}
 
-		public SourceCollectionsList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, BookCollection.Factory bookCollectionFactory, string editableCollectionDirectory)
+		public SourceCollectionsList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, 
+			string editableCollectionDirectory, 
+			IEnumerable<string> sourceRootFolders)
 		{
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
-			_bookCollectionFactory = bookCollectionFactory;
 			_editableCollectionDirectory = editableCollectionDirectory;
+			_sourceRootFolders = sourceRootFolders;
 		}
 
-		public IEnumerable<string> RepositoryFolders
+		public Book.Book FindAndCreateTemplateBookByFileName(string fileName)
 		{
-			get;
-			set;
+			return FindAndCreateTemplateBook(templateDirectory => Path.GetFileName(templateDirectory) == fileName);
+		}
+		public Book.Book FindAndCreateTemplateBookByFullPath(string path)
+		{
+			return FindAndCreateTemplateBook(templateDirectory =>templateDirectory == Path.GetDirectoryName(path));
 		}
 
-		public Book.Book FindTemplateBook(string key)
+		public Book.Book FindAndCreateTemplateBook(Func<string, bool> predicate)
 		{
-			foreach (var root in RepositoryFolders)
+			return GetSourceBookFolders()
+				.Where(predicate)
+				.Select(dir => _bookFactory(new BookInfo(dir, false), _storageFactory(dir)))
+				.FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Gives paths to the html files for all source books
+		/// </summary>
+		public IEnumerable<string> GetSourceBookPaths()
+		{
+			return GetCollectionFolders()
+				.SelectMany(Directory.GetDirectories)
+					.Select(BookStorage.FindBookHtmlInFolder);
+		}
+
+		/// <summary>
+		/// Gives paths to each source book folder
+		/// </summary>
+		public IEnumerable<string> GetSourceBookFolders()
+		{
+			return GetCollectionFolders().SelectMany(Directory.GetDirectories);
+		}
+
+		public virtual IEnumerable<string> GetSourceCollectionsFolders()
+		{
+			return from dir in GetCollectionFolders()
+				where dir != _editableCollectionDirectory
+				      && !Path.GetFileName(dir).StartsWith(".")
+				select dir;
+		}
+
+		/// <summary>
+		/// Look in each of the roots and find the collection folders
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<string> GetCollectionFolders()
+		{
+			foreach(var root in _sourceRootFolders.Where(Directory.Exists))
 			{
-				if (!Directory.Exists(root))
-					continue;
-				foreach (var collectionDir in Directory.GetDirectories(root))
+				foreach(var collectionDir in Directory.GetDirectories(root))
 				{
-					foreach (var templateDir in Directory.GetDirectories(collectionDir))
-					{
-						if (Path.GetFileName(templateDir) == key)
-							return _bookFactory(new BookInfo(templateDir,false), _storageFactory(templateDir));
-								//review: this is loading the book both in the librarymodel, and here
-					}
+					yield return collectionDir;
 				}
 
 				//dereference shortcuts to folders living elsewhere
 
-				foreach (var shortcut in Directory.GetFiles(root, "*.lnk", SearchOption.TopDirectoryOnly))
+				foreach(var collectionDir in Directory.GetFiles(root, "*.lnk", SearchOption.TopDirectoryOnly)
+					.Select(ResolveShortcut.Resolve).Where(Directory.Exists))
 				{
-					var collectionDir = ResolveShortcut.Resolve(shortcut);
-					if (Directory.Exists(collectionDir))
-					{
-						foreach (var templateDir in Directory.GetDirectories(collectionDir))
-						{
-							if (Path.GetFileName(templateDir) == key)
-								return _bookFactory(new BookInfo(templateDir,false),_storageFactory(templateDir));
-							//review: this is loading the book both in the librarymodel, and here
-						}
-					}
-				}
-			}
-			return null;
-		}
-
-		public virtual IEnumerable<BookCollection> GetSourceCollections()
-		{
-			foreach (var root in RepositoryFolders)
-			{
-				if (!Directory.Exists(root))
-					continue;
-
-				foreach (var dir in Directory.GetDirectories(root))
-				{
-					if (dir == _editableCollectionDirectory || Path.GetFileName(dir).StartsWith(".")) //skip thinks like .idea, .hg, etc.
-						continue;
-					yield return _bookCollectionFactory(dir, BookCollection.CollectionType.SourceCollection);
-				}
-
-				//follow shortcuts
-				foreach (var shortcut in Directory.GetFiles(root, "*.lnk", SearchOption.TopDirectoryOnly))
-				{
-					var path = ResolveShortcut.Resolve(shortcut);
-					if (path!=_editableCollectionDirectory && Directory.Exists(path))
-						yield return _bookCollectionFactory(path, BookCollection.CollectionType.SourceCollection);
+					yield return collectionDir;
 				}
 			}
 		}
+
 	}
 }

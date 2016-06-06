@@ -1,5 +1,11 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jquery.gridly.d.ts" />
+///<reference path="../../typings/toastr/toastr.d.ts"/>
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
+
+import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+
+import * as toastr from 'toastr';
 import * as $ from 'jquery';
 import '../../modified_libraries/gridly/jquery.gridly.js';
 import {SetImageElementUrl} from '../js/bloomImages';
@@ -32,12 +38,38 @@ $(window).ready(function(){
         event.stopPropagation();
         fireCSharpEvent("menuClicked", $(this).parent().parent().attr('id'));
     });
+    
+    const websocketPort = parseInt(window.location.port) + 1;
+    
+    //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
+    window["webSocket"] = new WebSocket("ws://127.0.0.1:"+websocketPort.toString());
+
+theOneLocalizationManager.asyncGetText("EditTab.SavingNotification","Saving...").done(savingNotification =>
+    window["webSocket"] .onmessage = event => {
+        var e = JSON.parse(event.data);
+        if(e.id == "saving"){
+            toastr.info(savingNotification,"",{
+                positionClass: "toast-top-left",
+                preventDuplicates: true,
+                showDuration: 300,
+                hideDuration: 300,
+                timeOut: 1000,
+                extendedTimeOut: 1000,
+                showEasing: "swing",
+                showMethod: "fadeIn",
+                hideEasing: "linear",
+                hideMethod: "fadeOut",
+                messageClass:"toast-for-saved-message",
+                iconClass:""
+            });
+        }
+    })
 });
 
 function fireCSharpEvent(eventName, eventData) {
 
     var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
-    document.dispatchEvent(event);
+    top.document.dispatchEvent(event);
 }
 
 function loadNextThumbnail() {

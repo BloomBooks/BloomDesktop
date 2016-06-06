@@ -161,7 +161,7 @@ export function closeSetupDialog() {
 function fireCSharpEvent(eventName, eventData) {
 
     var event = new MessageEvent(eventName, {'bubbles': true, 'cancelable': true, 'data': eventData });
-    document.dispatchEvent(event);
+    top.document.dispatchEvent(event);
     // For when we someday change this file to TypeScript... since the above ctor is not declared anywhere.
     // Solution III (works)
     //var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });

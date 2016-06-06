@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using Bloom.Book;
 
 namespace Bloom
 {
@@ -144,6 +145,22 @@ namespace Bloom
 			: base("deleteCurrentPage")
 		{
 
+		}
+	}
+
+
+	public class TemplateInsertionCommand
+	{
+		public event EventHandler InsertPage;
+		public Page MostRecentInsertedTemplatePage;
+
+		public void Insert(Page page)
+		{
+			if (InsertPage != null)
+			{
+				MostRecentInsertedTemplatePage = page;
+				InsertPage.Invoke(page, null);
+			}
 		}
 	}
 

@@ -37,7 +37,7 @@ import axios = require("axios");
 export function fireCSharpEditEvent(eventName, eventData) {
 
     var event = new MessageEvent(eventName, {/*'view' : window,*/ 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    document.dispatchEvent(event);
+    top.document.dispatchEvent(event);
 }
 
 export function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
@@ -727,7 +727,6 @@ export var pageSelectionChanging = function () {
     var marginBox = $('.marginBox');
     marginBox.removeClass('origami-layout-mode');
     marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
-    fireCSharpEditEvent('finishSavingPage', '');
 };
 
 // This is invoked from C# when we are about to leave a page (often right after the previous
@@ -748,26 +747,19 @@ export var disconnectForGarbageCollection = function () {
 };
 
 export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
-    axios.get('/bloom/windows/useLongpress',
-            {headers:{'Accept': 'text/plain',
-            //The default transformResponse of axios eagerly does a JSON.Parse on everything,
-            //so in a debugger, it will choke on 'Yes'. That exception gets swallowed, but
-            //I'm sick of running into it.
-            //So we specify our own identity transformResponse
-            transformResponse:  (data: string) => <string>data }
-        })
+    axios.get<boolean>('/bloom/api/keyboarding/useLongpress')
         .then(response => {
-           if (response.data === 'Yes') {
+           if (response.data) {
                 theOneLocalizationManager.asyncGetText(
                     'BookEditor.CharacterMap.Instructions',
-                    'To select, use your mouse wheel or point at what you want, then release the key.')
+                    'To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.')
                     .done(function (translation) {
                         jQuerySetOfMatchedElements.longPress(
                             { instructions: "<div class='instructions'>" + translation + "</div>" }
                         );
                 });
             };
-        })
+        }).catch(e=>alert("useLongPress query failed:"+e));
 }
 
 

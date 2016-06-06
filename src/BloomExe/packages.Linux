@@ -1,0 +1,4 @@
+  <package id="Geckofx45.32.Linux" version="45.0.17.0" targetFramework="net45" />
+  <package id="Geckofx45.64.Linux" version="45.0.17.0" targetFramework="net45" />
+  <package id="SharpFont" version="3.1.0" targetFramework="net45" />
+</packages>

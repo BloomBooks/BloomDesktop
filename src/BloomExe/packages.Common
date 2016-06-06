@@ -22,5 +22,3 @@
   <package id="RestSharp" version="105.0.1" targetFramework="net4-client" requireReinstallation="true" />
   <package id="SourceMapDotNet" version="1.0.5478.26629" targetFramework="net45" />
   <package id="TechTalk.JiraRestClient.RestSharp105" version="2.3.0.1" targetFramework="net4-client" />
-  <package id="SharpFont" version="3.1.0" targetFramework="net45" />
-</packages>

@@ -61,6 +61,10 @@ namespace Bloom.Edit
 				var page = _thumbNailList.GetPageContaining(args.TargetNode);
 				if (page == null)
 					return true; // no page-related commands if we didn't click on one.
+				if(page != _pageSelection.CurrentSelection)
+				{
+					return true; //it's too dangerous to let users do thing to a page they aren't seeing
+				}
 				foreach (var item in menuItems)
 				{
 					var menuItem = new MenuItem(item.Label, (sender, eventArgs) => item.ExecuteCommand(page));

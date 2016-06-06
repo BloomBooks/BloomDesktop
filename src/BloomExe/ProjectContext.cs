@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,6 +16,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
 using Bloom.web;
+using Bloom.web.controllers;
 using Chorus;
 using SIL.Extensions;
 using SIL.IO;
@@ -103,7 +105,11 @@ namespace Bloom
 							typeof (EditingModel),
 							typeof (AudioRecording),
 							typeof(CurrentBookHandler),
-							typeof(ReadersApi)
+							typeof(ReadersApi),
+							typeof(PageTemplatesApi),
+							typeof(AddOrChangePageApi),
+							typeof(KeybordingConfigApi),
+							typeof(BloomWebSocketServer)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -188,8 +194,7 @@ namespace Bloom
 					builder.Register<SourceCollectionsList>(c =>
 					{
 						var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(),
-							c.Resolve<BookCollection.Factory>(), editableCollectionDirectory);
-						l.RepositoryFolders = new string[] {FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()};
+							editableCollectionDirectory, new string[] { FactoryCollectionsDirectory, GetInstalledCollectionsDirectory() });
 						return l;
 					}).InstancePerLifetimeScope();
 
@@ -260,9 +265,14 @@ namespace Bloom
 			var server = _scope.Resolve<EnhancedImageServer>();
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
+
+			_scope.Resolve<BloomWebSocketServer>().Init((ServerBase.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
 			HelpLauncher.RegisterWithServer(server);
 			ExternalLinkController.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
+			_scope.Resolve<PageTemplatesApi>().RegisterWithServer(server);
+			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
+			_scope.Resolve<KeybordingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 		}

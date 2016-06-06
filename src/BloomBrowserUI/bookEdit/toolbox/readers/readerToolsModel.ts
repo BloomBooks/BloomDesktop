@@ -1084,6 +1084,8 @@ export class ReaderToolsModel {
   }
 
   getToolboxWindow(): Window {
+      // ReaderToolsModel is only loaded into the toolbox, so the toolbox window is simply the current window.
+      //return window;
       return (<HTMLIFrameElement>document.getElementById('toolbox')).contentWindow;
   }
 
@@ -1157,7 +1159,7 @@ export class ReaderToolsModel {
     // remember how many we are loading so we know when we're finished
     this.allowedWordFilesRemaining = stages.length;
 
-    stages.forEach(function(stage, index) {
+    stages.forEach((stage, index) => {
       if (stage.allowedWordsFile) {
           //axios.get<string>('/bloom/api/readers/allowedWordsList?fileName=' + encodeURIComponent(stage.allowedWordsFile))
           axios.get<string>('/bloom/api/readers/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })

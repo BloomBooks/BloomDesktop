@@ -15,6 +15,7 @@ using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 using System;
+using System.Collections.Generic;
 using BloomTemp;
 
 namespace BloomTests.Book
@@ -340,6 +341,7 @@ namespace BloomTests.Book
 				File.WriteAllText(Path.Combine(tempFolder.FolderPath, "read.png"),"This is a test");
 				var mockTemplateBook = new Moq.Mock<Bloom.Book.Book>();
 				mockTemplateBook.Setup(x => x.FolderPath).Returns(tempFolder.FolderPath);
+				mockTemplateBook.Setup(x => x.OurHtmlDom.GetTemplateStyleSheets()).Returns(new string[] {});
 				templatePage.Setup(x => x.Book).Returns(mockTemplateBook.Object);
 				book.InsertPageAfter(existingPage, templatePage.Object);
 			}
@@ -381,6 +383,88 @@ namespace BloomTests.Book
 			string[] guids = GetLineageGuids(page);
 			Assert.AreEqual("ma", guids[0]);
 			Assert.AreEqual(1, guids.Length);
+		}
+
+		[Test]
+		public void InsertPageAfter_PageRequiresStylesheetWeDontHave_StylesheetLinkAdded()
+		{
+			using(var bookFolder = new TemporaryFolder("InsertPageAfter_PageRequiresStylesheetWeDontHave_StylesheetLinkAdded"))
+			{
+				var templatePage = MakeTemplatePageThatHasABookWithStylesheets(bookFolder, new[] {"foo.css"});
+				SetDom("<div class='bloom-page' id='1'></div>", ""); //but no special stylesheets in the target book
+				var targetBook = CreateBook();
+				targetBook.InsertPageAfter(targetBook.GetPages().First(), templatePage);
+
+				Assert.NotNull(targetBook.OurHtmlDom.GetTemplateStyleSheets().First(name => name == "foo.css"));
+			}
+		}
+
+
+		[Test]
+		public void InsertPageAfter_PageRequiresStylesheetWeDontHave_StylesheetFileCopied()
+		{
+			//we need an actual templateBookFolder to contain the stylesheet we need to see copied into the target book
+			using(var templateBookFolder = new TemporaryFolder("InsertPageAfter_PageRequiresStylesheetWeDontHave_StylesheetFileCopied"))
+			{
+				//just a boring simple target book
+				SetDom("<div class='bloom-page' id='1'></div>", ""); 
+				var targetBook = CreateBook();
+
+				//our template folder will have this stylesheet file
+				File.WriteAllText(templateBookFolder.Combine("foo.css"), ".dummy{width:100px}");
+
+
+				//we're going to reference one stylesheet that is actually available in the template folder, and one that isn't
+				
+				var templatePage = MakeTemplatePageThatHasABookWithStylesheets( templateBookFolder, new [] {"foo.css","notthere.css"}); 
+
+				targetBook.InsertPageAfter(targetBook.GetPages().First(), templatePage);
+
+				Assert.True(File.Exists(targetBook.FolderPath.CombineForPath("foo.css")));
+
+				//Now add it again, to see if that causes problems
+				targetBook.InsertPageAfter(targetBook.GetPages().First(), templatePage);
+
+				//Have the template list a file it doesn't actually have
+				var templatePage2 = MakeTemplatePageThatHasABookWithStylesheets( templateBookFolder, new[] { "notthere.css" });
+
+					//for now, we just want it to not crash
+				targetBook.InsertPageAfter(targetBook.GetPages().First(), templatePage2);
+			}
+		}
+
+		[Test]
+		public void InsertPageAfter_PageRequiresStylesheetWeAlreadyHave_StylesheetNotAdded()
+		{
+			using(var templateBookFolder = new TemporaryFolder("InsertPageAfter_PageRequiresStylesheetWeAlreadyHave_StylesheetNotAdded"))
+			{
+				var templatePage = MakeTemplatePageThatHasABookWithStylesheets(templateBookFolder, new string[] {"foo.css"});
+					//it's in the template
+				var link = "<link rel='stylesheet' href='foo.css' type='text/css'></link>";
+				SetDom("<div class='bloom-page' id='1'></div>", link); //and we already have it in the target book
+				var targetBook = CreateBook();
+				targetBook.InsertPageAfter(targetBook.GetPages().First(), templatePage);
+
+				Assert.AreEqual(1, targetBook.OurHtmlDom.GetTemplateStyleSheets().Count(name => name == "foo.css"));
+			}
+		}
+
+		private IPage MakeTemplatePageThatHasABookWithStylesheets(TemporaryFolder bookFolder, IEnumerable<string> stylesheetNames )
+		{
+			var headContents = "";
+			foreach(var stylesheetName in stylesheetNames)
+			{
+				headContents += "<link rel='stylesheet' href='"+stylesheetName+"' type='text/css'></link>";
+			}
+
+			var templateDom =
+				new HtmlDom("<html><head>" + headContents + "</head><body><div class='bloom-page' id='1'></div></body></html>");
+			var templateBook = new Moq.Mock<Bloom.Book.Book>();
+			templateBook.Setup(x => x.FolderPath).Returns(bookFolder.FolderPath);
+			templateBook.Setup(x => x.OurHtmlDom).Returns(templateDom);
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page' id='1'></div>");
+			templatePage.Setup(x => x.Book).Returns(templateBook.Object);
+			return templatePage.Object;
 		}
 
 		private void TestTemplateInsertion(Bloom.Book.Book book, IPage existingPage, string divContent)
@@ -1279,11 +1363,18 @@ namespace BloomTests.Book
 
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{
+
+			var mockTemplateBook = new Moq.Mock<Bloom.Book.Book>();
+			mockTemplateBook.Setup(x => x.OurHtmlDom.GetTemplateStyleSheets()).Returns(new string[] { });
+
 			var templatePage = new Moq.Mock<IPage>();
-			XmlDocument d = new XmlDocument();
-			d.LoadXml("<wrapper>"+divContent+"</wrapper>");
-			XmlElement x1 = (XmlElement) d.SelectSingleNode("//div");
-			templatePage.Setup(x=>x.GetDivNodeForThisPage()).Returns(x1);
+
+			templatePage.Setup(x => x.Book).Returns(mockTemplateBook.Object);
+			var d = new XmlDocument();
+			d.LoadXml("<wrapper>" + divContent + "</wrapper>");
+			var pageContentElement = (XmlElement)d.SelectSingleNode("//div");
+			templatePage.Setup(x=>x.GetDivNodeForThisPage()).Returns(pageContentElement);
+
 			return templatePage;
 		}
 	}

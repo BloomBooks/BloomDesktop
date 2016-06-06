@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="SelectTargetsConfig" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
@@ -12,6 +12,8 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -33,6 +35,13 @@
     <Optimize>false</Optimize>
     <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>5</LangVersion>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="DISPLAY" value=":2" />
+        <Variable name="FEEDBACK" value="off" />
+        <Variable name="MONO_PREFIX" value="/opt/mono-sil" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\output\Release\</OutputPath>
@@ -94,6 +103,20 @@
     <Reference Include="Fleck, Version=0.13.0.57, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fleck.0.13.0.57\lib\net40\Fleck.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
+      <HintPath>..\..\packages\Geckofx45.45.0.19.0\lib\net40\Geckofx-Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
+      <HintPath>..\..\packages\Geckofx45.45.0.19.0\lib\net40\Geckofx-Winforms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'">
+      <HintPath>..\..\output\$(Configuration)\Geckofx-Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'!='Windows_NT'">
+      <HintPath>..\..\output\$(Configuration)\Geckofx-Winforms.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\..\lib\dotnet\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -207,20 +230,6 @@
     </Reference>
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
-    </Reference>
-    <Reference Include="Geckofx-Core, Version=29.0.8.0, Culture=neutral" Condition="'$(OS)'!='Windows_NT'">
-      <SpecificVersion>False</SpecificVersion>
-      <Package>Geckofx-Core</Package>
-    </Reference>
-    <Reference Include="Geckofx-Winforms, Version=29.0.8.0, Culture=neutral" Condition="'$(OS)'!='Windows_NT'">
-      <SpecificVersion>False</SpecificVersion>
-      <Package>Geckofx-Winforms</Package>
-    </Reference>
-    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\lib\dotnet\Geckofx-Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
     </Reference>
     <Reference Include="GtkUtils" Condition="'$(OS)'!='Windows_NT'">
       <HintPath>..\..\lib\dotnet\GtkUtils.dll</HintPath>
@@ -350,7 +359,6 @@
     <Compile Include="MiscUI\BloomIntegrityDialog.Designer.cs">
       <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="JavaScriptErrorHandler.cs" />
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -520,6 +528,9 @@
     <Compile Include="web\ApiRequest.cs" />
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
+    <Compile Include="web\controllers\AddOrChangePageApi.cs" />
+    <Compile Include="web\controllers\KeybordingConfigApi.cs" />
+    <Compile Include="web\controllers\PageTemplatesApi.cs" />
     <Compile Include="web\CurrentBookHandler.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />
@@ -1193,19 +1204,23 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     </PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  <Target Name="BeforeBuild" Condition="'$(OS)'=='Windows_NT'">
+    <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')"/>
+    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx45.45.0.19.0\content\Firefox\*.* $(OutDir)Firefox"/>
   </Target>
-  -->
-  <Target Name="BeforeBuild">
+  <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
+  <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
     <!-- For Linux, copy the appropriate version of icudotnet -->
     <!-- $(icu-config ...) is passed to shell to exec. -->
     <!-- Escape the $ (%24) to ensure it is sent to the shell. -->
-    <Exec Command="cp -p $(SolutionDir)/lib/dotnet/icu%24(icu-config --version|tr -d .|cut -c -2)/icu.net.dll* $(SolutionDir)/lib/dotnet" Condition="'$(OS)'!='Windows_NT'" />
-    <Exec Command="[ -e $(SolutionDir)/Mercurial ] || ln -s $(SolutionDir)/Mercurial-%24(uname -m)/Mercurial $(SolutionDir)/Mercurial" Condition="'$(OS)'!='Windows_NT'" />
-    <!-- For Linux, compile the various typescript, jade, and less files in BloomBrowserUI. -->
-    <Exec Condition="'$(OS)'!='Windows_NT'" Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; npm install &amp;&amp; ./fixNodejsForLinux.sh &amp;&amp; npm run build" />
+    <Exec Command="cp -pvn $(SolutionDir)/lib/dotnet/icu%24(icu-config --version|tr -d .|cut -c -2)/icu.net.dll* $(SolutionDir)/lib/dotnet" />
+    <!-- ensure that Mercurial can be found under its standard directory name -->
+    <Exec Command="[ -e $(SolutionDir)/Mercurial ] || ln -s $(SolutionDir)/Mercurial-%24(uname -m)/Mercurial $(SolutionDir)/Mercurial" />
+    <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
+    <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; npm install &amp;&amp; ./fixNodejsForLinux.sh &amp;&amp; npm run build" />
+    <!-- copy the appropriate Geckofx45 files to the output directory, first creating it if necessary -->
+    <Exec Command="mkdir -p $(OutDir)" />
+    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.17.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.17.0 -name Firefox -type d -exec cp -pRvn '{}' $(OutDir) ';'; else find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.17.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.17.0 -name Firefox -type d -exec cp -pRvn '{}' $(OutDir) ';'; fi" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
@@ -1251,6 +1266,32 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </ItemGroup>
   <ItemGroup>
     <Content Include="bloom.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Firefox\AccessibleMarshal.dll" />
+    <Content Include="Firefox\breakpadinjector.dll" />
+    <Content Include="Firefox\D3DCompiler_43.dll" />
+    <Content Include="Firefox\d3dcompiler_47.dll" />
+    <Content Include="Firefox\freebl3.dll" />
+    <Content Include="Firefox\icudt56.dll" />
+    <Content Include="Firefox\icuin56.dll" />
+    <Content Include="Firefox\icuuc56.dll" />
+    <Content Include="Firefox\lgpllibs.dll" />
+    <Content Include="Firefox\libEGL.dll" />
+    <Content Include="Firefox\libGLESv2.dll" />
+    <Content Include="Firefox\mozglue.dll" />
+    <Content Include="Firefox\msvcp120.dll" />
+    <Content Include="Firefox\msvcr120.dll" />
+    <Content Include="Firefox\nss3.dll" />
+    <Content Include="Firefox\nssckbi.dll" />
+    <Content Include="Firefox\nssdbm3.dll" />
+    <Content Include="Firefox\plugin-container.exe" />
+    <Content Include="Firefox\plugin-hang-ui.exe" />
+    <Content Include="Firefox\sandboxbroker.dll" />
+    <Content Include="Firefox\softokn3.dll" />
+    <Content Include="Firefox\xul.dll" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="desktopAndTaskBar.ico" />
     <Content Include="desktopAndTaskBar.svg.ico" />
     <None Include="Resources\normal.svg.ico" />
@@ -1263,5 +1304,9 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
     <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
+  </Target>
+  <Target Name="SelectTargetsConfig">
+    <Exec Condition="'$(OS)'=='Windows_NT'" Command="copy /Y /B packages.Common + packages.Windows packages.config" />
+    <Exec Condition="'$(OS)'!='Windows_NT'" Command="cat packages.Common packages.Linux >packages.config" />
   </Target>
 </Project>
