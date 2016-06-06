@@ -637,6 +637,7 @@ namespace Bloom.Workspace
 		{
 			using (var dlg = _problemReportDialogFactory(this))
 			{
+				dlg.SetDefaultIncludeBookSetting(true);
 				dlg.ShowDialog();
 			}
 		}

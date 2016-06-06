@@ -36,7 +36,7 @@ namespace Bloom.Edit
 #if !__MonoCS__
 		private AudioRecorder _recorder;
 #endif
-		BloomWebSocketServer _peakLevelWebSocketServer;
+		BloomWebSocketServer _webSocketServer;
 		
 		/// <summary>
 		/// The file we want to record to
@@ -69,7 +69,7 @@ namespace Bloom.Edit
 		// call directly since it is static.
 		private static AudioRecording CurrentRecording { get; set; }
 
-		public AudioRecording(BookSelection bookSelection)
+		public AudioRecording(BookSelection bookSelection, BloomWebSocketServer bloomWebSocketServer)
 		{
 			_bookSelection = bookSelection;
 			_startRecordingTimer = new Timer();
@@ -77,6 +77,7 @@ namespace Bloom.Edit
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
 			_backupPath = System.IO.Path.GetTempFileName();
 			CurrentRecording = this;
+			_webSocketServer = bloomWebSocketServer;
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -90,7 +91,6 @@ namespace Bloom.Edit
 			server.RegisterEndpointHandler("audio/devices", HandleAudioDevices);
 
 			Debug.Assert(ServerBase.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
-			_peakLevelWebSocketServer = new BloomWebSocketServer((ServerBase.portForHttp+1).ToString(CultureInfo.InvariantCulture));//review: we have no dispose (on us or our parent) so this is never disposed
 		}
 
 		// does this page have any audio at all? Used enable the Listen page.
@@ -160,7 +160,7 @@ namespace Bloom.Edit
 			if(level != _previousLevel)
 			{
 				_previousLevel = level;
-				_peakLevelWebSocketServer.Send(level.ToString(CultureInfo.InvariantCulture));
+				_webSocketServer.Send("peakAudioLevel", level.ToString(CultureInfo.InvariantCulture));
 			}
 		}
 #endif
@@ -566,11 +566,6 @@ namespace Bloom.Edit
 						_recorder = null;
 					}
 #endif
-					if (_peakLevelWebSocketServer != null)
-					{
-						_peakLevelWebSocketServer.Dispose();
-						_peakLevelWebSocketServer = null;
-					}
 				}
 
 				// shared (dispose and finalizable) cleanup logic

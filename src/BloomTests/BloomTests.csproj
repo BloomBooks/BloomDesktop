@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -82,6 +82,22 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'" >
+      <HintPath>..\..\packages\Geckofx45.45.0.18\lib\net40\Geckofx-Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
+      <HintPath>..\..\packages\Geckofx45.45.0.18\lib\net40\Geckofx-Winforms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'" >
+      <HintPath>..\..\output\$(Configuration)\Geckofx-Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'!='Windows_NT'">
+      <HintPath>..\..\output\$(Configuration)\Geckofx-Winforms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -147,20 +163,6 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Core, Version=29.0.6.0, Culture=neutral, PublicKeyToken=3209ac31600d1857" Condition="'$(OS)'!='Windows_NT'">
-      <Package>Geckofx-Core</Package>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Geckofx-Winforms, Version=29.0.6.0, Culture=neutral, PublicKeyToken=3209ac31600d1857" Condition="'$(OS)'!='Windows_NT'">
-      <Package>Geckofx-Winforms</Package>
-      <SpecificVersion>false</SpecificVersion>
-    </Reference>
-    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\lib\dotnet\Geckofx-Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BloomFileLocatorTests.cs" />
@@ -213,10 +215,11 @@
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
-    <Compile Include="web\ReadersApiTests.cs" />
-    <Compile Include="web\ApiTest.cs" />
+    <Compile Include="web\controllers\PageTemplatesApiTests.cs" />
+    <Compile Include="web\controllers\ReadersApiTests.cs" />
+    <Compile Include="web\controllers\ApiTest.cs" />
     <Compile Include="ImageProcessing\ImageServerTests.cs" />
-    <Compile Include="web\EndpointHandlerTests.cs" />
+    <Compile Include="web\controllers\EndpointHandlerTests.cs" />
     <Compile Include="web\RequestInfoTests.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
     <Compile Include="web\EnhancedImageServerTests.cs" />

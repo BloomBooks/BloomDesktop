@@ -601,7 +601,7 @@ namespace Bloom.Book
 				{
 					if (templateKey.ToLowerInvariant() == "basicbook")//catch this pre-beta spelling with no space
 						templateKey = "Basic Book";
-					book = _templateFinder.FindTemplateBook(templateKey);
+					book = _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
 					if(book==null)
 					{
 						ErrorReport.NotifyUserOfProblem("Bloom could not find the source of template pages named {0} (as in {0}.htm).\r\nThis comes from the <meta name='pageTemplateSource' content='{0}'/>.\r\nCheck that name matches the html exactly.",templateKey);
@@ -635,7 +635,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public HtmlDom OurHtmlDom
+		public virtual HtmlDom OurHtmlDom
 		{
 			get { return _storage.Dom;}
 		}
@@ -1603,6 +1603,9 @@ namespace Bloom.Book
 
 			ClearPagesCache();
 
+			if(templatePage.Book !=null) // will be null in some unit tests that are unconcerned with stylesheets
+				HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, OurHtmlDom);
+
 			XmlDocument dom = OurHtmlDom.RawDom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
@@ -1618,7 +1621,7 @@ namespace Bloom.Book
 			BuildPageCache();
 			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == newPageDiv);
 			Guard.AgainstNull(newPage,"could not find the page we just added");
-			_pageSelection.SelectPage(newPage);
+			
 			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
 
 			// If copied page references images, copy them.
@@ -1634,9 +1637,23 @@ namespace Bloom.Book
 				}
 			}
 
+			//similarly, if the page has stylesheet files we don't have, copy them
+			foreach(string sheetName in templatePage.Book.OurHtmlDom.GetTemplateStyleSheets())
+			{
+				var destinationPath = Path.Combine(FolderPath, sheetName);
+				if (!File.Exists(destinationPath))
+				{
+					var sourcePath = Path.Combine(templatePage.Book.FolderPath, sheetName);
+					if (File.Exists(sourcePath))
+						File.Copy(sourcePath, destinationPath);
+				}
+			}
+
 			Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
+
+			_pageSelection.SelectPage(newPage);
 
 			InvokeContentsChanged(null);
 		}
@@ -1958,17 +1975,8 @@ namespace Bloom.Book
 				childBook.UpdateEditableAreasOfElement(childBook.OurHtmlDom);
 				
 				//add links to the template css needed by the children.
-				//NB: at this point this code can't hand the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
-				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
-				var userModifiedStyleSheets = new List<string>();
-				foreach (string sheetName in childBook.OurHtmlDom.GetTemplateStyleSheets())
-				{
-					if (!userModifiedStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
-					{
-						userModifiedStyleSheets.Add(sheetName);
-						printingDom.AddStyleSheetIfMissing(sheetName);
-					}
-				}
+
+				HtmlDom.AddStylesheetFromAnotherBook(childBook.OurHtmlDom, printingDom);
 				printingDom.SortStyleSheetLinks();
 
 				foreach (XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
