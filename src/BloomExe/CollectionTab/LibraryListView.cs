@@ -109,6 +109,20 @@ namespace Bloom.CollectionTab
 		private void _bookContextMenu_Opening(object sender, CancelEventArgs e)
 		{
 			var btn = (sender as ContextMenuStrip).SourceControl as Button;
+			if (btn == null)
+			{
+				// At least in Mono, the button selection doesn't always survive from the click to this point.
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3424 and various internet posts like
+				// http://stackoverflow.com/questions/3026380/getting-the-highest-owner-of-a-toolstripdropdownitem.
+				// This might be needed only on Linux/Mono, but is safe for windows.
+				btn = _clickedButton;
+				_clickedButton = null;
+				if (btn == null)
+				{
+					e.Cancel = true; // don't show the menu at all
+					return;
+				}
+			}
 			var btnInfo = btn.Tag as BookButtonInfo;
 			if (btnInfo.IsEditable)
 				return; // leave them all on
@@ -152,6 +166,8 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		Button _clickedButton;	// safety net for ContextMenuStrip to know caller.  (BL-3424)
+
 		void _bookTriangle_Click(Button btn, Point clickLocation)
 		{
 			// hide these controls in the triangle menu
@@ -159,6 +175,7 @@ namespace Bloom.CollectionTab
 			_updateThumbnailMenu.Visible = false;
 			_updateFrontMatterToolStripMenu.Visible = false;
 
+			_clickedButton = btn;
 			btn.ContextMenuStrip.Show(btn, clickLocation);
 		}
 
@@ -685,6 +702,7 @@ namespace Bloom.CollectionTab
 		{
 			_primaryCollectionReloadPending = true;
 		}
+
 
 		private void OnClickBook(object sender, EventArgs e)
 		{
