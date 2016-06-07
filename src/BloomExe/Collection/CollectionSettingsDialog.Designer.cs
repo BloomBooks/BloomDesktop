@@ -610,7 +610,7 @@ namespace Bloom.Collection
 			this._showExperimentCommands.Name = "_showExperimentCommands";
 			this._showExperimentCommands.Size = new System.Drawing.Size(404, 23);
 			this._showExperimentCommands.TabIndex = 4;
-			this._showExperimentCommands.Text = "Show Experimental Commands (e.g. Export ePUB, Record Audio for Talking Book)";
+			this._showExperimentCommands.Text = "Show Experimental Commands";
 			this._showExperimentCommands.UseVisualStyleBackColor = true;
 			this._showExperimentCommands.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
 			// 
