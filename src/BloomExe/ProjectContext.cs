@@ -109,7 +109,7 @@ namespace Bloom
 							typeof(ReadersApi),
 							typeof(PageTemplatesApi),
 							typeof(AddOrChangePageApi),
-							typeof(BloomWebSocketServer)
+							typeof(BloomWebSocketServer),
 							typeof(KeybordingConfigApi)
 						}.Contains(t));
 
