@@ -23,7 +23,7 @@ require("./jquery.mousewheel.js");
     var moreChars={
         // extended latin (and african latin)
         // upper
-        'A':'ĀĂÀÁÂÃÄÅĄⱭ∀Æ',
+        'A':'ĀĂÀÁÂÃÄÅĄⱭÆ∀',
         'B':'Ɓ',
         'C': 'ÇĆĈƆ̃ĊČƆ',
         'D':'ÐĎĐḎƊ',
@@ -108,20 +108,41 @@ require("./jquery.mousewheel.js");
     // 46 delete
     // Review: there are others we could add, function keys, num lock, scroll lock, break, forward & back slash, etc.
     //  not sure how much we gain from that...
-    var ignoredKeyDownKeys=[8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
+    var ignoredKeyDownKeyCodes=[8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
     var ignoredKeyUpKeys = [8, 9, 13, /*16,*/ 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
 
     var selectedCharIndex;
-    var lastWhich;
+    var activationKey;
     var timer;
     var activeElement;
     var textAreaCaretPosition;
     var storedOffset;
-
+    var shortcuts=[];
     var popup;
 
     $(window).mousewheel(onWheel);
 
+
+
+    function makeShortcuts(skipKey){
+        shortcuts=[];
+        //while numbers are the most convenient, we are using them because
+        //when the user is trying to get a capital letter, the shift key is held
+        //down and numbers are converted to symbols. I don' know of a way to convert
+        //those symbols back to numbers in a way that works across different keyboards
+        // for(var i = 1; i < 10;i++){
+        //     shortcuts.push(String.fromCharCode(48+i));//48 is '1';
+        // }
+        for(var i = 0; i<26;i++){
+            //the character used to invoke longPress can't be pressed again as a shortcut,
+            //same for the shifted version of the character. 
+            var key = String.fromCharCode(97+i);
+            if(key != skipKey && key != skipKey.toLowerCase()){
+                shortcuts.push(key);//97 is charcode for 'a';
+            }
+        }
+    }
+            
     function onKeyDown(e) {
         /* we had to disable thes because ckeditor was seeing them and messing things up. Hopefully in the future it can be reinstated:
         // Arrow key with popup visible
@@ -136,17 +157,32 @@ require("./jquery.mousewheel.js");
         }
         */
 
-        if (ignoredKeyDownKeys.indexOf(e.which)>-1) return;
+        //once the panel is showing, let the user type any of the shortcuts to select the corresponding character 
+        if(activationKey && activationKey != e.key){
+            var unshiftedKey = e.key.toLowerCase(); 
+            var indexOfSelectedCharacter = shortcuts.indexOf(unshiftedKey);
+            if(indexOfSelectedCharacter >= 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                selectCharIndex(indexOfSelectedCharacter);
+                return;
+            }
+        }
+
+        
+        if (ignoredKeyDownKeyCodes.indexOf(e.which)>-1) return;
         activeElement=e.target;
 
-        if (e.which==lastWhich) {
+        if (e.key==activationKey) {
             e.preventDefault();
             e.stopPropagation(); //attempt to stop ckeditor from seeing this event
+            makeShortcuts(activationKey);
             if (!timer) timer=setTimeout(onTimer, 10);
             return;
         }
-        lastWhich=e.which;
+        activationKey=e.key;
     }
+    
     function onKeyUp(e) {
         if (ignoredKeyUpKeys.indexOf(e.which) > -1) return;
         if (activeElement == null) return;
@@ -155,7 +191,7 @@ require("./jquery.mousewheel.js");
         // then use their other hand to do mouse or arrow keys.
         if (e.shiftKey) return;
 
-        lastWhich=null;
+        activationKey=null;
         clearTimeout(timer);
         timer=null;
 
@@ -177,7 +213,7 @@ require("./jquery.mousewheel.js");
         popup.find('ul').empty();
         var letter;
         for (var i=0; i<chars.length; i++) {
-            letter=$('<li class=long-press-letter />').text(chars[i]);
+            letter=$('<li class=long-press-letter data-shortcut="'+shortcuts[i]+'">'+chars[i]+'</li>');
             letter.mouseenter(activateLetter);
             letter.click(onPopupLetterClick);
             popup.find('ul').append(letter);
