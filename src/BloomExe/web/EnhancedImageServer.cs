@@ -470,6 +470,13 @@ namespace Bloom.Api
 			}
 			if (!File.Exists(path))
 			{
+				if(path == null)
+				{
+					path = "(was null)";
+				}
+				var stuffToIgnore = new[] { "favicon.ico", ".map" };
+				if(stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
+					return false;
 				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Server could not find the file "+path,"LocalPath was "+localPath);
 				return false;
 			}
