@@ -53,6 +53,7 @@
 			this.Image.Location = new System.Drawing.Point(6, 9);
 			this.Image.Name = "Image";
 			this.Image.Size = new System.Drawing.Size(39, 43);
+			this.Image.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
 			this.Image.TabIndex = 3;
 			this.Image.TabStop = false;
 			this.Image.Click += new System.EventHandler(this.ToastNotifier_Click);
