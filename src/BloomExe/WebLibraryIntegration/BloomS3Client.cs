@@ -260,6 +260,8 @@ namespace Bloom.WebLibraryIntegration
 
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}"),
 						fileName);
+					if (progress.CancelRequested)
+						return;
 
 					try
 					{
@@ -282,6 +284,8 @@ namespace Bloom.WebLibraryIntegration
 				foreach(string subdir in Directory.GetDirectories(directoryPath))
 				{
 					UploadDirectory(prefix, subdir, progress);
+					if (progress.CancelRequested)
+						return;
 				}
 			}
 		}

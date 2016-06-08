@@ -642,6 +642,12 @@ namespace Bloom.Workspace
 			}
 		}
 
+		public void SetStateOfNonPublishTabs(bool enable)
+		{
+			_collectionTab.Enabled = enable;
+			_editTab.Enabled = enable;
+		}
+
 		private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
 		{
 			var path = FileLocator.GetFileDistributedWithApplication(false,"infoPages", "TrainingVideos-en.md");

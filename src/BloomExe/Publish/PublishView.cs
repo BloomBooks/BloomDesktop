@@ -105,6 +105,14 @@ namespace Bloom.Publish
 			_previewBox.BringToFront();
 		}
 
+		public void SetStateOfNonUploadRadios(bool enable)
+		{
+			_epubRadio.Enabled = enable;
+			_bookletBodyRadio.Enabled = enable;
+			_bookletCoverRadio.Enabled = enable;
+			_simpleAllPagesRadio.Enabled = enable;
+		}
+
 		private void BackgroundColorsForLinux() {
 
 			var bmp = new Bitmap(_menusToolStrip.Width, _menusToolStrip.Height);
