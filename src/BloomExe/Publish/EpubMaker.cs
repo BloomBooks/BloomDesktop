@@ -28,6 +28,8 @@ namespace Bloom.Publish
 	/// </summary>
 	public class EpubMaker : IDisposable
 	{
+		public const string kEPUBExportFolder = "ePUB export";
+
 		public Book.Book Book
 		{
 			get
@@ -110,11 +112,11 @@ namespace Bloom.Publish
 		{
 			_publishWithoutAudio = publishWithoutAudio;
 			Debug.Assert(_stagingFolder == null, "EpubMaker should only be used once");
-			var epubExport = "ePUB export";
+			
 			//I (JH) kept having trouble making epubs because this kept getting locked.
-			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), epubExport));
+			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
 
-			_stagingFolder = new TemporaryFolder(epubExport);
+			_stagingFolder = new TemporaryFolder(kEPUBExportFolder);
 			// The readium control remembers the current page for each book.
 			// So it is useful to have a unique name for each one.
 			// However, it needs to be something we can put in a URL without complications,
