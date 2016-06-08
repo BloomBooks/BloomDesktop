@@ -105,7 +105,7 @@ namespace Bloom.Publish
 			_previewBox.BringToFront();
 		}
 
-		public void EnableNonUploadRadios(bool enable)
+		public void SetStateOfNonUploadRadios(bool enable)
 		{
 			_epubRadio.Enabled = enable;
 			_bookletBodyRadio.Enabled = enable;

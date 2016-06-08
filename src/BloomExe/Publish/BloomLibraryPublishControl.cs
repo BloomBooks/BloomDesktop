@@ -264,7 +264,7 @@ namespace Bloom.Publish
 			UpdateDisplay();
 		}
 
-		void EnableNonUploadControls(bool enable)
+		void SetStateOfNonUploadControls(bool enable)
 		{
 			if (enable)
 			{
@@ -280,12 +280,12 @@ namespace Bloom.Publish
 				parent = parent.Parent;
 			if (parent == null)
 				return;
-			((PublishView)parent).EnableNonUploadRadios(enable);
+			((PublishView)parent).SetStateOfNonUploadRadios(enable);
 			while (parent != null && !(parent is WorkspaceView))
 				parent = parent.Parent;
 			if (parent == null)
 				return;
-			((WorkspaceView)parent).EnableNonPublishTabs(enable);
+			((WorkspaceView)parent).SetStateOfNonPublishTabs(enable);
 		}
 
 		private void _uploadButton_Click(object sender, EventArgs e)
@@ -352,6 +352,11 @@ namespace Bloom.Publish
 			_uploadWorker.WorkerReportsProgress = true;
 			_uploadWorker.RunWorkerCompleted += (theWorker, completedEvent) =>
 			{
+				// Return all controls to normal state. (Do this first, just in case we get some further exception somehow.)
+				// I believe the event is guaranteed to be raised, even if something in the worker thread throws,
+				// so there should be no way to get stuck in the state where the tabs etc. are disabled.
+				SetStateOfNonUploadControls(true);
+				// Don't call UpdateDisplay, it will wipe out the progress messages.
 				if (_progressBox.CancelRequested)
 				{
 					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.Cancelled", "Upload was cancelled"));
@@ -379,10 +384,9 @@ namespace Bloom.Publish
 						_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title, url);
 					}
 				}
-				EnableNonUploadControls(true); // Don't call UpdateDisplay, it will wipe out the progress messages.
 				_uploadWorker = null;
 			};
-			EnableNonUploadControls(false);
+			SetStateOfNonUploadControls(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
 			_uploadWorker.RunWorkerAsync(_book);
 			//_bookTransferrer.UploadBook(_book.FolderPath, AddNotification);
 		}

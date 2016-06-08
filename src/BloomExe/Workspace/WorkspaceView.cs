@@ -641,7 +641,7 @@ namespace Bloom.Workspace
 			}
 		}
 
-		public void EnableNonPublishTabs(bool enable)
+		public void SetStateOfNonPublishTabs(bool enable)
 		{
 			_collectionTab.Enabled = enable;
 			_editTab.Enabled = enable;
