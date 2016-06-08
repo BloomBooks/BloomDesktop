@@ -530,7 +530,7 @@ namespace Bloom.CollectionTab
 				book.CheckBook(dialog.Progress, pathToFolderOfReplacementImages);
 				dialog.ProgressString.WriteMessage("");
 			}
-			dialog.ProgressBar.Value++;
+			dialog.Progress.ProgressIndicator.PercentCompleted = 100;
 		}
 
 
