@@ -170,6 +170,18 @@ preview.css.
 Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 */
 .bloom-page {
+	&.Device16x9Portrait{
+		min-width: @Device16x9Portrait-Width;
+		max-width: @Device16x9Portrait-Width;
+		min-height: @Device16x9Portrait-Height;
+		max-height: @Device16x9Portrait-Height;
+	}
+	&.Device16x9Landscape{
+		min-width: @Device16x9Landscape-Width;
+		max-width: @Device16x9Landscape-Width;
+		min-height: @Device16x9Landscape-Height;
+		max-height: @Device16x9Landscape-Height;
+	}
 	&.A5Portrait {
 		min-width: @A5Portrait-Width;
 		max-width: @A5Portrait-Width;
@@ -288,6 +300,11 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 	top: @MarginTop;
 }
 
+.Device16x9Landscape, .Device16x9Portrait{
+	.origami-toggle{display:none}
+	.pageLabel{display:none}
+}
+
 .marginBox {
 	.SetMarginBox(@PageWidth, @PageHeight) {
 		height: @PageHeight - (@MarginTop + @MarginBottom);
@@ -296,7 +313,26 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 			max-width: @PageWidth - ( @MarginOuter + @MarginInner );
 		}
 	}
-	
+	.SetMarginBoxDevice(@PageWidth, @PageHeight) {
+		height: @PageHeight ;
+		width: @PageWidth;
+		IMG { 
+			max-width: @PageWidth ;
+		}
+		top:0;
+		left:0 !important;
+	}
+
+	.Device16x9Portrait & {
+		.SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
+	}
+	.Device16x9Landscape & {
+		.SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
+
+		//make the top half take up the whole screen
+		.position-top{bottom: 0 !important;}
+		.position-bottom{display:none;}
+	}
 	.A4Portrait & {
 		.SetMarginBox(@A4Portrait-Width, @A4Portrait-Height);
 	}

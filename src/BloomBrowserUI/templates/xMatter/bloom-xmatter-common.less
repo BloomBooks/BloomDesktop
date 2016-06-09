@@ -24,6 +24,21 @@
             max-width: @PageWidth - (2 * @MarginOuter);
         }
     }
+    .SetMarginBoxDevice(@PageWidth, @PageHeight) {
+		height: @PageHeight ;
+		width: @PageWidth;
+		IMG { 
+			max-width: @PageWidth ;
+		}
+		top:0;
+		left:0 !important;
+	}
+    .Device16x9Portrait& {
+        .SetMarginBoxDevice(@Device16x9Portrait-Height, @Device16x9Portrait-Width);
+    }
+    .Device16x9Landscape& {
+        .SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
+    }
     .A4Portrait& {
         .SetMarginBoxCover(@A4Portrait-Height, @A4Portrait-Width);
     }
@@ -78,6 +93,9 @@
     display: inline;
 }
 
+.Device16x9Landscape.frontCover, .Device16x9Portrait.frontCover{
+
+}
 .frontCover {
     @BottomRowHeight: 20px;
     @MarginBetweenMajorItems: 15px;

@@ -266,22 +266,30 @@ namespace Bloom.Publish
 		}
 
 		public bool AllowUpload {
-			get { return BookSelection.CurrentSelection.BookInfo.AllowUploading; }
+			get { return !PageLayout.IsDeviceLayout
+					&& BookSelection.CurrentSelection.BookInfo.AllowUploading; }
 		}
 
-		public bool ShowBookletOption
+		public bool AllowPdf
+		{
+			get { return !PageLayout.IsDeviceLayout; }
+		}
+
+		public bool AllowPdfBooklet
 		{
 			get
 			{
-				return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
+				return AllowPdf && BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
 				       BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.PageSizeName != "Letter";
 			}
 		}
 
-		public bool ShowCoverOption
+		public bool AllowPdfCover
 		{
 			//currently the only cover option we have is a booklet one
-			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
+			get { return AllowPdf &&
+					BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate;
+			}
 		}
 
 

@@ -295,8 +295,9 @@ namespace Bloom.Publish
 			   //this doesn't actually show when disabled		        _superToolTip.GetSuperStuff(_uploadRadio).SuperToolTipInfo.BodyText = "This creator of this book, or its template, has marked it as not being appropriate for upload to BloomLibrary.org";
 			}
 			_uploadRadio.Enabled = _model.AllowUpload;
-			_bookletBodyRadio.Enabled = _model.ShowBookletOption;
-			_bookletCoverRadio.Enabled = _model.ShowCoverOption;
+			_simpleAllPagesRadio.Enabled = _model.AllowPdf;
+			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
+			_bookletCoverRadio.Enabled = _model.AllowPdfCover;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
 			_epubRadio.Enabled = true; // Review: any situation where we shouldn't be able to do this?
 

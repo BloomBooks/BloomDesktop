@@ -16,6 +16,11 @@
 
 @defaultLineHeight: 1.5em;//no units! No em!!!! em makes children inside have a lineheight that matches the font of the overall box, regardless of the thing's font-size. See https://developer.mozilla.org/en-US/docs/Web/CSS/line-height
 
+@Device16x9Portrait-Width: 100mm;
+@Device16x9Portrait-Height: @Device16x9Portrait-Width * 16 / 9;
+@Device16x9Landscape-Height: @Device16x9Portrait-Width;
+@Device16x9Landscape-Width: @Device16x9Portrait-Height;
+
 @A4Portrait-Height: 297mm;
 @A4Portrait-Width: 210mm;
 @A4Landscape-Height: @A4Portrait-Width;
