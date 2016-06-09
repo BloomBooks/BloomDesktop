@@ -75,7 +75,9 @@
     "jasmine": "^2.4.1",
     "jasmine-jquery": "^2.1.1",
 
+    "jstransformer-marked": "^1.0.1",
     "less-loader": "^2.2.2",
+    "marked": "^0.3.5",
     "path": "^0.12.7",
     "querystring": "^0.2.0",
     "run-sequence": "^1.1.5",
