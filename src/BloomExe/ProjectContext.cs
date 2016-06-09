@@ -105,7 +105,7 @@ namespace Bloom
 							typeof (ControlKeyEvent),
 							typeof (EditingModel),
 							typeof (AudioRecording),
-							typeof(CurrentBookHandler),
+							typeof(BookSettingsApi),
 							typeof(ReadersApi),
 							typeof(PageTemplatesApi),
 							typeof(AddOrChangePageApi),
@@ -275,7 +275,7 @@ namespace Bloom
 			_scope.Resolve<PageTemplatesApi>().RegisterWithServer(server);
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
 			_scope.Resolve<KeybordingConfigApi>().RegisterWithServer(server);
-			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
+			_scope.Resolve<BookSettingsApi>().RegisterWithServer(server);
 			_scope.Resolve<ImageApi>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
 		}

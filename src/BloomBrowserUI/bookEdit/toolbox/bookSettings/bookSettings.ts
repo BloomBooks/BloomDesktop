@@ -3,7 +3,7 @@ import axios = require('axios');
 
 $(document).ready(() => {
     // request our model and set the controls
-    axios.get<any>('/bloom/api/bookSettings').then(result => {
+    axios.get<any>('/bloom/api/book/settings').then(result => {
         var settings = result.data;
 
         // Only show this if we are editing a shell book. Otherwise, it's already not locked.
@@ -26,5 +26,5 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
         o[input.name] = $(input).prop("checked");
         return o;
     })[0];
-    axios.post("/bloom/api/bookSettings", settings);
+    axios.post("/bloom/api/book/settings", settings);
 }

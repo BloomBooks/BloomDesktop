@@ -5,16 +5,14 @@ using Bloom.Book;
 namespace Bloom.Api
 {
 	/// <summary>
-	/// This class is responsible for handling Server requests that depend on knowledge of the current book.
-	/// An exception is some reader tools requests, which have their own handler, though most of them depend
-	/// on knowing the current book.
+	/// Exposes some settings of the current Book via api
 	/// </summary>
-	public class CurrentBookHandler
+	public class BookSettingsApi
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageRefreshEvent _pageRefreshEvent;
 
-		public CurrentBookHandler(BookSelection bookSelection, PageRefreshEvent pageRefreshEvent)
+		public BookSettingsApi(BookSelection bookSelection, PageRefreshEvent pageRefreshEvent)
 		{
 			_bookSelection = bookSelection;
 			_pageRefreshEvent = pageRefreshEvent;
@@ -22,7 +20,7 @@ namespace Bloom.Api
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("bookSettings", HandleBookSettings);
+			server.RegisterEndpointHandler("book/settings", HandleBookSettings);
 		}
 
 		/// <summary>
