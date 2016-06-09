@@ -160,7 +160,7 @@ function SetImageTooltip(container, img) {
     urlForQuery = urlForQuery.replace(/%20/g, '+');
     
 
- axios.get<string>('/bloom/api/imageInfo', { params: { image: GetRawImageUrl(img) } }).then(result => {
+ axios.get<string>('/bloom/api/image/info', { params: { image: GetRawImageUrl(img) } }).then(result => {
         var image:any = result.data;
         const kBrowserDpi = 96; // this appears to be constant even on higher dpi screens. See http://www.w3.org/TR/css3-values/#absolute-lengths
         var dpi = Math.round(image.width / ($(img).width() / kBrowserDpi));

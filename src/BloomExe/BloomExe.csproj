@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="SelectTargetsConfig" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -525,13 +525,14 @@
     <Compile Include="ApplicationUpdateSupport.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
-    <Compile Include="web\ApiRequest.cs" />
+    <Compile Include="web\controllers\ApiRequest.cs" />
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
     <Compile Include="web\controllers\AddOrChangePageApi.cs" />
+    <Compile Include="web\controllers\ImageApi.cs" />
     <Compile Include="web\controllers\PageTemplatesApi.cs" />
     <Compile Include="web\controllers\KeybordingConfigAPI.cs" />
-    <Compile Include="web\CurrentBookHandler.cs" />
+    <Compile Include="web\controllers\CurrentBookHandler.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersApi.cs" />
@@ -1205,8 +1206,8 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="BeforeBuild" Condition="'$(OS)'=='Windows_NT'">
-    <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')"/>
-    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx45.45.0.19.0\content\Firefox\*.* $(OutDir)Firefox"/>
+    <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')" />
+    <Exec Command="copy /Y $(SolutionDir)packages\Geckofx45.45.0.19.0\content\Firefox\*.* $(OutDir)Firefox" />
   </Target>
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
@@ -1307,6 +1308,6 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </Target>
   <Target Name="SelectTargetsConfig">
     <Exec Condition="'$(OS)'=='Windows_NT'" Command="copy /Y /B packages.Common + packages.Windows packages.config" />
-    <Exec Condition="'$(OS)'!='Windows_NT'" Command="cat packages.Common packages.Linux >packages.config" />
+    <Exec Condition="'$(OS)'!='Windows_NT'" Command="cat packages.Common packages.Linux &gt;packages.config" />
   </Target>
 </Project>
