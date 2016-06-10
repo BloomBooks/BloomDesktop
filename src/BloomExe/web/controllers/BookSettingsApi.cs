@@ -5,7 +5,7 @@ using Bloom.Book;
 namespace Bloom.Api
 {
 	/// <summary>
-	/// Exposes some settings of the current Book via api
+	/// Exposes some settings of the current Book via API
 	/// </summary>
 	public class BookSettingsApi
 	{
@@ -35,6 +35,7 @@ namespace Bloom.Api
 					settings.isRecordedAsLockedDown = _bookSelection.CurrentSelection.RecordedAsLockedDown;
 					settings.unlockShellBook = _bookSelection.CurrentSelection.TemporarilyUnlocked;
 					settings.currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool;
+					settings.isTemplateBook = GetIsBookATemplate();
 					request.ReplyWithJson((object)settings);
 					break;
 				case HttpMethods.Post:
@@ -43,6 +44,7 @@ namespace Bloom.Api
 					settings = DynamicJson.Parse(request.RequiredPostJson());
 					_bookSelection.CurrentSelection.TemporarilyUnlocked = settings["unlockShellBook"];
 					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
+					UpdateBookTemplateMode(settings.isTemplateBook);
 					request.Succeeded();
 					break;
 				default:
@@ -50,6 +52,14 @@ namespace Bloom.Api
 			}
 		}
 
-	
+		private bool GetIsBookATemplate()
+		{
+			return false;
+		}
+
+		private void UpdateBookTemplateMode(bool isTemplateBook)
+		{
+			
+		}
 	}
 }
