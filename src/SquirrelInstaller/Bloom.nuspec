@@ -22,7 +22,7 @@
 		<file src="..\..\distfiles\**\*.*"  target="lib\net45\"/>
 		<file src="..\..\Mercurial\**\*.*" target="\lib\net45\Mercurial"/>
 		<file src="..\..\MercurialExtensions\**\*.*" target="\lib\net45\MercurialExtensions"/>
-		<file src="..\..\src\BloomExe\Resources\Bloom*.ico" target="\lib\net45\"/>
+		<file src="Bloom*.ico" target="\lib\net45\"/>
 		<!-- For Bloom 3.6 only, we have to hand-pick out each node_modules dependency we really want in the installer -->
 		<file src="..\..\src\BloomBrowserUI\**\*.*" target="\lib\net45\BloomBrowserUI" exclude="..\..\src\BloomBrowserUI\node_modules\**\*.*"/>
 		<file src="..\..\src\BloomBrowserUI\node_modules\jquery\dist\jquery.js" target="\lib\net45\BloomBrowserUI\node_modules\jquery\dist"/>
