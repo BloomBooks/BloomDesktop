@@ -235,8 +235,7 @@ namespace Bloom.Api
 
 				if(!zoneAlarm)
 				{
-					var processes = Process.GetProcesses().Where(p => p.ProcessName.ToLowerInvariant().StartsWith("mono"));
-					zoneAlarm = processes.Any(p => p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName.Contains("ZoneAlarm")));
+					zoneAlarm = Process.GetProcesses().Any(p => p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName.Contains("ZoneAlarm")));
 				}
 			}
 			if(zoneAlarm)
