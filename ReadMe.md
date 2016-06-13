@@ -34,6 +34,16 @@ This will build and test the Typescript, javascript, less, and jade:
 Here npm is really just running some gulp scripts, defined in gulpfile.js. Note that when you're using Visual Studio, the "Task Runner Explorer" can be used to start those gulp tasks, and VS should run the "default" gulp task each time it does a build. To make it run this each time you do a "run", though, make sure you've turned off this option:
 
     Tools:Options:Projects and Solutions:Build and Run:Only build startup projects and dependencies on Run
+    
+We use webpack for building the Typescript, running Javascript through Babel, and packing everything six top-level (apps (ugghhh)). When coding in Typescript/Javascript, then go to the src/BloomBrowserUI folder and run 
+
+``webpack -w``
+
+Which will quickly update things each time you save a file.  Similarly, you can use
+
+``gulp watch``
+
+to keep less and jade (pug) up to date if you're working in those kinds of files.
 
 ## Building C# Source Code ##
 
@@ -76,16 +86,7 @@ Our **[PdfDroplet ](http://pdfdroplet.palaso.org)**engine drives the booklet-mak
 
 Our **[Chorus](https://github.com/sillsdev/chorus)** library provides the Send/Receive functionality.
 
-**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx). As of Bloom version 3, we are using xulrunner 29.
-
-**XulRunner**: If you need some other version, they come from here: [http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases](http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases). You want a "runtime", not an "sdk". Note, in addition to the generic "lib/xulrunner", the code will also work if it finds "lib/xulrunner8" (or 9, or 10, or whatever the current version is).
-
-More information on XulRunner and GeckoFX: Firefox is a browser which uses XulRunner which uses Gecko rendering engine. GeckoFX is the name of the .net dll which lets you use XulRunner in your WinForms applications, with .net or mono. This is a bit confusing, because GeckoFX is the wrapper but you won't find something called "gecko" coming out of Mozilla and shipping with Bloom. Instead, "XulRunner" comes from Mozilla and ships with Bloom, which accesses it using the GeckoFX dll. Got it?
-
-Now, Mozilla puts out a new version of XulRunner every 6 weeks at the time of this writing, and Hindle's GeckoFX keeps up with that, which is great, but also adds a level of complexity when you're trying to get Bloom going. Bloom needs to have 3 things in sync:
-1) XulRunner
-2) GeckoFX intended for that version of XulRunner
-3) Bloom source code which is expecting that same version of GeckoFX.
+**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx). As of Bloom version 3.8, this comes in via a nuget package.
 
 Bloom uses various web services that require identification. We can't really keep those a secret, but we can at least not make them google'able by not checking them into github. To get the file that contains user and test-level authorization codes, just get the connections.dll file out of a shipping version of a Bloom, and place it in your Bloom/DistFiles directory.
 
