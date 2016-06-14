@@ -16,6 +16,7 @@ using L10NSharp;
 using Microsoft.Win32;
 using SIL.IO;
 using Bloom.Collection;
+using Bloom.Publish;
 using Newtonsoft.Json;
 using SIL.Reporting;
 using SIL.Extensions;
@@ -241,7 +242,11 @@ namespace Bloom.Api
 				if (File.Exists(temp))
 					localPath = temp;
 			}
-
+			// this is used only by the readium viewer
+			else if (localPath.StartsWith("node_modules/jquery/dist/jquery.js"))
+			{
+				localPath = BloomFileLocator.GetBrowserFile("jquery.min.js");
+			}
 			//Firefox debugger, looking for a source map, was prefixing in this unexpected 
 			//way.
 			localPath = localPath.Replace("output/browser/", "");
@@ -468,13 +473,22 @@ namespace Bloom.Api
 					return true;
 				}
 			}
+			
 			if (!File.Exists(path))
 			{
 				if(path == null)
 				{
 					path = "(was null)";
 				}
-				var stuffToIgnore = new[] { "favicon.ico", ".map" };
+				var stuffToIgnore = new[] {
+					//browser/debugger stuff
+					"favicon.ico", ".map",
+					
+					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation 
+					// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
+					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
+				};
+
 				if(stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
 					return false;
 				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Server could not find the file "+path,"LocalPath was "+localPath);
