@@ -12,6 +12,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
+using SIL.Xml;
 
 namespace BloomTests.Book
 {
@@ -287,7 +288,31 @@ namespace BloomTests.Book
 			Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);
 		}
 
-		[Test]
+        [Test]
+        public void UpdateFieldsAndVariables_OneLabelPreserved_DuplicatesRemovedNotAdded()
+        {
+            var dom = new HtmlDom(@"<html ><head></head><body>
+				<div class='bloom-page titlePage'>
+						<div id='target' class='bloom-content1' data-book='insideBackCover'>
+							<label class='bubble'>Some more space to put things</label><label class='bubble'>Some more space to put things</label>Here is the content
+						</div>
+				</div>
+				</body></html>");
+            var collectionSettings = new CollectionSettings()
+            {
+                Language1Iso639Code = "etr"
+            };
+            var data = new BookData(dom, collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+            XmlElement target = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//div[@id='target']");
+
+            // It's expected that the surviving label goes at the end.
+            Assert.That(target.InnerText, Is.EqualTo("Here is the contentSome more space to put things"));
+            XmlElement label = (XmlElement)target.SelectSingleNodeHonoringDefaultNS("//label");
+            Assert.That(label.InnerText, Is.EqualTo("Some more space to put things"));
+        }
+
+        [Test]
 		public void GetMultilingualContentLanguage_ContentLanguageSpecifiedInHtml_ReadsIt()
 		{
 			var dom = new HtmlDom(@"<html ><head></head><body>
