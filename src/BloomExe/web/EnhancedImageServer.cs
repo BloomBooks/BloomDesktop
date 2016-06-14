@@ -483,8 +483,12 @@ namespace Bloom.Api
 				var stuffToIgnore = new[] {
 					//browser/debugger stuff
 					"favicon.ico", ".map",
-					// readium stuff that we don't ship with (though I don't know why)
-					EpubMaker.kEPUBExportFolder.ToLowerInvariant() };
+					
+					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation 
+					// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
+					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
+				};
+
 				if(stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
 					return false;
 				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Server could not find the file "+path,"LocalPath was "+localPath);
