@@ -62,9 +62,14 @@ namespace Bloom
 			if (Xpcom.IsInitialized)
 				return;
 			string xulRunnerPath = Environment.GetEnvironmentVariable("XULRUNNER");
-			if (!Directory.Exists(xulRunnerPath))
+			if (String.IsNullOrEmpty(xulRunnerPath) || !Directory.Exists(xulRunnerPath))
 			{
-				xulRunnerPath = "Firefox";
+				var asm = Assembly.GetExecutingAssembly();
+				var file = asm.CodeBase.Replace("file://", String.Empty);
+				if (SIL.PlatformUtilities.Platform.IsWindows)
+					file = file.TrimStart('/');
+				var folder = Path.GetDirectoryName(file);
+				xulRunnerPath = Path.Combine(folder, "Firefox");
 			}
 			Xpcom.Initialize(xulRunnerPath);
 
