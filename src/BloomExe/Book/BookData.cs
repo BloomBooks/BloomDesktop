@@ -635,7 +635,15 @@ namespace Bloom.Book
 					}
 					else
 					{
-						value = node.InnerXml.Trim(); //may contain formatting
+					    var node1 = node.CloneNode(true); // so we can remove labels without modifying node
+                        // Datadiv content should be node content without labels. The labels are not really part
+                        // of the content we want to replicate, they are just information for the user, and
+                        // specific to one context. Also, including them causes them to get repeated in each location;
+                        // SetInnerXmlPreservingLabel() assumes data set content does not include label elements.
+					    var labels = node1.SafeSelectNodes(".//label").Cast<XmlElement>().ToList();
+					    foreach (var label in labels)
+					        label.ParentNode.RemoveChild(label);
+						value = node1.InnerXml.Trim(); //may contain formatting
 						if(KeysOfVariablesThatAreUrlEncoded.Contains(key))
 						{
 							value = UrlPathString.CreateFromHtmlXmlEncodedString(value).UrlEncoded;

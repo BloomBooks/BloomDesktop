@@ -752,12 +752,15 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
            if (response.data) {
                 theOneLocalizationManager.asyncGetText(
                     'BookEditor.CharacterMap.Instructions',
-                    'To select, use your mouse wheel or point at what you want, then release the key.')
+                    'To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.')
                     .done(function (translation) {
                         jQuerySetOfMatchedElements.longPress(
                             { instructions: "<div class='instructions'>" + translation + "</div>" }
                         );
                 });
+            }
+            else{
+                console.log("longPress disabled")
             };
         }).catch(e=>alert("useLongPress query failed:"+e));
 }

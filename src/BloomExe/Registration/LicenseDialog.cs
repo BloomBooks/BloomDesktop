@@ -20,9 +20,9 @@ namespace Bloom.Registration
 			_licenseBrowser = new Browser();
 			_licenseBrowser.Isolator = new NavigationIsolator(); // never used while other browsers are around
 			_licenseBrowser.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-			_licenseBrowser.Location = new Point(176, 12);
+			_licenseBrowser.Location = new Point(12, 12);
 			_licenseBrowser.Name = "licenseBrowser";
-			_licenseBrowser.Size = new Size(_acceptButton.Right - 176, _acceptButton.Top - 24);
+			_licenseBrowser.Size = new Size(_acceptButton.Right - 12, _acceptButton.Top - 24);
 			Controls.Add(_licenseBrowser);
 			var options = new MarkdownOptions() { LinkEmails = true, AutoHyperlink = true };
 			var m = new Markdown(options);

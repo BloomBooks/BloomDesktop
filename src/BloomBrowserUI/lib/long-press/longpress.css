@@ -22,6 +22,14 @@
   border-radius: 12px;
   font-size: 24pt;
 }
+.long-press-popup li::before {
+  content: attr(data-shortcut);
+  position: absolute;
+  font-size: 8pt;
+  bottom: 0;
+  right: 0;
+  color: #96668F;
+}
 .long-press-popup .selected {
   border-color: white;
   -webkit-box-shadow: 0 0 18px rgba(255, 255, 255, 0.75);

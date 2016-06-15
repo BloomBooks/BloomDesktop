@@ -506,7 +506,15 @@ namespace Bloom.CollectionTab
 
 				var path = Path.GetTempFileName() + ".txt";
 				File.WriteAllText(path, dlg.ProgressString.Text);
-				PathUtilities.OpenFileInApplication(path);
+				try
+				{
+					PathUtilities.OpenFileInApplication(path);
+				}
+				catch (System.OutOfMemoryException)
+				{
+					// This has happened at least once.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3431.
+					MessageBox.Show("Bloom ran out of memory trying to open the log.  You should quit and restart the program.  (Your books should all be okay.)");
+				}
 			}
 
 		}
@@ -530,7 +538,7 @@ namespace Bloom.CollectionTab
 				book.CheckBook(dialog.Progress, pathToFolderOfReplacementImages);
 				dialog.ProgressString.WriteMessage("");
 			}
-			dialog.ProgressBar.Value++;
+			dialog.Progress.ProgressIndicator.PercentCompleted = 100;
 		}
 
 

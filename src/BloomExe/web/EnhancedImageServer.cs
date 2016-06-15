@@ -16,6 +16,7 @@ using L10NSharp;
 using Microsoft.Win32;
 using SIL.IO;
 using Bloom.Collection;
+using Bloom.Publish;
 using Newtonsoft.Json;
 using SIL.Reporting;
 using SIL.Extensions;
@@ -241,7 +242,11 @@ namespace Bloom.Api
 				if (File.Exists(temp))
 					localPath = temp;
 			}
-
+			// this is used only by the readium viewer
+			else if (localPath.StartsWith("node_modules/jquery/dist/jquery.js"))
+			{
+				localPath = BloomFileLocator.GetBrowserFile("jquery.min.js");
+			}
 			//Firefox debugger, looking for a source map, was prefixing in this unexpected 
 			//way.
 			localPath = localPath.Replace("output/browser/", "");
@@ -447,11 +452,10 @@ namespace Bloom.Api
 					return true;
 				}
 			}
+			
 			if (!File.Exists(path))
 			{
-#if DEBUG
-				ReportMissingFile(localPath, path);
-#endif
+				ReportMissingFile(localPath,path);
 				return false;
 			}
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
@@ -459,32 +463,28 @@ namespace Bloom.Api
 			return true;
 		}
 
-#if DEBUG
-		// Our Redium shell is a crudely cut-down version of a larger page and tries to load all kinds of stuff we don't need
-		// and don't have.
-		bool FileMayBeMissing(string path)
-		{
-			if (string.IsNullOrEmpty(path))
-				return false;
-			if (!path.Contains("Epub export"))
-				return false;
-			if (path.EndsWith(".png"))
-				return true;
-			if (path.EndsWith("display-options.xml"))
-				return true;
-			if (path.EndsWith("encryption.xml"))
-				return true;
-			return false;
-		}
+
 
 		// overridden in tests
 		internal virtual void ReportMissingFile(string localPath, string path)
 		{
-			if (!FileMayBeMissing(localPath))
-				Console.WriteLine("(DEBUG ONLY) Not Found" + System.Environment.NewLine + "localPath=" + localPath + System.Environment.NewLine + "path=" + path);
+			if (path == null)
+			{
+				path = "(was null)";
+			}
+			var stuffToIgnore = new[] {
+					//browser/debugger stuff
+					"favicon.ico", ".map",
+					
+					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation 
+					// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
+					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
+				};
 
+			if (!stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
+				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Server could not find the file " + path, "LocalPath was " + localPath);
 		}
-#endif
+
 
 		/// <summary>
 		/// Requests with ?generateThumbnaiIfNecessary=true are potentially recursive in that we may have to navigate

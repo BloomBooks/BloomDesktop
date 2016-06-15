@@ -72,7 +72,10 @@
     "karma-jasmine": "^0.3.6",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-spec-reporter": "0.0.23",
+
+    "jstransformer-marked": "^1.0.1",
     "less-loader": "^2.2.2",
+    "marked": "^0.3.5",
     "path": "^0.12.7",
     "querystring": "^0.2.0",
     "run-sequence": "^1.1.5",

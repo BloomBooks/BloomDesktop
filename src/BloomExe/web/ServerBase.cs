@@ -147,8 +147,8 @@ namespace Bloom.Api
 
 			if(!success)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-					"Bloom could not start up its own internal HTTP Server. Please try again after restarting your computer.");
+				
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
 				Logger.WriteEvent("Error: Could not start up internal HTTP Server");
 				Analytics.ReportException(new ApplicationException("Could not start server."));
 				Application.Exit();
@@ -206,12 +206,46 @@ namespace Bloom.Api
 
 		private static void VerifyWeAreNowListening()
 		{
-			var x = new WebClientWithTimeout { Timeout = 3000 };
-			if ("OK" != x.DownloadString(ServerUrlWithBloomPrefixEndingInSlash + "testconnection"))
+			try
 			{
-				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.CannotConnectToBloomServer", "Bloom's built-in HTTP server is not responding.");
-				throw new ApplicationException(msg);
+				var x = new WebClientWithTimeout {Timeout = 3000};
+
+				if("OK" != x.DownloadString(ServerUrlWithBloomPrefixEndingInSlash + "testconnection"))
+				{
+					throw new ApplicationException(GetServerStartFailureMessage());
+				}
 			}
+			catch(Exception error)
+			{
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,GetServerStartFailureMessage());
+				Application.Exit();
+			}
+		}
+
+		private static string GetServerStartFailureMessage()
+		{
+			var zoneAlarm = false;
+			if(SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				zoneAlarm =
+					Directory.Exists(Path.Combine(Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86),
+						"CheckPoint/ZoneAlarm")) ||
+					Directory.Exists(Path.Combine(Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles),
+						"CheckPoint/ZoneAlarm"));
+
+				if(!zoneAlarm)
+				{
+					zoneAlarm = Process.GetProcesses().Any(p => p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName.Contains("ZoneAlarm")));
+				}
+			}
+			if(zoneAlarm)
+			{
+				return LocalizationManager.GetString("Errors.ZoneAlarm",
+					"Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.");
+			}
+
+			return LocalizationManager.GetString("Errors.CannotConnectToBloomServer",
+				"Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.");
 		}
 
 		// After the initial startup, this should only be called inside a lock(_queue),
