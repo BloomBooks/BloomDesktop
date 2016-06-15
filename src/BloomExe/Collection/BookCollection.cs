@@ -93,6 +93,7 @@ namespace Bloom.Collection
 			get
 			{
 				var dirName = Path.GetFileName(_path);
+				//the UI and existing Localizations want to see "templates", but on disk, "templates" is ambiguous, so the name there is "template books".
 				return dirName == "template books" ? "Templates" : dirName;
 			}
 		}
