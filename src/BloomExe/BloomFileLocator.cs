@@ -173,9 +173,9 @@ namespace Bloom
 		}
 		
 
-		public static string GetFactoryBookTemplateDirectory(params string[] parts)
+		public static string GetFactoryBookTemplateDirectory(string bookName)
 		{
-			return Path.Combine(FactoryTemplateBookDirectory, parts[0]);
+			return Path.Combine(FactoryTemplateBookDirectory, bookName);
 		}
 
 

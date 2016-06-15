@@ -22,13 +22,13 @@ lib/xulrunner*/
 DistFiles/root/tmp*
 *.pdb
 lib/dotnet/Palaso*.dll
-DistFiles/factoryCollections/Templates/BasicBook/basePage.css
-DistFiles/factoryCollections/Templates/BasicBook/previewMode.css
-DistFiles/factoryCollections/Templates/BasicBook/languageDisplay.css
-DistFiles/factoryCollections/Templates/Decodable Reader/Basic Book.css
-DistFiles/factoryCollections/Templates/Leveled Reader/Basic Book.css
-DistFiles/factoryCollections/Templates/**/Factory-XMatter.css
-DistFiles/factoryCollections/Templates/**/basePage.css
+
+basePage.css
+previewMode.css
+languageDisplay.css
+Basic Book.css
+Factory-XMatter.css
+
 
 *.bak
 **/Sample Shells/Vaccinations/*.css
