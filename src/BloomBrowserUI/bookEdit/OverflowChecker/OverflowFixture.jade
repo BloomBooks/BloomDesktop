@@ -24,7 +24,10 @@ body
 	+standardTestField(name="Default font bloom-editable with no styles doesn't overflow") Test text
 
 	// Test#1
-	-var styles="font-family:'Andika New Basic', Andika;font-size:large;height:21px;";
+	// This test originally used Andika New Basic font and height:21px. Andika is much higher at a given size than
+	// Arial. This may well have been the point of this case. However, build agents were failing because Andika NB
+	// was not installed so the test failed. This may be a less useful test case but at least it's consistent.
+	-var styles="font-family:Arial;font-size:large;height:15px;";
 	+standardTestField(name="Andika bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
 
 	// Test#2
