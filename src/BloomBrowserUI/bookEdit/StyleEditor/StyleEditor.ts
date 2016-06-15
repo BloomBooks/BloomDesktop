@@ -1129,12 +1129,18 @@ class StyleEditor {
     }
 
     changeWordSpace() {
+        //careful here: the labels we get are localized, so you can't just compare to English ones (BL-3527)
         if (this.ignoreControlChanges) return;
-        var wordSpace = $('#word-space-select').val();
-        if (wordSpace === 'Wide')
-            wordSpace = '5pt';
-        else if (wordSpace === 'Extra Wide') {
-            wordSpace = '10pt';
+        
+        var chosenIndex = $("#word-space-select option:selected").index();
+        var wordSpace;
+        switch (chosenIndex) {
+            case 1: wordSpace = '5pt';
+               break;
+            case 2: wordSpace = '10pt';
+               break;
+            default:
+                wordSpace = 'normal';
         }
         var rule = this.getStyleRule(false);
         rule.style.setProperty("word-spacing", wordSpace, "important");
