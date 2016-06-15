@@ -39,13 +39,12 @@ namespace BloomTests.Edit
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
 											{
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Wall Calendar"),
+												//FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+												BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book"),
+												BloomFileLocator.GetFactoryBookTemplateDirectory("Wall Calendar"),
 												FileLocator.GetDirectoryDistributedWithApplication( BloomFileLocator.BrowserRoot),
-												FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookLayout")),
-												FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/css")),
+												BloomFileLocator.GetBrowserDirectory("bookLayout"),
+												BloomFileLocator.GetBrowserDirectory("bookEdit","css"),
 												BloomFileLocator.GetInstalledXMatterDirectory()
 											});
 
@@ -227,7 +226,7 @@ namespace BloomTests.Edit
 
 		private BookStorage Get_NotYetConfigured_CalendardBookStorage()
 		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Wall Calendar");
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Wall Calendar");
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _libraryFolder.Path));
 			var projectFolder = new TemporaryFolder("ConfiguratorTests_ProjectCollection");
 			//review

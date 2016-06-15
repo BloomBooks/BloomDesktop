@@ -110,7 +110,7 @@ namespace Bloom.Api
 		/// <returns></returns>
 		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool forSrcAttr = false)
 		{
-			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".htm");
+			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".html");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
 			if (dom.BaseForRelativePaths != null)
 			{

@@ -93,7 +93,10 @@ namespace Bloom.Api
 						//var modal = ApplicationUpdateSupport.ChannelName.StartsWith("Developer/") ? ModalIf.All : ModalIf.None;
 
 						var longMsg = String.Format("**I18NHandler: Added missing translatable string (\"{0}\")", englishText);
-						NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "adding translatable string", longMsg);
+
+						//Note: this used to be at PassiveIf.All. The problem is that some requests for translations are of user
+						//data, like template book names. So lots of false positives.
+						NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "adding translatable string", longMsg);
 						info.ContentType = "text/plain";
 						info.WriteCompleteOutput(englishText);
 						return true;

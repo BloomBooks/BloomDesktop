@@ -80,15 +80,15 @@ namespace Bloom.Book
 
 		private string GetPathToHtmlFile(string folder)
 		{
-			var candidates = from x in Directory.GetFiles(folder, "*.htm")
-							 where !(x.ToLowerInvariant().EndsWith("configuration.htm"))
+			var candidates = from x in Directory.GetFiles(folder, "*.htm*")
+							 where !(x.ToLowerInvariant().EndsWith("configuration.html"))
 							 select x;
 			if (candidates.Count() == 1)
 				return candidates.First();
 			else
 			{
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-					"There should only be a single htm file in each folder ({0}). [not counting configuration.htm]", folder);
+					"There should only be a single htm(l) file in each folder ({0}). [not counting configuration.html]", folder);
 				throw new ApplicationException();
 			}
 

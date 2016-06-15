@@ -1,0 +1,211 @@
+//- ---------------------------------------------------------------------------------------
+//- Notes on Mixin use
+//- 	If you get the error : "You should not have jade tags with multiple attributes."
+//-		make sure the mixin name is spelled correctly and capitalized correctly.
+//-		Use ctrl+/ in good editors to comment out a large section so you can narrow it down
+//- ---------------------------------------------------------------------------------------
+
+- const kLanguageForPrototypeOnly = 'z';
+
+//- All Bloom templates should use this mixin, so that when the format version
+//- changes we can change the version number in one place
+mixin metadata-standard
+	meta(charset='UTF-8')
+	meta(name='Generator', content='Bloom')
+	meta(name='BloomFormatVersion', content='2.0')
+
+mixin stylesheets(nameOfTemplateSpecificCSS)
+	+stylesheet('basePage.css')
+	//- +stylesheet('languageDisplay.css')
+	+stylesheet('editMode.css')
+	+stylesheet('editPaneGlobal.css')
+	+stylesheet(nameOfTemplateSpecificCSS)
+	//- +stylesheet('file://..\customCollectionStyles.css')
+
+mixin bookVariable(element, langCode, value)
+	div(data-book=element, lang=langCode)=value
+
+mixin bookVariable-title(langCode, title)
+	div(data-book='bookTitle', lang=langCode)=title
+
+//- Copy this into your own template if you need a different
+//- default page size
+mixin pageWithJustPageSize
+	.A5Portrait&attributes(attributes)
+		block
+
+mixin page(englishLabel, englishDescription)
+	+pageWithJustPageSize.bloom-page&attributes(attributes)
+		+page-label-english(englishLabel, englishDescription)
+		.marginBox
+			block
+
+//- The most common kind of page template; it is numbered and not required.
+mixin page-choice(englishLabel, englishDescription)
+	+page(englishLabel, englishDescription).numberedPage(data-page='extra')&attributes(attributes)
+		block
+
+mixin page-layout(englishLabel, englishDescription)
+	+pageWithJustPageSize.bloom-page&attributes(attributes)
+		+page-label-english(englishLabel, englishDescription)
+		.marginBox.origami-layout-mode
+			block
+
+//- The most common kind of page template; it is numbered and not required.
+mixin page-choice-layout(englishLabel, englishDescription)
+	+page-layout(englishLabel, englishDescription).numberedPage(data-page='extra')&attributes(attributes)
+		block
+
+//- This is a page that is always in the book and can't be removed, like a cover page.
+mixin page-required(englishLabel, englishDescription)
+	+page(englishLabel, englishDescription)(data-page='required')&attributes(attributes)
+		block
+
+mixin page-label-english(englishLabel, englishDescription)
+	.pageLabel(lang='en')=englishLabel
+	.pageDescription(lang='en')=englishDescription
+
+//- Example Usage with placeholder and bubble:
+//-	+field.question
+//-		label.bubble Don't forget to fill this in using {lang}
+//-		label.placeholder question
+mixin field
+	-requireZeroArguments('field');
+	.bloom-translationGroup&attributes(attributes)
+		block //this is where <label>s go
+		+editable(kLanguageForPrototypeOnly)
+
+mixin field-withSampleText
+	-requireZeroArguments('field-withSampleText');
+	.bloom-translationGroup&attributes(attributes)
+		+editable(kLanguageForPrototypeOnly)
+			block
+
+//- Sometimes, especially when we're just jade-ifying some existing html with existing css,
+//- we need to put attributes directly on the prototyp div instide of a translation group.
+//- This one lets us do that
+mixin field-prototypeDeclaredExplicity
+	- requireZeroArguments('field-prototypeDeclaredExplicity', arguments);
+	.bloom-translationGroup&attributes(attributes)
+		block
+
+//- deprecated. Starting with version 2.0, we've changed how placeholders are handled
+mixin field-version1(placeholder)
+	+field-withSampleText(data-placeholder=placeholder)&attributes(attributes)
+		block
+
+//- Example usage: This would give us a user-changeable image inside a rounded border, with 2 movable labels
+//-	.roundedBorder
+//-		+image.storyPicture
+//-			+field.bloom-draggableLabel
+//-			+field.bloom-draggableLabel
+mixin image
+	- requireZeroArguments('image', arguments);
+	.bloom-imageContainer&attributes(attributes)
+		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the picture')
+		block
+
+//- Will show a table. Bloom's basePage.css should style it with a border around each cell
+mixin grid(rows, columns)
+	- requireTwoArguments("grid", arguments);
+	table.bloomGrid&attributes(attributes)
+		- for (var r = 0; r < rows; r++)
+			tr
+				- for(var c = 0; c < columns; c++)
+					td
+						+field
+
+mixin gridxy(columns, rows)
+	- requireTwoArguments("grid", arguments);
+	table.bloomGrid&attributes(attributes)
+		- for (var r = 0; r < rows; r++)
+			tr
+				- for(var c = 0; c < columns; c++)
+					td
+						+field
+//- ------------------------------------------------
+//- Mixins for Repetition
+//- ------------------------------------------------
+
+mixin repeat(count)
+	- if(!count) throw "Usage Error: +repeat requires a count parameter.";
+	- for (var i=0;i<count;i++)
+		block
+
+mixin list-numbered(count)
+	- if(!count) throw "Usage Error: +list-numbered requires a count parameter.";
+	ol(class=attributes.class)
+		- for (var i=0;i<count;i++)
+			li
+				block
+
+
+//- ------------------------------------------------
+//- Lesser-used Mixins
+//- ------------------------------------------------
+
+//- Use this to have an element that repeats on multiple pages with the same value
+mixin field-common(key)
+	- requireOneArgument('field-common', arguments);
+	+field(data-book=key)&attributes(attributes)
+		block
+
+//- REVIEW: How are we going to allow placeholders/bubbles on these mono fields in the new <label> style, unless there is a wrapping element to hold  both?
+//- use this for fields that are always in the specified language, no translation possible
+mixin field-mono-version1(language, bubbleText)
+	- requireTwoArguments('field-mono-version1', arguments);
+	+editable(language)(data-hint=bubbleText)&attributes(attributes)
+
+//- These are useful for front-back matter that will never be translated.
+//- When used in frontMatter, the dataBookName is mandatory.
+//- Language is always mandatory, but you can use '*' to mean "Don't worry what language it is"
+mixin field-mono-meta(language, dataBookName)
+	- requireTwoArguments('field-mono-meta', arguments);
+	+editable(language)(data-book=dataBookName,data-metalanguage=language)&attributes(attributes)
+		block
+
+mixin  page-splittable-choice-custom(englishLabel, englishDescription)
+	+page-choice(englishLabel, englishDescription).customPage.bloom-combinedPage&attributes(attributes)
+			block
+
+//- A splittable page is one that has each element tagged with either 'bloom-leadingElement' or 'bloom-trailingElement'.
+//- The css for the page should then respond to the page having either bloom-combined (when not split) and
+//- either bloom-leadingPage or bloom-trailingPage (when split). See "Split Page Support" in the Bloom Format Documentation.
+mixin  page-splittable-choice(englishLabel, englishDescription)
+	+page-choice(englishLabel, englishDescription)(class='bloom-combinedPage')&attributes(attributes)
+		block
+
+mixin script(javascriptfileName)
+	script(type='text/javascript', src=javascriptfileName)
+
+mixin stylesheet(fullName)
+	- requireOneArgument('stylesheet', arguments);
+	link(rel='stylesheet', href=fullName, type='text/css')
+
+mixin dataDiv
+	div#bloomDataDiv
+		block
+
+//- +editable should rarely if ever be used directly in a template; it is for other mixins
+mixin editable(language)
+	- requireOneArgument('editable', arguments)
+	.bloom-content1.bloom-editable(lang=language, contenteditable="true")&attributes(attributes)
+		block
+
+
+//----- utility functions------------------------------
+- function requireZeroArguments(functionName, args) {
+-    if(args && args.length) throw "Usage Error: "+functionName+" takes no parameters."+args.length;
+- }
+
+- function requireOneArgument(functionName, args) {
+-    if(args.length != 1) throw "Usage Error: "+functionName+" requires 1 parameter.";
+- }
+
+- function requireTwoArguments(functionName, args) {
+-    if(args.length != 2) throw "Usage Error: "+functionName+" requires 2 parameters.";
+- }
+
+- function requireThreeArguments(functionName, args) {
+-    if(args.length != 3) throw "Usage Error: "+functionName+" requires 3 parameters.";
+- }

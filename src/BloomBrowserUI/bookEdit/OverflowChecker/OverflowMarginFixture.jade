@@ -6,16 +6,16 @@ doctype html
 //- NB: Could this have been the thin gray border of a focused entry box?
 //- As a consequence, the overflow test will be "var overflow = scrollHeight > clientHeight + 2;
 mixin testTarget
-	.myTest(attributes)
+	.myTest&attributes(attributes)
 		block
 
 mixin standardTestField
-	+testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+	+testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true')&attributes(attributes)
 		block
 
 mixin standardTranslationGroup
 	.bloom-translationGroup
-		.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+		.bloom-editable.bloom-content1(lang='z', contenteditable='true')&attributes(attributes)
 			block
 
 head

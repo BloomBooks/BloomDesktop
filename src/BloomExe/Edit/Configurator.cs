@@ -43,12 +43,12 @@ namespace Bloom.Edit
 			//BookStorage storage = new BookStorage(folderPath, null);
 			//return (null != FindConfigurationPage(dom));
 
-			return File.Exists(Path.Combine(folderPath, "configuration.htm"));
+			return File.Exists(Path.Combine(folderPath, "configuration.html"));
 		}
 
 		public DialogResult ShowConfigurationDialog(string folderPath)
 		{
-			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetLibraryData(), _isolator))
+			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.html"), GetLibraryData(), _isolator))
 			{
 				var result = dlg.ShowDialog(null);
 				if (result == DialogResult.OK)

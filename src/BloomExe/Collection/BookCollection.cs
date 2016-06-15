@@ -90,7 +90,11 @@ namespace Bloom.Collection
 
 		public virtual string Name
 		{
-			get { return Path.GetFileName(_path); }
+			get
+			{
+				var dirName = Path.GetFileName(_path);
+				return dirName == "template books" ? "Templates" : dirName;
+			}
 		}
 
 		public string PathToDirectory
@@ -164,7 +168,7 @@ namespace Bloom.Collection
 			try
 			{
 				//this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
-				if (Directory.GetFiles(folderPath, "*.htm").Length == 0)
+				if (Directory.GetFiles(folderPath, "*.htm").Length == 0 && Directory.GetFiles(folderPath, "*.html").Length == 0)
 					return;
 				var bookInfo = new BookInfo(folderPath, Type == CollectionType.TheOneEditableCollection);
 
@@ -205,7 +209,7 @@ namespace Bloom.Collection
 		/// <summary>
 		/// This includes everything in "factoryCollections" (i.e. Templates folder AND Sample Shells:Vaccinations folder)
 		/// </summary>
-		public bool IsFactoryInstalled { get { return PathToDirectory.Contains(ProjectContext.FactoryCollectionsDirectory); } }
+		public bool IsFactoryInstalled { get { return BloomFileLocator.IsInstalledFileOrDirectory(PathToDirectory); } }
 
 		private FileSystemWatcher _watcher;
 		/// <summary>

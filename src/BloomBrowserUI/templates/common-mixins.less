@@ -1,0 +1,72 @@
+//NB: why wouldn't you *always* want this? If you're doing something fancy,
+//and placing editables around(like basic book: basic text & picture does),
+//you may have already dealt with spacing.
+//.SeparateMultilingualEditables(@doSeparate) when (@doSeparate) {
+@StandardMultilingualEditBoxSeparation: 10px;//Beware the temptation to express this in "em"s. As the user changes the font size, that could make stuff exceed the bounds of the page
+
+.Common-SeparateMultilingualEditables(@separation){
+    .bloom-translationGroup {
+        .bloom-editable {
+            &.bloom-content2, &.bloom-content3 {
+                margin-top: @separation;
+            }
+        }
+    }
+}
+
+@defaultLineHeight: 1.5em;//no units! No em!!!! em makes children inside have a lineheight that matches the font of the overall box, regardless of the thing's font-size. See https://developer.mozilla.org/en-US/docs/Web/CSS/line-height
+
+@Device16x9Portrait-Width: 100mm;
+@Device16x9Portrait-Height: @Device16x9Portrait-Width * 16 / 9;
+@Device16x9Landscape-Height: @Device16x9Portrait-Width;
+@Device16x9Landscape-Width: @Device16x9Portrait-Height;
+
+@A4Portrait-Height: 297mm;
+@A4Portrait-Width: 210mm;
+@A4Landscape-Height: @A4Portrait-Width;
+@A4Landscape-Width: @A4Portrait-Height;
+
+@A5Portrait-Height: @A4Portrait-Width;
+@A5Portrait-Width: floor(@A4Portrait-Height / 2.0);
+@A5Landscape-Height: @A5Portrait-Width;
+@A5Landscape-Width: @A5Portrait-Height;
+
+@A6Portrait-Height: @A5Portrait-Width;
+@A6Portrait-Width: floor(@A4Portrait-Width / 2.0);
+@A6Landscape-Height: @A6Portrait-Width;
+@A6Landscape-Width: @A6Portrait-Height;
+
+@B5Portrait-Height: 250mm;
+@B5Portrait-Width: 176mm;
+
+@LetterPortrait-Height: 11in;
+@LetterPortrait-Width: 8.5in;
+@LetterLandscape-Height: @LetterPortrait-Width;
+@LetterLandscape-Width: @LetterPortrait-Height;
+
+@HalfLetterPortrait-Height: 8.5in;
+@HalfLetterPortrait-Width: 5.5in;
+@HalfLetterLandscape-Height: @HalfLetterPortrait-Width;
+@HalfLetterLandscape-Width: @HalfLetterPortrait-Height;
+
+@QuarterLetterPortrait-Height: 5.5in;
+@QuarterLetterPortrait-Width: 4.25in;
+@QuarterLetterLandscape-Height: @QuarterLetterPortrait-Width;
+@QuarterLetterLandscape-Width: @QuarterLetterPortrait-Height;
+
+@LegalPortrait-Height: 14in;
+@LegalPortrait-Width: 8.5in;
+@LegalLandscape-Height: @LegalPortrait-Width;
+@LegalLandscape-Width: @LegalPortrait-Height;
+
+@HalfLegalPortrait-Height: 8.5in;
+@HalfLegalPortrait-Width: 7in;
+@HalfLegalLandscape-Height: @HalfLegalPortrait-Width;
+@HalfLegalLandscape-Width: @HalfLegalPortrait-Height;
+
+@MarginTop: 15mm;
+@MarginOuter: 15mm;
+@MarginBottom: 15mm;
+@ExtraSpaceForBinding: 10mm;
+@MarginInner: @MarginOuter + @ExtraSpaceForBinding;
+@MarginBalanced: (@MarginOuter + @MarginInner) / 2.0; // for when we want the same left and right margins

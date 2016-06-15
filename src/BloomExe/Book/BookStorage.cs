@@ -565,6 +565,9 @@ namespace Bloom.Book
 			string p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
 			if (File.Exists(p))
 				return p;
+			p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".html");
+			if (File.Exists(p))
+				return p;
 
 			if (!Directory.Exists(folderPath)) //bl-291 (user had 4 month-old version, so the bug may well be long gone)
 			{
@@ -575,13 +578,16 @@ namespace Bloom.Book
 			}
 
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
-			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm"));
+			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm").Concat(Directory.GetFiles(folderPath, "*.html")));
 			candidates.RemoveAll((name) => name.ToLowerInvariant().Contains("configuration"));
 			if (candidates.Count == 1)
 				return candidates[0];
 
 			//template
 			p = Path.Combine(folderPath, "templatePages.htm");
+			if (File.Exists(p))
+				return p;
+			p = Path.Combine(folderPath, "templatePages.html");
 			if (File.Exists(p))
 				return p;
 

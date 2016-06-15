@@ -77,6 +77,11 @@ namespace Bloom.Book
 			}
 		}
 
+		public bool IsDeviceLayout
+		{
+			get { return SizeAndOrientation.ToString().StartsWith("Device"); }
+		}
+
 		public override string ToString()
 		{
 			var s = "";

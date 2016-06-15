@@ -32,7 +32,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		public void MakePdf_BookStyleIsNone_OutputsPdf()
 		{
 			var maker = new PdfMaker();
-			using (var input = TempFile.WithExtension("htm"))
+			using (var input = TempFile.WithExtension("html"))
 			using (var output = new TempFile())
 			{
 				File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
@@ -52,7 +52,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		public void MakePdf_BookStyleIsBooklet_OutputsPdf()
 		{
 			var maker = new PdfMaker();
-			using (var input = TempFile.WithExtension("htm"))
+			using (var input = TempFile.WithExtension("html"))
 			using (var output = new TempFile())
 			{
 				File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
@@ -75,7 +75,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		public void MakePdf_BookNameIsChinese_OutputsPdf()
 		{
 			var maker = new PdfMaker();
-			using (var input = TempFile.WithFilename("北京.htm"))
+			using (var input = TempFile.WithFilename("北京.html"))
 			using (var output = TempFile.WithFilename("北京.pdf"))
 			{
 				File.WriteAllText(input.Path, "<html><body>北京</body></html>");
@@ -95,7 +95,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		public void MakePdf_BookNameIsNonAscii_OutputsPdf()
 		{
 			var maker = new PdfMaker();
-			using (var input = TempFile.WithFilename("എന്റെ ബുക്ക്.htm"))
+			using (var input = TempFile.WithFilename("എന്റെ ബുക്ക്.html"))
 			using (var output = TempFile.WithFilename("എന്റെ ബുക്ക്.pdf"))
 			{
 				File.WriteAllText(input.Path, "<META HTTP-EQUIV=\"content-type\" CONTENT=\"text/html; charset=utf-8\"><html><body>എന്റെ ബുക്ക്</body></html>");
