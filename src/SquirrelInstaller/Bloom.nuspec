@@ -18,8 +18,6 @@
 		This pattern should cover Bloom.pdb or BloomAlpha.pdb or anything similar (but we don't need BloomTests.pdb or BloomChorusPlugin.pdb).-->
 		<file src="..\..\output\release\Bloom*.pdb" exclude="**\*Tests.*;**\*Chorus*.*" target="lib\net45\"/>
 		<file src="..\..\output\release\SIL.*.pdb" target="lib\net45\"/> <!-- Palaso library debug symbols -->
-		<!-- This exclusion list is derived from https://msdn.microsoft.com/en-us/library/system.io.file.delete(v=vs.110).aspx, plus the spelling dictionaries: bits of xulrunner we don't need, to save space. Current version created for xulrunner29.-->
-		<file src="..\..\lib\xulrunner\**\*.*" target="\lib\net45\xulrunner" exclude="*.exe;*.aff;*.dic;crashreporter.*;AccessibleMarshal.dll;breakpadinjector.dll;D3DCompiler_43.dll;IA2Marshal.dll;nssdbm3.*;precomplete"/>
 		<file src="..\..\distfiles\**\*.*"  target="lib\net45\"/>
 		<file src="..\..\Mercurial\**\*.*" target="\lib\net45\Mercurial"/>
 		<file src="..\..\MercurialExtensions\**\*.*" target="\lib\net45\MercurialExtensions"/>
