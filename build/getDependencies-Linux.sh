@@ -54,14 +54,10 @@ fi
 
 copy_wget() {
 echo "wget: $2 <= $1"
-f1=$(basename $1)
-f2=$(basename $2)
-cd $(dirname $2)
+f=$(basename $2)
+d=$(dirname $2)
+cd $d
 wget -q -L -N $1
-# wget has no true equivalent of curl's -o option.
-# Different versions of wget handle (or not) % escaping differently.
-# A URL query is the only reason why $f1 and $f2 should differ.
-if [ "$f1" != "$f2" ]; then mv $f2\?* $f2; fi
 cd -
 }
 
@@ -147,7 +143,7 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
-#     VCS: http://bitbucket.org/hatton/pdfdroplet [default]
+#     VCS: https://github.com/sillsdev/pdfDroplet [master]
 # [11] build: TidyManaged-master-precise64-continuous (bt351)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt351
