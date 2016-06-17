@@ -1,4 +1,9 @@
-# We are now shipping geckofx and xulrunner side-by-side, so just search for them.
-export XULRUNNER=$(dirname $(find $(pwd) -name libxul.so | grep -v /packages/))
+# We are now shipping geckofx and xulrunner side-by-side with Bloom, so just search
+# for them.  Note that this script lives in /usr/share/bloom-desktop* on user machines,
+# but on the root of the repository on developer machines.  This requires a bit of
+# hackery to reliably find the proper location of the Firefox/xulrunner libraries.
+tmpbasedir=$(pwd | sed s=usr/share/=usr/lib/=)
+export XULRUNNER=$(dirname $(find $tmpbasedir -name libxul.so | grep -v /packages/))
 LD_LIBRARY_PATH="${XULRUNNER}:${LD_LIBRARY_PATH}"
-export LD_PRELOAD=$(find $(pwd) -name libgeckofix.so | grep -v /packages/)
+export LD_PRELOAD=$(find $tmpbasedir -name libgeckofix.so | grep -v /packages/)
+unset tmpbasedir
