@@ -52,7 +52,8 @@ namespace Bloom.Api
 				request.ReplyWithText(bookFontName);
 			});
 
-			server.RegisterEndpointHandler("readers/.*", HandleRequest);
+			server.RegisterEndpointHandler("readers/ui/.*", HandleRequest, true);
+			server.RegisterEndpointHandler("readers/io/.*", HandleRequest, false);
 
 			//we could do them all like this:
 			//server.RegisterEndpointHandler("readers/loadReaderToolSettings", r=> r.ReplyWithJson(GetDefaultReaderSettings(r.CurrentCollectionSettings)));

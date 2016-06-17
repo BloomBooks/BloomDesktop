@@ -698,7 +698,7 @@ function attachEventHandlers(): void {
   if (typeof ($) === "function") {
 
     $("#open-text-folder").onSafe('click', function() {
-      axios.post('/bloom/api/readers/openTextsFolder');
+      axios.post('/bloom/api/readers/ui/openTextsFolder');
       return false;
     });
 
@@ -754,7 +754,7 @@ function attachEventHandlers(): void {
     });
 
     $('#setup-choose-allowed-words-file').onSafe('click', function() {
-      axios.get<string>('/bloom/api/readers/chooseAllowedWordsListFile').then(result => {
+      axios.get<string>('/bloom/api/readers/ui/chooseAllowedWordsListFile').then(result => {
         var fileName = result.data;
         if (fileName) setAllowedWordsFile(fileName);
 
@@ -829,7 +829,7 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
   }
 
   // if you are here, the file name is not in use
-  axios.delete('/bloom/api/readers/allowedWordsList', { params: { 'fileName': fileName } });
+  axios.delete('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': fileName } });
 }
 
 export function enableSampleWords() {

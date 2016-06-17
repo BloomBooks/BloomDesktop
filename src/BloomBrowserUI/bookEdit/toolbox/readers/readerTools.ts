@@ -171,7 +171,7 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
     readerToolsInitialized = true;
 
     axios.get<string>('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data));
-    axios.get<string>('/bloom/api/readers/readerToolSettings').then(settingsFileContent => {
+    axios.get<string>('/bloom/api/readers/io/readerToolSettings').then(settingsFileContent => {
         initializeSynphony(settingsFileContent.data);
         result.resolve();
     });
@@ -204,7 +204,7 @@ function initializeSynphony(settingsFileContent: string): void {
   }
   else {
     // get the list of sample texts
-    axios.get<string>('/bloom/api/readers/sampleTextsList').then(result =>beginSetTextsList(result.data));
+    axios.get<string>('/bloom/api/readers/ui/sampleTextsList').then(result =>beginSetTextsList(result.data));
   }
 }
 
@@ -264,11 +264,11 @@ function beginRefreshEverything(settings: ReaderSettings) : Promise<void> {
   getTheOneReaderToolsModel().setSynphony(synphony);
 
   // reload the sample texts
-  return <any>axios.get<string>('/bloom/api/readers/sampleTextsList').then(result => beginSetTextsList(result.data));
+  return <any>axios.get<string>('/bloom/api/readers/io/sampleTextsList').then(result => beginSetTextsList(result.data));
 }
 
 export function beginSaveChangedSettings(settings: ReaderSettings, previousMoreWords: string): Promise<void> {
-  return <any>axios.post('/bloom/api/readers/readerToolSettings', settings)
+  return <any>axios.post('/bloom/api/readers/io/readerToolSettings', settings)
     .then(result => {
       // reviewslog: following previous logic that we need to reload files if useAllowedWords
       // is true. Seems we should at least need to do it ALSO if it was PREVIOUSLY true.
@@ -322,7 +322,7 @@ export function makeLetterWordList(): void {
   allWords = _.compact(_.pluck(allWords, 'Name'));
 
   // export the word list
-  var ajaxSettings = {type: 'POST', url: '/bloom/api/readers/makeLetterAndWordList'};
+  var ajaxSettings = {type: 'POST', url: '/bloom/api/readers/ui/makeLetterAndWordList'};
   ajaxSettings['data'] = {
     settings: JSON.stringify(settings),
     allWords: allWords.join('\t')
