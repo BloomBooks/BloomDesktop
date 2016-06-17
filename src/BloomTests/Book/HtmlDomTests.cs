@@ -445,6 +445,22 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='en' and text()='blah']", 1);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']", 2);
 		}
+
+		[Test]
+		public void SetBookSetting_HadValueWithNoLanguage_RemovesItAndSavesNewValue()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='foo'>blah</div>
+					<div data-book='foo' lang='en'>blah</div>
+				</div>
+			 </body></html>");
+			bookDom.SetBookSetting("foo", "xyz", "hello");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='xyz' and text()='hello']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='en' and text()='blah']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@data-book='foo' and not(@lang)]");
+		}
+
 		[Test]
 		public void SetBookSetting_AddANewVariationToAnExistingKey_Added()
 		{
