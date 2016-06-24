@@ -253,4 +253,4 @@ function ResetRememberedSize(element) {
 
   };
 
-})(jQuery,this);
+})(jQuery, window); // JohnT mod: in module context, 'this' is not defined.
