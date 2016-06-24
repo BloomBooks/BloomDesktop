@@ -184,7 +184,13 @@ namespace Bloom
 		/// </summary>
 		public static bool IsInstalledFileOrDirectory(string filepath)
 		{
-			return filepath.Contains(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase));
+			var file = Assembly.GetExecutingAssembly().CodeBase.Replace("file://", String.Empty);
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+				file = file.TrimStart('/');
+			var folder = Path.GetDirectoryName(file);
+			if (folder.EndsWith("/output/Debug"))
+				folder = folder.Replace("/Debug", String.Empty);	// files now copied to output/browser for access
+			return filepath.Contains(folder);
 		}
 	}
 }
