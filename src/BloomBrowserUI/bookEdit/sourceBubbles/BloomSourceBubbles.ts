@@ -236,7 +236,7 @@ export default class BloomSourceBubbles {
     // This method is only public for testing
     public static CreateDropdownIfNecessary(divForBubble:JQuery):JQuery {
         var FIRST_SELECT_OPTION = 3;
-        var tabs = divForBubble.find("li");
+        var tabs = divForBubble.find("nav").find("li"); // may be li elements in the content
         if (tabs.length < FIRST_SELECT_OPTION) return divForBubble; // no change
 
         var dropMenu = "<li class='dropdown-menu'><div>0</div><ul class='dropdown-list'></ul></li>";
