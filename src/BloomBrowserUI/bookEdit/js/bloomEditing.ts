@@ -20,6 +20,7 @@ import 'jquery.qtip.js'
 import 'jquery.qtipSecondary.js'
 import 'long-press/jquery.longpress.js'
 import 'jquery.hotkeys'; //makes the on(keydown work with keynames)
+import '../../lib/jquery.resize'; // makes jquery resize work on all elements
 import {getToolboxFrameExports} from './bloomFrames';
 
 
