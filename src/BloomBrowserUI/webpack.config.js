@@ -8,7 +8,7 @@ var pathToBookEditJS = path.resolve(__dirname, 'bookEdit/js');
 var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(__dirname, 'modified_libraries');
 var globule = require("globule");
 
-//note: if you change this, change it in gulpfile.js & karma.conf.js as well 
+//note: if you change this, change it in gulpfile.js & karma.conf.js as well
 var outputDir ="../../output/browser";
 
 //because our output directory does not have the same parent as our node_modules
@@ -19,7 +19,7 @@ var babelString =  require.resolve('babel-loader')+'?'+babelQueryString;
 module.exports = {
     context: __dirname,
     devtool: 'source-map',
-    //Bloom is not (yet) one webapp; it's actually a several loosely related ones. 
+    //Bloom is not (yet) one webapp; it's actually a several loosely related ones.
     //So we have multiple "entry points" that we need to emit. Fortunately the
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
     entry: { editTabRootBundle:  './bookEdit/editViewFrame.ts',
@@ -30,24 +30,23 @@ module.exports = {
              toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.ts',
              pageChooserBundle: ['./pageChooser/page-chooser.ts'],//https://github.com/webpack/webpack/issues/300
              pageThumbnailListBundle: './bookEdit/pageThumbnailList/pageThumbnailList.ts',
-             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
              testBundle: globule.find(["./bookEdit/**/*Spec.ts", "./bookEdit/**/*Spec.js","./lib/**/*Spec.ts", "./lib/**/*Spec.js"])
 //             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//This slowed down webpack a ton, becuase the way it works is that it 1st it finds it all, then it excludes node_modules
            },
 
     output: {
-        path: path.join(__dirname, outputDir), 
+        path: path.join(__dirname, outputDir),
         filename: "[name].js",
-        
+
         libraryTarget: "var",
-        
+
         //makes a single entry point module's epxorts accessible via Exports.
         //Note that if you include more than one entry point js in the frame, the second one will overwrite the Exports var
         // (see the other way of doing this, below, if that becomes necessary for some reason)
-        library: "FrameExports" 
-       
+        library: "FrameExports"
+
     },
-    
+
     resolve: {
         root: ['.'],
         alias: {
