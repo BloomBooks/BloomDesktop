@@ -31,6 +31,8 @@ module.exports = {
              pageChooserBundle: ['./pageChooser/page-chooser.ts'],//https://github.com/webpack/webpack/issues/300
              pageThumbnailListBundle: './bookEdit/pageThumbnailList/pageThumbnailList.ts',
              testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
+             testBundle: globule.find(["./bookEdit/**/*Spec.ts", "./bookEdit/**/*Spec.js","./lib/**/*Spec.ts", "./lib/**/*Spec.js"])
+//             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//This slowed down webpack a ton, becuase the way it works is that it 1st it finds it all, then it excludes node_modules
            },
 
     output: {
