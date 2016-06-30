@@ -455,6 +455,11 @@ namespace Bloom.Api
 			
 			if (!File.Exists(path))
 			{
+				// On developer machines, we can lose part of path earlier.  Try one more thing.
+				path = info.LocalPathWithoutQuery.Substring(7); // skip leading "/bloom/");
+			}
+			if (!File.Exists(path))
+			{
 				ReportMissingFile(localPath,path);
 				return false;
 			}
