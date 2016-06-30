@@ -1,0 +1,75 @@
+@import "../bloom-xmatter-common.less";
+
+@XMatterPackName: "Traditional";
+
+//ok, this is embarrassing, but we're in a presidence fight with the html itself
+div.bloom-page.coverColor, .bloom-backMatter{
+    background-color: black !important;
+
+    color: #9E9E9E;
+}
+
+.frontCover {
+    .marginBox{
+        padding: 20px;
+        padding-top: 100px;
+        width:100%;
+        box-sizing: border-box;
+        // background-color: yellow;
+        // border: solid thin red;
+
+        .bookTitle .bloom-content1{
+            color: #8BC34A;
+        }
+        .bottomBlock{
+            display:flex;
+            justify-content: center;
+            align-content: center;
+            align-items: center;
+            position: absolute;
+            bottom:10px;
+            width: 93%; //Enhance fix this hack
+            //border: solid thin red;
+            .coverBottomLangName {
+                position: initial;
+                align-self: center;
+            }
+        }
+    }
+}
+
+
+.bloom-backMatter{
+    .marginBox{
+        padding: 20px;
+        box-sizing: border-box;//don't let the padding push us off the page
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+
+        .licenseAndCopyrightBlock{
+            .copyright{
+                text-align: center;
+                font-size: 1.5em;
+            }
+            .licenseBlock {
+                img{
+                    width: 150px;
+                    margin:20px;
+                }
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+        .originalAcknowledgments, .versionAcknowledgments{
+                margin-top:20px;
+                width: 100%;
+                text-align: center;
+            }
+    }
+}
