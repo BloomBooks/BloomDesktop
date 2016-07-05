@@ -23,8 +23,9 @@ using SIL.Windows.Forms.Registration;
 using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
-using Bloom.Edit;
+using Bloom.CLI;
 using Bloom.MiscUI;
+using CommandLine;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 
@@ -59,12 +60,46 @@ namespace Bloom
 
 		private static bool _supressRegistrationDialog = false;
 
+#if !__MonoCS__
+		[System.Runtime.InteropServices.DllImport("kernel32.dll")]
+		private static extern bool AttachConsole(int pid);
+#endif
+
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
-		static void Main(string[] args1)
+		static int Main(string[] args1)
 		{
 			Logger.Init();
 			CheckForCorruptUserConfig();
+
+			// Bloom has several command line scenarios, without a coherent system for them.
+			// The following is how we will do things from now on, and things can be moved
+			// into this as time allows. See CommandLineOptions.cs.
+			if (args1.Length > 0 && new[] {"--help", "hydrate"}.Contains(args1[0])) //restrict using the commandline parser to cases were it should work
+			{
+#if !__MonoCS__
+				AttachConsole(-1);
+#endif
+				var exitCode = CommandLine.Parser.Default.ParseArguments(args1,
+					new[] {typeof(HydrateParameters) /*,typeof(DownloadOptions)*/})
+					.MapResult(
+						(HydrateParameters opts) => HandlePrepareCommandLine(opts),
+						/*(DownloadOptions opts) => RunCommitAndReturnExitCode(opts),*/
+						errors =>
+						{
+							var code = 0;
+							foreach(var error in errors)
+							{
+								if(!(error is HelpVerbRequestedError))
+								{
+									Console.WriteLine(error.ToString());
+									code = 1;
+								}
+							}
+							return code;
+						});
+				return exitCode; // we're done
+			}
 
 			//Debug.Fail("Attach Now");
 			bool skipReleaseToken = false;
@@ -107,7 +142,7 @@ namespace Bloom
 					Browser.SetUpXulRunner();
 					using (var dlg = new LicenseDialog())
 						if (dlg.ShowDialog() != DialogResult.OK)
-							return;
+							return 1;
 					Settings.Default.LicenseAccepted = true;
 					Settings.Default.Save();
 				}
@@ -170,64 +205,25 @@ namespace Bloom
 								if (!File.Exists(path))
 								{
 									path = FileLocator.GetFileDistributedWithApplication(true, path);
-									if (!File.Exists(path))
-										return;
+									if(!File.Exists(path))
+										return 1;
 								}
 							}
 							using (var dlg = new BloomPackInstallDialog(path))
 							{
 								dlg.ShowDialog();
 								if (dlg.ExitWithoutRunningBloom)
-									return;
+									return 1;
 							}
 						}
 					}
 					if (IsBloomBookOrder(args))
 					{
-						// We will start up just enough to download the book. This avoids the code that normally tries to keep only a single instance running.
-						// There is probably a pathological case here where we are overwriting an existing template just as the main instance is trying to
-						// do something with it. The time interval would be very short, because download uses a temp folder until it has the whole thing
-						// and then copies (or more commonly moves) it over in one step, and making a book from a template involves a similarly short
-						// step of copying the template to the new book. Hopefully users have (or will soon learn) enough sense not to
-						// try to use a template while in the middle of downloading a new version.
-						SetUpErrorHandling();
-						using (_applicationContainer = new ApplicationContainer())
-						{
-							SetUpLocalization();
-							InstallerSupport.MakeBloomRegistryEntries(args);
-							BookDownloadSupport.EnsureDownloadFolderExists();
-							Browser.SetUpXulRunner();
-							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
-							LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-								_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
-							transfer.HandleBloomBookOrder(args[0]);
-							PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
-
-							// If another instance is running, this one has served its purpose and can exit right away.
-							// Otherwise, carry on with starting up normally.
-							if (UniqueToken.AcquireTokenQuietly(_mutexId))
-								Run();
-							else
-							{
-								skipReleaseToken = true; // we don't own it, so we better not try to release it
-
-								// BL-2143: Don't show download complete message if download was not successful
-								if (!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))
-								{
-									var caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
-									var message = LocalizationManager.GetString("Download.Completed",
-										@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.");
-									message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
-									MessageBox.Show(message, caption);
-								}
-							}
-							return;
-						}
+						skipReleaseToken = HandleDownload(args[0], skipReleaseToken);
 					}
 
 					if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
-						return;
+						return 1;
 
 					OldVersionCheck();
 
@@ -247,7 +243,7 @@ namespace Bloom
 							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 								_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
 							transfer.UploadFolder(args[1], _applicationContainer);
-							return;
+							return 1;
 						}
 
 						InstallerSupport.MakeBloomRegistryEntries(args);
@@ -260,7 +256,7 @@ namespace Bloom
 						{
 							Debug.Assert(args[0].ToLowerInvariant().EndsWith(".bloomcollection")); // Anything else handled above.
 							if (CollectionChoosing.OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(args[0]))
-								return;
+								return 1;
 							Settings.Default.MruProjects.AddNewPath(args[0]);
 						}
 
@@ -302,7 +298,7 @@ namespace Bloom
 						// We don't even want to try to install fonts if we are installed by an admin for all users;
 						// it will have been installed already as part of the allUsers install.
 						if ((!InstallerSupport.SharedByAllUsers()) && FontInstaller.InstallFont("AndikaNewBasic"))
-							return;
+							return 1;
 
 						Run();
 					}
@@ -314,6 +310,57 @@ namespace Bloom
 				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
 				if (!skipReleaseToken)
 					UniqueToken.ReleaseToken();
+			}
+			return 0;
+		}
+
+
+		private static int HandlePrepareCommandLine(HydrateParameters opts)
+		{
+			return HydrateBookCommand.Handle(opts);
+		}
+
+		private static bool HandleDownload(string order, bool skipReleaseToken)
+		{
+			// We will start up just enough to download the book. This avoids the code that normally tries to keep only a single instance running.
+			// There is probably a pathological case here where we are overwriting an existing template just as the main instance is trying to
+			// do something with it. The time interval would be very short, because download uses a temp folder until it has the whole thing
+			// and then copies (or more commonly moves) it over in one step, and making a book from a template involves a similarly short
+			// step of copying the template to the new book. Hopefully users have (or will soon learn) enough sense not to
+			// try to use a template while in the middle of downloading a new version.
+			SetUpErrorHandling();
+			using(_applicationContainer = new ApplicationContainer())
+			{
+				SetUpLocalization();
+				//JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
+				BookDownloadSupport.EnsureDownloadFolderExists();
+				Browser.SetUpXulRunner();
+				Browser.XulRunnerShutdown += OnXulRunnerShutdown;
+				LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+				var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+					_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
+				transfer.HandleBloomBookOrder(order);
+				PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
+
+				// If another instance is running, this one has served its purpose and can exit right away.
+				// Otherwise, carry on with starting up normally.
+				if(UniqueToken.AcquireTokenQuietly(_mutexId))
+					Run();
+				else
+				{
+					skipReleaseToken = true; // we don't own it, so we better not try to release it
+
+					// BL-2143: Don't show download complete message if download was not successful
+					if(!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))
+					{
+						var caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
+						var message = LocalizationManager.GetString("Download.Completed",
+							@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.");
+						message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
+						MessageBox.Show(message, caption);
+					}
+				}
+				return skipReleaseToken;
 			}
 		}
 
@@ -331,7 +378,7 @@ namespace Bloom
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, "Bloom encounterd a problem while restarting.");
+				ErrorReport.NotifyUserOfProblem(e, "Bloom encountered a problem while restarting.");
 			}
 		}
 

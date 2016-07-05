@@ -155,7 +155,7 @@ namespace Bloom.Book
 		/// <param name="elementToReadFrom">This is either the whole document, or a page div that we just edited and want to read from.</param>
 		private void UpdateVariablesAndDataDiv(XmlNode elementToReadFrom, BookInfo info = null)
 		{
-			Debug.WriteLine("before update: " + _dataDiv.OuterXml);
+			//Debug.WriteLine("before update: " + _dataDiv.OuterXml);
 
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom, itemsToDelete);
@@ -177,7 +177,7 @@ namespace Bloom.Book
 			}
 			foreach (var tuple in itemsToDelete)
 				UpdateSingleTextVariableInDataDiv(tuple.Item1, tuple.Item2, "");
-			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
+			//Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
 			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
 			UpdateIsbn(info);
@@ -397,8 +397,8 @@ namespace Bloom.Book
 			{
 				if (!string.IsNullOrEmpty(form))
 				{
-					Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, writingSystemId, form);
-					Debug.WriteLine("nop: " + _dataDiv.OuterXml);
+					//Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, writingSystemId, form);
+					//Debug.WriteLine("nop: " + _dataDiv.OuterXml);
 					AddDataDivBookVariable(key, writingSystemId, form);
 				}
 			}

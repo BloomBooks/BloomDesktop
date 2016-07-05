@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -82,7 +82,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'" >
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\Geckofx45.45.0.18\lib\net40\Geckofx-Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -90,7 +90,7 @@
       <HintPath>..\..\packages\Geckofx45.45.0.18\lib\net40\Geckofx-Winforms.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'" >
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'">
       <HintPath>..\..\output\$(Configuration)\Geckofx-Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -172,6 +172,7 @@
     <Compile Include="Book\BookInfoTests.cs" />
     <Compile Include="Book\UserPrefsTests.cs" />
     <Compile Include="Book\BookTestsBase.cs" />
+    <Compile Include="CLI\HydrateBookCommandTests.cs" />
     <Compile Include="MiscellaneousTests.cs" />
     <Compile Include="Publish\ExportEpubTests.cs" />
     <Compile Include="Book\HtmlDomTests.cs" />
