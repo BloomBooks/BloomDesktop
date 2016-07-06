@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  wget, unzip, desktop-file-utils,
  optipng, libsndfile1,
  nodejs (>= 5.0),
- mono-sil, libgdiplus-sil, geckofx29,
+ mono-sil, libgdiplus-sil,
  libenchant-dev, libxklavier-dev, libdconf-dev,
  libicu-dev,
  icu-devtools | libicu-dev (<< 52)
@@ -20,7 +20,7 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
 Package: bloom-desktop-unstable
 Architecture: all
 Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
- mono-sil, libgdiplus-sil, geckofx29, gtklp,
+ mono-sil, libgdiplus-sil, gtklp,
  chmsee, libtidy5,
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
