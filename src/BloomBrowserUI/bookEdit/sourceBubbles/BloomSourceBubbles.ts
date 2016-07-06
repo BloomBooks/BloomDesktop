@@ -133,7 +133,7 @@ export default class BloomSourceBubbles {
         items = BloomSourceBubbles.SmartOrderSourceTabs(items, newIso);
 
         var shellEditingMode = false;
-        var list = $this.find('ul');
+        var list = $this.find('nav ul');
         items.each(function() {
             var iso = $(this).attr('lang');
             if (iso) {
@@ -218,7 +218,7 @@ export default class BloomSourceBubbles {
     // N.B.: Sorting the last used source language first means we no longer need to specify which tab is selected.
     private static CreateTabsFromDiv(divForBubble: JQuery): JQuery {
         //now turn that new div into a set of tabs
-        if (divForBubble.find("li").length > 0) {
+        if (divForBubble.find('nav li').length > 0) {
             divForBubble.easytabs({
                 animate: false,
                 tabs: "> nav > ul > li"
@@ -236,11 +236,11 @@ export default class BloomSourceBubbles {
     // This method is only public for testing
     public static CreateDropdownIfNecessary(divForBubble:JQuery):JQuery {
         var FIRST_SELECT_OPTION = 3;
-        var tabs = divForBubble.find("nav").find("li"); // may be li elements in the content
+        var tabs = divForBubble.find('nav li'); // may be li elements in the content
         if (tabs.length < FIRST_SELECT_OPTION) return divForBubble; // no change
 
         var dropMenu = "<li class='dropdown-menu'><div>0</div><ul class='dropdown-list'></ul></li>";
-        divForBubble.find("ul").append(dropMenu);
+        divForBubble.find('nav ul').append(dropMenu);
         var container = divForBubble.find(".dropdown-list");
         tabs.each(function(idx) {
             if(idx < FIRST_SELECT_OPTION - 1) return true; // continue to next iteration of .each()
