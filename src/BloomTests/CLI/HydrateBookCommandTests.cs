@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Bloom;
 using Bloom.Book;
 using Bloom.CLI;
 using BloomTemp;
@@ -28,8 +29,24 @@ namespace BloomTests.CLI
 			_originalHtmlPath = _bookFolder.Combine("original name.html");
 			File.WriteAllText(_originalHtmlPath,
 				@"<html><head></head><body>
-					<div data-book='bookTitle' lang='en'>
-							mudmen
+					<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='en'>
+								mudmen
+						</div>
+						<div data-book='topic' lang='en'>
+							Story Book
+						</div>
+
+						<div data-book='copyright' lang='*'>
+							Copyright © 2016, Joe Author
+						</div>
+
+						<div data-book='licenseUrl' lang='*'>
+							http://creativecommons.org/licenses/by/4.0/
+						</div>
+
+						<div data-book='originalAcknowledgments' lang='en'>
+							Some Acknowledgments
 						</div>
 					</div>
 					<div id ='firstPage' class='bloom-page A5Landscape'>1st page</div>
@@ -39,7 +56,7 @@ namespace BloomTests.CLI
 			//the name of the file and folder, the hydration process will rename the book's folder and file, 
 			//just like opening it in Bloom does. At the moment, we set the name of the folder/file to be
 			//the same as the title in the requested vernacular, so it isn't an issue. But further tests
-			//could make it and issue. For now, these are the same:
+			//could make it an issue. For now, these are the same:
 			//_eventualHtmlPath = _testFolder.Combine("mudmen", "mudmen.htm");
 
 			//decided that allowing a new name is just going to confuse the programs using this CLI, so
@@ -108,8 +125,29 @@ namespace BloomTests.CLI
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			Debug.Write(File.ReadAllText(_eventualHtmlPath));
-			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(File.ReadAllText(_eventualHtmlPath));
+
+			AssertThatXmlIn.Dom(dom)
 				.HasAtLeastOneMatchForXpath("//div[contains(@class,'bookTitle')]/div[contains(@class, 'bloom-editable') and contains(text(), 'mudmen')]");
+
+			AssertThatXmlIn.Dom(dom)
+				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-derived='copyright' and contains(text(),'Joe Author')]", 1);
+
+			AssertThatXmlIn.Dom(dom)
+				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='originalAcknowledgments' and @lang='en' and contains(@class,'bloom-editable') and contains(text(),'Some Acknowledgments')]", 1);
+		}
+
+
+		[Test]
+		public void PresetIsApp_CreativeCommonsLicenseImageAdded()
+		{
+			var code = HydrateBookCommand.Handle(new HydrateParameters()
+			{
+				Path = _bookFolder.FolderPath,
+				Preset = "app",
+				VernacularIsoCode = "en"
+			});
+			Assert.That(File.Exists(Path.Combine(_eventualHtmlPath, "../license.png")));
 		}
 
 		[Test]
