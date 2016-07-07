@@ -137,6 +137,24 @@ namespace BloomTests.CLI
 				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='originalAcknowledgments' and @lang='en' and contains(@class,'bloom-editable') and contains(text(),'Some Acknowledgments')]", 1);
 		}
 
+		[Test]
+		public void PresetIsApp_StylesheetAreRelativePaths()
+		{
+			var code = HydrateBookCommand.Handle(new HydrateParameters()
+			{
+				Path = _bookFolder.FolderPath,
+				Preset = "app",
+				VernacularIsoCode = "en"
+			});
+			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
+			Debug.Write(File.ReadAllText(_eventualHtmlPath));
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(File.ReadAllText(_eventualHtmlPath));
+
+			AssertThatXmlIn.Dom(dom)
+				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']",1);
+			AssertThatXmlIn.Dom(dom)
+				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='Video-XMatter.css']", 1);
+		}
 
 		[Test]
 		public void PresetIsApp_CreativeCommonsLicenseImageAdded()
