@@ -29,6 +29,8 @@ namespace Bloom.CLI
 				Console.Error.WriteLine("Could not find "+options.Path);
 				return 1;
 			}
+			Console.WriteLine("Starting Hydrating.");
+
 			var layout = new Layout()
 			{
 				SizeAndOrientation = SizeAndOrientation.FromString(options.SizeAndOrientation)
@@ -48,9 +50,14 @@ namespace Bloom.CLI
 
 			var bookInfo = new BookInfo(options.Path, true);
 			var book = new Book.Book(bookInfo,new BookStorage(options.Path, locator, new BookRenamedEvent(), collectionSettings), null, collectionSettings, null, null, new BookRefreshEvent());
+
+			//we might change this later, or make it optional, but for now, this will prevent surprises to processes
+			//running this CLI... the folder name won't change out from under it.
+			book.LockDownTheFileAndFolderName = true;
+
 			book.SetLayout(layout);
 			book.BringBookUpToDate(new NullProgress());
-
+			Console.WriteLine("Finished Hydrating.");
 			return 0;
 		}
 	}

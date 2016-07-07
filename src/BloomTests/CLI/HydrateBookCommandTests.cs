@@ -40,7 +40,11 @@ namespace BloomTests.CLI
 			//just like opening it in Bloom does. At the moment, we set the name of the folder/file to be
 			//the same as the title in the requested vernacular, so it isn't an issue. But further tests
 			//could make it and issue. For now, these are the same:
-			_eventualHtmlPath = _testFolder.Combine("mudmen", "mudmen.htm");
+			//_eventualHtmlPath = _testFolder.Combine("mudmen", "mudmen.htm");
+
+			//decided that allowing a new name is just going to confuse the programs using this CLI, so
+			//let's expect the program to NOT change the names for now.
+			_eventualHtmlPath = _testFolder.Combine("original name", "original name.html");
 		}
 
 		[TearDown]

@@ -2182,9 +2182,15 @@ namespace Bloom.Book
 		{
 			Guard.Against(Type != BookType.Publication, "Tried to save a non-editable book.");
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
-			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
+			if(!LockDownTheFileAndFolderName)
+			{
+				_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
+			}
 			_storage.Save();
 		}
+
+		//used by the command-line "hydrate" command
+		public bool LockDownTheFileAndFolderName { get; set; }
 
 		//TODO: remove this in favor of meta data (the later currently doesn't appear to have access to lineage, I need to ask JT about that)
 		public string GetBookLineage()
