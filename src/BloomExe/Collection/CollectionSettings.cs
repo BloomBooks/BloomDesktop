@@ -45,6 +45,7 @@ namespace Bloom.Collection
 			XMatterPackName = "Traditional";
 			Language2Iso639Code = "en";
 			AllowNewBooks = true;
+			CollectionName = "dummy collection";
 		}
 
 		public static void CreateNewCollection(NewCollectionSettings collectionInfo)
