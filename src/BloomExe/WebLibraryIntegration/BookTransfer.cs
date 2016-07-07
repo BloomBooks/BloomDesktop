@@ -185,22 +185,22 @@ namespace Bloom.WebLibraryIntegration
 		private ProgressDialog _progressDialog;
 		private string _downloadRequest;
 
-		internal void HandleBloomBookOrder(string argument)
+		internal void HandleBloomBookOrder(string order)
 		{
-			_downloadRequest = argument;
+			_downloadRequest = order;
 			using (_progressDialog = new ProgressDialog())
 			{
 				_progressDialog.CanCancel = false; // one day we may allow this...
 				_progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
 				_progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
-				if (IsUrlOrder(argument))
+				if (IsUrlOrder(order))
 				{
-					var link = new BloomLinkArgs(argument);
+					var link = new BloomLinkArgs(order);
 					_progressDialog.StatusText = link.Title;
 				}
 				else
 				{
-					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(argument);
+					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(order);
 				}
 
 				// We must do the download in a background thread, even though the whole process is doing nothing else,
