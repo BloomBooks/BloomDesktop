@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using CommandLine;
@@ -26,7 +27,7 @@ namespace Bloom.CLI
 		{
 			if(!Directory.Exists(options.Path))
 			{
-				Console.Error.WriteLine("Could not find "+options.Path);
+				Console.Error.WriteLine("Could not find " + options.Path);
 				return 1;
 			}
 			Console.WriteLine("Starting Hydrating.");
@@ -45,11 +46,21 @@ namespace Bloom.CLI
 				//			collectionSettings.Language3Iso639Code = options.NationalLanguage2IsoCode;
 			};
 
-			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() });
-			var locator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
+			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] {BloomFileLocator.GetInstalledXMatterDirectory()});
+			var locator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(),
+				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 
 			var bookInfo = new BookInfo(options.Path, true);
-			var book = new Book.Book(bookInfo,new BookStorage(options.Path, locator, new BookRenamedEvent(), collectionSettings), null, collectionSettings, null, null, new BookRefreshEvent());
+			var book = new Book.Book(bookInfo, new BookStorage(options.Path, locator, new BookRenamedEvent(), collectionSettings),
+				null, collectionSettings, null, null, new BookRefreshEvent());
+
+			if(null == book.OurHtmlDom.SelectSingleNodeHonoringDefaultNS("//script[contains(text(),'bloomPlayer.js')]"))
+			{
+				var element = book.OurHtmlDom.Head.AppendChild(book.OurHtmlDom.RawDom.CreateElement("script")) as XmlElement;
+				element.IsEmpty = false;
+				element.SetAttribute("type", "text/javascript");
+				element.SetAttribute("src", "bloomPlayer.js");
+			}
 
 			//we might change this later, or make it optional, but for now, this will prevent surprises to processes
 			//running this CLI... the folder name won't change out from under it.

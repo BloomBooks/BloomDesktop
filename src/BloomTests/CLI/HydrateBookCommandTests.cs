@@ -112,15 +112,35 @@ namespace BloomTests.CLI
 				.HasAtLeastOneMatchForXpath("//div[contains(@class,'bookTitle')]/div[contains(@class, 'bloom-editable') and contains(text(), 'mudmen')]");
 		}
 
-
 		[Test]
 		public void SetsCorrectClassesForVernacularLanguage()
 		{
+			//TODO
 		}
 
 		[Test]
 		public void SetsCorrectClassesForNationalLanguages()
 		{
+			//TODO
+		}
+
+		[Test]
+		public void HasNoBloomPlayerScript_AddsOne()
+		{
+			var code = HydrateBookCommand.Handle(new HydrateParameters()
+			{
+				Path = _bookFolder.FolderPath,
+				Preset = "app",
+				VernacularIsoCode = "en"
+			});
+			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
+				.HasSpecifiedNumberOfMatchesForXpath("//head/script[contains(@src,'bloomPlayer.js')]",1);
+		}
+
+		[Test]
+		public void AlreadyBloomPlayerScript_DoesNotAddOne()
+		{
+			//TODO
 		}
 	}
 }
