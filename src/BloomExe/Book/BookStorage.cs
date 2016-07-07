@@ -896,7 +896,15 @@ namespace Bloom.Book
 		/// </summary>
 		private bool IsUserFolder
 		{
-			get { return _folderPath.Contains(_collectionSettings.FolderPath); }
+			get
+			{
+				if(string.IsNullOrEmpty(_collectionSettings.FolderPath))
+				{
+					//this happens when we are just hydrating the book via a command-line command
+					return true;
+				}
+				else return _folderPath.Contains(_collectionSettings.FolderPath);
+			}
 		}
 
 		// NB: this knows nothing of book-specific css's... even "basic book.css"
