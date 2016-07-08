@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,16 @@ namespace Bloom.CLI
 		{
 			if(!Directory.Exists(options.Path))
 			{
-				Console.Error.WriteLine("Could not find " + options.Path);
+				if(options.Path.Contains(".htm"))
+				{
+					Debug.WriteLine("Supply only the directory, not the path to the file.");
+					Console.Error.WriteLine("Supply only the directory, not the path to the file.");
+				}
+				else
+				{
+					Debug.WriteLine("Could not find " + options.Path);
+					Console.Error.WriteLine("Could not find " + options.Path);
+				}
 				return 1;
 			}
 			Console.WriteLine("Starting Hydrating.");
@@ -41,7 +51,9 @@ namespace Bloom.CLI
 			var collectionSettings = new CollectionSettings()
 			{
 				XMatterPackName = "Video",
-				Language1Iso639Code = options.VernacularIsoCode
+				Language1Iso639Code = options.VernacularIsoCode,
+				Language2Iso639Code = "",
+				Language3Iso639Code = ""
 				//			collectionSettings.Language2Iso639Code = options.NationalLanguage1IsoCode;
 				//			collectionSettings.Language3Iso639Code = options.NationalLanguage2IsoCode;
 			};
@@ -69,6 +81,7 @@ namespace Bloom.CLI
 			book.SetLayout(layout);
 			book.BringBookUpToDate(new NullProgress());
 			Console.WriteLine("Finished Hydrating.");
+			Debug.WriteLine("Finished Hydrating.");
 			return 0;
 		}
 	}
