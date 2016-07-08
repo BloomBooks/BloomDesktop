@@ -32,7 +32,7 @@ namespace BloomTests.web
 		[Test]
 		public void IsReceivingApiCalls()
 		{
-			var result = ApiTest.GetString(_server,"readers/test");
+			var result = ApiTest.GetString(_server,"readers/io/test");
 			Assert.That(result, Is.EqualTo("OK"));
 		}
 	}

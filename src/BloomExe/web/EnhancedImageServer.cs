@@ -41,7 +41,7 @@ namespace Bloom.Api
 		private readonly ProjectContext _projectContext;
 
 		// This dictionary ties API endpoints to functions that handle the requests.
-		private Dictionary<string, EndpointHandler> _endpointHandlers = new Dictionary<string, EndpointHandler>();
+		private Dictionary<string, EndpointRegistration> _endpointRegistrations = new Dictionary<string, EndpointRegistration>();
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -59,9 +59,19 @@ namespace Bloom.Api
 		}
 
 
-		public void RegisterEndpointHandler(string key, EndpointHandler handler)
+		/// <summary>
+		/// Get called when a client (i.e. javascript) does an HTTP api call
+		/// </summary>
+		/// <param name="pattern">Simple string or regex to match APIs that this can handle. This must match what comes after the ".../api/" of the URL</param>
+		/// <param name="handler">The method to call</param>
+		/// <param name="handleOnUiThread">For safety, this defaults to true, but that can kill performance if you don't need it (BL-3452) </param>
+		public void RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread = true)
 		{
-			_endpointHandlers[key.ToLowerInvariant().Trim(new char[] {'/'})] = handler;
+			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = new EndpointRegistration()
+			{
+				Handler = handler,
+				HandleOnUIThread = handleOnUiThread
+			};
 		}
 
 		// We use two different locks to synchronize access to the methods of this class.
@@ -185,7 +195,7 @@ namespace Bloom.Api
 			if (localPath.ToLower().StartsWith("api/"))
 			{
 				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
-				foreach (var pair in _endpointHandlers.Where(pair => 
+				foreach (var pair in _endpointRegistrations.Where(pair => 
 						Regex.Match(endpoint,
 							"^" + //must match the beginning
 							pair.Key.ToLower()

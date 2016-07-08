@@ -804,6 +804,14 @@ namespace Bloom.Book
 		public void SetBookSetting(string key, string writingSystemId, string form)
 		{
 			var dataDiv = GetOrCreateDataDiv(RawDom);
+
+			// Some old books may have values for this key with no language. Because GetBookSetting is coded to
+			// find these, they may take precendence over the one we are setting. To prevent this, once a book
+			// is updated using the new system, any obsolete no-language versions will be removed.
+			XmlElement obsoleteNode = dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and not(@lang)]", key)) as XmlElement;
+			if (obsoleteNode != null)
+				dataDiv.RemoveChild(obsoleteNode);
+
 			XmlElement node =
 				dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
 					writingSystemId)) as XmlElement;

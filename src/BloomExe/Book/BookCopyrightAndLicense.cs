@@ -96,6 +96,9 @@ namespace Bloom.Book
 			var description = metadata.License.GetDescription(collectionSettings.LicenseDescriptionLanguagePriorities, out languageUsedForDescription);
 			dom.SetBookSetting("licenseDescription", languageUsedForDescription, description);
 
+			// Book may have old licenseNotes, typically in 'en'. This can certainly show up again if licenseNotes in '*' is removed,
+			// and maybe anyway. Safest to remove it altogether if we are setting it using the new scheme.
+			dom.RemoveBookSetting("licenseNotes");
 			dom.SetBookSetting("licenseNotes", "*", metadata.License.RightsStatement);
 
 			// we could do away with licenseImage in the bloomDataDiv, since the name is always the same, but we keep it for backward compatibility

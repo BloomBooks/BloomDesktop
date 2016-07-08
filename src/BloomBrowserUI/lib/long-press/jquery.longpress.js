@@ -119,6 +119,7 @@ require("./jquery.mousewheel.js");
     var storedOffset;
     var shortcuts=[];
     var popup;
+    var longpressPopupVisible = false;
 
     $(window).mousewheel(onWheel);
 
@@ -158,7 +159,7 @@ require("./jquery.mousewheel.js");
         */
 
         //once the panel is showing, let the user type any of the shortcuts to select the corresponding character 
-        if(activationKey && activationKey != e.key){
+        if(longpressPopupVisible && activationKey != e.key){
             var unshiftedKey = e.key.toLowerCase(); 
             var indexOfSelectedCharacter = shortcuts.indexOf(unshiftedKey);
             if(indexOfSelectedCharacter >= 0) {
@@ -220,6 +221,7 @@ require("./jquery.mousewheel.js");
         }
         $('body').append(popup);
         selectedCharIndex=-1;
+        longpressPopupVisible = true;
     }
     function onPopupLetterClick(e) {
         restoreCaretPosition();
@@ -238,6 +240,7 @@ require("./jquery.mousewheel.js");
         activateRelativeLetter(-1);
     }
     function hidePopup() {
+        longpressPopupVisible = false;
         popup.detach();
     }
     function onWheel(e, delta, deltaX, deltaY) {

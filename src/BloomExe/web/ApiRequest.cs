@@ -12,6 +12,13 @@ namespace Bloom.Api
 {
 	public delegate void EndpointHandler(ApiRequest request);
 
+	public class EndpointRegistration
+	{
+		public bool HandleOnUIThread = true;
+		public EndpointHandler Handler;
+	}
+
+
 	/// <summary>
 	/// When the Bloom UI makes an API call, a method that has been registered to handle that
 	/// endpoint is called and given one of these. That method uses this class to get information
@@ -97,25 +104,25 @@ namespace Bloom.Api
 			_requestInfo.WriteError(503,text);
 		}
 
-		public static bool Handle(EndpointHandler endpointHandler, IRequestInfo info, CollectionSettings collectionSettings, Book.Book currentBook)
+		public static bool Handle(EndpointRegistration endpointRegistration, IRequestInfo info, CollectionSettings collectionSettings, Book.Book currentBook)
 		{
 			var request = new ApiRequest(info, collectionSettings, currentBook);
 			try
 			{
 				if(Program.RunningUnitTests) 
 				{
-					endpointHandler(request);
+					endpointRegistration.Handler(request);
 				}
 				else
 				{
 					var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
-					if(formForSynchronizing.InvokeRequired)
+					if (endpointRegistration.HandleOnUIThread && formForSynchronizing.InvokeRequired)
 					{
-						formForSynchronizing.Invoke(endpointHandler, request);
+						formForSynchronizing.Invoke(endpointRegistration.Handler, request);
 					}
 					else
 					{
-						endpointHandler(request);
+						endpointRegistration.Handler(request);
 					}
 				}
 				if(!info.HaveOutput)
