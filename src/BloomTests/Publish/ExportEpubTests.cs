@@ -166,7 +166,8 @@ namespace BloomTests.Publish
 		private void CheckBasicsInManifest(params string[] imageFiles)
 		{
 			VerifyThatFilesInManifestArePresent();
-			var assertThatManifest = AssertThatXmlIn.String(_manifestContent);
+			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
+			var assertThatManifest = AssertThatXmlIn.String(_manifestContent.Replace("application/", "application^slash^"));
 			assertThatManifest.HasAtLeastOneMatchForXpath("package[@version='3.0']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package[@unique-identifier]");
 			assertThatManifest.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:title", _ns);
@@ -185,8 +186,8 @@ namespace BloomTests.Publish
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customCollectionStyles' and @href='customCollectionStyles.css']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='customBookStyles.css']");
 
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-R' and @href='AndikaNewBasic-R.ttf']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-R' and @href='AndikaNewBasic-R.ttf' and @media-type='application^slash^vnd.ms-opentype']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf' and @media-type='application^slash^vnd.ms-opentype']");
 			// It should include italic and BI too...though eventually it may get smarter and figure they are not used...but I think this is enough to test
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fonts' and @href='fonts.css']");
 
@@ -326,7 +327,7 @@ namespace BloomTests.Publish
 			var book = SetupBook("<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>",
 				"xyz", "1my$Image", "my%20image");
 			MakeImageFiles(book, "my image");
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.wav"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp3"));
 			// But don't make a fake audio file for the second span
 			MakeEpub("output", "Missing_Audio_CreatedFromWav", book);
 			CheckBasicsInManifest("my_image");
@@ -704,9 +705,9 @@ namespace BloomTests.Publish
 		}
 
 		[Test]
-		public void BookWithAudio_ProducesOverlay()
+		public void BookWithAudio_ProducesOverlay_OmitsInvalidAttrs()
 		{
-			var book = SetupBook("<span id='a123'>This is some text.</span><span id='a23'>Another sentence</span>", "xyz");
+			var book = SetupBook("<span id='a123' recordingmd5='undefined'>This is some text.</span><span id='a23'>Another sentence</span>", "xyz");
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
 			MakeEpub("output", "BookWithAudio_ProducesOverlay", book);
@@ -730,12 +731,15 @@ namespace BloomTests.Publish
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fa123.mp4']", _ns);
 			assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fa23.mp3']", _ns);
 
+			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//span[@id='a123' and not(@recordingmd5)]");
+
 			GetZipEntry(_epub, "content/audio_2fa123.mp4");
 			GetZipEntry(_epub, "content/audio_2fa23.mp3");
 		}
 
 		/// <summary>
 		/// There's some special-case code for Ids that start with digits that we test here.
+		/// This test has been extended to verify that we get media:duration metadata
 		/// </summary>
 		[Test]
 		public void AudioWithParagraphsAndRealGuids_ProducesOverlay()
@@ -752,6 +756,9 @@ namespace BloomTests.Publish
 			var assertManifest = AssertThatXmlIn.String(_manifestContent.Replace("application/smil", "application^slash^smil"));
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+			// We don't much care how many decimals follow the 03.4 but this is what the default TimeSpan.ToString currently does.
+			assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and not(@refines) and text()='00:00:03.4000000']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='media:duration' and @refines='#f1_overlay' and text()='00:00:03.4000000']");
 
 			var smilData = StripXmlHeader(GetZipContent(_epub, "content/1_overlay.smil"));
 			var assertSmil = AssertThatXmlIn.String(smilData);
@@ -768,7 +775,12 @@ namespace BloomTests.Publish
 		protected void MakeFakeAudio(string path)
 		{
 			Directory.CreateDirectory(Path.GetDirectoryName(path));
-			File.WriteAllText(path, "fake audio");
+			// Bloom is going to try to figure its duration, so put a real audio file there.
+			// Some of the paths are for mp4s, but it doesn't hurt to use an mp3.
+			var src = SIL.IO.FileLocator.GetFileDistributedWithApplication("src/BloomTests/Publish/sample_audio.mp3");
+			File.Copy(src, path);
+			var wavSrc = Path.ChangeExtension(src, ".wav");
+			File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);
 		}
 
 		private string GetZipContent(ZipFile zip, string path)
