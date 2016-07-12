@@ -6,6 +6,6 @@ SHARE=/usr/share/bloom-desktop-beta
 cd "$SHARE"
 RUNMODE=INSTALLED
 . ./environ
-cd $OLDPWD
+cd "$OLDPWD"
 
 exec mono --debug "$LIB"/Bloom.exe "$@"
