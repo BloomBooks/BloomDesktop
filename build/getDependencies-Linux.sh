@@ -106,9 +106,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"*.exe*"=>"lib/dotnet", "*.dll*"=>"lib/dotnet", "Mercurial-x86_64.zip!**"=>"Mercurial-x86_64", "Mercurial-i686.zip!**"=>"Mercurial-i686", "MercurialExtensions/**"=>"MercurialExtensions"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
-# [5] build: GeckofxHtmlToPdf-precise64-continuous (bt464)
+# [5] build: GeckofxHtmlToPdf-trusty64-continuous (GeckofxHtmlToPdfTrusty64)
 #     project: GeckofxHtmlToPdf
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt464
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdfTrusty64
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
@@ -230,9 +230,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.py?branch=%3Cdefault%3E ../MercurialExtensions/fixutf8/win32helper.py
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.pyc?branch=%3Cdefault%3E ../MercurialExtensions/fixutf8/win32helper.pyc
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.pyo?branch=%3Cdefault%3E ../MercurialExtensions/fixutf8/win32helper.pyo
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt464/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt464/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt464/latest.lastSuccessful/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/latest.lastSuccessful/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.BuildTasks.dll?branch=%3Cdefault%3E ../build/Palaso.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Commons.Xml.Relaxng.dll?branch=%3Cdefault%3E ../lib/dotnet/Commons.Xml.Relaxng.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Enchant.Net.dll?branch=%3Cdefault%3E ../lib/dotnet/Enchant.Net.dll
