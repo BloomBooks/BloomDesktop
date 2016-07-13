@@ -264,6 +264,7 @@
     <Compile Include="Book\BookInfo.cs" />
     <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
+    <Compile Include="CLI\DownloadBookCommand.cs" />
     <Compile Include="CLI\HydrateBookCommand.cs" />
     <Compile Include="Edit\BookSettingsTool.cs" />
     <Compile Include="Edit\ToolboxTool.cs" />
@@ -533,6 +534,7 @@
     <Compile Include="ApplicationUpdateSupport.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
+    <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
     <Compile Include="web\controllers\ApiRequest.cs" />
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />

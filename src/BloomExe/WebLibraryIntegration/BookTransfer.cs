@@ -182,42 +182,67 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private ProgressDialog _progressDialog;
+		private IProgressDialog _progressDialog;
 		private string _downloadRequest;
 
 		internal void HandleBloomBookOrder(string order)
 		{
 			_downloadRequest = order;
-			using (_progressDialog = new ProgressDialog())
+			using (var progressDialog = new ProgressDialog())
 			{
-				_progressDialog.CanCancel = false; // one day we may allow this...
-				_progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
-				_progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
+				_progressDialog = new ProgressDialogWrapper(progressDialog);
+				progressDialog.CanCancel = false; // one day we may allow this...
+				progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
+				progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
 				if (IsUrlOrder(order))
 				{
 					var link = new BloomLinkArgs(order);
-					_progressDialog.StatusText = link.Title;
+					progressDialog.StatusText = link.Title;
 				}
 				else
 				{
-					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(order);
+					progressDialog.StatusText = Path.GetFileNameWithoutExtension(order);
 				}
 
 				// We must do the download in a background thread, even though the whole process is doing nothing else,
 				// so we can invoke stuff on the main thread to (e.g.) update the progress bar.
 				BackgroundWorker worker = new BackgroundWorker();
 				worker.DoWork += OnDoDownload;
-				_progressDialog.BackgroundWorker = worker;
+				progressDialog.BackgroundWorker = worker;
 				//dlg.CancelRequested += new EventHandler(OnCancelRequested);
-				_progressDialog.ShowDialog(); // hidden automatically when task completes
-				if (_progressDialog.ProgressStateResult != null &&
-					_progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
+				progressDialog.ShowDialog(); // hidden automatically when task completes
+				if (progressDialog.ProgressStateResult != null &&
+					progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
-						SIL.Reporting.ErrorReport.ReportFatalException(
-							_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
-					}
+					SIL.Reporting.ErrorReport.ReportFatalException(
+						progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
 				}
 			}
+		}
+
+		/// <summary>
+		/// url is typically something like https://s3.amazonaws.com/BloomLibraryBooks/andrew_polk@sil.org/0a2745dd-ca98-47ea-8ba4-2cabc67022e
+		/// It is harmless if there are more elements in it (e.g. address to a particular file in the folder)
+		/// Note: if you copy the url from part of the link to a file in the folder from AWS,
+		/// you typically need to change %40 to @ in the uploader's email.
+		/// </summary>
+		/// <param name="url"></param>
+		/// <param name="destRoot"></param>
+		internal void HandleDownloadWithoutProgress(string url, string destRoot)
+		{
+			_progressDialog = new ConsoleProgress();
+			if (!url.StartsWith("https://s3.amazonaws.com/"))
+			{
+				Console.WriteLine("Url unexpectedly does not start with https://s3.amazonaws.com/");
+				return;
+			}
+			var bookOrder = url.Substring("https://s3.amazonaws.com/".Length);
+			var index = bookOrder.IndexOf('/');
+			var bucket = bookOrder.Substring(0, index);
+			var folder = bookOrder.Substring(index + 1);
+
+			DownloadBook(bucket, folder, destRoot);
+		}
 
 		/// <summary>
 		/// this runs in a worker thread

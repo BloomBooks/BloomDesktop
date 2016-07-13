@@ -75,16 +75,16 @@ namespace Bloom
 			// Bloom has several command line scenarios, without a coherent system for them.
 			// The following is how we will do things from now on, and things can be moved
 			// into this as time allows. See CommandLineOptions.cs.
-			if (args1.Length > 0 && new[] {"--help", "hydrate"}.Contains(args1[0])) //restrict using the commandline parser to cases were it should work
+			if (args1.Length > 0 && new[] {"--help", "hydrate", "download"}.Contains(args1[0])) //restrict using the commandline parser to cases were it should work
 			{
 #if !__MonoCS__
 				AttachConsole(-1);
 #endif
 				var exitCode = CommandLine.Parser.Default.ParseArguments(args1,
-					new[] {typeof(HydrateParameters) /*,typeof(DownloadOptions)*/})
+					new[] {typeof(HydrateParameters) ,typeof(DownloadBookOptions)})
 					.MapResult(
 						(HydrateParameters opts) => HandlePrepareCommandLine(opts),
-						/*(DownloadOptions opts) => RunCommitAndReturnExitCode(opts),*/
+						(DownloadBookOptions opts) => DownloadBookCommand.HandleSilentDownload(opts),
 						errors =>
 						{
 							var code = 0;
@@ -320,6 +320,23 @@ namespace Bloom
 			return HydrateBookCommand.Handle(opts);
 		}
 
+		/// <summary>
+		/// This routine handles the old-style download requests which come as an order URL from BloomLibrary.
+		/// Enhance: it's unfortunate that we have two command-line methods of downloading a book. However, they have
+		/// rather different requirements:
+		///   - this one displays a progress UI, the other doesn't.
+		///   - this one must extract the URL from a bloom: url (which the library must produce with urlencoding),
+		///			for the other, it's more convenient to pass an unencoded url
+		///   - worse, this version typically goes on to fully launch Bloom; the other always shuts the program down
+		///			when done. Thus, this version is much more tightly connected to the normal startup code.
+		/// Note that we can't easily change the exact command line that this version deals with, because
+		/// Bloom library generates that command line, and if we change what it generates, everyone running an
+		/// older Bloom will be in trouble.
+		/// Most of the core implementation of the download process is common.
+		/// </summary>
+		/// <param name="order"></param>
+		/// <param name="skipReleaseToken"></param>
+		/// <returns></returns>
 		private static bool HandleDownload(string order, bool skipReleaseToken)
 		{
 			// We will start up just enough to download the book. This avoids the code that normally tries to keep only a single instance running.
@@ -403,7 +420,7 @@ namespace Bloom
 		// or indeed to do something special for any particular version(s) of Bloom,
 		// or even to switch to a different upgrade path after releasing a version.
 
-		private static void OnXulRunnerShutdown(object sender, EventArgs e)
+		internal static void OnXulRunnerShutdown(object sender, EventArgs e)
 		{
 			ApplicationExiting = true;
 			Browser.XulRunnerShutdown -= OnXulRunnerShutdown;
@@ -826,8 +843,11 @@ namespace Bloom
 			OpenCollection(Settings.Default.MruProjects.Latest);
 		}
 
-		public static void SetUpLocalization()
+		public static void SetUpLocalization(ApplicationContainer applicationContainerSource = null)
 		{
+			var applicationContainer = _applicationContainer;
+			if (applicationContainerSource != null)
+				applicationContainer = applicationContainerSource;
 			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication(true,"localization");
 			if (installedStringFileFolder == null)
 			{
@@ -840,7 +860,7 @@ namespace Bloom
 				// Ideally we would dispose this at some point, but I don't know when we safely can. Normally this should never happen,
 				// so I'm not very worried.
 				var fakeLocalDir = new TemporaryFolder("Bloom fake localization").FolderPath;
-				_applicationContainer.LocalizationManager = LocalizationManager.Create("en", "Bloom", "Bloom", Application.ProductVersion, fakeLocalDir, "SIL/Bloom",
+				applicationContainer.LocalizationManager = LocalizationManager.Create("en", "Bloom", "Bloom", Application.ProductVersion, fakeLocalDir, "SIL/Bloom",
 										   Resources.BloomIcon, "issues@bloomlibrary.org",
 											//the parameters that follow are namespace beginnings:
 										   "Bloom");
@@ -849,7 +869,7 @@ namespace Bloom
 
 			try
 			{
-				_applicationContainer.LocalizationManager = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
+				applicationContainer.LocalizationManager = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
 										   "SIL/Bloom",
@@ -864,9 +884,9 @@ namespace Bloom
 				//don't want to check that stuff in".
 
 #if DEBUG
-				_applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = true;
+				applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = true;
 #else
-				_applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = false;
+				applicationContainer.LocalizationManager.CollectUpNewStringsDiscoveredDynamically = false;
 #endif
 
 				var uiLanguage =   LocalizationManager.UILanguageId;//just feeding this into subsequent creates prevents asking the user twice if the language of their os isn't one we have a tmx for
@@ -903,7 +923,7 @@ namespace Bloom
 		private static bool _errorHandlingHasBeenSetUp;
 
 		/// ------------------------------------------------------------------------------------
-		private static void SetUpErrorHandling()
+		internal static void SetUpErrorHandling()
 		{
 			if (_errorHandlingHasBeenSetUp)
 				return;
