@@ -12,6 +12,7 @@ namespace Bloom.Book
 		{
 			WritingSystemAliases = new Dictionary<string, string>();
 			TextVariables = new Dictionary<string, NamedMutliLingualValue>();
+			Attributes = new Dictionary<string, List<KeyValuePair<string, string>>>();
 		}
 
 		/// <summary>
@@ -23,6 +24,8 @@ namespace Bloom.Book
 		public Dictionary<string, string> WritingSystemAliases { get; private set; }
 
 		public Dictionary<string, NamedMutliLingualValue> TextVariables { get; private set; }
+
+		public Dictionary<string, List<KeyValuePair<string, string>>> Attributes { get; private set; } 
 
 
 		public void UpdateGenericLanguageString(string key, string value, bool isCollectionValue)

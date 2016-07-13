@@ -48,6 +48,8 @@ namespace BloomTests.CLI
 						<div data-book='originalAcknowledgments' lang='en'>
 							Some Acknowledgments
 						</div>
+
+						<div data-book-attributes='frontCover' data-backgroundaudio='audio/SoundTrack1.mp3' data-backgroundaudiovolume='0.17'></div>
 					</div>
 					<div id ='firstPage' class='bloom-page A5Landscape'>1st page</div>
 				</body></html>");
@@ -135,6 +137,12 @@ namespace BloomTests.CLI
 
 			AssertThatXmlIn.Dom(dom)
 				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='originalAcknowledgments' and @lang='en' and contains(@class,'bloom-editable') and contains(text(),'Some Acknowledgments')]", 1);
+
+			AssertThatXmlIn.Dom(dom)
+				.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book-attributes='frontCover' and @data-backgroundaudio='audio/SoundTrack1.mp3' and @data-backgroundaudiovolume='0.17']", 2);
+
+			AssertThatXmlIn.Dom(dom)
+				.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'frontCover') and @data-backgroundaudio='audio/SoundTrack1.mp3' and @data-backgroundaudiovolume='0.17']", 1);
 		}
 
 		[Test]
