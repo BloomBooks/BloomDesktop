@@ -86,9 +86,11 @@ namespace Bloom.Api
 						//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
 						// And return the English string, which is what we would do the next time anyway.  (BL-3374)
 						LocalizationManager.GetDynamicString("Bloom", id, englishText);
+#if DEBUG	// Don't annoy users (even beta testing) with this message (BL-3598)
 						var modal = ApplicationUpdateSupport.ChannelName.StartsWith("Developer/") ? ModalIf.All : ModalIf.None;
 						var longMsg = String.Format("**I18NHandler: Added missing translatable string (\"{0}\")", englishText);
 						NonFatalProblem.Report(modal, PassiveIf.Beta, "adding translatable string", longMsg);
+#endif
 						info.ContentType = "text/plain";
 						info.WriteCompleteOutput(englishText);
 						return true;
