@@ -599,7 +599,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection attributes.
+		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection or data-book-attributes attributes.
 		/// </summary>
 		private void GatherDataItemsFromXElement(DataSet data,
 			XmlNode sourceElement, // can be the whole sourceDom or just a page
