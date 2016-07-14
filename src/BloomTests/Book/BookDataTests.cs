@@ -11,7 +11,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
-using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 
 namespace BloomTests.Book
@@ -37,9 +36,9 @@ namespace BloomTests.Book
 
 			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
 			_localizationManager = LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
-				null, "", new string[] {});
+				null, "");
 			_palasoLocalizationManager = LocalizationManager.Create("fr", "Palaso","Palaso", "1.0.0", localizationDirectory, "SIL/Palaso",
-				null, "", new string[] { });
+				null, "");
 		}
 
 		[TearDown]
@@ -175,6 +174,21 @@ namespace BloomTests.Book
 			var data = new BookData(dom, _collectionSettings, null);
 			data.UpdateVariablesAndDataDivThroughDOM();
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='"+_collectionSettings.Language1Iso639Code+"' and text()='the title']",1);
+		}
+
+		[Test]
+		public void UpdateVariablesAndDataDivThroughDOM_DataBookAttributes_AttributesAddedToDiv()
+		{
+			var dom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book-attributes='frontCover' data-backgroundaudio='audio/SoundTrack1.mp3' data-backgroundaudiovolume='0.17'></div>
+				</div>
+				<div id='firstPage' class='bloom-page' data-book-attributes='frontCover'>1st page</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			data.UpdateVariablesAndDataDivThroughDOM();
+			AssertThatXmlIn.Dom(dom.RawDom)
+				.HasSpecifiedNumberOfMatchesForXpath("//div[@id='firstPage' and @data-book-attributes='frontCover' and @data-backgroundaudio='audio/SoundTrack1.mp3' and @data-backgroundaudiovolume='0.17']", 1);
 		}
 
 		[Test]
