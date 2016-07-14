@@ -88,7 +88,7 @@ namespace Bloom.Api
 						LocalizationManager.GetDynamicString("Bloom", id, englishText);
 						var modal = ApplicationUpdateSupport.ChannelName.StartsWith("Developer/") ? ModalIf.All : ModalIf.None;
 						var longMsg = String.Format("**I18NHandler: Added missing translatable string (\"{0}\")", englishText);
-						NonFatalProblem.Report(modal, PassiveIf.Beta, "adding translatable string", longMsg);
+						NonFatalProblem.Report(modal, PassiveIf.Alpha, "adding translatable string", longMsg);
 						info.ContentType = "text/plain";
 						info.WriteCompleteOutput(englishText);
 						return true;
