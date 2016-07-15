@@ -119,7 +119,8 @@ namespace BloomTests.WebLibraryIntegration
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 			_downloadedBooks.Clear();
-			var newBookFolder = _transfer.DownloadBook(BloomS3Client.UnitTestBucketName, s3Id, dest);
+			var url = BookTransfer.BloomS3UrlPrefix + BloomS3Client.UnitTestBucketName + "/" + s3Id;
+			var newBookFolder = _transfer.HandleDownloadWithoutProgress(url, dest);
 
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
 

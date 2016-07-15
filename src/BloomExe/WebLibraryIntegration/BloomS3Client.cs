@@ -397,7 +397,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <param name="storageKeyOfBookFolder"></param>
 		public string DownloadBook(string bucketName, string storageKeyOfBookFolder, string pathToDestinationParentDirectory,
-			ProgressDialog downloadProgress = null)
+			IProgressDialog downloadProgress = null)
 		{
 			//review: should we instead save to a newly created folder so that we don't have to worry about the
 			//other folder existing already? Todo: add a test for that first.
