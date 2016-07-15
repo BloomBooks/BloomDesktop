@@ -221,27 +221,27 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		/// <summary>
-		/// url is typically something like https://s3.amazonaws.com/BloomLibraryBooks/andrew_polk@sil.org/0a2745dd-ca98-47ea-8ba4-2cabc67022e
+		/// url is typically something like https://s3.amazonaws.com/BloomLibraryBooks/somebody@example.com/0a2745dd-ca98-47ea-8ba4-2cabc67022e
 		/// It is harmless if there are more elements in it (e.g. address to a particular file in the folder)
 		/// Note: if you copy the url from part of the link to a file in the folder from AWS,
 		/// you typically need to change %40 to @ in the uploader's email.
 		/// </summary>
 		/// <param name="url"></param>
 		/// <param name="destRoot"></param>
-		internal void HandleDownloadWithoutProgress(string url, string destRoot)
+		internal string HandleDownloadWithoutProgress(string url, string destRoot)
 		{
 			_progressDialog = new ConsoleProgress();
-			if (!url.StartsWith("https://s3.amazonaws.com/"))
+			if (!url.StartsWith(BloomS3UrlPrefix))
 			{
 				Console.WriteLine("Url unexpectedly does not start with https://s3.amazonaws.com/");
-				return;
+				return "";
 			}
-			var bookOrder = url.Substring("https://s3.amazonaws.com/".Length);
+			var bookOrder = url.Substring(BloomS3UrlPrefix.Length);
 			var index = bookOrder.IndexOf('/');
 			var bucket = bookOrder.Substring(0, index);
 			var folder = bookOrder.Substring(index + 1);
 
-			DownloadBook(bucket, folder, destRoot);
+			return DownloadBook(bucket, folder, destRoot);
 		}
 
 		/// <summary>
@@ -295,6 +295,7 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		public const string BookOrderExtension = ".BloomBookOrder";
+		internal const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
 
 		private string _uploadedBy;
 		private string _accountWhenUploadedByLastSet;

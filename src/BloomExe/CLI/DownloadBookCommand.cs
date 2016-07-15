@@ -51,7 +51,7 @@ namespace Bloom.CLI
 				Debug.WriteLine(ex.Message);
 				Console.WriteLine(ex.Message);
 				Console.WriteLine(ex.StackTrace);
-				return -1;
+				return 1;
 			}
 		}
 	}
