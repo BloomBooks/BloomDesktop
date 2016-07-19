@@ -46,7 +46,6 @@ namespace Bloom.CLI
 			{
 				SizeAndOrientation = SizeAndOrientation.FromString(options.SizeAndOrientation)
 			};
-			var nameOfXMatterPack = "Video";
 
 			var collectionSettings = new CollectionSettings()
 			{
