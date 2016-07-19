@@ -369,26 +369,35 @@ namespace Bloom.Publish
 			{
 				var spanId = span.Attributes["id"].Value;
 				var path = GetOrCreateCompressedAudioIfWavExists(spanId);
-				//var durationSeconds = TagLib.File.Create(path).Properties.Duration.TotalSeconds;
-				//duration += new TimeSpan((long)(durationSeconds * 1.0e7)); // argument is in ticks (100ns)
-				// Haven't found a good way to get duration from MP3 without adding more windows-specific
-				// libraries. So for now we'll figure it from the wav if we have it. If not we do a very
-				// crude estimate from file size. Hopefully good enough for BSV animation.
-				var wavPath = Path.ChangeExtension(path, "wav");
-				if (File.Exists(wavPath))
+				var dataDurationAttr = span.Attributes["data-duration"];
+				if (dataDurationAttr != null)
 				{
-					WaveFileReader wf = new WaveFileReader(wavPath);
-					pageDuration += wf.TotalTime;
+					pageDuration += TimeSpan.FromSeconds(Double.Parse(dataDurationAttr.Value));
 				}
 				else
 				{
-					NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
-						string.Format("Bloom could not find one of the expected audio files for this book, {0}. Bloom can only make a very rough estimate of the length of the mp3 file."));
-					// Crude estimate. In one sample, a 61K mp3 is 7s long.
-					// So, multiply by 7 and divide by 61K to get seconds.
-					// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
-					// hence the 10000000.
-					pageDuration += new TimeSpan(new FileInfo(path).Length * 7 * 10000000 / 61000);
+					//var durationSeconds = TagLib.File.Create(path).Properties.Duration.TotalSeconds;
+					//duration += new TimeSpan((long)(durationSeconds * 1.0e7)); // argument is in ticks (100ns)
+					// Haven't found a good way to get duration from MP3 without adding more windows-specific
+					// libraries. So for now we'll figure it from the wav if we have it. If not we do a very
+					// crude estimate from file size. Hopefully good enough for BSV animation.
+					var wavPath = Path.ChangeExtension(path, "wav");
+					if (File.Exists(wavPath))
+					{
+						WaveFileReader wf = new WaveFileReader(wavPath);
+						pageDuration += wf.TotalTime;
+					}
+					else
+					{
+						NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+							string.Format(
+								"Bloom could not find one of the expected audio files for this book, {0}, nor a precomputed duration. Bloom can only make a very rough estimate of the length of the mp3 file."));
+						// Crude estimate. In one sample, a 61K mp3 is 7s long.
+						// So, multiply by 7 and divide by 61K to get seconds.
+						// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
+						// hence the 10000000.
+						pageDuration += new TimeSpan(new FileInfo(path).Length*7*10000000/61000);
+					}
 				}
 				var epubPath = CopyFileToEpub(path);
 				seq.Add(new XElement(smil+"par",
