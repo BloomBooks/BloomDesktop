@@ -245,7 +245,7 @@ namespace Bloom.Edit
 				_inProcessOfDeleting = true;
 				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
 				_currentlyDisplayedBook.DeletePage(page);
-				_view.UpdatePageList(false);
+				//_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
 				Logger.WriteEvent("Delete Page");
 				Analytics.Track("Delete Page");
 			}
@@ -273,7 +273,7 @@ namespace Bloom.Edit
 		private void OnInsertTemplatePage(object sender, EventArgs e)
 		{
 			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
-			_view.UpdatePageList(false);
+			//_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
 			//_pageSelection.SelectPage(newPage);
 			try
 			{
