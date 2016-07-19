@@ -382,6 +382,8 @@ namespace Bloom.Publish
 				}
 				else
 				{
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+						string.Format("Bloom could not find one of the expected audio files for this book, {0}. Bloom can only make a very rough estimate of the length of the mp3 file."));
 					// Crude estimate. In one sample, a 61K mp3 is 7s long.
 					// So, multiply by 7 and divide by 61K to get seconds.
 					// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
