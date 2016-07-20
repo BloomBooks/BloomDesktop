@@ -5,6 +5,9 @@
 //ok, this is embarrassing, but we're in a presidence fight with the html itself
 div.bloom-page.coverColor, .bloom-backMatter{
     background-color: black !important;
+    .bloom-editable[contentEditable="true"][data-languageTipContent]:after{
+        color: dimgrey !important;
+    }
 
     color: #9E9E9E;
 }
@@ -35,6 +38,47 @@ div.bloom-page.coverColor, .bloom-backMatter{
                 align-self: center;
             }
         }
+    }
+}
+.credits1{
+    img{
+        //the CC licenses we're using are transparent, so they don't come out right if the background is black
+        background-color: white;
+    }
+}
+
+body:not(.publishMode) .bloom-editable {
+    border-color: dimgray;
+}
+
+.credits2{
+    .bloom-translationGroup {
+        min-height: 3em;
+        width:100%;
+        margin-bottom: 2em;
+        p{
+            min-width: 15em;
+            text-align: center;
+        }
+    }
+}
+.theEndPage{
+    .marginBox{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.theEnd{
+    height: initial; //otherwise gets 100% and then can't be centered vertically
+    //color:yellow;
+    text-align: center;
+    width: 100%;
+    font-size: 3em;
+
+    p {
+        width: inherit;// make centering work
     }
 }
 

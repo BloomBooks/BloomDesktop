@@ -300,9 +300,26 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 	top: @MarginTop;
 }
 
+.Device16x9Landscape{
+	//TODO: This is only for videos
+	background-color: black;
+	img{ background-color: white; } // so that transparent images show
+}
+
 .Device16x9Landscape, .Device16x9Portrait{
 	.origami-toggle{display:none}
 	.pageLabel{display:none}
+
+	.marginBox {
+        .split-pane.horizontal-percent > .split-pane-component.position-top{
+            margin-bottom: 0;
+        }
+
+        .bloom-imageContainer{
+            //the basePage.css has a "- 3px" that leaves the bottom of the screen unused
+            height: calc(100%) !important;
+        }
+    }
 }
 
 .marginBox {
@@ -316,7 +333,7 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 	.SetMarginBoxDevice(@PageWidth, @PageHeight) {
 		height: @PageHeight ;
 		width: @PageWidth;
-		IMG { 
+		IMG {
 			max-width: @PageWidth ;
 		}
 		top:0;
@@ -325,7 +342,15 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 
 	.Device16x9Portrait & {
 		.SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
+
+		//that makes the margin box actually have no margin. Which looks good for the image, but
+		//looks bad for the text. So here we re-introduce a margin... a bit of a hack
+		.bloom-editable{
+			margin-left: 10px;
+			width: ~"calc(100% - 20px)"; // 10px for the left, 10px for the right
+		}
 	}
+
 	.Device16x9Landscape & {
 		.SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
 
@@ -382,7 +407,7 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 	}
 }
 
-//Currently, in edit mode there is only one page in the html, so every 
+//Currently, in edit mode there is only one page in the html, so every
 //page looks like page 1 from the view of the css, so showing every page
 //as if it were odd is just confusing for the user.
 //Therefore we only turn on left-vs.right distinctions when when making PDF.
