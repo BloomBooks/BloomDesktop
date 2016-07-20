@@ -13,7 +13,9 @@ using System.Xml.Linq;
 using Bloom.Book;
 using Bloom.Edit;
 using BloomTemp;
+#if !__MonoCS__
 using NAudio.Wave;
+#endif
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -384,8 +386,12 @@ namespace Bloom.Publish
 					var wavPath = Path.ChangeExtension(path, "wav");
 					if (File.Exists(wavPath))
 					{
+#if __MonoCS__
+						pageDuration += new TimeSpan(new FileInfo(path).Length);	// TODO: this needs to be fixed for Linux/Mono
+#else
 						WaveFileReader wf = new WaveFileReader(wavPath);
 						pageDuration += wf.TotalTime;
+#endif
 					}
 					else
 					{
