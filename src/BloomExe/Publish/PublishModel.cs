@@ -15,7 +15,10 @@ using Bloom.Collection;
 using Bloom.Api;
 using DesktopAnalytics;
 using SIL.IO;
+using SIL.Xml;
 using PdfDroplet.LayoutMethods;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 namespace Bloom.Publish
 {
@@ -158,6 +161,7 @@ namespace Bloom.Publish
 			PageLayout.UpdatePageSplitMode(dom.RawDom);
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
+			ShrinkImagesIfNeeded(dom.RawDom, _currentlyLoadedBook.FolderPath);
 			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
 			return EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom);
 		}
@@ -534,6 +538,198 @@ namespace Bloom.Publish
 					Analytics.Track("Save ePUB");
 				}
 			}
+		}
+
+		/// <summary>
+		/// Shrink any image that has an effective DPI greater than 500 to have an effective DPI of 400 or so.  (Effective DPI means at
+		/// the image size given by height and width in pixels.)
+		/// This is an attempt to minimize the size of the generated PDF file.
+		/// </summary>
+		/// <remarks>
+		/// Design/implementation questions that should be at least thought about.
+		/// 1) The method currently creates new files as needed for printing and leaves them on the disk.  Should the new files be
+		///    removed after the PDF has been created?  (Leaving them means we don't need to recreate them each time.)
+		/// 2) The method uses the width and height attributes of the img element for the desired size.  Is this reliable enough
+		///    in practice?
+		/// 3) The method tries to save file access by using the title attribute of the parent div element.  Is this reliable
+		///    enough to depend on in practice?
+		/// 4) What about images that don't fit the standard pattern?  (cover page for sure, are there others?)  How can we handle
+		///    them?
+		/// 5) The estimated DPI for printing is a bit sloppy.  It assumes screen DPI ranges between 96 and 120, and that the print
+		///    DPI can safely be set to 4 * screen DPI.  Is this a safe assumption?
+		/// 6) Do we need progress reporting for this process?
+		/// There may be other questions to answer as well.  The initial result of using this code reduced a PDF containing
+		/// about 20 photographs from 378,195,191 (!) bytes on the disk to "only" 103,465,177 bytes.
+		/// Note that this initial work was done on Linux/Mono, so we know it works there.
+		/// </remarks>
+		private void ShrinkImagesIfNeeded(XmlDocument dom, string folder)
+		{
+			foreach (XmlElement node in dom.SafeSelectNodes("//div/img"))
+			{
+				var parent = node.ParentNode;
+				var title = parent.GetOptionalStringAttribute("title", null);	// "100_10431.jpg 888.85 KB 3264 x 2448 770 DPI (should be 300-600) Bit Depth: 24"
+				if (String.IsNullOrEmpty (title))
+					continue;
+				var src = node.GetOptionalStringAttribute("src", null);			// "100_10431.jpg"
+				if (String.IsNullOrEmpty(src))
+					continue;
+				var srcDecoded = System.Web.HttpUtility.UrlDecode(src);
+				// height and width (which are in screen pixels) may not be accurate, but they're the best
+				// information we have without going through a lot more effort.
+				var height = node.GetOptionalStringAttribute("height", null);	// "305"
+				var width = node.GetOptionalStringAttribute("width", null);		// "407"
+				if (String.IsNullOrEmpty(height) || String.IsNullOrEmpty(width))
+					continue;
+				int pxHeight;
+				int pxWidth;
+				if (!Int32.TryParse(height, out pxHeight) || !Int32.TryParse(width, out pxWidth))
+					continue;
+				int rawDPI = GetDPIFromTitleAttribute(title, srcDecoded);
+				if (rawDPI > 0 && rawDPI < 500)
+					continue;	// The file's effective DPI seems to be reasonable already, so don't change anything.
+				var oldFilepath = Path.Combine(folder, srcDecoded);
+				if (!File.Exists(oldFilepath))
+					continue;
+				if (rawDPI < 0)
+					rawDPI = GetDPIFromBitmap(oldFilepath, pxWidth, pxHeight);
+				if (rawDPI < 500)
+					continue;
+				// TODO: We really need a graphics object to get the DpiX and DpiY values, but we'll assume 96 (or maybe 120)
+				// as the best guess for a computer screen to get started.
+				int desiredWidth = pxWidth * 4;		// give ~ 384 - 480 DPI depending on screen resolution
+				int desiredHeight = pxHeight * 4;
+				var newFilename = String.Format("{0}-{1}x{2}{3}", Path.GetFileNameWithoutExtension(srcDecoded), desiredWidth, desiredHeight, Path.GetExtension(srcDecoded));
+				var newFilepath = Path.Combine(folder, newFilename);
+				if (File.Exists(newFilepath))	// If we've already created a file at the desired size, don't bother doing so again.
+					continue;
+				// Create the new image file at the desired size and update the src attribute.
+				using (var oldImage = new Bitmap(oldFilepath))
+				{
+					using (var newImage = ResizeImage(oldImage, new Size(desiredWidth, desiredHeight)))
+					{
+						var fmt = GetImageFormat(oldImage, Path.GetExtension(src));
+						newImage.Save(newFilepath, fmt);
+					}
+				}
+				var newSrc = String.Format("{0}-{1}x{2}{3}", Path.GetFileNameWithoutExtension(src), desiredWidth, desiredHeight, Path.GetExtension(src));
+				node.SetAttribute("src", newSrc);
+				Console.WriteLine("new filepath = {0}, new src = {1}", newFilepath, newSrc);
+			}
+		}
+
+		/// <summary>
+		/// Get the proper ImageFormat from either the current image's format or from the filename extension.
+		/// </summary>
+		/// <remarks>
+		/// It may be a bug in the Mono library that keeps image.RawFormat from working directly.  But this
+		/// method is needed, at least on Linux.
+		/// </remarks>
+		ImageFormat GetImageFormat(Bitmap image, string extension)
+		{
+			// Try to preserve the old file's format if possible.
+			// Note that having the same guid isn't quite enough to ensure proper behaviour on output.
+			if (image.RawFormat.Guid == ImageFormat.Jpeg.Guid)		return ImageFormat.Jpeg;
+			if (image.RawFormat.Guid == ImageFormat.Png.Guid)		return ImageFormat.Png;
+			if (image.RawFormat.Guid ==  ImageFormat.Tiff.Guid)		return ImageFormat.Tiff;
+			if (image.RawFormat.Guid == ImageFormat.Bmp.Guid)		return ImageFormat.Bmp;
+			if (image.RawFormat.Guid == ImageFormat.Emf.Guid)		return ImageFormat.Emf;
+			if (image.RawFormat.Guid == ImageFormat.Exif.Guid)		return ImageFormat.Exif;
+			if (image.RawFormat.Guid ==  ImageFormat.Gif.Guid)		return ImageFormat.Gif;
+			if (image.RawFormat.Guid ==  ImageFormat.Icon.Guid)		return ImageFormat.Icon;
+			if (image.RawFormat.Guid ==  ImageFormat.Wmf.Guid)		return ImageFormat.Wmf;
+			// okay, try to guess from the filename extension (probably redundant code here)
+			switch (extension.ToLowerInvariant())
+			{
+			case ".bmp":	return ImageFormat.Bmp;
+			case ".gif":	return ImageFormat.Gif;
+			case ".jpg":
+			case ".jpeg":	return ImageFormat.Jpeg;
+			case ".png":	return ImageFormat.Png;
+			case ".tif":
+			case ".tiff":	return ImageFormat.Tiff;
+			}
+			return ImageFormat.Png;		// seems to be the default, at least on Linux...
+		}
+
+		/// <summary>
+		/// Parse the title attribute from the owning div element to get the estimated DPI of the image
+		/// at the desired size.
+		/// </summary>
+		private static int GetDPIFromTitleAttribute(string title, string srcDecoded)
+		{
+			if (!title.StartsWith(srcDecoded))
+				return -1;
+			string titleSizes = title.Substring(srcDecoded.Length + 1);
+			var sizes = titleSizes.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			if (sizes[3] != "x" || sizes[6] != "DPI")
+				return -1;
+			int rawWidth;
+			int rawHeight;
+			int rawDPI;
+			if (!Int32.TryParse(sizes[2], out rawWidth) || !Int32.TryParse(sizes[4], out rawHeight) || !Int32.TryParse(sizes[5], out rawDPI))
+				return -1;
+			Console.WriteLine("{0} : size={1}x{2} rawDpi={3}", srcDecoded, rawWidth, rawHeight, rawDPI);
+			return rawDPI;
+		}
+
+		/// <summary>
+		/// Load the image into memory to get its estimated DPI at the desired size.
+		/// </summary>
+		/// <remarks>
+		/// Is there some way to redesign this so that we only load the file into memory once when we need to reduce it?
+		/// </remarks>
+		private static int GetDPIFromBitmap(string oldFilepath, int pxWidth, int pxHeight)
+		{
+			using (var oldImage = new Bitmap(oldFilepath))
+			{
+				var g = Graphics.FromImage(oldImage);
+				var inchWidth = pxWidth / g.DpiX;
+				var inchHeight = pxHeight / g.DpiY;
+				var dpiX = oldImage.Width / inchWidth;
+				var dpiY = oldImage.Height / inchHeight;
+				int rawDPI = (int)((dpiX + dpiY) / 2.0);
+				Console.WriteLine("{0} : size={1}x{2} ({3}x{4}), g.DpiX={5}, g.DpiY={6}, rawDpiX={7}, rawDpiY={8}, rawDPI={9}",
+					Path.GetFileName(oldFilepath), oldImage.Width, oldImage.Height, inchWidth, inchHeight, g.DpiX, g.DpiY, dpiX, dpiY, rawDPI);
+				return rawDPI;
+			}
+		}
+
+		/// <summary>
+		/// Generate a new Bitmap of the desired size from the old one.
+		/// </summary>
+		/// <remarks>
+		/// This code was adapted from some found at
+		/// https://social.msdn.microsoft.com/Forums/en-US/e2e59871-f888-4d41-8aa2-fa7f3572c1ce/change-the-resolution-of-png-image-and-save-it?forum=csharplanguage.
+		/// </remarks>
+		private static Bitmap ResizeImage(Bitmap oldImage, Size newSize)
+		{
+			// The use of ratio, myHeight, myWidth, mySize, x, y are an attempt to smooth the differences
+			// in the old size and the new size.  In practice, x and y should be in the order of 0 or 1, and
+			// certainly no more than 2 or so.
+			double ratio;
+			if ((oldImage.Width / Convert.ToDouble(newSize.Width)) > (oldImage.Height / Convert.ToDouble(newSize.Height)))
+				ratio = Convert.ToDouble(oldImage.Width) / Convert.ToDouble(newSize.Width);
+			else
+				ratio = Convert.ToDouble(oldImage.Height) / Convert.ToDouble(newSize.Height);
+			var myHeight = Math.Ceiling(oldImage.Height / ratio);
+			var myWidth = Math.Ceiling(oldImage.Width / ratio);
+			var mySize = new Size((int)myWidth, (int)myHeight);
+			var x = (newSize.Width - mySize.Width) / 2;
+			var y = (newSize.Height - mySize.Height);
+
+			var newImage = new Bitmap(newSize.Width, newSize.Height);
+			var g = Graphics.FromImage(newImage);
+			g.SmoothingMode = SmoothingMode.HighQuality;
+			g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+			g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+			var rect = new Rectangle(x, y, mySize.Width, mySize.Height);
+			g.DrawImage(oldImage, rect, 0, 0, oldImage.Width, oldImage.Height, GraphicsUnit.Pixel);
+			if (oldImage.HorizontalResolution != newImage.HorizontalResolution ||
+				oldImage.VerticalResolution != newImage.VerticalResolution)
+			{
+				newImage.SetResolution(oldImage.HorizontalResolution, oldImage.VerticalResolution);
+			}
+			return newImage;
 		}
 	}
 }
