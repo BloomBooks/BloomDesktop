@@ -75,16 +75,17 @@ namespace Bloom
 			// Bloom has several command line scenarios, without a coherent system for them.
 			// The following is how we will do things from now on, and things can be moved
 			// into this as time allows. See CommandLineOptions.cs.
-			if (args1.Length > 0 && new[] {"--help", "hydrate", "download"}.Contains(args1[0])) //restrict using the commandline parser to cases were it should work
+			if (args1.Length > 0 && new[] {"--help", "hydrate", "download", "getfonts"}.Contains(args1[0])) //restrict using the commandline parser to cases were it should work
 			{
 #if !__MonoCS__
 				AttachConsole(-1);
 #endif
 				var exitCode = CommandLine.Parser.Default.ParseArguments(args1,
-					new[] {typeof(HydrateParameters) ,typeof(DownloadBookOptions)})
+					new[] {typeof (HydrateParameters), typeof (DownloadBookOptions), typeof (GetUsedFontsParameters)})
 					.MapResult(
 						(HydrateParameters opts) => HandlePrepareCommandLine(opts),
 						(DownloadBookOptions opts) => DownloadBookCommand.HandleSilentDownload(opts),
+						(GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
 						errors =>
 						{
 							var code = 0;
