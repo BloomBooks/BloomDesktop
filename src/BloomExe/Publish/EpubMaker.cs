@@ -504,7 +504,7 @@ namespace Bloom.Publish
 		/// </summary>
 		private void EmbedFonts()
 		{
-			var fontsWanted = GetFontsUsed(Book.FolderPath);
+			var fontsWanted = GetFontsUsed(Book.FolderPath, false);
 			var fontFileFinder = new FontFileFinder();
 			var filesToEmbed = fontsWanted.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
 			foreach (var file in filesToEmbed)
@@ -543,14 +543,15 @@ namespace Bloom.Publish
 		/// For now we examine the stylesheets and collect the font families they mention.
 		/// </summary>
 		/// <param name="bookPath"></param>
+		/// <param name="preferredFontsOnly"></param>
 		/// <returns></returns>
-		public static IEnumerable<string> GetFontsUsed(string bookPath)
+		public static IEnumerable<string> GetFontsUsed(string bookPath, bool preferredFontsOnly)
 		{
 			var result = new HashSet<string>();
 			foreach (var ss in Directory.GetFiles(bookPath, "*.css"))
 			{
 				var root = File.ReadAllText(ss, Encoding.UTF8);
-				HtmlDom.FindFontsUsedInCss(root, result);
+				HtmlDom.FindFontsUsedInCss(root, result, preferredFontsOnly);
 			}
 			return result;
 		}

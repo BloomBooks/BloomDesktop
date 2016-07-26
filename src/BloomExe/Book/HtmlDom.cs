@@ -886,7 +886,7 @@ namespace Bloom.Book
 			return attr.Value;
 		}
 
-		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
+		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result, bool firstFontInEachList)
 		{
 			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
 			foreach (Match match in findFF.Matches(cssContent))
@@ -898,6 +898,8 @@ namespace Bloom.Book
 					if (name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
 						name = name.Substring(1, name.Length - 2);
 					result.Add(name);
+					if (firstFontInEachList)
+						break;
 				}
 			}
 		}

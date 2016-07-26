@@ -93,6 +93,7 @@ namespace Bloom
 							{
 								if(!(error is HelpVerbRequestedError))
 								{
+									Debug.WriteLine(error.ToString());
 									Console.WriteLine(error.ToString());
 									code = 1;
 								}
