@@ -585,7 +585,7 @@ namespace BloomTests.Publish
 		public void FindFontsUsedInCss_FindsSimpleFontFamily()
 		{
 			var results = new HashSet<string>();
-			HtmlDom.FindFontsUsedInCss("body {font-family:Arial}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family:Arial}", results, true);
 			Assert.That(results, Has.Count.EqualTo(1));
 			Assert.That(results.Contains("Arial"));
 		}
@@ -594,22 +594,35 @@ namespace BloomTests.Publish
 		public void FindFontsUsedInCss_FindsQuotedFontFamily()
 		{
 			var results = new HashSet<string>();
-			HtmlDom.FindFontsUsedInCss("body {font-family:'Times New Roman'}", results);
-			HtmlDom.FindFontsUsedInCss("body {font-family:\"Andika New Basic\"}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family:'Times New Roman'}", results, true);
+			HtmlDom.FindFontsUsedInCss("body {font-family:\"Andika New Basic\"}", results, true);
 			Assert.That(results, Has.Count.EqualTo(2));
 			Assert.That(results.Contains("Times New Roman"));
 			Assert.That(results.Contains("Andika New Basic"));
 		}
 
 		[Test]
-		public void FindFontsUsedInCss_FindsMultipleFontFamilies()
+		public void FindFontsUsedInCss_IncludeFallbackFontsTrue_FindsMultipleFontFamilies()
 		{
 			var results = new HashSet<string>();
-			HtmlDom.FindFontsUsedInCss("body {font-family: 'Times New Roman', Arial,\"Andika New Basic\";}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family: 'Times New Roman', Arial,\"Andika New Basic\";}", results, true);
 			Assert.That(results, Has.Count.EqualTo(3));
 			Assert.That(results.Contains("Times New Roman"));
 			Assert.That(results.Contains("Andika New Basic"));
 			Assert.That(results.Contains("Arial"));
+		}
+
+		[Test]
+		public void FindFontsUsedInCss_IncludeFallbackFontsFalse_FindsFirstFontInEachList()
+		{
+			var results = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss("body {font-family: 'Times New Roman', Arial,\"Andika New Basic\";} " +
+			                           "div {font-family: Font1, \"Font2\";} " +
+			                           "p {font-family: \"Font3\";}", results, false);
+			Assert.That(results, Has.Count.EqualTo(3));
+			Assert.That(results.Contains("Times New Roman"));
+			Assert.That(results.Contains("Font1"));
+			Assert.That(results.Contains("Font3"));
 		}
 
 		[TestCase("A5Portrait", 297.0 / 2.0)]

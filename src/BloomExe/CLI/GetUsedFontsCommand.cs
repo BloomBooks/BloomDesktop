@@ -1,17 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using Bloom.Book;
-using Bloom.Collection;
 using Bloom.Publish;
 using CommandLine;
-using SIL.IO;
-using SIL.Progress;
 
 namespace Bloom.CLI
 {
@@ -60,7 +52,7 @@ namespace Bloom.CLI
 
 			//book.BringBookUpToDate(new NullProgress());
 
-			var fonts = EpubMaker.GetFontsUsed(options.BookPath).ToList();
+			var fonts = EpubMaker.GetFontsUsed(options.BookPath, false).ToList();
 			fonts.Sort();
 			fonts.Remove("inherit"); // not a real font!
 
