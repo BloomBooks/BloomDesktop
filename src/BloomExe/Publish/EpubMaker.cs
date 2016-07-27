@@ -13,6 +13,9 @@ using System.Xml.Linq;
 using Bloom.Book;
 using Bloom.Edit;
 using BloomTemp;
+#if !__MonoCS__
+using NAudio.Wave;
+#endif
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -59,6 +62,8 @@ namespace Bloom.Publish
 		Dictionary<string, string> _mapChangedFileNames = new Dictionary<string, string>();
 		// All the things (files) we need to list in the manifest
 		private List<string> _manifestItems;
+		// Duration of each item of type application/smil+xml (key is ID of item)
+		Dictionary<string, TimeSpan> _pageDurations = new Dictionary<string, TimeSpan>(); 
 		// The things we need to list in the 'spine'...defines the normal reading order of the book
 		private List<string> _spineItems;
 		// We track the first page that is actually content and link to it in our rather trivial table of contents.
@@ -218,12 +223,15 @@ namespace Bloom.Publish
 
 			var manifestElt = new XElement(opf + "manifest");
 			rootElt.Add(manifestElt);
+			TimeSpan bookDuration = new TimeSpan();
 			foreach (var item in _manifestItems)
 			{
+				var mediaType = GetMediaType(item);
+				var idOfFile = GetIdOfFile(item);
 				var itemElt = new XElement(opf + "item",
-					new XAttribute("id", GetIdOfFile(item)),
+					new XAttribute("id", idOfFile),
 					new XAttribute("href", item),
-					new XAttribute("media-type", GetMediaType(item)));
+					new XAttribute("media-type", mediaType));
 				// This isn't very useful but satisfies a validator requirement until we think of
 				// something better.
 				if (item == _navFileName)
@@ -237,6 +245,23 @@ namespace Bloom.Publish
 						itemElt.SetAttributeValue("media-overlay", GetIdOfFile(overlay));
 				}
 				manifestElt.Add(itemElt);
+				if (mediaType== "application/smil+xml")
+				{
+					// need a metadata item giving duration (possibly only to satisfy Pagina validation,
+					// but that IS an objective).
+					TimeSpan itemDuration = _pageDurations[idOfFile];
+					bookDuration += itemDuration;
+					metadataElt.Add(new XElement(opf + "meta",
+						new XAttribute("property", "media:duration"),
+						new XAttribute("refines", "#"+idOfFile),
+						new XText(itemDuration.ToString())));
+				}
+			}
+			if (bookDuration.TotalMilliseconds > 0)
+			{
+				metadataElt.Add(new XElement(opf + "meta",
+					new XAttribute("property","media:duration"),
+					new XText(bookDuration.ToString())));
 			}
 			MakeSpine(opf, rootElt, manifestPath);
 		}
@@ -341,10 +366,45 @@ namespace Bloom.Publish
 				new XElement(smil + "body",
 					seq));
 			int index = 1;
+			TimeSpan pageDuration = new TimeSpan();
 			foreach (var span in spansWithAudio)
 			{
 				var spanId = span.Attributes["id"].Value;
 				var path = GetOrCreateCompressedAudioIfWavExists(spanId);
+				var dataDurationAttr = span.Attributes["data-duration"];
+				if (dataDurationAttr != null)
+				{
+					pageDuration += TimeSpan.FromSeconds(Double.Parse(dataDurationAttr.Value));
+				}
+				else
+				{
+					//var durationSeconds = TagLib.File.Create(path).Properties.Duration.TotalSeconds;
+					//duration += new TimeSpan((long)(durationSeconds * 1.0e7)); // argument is in ticks (100ns)
+					// Haven't found a good way to get duration from MP3 without adding more windows-specific
+					// libraries. So for now we'll figure it from the wav if we have it. If not we do a very
+					// crude estimate from file size. Hopefully good enough for BSV animation.
+					var wavPath = Path.ChangeExtension(path, "wav");
+					if (File.Exists(wavPath))
+					{
+#if __MonoCS__
+						pageDuration += new TimeSpan(new FileInfo(path).Length);	// TODO: this needs to be fixed for Linux/Mono
+#else
+						WaveFileReader wf = new WaveFileReader(wavPath);
+						pageDuration += wf.TotalTime;
+#endif
+					}
+					else
+					{
+						NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+							string.Format(
+								"Bloom could not find one of the expected audio files for this book, {0}, nor a precomputed duration. Bloom can only make a very rough estimate of the length of the mp3 file."));
+						// Crude estimate. In one sample, a 61K mp3 is 7s long.
+						// So, multiply by 7 and divide by 61K to get seconds.
+						// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
+						// hence the 10000000.
+						pageDuration += new TimeSpan(new FileInfo(path).Length*7*10000000/61000);
+					}
+				}
 				var epubPath = CopyFileToEpub(path);
 				seq.Add(new XElement(smil+"par",
 					new XAttribute("id", "s" + index++),
@@ -356,6 +416,7 @@ namespace Bloom.Publish
 							// are at the top level in the ePUB. Makes one less complication for readers.
 							new XAttribute("src", Path.GetFileName(epubPath)))));
 			}
+			_pageDurations[GetIdOfFile(overlayName)] = pageDuration;
 			var overlayPath = Path.Combine(_contentFolder, overlayName);
 			using (var writer = XmlWriter.Create(overlayPath))
 				root.WriteTo(writer);
@@ -760,6 +821,11 @@ namespace Bloom.Publish
 				if (HasClass(elt, "pageDescription"))
 					elt.ParentNode.RemoveChild(elt);
 			}
+			// Our recordingmd5 attribute is not allowed
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//span[@recordingmd5]").Cast<XmlElement>())
+			{
+				elt.RemoveAttribute("recordingmd5");
+			}
 			if (isXMatter)
 				RemoveTempIds(pageElt); // don't need temporary IDs any more.
 		}
@@ -1043,7 +1109,7 @@ namespace Bloom.Publish
 			return output;
 		}
 
-		private object GetMediaType(string item)
+		private string GetMediaType(string item)
 		{
 			switch (Path.GetExtension(item).Substring(1))
 			{
@@ -1061,7 +1127,13 @@ namespace Bloom.Publish
 					return "application/font-woff"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
 				case "ttf":
 				case "otf":
-					return "application/font-sfnt"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
+					// According to http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts, the proper
+					// mime type for ttf fonts is now application/font-sfnt. However, this fails the Pagina Epubcheck
+					// for epub 3.0.1, since the proper mime type for ttf was not put into the epub standard until 3.1.
+					// See https://github.com/idpf/epub-revision/issues/443 and http://www.idpf.org/epub/31/spec/epub-changes.html#sec-epub31-cmt.
+					// Since there are no plans to deprecate application/vnd.ms-opentype and it's unlikely to break
+					// any reader (unlikely the reader even uses the type field), we're just sticking with that.
+					return "application/vnd.ms-opentype"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
 				case "smil":
 					return "application/smil+xml";
 				case "mp4":

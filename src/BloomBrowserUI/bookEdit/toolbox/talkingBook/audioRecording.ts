@@ -65,7 +65,8 @@ export default class AudioRecording {
     private levelCanvasHeight: number = 80;
     private hiddenSourceBubbles: JQuery;
     private playingAll: boolean; // true during listen.
-    private idOfCurrentSentence : string;
+    private idOfCurrentSentence: string;
+    private awaitingNewRecording: boolean;
     
     
     public initializeTalkingBookTool() {
@@ -80,16 +81,24 @@ export default class AudioRecording {
         $('#audio-listen').off().click(e => this.listen());
         $('#audio-clear').off().click(e => this.clearRecording());
         $('#player').off();
+        $('#player').attr('preload', 'auto'); // speeds playback, ensures we get the durationchange event
         $('#player').bind('error', e => {
             if (this.playingAll) {
                 // during a "listen", we walk through each segment, but some (or all) may not have audio
                 this.playEnded();//move to the next one
-            } else {
-                toastr.error("There was an error playing the sentence.");
+            } else if (this.awaitingNewRecording) {
+                // file may not have been created yet. Try again.
+                this.updatePlayerStatus();
             }
-        });
+            // A previous version did a toast here. However, the auto-preload which we set up to help
+            // us update durations causes an error to be raised for all nonexistent audio files; it
+            // may just be because we haven't recorded it yet. A toast for that is excessive.
+            // We could possibly arrange for a toast if we get an error while actually playing,
+            // but it seems very unlikely.
+          });
 
         $('#player').bind('ended', e => this.playEnded());
+        $('#player').bind('durationchange', e=>this.durationChanged());
         $('#audio-input-dev').off().click(e => this.selectInputDevice());
         
         toastr.options.positionClass = 'toast-toolbox-bottom';
@@ -233,6 +242,7 @@ export default class AudioRecording {
         if (!this.recording) return; // will trigger if the button wasn't enabled, so the recording never started
         
         this.recording = false;
+        this.awaitingNewRecording = true;
         
         //this.updatePlayerStatus();
 
@@ -251,6 +261,15 @@ export default class AudioRecording {
                 console.log(error.statusText);
                 this.updatePlayerStatus();
         });
+    }
+
+    // Called when we get a duration for a current audio element. Mainly we want it after recording a new one.
+    // However, for older documents that don't have this, just playing them all will add the new info...
+    // or even just stepping through with Next.
+    private durationChanged(): void {
+      this.awaitingNewRecording = false;
+      var current = this.getPage().find('.ui-audioCurrent');
+      current.attr('data-duration', (<HTMLAudioElement>$('#player').get(0)).duration);
     }
 
     private playCurrent(): void {
