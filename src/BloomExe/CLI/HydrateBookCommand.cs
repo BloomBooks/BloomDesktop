@@ -5,6 +5,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using CommandLine;
+using SIL.IO;
 using SIL.Progress;
 
 namespace Bloom.CLI
