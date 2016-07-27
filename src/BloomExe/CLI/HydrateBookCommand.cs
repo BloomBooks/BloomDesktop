@@ -5,7 +5,6 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using CommandLine;
-using SIL.IO;
 using SIL.Progress;
 
 namespace Bloom.CLI
@@ -22,9 +21,9 @@ namespace Bloom.CLI
 	{
 		public static int Handle(HydrateParameters options)
 		{
-			if(!Directory.Exists(options.Path))
+			if (!Directory.Exists(options.Path))
 			{
-				if(options.Path.Contains(".htm"))
+				if (options.Path.Contains(".htm"))
 				{
 					Debug.WriteLine("Supply only the directory, not the path to the file.");
 					Console.Error.WriteLine("Supply only the directory, not the path to the file.");
@@ -38,22 +37,20 @@ namespace Bloom.CLI
 			}
 			Console.WriteLine("Starting Hydrating.");
 
-			var layout = new Layout()
+			var layout = new Layout
 			{
 				SizeAndOrientation = SizeAndOrientation.FromString(options.SizeAndOrientation)
 			};
 
-			var collectionSettings = new CollectionSettings()
+			var collectionSettings = new CollectionSettings
 			{
 				XMatterPackName = "Video",
 				Language1Iso639Code = options.VernacularIsoCode,
-				Language2Iso639Code = "",
-				Language3Iso639Code = ""
-				//			collectionSettings.Language2Iso639Code = options.NationalLanguage1IsoCode;
-				//			collectionSettings.Language3Iso639Code = options.NationalLanguage2IsoCode;
+				Language2Iso639Code = options.NationalLanguage1IsoCode,
+				Language3Iso639Code = options.NationalLanguage2IsoCode
 			};
 
-			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] {BloomFileLocator.GetInstalledXMatterDirectory()});
+			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() });
 			var locator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(),
 				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 
@@ -61,7 +58,7 @@ namespace Bloom.CLI
 			var book = new Book.Book(bookInfo, new BookStorage(options.Path, locator, new BookRenamedEvent(), collectionSettings),
 				null, collectionSettings, null, null, new BookRefreshEvent());
 
-			if(null == book.OurHtmlDom.SelectSingleNodeHonoringDefaultNS("//script[contains(text(),'bloomPlayer.js')]"))
+			if (null == book.OurHtmlDom.SelectSingleNodeHonoringDefaultNS("//script[contains(text(),'bloomPlayer.js')]"))
 			{
 				var element = book.OurHtmlDom.Head.AppendChild(book.OurHtmlDom.RawDom.CreateElement("script")) as XmlElement;
 				element.IsEmpty = false;
@@ -98,6 +95,8 @@ namespace Bloom.CLI
 public class HydrateParameters
 {
 	private string _sizeAndOrientation;
+	private string _nationalLanguage1IsoCode;
+	private string _nationalLanguage2IsoCode;
 
 	[Option("bookpath", HelpText = "path to the book", Required = true)]
 	public string Path { get; set; }
@@ -110,15 +109,24 @@ public class HydrateParameters
 	// might not be the one that was "l1" when the book was uploaded. Using these parameters, the program making
 	// him an app can specify that this language should be the l1.
 
-	[Option("VernacularIsoCode", HelpText = "iso code of primary language", Required = true)]
+	[Option("vernacularisocode", HelpText = "iso code of primary language", Required = true)]
 	public string VernacularIsoCode { get; set; }
 
-	[Option("NationalLanguage1IsoCode", HelpText = "iso code of secondary language", Default="", Required = false)]
-		public string NationalLanguage1IsoCode { get; set; }
+	[Option("nationallanguage1isocode", HelpText = "iso code of secondary language", Default = "", Required = false)]
+	public string NationalLanguage1IsoCode
+	{
+		//"Default" is not working
+		get { return _nationalLanguage1IsoCode ?? string.Empty; }
+		set { _nationalLanguage1IsoCode = value; }
+	}
 
-	[Option("NationalLanguage2IsoCode", HelpText = "iso code of tertiary language", Default = "", Required = false)]
-		public string NationalLanguage2IsoCode { get; set; }
-	
+	[Option("nationallanguage2isocode", HelpText = "iso code of tertiary language", Default = "", Required = false)]
+	public string NationalLanguage2IsoCode
+	{
+		//"Default" is not working
+		get { return _nationalLanguage2IsoCode ?? string.Empty; }
+		set { _nationalLanguage2IsoCode = value; }
+	}
 
 	[Option("preset", HelpText = "alternative to specifying layout and xmatter. Currently only supported value is 'app'", Required = true /*will be false when we implement the indivdual options below*/)]
 	public string Preset { get; set; }
@@ -129,7 +137,7 @@ public class HydrateParameters
 	{
 		get
 		{
-			if(string.IsNullOrEmpty(_sizeAndOrientation))
+			if (string.IsNullOrEmpty(_sizeAndOrientation))
 			{
 				return "Device16x9Landscape";
 			}
