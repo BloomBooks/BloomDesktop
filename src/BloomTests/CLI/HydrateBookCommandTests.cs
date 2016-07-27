@@ -206,5 +206,35 @@ namespace BloomTests.CLI
 		{
 			//TODO
 		}
+
+		[Test]
+		public void HasNoBloomPlayerFile_AddsOne()
+		{
+			var bloomPlayerPath = Path.Combine(_eventualHtmlPath, "../bloomPlayer.js");
+			Assert.False(File.Exists(bloomPlayerPath));
+			HydrateBookCommand.Handle(new HydrateParameters
+			{
+				Path = _bookFolder.FolderPath,
+				Preset = "app",
+				VernacularIsoCode = "en"
+			});
+			Assert.True(File.Exists(bloomPlayerPath));
+		}
+
+		[Test]
+		public void AlreadyHasBloomPlayerFile_ReplacesIt()
+		{
+			var bloomPlayerPath = Path.Combine(_eventualHtmlPath, "../bloomPlayer.js");
+			File.WriteAllText(bloomPlayerPath, "Some initial text in the file");
+			Assert.True(File.Exists(bloomPlayerPath));
+			Assert.True(new FileInfo(bloomPlayerPath).Length < 100);
+			HydrateBookCommand.Handle(new HydrateParameters
+			{
+				Path = _bookFolder.FolderPath,
+				Preset = "app",
+				VernacularIsoCode = "en"
+			});
+			Assert.True(new FileInfo(bloomPlayerPath).Length > 100);
+		}
 	}
 }

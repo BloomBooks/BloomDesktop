@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -73,6 +69,8 @@ namespace Bloom.CLI
 				element.SetAttribute("src", "bloomPlayer.js");
 			}
 
+			AddRequisiteJsFiles(options.Path);
+
 			//we might change this later, or make it optional, but for now, this will prevent surprises to processes
 			//running this CLI... the folder name won't change out from under it.
 			book.LockDownTheFileAndFolderName = true;
@@ -82,6 +80,13 @@ namespace Bloom.CLI
 			Console.WriteLine("Finished Hydrating.");
 			Debug.WriteLine("Finished Hydrating.");
 			return 0;
+		}
+
+		private static void AddRequisiteJsFiles(string path)
+		{
+			const string bloomPlayerFileName = "bloomPlayer.js";
+			var bloomLibraryJsPath = FileLocator.GetFileDistributedWithApplication(bloomPlayerFileName);
+			File.Copy(bloomLibraryJsPath, Path.Combine(path, bloomPlayerFileName), true);
 		}
 	}
 }
