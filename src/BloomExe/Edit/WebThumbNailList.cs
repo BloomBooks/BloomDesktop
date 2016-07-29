@@ -301,8 +301,12 @@ namespace Bloom.Edit
 			{
 				foreach (XmlElement imgNode in imgNodes)
 				{
-					var url = HtmlDom.GetImageElementUrl(imgNode).UrlEncoded + "?thumbnail=1";
-					HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(url));
+					var filename = HtmlDom.GetImageElementUrl(imgNode).UrlEncoded;
+					if(!string.IsNullOrWhiteSpace(filename))
+					{
+						var url = filename + "?thumbnail=1";
+						HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(url));
+					}
 				}
 			}
 		}
