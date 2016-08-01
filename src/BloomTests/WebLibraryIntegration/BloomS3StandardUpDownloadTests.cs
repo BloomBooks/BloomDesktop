@@ -15,7 +15,7 @@ namespace BloomTests.WebLibraryIntegration
 		private string _srcCollectionPath;
 		private string _destCollectionPath;
 		private const string BookName = "Test Book";
-		private readonly string[] ExcludedFiles = {"thumbs.db", "book.userprefs", "extra.pdf", "preview.pdf"};
+		private readonly string[] ExcludedFiles = {"thumbs.db", "book.userprefs", "extra.pdf", "preview.pdf", "my.bloompack"};
 		private string _storageKeyOfBookFolder;
 
 		[TestFixtureSetUp]
@@ -71,6 +71,7 @@ namespace BloomTests.WebLibraryIntegration
 			File.WriteAllText(Path.Combine(bookFolder, "extra.pdf"), @"unwanted pdf file");
 			File.WriteAllText(Path.Combine(bookFolder, "thumbs.db"), @"test thumbs.db file");
 			File.WriteAllText(Path.Combine(bookFolder, "book.userPrefs"), @"test book.userPrefs file");
+			File.WriteAllText(Path.Combine(bookFolder, "my.bloompack"), @"test bloompack file");
 			return bookFolder;
 		}
 
@@ -115,7 +116,7 @@ namespace BloomTests.WebLibraryIntegration
 			foreach (var file in ExcludedFiles)
 			{
 				var notexpectedDestPath = Path.Combine(_destCollectionPath, BookName, file);
-				Assert.IsFalse(File.Exists(notexpectedDestPath));
+				Assert.IsFalse(File.Exists(notexpectedDestPath), notexpectedDestPath);
 			}
 		}
 	}
