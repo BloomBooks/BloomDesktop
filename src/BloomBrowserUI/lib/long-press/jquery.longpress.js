@@ -127,7 +127,7 @@ require("./jquery.mousewheel.js");
 
     function makeShortcuts(skipKey){
         shortcuts=[];
-        //while numbers are the most convenient, we are using them because
+        //while numbers are the most convenient, we are not using them because
         //when the user is trying to get a capital letter, the shift key is held
         //down and numbers are converted to symbols. I don' know of a way to convert
         //those symbols back to numbers in a way that works across different keyboards
@@ -136,14 +136,15 @@ require("./jquery.mousewheel.js");
         // }
         for(var i = 0; i<26;i++){
             //the character used to invoke longPress can't be pressed again as a shortcut,
-            //same for the shifted version of the character. 
+            //same for the shifted version of the character.
             var key = String.fromCharCode(97+i);
             if(key != skipKey && key != skipKey.toLowerCase()){
-                shortcuts.push(key);//97 is charcode for 'a';
+                //we use uppercase because that's what you see on the keys of the physical keyboard
+                shortcuts.push(key.toUpperCase());//97 is charcode for 'a';
             }
         }
     }
-            
+
     function onKeyDown(e) {
         /* we had to disable thes because ckeditor was seeing them and messing things up. Hopefully in the future it can be reinstated:
         // Arrow key with popup visible
@@ -158,9 +159,9 @@ require("./jquery.mousewheel.js");
         }
         */
 
-        //once the panel is showing, let the user type any of the shortcuts to select the corresponding character 
+        //once the panel is showing, let the user type any of the shortcuts to select the corresponding character
         if(longpressPopupVisible && activationKey != e.key){
-            var unshiftedKey = e.key.toLowerCase(); 
+            var unshiftedKey = e.key.toUpperCase();
             var indexOfSelectedCharacter = shortcuts.indexOf(unshiftedKey);
             if(indexOfSelectedCharacter >= 0) {
                 e.preventDefault();
