@@ -755,6 +755,28 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@data-book='coverImage' and @data-creator='joe']",1);
 		}
 
+		[Test]
+		public void BringBookUpToDate_LanguagesOfBookUpdated()
+		{
+			_bookDom = new HtmlDom(@"
+				<html>
+					<head>
+						<meta name='xmatter' content='Traditional'/>
+					</head>
+					<body>
+						<div id='bloomDataDiv'>
+							<div data-book='languagesOfBook' lang='*'>
+								English
+							</div>
+						</div>
+					</body>
+				</html>");
+			var book = CreateBook();
+			book.CollectionSettings.Language1Name = "My Language Name";
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='languagesOfBook' and text()='My Language Name' and not(@lang='en')]", 3);
+		}
+
 		private TempFile MakeTempImage(string name)
 		{
 			using (var x = new Bitmap(100, 100))
