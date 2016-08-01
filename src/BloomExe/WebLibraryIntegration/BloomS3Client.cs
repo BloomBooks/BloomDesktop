@@ -196,7 +196,8 @@ namespace Bloom.WebLibraryIntegration
 			fileSystemInfo.Delete();
 		}
 
-		private readonly string[] excludedFileNames = { "thumbs.db", "book.userprefs" }; // these files (if encountered) won't be uploaded
+		//Note: there is a similar list for BloomPacks, but it is not identical, so don't just copy/paste
+		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs" };
 		private AmazonS3Config _s3Config;
 		private string _previousBucketName;
 
@@ -230,7 +231,7 @@ namespace Bloom.WebLibraryIntegration
 				foreach(string file in filesToUpload)
 				{
 					var fileName = Path.GetFileName(file);
-					if(excludedFileNames.Contains(fileName.ToLowerInvariant()))
+					if(excludedFileExtensionsLowerCase.Contains(Path.GetExtension(fileName.ToLowerInvariant())))
 						continue; // BL-2246: skip uploading this one
 
 					var request = new TransferUtilityUploadRequest()
