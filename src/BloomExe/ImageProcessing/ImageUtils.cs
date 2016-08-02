@@ -58,6 +58,9 @@ namespace Bloom.ImageProcessing
 			try
 			{
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
+				if (!isEncodedAsJpeg)
+					imageInfo.Image = RemoveTransparency(imageInfo.Image);
+
 				var shouldConvertToJpeg = !isEncodedAsJpeg && ShouldChangeFormatToJpeg(imageInfo.Image);
 				string imageFileName;
 				if (!shouldConvertToJpeg && isSameFile)
@@ -65,8 +68,8 @@ namespace Bloom.ImageProcessing
 				else
 					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
 
-				if(!Directory.Exists((bookFolderPath)))
-					throw new DirectoryNotFoundException(bookFolderPath+" does not exist");
+				if (!Directory.Exists(bookFolderPath))
+					throw new DirectoryNotFoundException(bookFolderPath + " does not exist");
 
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 				if (shouldConvertToJpeg)
@@ -203,16 +206,29 @@ namespace Bloom.ImageProcessing
 		private static void RemoveTransparency(Image original, string path, IProgress progress)
 		{
 			progress.WriteStatus("RemovingTransparency from image: " + Path.GetFileName(path));
-			using(var b = new Bitmap(original.Width, original.Height))
+			using (var b = new Bitmap(original.Width, original.Height))
 			{
-				b.SetResolution(original.HorizontalResolution, original.VerticalResolution);
-
-				using(Graphics g = Graphics.FromImage(b))
-				{
-					g.Clear(Color.White);
-					g.DrawImageUnscaled(original, 0, 0);
-				}
+				DrawImageWithWhiteBackground(original, b);
 				b.Save(path, ImageFormat.Png);
+			}
+		}
+
+		private static Image RemoveTransparency(Image image)
+		{
+			var b = new Bitmap(image.Width, image.Height);
+			DrawImageWithWhiteBackground(image, b);
+			image.Dispose();
+			return b;
+		}
+
+		private static void DrawImageWithWhiteBackground(Image source, Bitmap target)
+		{
+			target.SetResolution(source.HorizontalResolution, source.VerticalResolution);
+
+			using (Graphics g = Graphics.FromImage(target))
+			{
+				g.Clear(Color.White);
+				g.DrawImageUnscaled(source, 0, 0);
 			}
 		}
 
@@ -261,10 +277,10 @@ namespace Bloom.ImageProcessing
 			var jpgEncoder = ImageCodecInfo.GetImageDecoders().First(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
 			var encoder = Encoder.Quality;
 
-			//nb: there are cases (notibly http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
+			//nb: there are cases (notably http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
 
-			using(var tempPath = new TempFile())
-			using(var safetyImage = new Bitmap(image))
+			using (var tempPath = new TempFile())
+			using (var safetyImage = new Bitmap(image))
 			{
 				using(var parameters = new EncoderParameters(1))
 				{
