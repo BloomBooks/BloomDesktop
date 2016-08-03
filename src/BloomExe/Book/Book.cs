@@ -1968,14 +1968,16 @@ namespace Bloom.Book
 					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
 					currentLastContentPage = importedPage;
 
-					foreach(XmlElement img in importedPage.SafeSelectNodes("descendant::img"))
+					foreach(XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(importedPage))
 					{
 						var bookFolderName = Path.GetFileName(bookInfo.FolderPath);
-						var pathRelativeToFolioFolder = ".../" + bookFolderName + "/" + img.GetAttribute("src");
+						var path = HtmlDom.GetImageElementUrl(img);
+						var pathRelativeToFolioFolder = ".../" + bookFolderName + "/" + path.NotEncoded;
 						//NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
 						//So we are using UrlPathEncode
-						var fullPathInLinkFormat = HttpUtility.UrlPathEncode(pathRelativeToFolioFolder);
-						img.SetAttribute("src", fullPathInLinkFormat);
+
+						HtmlDom.SetImageElementUrl(new ElementProxy(img), UrlPathString.CreateFromUnencodedString(pathRelativeToFolioFolder));
+
 					}
 				}
 			}

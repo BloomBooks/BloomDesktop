@@ -474,9 +474,9 @@ namespace Bloom.Book
 
 			//check for missing images
 
-			foreach (XmlElement imgNode in Dom.SafeSelectNodes("//img"))
+			foreach (XmlElement imgNode in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.Body))
 			{
-				var imageFileName = imgNode.GetAttribute("src");
+				var imageFileName = HtmlDom.GetImageElementUrl(imgNode).PathOnly.NotEncoded;
 				if (string.IsNullOrEmpty(imageFileName))
 				{
 					var classNames=imgNode.GetAttribute("class");
