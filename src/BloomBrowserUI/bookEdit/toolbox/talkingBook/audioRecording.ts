@@ -891,7 +891,9 @@ export default class AudioRecording {
         }
                 
         //set listen button based on whether we have an audio at all for this page
-        axios.get("/bloom/api/audio/enableListenButton").then(response=>{
+        var ids = [];
+        this.getAudioElements().each(function() { ids.push(this.id); });
+        axios.get("/bloom/api/audio/enableListenButton?ids=" + ids).then(response=>{
             if(response.statusText == "OK")
                 this.setStatus('listen', Status.Enabled);
         });
