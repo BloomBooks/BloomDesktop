@@ -14,6 +14,23 @@ DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang="VERNACULAR"])
 }
 */
 
+.customPage .bloom-translationGroup {
+	display: flex;
+	flex-direction: column;
+}
+.customPage .bloom-translationGroup .bloom-content1 {
+	display: block; /* we don't want to inherit flex from parent */
+	order: 1;
+}
+.customPage .bloom-translationGroup .bloom-content2 {
+	display: block; /* we don't want to inherit flex from parent */
+	order: 2;
+}
+.customPage .bloom-translationGroup .bloom-content3 {
+	display: block; /* we don't want to inherit flex from parent */
+	order: 3;
+}
+
 /*tems that are contained by  a bloom-translationGroup are made visible according to the monolingual/bilingual/trilingual settings*/
 /* NB: we must explicitly specify DIV and Textarea as the final element, else <br> in a div will be marked as display:none, leaving us with just one line in the div */
 .bloom-monolingual *.bloom-translationGroup DIV.bloom-editable:not(.bloom-content1), .bloom-monolingual *.bloom-translationGroup TEXTAREA:not(.bloom-content1)
