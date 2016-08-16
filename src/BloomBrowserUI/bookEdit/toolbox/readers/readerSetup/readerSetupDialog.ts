@@ -19,7 +19,7 @@ function getDialogHtml(title) {
     var dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($(parentDocument()).find("body"));
 
     var html = '<iframe id="settings_frame" src="/bloom/bookEdit/toolbox/readers/readerSetup/ReaderSetup.html" scrolling="no" ' +
-        'style="width: 100%; height: 100%; border-width: 0; margin: 0" ' +
+        'style="width: 100%; height: 100%; border-width: 0; margin: 0; position: absolute" ' +
         'onload="document.getElementById(\'toolbox\').contentWindow.FrameExports.initializeReaderSetupDialog()"></iframe>';
 
     dialogContents.append(html);
