@@ -1530,7 +1530,7 @@
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.1 Problem">
-      <note>This label indicates a page with one arithemetic problem on it.</note>
+      <note>This label indicates a page with one arithmetic problem on it.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>1 Problem</seg>
@@ -1603,7 +1603,7 @@
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.2 Problems">
-      <note>This label indicates a page with two arithemetic problems on it.</note>
+      <note>This label indicates a page with two arithmetic problems on it.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>2 Problems</seg>
@@ -1628,7 +1628,7 @@
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.3 Problems">
-      <note>This label indicates a page with three arithemetic problems on it.</note>
+      <note>This label indicates a page with three arithmetic problems on it.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>3 Problems</seg>
@@ -1641,7 +1641,7 @@
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.4 Problems">
-      <note>This label indicates a page with four arithemetic problems on it.</note>
+      <note>This label indicates a page with four arithmetic problems on it.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>4 Problems</seg>
