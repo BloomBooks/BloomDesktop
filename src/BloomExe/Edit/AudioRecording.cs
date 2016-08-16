@@ -93,10 +93,19 @@ namespace Bloom.Edit
 			Debug.Assert(ServerBase.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
 		}
 
-		// does this page have any audio at all? Used enable the Listen page.
+		// Does this page have any audio at all? Used to enable 'Listen to the whole page'.
 		private void HandleEnableListenButton(ApiRequest request)
 		{
-			request.Succeeded();// enhance: determine if there is any audio for this page
+			var ids = request.RequiredParam("ids");
+			foreach (var id in ids.Split(','))
+			{
+				if (File.Exists(GetPathToSegment(id)))
+				{
+					request.Succeeded();
+					return;
+				}
+			}
+			request.Failed("no audio");
 		}
 
 		/// <summary>
