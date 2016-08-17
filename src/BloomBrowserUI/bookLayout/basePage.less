@@ -419,8 +419,9 @@ h2 {
 	font-size: 1.2em;
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/
+/* If this is not important, it can be overridden by display:flex in languageDisplayTemplate.css (BL-3555, BL-3711) */
 .box-header-off{
-	display: none;
+	display: none !important;
 }
 
 // page-specific stylesheets can call this with (false) to turn it off
