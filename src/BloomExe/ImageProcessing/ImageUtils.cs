@@ -49,6 +49,8 @@ namespace Bloom.ImageProcessing
 		/// <summary>
 		/// Makes the image a png if it's not a jpg and saves in the book's folder.
 		/// If the image has a filename, replaces any file with the same name.
+		/// 
+		/// WARNING: imageInfo.Image could be replaced (causing the original to be disposed)
 		/// </summary>
 		/// <returns>The name of the file, now in the book's folder.</returns>
 		public static string ProcessAndSaveImageIntoFolder(PalasoImage imageInfo, string bookFolderPath, bool isSameFile)
@@ -58,6 +60,13 @@ namespace Bloom.ImageProcessing
 			try
 			{
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
+				if (!isEncodedAsJpeg)
+				{
+					// The original imageInfo.Image is disposed of in the setter.
+					// As of now (9/2016) this is safe because there are no other references to it higher in the stack.
+					imageInfo.Image = CreateImageWithoutTransparentBackground(imageInfo.Image);
+				}
+
 				var shouldConvertToJpeg = !isEncodedAsJpeg && ShouldChangeFormatToJpeg(imageInfo.Image);
 				string imageFileName;
 				if (!shouldConvertToJpeg && isSameFile)
@@ -65,8 +74,8 @@ namespace Bloom.ImageProcessing
 				else
 					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
 
-				if(!Directory.Exists((bookFolderPath)))
-					throw new DirectoryNotFoundException(bookFolderPath+" does not exist");
+				if (!Directory.Exists(bookFolderPath))
+					throw new DirectoryNotFoundException(bookFolderPath + " does not exist");
 
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 				if (shouldConvertToJpeg)
@@ -203,16 +212,28 @@ namespace Bloom.ImageProcessing
 		private static void RemoveTransparency(Image original, string path, IProgress progress)
 		{
 			progress.WriteStatus("RemovingTransparency from image: " + Path.GetFileName(path));
-			using(var b = new Bitmap(original.Width, original.Height))
+			using (var b = new Bitmap(original.Width, original.Height))
 			{
-				b.SetResolution(original.HorizontalResolution, original.VerticalResolution);
-
-				using(Graphics g = Graphics.FromImage(b))
-				{
-					g.Clear(Color.White);
-					g.DrawImageUnscaled(original, 0, 0);
-				}
+				DrawImageWithWhiteBackground(original, b);
 				b.Save(path, ImageFormat.Png);
+			}
+		}
+
+		private static Image CreateImageWithoutTransparentBackground(Image image)
+		{
+			var b = new Bitmap(image.Width, image.Height);
+			DrawImageWithWhiteBackground(image, b);
+			return b;
+		}
+
+		private static void DrawImageWithWhiteBackground(Image source, Bitmap target)
+		{
+			target.SetResolution(source.HorizontalResolution, source.VerticalResolution);
+
+			using (Graphics g = Graphics.FromImage(target))
+			{
+				g.Clear(Color.White);
+				g.DrawImageUnscaled(source, 0, 0);
 			}
 		}
 
@@ -261,10 +282,10 @@ namespace Bloom.ImageProcessing
 			var jpgEncoder = ImageCodecInfo.GetImageDecoders().First(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
 			var encoder = Encoder.Quality;
 
-			//nb: there are cases (notibly http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
+			//nb: there are cases (notably http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
 
-			using(var tempPath = new TempFile())
-			using(var safetyImage = new Bitmap(image))
+			using (var tempPath = new TempFile())
+			using (var safetyImage = new Bitmap(image))
 			{
 				using(var parameters = new EncoderParameters(1))
 				{
