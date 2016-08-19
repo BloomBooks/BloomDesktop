@@ -83,12 +83,23 @@ namespace Bloom.Api
 					}
 					else
 					{
-						//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
-						// And return the English string, which is what we would do the next time anyway.  (BL-3374)
-						LocalizationManager.GetDynamicString("Bloom", id, englishText);
-						var modal = ApplicationUpdateSupport.ChannelName.StartsWith("Developer/") ? ModalIf.All : ModalIf.None;
-						var longMsg = String.Format("**I18NHandler: Added missing translatable string (\"{0}\")", englishText);
-						NonFatalProblem.Report(modal, PassiveIf.Alpha, "adding translatable string", longMsg);
+						// it's ok if we don't have a translation, but if the string isn't even in the list of things that need translating,
+						// then we want to remind the developer to add it to the english tmx file.
+						if(!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
+						{
+							var modal = ApplicationUpdateSupport.ChannelName.StartsWith("Developer/") ? ModalIf.All : ModalIf.None;
+							var longMsg =
+								String.Format(
+									"Dear Developer: Please add this dynamic string to the english.tmx file: Id=\"{0}\" English =\"{1}\"", id,
+									englishText);
+							NonFatalProblem.Report(modal, PassiveIf.Alpha, longMsg);
+						}
+						else // we *could* do this even if the above error is detected, but it just masks the problem then. So let's not.
+						{
+							//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
+							// And return the English string, which is what we would do the next time anyway.  (BL-3374)
+							LocalizationManager.GetDynamicString("Bloom", id, englishText);
+						}
 						info.ContentType = "text/plain";
 						info.WriteCompleteOutput(englishText);
 						return true;
