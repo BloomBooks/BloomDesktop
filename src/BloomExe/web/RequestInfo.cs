@@ -80,7 +80,7 @@ namespace Bloom.Api
 		{
 			//Deal with BL-3153, where the file was still open in another thread
 			FileStream fs;
-			if(!File.Exists(path))
+			if(!SafeFile.Exists(path))
 			{
 				//for audio, at least, this is not really an error. We constantly are asking if audio already exists for the current segment
 				//enhance: maybe audio should go through a different path, e.g. "/bloom/audio/somefile.wav"
@@ -92,7 +92,7 @@ namespace Bloom.Api
 
 			try
 			{
-				fs = File.OpenRead(path);
+				fs = SafeFile.OpenRead(path);
 			}
 			catch(Exception error)
 			{
@@ -116,7 +116,7 @@ namespace Bloom.Api
 				// be reloaded. It is useful when debugging with tools which automatically reload the page when something changes.
 				if(_actualContext.Request.HttpMethod == "HEAD")
 				{
-					var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
+					var lastModified = SafeFile.GetLastWriteTimeUtc(path).ToString("R");
 
 					// Originally we were returning the Last-Modified header with every response, but we discovered that this was
 					// causing Geckofx to cache the contents of the files. This made debugging difficult because, even if the file

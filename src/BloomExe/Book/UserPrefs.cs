@@ -21,11 +21,11 @@ namespace Bloom.Book
 				return null;
 
 			UserPrefs userPrefs = null;
-			if(File.Exists(fileName))
+			if(SafeFile.Exists(fileName))
 			{
 				try
 				{
-					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(File.ReadAllText(fileName));
+					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(SafeFile.ReadAllText(fileName));
 					if (userPrefs == null)
 						throw new ApplicationException("JsonConvert.DeserializeObject() returned null");
 				}
@@ -82,7 +82,7 @@ namespace Bloom.Book
 				if(!string.IsNullOrWhiteSpace(prefs))
 				{
 					var temp = new SIL.IO.TempFileForSafeWriting(_filePath);
-					File.WriteAllText(temp.TempFilePath, prefs);
+					SafeFile.WriteAllText(temp.TempFilePath, prefs);
 					temp.WriteWasSuccessful();
 				}
 			}

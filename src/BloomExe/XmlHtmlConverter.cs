@@ -22,7 +22,7 @@ namespace Bloom
 
 		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
 		{
-			return GetXmlDomFromHtml(File.ReadAllText(path), includeXmlDeclaration);
+			return GetXmlDomFromHtml(SafeFile.ReadAllText(path), includeXmlDeclaration);
 		}
 
 		/// <summary></summary>
@@ -49,8 +49,8 @@ namespace Bloom
 			//using (var temp = new TempFile())
 			var temp = new TempFile();
 			{
-				File.WriteAllText(temp.Path, content, Encoding.UTF8);
-				using (var tidy = Document.FromFile(temp.Path))
+				SafeFile.WriteAllText(temp.Path, content, Encoding.UTF8);
+				using (var tidy = SafeIO.DocumentFromFile(temp.Path))
 				{
 					tidy.ShowWarnings = false;
 					tidy.Quiet = true;
@@ -332,7 +332,7 @@ namespace Bloom
 
 			// Now revert the stuff we did to make it "safe from libtidy"
 			html = RemoveFillerInEmptyElements(html);
-			File.WriteAllText(targetPath, html, Encoding.UTF8);
+			SafeFile.WriteAllText(targetPath, html, Encoding.UTF8);
 
 			return targetPath;
 		}

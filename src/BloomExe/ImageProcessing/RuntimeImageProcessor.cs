@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using SIL.Reporting;
 using SIL.Windows.Forms.ImageToolbox;
-using File = System.IO.File;
 
 namespace Bloom.ImageProcessing
 {
@@ -76,9 +75,9 @@ namespace Bloom.ImageProcessing
 				{
 					try
 					{
-						if (File.Exists(path))
+						if (SafeFile.Exists(path))
 						{
-							File.Delete(path);
+							SafeFile.Delete(path);
 							Debug.WriteLine("RuntimeImageProcessor Successfully deleted: " + path);
 						}
 					}
@@ -114,7 +113,7 @@ namespace Bloom.ImageProcessing
 				string pathToProcessedVersion;
 				if (_originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out pathToProcessedVersion))
 				{
-					if (File.Exists(pathToProcessedVersion) &&
+					if (SafeFile.Exists(pathToProcessedVersion) &&
 						new FileInfo(originalPath).LastWriteTimeUtc <= new FileInfo(pathToProcessedVersion).LastWriteTimeUtc)
 					{
 						return pathToProcessedVersion;
@@ -218,7 +217,7 @@ namespace Bloom.ImageProcessing
 							try
 							{
 								error = null;
-								processedBitmap.Save(pathToProcessedImage, originalImage.Image.RawFormat);
+								SafeIO.SaveImage(processedBitmap, pathToProcessedImage, originalImage.Image.RawFormat);
 								break;
 							}
 							catch (Exception e)

@@ -167,10 +167,10 @@ namespace Bloom
 							if (path.ToLowerInvariant().StartsWith("bloom://"))
 							{
 								path = path.Substring("bloom://".Length);
-								if (!File.Exists(path))
+								if (!SafeFile.Exists(path))
 								{
 									path = FileLocator.GetFileDistributedWithApplication(true, path);
-									if (!File.Exists(path))
+									if (!SafeFile.Exists(path))
 										return;
 								}
 							}
@@ -659,7 +659,7 @@ namespace Bloom
 				//if(Settings.Default.MruProjects.Latest == null)
 				//{
 				//	var path = NewCollectionWizard.CreateNewCollection();
-				//	if (!string.IsNullOrEmpty(path) && File.Exists(path))
+				//	if (!string.IsNullOrEmpty(path) && SafeFile.Exists(path))
 				//	{
 				//		OpenCollection(path);
 				//		return;
@@ -961,13 +961,13 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			foreach(var entry in filesToCheck)
 			{
 				var destFile = entry.Value;
-				if (!File.Exists(destFile))
+				if (!SafeFile.Exists(destFile))
 				{
 					var sourceFile = Path.Combine(sourceDir, "debian", entry.Key);
-					if (File.Exists(sourceFile))
+					if (SafeFile.Exists(sourceFile))
 					{
 						updateNeeded = true;
-						File.Copy(sourceFile, destFile);
+						SafeFile.Copy(sourceFile, destFile);
 					}
 				}
 			}
@@ -1080,11 +1080,11 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 				Logger.WriteEvent("Cannot open user config file "+ex.Filename);
 				Logger.WriteEvent(ex.Message);
 
-				if (File.Exists(ex.Filename))
+				if (SafeFile.Exists(ex.Filename))
 				{
-					Logger.WriteEvent("Config file content:\n{0}", File.ReadAllText(ex.Filename));
+					Logger.WriteEvent("Config file content:\n{0}", SafeFile.ReadAllText(ex.Filename));
 					Logger.WriteEvent("Deleting "+ ex.Filename);
-					File.Delete(ex.Filename);
+					SafeFile.Delete(ex.Filename);
 					Properties.Settings.Default.Upgrade();
 					// Properties.Settings.Default.Reload();
 					// you could optionally restart the app instead

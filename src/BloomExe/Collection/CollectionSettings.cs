@@ -85,7 +85,7 @@ namespace Bloom.Collection
 			var libraryDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
 			var parentDirectoryPath = Path.GetDirectoryName(libraryDirectory);
 
-			if (File.Exists(desiredOrExistingSettingsFilePath))
+			if (SafeFile.Exists(desiredOrExistingSettingsFilePath))
 			{
 				Load();
 			}
@@ -311,12 +311,12 @@ namespace Bloom.Collection
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
 			library.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
-			library.Save(SettingsFilePath);
+			SafeIO.SaveXElement(library, SettingsFilePath);
 
-			SavesettingsCollectionStylesCss();
+			SaveSettingsCollectionStylesCss();
 		}
 
-		private void SavesettingsCollectionStylesCss()
+		private void SaveSettingsCollectionStylesCss()
 		{
 			string path = FolderPath.CombineForPath("settingsCollectionStyles.css");
 
@@ -332,7 +332,7 @@ namespace Bloom.Collection
 				{
 					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, Language3LineHeight);
 				}
-				File.WriteAllText(path, sb.ToString());
+				SafeFile.WriteAllText(path, sb.ToString());
 			}
 			catch (Exception error)
 			{
@@ -386,7 +386,7 @@ namespace Bloom.Collection
 				string settingsContents = "";
 				try
 				{
-					settingsContents = File.ReadAllText(SettingsFilePath);
+					settingsContents = SafeFile.ReadAllText(SettingsFilePath);
 				}
 				catch (Exception error)
 				{
@@ -401,11 +401,11 @@ namespace Bloom.Collection
 			try
 			{
 				string oldcustomCollectionStylesPath = FolderPath.CombineForPath("collection.css");
-				if(File.Exists(oldcustomCollectionStylesPath))
+				if(SafeFile.Exists(oldcustomCollectionStylesPath))
 				{
 					string newcustomCollectionStylesPath = FolderPath.CombineForPath("customCollectionStyles.css");
 
-					File.Move(oldcustomCollectionStylesPath, newcustomCollectionStylesPath);
+					SafeFile.Move(oldcustomCollectionStylesPath, newcustomCollectionStylesPath);
 				}
 			}
 			catch (Exception)
@@ -609,8 +609,8 @@ namespace Bloom.Collection
 			{
 				//we now make a default name based on the name of the directory
 				string destinationPath = Path.Combine(toDirectory, Path.GetFileName(toDirectory)+".bloomCollection");
-				if (!File.Exists(destinationPath))
-					File.Move(collectionSettingsPath, destinationPath);
+				if (!SafeFile.Exists(destinationPath))
+					SafeFile.Move(collectionSettingsPath, destinationPath);
 
 				return destinationPath;
 			}

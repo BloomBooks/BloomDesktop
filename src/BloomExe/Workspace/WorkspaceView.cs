@@ -605,7 +605,7 @@ namespace Bloom.Workspace
 				return;
 			var shell = (Shell) ancestor;
 			var pathToNewExe = Path.Combine(newInstallDir, Path.ChangeExtension(Application.ProductName, ".exe"));
-			if (!File.Exists(pathToNewExe))
+			if (!SafeFile.Exists(pathToNewExe))
 				return; // aargh!
 			shell.QuitForVersionUpdate = true;
 			Process.Start(pathToNewExe);

@@ -181,7 +181,7 @@ namespace Bloom.Book
 			var licenseImage = metadata.License.GetImage();
 			var imagePath = bookFolderPath.CombineForPath("license.png");
 			// Don't try to overwrite the license image for a template book.  (See BL-3284.)
-			if (File.Exists(imagePath) && IsInstalledFile(imagePath))
+			if (SafeFile.Exists(imagePath) && IsInstalledFile(imagePath))
 				return;
 			try
 			{
@@ -194,8 +194,8 @@ namespace Bloom.Book
 				}
 				else
 				{
-					if(File.Exists(imagePath))
-						File.Delete(imagePath);
+					if(SafeFile.Exists(imagePath))
+						SafeFile.Delete(imagePath);
 				}
 			}
 			catch(Exception error)

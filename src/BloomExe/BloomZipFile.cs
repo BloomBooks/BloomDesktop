@@ -15,7 +15,7 @@ namespace Bloom
 
 		public BloomZipFile(string path)
 		{
-			var fsOut = File.Create(path);
+			var fsOut = SafeFile.Create(path);
 			_zipStream = new ZipOutputStream(fsOut);
 			_zipStream.SetLevel(9); //REVIEW: what does this mean?
 		}
@@ -40,7 +40,7 @@ namespace Bloom
 
 			// Zip the file in buffered chunks
 			var buffer = new byte[4096];
-			using (var streamReader = File.OpenRead(path))
+			using (var streamReader = SafeFile.OpenRead(path))
 			{
 				StreamUtils.Copy(streamReader, _zipStream, buffer);
 			}

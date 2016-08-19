@@ -165,7 +165,7 @@ namespace Bloom.CollectionCreating
 				{
 					return Path.GetFileName(_collectionInfo.PathToSettingsFile).IndexOfAny(Path.GetInvalidFileNameChars()) > -1
 						|| Directory.Exists(_collectionInfo.PathToSettingsFile)
-						|| File.Exists(_collectionInfo.PathToSettingsFile);
+						|| SafeFile.Exists(_collectionInfo.PathToSettingsFile);
 				}
 				catch (Exception)
 				{

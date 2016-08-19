@@ -172,10 +172,10 @@ namespace Bloom.WebLibraryIntegration
 			// Don't upload audio (todo: test).
 			string audioDir = Path.Combine(destDirName, "audio");
 			if (Directory.Exists(audioDir))
-				Directory.Delete(audioDir, true);
+				SafeIO.DeleteDirectory(audioDir, true);
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
 			foreach (var file in unwantedPdfs)
-				File.Delete(file);
+				SafeFile.Delete(file);
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
@@ -337,14 +337,14 @@ namespace Bloom.WebLibraryIntegration
 		// Return true if both files exist, are readable, and have the same content.
 		static bool SameFileContent(string path1, string path2)
 		{
-			if (!File.Exists(path1))
+			if (!SafeFile.Exists(path1))
 				return false;
-			if (!File.Exists(path2))
+			if (!SafeFile.Exists(path2))
 				return false;
 			try
 			{
-				var first = File.ReadAllBytes(path1);
-				var second = File.ReadAllBytes(path2);
+				var first = SafeFile.ReadAllBytes(path1);
+				var second = SafeFile.ReadAllBytes(path2);
 				if (first.Length != second.Length)
 					return false;
 				for (int i = 0; i < first.Length; i++)
@@ -455,7 +455,7 @@ namespace Bloom.WebLibraryIntegration
 					{
 						try
 						{
-							Directory.Delete(destinationPath, true);
+							SafeIO.DeleteDirectory(destinationPath, true);
 							didDelete = true;
 						}
 						catch(IOException)

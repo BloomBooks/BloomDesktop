@@ -249,13 +249,13 @@ namespace Bloom.Publish
 				var dllPath = gsVersKey.GetValue("GS_DLL") as String;
 				if (dllPath == null)
 					continue;
-				if (!System.IO.File.Exists(dllPath))
+				if (!SafeFile.Exists(dllPath))
 					continue; // some junk there??
 				exePath = Path.Combine(Path.GetDirectoryName(dllPath), "gswin32c.exe");
-				if (System.IO.File.Exists(exePath))
+				if (SafeFile.Exists(exePath))
 					break;
 				exePath = Path.Combine(Path.GetDirectoryName(dllPath), "gswin64c.exe");
-				if (System.IO.File.Exists(exePath))
+				if (SafeFile.Exists(exePath))
 					break;
 				// some old install in a bad state? Try another subkey
 			}
@@ -265,7 +265,7 @@ namespace Bloom.Publish
 			// -dNORANGEPAGESIZE makes it automatically select the right page orientation.
 			systemSpecificArgs = "-sDEVICE#mswinpr2 -dBATCH -dNOPAUSE -dQUIET -dNORANGEPAGESIZE ";
 #endif
-			if (exePath == null || !System.IO.File.Exists(exePath))
+			if (exePath == null || !SafeFile.Exists(exePath))
 				return false; // Can't use ghostscript approach
 			var proc = new Process
 			{

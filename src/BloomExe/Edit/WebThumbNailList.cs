@@ -200,7 +200,7 @@ namespace Bloom.Edit
 			}
 			var frame = BloomFileLocator.GetBrowserFile("bookEdit", "pageThumbnailList", "pageThumbnailList.html");
 			var backColor = ColorToHtmlCode(BackColor);
-			var htmlText = System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
+			var htmlText = SafeFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 			_usingTwoColumns = RoomForTwoColumns;
 			if (!RoomForTwoColumns)
 				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");

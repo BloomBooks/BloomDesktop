@@ -61,7 +61,7 @@ namespace Bloom.Book
 			{
 				var oldNamedFile = Path.Combine(newBookFolder, Path.GetFileName(GetPathToHtmlFile(sourceBookFolder)));
 				var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
-				File.Move(oldNamedFile, newNamedFile);
+				SafeFile.Move(oldNamedFile, newNamedFile);
 
 				//the destination may change here...
 				newBookFolder = SetupNewDocumentContents(sourceBookFolder, newBookFolder);
@@ -72,7 +72,7 @@ namespace Bloom.Book
 			}
 			catch (Exception)
 			{
-				Directory.Delete(newBookFolder,true);
+				SafeIO.DeleteDirectory(newBookFolder, true);
 				throw;
 			}
 			return newBookFolder;
@@ -172,7 +172,7 @@ namespace Bloom.Book
 		{
 			string parentId = null;
 			string lineage = null;
-			if (File.Exists(Path.Combine(sourceFolderPath, BookInfo.MetaDataFileName)))
+			if (SafeFile.Exists(Path.Combine(sourceFolderPath, BookInfo.MetaDataFileName)))
 			{
 				var sourceMetaData = new BookInfo(sourceFolderPath, false);
 				parentId = sourceMetaData.Id;
@@ -433,7 +433,7 @@ namespace Bloom.Book
 				var ext = Path.GetExtension(filePath).ToLowerInvariant();
 				if (new String[] {".jade", ".less"}.Any(ex => ex == ext))
 					continue;
-				File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
+				SafeFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}
 			foreach (var dirPath in Directory.GetDirectories(sourcePath))
 			{

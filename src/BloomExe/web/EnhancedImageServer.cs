@@ -175,7 +175,7 @@ namespace Bloom.Api
 			if (key.StartsWith("file://"))
 			{
 				var uri = new Uri(key);
-				File.Delete(uri.LocalPath);
+				SafeFile.Delete(uri.LocalPath);
 				return;
 			}
 			lock (_urlToSimulatedPageContent)
@@ -249,7 +249,7 @@ namespace Bloom.Api
 			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
 				var temp = LocalHostPathToFilePath(localPath);
-				if (File.Exists(temp))
+				if (SafeFile.Exists(temp))
 					localPath = temp;
 			}
 			// this is used only by the readium viewer
@@ -408,7 +408,7 @@ namespace Bloom.Api
 			// When JavaScript inserts our path into the html it replaces the three magic html characters with these substitutes.
 			// We need to convert back in order to match our key. Then, reverse the change we made to deal with quotation marks.
 			string tempPath = UnescapeUrlQuotes(modPath.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&"));
-			if (File.Exists(tempPath))
+			if (SafeFile.Exists(tempPath))
 				modPath = tempPath;
 			try
 			{
@@ -426,7 +426,7 @@ namespace Bloom.Api
 					possibleFullImagePath = localPath.Substring(15);
 				if (info.GetQueryParameters()["generateThumbnaiIfNecessary"] == "true")
 					return FindOrGenerateImage(info, localPath);
-				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
+				if(SafeFile.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
 					path = possibleFullImagePath;
 				}
@@ -448,7 +448,7 @@ namespace Bloom.Api
 			// but at the moment FF, looking for source maps to go with css, is
 			// looking for those maps where we said the css was, which is in the actual
 			// book folders. So instead redirect to our browser file folder.
-			if (string.IsNullOrEmpty(path) || !File.Exists(path))
+			if (string.IsNullOrEmpty(path) || !SafeFile.Exists(path))
 			{
 				var startOfBookLayout = localPath.IndexOf("bookLayout");
 				if (startOfBookLayout > 0)
@@ -458,33 +458,33 @@ namespace Bloom.Api
 					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
 			}
 
-			if (!File.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
+			if (!SafeFile.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
 			{
 				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
 				// template page, look for that thumbnail in the book that is the template source,
 				// rather than in the folder that stores the page choose dialog HTML and code.
 				var templatePath = Path.Combine(_bookSelection.CurrentSelection.FindTemplateBook().FolderPath,
 					localPath.Substring("pageChooser/".Length));
-				if (File.Exists(templatePath))
+				if (SafeFile.Exists(templatePath))
 				{
 					info.ReplyWithImage(templatePath);
 					return true;
 				}
 			}
-			if (!File.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
+			if (!SafeFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
 				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
 				// altering the main book title.
 				var currentFolderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, Path.GetFileName(localPath));
-				if (File.Exists(currentFolderPath))
+				if (SafeFile.Exists(currentFolderPath))
 				{
 					info.ReplyWithImage(currentFolderPath);
 					return true;
 				}
 			}
 			
-			if (!File.Exists(path))
+			if (!SafeFile.Exists(path))
 			{
 				if(path == null)
 				{
@@ -534,13 +534,13 @@ namespace Bloom.Api
 		{
 			var localPath = AdjustPossibleLocalHostPathToFilePath(path);
 			var svgpath = Path.ChangeExtension(localPath, "svg");
-			if (File.Exists(svgpath))
+			if (SafeFile.Exists(svgpath))
 			{
 				ReplyWithFileContentAndType(info, svgpath);
 				return true;
 			}
 			var pngpath = Path.ChangeExtension(localPath, "png");
-			if (File.Exists(pngpath))
+			if (SafeFile.Exists(pngpath))
 			{
 				ReplyWithFileContentAndType(info, pngpath);
 				return true;
@@ -602,7 +602,7 @@ namespace Bloom.Api
 			// but it has nothing to do with css files and defeats the following 'if'
 			localPath = localPath.Replace("OriginalImages/", "");
 			// is this request the full path to a real file?
-			if (File.Exists(localPath) && Path.IsPathRooted(localPath))
+			if (SafeFile.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
 				// Typically this will be files in the book or collection directory, since the browser
 				// is supplying the path.
@@ -628,13 +628,13 @@ namespace Bloom.Api
 			var path = _fileLocator.LocateFile(fileName);
 
 			// if still not found, and localPath is an actual file path, use it
-			if (string.IsNullOrEmpty(path) && File.Exists(localPath)) path = localPath;
+			if (string.IsNullOrEmpty(path) && SafeFile.Exists(localPath)) path = localPath;
 
 			if (string.IsNullOrEmpty(path))
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
 				var lastTry = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
-				if(File.Exists(lastTry)) path = lastTry;
+				if(SafeFile.Exists(lastTry)) path = lastTry;
 			}
 
 			// return false if the file was not found

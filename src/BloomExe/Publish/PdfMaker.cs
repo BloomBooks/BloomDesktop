@@ -55,10 +55,10 @@ namespace Bloom.Publish
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
 					return;
-				if (File.Exists(outputPdfPath))
+				if (SafeFile.Exists(outputPdfPath))
 					break; // normally the first time
 			}
-			if (!File.Exists(outputPdfPath) && owner != null)
+			if (!SafeFile.Exists(outputPdfPath) && owner != null)
 			{
 				// Should never happen, but...
 				owner.Invoke((Action) (() =>
@@ -212,8 +212,8 @@ namespace Bloom.Publish
 
 			using (var incoming = new TempFile())
 			{
-				File.Delete(incoming.Path);
-				File.Move(pdfPath, incoming.Path);
+				SafeFile.Delete(incoming.Path);
+				SafeFile.Move(pdfPath, incoming.Path);
 
 				LayoutMethod method;
 				switch (booketLayoutMethod)
