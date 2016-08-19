@@ -1,11 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
-using System.Linq;
 using Bloom.Edit;
 using ICSharpCode.SharpZipLib.Zip;
+using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.Collection.BloomPack
@@ -45,7 +44,7 @@ namespace Bloom.Collection.BloomPack
 
 		private void BeginInstall()
 		{
-			if (!File.Exists(_path))
+			if (!RobustFile.Exists(_path))
 			{
 				string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.DoesNotExist", "{0} does not exist");
 				ErrorReport.NotifyUserOfProblem(msg, _path);
@@ -104,13 +103,13 @@ namespace Bloom.Collection.BloomPack
 			//folder, we need to remove that readonly flag so we can delete it.
 			foreach (var f in Directory.GetFiles(destinationFolder))
 			{
-				var attributes = File.GetAttributes(f);
+				var attributes = RobustFile.GetAttributes(f);
 				if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
 				{
-					File.SetAttributes(f, attributes & ~FileAttributes.ReadOnly);
+					RobustFile.SetAttributes(f, attributes & ~FileAttributes.ReadOnly);
 				}
 			}
-			Directory.Delete(destinationFolder, true);
+			SIL.IO.RobustIO.DeleteDirectory(destinationFolder, true);
 		}
 
 		private delegate void ReportBadBloomPack();
@@ -207,7 +206,7 @@ namespace Bloom.Collection.BloomPack
 					if (!String.IsNullOrEmpty(directoryName))
 						Directory.CreateDirectory(directoryName);
 					using (var instream = zip.GetInputStream(entry))
-					using (var writer = File.Create(fullOutputPath))
+					using (var writer = RobustFile.Create(fullOutputPath))
 					{
 						ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
 					}
@@ -244,7 +243,7 @@ namespace Bloom.Collection.BloomPack
 				{
 					if (Directory.Exists(destDirName))
 					{
-						Directory.Delete(destDirName, true);
+						SIL.IO.RobustIO.DeleteDirectory(destDirName, true);
 					}
 				}
 				catch (Exception error)
@@ -253,7 +252,7 @@ namespace Bloom.Collection.BloomPack
 				}
 				try
 				{
-					Directory.Move(dir, destDirName);
+					SIL.IO.RobustIO.MoveDirectory(dir, destDirName);
 				}
 				catch (Exception error)
 				{

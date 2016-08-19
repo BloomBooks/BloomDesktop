@@ -10,6 +10,7 @@ using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.CollectionCreating
@@ -165,7 +166,7 @@ namespace Bloom.CollectionCreating
 				{
 					return Path.GetFileName(_collectionInfo.PathToSettingsFile).IndexOfAny(Path.GetInvalidFileNameChars()) > -1
 						|| Directory.Exists(_collectionInfo.PathToSettingsFile)
-						|| File.Exists(_collectionInfo.PathToSettingsFile);
+						|| RobustFile.Exists(_collectionInfo.PathToSettingsFile);
 				}
 				catch (Exception)
 				{

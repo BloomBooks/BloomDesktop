@@ -43,7 +43,7 @@ namespace Bloom.Edit
 			//BookStorage storage = new BookStorage(folderPath, null);
 			//return (null != FindConfigurationPage(dom));
 
-			return File.Exists(Path.Combine(folderPath, "configuration.htm"));
+			return RobustFile.Exists(Path.Combine(folderPath, "configuration.htm"));
 		}
 
 		public DialogResult ShowConfigurationDialog(string folderPath)
@@ -106,8 +106,8 @@ namespace Bloom.Edit
 			//nice non-ascii paths kill this, so let's go to a temp file first
 			var temp = TempFile.CreateAndGetPathButDontMakeTheFile(); //we don't want to wrap this in using
 			b.SaveDocument(temp.Path);
-			File.Delete(bookPath);
-			File.Move(temp.Path, bookPath);
+			RobustFile.Delete(bookPath);
+			RobustFile.Move(temp.Path, bookPath);
 
 			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 			//NB: this check only makes sense for the calendar, which is the only template we've create that
@@ -117,7 +117,7 @@ namespace Bloom.Edit
 			//when it is done with the previous navigation.
 			if (sanityCheckDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count < 24) //should be 24 pages
 			{
-				Logger.WriteMinorEvent(File.ReadAllText(bookPath)); //this will come to us if they report it
+				Logger.WriteMinorEvent(RobustFile.ReadAllText(bookPath)); //this will come to us if they report it
 				throw new ApplicationException("Malformed Calendar (code assumes only calendar uses the Configurator, and they have at least 24 pages)");
 			}
 
@@ -204,7 +204,7 @@ namespace Bloom.Edit
 					libraryData = MergeJsonData(DynamicJson.Parse(existingDataString).library.ToString(), libraryData.ToString());
 			}
 
-			File.WriteAllText(PathToLibraryJson, libraryData.ToString());
+			RobustFile.WriteAllText(PathToLibraryJson, libraryData.ToString());
 
 
 		}
@@ -279,10 +279,10 @@ namespace Bloom.Edit
 
 		public string GetLibraryData()
 		{
-			if (!File.Exists(PathToLibraryJson))
+			if (!RobustFile.Exists(PathToLibraryJson))
 				return "{}";//return "{\"dummy\": \"x\"}";//TODO
 
-			var s= File.ReadAllText(PathToLibraryJson);
+			var s= RobustFile.ReadAllText(PathToLibraryJson);
 			if(string.IsNullOrEmpty(s))
 				return string.Empty;
 

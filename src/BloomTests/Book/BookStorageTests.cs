@@ -201,7 +201,7 @@ namespace BloomTests.Book
 
 		private BookStorage GetInitialStorageWithCustomHtml(string html)
 		{
-			File.WriteAllText(_bookPath, html);
+			RobustFile.WriteAllText(_bookPath, html);
 			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);

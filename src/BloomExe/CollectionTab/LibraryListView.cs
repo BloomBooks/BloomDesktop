@@ -1220,7 +1220,7 @@ namespace Bloom.CollectionTab
 			// rename the book htm file
 			var oldName = Path.Combine(newBookDir, Path.GetFileName(SelectedBook.GetPathHtmlFile()));
 			var newName = Path.Combine(newBookDir, newBookName + ".htm");
-			File.Move(oldName, newName);
+			RobustFile.Move(oldName, newName);
 
 			// reload the collection
 			_model.ReloadCollections();
@@ -1264,7 +1264,7 @@ namespace Bloom.CollectionTab
 			Directory.CreateDirectory(targetDir);
 
 			foreach (var file in Directory.GetFiles(sourceDir))
-				File.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
+				RobustFile.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
 
 			foreach (var directory in Directory.GetDirectories(sourceDir))
 				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));

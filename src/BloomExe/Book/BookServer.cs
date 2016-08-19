@@ -52,7 +52,7 @@ namespace Bloom.Book
 					var c = _configuratorFactory(containingDestinationFolder);
 					if (DialogResult.Cancel == c.ShowConfigurationDialog(pathToFolderOfNewBook))
 					{
-						Directory.Delete(pathToFolderOfNewBook, true);
+						SIL.IO.RobustIO.DeleteDirectory(pathToFolderOfNewBook, true);
 						return null; // the template had a configuration page and they clicked "cancel"
 					}
 					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(pathToFolderOfNewBook));
@@ -79,7 +79,7 @@ namespace Bloom.Book
 				Logger.WriteEvent("Cleaning up after error CreateFromSourceBook({0})", pathToFolderOfNewBook);
 				//clean up this ill-fated book folder up
 				if (!string.IsNullOrEmpty(pathToFolderOfNewBook) && Directory.Exists(pathToFolderOfNewBook))
-					Directory.Delete(pathToFolderOfNewBook, true);
+					SIL.IO.RobustIO.DeleteDirectory(pathToFolderOfNewBook, true);
 				throw;
 			}
 		}

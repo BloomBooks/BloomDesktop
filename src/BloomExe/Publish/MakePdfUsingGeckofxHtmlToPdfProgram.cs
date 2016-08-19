@@ -100,7 +100,7 @@ namespace Bloom.Publish
 			var execDir = Path.GetDirectoryName(loc);
 			var fromDirectory = String.Empty;
 			var filePath = Path.Combine(execDir, "BloomPdfMaker.exe");
-			if (!File.Exists(filePath))
+			if (!RobustFile.Exists(filePath))
 			{
 				var msg = LocalizationManager.GetString("InstallProblem.BloomPdfMaker",
 					"A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
@@ -119,7 +119,7 @@ namespace Bloom.Publish
 			var arguments = bldr.ToString();
 			var progress = new NullProgress();
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, null);
-			if (res.DidTimeOut || !File.Exists (outputPdfPath))
+			if (res.DidTimeOut || !RobustFile.Exists (outputPdfPath))
 			{
 				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = "+res.StandardOutput);
 

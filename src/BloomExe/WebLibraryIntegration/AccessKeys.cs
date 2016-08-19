@@ -42,7 +42,7 @@ namespace Bloom.WebLibraryIntegration
 		public static AccessKeys GetAccessKeys(string bucket)
 		{
 			var connectionsPath = FileLocator.GetFileDistributedWithApplication("connections.dll");
-			var lines = File.ReadAllLines(connectionsPath);
+			var lines = RobustFile.ReadAllLines(connectionsPath);
 			switch(bucket)
 			{
 				case BloomS3Client.SandboxBucketName:

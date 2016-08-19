@@ -704,8 +704,8 @@ namespace Bloom.Book
 		{
 			_pagesCache = null;
 			string oldMetaData = "";
-			if (File.Exists(BookInfo.MetaDataPath))
-				oldMetaData = File.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
+			if (RobustFile.Exists(BookInfo.MetaDataPath))
+				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			BringBookUpToDate(OurHtmlDom, progress);
 			if (Type == BookType.Publication)
 			{
@@ -849,10 +849,10 @@ namespace Bloom.Book
 
 					// I think we should only mess with tags if we are updating the book for real.
 					var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
-					if (File.Exists(oldTagsPath))
+					if (RobustFile.Exists(oldTagsPath))
 					{
 						ConvertTagsToMetaData(oldTagsPath, BookInfo);
-						File.Delete(oldTagsPath);
+						RobustFile.Delete(oldTagsPath);
 					}
 				}
 				else //used for making a preview dom
@@ -867,7 +867,7 @@ namespace Bloom.Book
 				bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
 				// BookInfo will always have an ID, the constructor makes one even if there is no json file.
 				// To allow migration, pretend it has no ID if there is not yet a meta.json.
-				bookDOM.RemoveMetaElement("bloomBookId", () => (File.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
+				bookDOM.RemoveMetaElement("bloomBookId", () => (RobustFile.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
 					val => BookInfo.Id = val);
 
 				// Title should be replicated in json
@@ -911,10 +911,10 @@ namespace Bloom.Book
 
 						// I think we should only mess with tags if we are updating the book for real.
 						var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
-						if (File.Exists(oldTagsPath))
+						if (RobustFile.Exists(oldTagsPath))
 						{
 							ConvertTagsToMetaData(oldTagsPath, BookInfo);
-							File.Delete(oldTagsPath);
+							RobustFile.Delete(oldTagsPath);
 						}
 					}
 					else //used for making a preview dom
@@ -929,7 +929,7 @@ namespace Bloom.Book
 					bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
 					// BookInfo will always have an ID, the constructor makes one even if there is no json file.
 					// To allow migration, pretend it has no ID if there is not yet a meta.json.
-					bookDOM.RemoveMetaElement("bloomBookId", () => (File.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
+					bookDOM.RemoveMetaElement("bloomBookId", () => (RobustFile.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
 						val => BookInfo.Id = val);
 
 					// Title should be replicated in json
@@ -994,7 +994,7 @@ namespace Bloom.Book
 
 		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
-			var oldTags = File.ReadAllText(oldTagsPath);
+			var oldTags = RobustFile.ReadAllText(oldTagsPath);
 			bookMetaData.IsFolio = oldTags.Contains("folio");
 			bookMetaData.IsExperimental = oldTags.Contains("experimental");
 		}
@@ -1452,7 +1452,7 @@ namespace Bloom.Book
 			{
 				var options = new MarkdownOptions() {LinkEmails = true, AutoHyperlink=true};
 				var m = new Markdown(options);
-				var contents = m.Transform(File.ReadAllText(AboutBookMarkdownPath));
+				var contents = m.Transform(RobustFile.ReadAllText(AboutBookMarkdownPath));
 				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unneccessary.... do they scan .md files?
 
 				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
@@ -1462,7 +1462,7 @@ namespace Bloom.Book
 			} //todo add other ui languages
 		}
 
-		public bool HasAboutBookInformationToShow { get { return _storage!=null && File.Exists(AboutBookMarkdownPath); } }
+		public bool HasAboutBookInformationToShow { get { return _storage!=null && RobustFile.Exists(AboutBookMarkdownPath); } }
 		public string AboutBookMarkdownPath  {
 			get
 			{
@@ -1637,12 +1637,12 @@ namespace Bloom.Book
 			foreach (var pathFromBook in BookStorage.GetImagePathsRelativeToBook(newPageDiv))
 			{
 				var path = Path.Combine(FolderPath, pathFromBook);
-				if (!File.Exists(path))
+				if (!RobustFile.Exists(path))
 				{
 					var fileName = Path.GetFileName(path);
 					var sourcePath = Path.Combine(templatePage.Book.FolderPath, fileName);
-					if (File.Exists(sourcePath))
-						File.Copy(sourcePath, path);
+					if (RobustFile.Exists(sourcePath))
+						RobustFile.Copy(sourcePath, path);
 				}
 			}
 
@@ -2050,12 +2050,12 @@ namespace Bloom.Book
 		/// </summary>
 		private void WriteLanguageDisplayStyleSheet( )
 		{
-			var template = File.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
+			var template = RobustFile.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 
 			using (var temp = TempFile.WithExtension(".css"))
 			{
-				File.WriteAllText(temp.Path,
+				RobustFile.WriteAllText(temp.Path,
 					template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code)
 						.Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
 

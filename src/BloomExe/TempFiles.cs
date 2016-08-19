@@ -33,7 +33,7 @@ namespace BloomTemp
 			}
 
 			string liftContents = string.Format("<?xml version='1.0' encoding='utf-8'?><lift version='{0}'>{1}</lift>", claimedLiftVersion, xmlOfEntries);
-			File.WriteAllText(_path, liftContents);
+			RobustFile.WriteAllText(_path, liftContents);
 		}
 
 		public TempLiftFile(string fileName, TemporaryFolder parentFolder, string xmlOfEntries, string claimedLiftVersion)
@@ -42,14 +42,14 @@ namespace BloomTemp
 			_path = parentFolder.Combine(fileName);
 
 			string liftContents = string.Format("<?xml version='1.0' encoding='utf-8'?><lift version='{0}'>{1}</lift>", claimedLiftVersion, xmlOfEntries);
-			File.WriteAllText(_path, liftContents);
+			RobustFile.WriteAllText(_path, liftContents);
 		}
 		private TempLiftFile()
 		{
 		}
 		public new static TempLiftFile TrackExisting(string path)
 		{
-			Debug.Assert(File.Exists(path));
+			Debug.Assert(RobustFile.Exists(path));
 			TempLiftFile t = new TempLiftFile();
 			t._path = path;
 			return t;
@@ -63,7 +63,7 @@ namespace BloomTemp
 		{
 			var temp = TempFile.WithFilenameInTempFolder("tempHtml.htm");
 
-			File.WriteAllText(temp.Path, CreateHtml5StringFromXml(dom));
+			RobustFile.WriteAllText(temp.Path, CreateHtml5StringFromXml(dom));
 
 			return temp;
 		}
@@ -186,7 +186,7 @@ namespace BloomTemp
 			s = System.IO.Path.Combine(_path, s);
 			if (doCreateTheFile)
 			{
-				File.Create(s).Close();
+				RobustFile.Create(s).Close();
 			}
 			return s;
 		}
@@ -198,7 +198,7 @@ namespace BloomTemp
 
 			if (doCreateTheFile)
 			{
-				File.Create(s).Close();
+				RobustFile.Create(s).Close();
 			}
 			return s;
 		}
@@ -209,7 +209,7 @@ namespace BloomTemp
 			s = System.IO.Path.Combine(_path, s);
 			if (doCreateTheFile)
 			{
-				File.Create(s).Close();
+				RobustFile.Create(s).Close();
 			}
 			return TempFile.TrackExisting(s);
 		}
@@ -224,7 +224,7 @@ namespace BloomTemp
 		public string GetTemporaryFile(string name)
 		{
 			string s = System.IO.Path.Combine(_path, name);
-			File.Create(s).Close();
+			RobustFile.Create(s).Close();
 			return s;
 		}
 
@@ -246,7 +246,7 @@ namespace BloomTemp
 			{
 				try
 				{
-					Directory.Delete(folder, true);
+					RobustIO.DeleteDirectory(folder, true);
 				}
 				catch (Exception e)
 				{
@@ -259,7 +259,7 @@ namespace BloomTemp
 						{
 							try
 							{
-								File.Delete(s);
+								RobustFile.Delete(s);
 							}
 							catch (Exception)
 							{
@@ -267,7 +267,7 @@ namespace BloomTemp
 						}
 						//sleep and try again (in case some other thread will  let go of them)
 						Thread.Sleep(1000);
-						Directory.Delete(folder, true);
+						RobustIO.DeleteDirectory(folder, true);
 					}
 					catch (Exception)
 					{

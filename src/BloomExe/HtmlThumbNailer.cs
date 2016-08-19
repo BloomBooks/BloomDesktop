@@ -20,6 +20,7 @@ using SIL.Reporting;
 using Bloom.Book;
 using Bloom.Properties;
 using BloomTemp;
+using SIL.IO;
 
 namespace Bloom
 {
@@ -191,7 +192,7 @@ namespace Bloom
 			//Sitting on disk?
 			if (!string.IsNullOrEmpty(folderForThumbNailCache))
 			{
-				if (File.Exists(thumbNailFilePath))
+				if (RobustFile.Exists(thumbNailFilePath))
 				{
 					var thumbnail = ImageUtils.GetImageFromFile(thumbNailFilePath);
 					thumbnail.Tag = thumbNailFilePath;
@@ -440,7 +441,7 @@ namespace Bloom
 						//gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
 						using (Bitmap b = new Bitmap(pendingThumbnail))
 						{
-							b.Save(order.ThumbNailFilePath);
+							SIL.IO.RobustIO.SaveImage(b, order.ThumbNailFilePath);
 						}
 					}
 					catch (Exception)
@@ -648,11 +649,11 @@ namespace Bloom
 					string thumbnailPath = image.Tag as string;
 					if (!string.IsNullOrEmpty(thumbnailPath))
 					{
-						if (File.Exists(thumbnailPath))
+						if (RobustFile.Exists(thumbnailPath))
 						{
 							try
 							{
-								File.Delete(thumbnailPath);
+								RobustFile.Delete(thumbnailPath);
 							}
 							catch (Exception)
 							{

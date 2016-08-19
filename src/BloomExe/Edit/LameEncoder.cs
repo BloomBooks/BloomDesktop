@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using L10NSharp;
 using SIL.CommandLineProcessing;
+using SIL.IO;
 using SIL.Progress;
 
 namespace Bloom.Edit
@@ -19,8 +20,8 @@ namespace Bloom.Edit
 		{
 			LocateAndRememberLAMEPath();
 
-			if (File.Exists(destPathWithoutExtension + ".mp3"))
-				File.Delete(destPathWithoutExtension + ".mp3");
+			if (RobustFile.Exists(destPathWithoutExtension + ".mp3"))
+				RobustFile.Delete(destPathWithoutExtension + ".mp3");
 
 			progress.WriteMessage(LocalizationManager.GetString("LameEncoder.Progress", " Converting to mp3", "Appears in progress indicator"));
 
@@ -79,7 +80,7 @@ namespace Bloom.Edit
 			foreach (var path in progFileDirs)
 			{
 				var exePath = (Path.Combine(path, "LAME for Audacity/lame.exe"));
-				if (File.Exists(exePath))
+				if (RobustFile.Exists(exePath))
 					return exePath;
 			}
 			return string.Empty;

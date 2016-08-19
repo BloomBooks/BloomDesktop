@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using L10NSharp;
+using SIL.IO;
 
 namespace Bloom.Book
 {
@@ -68,10 +69,10 @@ namespace Bloom.Book
 				// try to read English XMatter pack description first
 				// we need version number at least
 				var pathEnglish = Path.Combine(PathToFolder, desc + "-en.txt");
-				if (!File.Exists(pathEnglish))
+				if (!RobustFile.Exists(pathEnglish))
 					return string.Empty;
 
-				var englishDescription = File.ReadAllText(pathEnglish);
+				var englishDescription = RobustFile.ReadAllText(pathEnglish);
 				if (!englishDescription.StartsWith("[V"))
 					return englishDescription;
 
@@ -81,10 +82,10 @@ namespace Bloom.Book
 				var enVersion = GetVersionNumberString(englishDescription);
 				englishDescription = StripVersionOff(englishDescription);
 				var pathUiLang = Path.Combine(PathToFolder, desc + "-" + uiLangId + ".txt");
-				if (uiLangId == "en" || !File.Exists(pathUiLang))
+				if (uiLangId == "en" || !RobustFile.Exists(pathUiLang))
 					return englishDescription;
 
-				var uiLangDescription = File.ReadAllText(pathUiLang);
+				var uiLangDescription = RobustFile.ReadAllText(pathUiLang);
 				var uiVersion = GetVersionNumberString(uiLangDescription);
 				uiLangDescription = StripVersionOff(uiLangDescription);
 				return enVersion > uiVersion || uiVersion == 0 || uiLangDescription.Length < 2 ? englishDescription : uiLangDescription;

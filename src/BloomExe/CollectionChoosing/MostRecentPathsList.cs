@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
+using SIL.IO;
 
 namespace Bloom.CollectionChoosing
 {
@@ -65,7 +66,7 @@ namespace Bloom.CollectionChoosing
 		{
 			foreach (string path in _paths)
 			{
-				if (File.Exists(path) || Directory.Exists(path))
+				if (RobustFile.Exists(path) || Directory.Exists(path))
 				{
 					yield return path;
 				}
@@ -83,7 +84,7 @@ namespace Bloom.CollectionChoosing
 			{
 				throw new ArgumentNullException("path");
 			}
-			if (!File.Exists(path) && ! Directory.Exists(path))
+			if (!RobustFile.Exists(path) && ! Directory.Exists(path))
 			{
 				return false;
 			}
