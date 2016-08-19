@@ -794,6 +794,13 @@
         <seg>&amp;Help</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.Loading">
+      <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Loading...</seg>
+      </tuv>
+    </tu>
     <tu tuid="Common.Next">
       <note>Used for the Next button in wizards, like that used for making a New Collection</note>
       <tuv xml:lang="en">

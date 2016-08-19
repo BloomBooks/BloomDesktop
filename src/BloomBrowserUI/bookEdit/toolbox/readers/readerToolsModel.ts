@@ -21,6 +21,7 @@ import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
 import {DataWord,TextFragment} from './libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
 import {EditableDivUtils} from '../../js/editableDivUtils';
+
 var SortType = {
   alphabetic: "alphabetic",
   byLength: "byLength",
@@ -47,7 +48,7 @@ export class ReaderToolsModel {
 
   previousHeight : number = 0;
   previousWidth : number = 0;
-  
+
   stageNumber: number = 1;
   levelNumber: number = 1;
   synphony: ReadersSynphonyWrapper = null; // to ensure detection of async issues, don't init until we load its settings
@@ -113,29 +114,56 @@ export class ReaderToolsModel {
     this.setStageNumber(this.stageNumber - 1);
   }
 
-  setStageNumber(val: number): void {
+  setStageNumber(stage: number): void {
 
-    // this may result in a need to resize the word list
-    this.previousHeight = 0;
+    theOneLocalizationManager.asyncGetText("Common.Loading", "Loading...").then( (loadingMessage)=> {
+      // this may result in a need to resize the word list
+      this.previousHeight = 0;
+      $("#letterList").html(loadingMessage);
+      $("#wordList").html(loadingMessage);
+      var stages = this.synphony.getStages();
+      if (stage < 1 || stage > stages.length) {
+        return;
+      }
 
-    var stages = this.synphony.getStages();
-    if (val < 1 || val > stages.length) {
-      return;
-    }
-    this.stageNumber = val;
+      this.stageNumber = stage;
+      this.updateStageLabel();
+      this.updateStageButtonsAvalibility();
 
-    // BL-599: Speed up the decodable reader tool
-    this.stageGraphemes = this.getKnownGraphemes(val);
+      // OK, now let that changed number and the "loading" messages
+      // make it to the user's screen, then start doing the work.
+      window.setTimeout(()=> {
+        if(this.stageNumber === stage) {
+          this.stageGraphemes = this.getKnownGraphemes(stage);
+        }
 
-    this.updateStageLabel();
-    this.updateLetterList();
-    this.enableStageButtons();
-    this.saveState();
+        // Both setting the letters and words require that to be done,
+        // but they can be done independently of each other.
+        // By separating them, we allow the letters to update while
+        // the words are still being generated.
+        window.setTimeout(()=> {
+          // make sure this is still the stage they want
+          // (it won't be if they are rapidly clicking the next/previous stage buttons)
+          if(this.stageNumber === stage) {
+            this.updateLetterList();}
+        }, 0);
 
-    if (!this.readyToDoMarkup()) return;
+        window.setTimeout(()=> {
+          // make sure this is still the stage they want
+          // (it won't be if they are rapidly clicking the next/previous stage buttons)
+          if(this.stageNumber === stage) {
+            this.updateWordList();
+          }}, 0);
 
-    this.doMarkup();
-    this.updateWordList();
+          this.saveState();
+
+          if (this.readyToDoMarkup()) {
+            this.doMarkup();
+          }
+          // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
+          // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
+      }, 500);
+    });
   }
 
   updateStageLabel(): void {
@@ -225,7 +253,7 @@ export class ReaderToolsModel {
     this.updateNumberOfStages();
     this.updateNumberOfLevels();
     this.updateStageLabel();
-    this.enableStageButtons();
+    this.updateStageButtonsAvalibility();
     this.enableLevelButtons();
     this.updateLevelLimits();
     this.updateLevelLabel();
@@ -240,7 +268,7 @@ export class ReaderToolsModel {
     this.updateElementContent("numberOfLevels", this.synphony.getLevels().length.toString());
   }
 
-  enableStageButtons(): void {
+  updateStageButtonsAvalibility(): void {
     this.updateDisabledStatus("decStage", this.stageNumber <= 1);
     this.updateDisabledStatus("incStage", this.stageNumber >= this.synphony.getStages().length);
   }
@@ -765,7 +793,7 @@ export class ReaderToolsModel {
 //       //So we specify our own identity transformResponse
 //         transformResponse:  (data: string) => <string>data }
 //     ).then(result => {
-//       //The return looks like {'12547c' : 'hello there', '898af87' : 'words of this page', etc.} 
+//       //The return looks like {'12547c' : 'hello there', '898af87' : 'words of this page', etc.}
 //       this.pageIDToText = JSON.parse(result.data);
 //       this.doMarkup();
 //     });
@@ -773,12 +801,12 @@ export class ReaderToolsModel {
 
   getTextOfWholeBook(): void {
     axios.get<any[]>('/bloom/api/readers/io/textOfContentPages').then(result => {
-      //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.} 
+      //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
       this.pageIDToText = result.data;
       this.doMarkup();
     });
   }
-  
+
   displayBookTotals(): void {
 
     if (this.pageIDToText.length === 0) {
