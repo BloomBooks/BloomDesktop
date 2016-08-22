@@ -100,11 +100,11 @@ export class LocalizationManager {
     public getText(stringId: string, englishText?: string, ...args): string {
         if(typeof stringId === 'undefined')
         {
-            try { 
+            try {
                 throw new Error('localizationManager.getText() stringid was undefined');
             }
-            catch (e) { 
-                    throw(e.message+e.stack); 
+            catch (e) {
+                    throw(e.message+e.stack);
             }
         }
         if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
@@ -219,6 +219,12 @@ export class LocalizationManager {
             }
         });
         return deferred.promise();
+    }
+
+    localizeThenSetElementText(element: HTMLElement, stringId:string, englishText:string): void {
+        this.asyncGetText(stringId, englishText).then( (translation) => {
+            element.innerText = translation;
+        });
     }
 
 /**
