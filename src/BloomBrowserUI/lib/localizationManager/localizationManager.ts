@@ -223,7 +223,7 @@ export class LocalizationManager {
 
     localizeThenSetElementText(element: HTMLElement, stringId:string, englishText:string): void {
         this.asyncGetText(stringId, englishText).then( (translation) => {
-            element.outerHTML = translation;
+            element.innerText = translation;
         });
     }
 
