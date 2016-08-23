@@ -36,8 +36,22 @@ export class ToolBox {
             // the toolbox itself handles keypresses in order to manage the process
             // of giving each tool a chance to update things when the user stops typing
             // (while maintaining the selection if at all possible).
-            $(container).find('.bloom-editable').keypress(function () {
-                doKeypressMarkup();
+            $(container).find('.bloom-editable').keypress(function (event) {
+                if(event.ctrlKey){
+                    // this is check is a workaround for BL-3490, but when doKeypressMarkup() get's fixed, it should be removed
+                    // because as is, we're not updating markup when you paste in text
+                    console.log("Skipping markup on paste because of faulty insertion logic. See BL-3490");
+                    return;
+                }
+                //don't do markup on cursor keys
+                if(event.keyCode >= 37 && event.keyCode <= 40){
+                    // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
+                    // if all they did was move the cursor, we don't need to look at markup.
+                    console.log("skipping markup on arrow key");
+                    return;
+                }
+                  console.log("doing markup "+event.ctrlKey);
+                 doKeypressMarkup();
             });
        }
     }
@@ -317,6 +331,9 @@ function doKeypressMarkup(): void {
             return; // don't even try to adjust markup while there is some complex selection
         }
 
+
+        const innerHtmlBeforeMarkup = active.innerHTML;
+
         var myRange: Range = selection.getRangeAt(0).cloneRange();
         myRange.setStart(active, 0);
         var offset: number = myRange.toString().length;
@@ -342,9 +359,15 @@ function doKeypressMarkup(): void {
 
         if (currentTool && toolbox.toolboxIsShowing()) currentTool.updateMarkup();
 
-        // Now we try to restore the selection at the specified position.
-        EditableDivUtils.makeSelectionIn(active, offset, divBrCount, atStart);
-
+        // ideally, this check wouldn't matter, but we're tring to limit the impact of some bugs in the setting of the selection
+        // might as well not even try if there's no reason to think the html changed
+        if(active.innerHTML != innerHtmlBeforeMarkup) {
+            // Now we try to restore the selection at the specified position.
+            console.log("makeSelectionIn active:"+active+" current.nodeType:"+current.nodeType+" offset:"+offset+" divBrCount:"+divBrCount+" atStart:"+atStart);
+            EditableDivUtils.makeSelectionIn(active, offset, divBrCount, atStart);
+        } else {
+            console.log("no markup apparent");
+        }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
         keypressTimer = null;
     }, 500);
