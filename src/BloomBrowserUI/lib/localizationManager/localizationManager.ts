@@ -193,6 +193,7 @@ export class LocalizationManager {
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
         var deferred = $.Deferred();
+
         //when the async call comes back, we massage the text
         axios.get("/bloom/i18n/translate",
         {
@@ -206,7 +207,8 @@ export class LocalizationManager {
             }
             deferred.resolve(text);
         })
-        //reviewslog: verify that this block gets activated when needed
+
+        //TODO: I (JH) could not get this to fire, in a unit test environment, when there was no response.
         .catch(text => {
             if (englishDefault) {
                 text = HtmlDecode(englishText);
