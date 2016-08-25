@@ -322,7 +322,6 @@
 			this._cutButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._cutButton.TextDropShadow = false;
 			this._betterToolTip1.SetToolTip(this._cutButton, "Cut (Ctrl-x)");
-			this._betterToolTip1.SetToolTipWhenDisabled(this._cutButton, "You need to select some text before you can cut it");
 			this._cutButton.UseVisualStyleBackColor = false;
 			this._cutButton.Click += new System.EventHandler(this._cutButton_Click);
 			// 
