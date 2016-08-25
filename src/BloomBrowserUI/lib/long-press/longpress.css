@@ -21,6 +21,8 @@
   border: solid 4px black;
   border-radius: 12px;
   font-size: 24pt;
+
+  position: relative;/* without this, we've got 'static' and shortcut letters can't be posititioned*/
 }
 .long-press-popup li::before {
   content: attr(data-shortcut);

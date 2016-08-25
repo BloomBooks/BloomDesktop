@@ -9,10 +9,11 @@ html
 		link(rel='stylesheet', href='/bloom/pageChooser/page-chooser.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/bookEdit/bloomDialog.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/lib/pure-drawer.css', type='text/css')
-		//script(src='/bloom/jquery.min.js')
+		link(rel='stylesheet', href='/bloom/lib/long-press/longpress.css', type='text/css')
+		script(src='/bloom/jquery.min.js') //needed by longpress
 		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
 		//script(src='/bloom/bookEdit/js/jquery.hasAttr.js')
-		
+
 		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
 
 		script(src='/bloom/commonBundle.js')
@@ -36,7 +37,7 @@ html
 						document.getElementById('page').src = '{simulatedPageFileInBookFolder}';
 					} else {
 						window.setTimeout(loadPageWhenToolboxIsSetup,10);
-					}					
+					}
 				}
 				loadPageWhenToolboxIsSetup();
 			});
