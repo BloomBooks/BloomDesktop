@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
+using L10NSharp;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.Extensions;
 using SIL.TestUtilities;
 
 namespace BloomTests
@@ -115,10 +113,45 @@ namespace BloomTests
 		[Test]
 		public void GetLocalizableFileDistributedWithApplication_CurrentlyInEnglish_FindsIt()
 		{
-			var filename = "test-en.txt";
-			File.WriteAllText(_otherFilesForTestingFolder.Combine(filename),"");
-			BloomFileLocator.GetLocalizableFileDistributedWithApplication(filename);
-			Assert.That(BloomFileLocator.GetLocalizableFileDistributedWithApplication(filename), Is.EqualTo(_otherFilesForTestingFolder.Combine(filename)));
+			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.md");
+			Assert.IsTrue(path.EndsWith("TrainingVideos-en.md"));
+		}
+
+		[Test]
+		public void GetLocalizableFileDistributedWithApplication_DontHaveThatTranslation_GetEnglishOne()
+		{
+			LocalizationManager.SetUILanguage("zz",false);
+			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.md");
+			Assert.IsTrue(path.EndsWith("TrainingVideos-en.md"));
+		}
+
+		[Test]
+		public void GetBestLocalizedFile_EnglishIsCurrentLang_GetEnglishOne()
+		{
+			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
+				"../browser/xMatter/Traditional-XMatter/description-en.txt");
+			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
+			Assert.AreEqual(englishPath, bestLocalizedFile);
+		}
+
+		[Test]
+		public void GetBestLocalizedFile_DontHaveThatTranslation_GetEnglishOne()
+		{
+			LocalizationManager.SetUILanguage("zz", false);
+			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
+				"../browser/xMatter/Traditional-XMatter/description-en.txt");
+			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
+			Assert.AreEqual(englishPath, bestLocalizedFile);
+		}
+
+		[Test]
+		public void GetBestLocalizedFile_HaveFrench_FindsIt()
+		{
+			LocalizationManager.SetUILanguage("fr", false);
+			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
+				"../browser/xMatter/Traditional-XMatter/description-en.txt");
+			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
+			Assert.IsTrue(bestLocalizedFile.Contains("-fr"));
 		}
 	}
 }

@@ -53,7 +53,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// This is Bloom's achilles heel.
+		/// These are used (as of 26 aug 2016) only by LibPalaso's FileLocator.LocateFile(). Not used by GetFileDistributedWIthApplication().
 		/// </summary>
 		/// <returns></returns>
 		protected override IEnumerable<string> GetSearchPaths()
@@ -152,17 +152,29 @@ namespace Bloom
 			return BloomFileLocator.GetBrowserDirectory("xMatter");
 		}
 
-		public static string GetLocalizableFileDistributedWithApplication(string languageCode, string englishFileName)
+		/// <summary>
+		/// This can be used to find the best localized file when there is only one file with the given name, 
+		/// and the file is part of the files distributed with Bloom (i.e., not something in a downloaded template).
+		/// </summary>
+		public static string GetBestLocalizableFileDistributedWithApplication(bool existenceOfEnglishVersionIsOptional, params string[] partsOfEnglishFilePath)
 		{
-			var nameInThisLang = englishFileName.Replace("-en.", "-" + languageCode + ".");
-			var path = FileLocator.GetFileDistributedWithApplication(true, nameInThisLang);
-			if (!string.IsNullOrEmpty(path))
-				return path;
-			return FileLocator.GetFileDistributedWithApplication(englishFileName);
+			var englishPath = FileLocator.GetFileDistributedWithApplication(existenceOfEnglishVersionIsOptional, partsOfEnglishFilePath);
+			if(!File.Exists(englishPath))
+			{
+				return englishPath; // just return whatever the original GetFileDistributedWithApplication gave. "", null, whatever it is.
+			}
+			return BloomFileLocator.GetBestLocalizedFile(englishPath);
 		}
-		public static string GetLocalizableFileDistributedWithApplication(string englishFileName)
+
+
+		/// <summary>
+		/// If there is a file sitting next to the english one with the desired language, get that path.
+		/// Otherwise, returns the English path.
+		/// </summary>
+		public static string GetBestLocalizedFile(string pathToEnglishFile)
 		{
-			return FileLocator.GetFileDistributedWithApplication(LocalizationManager.UILanguageId, englishFileName);
+			var pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + LocalizationManager.UILanguageId + ".");
+			return File.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
 		}
 	}
 }
