@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
+using L10NSharp;
 using SIL.IO;
 
 namespace Bloom
@@ -149,6 +150,19 @@ namespace Bloom
 		public static string GetInstalledXMatterDirectory()
 		{
 			return BloomFileLocator.GetBrowserDirectory("xMatter");
+		}
+
+		public static string GetLocalizableFileDistributedWithApplication(string languageCode, string englishFileName)
+		{
+			var nameInThisLang = englishFileName.Replace("-en.", "-" + languageCode + ".");
+			var path = FileLocator.GetFileDistributedWithApplication(true, nameInThisLang);
+			if (!string.IsNullOrEmpty(path))
+				return path;
+			return FileLocator.GetFileDistributedWithApplication(englishFileName);
+		}
+		public static string GetLocalizableFileDistributedWithApplication(string englishFileName)
+		{
+			return FileLocator.GetFileDistributedWithApplication(LocalizationManager.UILanguageId, englishFileName);
 		}
 	}
 }

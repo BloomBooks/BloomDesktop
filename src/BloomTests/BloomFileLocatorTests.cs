@@ -23,6 +23,7 @@ namespace BloomTests
 		private XMatterPackFinder _xMatterFinder;
 		private TemporaryFolder _xMatterParentFolder;
 		private TemporaryFolder _xMatterFolder;
+		private TemporaryFolder _otherFilesForTestingFolder;
 
 		[SetUp]
 		public void Setup()
@@ -37,7 +38,11 @@ namespace BloomTests
 			//locations.Add(XMatterAppDataFolder);
 			//locations.Add(XMatterCommonDataFolder);
 			_xMatterFinder = new XMatterPackFinder(locations);
-			_fileLocator = new BloomFileLocator(new CollectionSettings(), _xMatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(),
+
+			_otherFilesForTestingFolder = new TemporaryFolder("BloomFileLocatorTests");
+			var userInstalledSearchPaths = new List<string>( ProjectContext.GetFoundFileLocations());
+			userInstalledSearchPaths.Add(_otherFilesForTestingFolder.Path);
+			_fileLocator = new BloomFileLocator(new CollectionSettings(), _xMatterFinder, ProjectContext.GetFactoryFileLocations(), userInstalledSearchPaths,
 				ProjectContext.GetAfterXMatterFileLocations());
 		}
 
@@ -46,6 +51,7 @@ namespace BloomTests
 		{
 			_xMatterFolder.Dispose();
 			_xMatterParentFolder.Dispose();
+			_otherFilesForTestingFolder.Dispose();
 		}
 
 		/// <summary>
@@ -104,6 +110,15 @@ namespace BloomTests
 		{
 			var path = _fileLocator.LocateFile("SomeRandomXYZABCStyles.css");
 			Assert.That(Path.GetDirectoryName(path), Is.StringContaining("User-XMatter"));
+		}
+
+		[Test]
+		public void GetLocalizableFileDistributedWithApplication_CurrentlyInEnglish_FindsIt()
+		{
+			var filename = "test-en.txt";
+			File.WriteAllText(_otherFilesForTestingFolder.Combine(filename),"");
+			BloomFileLocator.GetLocalizableFileDistributedWithApplication(filename);
+			Assert.That(BloomFileLocator.GetLocalizableFileDistributedWithApplication(filename), Is.EqualTo(_otherFilesForTestingFolder.Combine(filename)));
 		}
 	}
 }
