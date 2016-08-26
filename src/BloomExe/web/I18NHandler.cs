@@ -83,20 +83,30 @@ namespace Bloom.Api
 					}
 					else
 					{
-						//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
-						// And return the English string, which is what we would do the next time anyway.  (BL-3374)
-						LocalizationManager.GetDynamicString("Bloom", id, englishText);
+						// it's ok if we don't have a translation, but if the string isn't even in the list of things that need translating,
+						// then we want to remind the developer to add it to the english tmx file.
+						if(!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
+						{
+							// starting with 3.8, we're getting failed lookups when we look for template pages that may be
+							// user-generated (i.e., if the dev has a custom template, that isn't a string that should be
+							// added to the Bloom distribution). Perhaps we could just detect that special case, but for now
+							// I'm dealing with a merge conflict with 3.7 so I'm just going to do what 3.8 did and keep all
+							// these messages passive.
+							//var modal = ApplicationUpdateSupport.ChannelName.StartsWith("Developer/") ? ModalIf.All : ModalIf.None;
+							var modal = ModalIf.None;
+							var longMsg =
+								String.Format(
+									"Dear Developer: Please add this dynamic string to the english.tmx file: Id=\"{0}\" English =\"{1}\"", id,
+									englishText);
 
-						// This, getting it in the dev's face, made sense but now that the AddPage looks for user templates,
-						// it's now frequently likely that we're encountering a string that we can't really expect to have in our
-						// list of strings. So I'm dropping this back to passive, even for developers
-						//var modal = ApplicationUpdateSupport.ChannelName.StartsWith("Developer/") ? ModalIf.All : ModalIf.None;
-
-						var longMsg = String.Format("**I18NHandler: Added missing translatable string (\"{0}\")", englishText);
-
-						//Note: this used to be at PassiveIf.All. The problem is that some requests for translations are of user
-						//data, like template book names. So lots of false positives.
-						NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "adding translatable string", longMsg);
+							NonFatalProblem.Report(modal, PassiveIf.Alpha, longMsg);
+						}
+						else // we *could* do this even if the above error is detected, but it just masks the problem then. So let's not.
+						{
+							//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
+							// And return the English string, which is what we would do the next time anyway.  (BL-3374)
+							LocalizationManager.GetDynamicString("Bloom", id, englishText);
+						}
 						info.ContentType = "text/plain";
 						info.WriteCompleteOutput(englishText);
 						return true;

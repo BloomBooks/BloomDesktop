@@ -40,7 +40,11 @@ div.word { margin: 0 2px 2px; width: auto; }
 div.sight-word {
 	color: #87CEFA;
 }
-div#lettersTable {max-height: 100px;}
+
+#lettersTable {
+	max-height: ~"calc(100% - 200px)"; //prefer the letters list over the word list. It's a real drag to have to scroll the letters.
+	min-height: 100px;
+}
 
 div.section ul { padding-left: 16px; margin-top: 4px; }
 div.section ul li { color: #fff; }
@@ -53,7 +57,7 @@ div.section ul li { color: #fff; }
   	padding: 8px 4px;
 	background-color: #333;
 	box-sizing: border-box;
-	width: calc(100% - 3px);
+	width: ~"calc(100% - 3px)";
 }
 #make-letter-word-list {
   font-size: 10px;

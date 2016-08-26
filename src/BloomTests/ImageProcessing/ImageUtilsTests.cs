@@ -71,5 +71,27 @@ namespace BloomTests.ImageProcessing
 				}
 			}
 		}
+
+		// See BL-3646 which showed we were blacking out the image when converting from png to jpg
+		[Test]
+		public static void ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased()
+		{
+			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirtWithTransparentBg.png");
+			var originalFileSize = new FileInfo(inputPath).Length;
+			using (var image = PalasoImage.FromFile(inputPath))
+			{
+				using (var folder = new TemporaryFolder("TransparentPngTest"))
+				{
+					var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path, false);
+					Assert.AreEqual(".png", Path.GetExtension(fileName));
+					var outputPath = folder.Combine(fileName);
+					using (var result = Image.FromFile(outputPath))
+					{
+						Assert.AreEqual(ImageFormat.Png, result.RawFormat);
+						Assert.That(originalFileSize <= new FileInfo(outputPath).Length);
+					}
+				}
+			}
+		}
 	}
 }

@@ -9,7 +9,7 @@
  *  Modified August 2015 to add instructions at the bottom
  *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
-import {EditableDivUtils} from "../../bookEdit/js/editableDivUtils"; 
+import {EditableDivUtils} from "../../bookEdit/js/editableDivUtils";
 require("./jquery.mousewheel.js");
 
 (function ($, window, undefined) {
@@ -41,7 +41,7 @@ require("./jquery.mousewheel.js");
         'R':'ŔŘɌⱤ',
         'S':'ßſŚŜŞṢŠÞ§',
         'T':'ŢŤṮƬƮ',
-        'U':'ÙÚÛŨÜŪŬŮŰŲɄƯƱ', 
+        'U':'ÙÚÛŨÜŪŬŮŰŲɄƯƱ',
         'V':'Ʋ',
         'W':'ŴẄΩ',
         'Y':'ÝŶŸƔƳ',
@@ -52,7 +52,7 @@ require("./jquery.mousewheel.js");
         'b':'ßβɓ',
         'c': 'çςćĉɔ̃ċč¢ɔ',
         'd':'ðďđɖḏɖɗ',
-        'e':'èéêẽëēėęẹěəæεɛ€', 
+        'e':'èéêẽëēėęẹěəæεɛ€',
         'f':'ƒʃƭ',
         'g':'ĝğġģɠƣ',
         'h':'ĥħɦẖ',
@@ -171,7 +171,7 @@ require("./jquery.mousewheel.js");
             }
         }
 
-        
+
         if (ignoredKeyDownKeyCodes.indexOf(e.which)>-1) return;
         activeElement=e.target;
 
@@ -184,14 +184,10 @@ require("./jquery.mousewheel.js");
         }
         activationKey=e.key;
     }
-    
+
     function onKeyUp(e) {
         if (ignoredKeyUpKeys.indexOf(e.which) > -1) return;
         if (activeElement == null) return;
-
-        // allow them to hold down the shift key after pressing a letter, 
-        // then use their other hand to do mouse or arrow keys.
-        if (e.shiftKey) return;
 
         activationKey=null;
         clearTimeout(timer);
