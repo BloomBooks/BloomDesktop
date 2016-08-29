@@ -852,7 +852,7 @@
         <seg>&amp;Delete</seg>
       </tuv>
     </tu>
-	<tu tuid="CopyToDistributionTmx_EditTab.SavingNotification">
+	<tu tuid="EditTab.SavingNotification">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Saving...</seg>
