@@ -33,12 +33,12 @@ namespace Bloom.Book
 
 		public string GetDescription()
 		{
-			const string desc = "description-";
+			const string desc = "description";
 			try
 			{
 				// try to read English XMatter pack description first
 				// we need version number at least
-				var pathEnglish = Path.Combine(PathToFolder, desc + "en.txt");
+				var pathEnglish = Path.Combine(PathToFolder, desc + "-en.txt");
 				if (!File.Exists(pathEnglish))
 					return string.Empty;
 
@@ -51,7 +51,7 @@ namespace Bloom.Book
 				var uiLangId = LocalizationManager.UILanguageId;
 				var enVersion = GetVersionNumberString(englishDescription);
 				englishDescription = StripVersionOff(englishDescription);
-				var pathUiLang = Path.Combine(PathToFolder, desc + uiLangId + ".txt");
+				var pathUiLang = Path.Combine(PathToFolder, desc + "-" + uiLangId + ".txt");
 				if (uiLangId == "en" || !File.Exists(pathUiLang))
 					return englishDescription;
 

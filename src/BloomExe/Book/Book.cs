@@ -1454,7 +1454,7 @@ namespace Bloom.Book
 		public string AboutBookMarkdownPath  {
 			get
 			{
-				return _storage.FolderPath.CombineForPath("ReadMe_en.md");
+				return BloomFileLocator.GetBestLocalizedFile(_storage.FolderPath.CombineForPath("ReadMe-en.md"));
 			}
 		}
 
