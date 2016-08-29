@@ -852,6 +852,12 @@
         <seg>&amp;Delete</seg>
       </tuv>
     </tu>
+	<tu tuid="CopyToDistributionTmx_EditTab.SavingNotification">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Saving...</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
