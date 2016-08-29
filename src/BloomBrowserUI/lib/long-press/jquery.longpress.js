@@ -174,7 +174,7 @@ require("./jquery.mousewheel.js");
 
         if (ignoredKeyDownKeyCodes.indexOf(e.which)>-1) return;
         activeElement=e.target;
-
+;
         if (e.key==activationKey) {
             e.preventDefault();
             e.stopPropagation(); //attempt to stop ckeditor from seeing this event
@@ -216,7 +216,9 @@ require("./jquery.mousewheel.js");
             letter.click(onPopupLetterClick);
             popup.find('ul').append(letter);
         }
-        $('body').append(popup);
+        var target = window.top.document.getElementById("left");
+        $(target).append(popup);
+        //$('body').append(popup);
         selectedCharIndex=-1;
         longpressPopupVisible = true;
     }
@@ -291,6 +293,7 @@ require("./jquery.mousewheel.js");
     }
 
     function replacePreviousLetterWithText(text) {
+
         if (isTextArea()) {
             var pos=getTextAreaCaretPosition(activeElement);
             var arVal=$(activeElement).val().split('');
@@ -386,7 +389,9 @@ require("./jquery.mousewheel.js");
         this._defaults = defaults;
         this._name = pluginName;
 
-        popup = $('<div  class=long-press-popup><ul />' + this.options.instructions + '</div>');
+        //popup = $('<div id="longpress" class="long-press-popup"><ul />' + this.options.instructions + '</div>');
+
+        popup = window.top.$('<div id="longpress" class="long-press-popup"><ul />' + this.options.instructions + '</div>');
         this.init();
     }
 

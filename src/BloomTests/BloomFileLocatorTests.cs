@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
+using L10NSharp;
 using NUnit.Framework;
-using SIL.IO;
+using SIL.Extensions;
 using SIL.TestUtilities;
 
 namespace BloomTests
@@ -23,6 +21,7 @@ namespace BloomTests
 		private XMatterPackFinder _xMatterFinder;
 		private TemporaryFolder _xMatterParentFolder;
 		private TemporaryFolder _xMatterFolder;
+		private TemporaryFolder _otherFilesForTestingFolder;
 
 		[SetUp]
 		public void Setup()
@@ -37,7 +36,11 @@ namespace BloomTests
 			//locations.Add(XMatterAppDataFolder);
 			//locations.Add(XMatterCommonDataFolder);
 			_xMatterFinder = new XMatterPackFinder(locations);
-			_fileLocator = new BloomFileLocator(new CollectionSettings(), _xMatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(),
+
+			_otherFilesForTestingFolder = new TemporaryFolder("BloomFileLocatorTests");
+			var userInstalledSearchPaths = new List<string>( ProjectContext.GetFoundFileLocations());
+			userInstalledSearchPaths.Add(_otherFilesForTestingFolder.Path);
+			_fileLocator = new BloomFileLocator(new CollectionSettings(), _xMatterFinder, ProjectContext.GetFactoryFileLocations(), userInstalledSearchPaths,
 				ProjectContext.GetAfterXMatterFileLocations());
 		}
 
@@ -46,6 +49,7 @@ namespace BloomTests
 		{
 			_xMatterFolder.Dispose();
 			_xMatterParentFolder.Dispose();
+			_otherFilesForTestingFolder.Dispose();
 		}
 
 		/// <summary>
@@ -104,6 +108,50 @@ namespace BloomTests
 		{
 			var path = _fileLocator.LocateFile("SomeRandomXYZABCStyles.css");
 			Assert.That(Path.GetDirectoryName(path), Is.StringContaining("User-XMatter"));
+		}
+
+		[Test]
+		public void GetLocalizableFileDistributedWithApplication_CurrentlyInEnglish_FindsIt()
+		{
+			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.md");
+			Assert.IsTrue(path.EndsWith("TrainingVideos-en.md"));
+		}
+
+		[Test]
+		public void GetLocalizableFileDistributedWithApplication_DontHaveThatTranslation_GetEnglishOne()
+		{
+			LocalizationManager.SetUILanguage("gd", false);
+			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.md");
+			Assert.IsTrue(path.EndsWith("TrainingVideos-en.md"));
+		}
+
+		[Test]
+		public void GetBestLocalizedFile_EnglishIsCurrentLang_GetEnglishOne()
+		{
+			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
+				"../browser/templates/xMatter/Traditional-XMatter/description-en.txt");
+			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
+			Assert.AreEqual(englishPath, bestLocalizedFile);
+		}
+
+		[Test]
+		public void GetBestLocalizedFile_DontHaveThatTranslation_GetEnglishOne()
+		{
+			LocalizationManager.SetUILanguage("gd", false);
+			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
+				"../browser/templates/xMatter/Traditional-XMatter/description-en.txt");
+			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
+			Assert.AreEqual(englishPath, bestLocalizedFile);
+		}
+
+		[Test]
+		public void GetBestLocalizedFile_HaveFrench_FindsIt()
+		{
+			LocalizationManager.SetUILanguage("fr", false);
+			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
+				"../browser/templates/xMatter/Traditional-XMatter/description-en.txt");
+			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
+			Assert.IsTrue(bestLocalizedFile.Contains("-fr"));
 		}
 	}
 }
