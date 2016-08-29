@@ -105,11 +105,11 @@ namespace Bloom.Api
 										"when the user has not encountered this part of the interface yet.",
 										id,
 										englishText);
-								NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "TMX ERROR", longMsg);
+								NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Missing l10n: "+englishText, longMsg);
 							}
 							else
 							{
-								NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "String not Ready For Localization", 
+								NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Missing l10n: " + englishText, 
 									"Please report that "+id+" needs to be " +
 									"added to the en.tmx, so that it can show up in the list of things to be localized even " +
 									"when the user has not encountered this part of the interface yet.");
