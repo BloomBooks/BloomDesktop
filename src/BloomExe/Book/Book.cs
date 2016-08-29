@@ -1846,7 +1846,7 @@ namespace Bloom.Book
 			{
 				body.InsertAfter(pageDiv, pages[indexOfItemAfterRelocation-1]);
 			}
-
+			BuildPageCache();
 			Save();
 			InvokeContentsChanged(null);
 			return true;
