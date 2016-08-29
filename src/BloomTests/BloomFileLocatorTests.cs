@@ -120,7 +120,7 @@ namespace BloomTests
 		[Test]
 		public void GetLocalizableFileDistributedWithApplication_DontHaveThatTranslation_GetEnglishOne()
 		{
-			LocalizationManager.SetUILanguage("zz",false);
+			LocalizationManager.SetUILanguage("gd", false);
 			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.md");
 			Assert.IsTrue(path.EndsWith("TrainingVideos-en.md"));
 		}
@@ -137,7 +137,7 @@ namespace BloomTests
 		[Test]
 		public void GetBestLocalizedFile_DontHaveThatTranslation_GetEnglishOne()
 		{
-			LocalizationManager.SetUILanguage("zz", false);
+			LocalizationManager.SetUILanguage("gd", false);
 			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
 				"../browser/xMatter/Traditional-XMatter/description-en.txt");
 			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
