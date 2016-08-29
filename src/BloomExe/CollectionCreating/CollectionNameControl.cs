@@ -83,7 +83,7 @@ namespace Bloom.CollectionCreating
 			get
 			{
 				return (Directory.Exists(Path.GetDirectoryName(_collectionInfo.PathToSettingsFile))
-					|| File.Exists(_collectionInfo.PathToSettingsFile));
+					|| SafeFile.Exists(_collectionInfo.PathToSettingsFile));
 			}
 		}
 

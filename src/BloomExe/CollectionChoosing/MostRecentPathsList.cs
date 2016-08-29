@@ -65,7 +65,7 @@ namespace Bloom.CollectionChoosing
 		{
 			foreach (string path in _paths)
 			{
-				if (File.Exists(path) || Directory.Exists(path))
+				if (SafeFile.Exists(path) || Directory.Exists(path))
 				{
 					yield return path;
 				}
@@ -83,7 +83,7 @@ namespace Bloom.CollectionChoosing
 			{
 				throw new ArgumentNullException("path");
 			}
-			if (!File.Exists(path) && ! Directory.Exists(path))
+			if (!SafeFile.Exists(path) && ! Directory.Exists(path))
 			{
 				return false;
 			}

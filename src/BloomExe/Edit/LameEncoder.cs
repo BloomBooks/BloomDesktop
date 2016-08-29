@@ -19,8 +19,8 @@ namespace Bloom.Edit
 		{
 			LocateAndRememberLAMEPath();
 
-			if (File.Exists(destPathWithoutExtension + ".mp3"))
-				File.Delete(destPathWithoutExtension + ".mp3");
+			if (SafeFile.Exists(destPathWithoutExtension + ".mp3"))
+				SafeFile.Delete(destPathWithoutExtension + ".mp3");
 
 			progress.WriteMessage(LocalizationManager.GetString("LameEncoder.Progress", " Converting to mp3", "Appears in progress indicator"));
 
@@ -79,7 +79,7 @@ namespace Bloom.Edit
 			foreach (var path in progFileDirs)
 			{
 				var exePath = (Path.Combine(path, "LAME for Audacity/lame.exe"));
-				if (File.Exists(exePath))
+				if (SafeFile.Exists(exePath))
 					return exePath;
 			}
 			return string.Empty;

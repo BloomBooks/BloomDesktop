@@ -255,6 +255,7 @@
     <Compile Include="Edit\TalkingBookTool.cs" />
     <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
+    <Compile Include="SafeIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
       <SubType>UserControl</SubType>
@@ -280,6 +281,7 @@
     <Compile Include="Book\DataSet.cs" />
     <Compile Include="Book\StyleSheetLinkSorter.cs" />
     <Compile Include="Book\TranslationGroupManager.cs" />
+    <Compile Include="RetryUtil.cs" />
     <Compile Include="ToPalaso\SafeInvoke.cs" />
     <Compile Include="UrlPathString.cs" />
     <Compile Include="Book\UserPrefs.cs" />
@@ -670,7 +672,9 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="SourceCollectionsList.cs" />
-    <Compile Include="Workspace\TabStrip.cs" />
+    <Compile Include="Workspace\TabStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
     <Compile Include="Publish\PublishView.cs">

@@ -188,7 +188,7 @@ namespace Bloom
 			//Sitting on disk?
 			if (!string.IsNullOrEmpty(folderForThumbNailCache))
 			{
-				if (File.Exists(thumbNailFilePath))
+				if (SafeFile.Exists(thumbNailFilePath))
 				{
 					var thumbnail = ImageUtils.GetImageFromFile(thumbNailFilePath);
 					thumbnail.Tag = thumbNailFilePath;
@@ -645,11 +645,11 @@ namespace Bloom
 					string thumbnailPath = image.Tag as string;
 					if (!string.IsNullOrEmpty(thumbnailPath))
 					{
-						if (File.Exists(thumbnailPath))
+						if (SafeFile.Exists(thumbnailPath))
 						{
 							try
 							{
-								File.Delete(thumbnailPath);
+								SafeFile.Delete(thumbnailPath);
 							}
 							catch (Exception)
 							{

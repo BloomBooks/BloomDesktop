@@ -63,7 +63,7 @@ namespace Bloom.CollectionChoosing
 			{
 				collectionsToShow.AddRange(Directory.GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
 					.Select(d => Path.Combine(d, Path.ChangeExtension(Path.GetFileName(d),"bloomCollection")))
-					.Where(c => File.Exists(c) && !collectionsToShow.Contains(c))
+					.Where(c => SafeFile.Exists(c) && !collectionsToShow.Contains(c))
 					.OrderBy(c => Directory.GetLastWriteTime(Path.GetDirectoryName(c)))
 					.Reverse()
 					.Take(maxMruItems - collectionsToShow.Count()));
@@ -273,18 +273,18 @@ namespace Bloom.CollectionChoosing
 						dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
 
 					//on my windows 10 box, the file we want is in AppData\Local\Dropbox
-					if (!File.Exists(dropboxInfoFile))
+					if (!SafeFile.Exists(dropboxInfoFile))
 					{
 						baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 						if (SIL.PlatformUtilities.Platform.IsWindows)
 							dropboxInfoFile = Path.Combine(baseFolder, @"Dropbox\info.json");
 						else
 							dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
-						if (!File.Exists(dropboxInfoFile))
+						if (!SafeFile.Exists(dropboxInfoFile))
 							return; // User appears to not have Dropbox installed
 					}
 
-					var info = File.ReadAllText(dropboxInfoFile);
+					var info = SafeFile.ReadAllText(dropboxInfoFile);
 					var matches = Regex.Matches(info, @"{""path"": ""([^""]+)"",");
 					foreach (Match match in matches)
 					{

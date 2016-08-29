@@ -5,7 +5,6 @@ using System.Text;
 #if !__MonoCS__
 using IWshRuntimeLibrary;
 #endif
-using File = System.IO.File;
 
 namespace Bloom.Collection
 {
@@ -25,8 +24,8 @@ namespace Bloom.Collection
 			var linkPath = Path.Combine(whereToPutItPath, name) + ".lnk";
 			var shortLinkPath = "";
 
-			if(File.Exists(linkPath))
-				File.Delete(linkPath);
+			if(SafeFile.Exists(linkPath))
+				SafeFile.Delete(linkPath);
 
 #if !__MonoCS__
 			var wshShell = new WshShellClass();
@@ -50,8 +49,8 @@ namespace Bloom.Collection
 				name = Path.GetFileName(shortTargetPath.ToString());
 
 				shortLinkPath = Path.Combine(shortWhereToPutPath.ToString(), name) + ".lnk";
-				if (File.Exists(shortLinkPath))
-					File.Delete(shortLinkPath);
+				if (SafeFile.Exists(shortLinkPath))
+					SafeFile.Delete(shortLinkPath);
 
 				shortcut = (IWshShortcut)wshShell.CreateShortcut(shortLinkPath);
 				shortcut.TargetPath = shortTargetPath.ToString();
@@ -61,7 +60,7 @@ namespace Bloom.Collection
 
 			// now rename the link to the correct name if needed
 			if (!string.IsNullOrEmpty(shortLinkPath))
-				File.Move(shortLinkPath, linkPath);
+				SafeFile.Move(shortLinkPath, linkPath);
 
 #else
 			// It's tempting to use symbolic links instead which would work much nicer - iff
@@ -75,7 +74,7 @@ namespace Bloom.Collection
 //			var target = new Mono.Unix.UnixSymbolicLinkInfo(targetPath);
 //			target.CreateSymbolicLink(linkPath);
 
-			File.WriteAllText(linkPath, targetPath);
+			FileWithRetry.WriteAllText(linkPath, targetPath);
 #endif
 		}
 	}

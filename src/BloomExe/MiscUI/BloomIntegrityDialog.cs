@@ -42,10 +42,10 @@ namespace Bloom.MiscUI
 				if(FileLocator.GetFileDistributedWithApplication(true, fileName) == null)
 				{
 					//In a code directory, the FileLocator considers the solution the root, so it can't find files in output\debug
-					if(!File.Exists(Path.Combine(FileLocator.DirectoryOfTheApplicationExecutable, fileName)))
+					if(!SafeFile.Exists(Path.Combine(FileLocator.DirectoryOfTheApplicationExecutable, fileName)))
 					{
 						//maybe it's an exe in distfiles?
-						if(fileName.EndsWith(".exe") && File.Exists(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "DistFiles")))
+						if(fileName.EndsWith(".exe") && SafeFile.Exists(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "DistFiles")))
 						{
 							continue;
 						}
@@ -75,7 +75,7 @@ namespace Bloom.MiscUI
 				{
 					var installFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
 							.CombineForPath(Application.ProductName);
-					message = File.ReadAllText(messagePath).Replace("{installFolder}", installFolder);
+					message = SafeFile.ReadAllText(messagePath).Replace("{installFolder}", installFolder);
 				}
 
 				message = message + Environment.NewLine + Environment.NewLine + errors.ToString();
@@ -111,9 +111,9 @@ namespace Bloom.MiscUI
 							.CombineForPath(Application.ProductName, "SquirrelSetup.log");
 					dlg.Description += "=Squirrel Log=" + Environment.NewLine;
 					dlg.Description += logPath + Environment.NewLine;
-					if(File.Exists(logPath))
+					if(SafeFile.Exists(logPath))
 					{
-						dlg.Description += File.ReadAllText(logPath);
+						dlg.Description += SafeFile.ReadAllText(logPath);
 					}
 					else
 					{

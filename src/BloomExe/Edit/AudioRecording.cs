@@ -99,7 +99,7 @@ namespace Bloom.Edit
 			var ids = request.RequiredParam("ids");
 			foreach (var id in ids.Split(','))
 			{
-				if (File.Exists(GetPathToSegment(id)))
+				if (SafeFile.Exists(GetPathToSegment(id)))
 				{
 					request.Succeeded();
 					return;
@@ -225,7 +225,7 @@ namespace Bloom.Edit
 			catch (Exception error)
 			{
 				Logger.WriteEvent(error.Message);
-				File.Copy(PathToTemporaryWav,PathToCurrentAudioSegment, true);
+				SafeFile.Copy(PathToTemporaryWav,PathToCurrentAudioSegment, true);
 			}
 
 			//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
@@ -298,12 +298,12 @@ namespace Bloom.Edit
 				return;
 			}
 
-			if (File.Exists(PathToCurrentAudioSegment))
+			if (SafeFile.Exists(PathToCurrentAudioSegment))
 			{
 				//Try to deal with _backPath getting locked (BL-3160)
 				try
 				{
-					File.Delete(_backupPath);
+					SafeFile.Delete(_backupPath);
 				}
 				catch(IOException)
 				{
@@ -311,7 +311,7 @@ namespace Bloom.Edit
 				}
 				try
 				{
-					File.Copy(PathToCurrentAudioSegment, _backupPath, true);
+					SafeFile.Copy(PathToCurrentAudioSegment, _backupPath, true);
 				}
 				catch (Exception err)
 				{
@@ -322,7 +322,7 @@ namespace Bloom.Edit
 				}
 				try
 				{
-					File.Delete(PathToCurrentAudioSegment);
+					SafeFile.Delete(PathToCurrentAudioSegment);
 					//DesktopAnalytics.Analytics.Track("Re-recorded a clip", ContextForAnalytics);
 				}
 				catch (Exception err)
@@ -335,7 +335,7 @@ namespace Bloom.Edit
 			}
 			else
 			{
-				File.Delete(_backupPath);
+				SafeFile.Delete(_backupPath);
 				//DesktopAnalytics.Analytics.Track("Recording clip", ContextForAnalytics);
 			}
 			_startRecording = DateTime.Now;
@@ -399,7 +399,7 @@ namespace Bloom.Edit
 			// is the expected action.
 			try
 			{
-				File.Delete(PathToCurrentAudioSegment);
+				SafeFile.Delete(PathToCurrentAudioSegment);
 			}
 			catch (Exception error)
 			{
@@ -408,11 +408,11 @@ namespace Bloom.Edit
 			}
 
 			// If we had a prior recording, restore it...button press may have been a mistake.
-			if (File.Exists(_backupPath))
+			if (SafeFile.Exists(_backupPath))
 			{
 				try
 				{
-					File.Copy(_backupPath, PathToCurrentAudioSegment, true);
+					SafeFile.Copy(_backupPath, PathToCurrentAudioSegment, true);
 				}
 				catch (IOException e)
 				{
@@ -464,7 +464,7 @@ namespace Bloom.Edit
 		private void HandleCheckForSegment(ApiRequest request)
 		{
 			var path = GetPathToSegment(request.RequiredParam("id"));
-			request.ReplyWithText(File.Exists(path) ? "exists" : "not found");
+			request.ReplyWithText(SafeFile.Exists(path) ? "exists" : "not found");
 		}
 
 
@@ -475,7 +475,7 @@ namespace Bloom.Edit
 		private void HandleDeleteSegment(ApiRequest request)
 		{
 			var path = GetPathToSegment(request.RequiredParam("id"));
-			if(!File.Exists(path))
+			if(!SafeFile.Exists(path))
 			{
 				request.Succeeded();
 			}
@@ -483,7 +483,7 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					File.Delete(path);
+					SafeFile.Delete(path);
 					request.Succeeded();
 				}
 				catch(IOException e)

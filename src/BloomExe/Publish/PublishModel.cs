@@ -184,12 +184,12 @@ namespace Bloom.Publish
 			for (int i = 0; i < 100; i++)
 			{
 				path = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}.pdf", fileName, i));
-				if (!File.Exists(path))
+				if (!SafeFile.Exists(path))
 					break;
 
 				try
 				{
-					File.Delete(path);
+					SafeFile.Delete(path);
 					break;
 				}
 				catch (Exception)
@@ -232,11 +232,11 @@ namespace Bloom.Publish
 
 		public void Dispose()
 		{
-			if (File.Exists(PdfFilePath))
+			if (SafeFile.Exists(PdfFilePath))
 			{
 				try
 				{
-					File.Delete(PdfFilePath);
+					SafeFile.Delete(PdfFilePath);
 				}
 				catch (Exception)
 				{
@@ -341,7 +341,7 @@ namespace Bloom.Publish
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
 						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-						File.Copy(PdfFilePath, dlg.FileName, true);
+						SafeFile.Copy(PdfFilePath, dlg.FileName, true);
 						Analytics.Track("Save PDF", new Dictionary<string, string>()
 							{
 								{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},

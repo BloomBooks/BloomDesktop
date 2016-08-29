@@ -146,7 +146,7 @@ namespace Bloom.Book
 					Debug.Fail("Could not locate "+fileName);
 					continue;
 				}
-				var contents = File.ReadAllText(path);
+				var contents = SafeFile.ReadAllText(path);
 				var start = contents.IndexOf("STARTLAYOUTS");
 				if (start < 0)
 					 continue; //yield break; // continue;//move on to the next stylesheet

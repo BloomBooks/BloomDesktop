@@ -97,7 +97,7 @@ namespace Bloom.Api
 					{
 						var path = DecodableReaderTool.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
 						var content = request.RequiredPostJson();
-						File.WriteAllText(path, content, Encoding.UTF8);
+						SafeFile.WriteAllText(path, content, Encoding.UTF8);
 						request.Succeeded();
 					}
 					break;
@@ -220,14 +220,14 @@ namespace Bloom.Api
 				if (foundFile != null)
 				{
 					// copy it
-					File.Copy(Path.Combine(foundFile.DirectoryName, foundFile.Name), langFile);
+					SafeFile.Copy(Path.Combine(foundFile.DirectoryName, foundFile.Name), langFile);
 				}
 
 				return String.Empty;
 			}
 
 			// first look for ReaderToolsWords-<iso>.json
-			if (File.Exists(langFile))
+			if (SafeFile.Exists(langFile))
 				fileList1.Add(langFile);
 
 			// next look for <language_name>_lang_data.js
@@ -257,14 +257,14 @@ namespace Bloom.Api
 
 			path = Path.Combine(path, fileName);
 
-			if (!File.Exists(path)) return String.Empty;
+			if (!SafeFile.Exists(path)) return String.Empty;
 
 			// first try utf-8/ascii encoding (the .Net default)
-			var text = File.ReadAllText(path);
+			var text = SafeFile.ReadAllText(path);
 
 			// If the "unknown" character (65533) is present, C# did not sucessfully decode the file. Try the system default encoding and codepage.
 			if (text.Contains((char)65533))
-				text = File.ReadAllText(path, Encoding.Default);
+				text = SafeFile.ReadAllText(path, Encoding.Default);
 
 			return text;
 		}
@@ -274,9 +274,9 @@ namespace Bloom.Api
 			var settingsPath = DecodableReaderTool.GetReaderToolsSettingsFilePath(currentCollectionSettings);
 
 			// if file exists, return current settings
-			if (File.Exists(settingsPath))
+			if (SafeFile.Exists(settingsPath))
 			{
-				var result = File.ReadAllText(settingsPath, Encoding.UTF8);
+				var result = SafeFile.ReadAllText(settingsPath, Encoding.UTF8);
 				if (!string.IsNullOrWhiteSpace(result))
 					return result;
 			}
@@ -292,7 +292,7 @@ namespace Bloom.Api
 					+ "{\"maxWordsPerSentence\":8,\"maxWordsPerPage\":18,\"maxWordsPerBook\":206,\"maxUniqueWordsPerBook\":32,\"thingsToRemember\":[]},"
 					+ "{\"maxWordsPerSentence\":12,\"maxWordsPerPage\":25,\"maxWordsPerBook\":500,\"maxUniqueWordsPerBook\":64,\"thingsToRemember\":[]},"
 					+ "{\"maxWordsPerSentence\":20,\"maxWordsPerPage\":50,\"maxWordsPerBook\":1000,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]}]}";
-			File.WriteAllText(settingsPath, settingsString);
+			SafeFile.WriteAllText(settingsPath, settingsString);
 
 			return settingsString;
 		}
@@ -339,7 +339,7 @@ namespace Bloom.Api
 
 			// write the file
 			var fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, "Decodable Books Letters and Words.txt");
-			File.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
+			SafeFile.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
 
 			// open the file
 			PathUtilities.OpenFileInApplication(fileName);
@@ -360,7 +360,7 @@ namespace Bloom.Api
 			var fileName = String.Format(DecodableReaderTool.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
-			File.WriteAllText(fileName, jsonString, Encoding.UTF8);
+			SafeFile.WriteAllText(fileName, jsonString, Encoding.UTF8);
 		}
 
 		private void OpenTextsFolder()
@@ -417,7 +417,7 @@ namespace Bloom.Api
 						var i = 0;
 
 						// get a unique destination file name
-						while (File.Exists(Path.Combine(destPath, destFile)))
+						while (SafeFile.Exists(Path.Combine(destPath, destFile)))
 						{
 							destFile = Path.GetFileName(srcFile);
 							var fileExt = Path.GetExtension(srcFile);
@@ -426,7 +426,7 @@ namespace Bloom.Api
 							destFile += fileExt;
 						}
 
-						File.Copy(srcFile, Path.Combine(destPath, destFile));
+						SafeFile.Copy(srcFile, Path.Combine(destPath, destFile));
 					}
 
 					returnVal = destFile;
@@ -441,7 +441,7 @@ namespace Bloom.Api
 			var folderPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Allowed Words");
 			var fullFileName = Path.Combine(folderPath, fileName);
 
-			if (File.Exists(fullFileName))
+			if (SafeFile.Exists(fullFileName))
 				PathUtilities.DeleteToRecycleBin(fullFileName);
 		}
 

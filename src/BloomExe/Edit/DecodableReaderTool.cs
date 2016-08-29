@@ -18,7 +18,7 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					File.Copy(readerSettingsFile, Path.Combine(destFolder, Path.GetFileName(readerSettingsFile)), true);
+					SafeFile.Copy(readerSettingsFile, Path.Combine(destFolder, Path.GetFileName(readerSettingsFile)), true);
 				}
 				catch (IOException e)
 				{
@@ -54,11 +54,11 @@ namespace Bloom.Edit
 			var readerToolsPath = GetReaderToolsSettingsFilePath(settings);
 			var bloomFolder = ProjectContext.GetBloomAppDataFolder();
 			var newReaderTools = Path.Combine(bloomFolder, Path.GetFileName(readerToolsPath));
-			if (!File.Exists(newReaderTools))
+			if (!SafeFile.Exists(newReaderTools))
 				return;
-			if (File.Exists(readerToolsPath) && File.GetLastWriteTime(readerToolsPath) > File.GetLastWriteTime(newReaderTools))
+			if (SafeFile.Exists(readerToolsPath) && SafeFile.GetLastWriteTime(readerToolsPath) > SafeFile.GetLastWriteTime(newReaderTools))
 				return; // don't overwrite newer existing settings?
-			File.Copy(newReaderTools, readerToolsPath, true);
+			SafeFile.Copy(newReaderTools, readerToolsPath, true);
 		}
 
 		/// <remarks>About this file (e.g. ReaderToolsWords-en.json).

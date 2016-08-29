@@ -88,7 +88,7 @@ namespace Bloom.Book
 			{
 				progress.WriteStatus("Reading metadata from " + fileName);
 				var path = folderPath.CombineForPath(fileName);
-				if (!File.Exists(path)) // they have bigger problems, which aren't appropriate to deal with here.
+				if (!SafeFile.Exists(path)) // they have bigger problems, which aren't appropriate to deal with here.
 				{
 					imgElement.RemoveAttribute("data-copyright");
 					imgElement.RemoveAttribute("data-creator");

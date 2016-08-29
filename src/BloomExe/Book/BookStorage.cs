@@ -143,14 +143,14 @@ namespace Bloom.Book
 		public bool RemoveBookThumbnail(string fileName)
 		{
 			string path = Path.Combine(_folderPath, fileName);
-			if(File.Exists(path) &&
+			if(SafeFile.Exists(path) &&
 			 (new System.IO.FileInfo(path).IsReadOnly)) //readonly is good when you've put in a custom thumbnail
 			{
 				return false;
 			}
-			if (File.Exists(path))
+			if (SafeFile.Exists(path))
 			{
-				File.Delete(path);
+				SafeFile.Delete(path);
 			}
 			return true;
 		}
@@ -169,7 +169,7 @@ namespace Bloom.Book
 		public bool TryGetPremadeThumbnail(string fileName, out Image image)
 		{
 			string path = Path.Combine(_folderPath, fileName);
-			if (File.Exists(path))
+			if (SafeFile.Exists(path))
 			{
 				image = ImageUtils.GetImageFromFile(path);
 				return true;
@@ -213,7 +213,7 @@ namespace Bloom.Book
 
 		public bool GetLooksOk()
 		{
-			return File.Exists(PathToExistingHtml) && string.IsNullOrEmpty(ErrorMessagesHtml);
+			return SafeFile.Exists(PathToExistingHtml) && string.IsNullOrEmpty(ErrorMessagesHtml);
 		}
 
 		public void Save()
@@ -239,10 +239,10 @@ namespace Bloom.Book
 			{
 				Logger.WriteEvent("Errors saving book {0}: {1}", PathToExistingHtml, errors);
 				var badFilePath = PathToExistingHtml + ".bad";
-				File.Copy(tempPath, badFilePath, true);
+				SafeFile.Copy(tempPath, badFilePath, true);
 				//hack so we can package this for palaso reporting
 				errors += string.Format("{0}{0}{0}Contents:{0}{0}{1}", Environment.NewLine,
-					File.ReadAllText(badFilePath));
+					SafeFile.ReadAllText(badFilePath));
 				var ex = new XmlSyntaxException(errors);
 
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
@@ -298,7 +298,7 @@ namespace Bloom.Book
 				{
 					Debug.WriteLine("Removed unused image: "+path);
 					Logger.WriteEvent("Removed unused image: " + path);
-					File.Delete(path);
+					SafeFile.Delete(path);
 				}
 				catch (Exception)
 				{
@@ -408,7 +408,7 @@ namespace Bloom.Book
 			Logger.WriteEvent("Renaming html from '{0}' to '{1}.htm'", currentFilePath, newFolderPath);
 
 			//next, rename the file
-			File.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
+			SafeFile.Move(currentFilePath, Path.Combine(FolderPath, Path.GetFileName(newFolderPath) + ".htm"));
 
 			//next, rename the enclosing folder
 			var fromToPair = new KeyValuePair<string, string>(FolderPath, newFolderPath);
@@ -451,7 +451,7 @@ namespace Bloom.Book
 			{
 				return "The directory (" + _folderPath + ") could not be found.";
 			}
-			if (!File.Exists(PathToExistingHtml))
+			if (!SafeFile.Exists(PathToExistingHtml))
 			{
 				return "Could not find an html file to use.";
 			}
@@ -502,7 +502,7 @@ namespace Bloom.Book
 				while (Uri.UnescapeDataString(imageFileName) != imageFileName)
 					imageFileName = Uri.UnescapeDataString(imageFileName);
 
-				if (!File.Exists(Path.Combine(_folderPath, imageFileName)))
+				if (!SafeFile.Exists(Path.Combine(_folderPath, imageFileName)))
 				{
 					if (!string.IsNullOrEmpty(pathToFolderOfReplacementImages))
 					{
@@ -525,7 +525,7 @@ namespace Bloom.Book
 			{
 				foreach (var imageFilePath in Directory.GetFiles(pathToFolderOfReplacementImages, missingFile))
 				{
-					File.Copy(imageFilePath, Path.Combine(_folderPath, missingFile));
+					SafeFile.Copy(imageFilePath, Path.Combine(_folderPath, missingFile));
 					progress.WriteMessage(string.Format("Replaced image {0} from a copy in {1}", missingFile,
 														pathToFolderOfReplacementImages));
 					return true;
@@ -563,7 +563,7 @@ namespace Bloom.Book
 		public static string FindBookHtmlInFolder(string folderPath)
 		{
 			string p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
-			if (File.Exists(p))
+			if (SafeFile.Exists(p))
 				return p;
 
 			if (!Directory.Exists(folderPath)) //bl-291 (user had 4 month-old version, so the bug may well be long gone)
@@ -582,7 +582,7 @@ namespace Bloom.Book
 
 			//template
 			p = Path.Combine(folderPath, "templatePages.htm");
-			if (File.Exists(p))
+			if (SafeFile.Exists(p))
 				return p;
 
 			return string.Empty;
@@ -657,7 +657,7 @@ namespace Bloom.Book
 				return;
 			}
 		
-			if (!File.Exists(pathToExistingHtml))
+			if (!SafeFile.Exists(pathToExistingHtml))
 			{
 				var files = new List<string>(Directory.GetFiles(_folderPath));
 				var b = new StringBuilder();
@@ -792,7 +792,7 @@ namespace Bloom.Book
 
 		private bool IsPathReadonly(string path)
 		{
-			return (File.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
+			return (SafeFile.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
 		}
 
 		private void Update(string fileName, string factoryPath = "")
@@ -845,10 +845,10 @@ namespace Bloom.Book
 					return;
 
 				documentPath = Path.Combine(_folderPath, fileName);
-				if(!File.Exists(documentPath))
+				if(!SafeFile.Exists(documentPath))
 				{
 					Logger.WriteMinorEvent("BookStorage.Update() Copying missing file {0} to {1}", factoryPath, documentPath);
-					File.Copy(factoryPath, documentPath);
+					SafeFile.Copy(factoryPath, documentPath);
 					return;
 				}
 				// due to BL-2166, we no longer compare times since downloaded books often have
@@ -865,9 +865,9 @@ namespace Bloom.Book
 				}
 				Logger.WriteMinorEvent("BookStorage.Update() Updating file {0} to {1}", factoryPath, documentPath);
 
-				File.Copy(factoryPath, documentPath, true);
+				SafeFile.Copy(factoryPath, documentPath, true);
 				//if the source was locked, don't copy the lock over
-				File.SetAttributes(documentPath, FileAttributes.Normal);
+				SafeFile.SetAttributes(documentPath, FileAttributes.Normal);
 			}
 			catch (Exception e)
 			{
@@ -905,14 +905,14 @@ namespace Bloom.Book
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation));
 
 			string autocssFilePath = ".."+Path.DirectorySeparatorChar+"settingsCollectionStyles.css";
-			if (File.Exists(Path.Combine(_folderPath,autocssFilePath)))
+			if (SafeFile.Exists(Path.Combine(_folderPath,autocssFilePath)))
 				EnsureHasLinkToStyleSheet(dom, autocssFilePath);
 
 			var customCssFilePath = ".." + Path.DirectorySeparatorChar + "customCollectionStyles.css";
-			if (File.Exists(Path.Combine(_folderPath, customCssFilePath)))
+			if (SafeFile.Exists(Path.Combine(_folderPath, customCssFilePath)))
 				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
 
-			if (File.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
+			if (SafeFile.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");

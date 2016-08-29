@@ -45,15 +45,15 @@ namespace Bloom.Book
 			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
 			
 			var jsonPath = MetaDataPath;
-			if (File.Exists(jsonPath))
+			if (SafeFile.Exists(jsonPath))
 			{
-				_metadata = BookMetaData.FromString(File.ReadAllText(jsonPath)); // Enhance: error handling?
+				_metadata = BookMetaData.FromString(SafeFile.ReadAllText(jsonPath)); // Enhance: error handling?
 			}
 			else
 			{
 				// Look for old tags files not yet migrated
 				var oldTagsPath = Path.Combine(folderPath, "tags.txt");
-				if (File.Exists(oldTagsPath))
+				if (SafeFile.Exists(oldTagsPath))
 				{
 					Book.ConvertTagsToMetaData(oldTagsPath, this);
 				}
@@ -219,7 +219,7 @@ namespace Bloom.Book
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
 			string path = Path.Combine(FolderPath, "thumbnail.png");
-			if (File.Exists(path))
+			if (SafeFile.Exists(path))
 			{
 				try
 				{
@@ -245,7 +245,7 @@ namespace Bloom.Book
 			{
 				try
 				{
-					File.WriteAllText(MetaDataPath, MetaData.Json);
+					SafeFile.WriteAllText(MetaDataPath, MetaData.Json);
 					return;
 				}
 				catch (IOException e)
@@ -446,7 +446,7 @@ namespace Bloom.Book
 
 		public static BookMetaData FromFolder(string bookFolderPath)
 		{
-			return FromString(File.ReadAllText(MetaDataPath(bookFolderPath)));
+			return BookMetaData.FromString(SafeFile.ReadAllText(MetaDataPath(bookFolderPath)));
 		}
 
 		public static string MetaDataPath(string bookFolderPath)
@@ -456,7 +456,7 @@ namespace Bloom.Book
 
 		public void WriteToFolder(string bookFolderPath)
 		{
-			File.WriteAllText(MetaDataPath(bookFolderPath), Json);
+			SafeFile.WriteAllText(MetaDataPath(bookFolderPath), Json);
 		}
 
 		[JsonIgnore]

@@ -159,7 +159,7 @@ namespace Bloom.Publish
 				thumbNailException = e;
 			}
 			var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-			if (thumbNailException != null || !File.Exists(coverPageImagePath))
+			if (thumbNailException != null || !SafeFile.Exists(coverPageImagePath))
 			{
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom failed to make a high-quality cover page for your book (BL-3209)",
 					"We will try to make the book anyway, but you may want to try again.",
@@ -167,7 +167,7 @@ namespace Bloom.Publish
 
 				coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
 				coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-				if (!File.Exists(coverPageImagePath))
+				if (!SafeFile.Exists(coverPageImagePath))
 				{
 					// I don't think we can make an epub without a cover page so at this point we've had it.
 					// I suppose we could recover without actually crashing but it doesn't seem worth it unless this
@@ -183,12 +183,12 @@ namespace Bloom.Publish
 			//supporting files
 
 			// Fixed requirement for all epubs
-			File.WriteAllText(Path.Combine(StagingDirectory, "mimetype"), @"application/epub+zip");
+			SafeFile.WriteAllText(Path.Combine(StagingDirectory, "mimetype"), @"application/epub+zip");
 
 			var metaInfFolder = Path.Combine(StagingDirectory, "META-INF");
 			Directory.CreateDirectory(metaInfFolder);
 			var containerXmlPath = Path.Combine(metaInfFolder, "container.xml");
-			File.WriteAllText(containerXmlPath, @"<?xml version='1.0' encoding='utf-8'?>
+			SafeFile.WriteAllText(containerXmlPath, @"<?xml version='1.0' encoding='utf-8'?>
 					<container version='1.0' xmlns='urn:oasis:names:tc:opendocument:xmlns:container'>
 					<rootfiles>
 					<rootfile full-path='content/content.opf' media-type='application/oebps-package+xml'/>
@@ -274,11 +274,11 @@ namespace Bloom.Publish
 			foreach (var ext in extensions)
 			{
 				var path = Path.Combine(root, Path.ChangeExtension(id, ext));
-				if (File.Exists(path))
+				if (SafeFile.Exists(path))
 					return path;
 			}
 			var wavPath = Path.Combine(root, Path.ChangeExtension(id, "wav"));
-			if (!File.Exists(wavPath))
+			if (!SafeFile.Exists(wavPath))
 				return null;
 			return MakeCompressedAudio(wavPath);
 		}
@@ -328,7 +328,7 @@ namespace Bloom.Publish
 				return false; // not missing, we got it.
 			// We consider ourselves to have a missing compressed audio if we have a wav recording
 			// but no corresponding compressed waveform.
-			return File.Exists(Path.Combine(AudioFolderPath, Path.ChangeExtension(id, "wav")));
+			return SafeFile.Exists(Path.Combine(AudioFolderPath, Path.ChangeExtension(id, "wav")));
 		}
 
 		/// <summary>
@@ -384,7 +384,7 @@ namespace Bloom.Publish
 					// libraries. So for now we'll figure it from the wav if we have it. If not we do a very
 					// crude estimate from file size. Hopefully good enough for BSV animation.
 					var wavPath = Path.ChangeExtension(path, "wav");
-					if (File.Exists(wavPath))
+					if (SafeFile.Exists(wavPath))
 					{
 #if __MonoCS__
 						pageDuration += new TimeSpan(new FileInfo(path).Length);	// TODO: this needs to be fixed for Linux/Mono
@@ -511,7 +511,7 @@ namespace Bloom.Publish
 
 			// ePUB validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
 			pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-			File.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
+			SafeFile.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
 			return pageDom;
 		}
 
@@ -531,7 +531,7 @@ namespace Bloom.Publish
 					continue;
 				// Images are always directly in the folder
 				var srcPath = Path.Combine(Book.FolderPath, filename);
-				if (File.Exists(srcPath))
+				if (SafeFile.Exists(srcPath))
 					CopyFileToEpub(srcPath);
 				else
 					img.ParentNode.RemoveChild(img);
@@ -583,7 +583,7 @@ namespace Bloom.Publish
 					AddFontFace(sb, font, "bold", "italic", group.BoldItalic);
 				}
 			}
-			File.WriteAllText(Path.Combine(_contentFolder, "fonts.css"), sb.ToString());
+			SafeFile.WriteAllText(Path.Combine(_contentFolder, "fonts.css"), sb.ToString());
 			_manifestItems.Add("fonts.css");
 		}
 
@@ -608,7 +608,7 @@ namespace Bloom.Publish
 			var result = new HashSet<string>();
 			foreach (var ss in Directory.GetFiles(Book.FolderPath, "*.css"))
 			{
-				var root = File.ReadAllText(ss, Encoding.UTF8);
+				var root = SafeFile.ReadAllText(ss, Encoding.UTF8);
 				HtmlDom.FindFontsUsedInCss(root, result);
 			}
 			return result;
@@ -928,7 +928,7 @@ namespace Bloom.Publish
 			// We deleted the root directory at the start, so if the file is already
 			// there it is a clash, either multiple sources for files with the same name,
 			// or produced by replacing spaces, or something. Come up with a similar unique name.
-			for (int fix = 1; File.Exists(dstPath); fix++)
+			for (int fix = 1; SafeFile.Exists(dstPath); fix++)
 			{
 				var fileNameWithoutExtension = Path.Combine(Path.GetDirectoryName(fileName),
 					Path.GetFileNameWithoutExtension(fileName));
@@ -951,7 +951,7 @@ namespace Bloom.Publish
 		/// <param name="dstPath"></param>
 		internal virtual void CopyFile(string srcPath, string dstPath)
 		{
-			File.Copy(srcPath, dstPath);
+			SafeFile.Copy(srcPath, dstPath);
 		}
 
 		// The validator is (probably excessively) upset about IDs that start with numbers.

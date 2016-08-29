@@ -78,7 +78,7 @@ namespace Bloom.Publish
 			if (Directory.Exists(exportFolder))
 			{
 				//state.StatusLabel = "Deleting existing thumbnail directory";
-				Directory.Delete(exportFolder, true);
+				SafeIO.DeleteDirectory(exportFolder, true);
 				Thread.Sleep(1000); //let any open windows explorers deal with this before we move on
 			}
 			Directory.CreateDirectory(exportFolder);

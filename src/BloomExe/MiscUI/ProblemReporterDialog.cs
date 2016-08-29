@@ -274,7 +274,7 @@ namespace Bloom.MiscUI
 
 		private void MakePackageForUserToEmail()
 		{
-			if (string.IsNullOrWhiteSpace(_emailableReportFilePath) || !File.Exists(_emailableReportFilePath))
+			if (string.IsNullOrWhiteSpace(_emailableReportFilePath) || !SafeFile.Exists(_emailableReportFilePath))
 			{
 				MakeEmailableReportFile();
 			}
@@ -314,7 +314,7 @@ namespace Bloom.MiscUI
 				{
 					using (var file = TempFile.WithFilenameInTempFolder("screenshot.png"))
 					{
-						_screenshot.Save(file.Path, ImageFormat.Png);
+						SafeIO.SaveImage(_screenshot, file.Path, ImageFormat.Png);
 						AddAttachment(file.Path);
 					}
 				}
@@ -415,7 +415,7 @@ namespace Bloom.MiscUI
 
 			using (var file = TempFile.WithFilenameInTempFolder("report.txt"))
 			{
-				using (var stream = File.CreateText(file.Path))
+				using (var stream = SafeFile.CreateText(file.Path))
 				{
 					stream.WriteLine(GetFullDescriptionContents(false));
 
@@ -437,7 +437,7 @@ namespace Bloom.MiscUI
 			{
 				using (var file = TempFile.WithFilenameInTempFolder("screenshot.png"))
 				{
-					_screenshot.Save(file.Path, ImageFormat.Png);
+					SafeIO.SaveImage(_screenshot, file.Path, ImageFormat.Png);
 					zip.AddTopLevelFile(file.Path);
 				}
 			}
@@ -515,12 +515,12 @@ namespace Bloom.MiscUI
 			var file = TempFile.WithFilenameInTempFolder(UsageReporter.AppNameToUseInReporting + ".log");
 			try
 			{
-				File.WriteAllText(file.Path, Logger.LogText);
+				SafeFile.WriteAllText(file.Path, Logger.LogText);
 			}
 			catch (Exception err)
 			{
 				//We have more than one report of dieing while logging an exception.
-				File.WriteAllText(file.Path, "****Could not read from log: " + err.Message);
+				SafeFile.WriteAllText(file.Path, "****Could not read from log: " + err.Message);
 			}
 			return file;
 		}
@@ -533,7 +533,7 @@ namespace Bloom.MiscUI
 		private void _seeDetails_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var temp = TempFile.WithExtension(".txt");
-			File.WriteAllText(temp.Path, GetFullDescriptionContents(true));
+			SafeFile.WriteAllText(temp.Path, GetFullDescriptionContents(true));
 			Process.Start(temp.Path);
 			//yes, we're leaking this temp file
 		}

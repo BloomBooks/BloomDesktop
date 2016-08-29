@@ -661,13 +661,13 @@ namespace Bloom.Edit
 							Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png");
 						Logger.WriteMinorEvent("[Paste Image] Saving {0} ({1}) as {2} and converting to PNG", clipboardImage.FileName,
 							clipboardImage.OriginalFilePath, pathToPngVersion);
-						if(File.Exists(pathToPngVersion))
+						if(SafeFile.Exists(pathToPngVersion))
 						{
-							File.Delete(pathToPngVersion);
+							SafeFile.Delete(pathToPngVersion);
 						}
 						using(var temp = TempFile.TrackExisting(pathToPngVersion))
 						{
-							clipboardImage.Image.Save(pathToPngVersion, ImageFormat.Png);
+							SafeIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
 
 							using(var palasoImage = PalasoImage.FromFile(temp.Path))
 							{
@@ -790,7 +790,7 @@ namespace Bloom.Edit
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
 
 			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
-			if(!currentPath.ToLowerInvariant().Contains("placeholder") && File.Exists(existingImagePath))
+			if(!currentPath.ToLowerInvariant().Contains("placeholder") && SafeFile.Exists(existingImagePath))
 			{
 				try
 				{

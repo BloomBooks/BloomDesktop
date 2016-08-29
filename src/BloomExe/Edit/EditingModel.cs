@@ -625,7 +625,7 @@ namespace Bloom.Edit
 			// We don't really make a file for the page, the contents are just saved in our local server.
 			// But we give it a url that makes it seem to be in the book folder so local urls work.
 			// See EnhancedImageServer.MakeSimulatedPageFileInBookFolder() for more details.
-			var frameText = File.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
+			var frameText = SafeFile.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
 

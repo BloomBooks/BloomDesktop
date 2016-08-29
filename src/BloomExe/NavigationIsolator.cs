@@ -171,7 +171,7 @@ namespace Bloom
 				// the new file being sent as a navigation requesting.  So we have this check as a backstop.
 				// (I always believe in both belts and suspenders, don't you?)  This is part of the fix
 				// for https://jira.sil.org/browse/BL-863.
-				if (!task.Url.StartsWith("http://") && !System.IO.File.Exists(task.Url))
+				if (!task.Url.StartsWith("http://") && !SafeFile.Exists(task.Url))
 				{
 					Debug.Assert(false, String.Format(@"DEBUG: NavigationIsolator.ForceDocumentCompleted(): new file to display (""{0}"") does not exist!??", task.Url));
 					continue;
