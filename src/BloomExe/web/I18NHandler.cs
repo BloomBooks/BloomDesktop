@@ -87,14 +87,35 @@ namespace Bloom.Api
 						// then we want to remind the developer to add it to the english tmx file.
 						if(!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
 						{
-							var modal = ApplicationUpdateSupport.ChannelName.StartsWith("Developer/") ? ModalIf.All : ModalIf.None;
-							var longMsg =
-								String.Format(
-									"Dear Developer: Please add this dynamic string to the english.tmx file: Id=\"{0}\" English =\"{1}\"", id,
-									englishText);
-							NonFatalProblem.Report(modal, PassiveIf.Alpha, longMsg);
+							//It would be a nice improvement to l10n to allow us to write directly to the source-code TMX file, so that the
+							//developer just has to check it in. But for now, we can write out a TMX element to the "local" TMX which the developer 
+							//can put in the distribution one. We prefix it with CopyToDistributionTmx_, which he will have to remove, because
+							//otherwise the next time we look for this string, it would get found and we would lose the ability to point out the 
+							//problem to the developer.
+							LocalizationManager.GetDynamicString("Bloom", "CopyToDistributionTmx_" + id, englishText);
+
+							if(ApplicationUpdateSupport.ChannelName.StartsWith("Developer"))
+							{
+								var longMsg =
+									String.Format(
+										"Dear Developer: Please add this dynamic string to the english.tmx file: Id=\"{0}\" English =\"{1}\". " +
+										"The code at this time cannot add this for you, but we have created an element in your local TMX which you can copy over." +
+										" Search for CopyToDistributionTmx_, and remember to remove that from the ID. It needs to be " +
+										"added to the en.tmx, so that it can show up in the list of things to be localized even " +
+										"when the user has not encountered this part of the interface yet.",
+										id,
+										englishText);
+								NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "TMX ERROR", longMsg);
+							}
+							else
+							{
+								NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "String not Ready For Localization", 
+									"Please report that "+id+" needs to be " +
+									"added to the en.tmx, so that it can show up in the list of things to be localized even " +
+									"when the user has not encountered this part of the interface yet.");
+							}
 						}
-						else // we *could* do this even if the above error is detected, but it just masks the problem then. So let's not.
+						else 
 						{
 							//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
 							// And return the English string, which is what we would do the next time anyway.  (BL-3374)
