@@ -65,13 +65,13 @@ namespace Bloom.Api
 		{
 			try
 			{
-				var fileName = request.RequiredParam("image");
+				var fileName = request.RequiredFileNameOrPath("image");
 				Guard.AgainstNull(_bookSelection.CurrentSelection, "CurrentBook");
-				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
+				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName.NotEncoded);
 				RequireThat.File(path).Exists();
 				var fileInfo = new FileInfo(path);
 				dynamic result = new ExpandoObject();
-				result.name = fileName;
+				result.name = fileName.NotEncoded;
 				result.bytes = fileInfo.Length;
 
 				// Using a stream this way, according to one source,
@@ -114,6 +114,7 @@ namespace Bloom.Api
 				Logger.WriteEvent("Error in server imageInfo/: url was " + request.LocalPath());
 				Logger.WriteEvent("Error in server imageInfo/: exception is " + e.Message);
 				request.Failed(e.Message);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Request Error", request.LocalPath(), e);
 			}
 		}
 	}
