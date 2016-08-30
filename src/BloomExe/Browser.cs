@@ -1177,7 +1177,8 @@ namespace Bloom
 		/// <returns></returns>
 		public static IEnumerable<string> NamesOfFontsThatBrowserCanRender()
 		{
-			using(var installedFontCollection = new InstalledFontCollection())
+			var foundAndika = false;
+			using (var installedFontCollection = new InstalledFontCollection())
 			{
 				var modifierTerms = new string[] { "condensed", "semilight", "black", "bold", "medium", "semibold", "light", "narrow" };
 
@@ -1189,8 +1190,16 @@ namespace Bloom
 						continue;
 						// sorry, we just can't display that font, it will come out as some browser default font (at least on Windows, and at least up to Firefox 36)
 					}
+					foundAndika |= family.Name == "Andika New Basic";
+
 					yield return family.Name;
 				}
+			}
+			if(!foundAndika) // see BL-3674. We want to offer Andika even if the Andika installer isn't finished yet.
+			{	// it's possible that the user actually uninstalled Andika, but that's ok. Until they change to another font,
+				// they'll get a message that this font is not actually installed when they try to edit a book.
+				Logger.WriteMinorEvent("Andika not installed (BL-3674)");
+				yield return "Andika New Basic";
 			}
 		}
 	}
