@@ -20,7 +20,9 @@ namespace Bloom.WebLibraryIntegration
 			{
 				using(var s3Client = new BloomS3Client(bucketName))
 				{
-					return s3Client.UploadSingleFile(bookZipPath, progress);
+					var url = s3Client.UploadSingleFile(bookZipPath, progress);
+					progress.WriteMessage("Upload Success");
+					return url;
 				}
 
 			}
@@ -54,8 +56,6 @@ namespace Bloom.WebLibraryIntegration
 				progress.WriteVerbose(e.StackTrace);
 				throw;
 			}
-
-			progress.WriteMessage("Upload Success");
 		}
 	}
 }
