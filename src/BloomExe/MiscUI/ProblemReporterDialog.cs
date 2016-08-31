@@ -8,9 +8,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
+using SIL.Progress;
 using SIL.Reporting;
 using YouTrackSharp.Infrastructure;
 using YouTrackSharp.Issues;
@@ -26,9 +28,10 @@ namespace Bloom.MiscUI
 	/// </summary>
 	public partial class ProblemReporterDialog : Form
 	{
+		private string _shortErrorHtml = "";
 		public delegate ProblemReporterDialog Factory(Control targetOfScreenshot);//autofac uses this
 
-		protected enum State { WaitingForSubmission, ZippingUpBook, Submitting, CouldNotAutomaticallySubmit, Success }
+		protected enum State { WaitingForSubmission, UploadingBook, Submitting, CouldNotAutomaticallySubmit, Success }
 
 		public Book.Book Book;
 		private Bitmap _screenshot;
@@ -197,11 +200,11 @@ namespace Bloom.MiscUI
 					Cursor = Cursors.Default;
 					break;
 
-				case State.ZippingUpBook:
+				case State.UploadingBook:
 					_seeDetails.Visible = false;
 					_submitMsg.Visible = false;
 					_status.Visible = true;
-					_status.HTML = LocalizationManager.GetString("ReportProblemDialog.Zipping", "Zipping up book...",
+					_status.HTML = LocalizationManager.GetString("ReportProblemDialog.Zipping", "Uploading book...",
 						"This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.");
 					_submitButton.Enabled = false;
 					Cursor = Cursors.WaitCursor;
@@ -241,7 +244,7 @@ namespace Bloom.MiscUI
 						"We received your report, thanks for taking the time to help make Bloom better!");
 					this.AcceptButton = _submitButton;
 					_submitButton.Focus();
-					_status.HTML = string.Format("<span style='color:blue'>" + message + "</span><br/><a href='{0}'>{1}</a>", YouTrackUrl + "/youtrack/issue/" + _youTrackIssueId, _youTrackIssueId);
+					_status.HTML = "<span style='color:red'>"+_shortErrorHtml + "</span>" + string.Format("<span style='color:blue'>" + message + "</span><br/><a href='{0}'>{1}</a>", YouTrackUrl + "/youtrack/issue/" + _youTrackIssueId, _youTrackIssueId);
 
 					Cursor = Cursors.Default;
 					break;
@@ -297,8 +300,6 @@ namespace Bloom.MiscUI
 			{
 				ChangeState(State.Submitting);
 
-
-
 				_youTrackConnection.Authenticate("auto_report_creator", "thisIsInOpenSourceCode");
 				_issueManagement = new IssueManagement(_youTrackConnection);
 				_youTrackIssue = new Issue();
@@ -307,7 +308,7 @@ namespace Bloom.MiscUI
 				_youTrackIssue.Summary = string.Format(Summary,_name.Text);
 				_youTrackIssue.Description = GetFullDescriptionContents(false);
 				_youTrackIssueId = _issueManagement.CreateIssue(_youTrackIssue);
-
+				
 				// this could all be done in one go, but I'm doing it in stages so as to increase the
 				// chance of success in bad internet situations
 				if (_includeScreenshot.Checked)
@@ -318,57 +319,7 @@ namespace Bloom.MiscUI
 						AddAttachment(file.Path);
 					}
 				}
-
-				if (_includeBook.Checked)
-				{
-					ChangeState(State.ZippingUpBook);
-					using (var bookZip = TempFile.WithExtension(".zip"))
-					{
-						try
-						{
-							try
-							{
-								var zip = new BloomZipFile(bookZip.Path);
-								zip.AddDirectory(Book.FolderPath);
-								zip.Save();
-
-							}
-							catch (Exception)
-							{
-								// if an error happens in the zipper, the zip file stays locked, so we just leak it
-								bookZip.Detach();
-								throw;
-							}
-							AddAttachment(bookZip.Path);
-						}
-						catch (InvalidRequestException e)
-						{
-							// We get this rather unspecific exception (with the even more unhelpful message 'NoContent') if the attachment is too large.
-							// There might of course be other reasons.
-							var attachmentLength = new FileInfo(bookZip.Path).Length;
-							try
-							{
-								_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description
-									+ "\nGot exception: " + e.Message + " trying to attach book file: " + Book.FolderPath + " of size " + attachmentLength);
-							}
-							catch (Exception error)
-							{
-								Logger.WriteEvent("*** Error as ProblemReporterDialog attempted to add warning to issue. " + error.Message);
-							}
-							if (attachmentLength > 10485760) // This is the limit as of October 20, 3015 (see http://issues.bloomlibrary.org/youtrack/admin/settings)
-							{
-								var msg = LocalizationManager.GetString("ReportProblemDialog.FileTooLarge",
-									"Unfortunately, {0} is too large to upload. If we need the book in order to work on your problem we will contact you.");
-								MessageBox.Show(string.Format(msg, Path.GetFileName(Book.FolderPath)));
-							}
-						}
-						catch (Exception error)
-						{
-                            Logger.WriteEvent("*** Error as ProblemReporterDialog attempted to zip up the book. "+error.Message);
-						}
-					}
-				}
-
+				
 				if (Logger.Singleton != null)
 				{
 					try
@@ -380,7 +331,49 @@ namespace Bloom.MiscUI
 					}
 					catch (Exception e)
 					{
-						_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description + "Got exception trying to attach log file: " + e.Message);
+						_youTrackIssue.Description += System.Environment.NewLine + "***Got exception trying to attach log file: " + e.Message;
+						_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description);
+					}
+				}
+
+
+				if (_includeBook.Checked)
+				{
+					ChangeState(State.UploadingBook);
+					using (var bookZip = TempFile.WithFilenameInTempFolder(_youTrackIssueId + ".zip"))
+					{
+						var progress = new StatusProgress();
+						try
+						{
+							var zip = new BloomZipFile(bookZip.Path);
+							zip.AddDirectory(Book.FolderPath);
+							zip.Save();
+						}
+						catch (Exception error)
+						{
+							_youTrackIssue.Description += System.Environment.NewLine + "***Error as ProblemReporterDialog attempted to zip up the book: " + error.Message;
+							_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description);
+							Logger.WriteEvent("*** Error as ProblemReporterDialog attempted to zip up the book. " + error.Message);
+							// if an error happens in the zipper, the zip file stays locked, so we just leak it
+							bookZip.Detach();
+							_shortErrorHtml += " Error Zipping Book ";
+							throw;
+						}
+
+						try
+						{
+							string url = ProblemBookUploader.UploadBook(BloomS3Client.UnitTestBucketName, bookZip.Path,
+								progress);
+							_youTrackIssue.Description += System.Environment.NewLine + url;
+							_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description);
+						}
+						catch (Exception error)
+						{
+							Logger.WriteError(progress.LastError, error);
+							_youTrackIssue.Description += System.Environment.NewLine + "***Got exception trying upload book: " + error.Message;
+							_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description);
+							_shortErrorHtml += " Uploading Book Failed ";
+						}
 					}
 				}
 

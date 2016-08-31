@@ -213,6 +213,7 @@
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
+    <Compile Include="WebLibraryIntegration\ProblemBookUploaderTests.cs" />
     <Compile Include="web\ReadersApiTests.cs" />
     <Compile Include="web\ApiTest.cs" />
     <Compile Include="ImageProcessing\ImageServerTests.cs" />

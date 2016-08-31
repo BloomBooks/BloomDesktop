@@ -50,7 +50,7 @@ namespace BloomTests.WebLibraryIntegration
 			// Todo: Make sure the parse.com unit test book table is empty
 			_parseClient = new BloomParseClientDouble(_thisTestId);
 			_htmlThumbNailer = new HtmlThumbNailer(new NavigationIsolator());
-			_transfer = new BookTransfer(_parseClient, new BloomS3Client(), new BookThumbNailer(_htmlThumbNailer), new BookDownloadStartingEvent());
+			_transfer = new BookTransfer(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer), new BookDownloadStartingEvent());
 			_transfer.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
 		}
 
