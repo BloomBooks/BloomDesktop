@@ -1,4 +1,4 @@
-﻿## 3.7
+## 3.7
 - You can now "unlock" a shell book that you are translating, so that you can do things like:
  - add pages
  - delete pages
@@ -16,7 +16,7 @@
 
 - When you do Help:Report a Problem, Bloom now has a better approach to sending us the problem book, so that you can send us larger books than before.
 
-- Previously, some text-heavy parts of the interface (like the desciptions of various Reader templates and how to use them) could not be translated into a different language. Now they can.
+- Previously, some text-heavy parts of the interface (like the descriptions of various Reader templates and how to use them) could not be translated into a different language. Now they can.
 
 - Over 170 fixes and small improvements.
 
