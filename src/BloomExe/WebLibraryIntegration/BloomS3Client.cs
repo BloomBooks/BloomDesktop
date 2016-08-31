@@ -30,6 +30,7 @@ namespace Bloom.WebLibraryIntegration
 		public const string SandboxBucketName = "BloomLibraryBooks-Sandbox";
 		public const string ProductionBucketName = "BloomLibraryBooks";
 		public const string ProblemBookUploadsBucketName = "bloom-problem-books";
+		public const string BloomDesktopFiles = "bloom-desktop-files";
 
 		public BloomS3Client(string bucketName)
 		{

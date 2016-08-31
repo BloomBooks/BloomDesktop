@@ -57,8 +57,11 @@ namespace Bloom.WebLibraryIntegration
 					return new AccessKeys(lines[0], lines[1], lines[4], lines[5]);
 				case BloomS3Client.ProblemBookUploadsBucketName:
 					return new AccessKeys(lines[2], lines[3], null,null);
+				case BloomS3Client.BloomDesktopFiles:
+					// For now, this is public read, and no one needs to write.
+					return new AccessKeys(null, null, null, null);
 
-				default: throw new ApplicationException("Do not recognized bucket name "+bucket);
+				default: throw new ApplicationException("Bucket name not recognized: " + bucket);
 			}
 		}
 	}

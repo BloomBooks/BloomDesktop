@@ -1,0 +1,4 @@
+{
+	"parseSandbox": "http://bloomparseserverebsandbox-env.us-east-1.elasticbeanstalk.com/parse/",
+	"parseProduction": "https://api.parse.com/1/"
+}

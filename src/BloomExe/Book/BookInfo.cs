@@ -511,7 +511,6 @@ namespace Bloom.Book
 						copyright = Copyright,
 						credits = Credits,
 						tags = Tags,
-						authors = Authors,
 						summary = Summary,
 						pageCount = PageCount,
 						langPointers = LanguageTableReferences,
@@ -588,9 +587,6 @@ namespace Bloom.Book
 
 		[JsonProperty("copyright")]
 		public string Copyright { get; set; }
-
-		[JsonProperty("authors")]
-		public string[] Authors { get; set; }
 
 		[JsonProperty("credits")]
 		public string Credits { get; set; }
