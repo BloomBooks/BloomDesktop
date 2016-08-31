@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows.Forms;
@@ -9,7 +7,7 @@ using Bloom.Properties;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
-using RestSharp.Deserializers;
+using SIL.Reporting;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -61,37 +59,28 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		// Get the real URL where the parse.com server lives.
-		// We have made an S3 bucket which redirects there.
-		// We use indirection so that we are free to change the location of the service without breaking existing clients.
-		// We were unable to make the combination of S3-based redirection, restsharp, and SSL work,
-		// so we are just using this initial request to obtain the url to use.
-		// See http://stackoverflow.com/questions/10115799/set-up-dns-based-url-forwarding-in-amazon-route53
-		// for instructions on how to set up AWS to redirect the way we want.
-		// In particular, our AWS Route53 has a record set for parse.bloomlibrary.org that points to
-		// our bucket called parse.bloomlibrary.org, which under Static Website Hosting is enabled,
-		// and has Edit Redirection Rules, in which the values of HostName and ReplaceKeyPrefixWith
-		// add up to the URL we want Bloom to use.
 		public string GetRealUrl()
 		{
-			var request = new RestRequest("aNonExistentTarget", Method.GET); // object doesn't exist anywhere, we just want the site redirect info
-			var client = new RestClient("http://parse.bloomlibrary.org");
-			client.FollowRedirects = false; // We WANT to receive the redirection response, not have the RestClient try to obey it
-			var result = client.Execute(request);
-			var locationHeader = result.Headers.FirstOrDefault(h => h.Name == "Location");
-			if (locationHeader != null && locationHeader.Value is String)
+			try
 			{
-				var rawLocation = (String)locationHeader.Value;
-				// S3 returns a location like https://api.parse.com/1/nonsense.
-				var index = rawLocation.LastIndexOf("/aNonExistentTarget");
-				if (index > 0)
+				using (var s3Client = new BloomS3Client(null))
 				{
-					var location = rawLocation.Substring(0, index + 1); // keep the slash following the redirect url
-					return location;
+					//For source code purposes, current-services-urls.json lives in BloomExe/Resources.
+					//But the live version is in S3 in the BloomS3Client.BloomDesktopFiles bucket.
+					var jsonContent = s3Client.DownloadFile(BloomS3Client.BloomDesktopFiles, "current-service-urls.json");
+					dynamic urls = JsonConvert.DeserializeObject(jsonContent);
+					var url = BookTransfer.UseSandbox ? urls.parseSandbox : urls.parseProduction;
+					if (!string.IsNullOrWhiteSpace(url))
+						return url;
 				}
 			}
+			catch (Exception e)
+			{
+				Logger.WriteEvent("Unable to look up parse URL: " + e);
+				// fallback below
+			}
 			NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "Bloom could not retrieve the parse URL from Amazon", "We will try to continue with the standard URL");
-			return "https://api.parse.com/1/"; // If our attempt to get the redirct URL fails somehow, we'll drop back to using the real parse.com API.
+			return "https://api.parse.com/1/"; // If our attempt to get the redirect URL fails somehow, we'll drop back to using the parse.com API.
 		}
 
 		private RestRequest MakeRequest(string path, Method requestType)
