@@ -10,7 +10,15 @@
 
 - When you drag the splitters to resize elements on the page, Bloom now shows a percentage indicator. You can use this number to set splitters to the same value on different pages, so that elements line up when they are on facing pages in the printed book.
 
-- If you don't have Keyman or the like running, then when you hold down a key, Bloom shows a panel of characters that are variants of the key you pressed. Normally, you use your mouse to aim at the one you want. However some laptops are now disabling the touchpad when a key is down. So with we now display little shortcut characters next to each choice. Pressing the indicated key selects the choice.
+- If you don't have Keyman or the like running, then when you hold down a key, Bloom shows the "Special Characters" panel which show variants of the key you pressed. Normally, you use your mouse to aim at the one you want. However some laptops are now disabling the touchpad when a key is down. So with we now display little shortcut characters next to each choice. Pressing the indicated key selects the choice.
+
+- When the page was zoomed in an using a smaller screen, the Special Characters panel was sometimes off-screen. Now it's always visible.
+
+- When you do Help:Report a Problem, Bloom now has a better approach to sending us the problem book, so that you can send us larger books than before.
+
+- Previously, some text-heavy parts of the interface (like the desciptions of various Reader templates and how to use them) could not be translated into a different language. Now they can.
+
+- Over 170 fixes and small improvements.
 
 ## 3.6
 - This version focuses on what we are calling "the toolbox": a panel on the right side that you can open to do specialized tasks like working on decodable and leveled readers or recording audio for "talking books".
