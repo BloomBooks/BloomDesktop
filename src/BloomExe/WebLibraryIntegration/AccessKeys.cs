@@ -55,6 +55,9 @@ namespace Bloom.WebLibraryIntegration
 					//S3 'uploader' user, who has permission to use the BloomLibraryBooks bucket
 					//parse.com silbloomlibrary
 					return new AccessKeys(lines[0], lines[1], lines[4], lines[5]);
+				case BloomS3Client.ProblemBookUploadsBucketName:
+					return new AccessKeys(lines[2], lines[3], null,null);
+
 				default: throw new ApplicationException("Do not recognized bucket name "+bucket);
 			}
 		}

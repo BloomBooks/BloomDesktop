@@ -26,7 +26,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.AreEqual(0, Directory.GetDirectories(workFolderPath).Count(), "Some stuff was left over from a previous test");
 			Assert.AreEqual(0, Directory.GetFiles(workFolderPath).Count(), "Some stuff was left over from a previous test");
 
-			_client = new BloomS3Client();
+			_client = new BloomS3Client(BloomS3Client.UnitTestBucketName);
 		}
 
 		[TearDown]

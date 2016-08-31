@@ -26,7 +26,7 @@ namespace BloomTests.WebLibraryIntegration
 			var workFolderPath = _workFolder.FolderPath;
 			Assert.AreEqual(0, Directory.GetDirectories(workFolderPath).Count(), "Some stuff was left over from a previous test");
 
-			_client = new BloomS3Client();
+			_client = new BloomS3Client(BloomS3Client.UnitTestBucketName);
 
 			// Now do standard upload/download. We save time by making this whole class do one upload/download sequence
 			// on the assumption that things that should be uploaded were if they make it through the download process too.
@@ -77,7 +77,7 @@ namespace BloomTests.WebLibraryIntegration
 
 		private void UploadBook(string bookFolder)
 		{
-			_client.UploadBook( _storageKeyOfBookFolder, bookFolder, new NullProgress(), "preview.pdf");
+			_client.UploadBook( _storageKeyOfBookFolder, bookFolder, new NullProgress(), pdfToInclude:"preview.pdf");
 		}
 
 		private void DownloadBook()
