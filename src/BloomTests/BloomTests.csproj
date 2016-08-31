@@ -219,6 +219,7 @@
     <Compile Include="web\controllers\PageTemplatesApiTests.cs" />
     <Compile Include="web\controllers\ReadersApiTests.cs" />
     <Compile Include="web\controllers\ApiTest.cs" />
+    <Compile Include="WebLibraryIntegration\ProblemBookUploaderTests.cs" />
     <Compile Include="ImageProcessing\ImageServerTests.cs" />
     <Compile Include="web\controllers\EndpointHandlerTests.cs" />
     <Compile Include="web\RequestInfoTests.cs" />

@@ -390,7 +390,7 @@ namespace Bloom.WebLibraryIntegration
 				parseId = "";
 				try
 				{
-					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude);
+					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude: pdfToInclude);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database."));

@@ -625,18 +625,11 @@ namespace Bloom.Collection
 
 		internal static string GetDefaultFontName()
 		{
-			foreach(var candidate in new[] { "Andika New Basic", "Andika", "Gentium", "Charis", "Paduak"/*Myanmar*/})
-			{
-				string lower = candidate.ToLowerInvariant();
-				if (FontFamily.Families.FirstOrDefault(f =>
-														   {
-															   return f.Name.ToLowerInvariant() == lower;
-														   }) != null)
-				{
-					return candidate;
-				}
-			}
-			return SystemFonts.DefaultFont.Name;
+			//Since we always install Andika New Basic, let's just always use that as the default
+			//Note (BL-3674) the font installer may not have completed yet, so we don't even check to make
+			//sure it's there. It's possible that the user actually uninstalled Andika, but that's ok. Until they change to another font,
+			// they'll get a message that this font is not actually installed when they try to edit a book.
+			return "Andika New Basic";
 		}
 
 		public static string FindSettingsFileInFolder(string folderPath)

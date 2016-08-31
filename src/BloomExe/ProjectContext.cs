@@ -284,7 +284,7 @@ namespace Bloom
 
 		internal static BloomS3Client CreateBloomS3Client()
 		{
-			return new BloomS3Client();
+			return new BloomS3Client(BookTransfer.UploadBucketNameForCurrentEnvironment);
 		}
 
 

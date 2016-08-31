@@ -138,6 +138,12 @@ namespace Bloom.Api
 			return true;
 		}
 
+		public UrlPathString RequiredFileNameOrPath(string name)
+		{
+			if (Parameters.AllKeys.Contains(name))
+				return UrlPathString.CreateFromUnencodedString(Parameters[name]);
+			throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have parameter " + name);
+		}
 
 		public string RequiredParam(string name)
 		{
