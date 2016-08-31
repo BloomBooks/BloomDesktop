@@ -362,7 +362,7 @@ namespace Bloom.MiscUI
 
 						try
 						{
-							string url = ProblemBookUploader.UploadBook(BloomS3Client.UnitTestBucketName, bookZip.Path,
+							string url = ProblemBookUploader.UploadBook(BloomS3Client.ProblemBookUploadsBucketName, bookZip.Path,
 								progress);
 							_youTrackIssue.Description += System.Environment.NewLine + url;
 							_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description);
