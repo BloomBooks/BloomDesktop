@@ -1,5 +1,7 @@
 ﻿using System.IO;
+using System.Net;
 using System.Text;
+using System.Threading;
 using Bloom.Api;
 using NUnit.Framework;
 using SIL.IO;
@@ -51,6 +53,41 @@ namespace BloomTests.web
 					Assert.AreEqual(utf8String[9], '\n');
 					Assert.AreEqual(utf8String[10], '"');
 				}
+			}
+		}
+
+		[TestCase("blah", "/blah")]
+		[TestCase("bl%23ah", "/bl#ah")]
+		[TestCase("bl?ah", "/bl")]
+		[TestCase("bl%F4%80%80%8Aah", "/bl􀀊ah")] // private use character
+		[RequiresSTA]
+		public void LocalPathWithoutQuery_SpecialCharactersDecodedCorrectly(string urlEnd, string expectedResult)
+		{
+			var listener = new HttpListener();
+			// Nothing special about 33579. It is a simply a random number we hope is unused.
+			// Note: if you get errors indicating the port is in use,
+			// it is likely the listener.Stop() line below wasn't called somehow.
+			var urlPrefix = "http://localhost:33579/";
+			listener.Prefixes.Add(urlPrefix);
+
+			new Thread(() =>
+			{
+				Thread.Sleep(100);
+				WebRequest req = WebRequest.Create(urlPrefix + urlEnd);
+				req.GetResponse();
+			}).Start();
+
+			try
+			{
+				listener.Start();
+				var context = listener.GetContext(); // This waits for a request.
+				var requestInfo = new RequestInfo(context);
+				Assert.AreEqual(expectedResult, requestInfo.LocalPathWithoutQuery);
+			}
+			finally
+			{
+				listener.Stop();
+				Thread.Sleep(105); // Prevents each test case from stepping on the other
 			}
 		}
 
