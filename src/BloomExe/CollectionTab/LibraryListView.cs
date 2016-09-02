@@ -13,6 +13,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.ToPalaso;
+using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using DesktopAnalytics;
@@ -432,9 +433,7 @@ namespace Bloom.CollectionTab
 				if (dialogResult != DialogResult.OK)
 					return;
 			}
-			Process.Start(BookTransfer.UseSandbox
-				? "http://dev.bloomlibrary.org/books"
-				: "http://bloomlibrary.org/books");
+			Process.Start(UrlLookup.LookupUrl(UrlType.LibrarySite, BookTransfer.UseSandbox) + "/books");
 		}
 
 		DialogResult ShowBloomLibraryLinkVerificationDialog()

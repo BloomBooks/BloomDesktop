@@ -1,4 +1,11 @@
 {
-	"parseSandbox": "http://bloomparseserverebsandbox-env.us-east-1.elasticbeanstalk.com/parse/",
-	"parseProduction": "https://api.parse.com/1/"
+	urls:[
+		{id:"parse", url: "https://api.parse.com/1/"},
+		{id:"parseSandbox", url: "http://bloomparseserverebsandbox-env.us-east-1.elasticbeanstalk.com/parse/"},
+		{id:"librarySite", url: "http://bloomlibrary.org"},
+		{id:"librarySiteSandbox", url: "http://dev.bloomlibrary.org"},
+		{id:"userSuggestions", url: "http://bloombooks.uservoice.com/forums/153625-general"},
+		{id:"issueTrackingSystem", url: "https://silbloom.myjetbrains.com"},
+		{id:"issueTrackingSystemBackend", url: "http://issues.bloomlibrary.org"}
+	]
 }
