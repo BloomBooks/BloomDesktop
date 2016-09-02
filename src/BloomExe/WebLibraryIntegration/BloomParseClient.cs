@@ -4,10 +4,10 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
-using SIL.Reporting;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -61,26 +61,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public string GetRealUrl()
 		{
-			try
-			{
-				using (var s3Client = new BloomS3Client(null))
-				{
-					//For source code purposes, current-services-urls.json lives in BloomExe/Resources.
-					//But the live version is in S3 in the BloomS3Client.BloomDesktopFiles bucket.
-					var jsonContent = s3Client.DownloadFile(BloomS3Client.BloomDesktopFiles, "current-service-urls.json");
-					dynamic urls = JsonConvert.DeserializeObject(jsonContent);
-					var url = BookTransfer.UseSandbox ? urls.parseSandbox : urls.parseProduction;
-					if (!string.IsNullOrWhiteSpace(url))
-						return url;
-				}
-			}
-			catch (Exception e)
-			{
-				Logger.WriteEvent("Unable to look up parse URL: " + e);
-				// fallback below
-			}
-			NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "Bloom could not retrieve the parse URL from Amazon", "We will try to continue with the standard URL");
-			return "https://api.parse.com/1/"; // If our attempt to get the redirect URL fails somehow, we'll drop back to using the parse.com API.
+			return UrlLookup.LookupUrl(UrlType.Parse, BookTransfer.UseSandbox);
 		}
 
 		private RestRequest MakeRequest(string path, Method requestType)

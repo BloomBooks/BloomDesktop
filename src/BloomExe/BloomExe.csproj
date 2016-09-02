@@ -527,6 +527,7 @@
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersApi.cs" />
     <Compile Include="web\controllers\ExternalLinkController.cs" />
+    <Compile Include="web\UrlLookup.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -905,6 +906,7 @@
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\current-service-urls.json" />
     <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <ItemGroup>

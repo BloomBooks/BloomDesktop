@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using Bloom.web;
 using SIL.IO;
 
 namespace Bloom.Workspace
@@ -35,12 +36,14 @@ namespace Bloom.Workspace
 
 			//So now, we just run your browser
 
-			Process.Start("http://bloombooks.uservoice.com/forums/153625-general");
+			var url = UrlLookup.LookupUrl(UrlType.UserSuggestions);
+			Process.Start(url);
 		}
 
 		private void FeedbackDialog_Load(object sender, EventArgs e)
 		{
-			_browser.Navigate("http://bloombooks.uservoice.com/forums/153625-general",false);
+			var url = UrlLookup.LookupUrl(UrlType.UserSuggestions);
+			_browser.Navigate(url, false);
 		}
 
 		private void _okButton_Click(object sender, EventArgs e)
