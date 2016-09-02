@@ -830,21 +830,10 @@ namespace Bloom.Edit
 			if (CannotSavePage())
 				return;
 
+			var stopwatch = Stopwatch.StartNew();
 			SaveNow();
-
-			// "Origami" is the javascript system that lets the user introduce new elements to the page.
-			// It can insert .bloom-translationGroup's, but it can't populate them with .bloom-editables
-			// or set the proper classes on those editables to match the current multilingual settings.
-			// So after a change, this eventually gets called. We then ask the page's book to fix things
-			// up so that those boxes are ready to edit
-			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
-			CheckForBL2364("reset dom in finish save");
-			_currentlyDisplayedBook.UpdateEditableAreasOfElement(_domForCurrentPage);
-			CheckForBL2364("updated editable areas");
-
-			//Enhance: Probably we could avoid having two saves, by determing what it is that they entail that is required.
-			//But at the moment both of them are required
-			SaveNow();
+			stopwatch.Stop();
+			Debug.WriteLine("Save Now Elapsed Time: {0} ms", stopwatch.ElapsedMilliseconds);
 		}
 
 		private bool CannotSavePage()

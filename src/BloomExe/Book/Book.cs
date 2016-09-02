@@ -1743,12 +1743,16 @@ namespace Bloom.Book
 			Debug.Assert(IsEditable);
 			try
 			{
-				//replace the corresponding page contents in our DOM with what is in this PageDom
-				XmlElement divElement = editedPageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
-				string pageDivId = divElement.GetAttribute("id");
-				var page = GetPageFromStorage(pageDivId);
+				// This is needed if the user did some ChangeLayout (origami) manipulation. This will populate new
+				// translationGroups with .bloom-editables and set the proper classes on those editables to match the current multilingual settings. 
+				UpdateEditableAreasOfElement(editedPageDom);
 
-				HtmlDom.ProcessPageAfterEditing(page, divElement);
+				//replace the corresponding page contents in our DOM with what is in this PageDom
+				XmlElement pageFromEditedDom = editedPageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
+				string pageId = pageFromEditedDom.GetAttribute("id");
+				var pageFromStorage = GetPageFromStorage(pageId);
+
+				HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
 
 				_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
@@ -1756,7 +1760,7 @@ namespace Bloom.Book
 				if (userModifiedStyles != null)
 				{
 					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
-					Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
+					//Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
 				Save();
 
