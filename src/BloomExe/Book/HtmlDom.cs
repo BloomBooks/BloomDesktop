@@ -735,7 +735,7 @@ namespace Bloom.Book
 		}
 		*/
 
-		public static void ProcessPageAfterEditing(XmlElement page, XmlElement divElement)
+		public static void ProcessPageAfterEditing(XmlElement destinationPageDiv, XmlElement edittedPageDiv)
 		{
 			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
 			// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
@@ -745,23 +745,23 @@ namespace Bloom.Book
 			// However, we need to do this in the edited page before copying to the storage page, since we are about to suck
 			// info from the edited page into the dataDiv and we don't want the bloom-ui elements in there either!
 			foreach (
-				var node in divElement.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
+				var node in edittedPageDiv.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
 				node.ParentNode.RemoveChild(node);
 
-			page.InnerXml = divElement.InnerXml;
+			destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
 			//Enhance: maybe we should just copy over all attributes?
-			page.SetAttribute("class", divElement.GetAttribute("class"));
+			destinationPageDiv.SetAttribute("class", edittedPageDiv.GetAttribute("class"));
 			//The SIL LEAD SHRP templates rely on "lang" on some ancestor to trigger the correct rules in labels.css.
 			//Those get set by putting data-metalanguage on Page, which then leads to a lang='xyz'. Let's save that
 			//back to the html in keeping with our goal of having the page look right if you were to just open the
 			//html file in Firefox.
-			page.SetAttribute("lang", divElement.GetAttribute("lang"));
+			destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
 
 			// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
 			foreach(
 				var node in
-					page.SafeSelectNodes(".//*[contains(concat(' ', @class, ' '), ' origami-layout-mode ')]").Cast<XmlNode>().ToArray())
+					destinationPageDiv.SafeSelectNodes(".//*[contains(concat(' ', @class, ' '), ' origami-layout-mode ')]").Cast<XmlNode>().ToArray())
 			{
 				string currentValue = node.Attributes["class"].Value;
 				node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
