@@ -951,7 +951,7 @@ namespace Bloom
 					styles.AppendLine(cssRule.CssText);
 				}
 				styles.AppendLine("</style>");
-				Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
+				//Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
 				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
 			}
 			catch (GeckoJavaScriptException jsex)
