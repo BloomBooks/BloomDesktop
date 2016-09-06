@@ -85,7 +85,7 @@
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
     <Reference Include="DesktopAnalytics, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DesktopAnalytics.1.2.1\lib\net40\DesktopAnalytics.dll</HintPath>
+      <HintPath>..\..\packages\DesktopAnalytics.1.2.2\lib\net40\DesktopAnalytics.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EasyHttp">
