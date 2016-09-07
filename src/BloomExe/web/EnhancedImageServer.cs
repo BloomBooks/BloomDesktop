@@ -498,10 +498,35 @@ namespace Bloom.Api
 					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
 				};
 
-			if (!stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
-				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Server could not find the file " + path, "LocalPath was " + localPath);
+			if (stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
+				return;
+
+			// we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
+			// I suspect our disposal algorithm is just flawed: the page is removed from the _url cache as soon as we navigated away, 
+			// which is too soon. But that will take more research and we're trying to finish 3.7. 
+			// So for now, let's just not to bother the user about an error that is only going to effect thumbnailing.
+			if (IsSimulatedFileUrl(localPath)) 
+			{
+				//even beta users should not be confronted with this
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);
+			}
+			else
+			{
+				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Cannot Find File", "Server could not find the file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
+			}
 		}
 
+		protected bool IsSimulatedFileUrl(string localPath)
+		{
+			var extension = Path.GetExtension(localPath);
+			if(extension != null && !extension.StartsWith("htm"))
+				return false;
+
+			// a good improvement might be to make these urls more obviously cache requests. But for now, let's just see if they are filename guids
+			var filename = Path.GetFileNameWithoutExtension(localPath);
+			Guid result;
+			return Guid.TryParse(filename, out result);
+		}
 
 		/// <summary>
 		/// Requests with ?generateThumbnaiIfNecessary=true are potentially recursive in that we may have to navigate
