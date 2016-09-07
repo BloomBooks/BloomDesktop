@@ -511,7 +511,7 @@ namespace Bloom.Api
 				if (IsSimulatedFileUrl(localPath)) 
 				{
 					//even beta users should not be confronted with this
-					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page cache miss", "Server no longer has this page in the cache: " + localPath);
+					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);
 				}
 				else
 				{
@@ -526,6 +526,10 @@ namespace Bloom.Api
 
 		protected bool IsSimulatedFileUrl(string localPath)
 		{
+			var extension = Path.GetExtension(localPath);
+			if(extension != null && !extension.StartsWith("htm"))
+				return false;
+
 			// a good improvement might be to make these urls more obviously cache requests. But for now, let's just see if they are filename guids
 			var filename = Path.GetFileNameWithoutExtension(localPath);
 			Guid result;
