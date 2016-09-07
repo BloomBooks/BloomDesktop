@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using L10NSharp;
+using SIL.Code;
 
 namespace Bloom.CollectionTab
 {
@@ -28,7 +29,10 @@ namespace Bloom.CollectionTab
 		{
 			_bookList.SuspendLayout();
 			_bookList.Items.Clear();
-			_bookList.Items.AddRange(files.ToArray());
+			var titles = files.Where(f => f !=null); //added to bandaid overBL-3774 since we could not reproduce
+			if(titles.Count() < files.Count())
+				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Please Report problem with one or more titles (BL-3774)");
+			_bookList.Items.AddRange(titles.ToArray());
 			_bookList.ResumeLayout();
 		}
 	}
