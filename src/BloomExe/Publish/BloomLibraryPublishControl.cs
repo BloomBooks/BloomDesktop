@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Properties;
+using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
@@ -393,15 +394,7 @@ namespace Bloom.Publish
 
 		public static string BloomLibraryUrlPrefix
 		{
-			get
-			{
-				var prefix = "http://";
-				if (BookTransfer.UseSandbox)
-					prefix += "dev.";
-				else
-					prefix += "books.";
-				return prefix + "bloomlibrary.org/#";
-			}
+			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookTransfer.UseSandbox) + "/#"; }
 		}
 
 		string _parseId;
