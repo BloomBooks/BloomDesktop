@@ -46,7 +46,7 @@
          </tuv>
       </tu>
       <tu tuid="Application.AlreadyRunning.Specific">
-         {0} is the application name
+         <note>{0} is the application name</note>
          <tuv xml:lang="en">
             <seg>Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</seg>
          </tuv>
@@ -63,7 +63,7 @@
          </tuv>
       </tu>
       <tu tuid="Application.ProblemStarting.Specific">
-         {0} is the application name
+         <note>{0} is the application name</note>
          <tuv xml:lang="en">
             <seg>There was a problem starting {0} which might require that you restart your computer.</seg>
          </tuv>
@@ -80,7 +80,7 @@
          </tuv>
       </tu>
       <tu tuid="Application.WaitingFinish.Specific">
-         {0} is the application name
+         <note>{0} is the application name</note>
          <tuv xml:lang="en">
             <seg>Waiting for other {0} to finish...</seg>
          </tuv>
@@ -121,7 +121,7 @@
          </tuv>
       </tu>
       <tu tuid="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
-         Parameter {0} is a description of the things being deleted (e.g., "The selected files"
+         <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files"</note>
          <tuv xml:lang="en">
             <seg>{0} will be moved to the Recycle Bin.</seg>
          </tuv>
@@ -130,7 +130,7 @@
          </tuv>
       </tu>
       <tu tuid="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
-         Parameter {0} is a file name
+         <note>Parameter {0} is a file name</note>
          <tuv xml:lang="en">
             <seg>{0} will be moved to the Recycle Bin.</seg>
          </tuv>
@@ -179,7 +179,7 @@
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.CopyExemplarMetadata">
-         Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.
+         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
          <tuv xml:lang="en">
             <seg>Use {0}</seg>
          </tuv>
@@ -260,7 +260,7 @@
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.PictureFiles">
-         Shown in the file-picking dialog to describe what kind of files the dialog is filtering for
+         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
          <tuv xml:lang="en">
             <seg>picture files</seg>
          </tuv>
@@ -334,7 +334,7 @@
          </tuv>
       </tu>
       <tu tuid="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
-         It's ok to change what this shows; the underlying destination will remain ethnologue.com
+         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
          <tuv xml:lang="en">
             <seg>Ethnologue.com</seg>
          </tuv>
@@ -376,7 +376,7 @@
          </tuv>
       </tu>
       <tu tuid="LanguageLookup.CountryCount">
-         Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.
+         <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
          <tuv xml:lang="en">
             <seg>{0} Countries</seg>
          </tuv>
@@ -466,8 +466,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired">
-         See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.
-         
+         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>You must keep the copyright and credits for authors, illustrators, etc.</seg>
@@ -477,8 +476,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed">
-         See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.
-         
+         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>You are free to make commercial use of this work.</seg>
@@ -488,8 +486,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.Licenses.CreativeCommons.Derivatives">
-         See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.
-         
+         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>You may adapt and add to this work.</seg>
@@ -499,8 +496,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike">
-         See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.
-         
+         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</seg>
@@ -510,8 +506,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives">
-         See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.
-         
+         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>You may not make changes or build upon this work without permission.</seg>
@@ -521,8 +516,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.Licenses.CreativeCommons.NonCommercial">
-         See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.
-         
+         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>You may not use this work for commercial purposes.</seg>
@@ -532,8 +526,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.Licenses.NullLicense">
-         This is used when all we have is a copyright, no other license.
-         
+         <note>This is used when all we have is a copyright, no other license.</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>For permission to reuse, contact the copyright holder.</seg>
@@ -649,7 +642,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.additionalRequestsLabel">
-         When you choose a Creative Commons License, this label shows over the text box at the bottom.
+         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
          <tuv xml:lang="en">
             <seg>Additional Requests</seg>
          </tuv>
@@ -658,7 +651,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.betterLinkLabel1">
-         The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.
+         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
          <tuv xml:lang="en">
             <seg>more info</seg>
          </tuv>
@@ -667,7 +660,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
-         While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.
+         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
          <tuv xml:lang="en">
             <seg>Not Enforceable</seg>
          </tuv>
@@ -740,7 +733,7 @@
          </tuv>
       </tu>
       <tu tuid="SettingsProtection.PasswordNotice">
-         Don't forget to have the {0} and {1} in your translated string!
+         <note>Don't forget to have the {0} and {1} in your translated string!</note>
          <tuv xml:lang="en">
             <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "factory password"</seg>
          </tuv>
