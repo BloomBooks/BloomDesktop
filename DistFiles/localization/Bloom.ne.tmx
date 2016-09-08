@@ -251,7 +251,7 @@
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.BloomPackInstaller">
-         Displayed as the message box title
+         <note>Displayed as the message box title</note>
          <tuv xml:lang="en">
             <seg>Bloom Pack Installer</seg>
          </tuv>
@@ -276,7 +276,7 @@
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.Extracting">
-         Shown while Bloom Packs are being installed
+         <note>Shown while Bloom Packs are being installed</note>
          <tuv xml:lang="en">
             <seg>Extracting...</seg>
          </tuv>
@@ -344,8 +344,7 @@
          </tuv>
       </tu>
       <tu tuid="BookEditor.CharacterMap.Instructions">
-         When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.
-         
+         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>To select, use your mouse wheel or point at what you want, then release the key.</seg>
@@ -443,7 +442,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
-         This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.
+         <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
          <tuv xml:lang="en">
             <seg>Use Image Server to reduce memory usage with large images.</seg>
          </tuv>
@@ -486,7 +485,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
-         {0} is a language name.
+         <note>{0} is a language name.</note>
          <tuv xml:lang="en">
             <seg>Default Font for {0}</seg>
          </tuv>
@@ -571,7 +570,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
-         In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label
+         <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
          <tuv xml:lang="en">
             <seg>Language 1</seg>
          </tuv>
@@ -580,7 +579,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
-         In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label
+         <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
          <tuv xml:lang="en">
             <seg>Language 2</seg>
          </tuv>
@@ -589,7 +588,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
-         In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label
+         <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
          <tuv xml:lang="en">
             <seg>Language 3</seg>
          </tuv>
@@ -606,7 +605,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
-         If there is no third language specified, the link changes to this.
+         <note>If there is no third language specified, the link changes to this.</note>
          <tuv xml:lang="en">
             <seg>Set...</seg>
          </tuv>
@@ -705,7 +704,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.Restart">
-         If you make certain changes in the settings dialog, the OK button changes to this.
+         <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
          <tuv xml:lang="en">
             <seg>Restart</seg>
          </tuv>
@@ -731,8 +730,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver">
-         Name of a Front/Back Matter Pack that puts credits on the inside of the front cover
-         
+         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Paper Saver</seg>
@@ -742,8 +740,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional">
-         Name of the default Front/Back Matter Pack
-         
+         <note>Name of the default Front/Back Matter Pack</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Traditional</seg>
@@ -952,7 +949,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionTab.Open/CreateCollectionButton">
-         This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere
+         <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
          <tuv xml:lang="en">
             <seg>Other Collection</seg>
          </tuv>
@@ -961,7 +958,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionTab.Open/CreateCollectionButton_ToolTip_">
-         This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere
+         <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
          <tuv xml:lang="en">
             <seg>Open/Create/Get Collection</seg>
          </tuv>
@@ -1031,7 +1028,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionTab.TitleMissing">
-         Shown as the thumbnail caption when the book doesn't have a title
+         <note>Shown as the thumbnail caption when the book doesn't have a title</note>
          <tuv xml:lang="en">
             <seg>Title Missing</seg>
          </tuv>
@@ -1041,7 +1038,7 @@
       </tu>
       <tu tuid="CollectionTab.Vernacular Collection Heading">
          <prop type="x-nolongerused">true</prop>
-         The {0} is where we fill in the name of the Vernacular
+         <note>The {0} is where we fill in the name of the Vernacular</note>
          <tuv xml:lang="en">
             <seg>{0} Books</seg>
          </tuv>
@@ -1101,7 +1098,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionTab.BloomLibraryLinkLabel">
-         Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library
+         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
          <tuv xml:lang="en">
             <seg>Get more source books at BloomLibrary.org</seg>
          </tuv>
@@ -1110,7 +1107,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionTab.BloomLibraryLinkVerificationCaption">
-         get this clicking on BloomLibrary.org link in source collection
+         <note>get this clicking on BloomLibrary.org link in source collection</note>
          <tuv xml:lang="en">
             <seg>Source Collection</seg>
          </tuv>
@@ -1144,7 +1141,7 @@
       </tu>
       <tu tuid="CollectionTab.hiddenBooksNotice">
          <prop type="x-nolongerused">true</prop>
-         Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden
+         <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
          <tuv xml:lang="en">
             <seg>Where's the rest?</seg>
          </tuv>
@@ -1153,7 +1150,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionTab.MoreLanguagesMenuItem">
-         Brings up the localization dialog
+         <note>Brings up the localization dialog</note>
          <tuv xml:lang="en">
             <seg>More...</seg>
          </tuv>
@@ -1178,7 +1175,7 @@
          </tuv>
       </tu>
       <tu tuid="Common.BackButton">
-         In a wizard, this button takes you to the previous step.
+         <note>In a wizard, this button takes you to the previous step.</note>
          <tuv xml:lang="en">
             <seg>Back</seg>
          </tuv>
@@ -1204,7 +1201,7 @@
          </tuv>
       </tu>
       <tu tuid="Common.Finish">
-         Used for the Finish button in wizards, like that used for making a New Collection
+         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
          <tuv xml:lang="en">
             <seg>&amp;Finish</seg>
          </tuv>
@@ -1221,8 +1218,7 @@
          </tuv>
       </tu>
       <tu tuid="Common.Loading">
-         This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.
-         
+         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Loading...</seg>
@@ -1232,7 +1228,7 @@
          </tuv>
       </tu>
       <tu tuid="Common.Next">
-         Used for the Next button in wizards, like that used for making a New Collection
+         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
          <tuv xml:lang="en">
             <seg>&amp;Next</seg>
          </tuv>
@@ -1241,7 +1237,7 @@
          </tuv>
       </tu>
       <tu tuid="Common.NextButton">
-         In a wizard, this button takes you to the next step.
+         <note>In a wizard, this button takes you to the next step.</note>
          <tuv xml:lang="en">
             <seg>Next</seg>
          </tuv>
@@ -1423,7 +1419,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.AddPageDialog.AddPageButton">
-         This is for the button that LAUNCHES the dialog, not the "Add this page" button that is IN the dialog.
+         <note>This is for the button that LAUNCHES the dialog, not the "Add this page" button that is IN the dialog.</note>
          <tuv xml:lang="en">
             <seg>Add Page</seg>
          </tuv>
@@ -1432,8 +1428,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.AddPageDialog.AddThisPageButton">
-         This is for the button inside the dialog
-         
+         <note>This is for the button inside the dialog</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Add This Page</seg>
@@ -1601,8 +1596,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.CustomPage.Or">
-         Shown between 'Picture' and 'Text' when Custom Page is in Layout mode
-         
+         <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>or</seg>
@@ -2005,8 +1999,7 @@
       </tu>
       <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
          <prop type="x-dynamic">true</prop>
-         
-         Put {lang} in your translation, so it can be replaced by the language name.
+         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
          <tuv xml:lang="en">
             <seg>Book title in {lang}</seg>
          </tuv>
@@ -2196,7 +2189,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.NewBookName">
-         Default file and folder name when you make a new book, but haven't give it a title yet.
+         <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
          <tuv xml:lang="en">
             <seg>Book</seg>
          </tuv>
@@ -2355,8 +2348,7 @@
       </tu>
       <tu tuid="TemplateBooks.PageLabel.1 Problem">
          <prop type="x-dynamic">true</prop>
-         
-         This label indicates a page with one arithmetic problem on it.
+         <note>This label indicates a page with one arithmetic problem on it.</note>
          <tuv xml:lang="en">
             <seg>1 Problem</seg>
          </tuv>
@@ -2465,8 +2457,7 @@
       </tu>
       <tu tuid="TemplateBooks.PageLabel.2 Problems">
          <prop type="x-dynamic">true</prop>
-         
-         This label indicates a page with two arithmetic problems on it.
+         <note>This label indicates a page with two arithmetic problems on it.</note>
          <tuv xml:lang="en">
             <seg>2 Problems</seg>
          </tuv>
@@ -2503,8 +2494,7 @@
       </tu>
       <tu tuid="TemplateBooks.PageLabel.3 Problems">
          <prop type="x-dynamic">true</prop>
-         
-         This label indicates a page with three arithmetic problems on it.
+         <note>This label indicates a page with three arithmetic problems on it.</note>
          <tuv xml:lang="en">
             <seg>3 Problems</seg>
          </tuv>
@@ -2523,8 +2513,7 @@
       </tu>
       <tu tuid="TemplateBooks.PageLabel.4 Problems">
          <prop type="x-dynamic">true</prop>
-         
-         This label indicates a page with four arithmetic problems on it.
+         <note>This label indicates a page with four arithmetic problems on it.</note>
          <tuv xml:lang="en">
             <seg>4 Problems</seg>
          </tuv>
@@ -3009,7 +2998,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.Bilingual">
-         Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page
+         <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
          <tuv xml:lang="en">
             <seg>Two Languages</seg>
          </tuv>
@@ -3018,7 +3007,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.CopyImageIPMetadataQuestion">
-         get this after you edit the metadata of an image
+         <note>get this after you edit the metadata of an image</note>
          <tuv xml:lang="en">
             <seg>Copy this information to all other pictures in this book?</seg>
          </tuv>
@@ -3035,7 +3024,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.Monolingual">
-         Shown in edit tab multilingualism chooser, for monolingual mode, one language per page
+         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
          <tuv xml:lang="en">
             <seg>One Language</seg>
          </tuv>
@@ -3044,7 +3033,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.NoOtherLayouts">
-         Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice
+         <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
          <tuv xml:lang="en">
             <seg>There are no other layout options for this template.</seg>
          </tuv>
@@ -3079,7 +3068,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.Trilingual">
-         Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page
+         <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
          <tuv xml:lang="en">
             <seg>Three Languages</seg>
          </tuv>
@@ -3149,7 +3138,7 @@
       </tu>
       <tu tuid="FrontMatter.Factory.Acknowledgments for translated version, in {lang}">
          <prop type="x-nolongerused">true</prop>
-         Put {lang} in your translation, so it can be replaced by the language name.
+         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
          <tuv xml:lang="en">
             <seg>Acknowledgments for translated version, in {lang}</seg>
          </tuv>
@@ -3159,7 +3148,7 @@
       </tu>
       <tu tuid="FrontMatter.Factory.Acknowledgments in {lang}">
          <prop type="x-nolongerused">true</prop>
-         Put {lang} in your translation, so it can be replaced by the language name.
+         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
          <tuv xml:lang="en">
             <seg>Acknowledgments in {lang}</seg>
          </tuv>
@@ -3169,7 +3158,7 @@
       </tu>
       <tu tuid="FrontMatter.Factory.Book title in {lang}">
          <prop type="x-nolongerused">true</prop>
-         Put {lang} in your translation, so it can be replaced by the language name.
+         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
          <tuv xml:lang="en">
             <seg>Book title in {lang}</seg>
          </tuv>
@@ -3206,7 +3195,7 @@
       </tu>
       <tu tuid="FrontMatter.Factory.The contributions made by writers, illustrators, editors, etc., in {lang}">
          <prop type="x-nolongerused">true</prop>
-         Put {lang} in your translation, so it can be replaced by the language name.
+         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
          <tuv xml:lang="en">
             <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
          </tuv>
@@ -3383,7 +3372,7 @@
          </tuv>
       </tu>
       <tu tuid="PublishTab.InDesignDialog.WindowTitle">
-         This is the title of a dialog about exporting a Bloom book to the InDesign XML format
+         <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
          <tuv xml:lang="en">
             <seg>InDesign XML Information</seg>
          </tuv>
@@ -3962,7 +3951,7 @@
          </tuv>
       </tu>
       <tu tuid="NewCollectionWizard.NewBookPattern">
-         The {0} is replaced by the name of the language.
+         <note>The {0} is replaced by the name of the language.</note>
          <tuv xml:lang="en">
             <seg>{0} Books</seg>
          </tuv>
@@ -4027,7 +4016,7 @@
          </tuv>
       </tu>
       <tu tuid="OpenCreateNewCollectionsDialog.Bloom Collections">
-         This shows in the file-open dialog that you use to open a different bloom collection
+         <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
          <tuv xml:lang="en">
             <seg>Bloom Collections</seg>
          </tuv>
@@ -4084,7 +4073,7 @@
          </tuv>
       </tu>
       <tu tuid="OpenCreateNewCollectionsDialog.ReadMoreLink">
-         This opens the Chorus Help to learn more about send/receive.
+         <note>This opens the Chorus Help to learn more about send/receive.</note>
          <tuv xml:lang="en">
             <seg>Read More</seg>
          </tuv>
@@ -4241,7 +4230,7 @@
       </tu>
       <tu tuid="PublishTab.OnPagePerPaperRadio">
          <prop type="x-nolongerused">true</prop>
-         Instead of making a booklet, just make normal pages
+         <note>Instead of making a booklet, just make normal pages</note>
          <tuv xml:lang="en">
             <seg>One page per piece of paper</seg>
          </tuv>
@@ -4250,7 +4239,7 @@
          </tuv>
       </tu>
       <tu tuid="PublishTab.OnePagePerPaperRadio">
-         Instead of making a booklet, just make normal pages
+         <note>Instead of making a booklet, just make normal pages</note>
          <tuv xml:lang="en">
             <seg>Simple</seg>
          </tuv>
@@ -4622,7 +4611,7 @@
          </tuv>
       </tu>
       <tu tuid="PublishTab.Upload.PleaseSetThis">
-         This shows next to the license, if the license has not yet been set.
+         <note>This shows next to the license, if the license has not yet been set.</note>
          <tuv xml:lang="en">
             <seg>Please set this from the edit tab</seg>
          </tuv>
@@ -4744,7 +4733,7 @@
          </tuv>
       </tu>
       <tu tuid="PublishTab.Upload.UploadingBookMetadata">
-         In this step, Bloom is uploading things like title, languages, and topic tags to the bloomlibrary.org database.
+         <note>In this step, Bloom is uploading things like title, languages, and topic tags to the bloomlibrary.org database.</note>
          <tuv xml:lang="en">
             <seg>Uploading book metadata</seg>
          </tuv>
@@ -5438,7 +5427,7 @@
          </tuv>
       </tu>
       <tu tuid="RegisterDialog.Heading">
-         Place a {0} where the name of the program goes.
+         <note>Place a {0} where the name of the program goes.</note>
          <tuv xml:lang="en">
             <seg>Please take a minute to register {0}</seg>
          </tuv>
@@ -5447,7 +5436,7 @@
          </tuv>
       </tu>
       <tu tuid="RegisterDialog.HowAreYouUsing">
-         Place a {0} where the name of the program goes.
+         <note>Place a {0} where the name of the program goes.</note>
          <tuv xml:lang="en">
             <seg>How are you using {0}?</seg>
          </tuv>
@@ -5488,7 +5477,7 @@
          </tuv>
       </tu>
       <tu tuid="RegisterDialog.WindowTitle">
-         Place a {0} where the name of the program goes.
+         <note>Place a {0} where the name of the program goes.</note>
          <tuv xml:lang="en">
             <seg>Register {0}</seg>
          </tuv>
@@ -5497,7 +5486,7 @@
          </tuv>
       </tu>
       <tu tuid="ReportProblemDialog.Close">
-         Shown in the button that closes the dialog after a successful report submission.
+         <note>Shown in the button that closes the dialog after a successful report submission.</note>
          <tuv xml:lang="en">
             <seg>Close</seg>
          </tuv>
@@ -5546,7 +5535,7 @@
          </tuv>
       </tu>
       <tu tuid="ReportProblemDialog.Retry">
-         Shown if there was an error submitting the report. Lets the user try submitting it again.
+         <note>Shown if there was an error submitting the report. Lets the user try submitting it again.</note>
          <tuv xml:lang="en">
             <seg>Retry</seg>
          </tuv>
@@ -5571,7 +5560,7 @@
          </tuv>
       </tu>
       <tu tuid="ReportProblemDialog.Submitting">
-         This is shown while Bloom is sending the problem report to our server.
+         <note>This is shown while Bloom is sending the problem report to our server.</note>
          <tuv xml:lang="en">
             <seg>Submitting to server...</seg>
          </tuv>
@@ -5604,7 +5593,7 @@
          </tuv>
       </tu>
       <tu tuid="ReportProblemDialog.Zipping">
-         This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.
+         <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
          <tuv xml:lang="en">
             <seg>Zipping up book...</seg>
          </tuv>
@@ -5695,8 +5684,7 @@
       </tu>
       <tu tuid="Topics.Agriculture">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Agriculture</seg>
          </tuv>
@@ -5706,8 +5694,7 @@
       </tu>
       <tu tuid="Topics.Animal Stories">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Animal Stories</seg>
          </tuv>
@@ -5717,8 +5704,7 @@
       </tu>
       <tu tuid="Topics.Business">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Business</seg>
          </tuv>
@@ -5728,8 +5714,7 @@
       </tu>
       <tu tuid="Topics.Community Living">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Community Living</seg>
          </tuv>
@@ -5739,8 +5724,7 @@
       </tu>
       <tu tuid="Topics.Culture">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Culture</seg>
          </tuv>
@@ -5750,8 +5734,7 @@
       </tu>
       <tu tuid="Topics.Dictionary">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Dictionary</seg>
          </tuv>
@@ -5761,8 +5744,7 @@
       </tu>
       <tu tuid="Topics.Environment">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Environment</seg>
          </tuv>
@@ -5772,8 +5754,7 @@
       </tu>
       <tu tuid="Topics.Fiction">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Fiction</seg>
          </tuv>
@@ -5783,8 +5764,7 @@
       </tu>
       <tu tuid="Topics.Health">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Health</seg>
          </tuv>
@@ -5794,8 +5774,7 @@
       </tu>
       <tu tuid="Topics.How To">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>How To</seg>
          </tuv>
@@ -5805,8 +5784,7 @@
       </tu>
       <tu tuid="Topics.Math">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Math</seg>
          </tuv>
@@ -5825,8 +5803,7 @@
       </tu>
       <tu tuid="Topics.Non Fiction">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Non Fiction</seg>
          </tuv>
@@ -5836,8 +5813,7 @@
       </tu>
       <tu tuid="Topics.Personal Development">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Personal Development</seg>
          </tuv>
@@ -5847,8 +5823,7 @@
       </tu>
       <tu tuid="Topics.Primer">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Primer</seg>
          </tuv>
@@ -5858,8 +5833,7 @@
       </tu>
       <tu tuid="Topics.Science">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Science</seg>
          </tuv>
@@ -5869,8 +5843,7 @@
       </tu>
       <tu tuid="Topics.Spiritual">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Spiritual</seg>
          </tuv>
@@ -5880,8 +5853,7 @@
       </tu>
       <tu tuid="Topics.Story Book">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Story Book</seg>
          </tuv>
@@ -5891,8 +5863,7 @@
       </tu>
       <tu tuid="Topics.Tradition">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Tradition</seg>
          </tuv>
@@ -5902,8 +5873,7 @@
       </tu>
       <tu tuid="Topics.Traditional Story">
          <prop type="x-dynamic">true</prop>
-         
-         shows in the topics chooser in the edit tab
+         <note>shows in the topics chooser in the edit tab</note>
          <tuv xml:lang="en">
             <seg>Traditional Story</seg>
          </tuv>
@@ -5912,7 +5882,7 @@
          </tuv>
       </tu>
       <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
-         This is the dialog used to set up the wall calendar
+         <note>This is the dialog used to set up the wall calendar</note>
          <tuv xml:lang="en">
             <seg>Setup</seg>
          </tuv>
