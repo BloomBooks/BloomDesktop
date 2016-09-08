@@ -87,7 +87,12 @@ namespace BloomTests.web
 			finally
 			{
 				listener.Stop();
-				Thread.Sleep(105); // Prevents each test case from stepping on the other
+
+				// Prevents each test case from stepping on the other
+				// Not sure what the magic number is here.
+				// 105 was sometimes failing on the build machine.
+				// 200 seemed to usually fail for me locally (though 105 didn't).
+				Thread.Sleep(300);
 			}
 		}
 
