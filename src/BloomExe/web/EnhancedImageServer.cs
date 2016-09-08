@@ -590,28 +590,36 @@ namespace Bloom.Api
 			if (templatePage == null)
 				templatePage = template.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-			Image image = _thumbNailer.GetThumbnailForPage(template, templatePage, isLandscape);
-
-			// The clone here is an attempt to prevent an unexplained exception complaining that the source image for the bitmap is in use elsewhere.
-			using (Bitmap b = new Bitmap((Image)image.Clone()))
+			var thumbnail = _thumbNailer.GetThumbnailForPage(template, templatePage, isLandscape);
+			
+			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
+			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this
+			// same contention problem (but, in hindsite, only partially, see?). But for some reason if we just lock the image
+			// until it is saved, we get all grey rectangles. So for now, we just quickly do the clone and unlock.
+			var resultPath = "";
+			Bitmap clone;
+			lock(thumbnail)
 			{
-				try
-				{
+				clone = new Bitmap((Image) thumbnail.Clone());
+			}
+			using(clone)
+			{
+					try
 					{
 						Directory.CreateDirectory(Path.GetDirectoryName(pngpath));
-						b.Save(pngpath);
+						clone.Save(pngpath);
+						resultPath = pngpath;
 					}
-					ReplyWithFileContentAndType(info, pngpath);
-				}
-				catch (Exception)
-				{
-					using (var file = new TempFile())
+					catch(Exception)
 					{
-						b.Save(file.Path);
-						ReplyWithFileContentAndType(info, file.Path);
+						using(var file = new TempFile())
+						{
+							clone.Save(file.Path);
+							resultPath = file.Path;
+						}
 					}
-				}
 			}
+			ReplyWithFileContentAndType(info, resultPath);
 			return true; // We came up with some reply
 		}
 
