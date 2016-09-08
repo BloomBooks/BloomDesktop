@@ -17,6 +17,7 @@ using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
 using Bloom.ToPalaso;
+using Bloom.web;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
@@ -490,7 +491,7 @@ namespace Bloom.Workspace
 
 		private void _webSiteMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start("http://bloomlibrary.org");
+			Process.Start(UrlLookup.LookupUrl(UrlType.LibrarySite));
 		}
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)

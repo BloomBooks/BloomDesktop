@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using SIL.Extensions;
@@ -40,7 +41,7 @@ namespace Bloom.MiscUI
 		private readonly string YouTrackUrl;
 		protected string _youTrackProjectKey = "BL";
 
-		private readonly Connection _youTrackConnection = new Connection("issues.bloomlibrary.org", 80, false, "youtrack");
+		private readonly Connection _youTrackConnection = new Connection(UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend, false, true), 80, false, "youtrack");
 		private IssueManagement _issueManagement;
 
 		private string _youTrackIssueId = "unknown";
@@ -61,7 +62,7 @@ namespace Bloom.MiscUI
 			// Haven't tried https here, as we're not using it for live YouTrack. Someday we may want to.
 			// If so, check Linux, as we had problems there with the old Jira reporting. Until
 			// then we use the unsecured URL.
-			YouTrackUrl = "http://issues.bloomlibrary.org";
+			YouTrackUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystemBackend);
 			Summary = "User Problem Report {0}";
 
 
