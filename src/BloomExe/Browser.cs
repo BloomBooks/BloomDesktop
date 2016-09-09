@@ -20,6 +20,7 @@ using Gecko.Events;
 using SIL.IO;
 using SIL.Reporting;
 using Bloom.Workspace;
+using L10NSharp;
 
 namespace Bloom
 {
@@ -512,7 +513,7 @@ namespace Bloom
 				if (replacesStdMenu)
 					return; // only the provider's items
 			}
-			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
+			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", OnOpenPageInStylizer);
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
 			if(FFMenuItem == null)
@@ -521,13 +522,14 @@ namespace Bloom
 			AddOtherMenuItemsForDebugging(e);
 #endif
 
-			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
+			e.ContextMenu.MenuItems.Add(LocalizationManager.GetString("Browser.CopyTroubleshootingInfo", "Copy Troubleshooting Information"), OnGetTroubleShootingInformation);
 		}
 
 		private MenuItem AddOpenPageInFFItem(GeckoContextMenuEventArgs e)
 		{
-			return e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)",
-					new EventHandler(OnOpenPageInSystemBrowser));
+			return e.ContextMenu.MenuItems.Add(
+				LocalizationManager.GetString("Browser.OpenPageInFirefox", "Open Page in Firefox (which must be in the PATH environment variable)"),
+				OnOpenPageInSystemBrowser);
 		}
 
 #if DEBUG
