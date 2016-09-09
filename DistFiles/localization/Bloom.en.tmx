@@ -262,6 +262,16 @@
         <seg>Sorry, Reader Templates do not allow changes to formatting.</seg>
       </tuv>
     </tu>
+    <tu tuid="Browser.CopyTroubleshootingInfo">
+      <tuv xml:lang="en">
+        <seg>Copy Troubleshooting Information</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Browser.OpenPageInFirefox">
+      <tuv xml:lang="en">
+        <seg>Open Page in Firefox (which must be in the PATH environment variable)</seg>
+      </tuv>
+    </tu>
     <tu tuid="Click to choose topic">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
@@ -850,6 +860,78 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>&amp;Delete</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Help">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Help</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Average">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>avg per sentence</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>longest sentence</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.ToolPurpose">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make an e-book that can play recordings while highlighting sentences.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AllowedWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>allowed words</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AllowedWordsFile">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Allowed Words File</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AllowedWordsFileHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Allowed Words File</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AverageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Avg</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ChooseAllowedWordsFile">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Choose...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MaxAverageWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Average Length of Sentences in Book</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.UseAllowedWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>We are using lists of allowed words to define stages</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.UseLetters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>We are using letters with sight words to define stages</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">
@@ -2751,6 +2833,17 @@
         <seg>Make a PDF of just the front and back (both sides), so you can  print on colored paper.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.EpubButton">
+      <tuv xml:lang="en">
+        <seg>ePUB</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.EpubRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.OnPagePerPaperRadio">
       <note>Instead of making a booklet, just make normal pages</note>
       <prop type="x-nolongerused">true</prop>
@@ -3366,6 +3459,12 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Word Lists and Sample Texts</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SampleWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Words</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SearchEngine">
