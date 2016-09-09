@@ -364,9 +364,30 @@ namespace Bloom.Edit
 				// never happens.
 				_browser1.WebBrowser.DocumentCompleted += WebBrowser_ReadyStateChanged;
 				_browser1.WebBrowser.ReadyStateChange += WebBrowser_ReadyStateChanged;
+#if __MonoCS__
+				// On Linux/Mono, the user can click between pages too fast in Edit mode, resulting
+				// in a warning dialog popping up.  I've never seen this happen on Windows, but it's
+				// happening fairly often on Linux when I just try to move around a book.  The fix
+				// here is to set a flag that page selection is still processing and block any
+				// further page selecting until the current page has finished loading.
+				_model.PageSelectionStarted();
+				_browser1.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
+#endif
 			}
 			UpdateDisplay();
 		}
+
+#if __MonoCS__
+		/// <summary>
+		/// Flag the PageSelection object that the current (former?) page selection has completed,
+		/// so it's safe to select another page now.
+		/// </summary>
+		void WebBrowser_DocumentCompleted(object sender, EventArgs e)
+		{
+			_model.PageSelectionFinished();
+			_browser1.WebBrowser.DocumentCompleted -= WebBrowser_DocumentCompleted;
+		}
+#endif
 
 		void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
 		{
