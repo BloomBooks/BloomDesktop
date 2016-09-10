@@ -142,25 +142,7 @@ function SetupImageContainer(containerDiv) {
 }
 
 function SetImageTooltip(container, img) {
-    var urlForQuery = GetRawImageUrl(img);
-
-    //Why these three? my thinking is that these are all delimiters in URL query
-    //strings: space, &, and ?. Space is already encoded at this point in my experiments,
-    // and ? isn't allowed in file names so we can ignore that. That leaves the ampersand.
-    urlForQuery = urlForQuery.replace(/\&/g, '%26');
-
-    //See http://stackoverflow.com/questions/2678551/when-to-encode-space-to-plus-or-20.
-    // there, people expect the server to cope with using %20 for space even *in the query portion* of the URL,
-    // but our .net HttpUtility.ParseQueryString does not. See also BL-3235
-
-    //first preserve actual plus signs
-    urlForQuery = urlForQuery.replace(/\+/g, '%2B');
-
-    //then use plus to stand in for space
-    urlForQuery = urlForQuery.replace(/%20/g, '+');
-    
-
- axios.get<string>('/bloom/api/image/info', { params: { image: GetRawImageUrl(img) } }).then(result => {
+    axios.get<string>('/bloom/api/image/info', { params: { image: GetRawImageUrl(img) } }).then(result => {
         var image:any = result.data;
         const kBrowserDpi = 96; // this appears to be constant even on higher dpi screens. See http://www.w3.org/TR/css3-values/#absolute-lengths
         var dpi = Math.round(image.width / ($(img).width() / kBrowserDpi));

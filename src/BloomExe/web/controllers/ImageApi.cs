@@ -33,6 +33,13 @@ namespace Bloom.web.controllers
 				var fileName = request.RequiredParam("image");
 				Guard.AgainstNull(_bookSelection.CurrentSelection, "CurrentBook");
 				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
+				if (!File.Exists(path))
+				{
+					// We can be fed doubly-encoded filenames.  So try to decode a second time and see if that works.
+					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3749.
+					fileName = System.Web.HttpUtility.UrlDecode(fileName);
+					path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
+				}
 				RequireThat.File(path).Exists();
 				var fileInfo = new FileInfo(path);
 				dynamic result = new ExpandoObject();
