@@ -1,0 +1,52 @@
+{
+    // This works with the vscode debug Chrome extension, which you need to install (Ctrl+P: "ext install Debugger for Chrome")
+    // 1) Run Bloom, go to a page.
+    // 2) Here in VSCODE, run Debug (F5, once you've done it once)
+
+    // This should open the page in Chrome. Breakpoints should point to the typescript.
+
+    // Note: you cannot (yet?) have the chrome inspector open at the same time (!!!) https://github.com/Microsoft/vscode-chrome-debug/issues/83,
+    //       https://github.com/Microsoft/vscode-chrome-debug/issues/95, https://bugs.chromium.org/p/chromium/issues/detail?id=129539#.
+    // Workaround: open a different tab with the same URL, you can Inspect that one.
+
+    // Troubleshooting tips
+    // * If Chrome cannot get the page, check that your Bloom is really listening on 8091 as listed in the "url" below? Bloom has
+    //   the ability to change ports if the default isn't available.
+    // If the debugger says it cannot connect to Chrome:
+    // * Uncomment the diagnosticLogging line below
+    // * Stop all other chromes: TASKKILL /IM chrome.exe /F
+    // * Try launching chrome first. Comment out the runtimeExecutable and runtimeArgs lines below. Then in a command prompt, run chrome in debugger mode:
+    //     "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --remote-debugging-port=9222 --no-first-run --incognito --disable-extensions
+    // * Try restarting your computer (clears out the bazillion chromes around), which somehow interfer.
+    // * Try avoiding using chrome for other things while doing this (e.g. use FF).
+
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch in Chrome",
+            "type": "chrome",
+            "request": "launch",
+            "externalConsole": true, // so console.log shows up in vscode "Debug Console"
+            "runtimeExecutable": "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+            // these args don't appear to work... trying to get it to not offer to restore previous pages
+            //"runtimeArgs": [ "--no-first-run --kiosk --disable-session-crashed-bubble --disable-infobars --incognito --disable-extensions"],
+
+            "url": "http://localhost:8091/bloom/CURRENTPAGE.htm",
+            "webRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/output/chrome"
+            //,"diagnosticLogging": true
+        }
+        // I have not managed to get attach to work
+        // ,{
+        //     "name": "Attach to existing Chrome",
+        //     "type": "chrome",
+        //     "request": "attach",
+        //     "webRoot": "${workspaceRoot}",
+        //     "sourceMaps": true,
+        //     "port": "9222",
+        //     "userDataDir": "${workspaceRoot}/output/chrome"
+        //     ,"diagnosticLogging": true
+        // }
+    ]
+}
