@@ -81,6 +81,7 @@ namespace Bloom.Api
 		private object I18NLock = new object();
 		// used to synchronize access to various other methods
 		private object SyncObj = new object();
+		private static string _keyToCurrentPage;
 
 		public string CurrentPageContent { get; set; }
 		public string ToolboxContent { get; set; }
@@ -114,11 +115,11 @@ namespace Bloom.Api
 		/// A marker is inserted into the generated urls if the input HtmlDom wants to use original images.
 		/// </summary>
 		/// <param name="dom"></param>
-		/// <param name="forSrcAttr">If this is true, the url will be inserted by JavaScript into
+		/// <param name="escapeUrlAsNeededForSrcAttribute">If this is true, the url will be inserted by JavaScript into
 		/// a src attr for an IFrame. We need to account for this because un-escaped quotation marks in the
 		/// URL can cause errors in JavaScript strings.</param>
 		/// <returns></returns>
-		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool forSrcAttr = false)
+		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool escapeUrlAsNeededForSrcAttribute = false, bool setAsCurrentPageForDebugging = false)
 		{
 			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".htm");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
@@ -133,7 +134,7 @@ namespace Bloom.Api
 				pathToSimulatedPageFile = OriginalImageMarker + "/" + pathToSimulatedPageFile;
 			var url = pathToSimulatedPageFile.ToLocalhost();
 			var key = pathToSimulatedPageFile.Replace('\\', '/');
-			if (forSrcAttr)
+			if (escapeUrlAsNeededForSrcAttribute)
 			{
 				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript. 
 				url = EscapeUrlQuotes(url);
@@ -141,6 +142,10 @@ namespace Bloom.Api
 				// We need to modify our key so that when the JavaScript comes looking for the page its modified url will
 				// generate the right key.
 				key = SimulateJavaScriptHandlingOfHtml(key);
+			}
+			if(setAsCurrentPageForDebugging)
+			{
+				_keyToCurrentPage = key;
 			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
@@ -211,6 +216,11 @@ namespace Bloom.Api
 			//OK, no more obvious simple API requests, dive into the rat's nest of other possibilities
 			if (base.ProcessRequest(info))
 				return true;
+
+			if(localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8091/bloom/CURRENTPAGE.htm will always show the page we're on.
+			{
+				localPath = _keyToCurrentPage;
+			}
 
 			string content;
 			bool gotSimulatedPage;
