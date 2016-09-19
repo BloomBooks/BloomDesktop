@@ -110,6 +110,23 @@ namespace Bloom.Edit
 			File.Move(temp.Path, bookPath);
 
 			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
+
+			// Because the Mozilla code loaded the document from a filename initially, and we later save to a
+			// different directory, Geckofx45's SaveDocument writes out the stylesheet links as absolute paths
+			// using the file:// protocol markup. When we try to open the new file, Mozilla then complains
+			// vociferously about security issues, and refuses to access the stylesheets as far as I can tell.
+			// Eventually, several of the stylesheets are cleaned up by being added in again, but a couple of
+			// them end up with invalid relative paths because they never get re-added.  So let's go through
+			// all the stylesheet links here and remove everything except the bare filenames.
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3573 for what happens without this fix.
+			foreach (System.Xml.XmlElement link in sanityCheckDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var href = link.GetAttribute("href");
+				if (href.StartsWith("file://"))
+					link.SetAttribute("href", Path.GetFileName(href.Replace("file:///", "").Replace("file://", "")));
+			}
+			XmlHtmlConverter.SaveDOMAsHtml5(sanityCheckDom, bookPath);
+
 			//NB: this check only makes sense for the calendar, which is the only template we've create that
 			// uses this class, and there are no other templates on the drawing board that would use it.
 			// If/when we use this for something else, this
