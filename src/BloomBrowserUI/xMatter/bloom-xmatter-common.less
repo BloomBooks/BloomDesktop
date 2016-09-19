@@ -3,9 +3,14 @@
 
 @XMatterPackName: "unknown";
 
+//This hack is used to localize the xMatter label. data-after-content is set in bloomEditing.ts
 .bloom-frontMatter, .bloom-backMatter {
+    .pageLabel:before {
+        content: "@{XMatterPackName}";
+        display: none;
+    }
     .pageLabel:after {
-        content: ": @{XMatterPackName} Front/Back Matter";
+        content: ": " attr(data-after-content);
     }
 }
 

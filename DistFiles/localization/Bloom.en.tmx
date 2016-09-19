@@ -1832,6 +1832,36 @@
         <seg>Day 5b</seg>
       </tuv>
     </tu>
+    <tu tuid="TemplateBooks.PageLabel.Factory">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Factory</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Paper Saver">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Paper Saver</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.SIL-Cameroon">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>SIL-Cameroon</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Traditional">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Traditional</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.FrontBackMatter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Front/Back Matter</seg>
+      </tuv>
+    </tu>
     <tu tuid="TemplateBooks.PageLabel.Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
