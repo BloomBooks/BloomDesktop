@@ -1,15 +1,21 @@
 {
-    // This works with the vscode debug Chrome extension, which you need to install (Ctrl+P: "ext install Debugger for Chrome")
+    // This works with the vscode debug Chrome and Firefox extensions,
+    // which you need to install.
+    // Firefox: CTRL+P: "ext install vscode-firefox-debug". See https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug
+    // Chrome: CTRL+P: "ext install Debugger for Chrome"
     // 1) Run Bloom, go to a page.
     // 2) Here in VSCODE, run Debug (F5, once you've done it once)
 
-    // This should open the page in Chrome. Breakpoints should point to the typescript.
+    // This should open the page in Firefox or Chrome. Breakpoints should point to the typescript.
 
+
+    // Firefox Troubleshooting tips
+    // Note: as of Sept 20 2016, I haven't gotten Firefox breakpoints to work, for TS or JS. So this is pretty worthless.
+
+    // Chrome Troubleshooting tips
     // Note: you cannot (yet?) have the chrome inspector open at the same time (!!!) https://github.com/Microsoft/vscode-chrome-debug/issues/83,
     //       https://github.com/Microsoft/vscode-chrome-debug/issues/95, https://bugs.chromium.org/p/chromium/issues/detail?id=129539#.
     // Workaround: open a different tab with the same URL, you can Inspect that one.
-
-    // Troubleshooting tips
     // * If Chrome cannot get the page, check that your Bloom is really listening on 8091 as listed in the "url" below? Bloom has
     //   the ability to change ports if the default isn't available.
     // If the debugger says it cannot connect to Chrome:
@@ -22,6 +28,19 @@
 
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "Launch in Firefox",
+            "type": "firefox",
+            "request": "launch",
+            "url": "http://localhost:8091/bloom/CURRENTPAGE.htm",
+            "webRoot": "${workspaceRoot}",
+            "log": {
+                "consoleLevel": {
+                    "PathConversion": "Debug",
+                    "default": "Error"
+                }
+            }
+        },
         {
             "name": "Launch in Chrome",
             "type": "chrome",
