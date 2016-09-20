@@ -1140,5 +1140,23 @@ namespace Bloom.Edit
 			CurrentBook.SetMetadata(metadata);
 			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
 		}
+
+#if __MonoCS__
+		/// <summary>
+		/// Flag that a page selection is currently under way.
+		/// </summary>
+		internal void PageSelectionStarted()
+		{
+			_pageSelection.StartChangingPage();
+		}
+
+		/// <summary>
+		/// Flag that the current (former) page selection has finished, so it's safe to select another page.
+		/// </summary>
+		internal void PageSelectionFinished()
+		{
+			_pageSelection.ChangingPageFinished();
+		}
+#endif
 	}
 }
