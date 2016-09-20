@@ -1,18 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.5519.15474" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.1.000.0</prop>
+    <prop type="x-appversion">3.7.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
     <tu tuid="AboutDialog.AboutDialogWindowTitle">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog.BuiltOnDate">
+      <tuv xml:lang="en">
+        <seg>Built on {0}</seg>
       </tuv>
     </tu>
     <tu tuid="AboutDialog.NoUpdates">
       <tuv xml:lang="en">
         <seg>No Updates</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>About {0}</seg>
       </tuv>
     </tu>
     <tu tuid="AboutDialog._checkForUpdates">
@@ -105,6 +116,12 @@
         <seg>&amp;Delete</seg>
       </tuv>
     </tu>
+    <tu tuid="ImageToolbox.AlmostMatchingImages">
+      <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
+      <tuv xml:lang="en">
+        <seg>Found {0} images with names close to {1}</seg>
+      </tuv>
+    </tu>
     <tu tuid="ImageToolbox.ArtOfReading">
       <tuv xml:lang="en">
         <seg>Art Of Reading</seg>
@@ -124,6 +141,11 @@
     <tu tuid="ImageToolbox.Crop">
       <tuv xml:lang="en">
         <seg>Crop</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ImageToolbox.DownloadArtOfReading">
+      <tuv xml:lang="en">
+        <seg>Download Art Of Reading Installer</seg>
       </tuv>
     </tu>
     <tu tuid="ImageToolbox.EditMetadataLink">
@@ -161,6 +183,27 @@
         <seg>Image Toolbox</seg>
       </tuv>
     </tu>
+    <tu tuid="ImageToolbox.InstallArtOfReading">
+      <tuv xml:lang="en">
+        <seg>Install the Art Of Reading package (this may be very slow)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ImageToolbox.MatchingImages">
+      <note>The {0} will be replaced by the number of matching images</note>
+      <tuv xml:lang="en">
+        <seg>Found {0} images</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ImageToolbox.NewMultilingual">
+      <tuv xml:lang="en">
+        <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ImageToolbox.NoArtOfReading">
+      <tuv xml:lang="en">
+        <seg>This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</seg>
+      </tuv>
+    </tu>
     <tu tuid="ImageToolbox.NoMatchingImages">
       <tuv xml:lang="en">
         <seg>Found no matching images</seg>
@@ -190,6 +233,16 @@
     <tu tuid="ImageToolbox.Scanner">
       <tuv xml:lang="en">
         <seg>Scanner</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ImageToolbox.SearchArtOfReading">
+      <tuv xml:lang="en">
+        <seg>Search the Art of Reading Gallery</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ImageToolbox.SearchLanguage">
+      <tuv xml:lang="en">
+        <seg>The search box is currently set to {0}</seg>
       </tuv>
     </tu>
     <tu tuid="ImageToolbox.SetUpMetadataLink">
@@ -277,6 +330,11 @@
         <seg>Name</seg>
       </tuv>
     </tu>
+    <tu tuid="LanguageLookup.ShowRegionalDialectsLabel">
+      <tuv xml:lang="en">
+        <seg>Show regional dialects</seg>
+      </tuv>
+    </tu>
     <tu tuid="LanguageLookup.UnlistedLanguage">
       <tuv xml:lang="en">
         <seg>Unlisted Language</seg>
@@ -287,9 +345,19 @@
         <seg>Can't find your language?</seg>
       </tuv>
     </tu>
+    <tu tuid="MemoryWarning">
+      <tuv xml:lang="en">
+        <seg>Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</seg>
+      </tuv>
+    </tu>
     <tu tuid="MetadataDisplay.Creator">
       <tuv xml:lang="en">
         <seg>Creator: {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataDisplay.CreatorLabel">
+      <tuv xml:lang="en">
+        <seg>Creator</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.LicenseInfo">
@@ -420,7 +488,7 @@
       </tuv>
     </tu>
     <tu tuid="MetadataEditor.betterLinkLabel1">
-      <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
+      <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
       <tuv xml:lang="en">
         <seg>more info</seg>
       </tuv>
@@ -487,10 +555,40 @@
         <seg>Settings Protection</seg>
       </tuv>
     </tu>
+    <tu tuid="ShowReleaseNotesDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Release Notes</seg>
+      </tuv>
+    </tu>
     <tu tuid="Use {0}">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>ImageToolbox.CopyExemplarMetadata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WSFontControl.Font">
+      <tuv xml:lang="en">
+        <seg>&amp;Font:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WSFontControl.FontNotAvailable">
+      <tuv xml:lang="en">
+        <seg>(The selected font is not available on this machine. Using default.)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WSFontControl.RightToLeftWS">
+      <tuv xml:lang="en">
+        <seg>This is a &amp;right to left writing system.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WSFontControl.Size">
+      <tuv xml:lang="en">
+        <seg>&amp;Size:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WSFontControl.TestArea">
+      <tuv xml:lang="en">
+        <seg>&amp;Test Area:</seg>
       </tuv>
     </tu>
     <tu tuid="WSKeyboardControl.KeyboardNotListed">
@@ -531,6 +629,21 @@
     <tu tuid="WSKeyboardControl.TestAreaCaption">
       <tuv xml:lang="en">
         <seg>&amp;Test Area (Use this area to type something to test out your keyboard.)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Warning">
+      <tuv xml:lang="en">
+        <seg>Warning</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WritingSystemSetupView.UnableToConnectToSldrCaption">
+      <tuv xml:lang="en">
+        <seg>Unable to connect to SLDR</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WritingSystemSetupView.UnableToConnectToSldrText">
+      <tuv xml:lang="en">
+        <seg>The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</seg>
       </tuv>
     </tu>
   </body>

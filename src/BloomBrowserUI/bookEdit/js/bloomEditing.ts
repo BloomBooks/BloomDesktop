@@ -582,6 +582,22 @@ function SetupElements(container) {
     // user will need to actually click in the div to start typing.
     if (!toolboxVisible)
         $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
+
+    AddXMatterLabelAfterPageLabel(container);
+}
+
+function AddXMatterLabelAfterPageLabel(container) {
+    // All this rigamarole so we can localize...
+    var pageLabel = <HTMLDivElement>document.getElementsByClassName("pageLabel")[0];
+    var xMatterLabel = window.getComputedStyle(pageLabel,':before').content;
+    xMatterLabel = xMatterLabel.replace(new RegExp("\"", 'g'), ""); //No idea why the quotes are still in there at this point.
+    theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel." + xMatterLabel, xMatterLabel)
+        .done(function (xMatterLabelTranslation) {
+            theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel.FrontBackMatter", "Front/Back Matter")
+                .done(function (frontBackTranslation) {
+                    $(pageLabel).attr('data-after-content', xMatterLabelTranslation + " " + frontBackTranslation);
+                })
+            });
 }
 
 // Only put setup code here which is guaranteed to only be run once per page load.

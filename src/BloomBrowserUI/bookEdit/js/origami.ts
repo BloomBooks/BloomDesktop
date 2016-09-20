@@ -34,6 +34,8 @@ export function setupOrigami() {
         setupLayoutMode();
         $('#myonoffswitch').prop('checked', true);
     }
+
+    $('.customPage').find('*[data-i18n]').localize();
 }
 
 export function cleanupOrigami() {
