@@ -988,6 +988,13 @@
         <seg>Words in this stage</seg>
       </tuv>
     </tu>
+	<tu tuid="EditTab.Toolbox.Zoom.Reset">
+      <prop type="x-dynamic">true</prop>
+	  <note>This is for the button that changes the page zoom back to 100%</note>
+      <tuv xml:lang="en">
+        <seg>Reset Zoom</seg>
+      </tuv>
+    </tu>
     <tu tuid="Download.Completed">
       <tuv xml:lang="en">
         <seg>Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</seg>
