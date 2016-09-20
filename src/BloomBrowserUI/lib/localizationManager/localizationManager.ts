@@ -298,9 +298,12 @@ export class LocalizationManager {
  * @param {String} text
  */
 function HtmlDecode(text): string {
-  var div = document.createElement('div');
-  div.innerHTML = text;
-  return div.firstChild.nodeValue;
+    if(text === "") {   //an empty string leads to div.firstChild, below, being null.
+        return text;
+    }
+    var div = document.createElement('div');
+    div.innerHTML = text;
+    return div.firstChild.nodeValue;
 }
 
 var theOneLocalizationManager: LocalizationManager = new LocalizationManager();
