@@ -60,6 +60,7 @@ namespace BloomTests.web
 		[TestCase("bl%23ah", "/bl#ah")]
 		[TestCase("bl?ah", "/bl")]
 		[TestCase("bl%F4%80%80%8Aah", "/bl􀀊ah")] // private use character
+		[TestCase("one + one", "/one + one")] // BL-3814. See http://stackoverflow.com/a/1006074/723299 
 		[RequiresSTA]
 		public void LocalPathWithoutQuery_SpecialCharactersDecodedCorrectly(string urlEnd, string expectedResult)
 		{
