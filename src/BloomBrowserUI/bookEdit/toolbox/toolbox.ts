@@ -3,7 +3,7 @@
 
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import '../../lib/jquery.i18n.custom';
-import "../../lib/jquery.onSafe"; 
+import "../../lib/jquery.onSafe";
 import axios = require('axios');
 import {EditableDivUtils} from '../js/editableDivUtils';
 
@@ -283,10 +283,10 @@ function setCurrentPanel(currentPanel) {
 /**
  * Requests a panel from localhost and loads it into the toolbox.
  * This is used when the user ticks a previously unticked checkbox of a tool.
- * Normally that job goes to an equivalent c# function. Enhance: remove the c# one. 
+ * Normally that job goes to an equivalent c# function. Enhance: remove the c# one.
  */
 // these last three parameters were never used: function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPanel) {
-function beginAddPanel(checkBoxId:string, panelId:string): Promise<void> {    
+function beginAddPanel(checkBoxId:string, panelId:string): Promise<void> {
     var chkBox = document.getElementById(checkBoxId);
     if (chkBox) {
         chkBox.innerHTML = checkMarkString;
@@ -324,6 +324,11 @@ function doKeypressMarkup(): void {
         var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById('page');
         if (!page) return; // unit testing?
 
+        //don't need to do any of this if there is no tool that will be adding markup anyway.
+        if (!currentTool || !toolbox.toolboxIsShowing()) {
+            return;
+        }
+
         var selection: Selection = page.contentWindow.getSelection();
         var current: Node = selection.anchorNode;
         var active = <HTMLDivElement>$(selection.anchorNode).closest('div').get(0);
@@ -331,43 +336,33 @@ function doKeypressMarkup(): void {
             return; // don't even try to adjust markup while there is some complex selection
         }
 
+        // the hard thing about all this is preserving the user's insertion point while we change the actual
+        // html out from under them to add/remove markup.
+        // ckeditor specific discussion: http://stackoverflow.com/questions/16835365/set-cursor-to-specific-position-in-ckeditor
+        // This "bookmark" approach makes that easy:
+        // We insert a dummy element where the insert point is. Later when we do the markup,
+        // we'll find the bookmark again, put the selection there, and remove this element.
+        // The problem with this approach is that when the user is fixing an existing word, the markup
+        // will see our bookmark as a word-breaking element. For example, if I type "houze" and go
+        // to fix that z, the markup routine is going to see "hous"-bookmark-"e". When the user
+        // clicks away, the markup will be redone and fixed. So this is a known tradeoff; we get
+        // more reliable insertion-point-preservation, at the cost of some temporarily inaccurate
+        // markup.
+        const editableDiv = $(selection.anchorNode).parents(".bloom-editable")[0];
+        const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
+        const ckeditorSelection = ckeditorOfThisBox.getSelection();
 
-        const innerHtmlBeforeMarkup = active.innerHTML;
+        // there is also createBookmarks2(), which avoids actually inserting anything. That has the
+        // advantage that changing a character in the middle of a word will allow the entire word to
+        // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
+        // actually go back to where it was: it gets shifted to the right.
+        const bookmarks = ckeditorSelection.createBookmarks(true);
 
-        var myRange: Range = selection.getRangeAt(0).cloneRange();
-        myRange.setStart(active, 0);
-        var offset: number = myRange.toString().length;
+        currentTool.updateMarkup();
 
-        // In case the IP is somewhere like after the last <br> or between <br>s,
-        // its anchorNode is the div itself, or perhaps one of its spans, and we want to try to put it back
-        // in a comparable position. -1 marks a selection that is at a text level.
-        // other values count the <br> elements immediately before the selection.
-        // I am hoping it doesn't happen that there are <br>s at multiple levels.
-        // Note that the newly marked up version will have any <br>s at the top level only (children of the div).
-        var divBrCount: number = -1;
-        if (current.nodeType !== 3) {
-            divBrCount = 0;
-            // endoffset counts the number of childNodes that the selection is after.
-            // We want to know how many <br> nodes are between it and the previous non-empty node.
-            for (var k = myRange.endOffset - 1; k >= 0; k--) {
-                if (current.childNodes[k].localName === 'br') divBrCount++;
-                else if (current.childNodes[k].textContent.length > 0) break;
-            }
-        }
+        //set the selection to wherever our bookmark node ended up
+        ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
 
-        var atStart: boolean = myRange.endOffset === 0;
-
-        if (currentTool && toolbox.toolboxIsShowing()) currentTool.updateMarkup();
-
-        // ideally, this check wouldn't matter, but we're tring to limit the impact of some bugs in the setting of the selection
-        // might as well not even try if there's no reason to think the html changed
-        if(active.innerHTML != innerHtmlBeforeMarkup) {
-            // Now we try to restore the selection at the specified position.
-            console.log("makeSelectionIn active:"+active+" current.nodeType:"+current.nodeType+" offset:"+offset+" divBrCount:"+divBrCount+" atStart:"+atStart);
-            EditableDivUtils.makeSelectionIn(active, offset, divBrCount, atStart);
-        } else {
-            console.log("no markup apparent");
-        }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
         keypressTimer = null;
     }, 500);

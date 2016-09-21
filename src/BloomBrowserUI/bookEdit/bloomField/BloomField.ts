@@ -83,6 +83,10 @@ export default class BloomField {
                 event.cancel();
             }
         });
+
+        // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
+        // I wasn't able to find one.
+        (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
     }
 
     private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {
