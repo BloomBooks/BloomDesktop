@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Newtonsoft.Json;
+using SIL.IO;
 
 namespace Bloom.web.controllers
 {
@@ -79,6 +80,16 @@ namespace Bloom.web.controllers
 		}
 
 		/// <summary>
+		/// Enhancing the code to not generate a new Book object every time we call Book.FindTemplateBook (BL-3782)
+		/// exposed a threading bug in the Mono library.  The same book can now being navigated at the same time
+		/// on multiple threads.  This appears to work okay on Windows/.Net, but throws exceptions on Linux/Mono.
+		/// (The error message in Mono even admitted it might reflect a bug in their XML library code.)
+		/// Locking three different lines of code below fixes this problem.  The locking doesn't seem to hurt
+		/// performance significantly, so I haven't tried to make it system specific.
+		/// </summary>
+		private static object _sTemplateLock = new object();
+
+		/// <summary>
 		/// Usually we expect that a file at the same path but with extension .svg will
 		/// be found and returned. Failing this we try for one ending in .png. If this still fails we
 		/// start a process to generate an image from the template page content.
@@ -111,29 +122,53 @@ namespace Bloom.web.controllers
 				caption = caption.Substring(0, caption.Length - "-landscape".Length);
 
 			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
-						var templatePage = templateBook.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
+			IPage templatePage = null;
+			lock(_sTemplateLock)
+			{
+				templatePage = templateBook.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
+			}
 			if (templatePage == null)
 				templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-			var image = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape);
+			Image thumbnail = null;
+			lock(_sTemplateLock)
+			{
+				thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape);
+			}
 
-			// The clone here is an attempt to prevent an unexplained exception complaining that the source image for the bitmap is in use elsewhere.
-			using (var b = new Bitmap((Image)image.Clone()))
+			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below. 
+			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this 
+			// same contention problem (but, in hindsight, only partially, see?). But for some reason if we just lock the image 
+			// until it is saved, we get all gray rectangles. So for now, we just quickly do the clone and unlock. 
+			var resultPath = "";
+			Bitmap clone;
+			lock (thumbnail)
+			{
+				clone = new Bitmap((Image)thumbnail.Clone());
+			}
+			using (clone)
 			{
 				try
 				{
 					//if the directory doesn't exist in the template's directory, make it (i.e. "templates/").
 					Directory.CreateDirectory(templatesDirectoryInTemplateBook);
 					//save this thumbnail so that we don't have to generate it next time
-					b.Save(pngpath);
-					return pngpath;
+					clone.Save(pngpath);
+					resultPath = pngpath;
 				}
 				catch (Exception)
 				{
-					return "";
+					using (var file = new TempFile())
+					{
+						clone.Save(file.Path);
+						resultPath = file.Path;
+					}
 				}
 			}
+			return resultPath;
 		}
+
+
 
 		private static string AdjustPossibleLocalHostPathToFilePath(string path)
 		{

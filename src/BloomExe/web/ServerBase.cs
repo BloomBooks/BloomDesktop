@@ -183,7 +183,7 @@ namespace Bloom.Api
 			{
 				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" + error.Message);
 				if (!Program.RunningUnitTests)
-					NonFatalProblem.Report(ModalIf.None,PassiveIf.Alpha,"Could not start server on that port");
+					NonFatalProblem.Report(ModalIf.None,PassiveIf.Alpha, "Could not open " + ServerUrlEndingInSlash, "Could not start server on that port", error);
 				try
 				{
 					if(_listener != null)

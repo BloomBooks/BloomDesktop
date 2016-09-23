@@ -83,7 +83,7 @@
 
 .insideFrontCover {
     .bloom-content1 {
-        display: inherit;
+        display: block;
     }
     .bloom-editable {
         height: 100%;
@@ -222,7 +222,7 @@
         //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
         &.bloom-contentNational1 {
             //NB: we show the national language even if this is a monolingual book
-            display: inherit;
+            display: block;
             font-size: 120%;
             //min-height: 2em;
             line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnท             line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test
@@ -232,7 +232,7 @@
         //   which we can tell because Bloom will stick a "bloom-content3" on the appropriate element
         //NOPE: .bloom-contentNational2 {
         &.bloom-content3 {
-            display: inherit;
+            display: block;
         }
         &.bloom-content1 {
             //main title

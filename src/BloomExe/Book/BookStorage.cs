@@ -887,8 +887,8 @@ namespace Bloom.Book
 				if(_alreadyNotifiedAboutOneFailedCopy)
 					return;//don't keep bugging them
 				_alreadyNotifiedAboutOneFailedCopy = true;
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					"Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", documentPath, factoryPath);
+				var msg = String.Format("Could not update one of the support files in this document ({0} to {1}).", documentPath, factoryPath);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Can't Update Support File", msg, exception: e);
 			}
 		}
 

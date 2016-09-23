@@ -115,8 +115,11 @@ namespace Bloom
 				//In our cache?
 				if (!String.IsNullOrWhiteSpace(key) && _images.TryGetValue(key, out image))
 				{
+					Debug.WriteLine("Thumbnail Cache HIT: "+ key + " thread=" + Thread.CurrentThread.ManagedThreadId);
 					return image;
 				}
+				Debug.WriteLine("Thumbnail Cache MISS: " + key + " thread=" + Thread.CurrentThread.ManagedThreadId);
+
 				_backgroundColorOfResult = options.BackgroundColor;
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(document.RawDom);
 

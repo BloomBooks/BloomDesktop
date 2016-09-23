@@ -13,7 +13,9 @@ mixin text(i18nKey, englishText)
 
 html
 	head
+		//review: I suspect we don't actually have a way to suck these up into our little panel (though that would be great). Instead, the js comes in as part of the webpack bundle, and the css has to be declared in the toolbox.jade
 		script(src='/bloom/bookEdit/toolbox/bookSettings/bookSettings.js')
+		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/bookSettings/bookSettings.css')
 	body
 		h3(data-panelId='bookSettingsTool', data-order='100')
 			img(src="/bloom/bookEdit/toolbox/bookSettings/icon.svg")
@@ -25,3 +27,4 @@ html
 				.showOnlyIfBookIsNeverLocked
 					+text('EditTab.Toolbox.Settings.IsTemplateBookIntroductionText','When you click "Add Page", you can choose from pages contained in template books. To make this a template book, tick this checkbox.')
 					+checkbox('isTemplateBook', 'EditTab.Toolbox.Settings.IsTemplateBook', 'This is a template book.')
+				a(data-i18n='EditTab.Toolbox.Zoom.Reset', href="javascript:window.FrameExports.handleResetZoom(this);") Reset Zoom
