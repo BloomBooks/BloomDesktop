@@ -946,6 +946,21 @@ namespace Bloom.Edit
 			ExecuteCommandSafely(_pasteCommand);
 		}
 
+		/// <summary>
+		/// Add a menu item to a dropdown button and return it.  Avoid creating a ToolStripSeparator instead of a
+		/// ToolStripMenuItem even for a hyphen.
+		/// </summary>
+		/// <returns>the dropdown menu item</returns>
+		/// <remarks>See https://silbloom.myjetbrains.com/youtrack/issue/BL-3796.</remarks>
+		private ToolStripMenuItem AddDropdownItemSafely(ToolStripDropDownButton button, string text)
+		{
+			// A single hyphen triggers a ToolStripSeparator instead of a ToolStripMenuItem, so change it minimally.
+			// (Surely localizers wouldn't do this to us, but it has happened to a user.)
+			if (text == "-")
+				text = "- ";
+			return (ToolStripMenuItem) button.DropDownItems.Add(text);
+		}
+
 		public void UpdateDisplay()
 		{
 			try
@@ -960,7 +975,7 @@ namespace Bloom.Edit
 
 				foreach(var l in _model.ContentLanguages)
 				{
-					ToolStripMenuItem item = (ToolStripMenuItem) _contentLanguagesDropdown.DropDownItems.Add(l.ToString());
+					var item = AddDropdownItemSafely(_contentLanguagesDropdown, l.ToString());
 					item.Tag = l;
 					item.Enabled = !l.Locked;
 					item.Checked = l.Selected;
@@ -974,7 +989,7 @@ namespace Bloom.Edit
 				foreach(var l in layoutChoices)
 				{
 					var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + l.ToString(), l.ToString());
-					ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(text);
+					var item = AddDropdownItemSafely(_layoutChoices, text);
 					item.Tag = l;
 					//we don't allow the split options here
 					if(l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
@@ -989,11 +1004,10 @@ namespace Bloom.Edit
 
 				if(layoutChoices.Count() < 2)
 				{
-					ToolStripMenuItem item =
-						(ToolStripMenuItem)
-							_layoutChoices.DropDownItems.Add(LocalizationManager.GetString("EditTab.NoOtherLayouts",
-								"There are no other layout options for this template.",
-								"Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice"));
+					var text = LocalizationManager.GetString("EditTab.NoOtherLayouts",
+						"There are no other layout options for this template.",
+						"Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice");
+					var item = AddDropdownItemSafely(_layoutChoices, text);
 					item.Tag = null;
 					item.Enabled = false;
 				}
