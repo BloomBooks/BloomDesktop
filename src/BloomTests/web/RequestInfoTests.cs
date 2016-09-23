@@ -71,12 +71,13 @@ namespace BloomTests.web
 			var urlPrefix = "http://localhost:33579/";
 			listener.Prefixes.Add(urlPrefix);
 
-			new Thread(() =>
+			var reqThread = new Thread(() =>
 			{
 				Thread.Sleep(100);
 				WebRequest req = WebRequest.Create(urlPrefix + urlEnd);
 				req.GetResponse();
-			}).Start();
+			});
+			reqThread.Start();
 
 			try
 			{
@@ -88,12 +89,7 @@ namespace BloomTests.web
 			finally
 			{
 				listener.Stop();
-
-				// Prevents each test case from stepping on the other
-				// Not sure what the magic number is here.
-				// 105 was sometimes failing on the build machine.
-				// 200 seemed to usually fail for me locally (though 105 didn't).
-				Thread.Sleep(300);
+				reqThread.Join();
 			}
 		}
 
