@@ -462,6 +462,13 @@ namespace Bloom.Api
 
 			if (!File.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
 			{
+				// try to find the image in the book that is the template source if we haven't found it yet
+				var templatePath = Path.Combine(_bookSelection.CurrentSelection.FindTemplateBook().FolderPath, Path.GetFileName(localPath));
+				if (File.Exists(templatePath))
+				{
+					info.ReplyWithImage(templatePath);
+					return true;
+				}
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
 				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
 				// altering the main book title.
