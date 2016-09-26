@@ -1107,12 +1107,14 @@ export default class StyleEditor {
 
     changeLineheight() {
         if (this.ignoreControlChanges) return;
+
+        var units = 'em'; // Mozilla says unitless line-height is preferred, but it doesn't work for some reason!
         var lineHeight = $('#line-height-select').val();
         var rule = this.getStyleRule(false);
-        rule.style.setProperty("line-height", lineHeight, "important");
+        rule.style.setProperty("line-height", lineHeight + units, "important");
         if (this.shouldSetDefaultRule()) {
             rule = this.getStyleRule(true);
-            rule.style.setProperty("line-height", lineHeight, "important");
+            rule.style.setProperty("line-height", lineHeight + units, "important");
         }
        this.cleanupAfterStyleChange();
     }
