@@ -51,7 +51,7 @@
             <seg>Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>{0} को अर्को प्रति पहिले देखि नै चलिरहेको छ। यदि तपाईंले {0} लाई फेला पार्न सक्नुभएन भने, आफ्नो कम्प्युटर पुन:सुरु गर्नुहोस्।</seg>
+            <seg>{0} को अर्को प्रति पहिले देखि नै चलिरहेको छ। यदि तपाईंले {0} को अर्को प्रति फेला पार्न सक्नुभएन भने, आफ्नो कम्प्युटर पुन:सुरु गर्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="Application.ProblemStarting.General">
@@ -59,7 +59,7 @@
             <seg>There was a problem starting the application which might require that you restart your computer.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो अनुप्रयोग खोल्दा समस्या आयो जसको कारणले तपाईंको कम्प्युटर पुन:सुरु गर्न आवश्यक हुन सक्छ।</seg>
+            <seg>यो अनुप्रयोग खोल्दा समस्या आयो जसको कारण तपाईंले आफ्नो कम्प्युटर पुन:सुरु गर्न आवश्यक हुन सक्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="Application.ProblemStarting.Specific">
@@ -68,7 +68,7 @@
             <seg>There was a problem starting {0} which might require that you restart your computer.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>{0} खोल्दा समस्या आयो जसको कारणले तपाईंको कम्प्युटर पुन:सुरु गर्न आवश्यक हुन सक्छ।</seg>
+            <seg>{0} खोल्दा समस्या आयो जसको कारण तपाईंले आफ्नो कम्प्युटर पुन:सुरु गर्न आवश्यक हुन सक्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="Application.WaitingFinish.General">
@@ -143,7 +143,7 @@
             <seg>Confirm Delete</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>मेटाउने निश्चित गर्नुहेास्।</seg>
+            <seg> मेटाउने निश्चित गर्नुहोस </seg>
          </tuv>
       </tu>
       <tu tuid="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
@@ -160,6 +160,15 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>&amp;मेट्नुहोस्</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ImageToolbox.AlmostMatchingImages">
+         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
+         <tuv xml:lang="en">
+            <seg>Found {0} images with names close to {1}</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>लगभग {1} सँग नाम मिल्ने {0} तस्विरहरू फेला परे</seg>
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.ArtOfReading">
@@ -195,6 +204,14 @@
             <seg>काटछाँट गर्नुहोस्</seg>
          </tuv>
       </tu>
+      <tu tuid="ImageToolbox.DownloadArtOfReading">
+         <tuv xml:lang="en">
+            <seg>Download Art Of Reading Installer</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>पढ्ने कला (Art Of Reading) को स्थापनाकर्ता डाउनलोड गर्नुहोस्</seg>
+         </tuv>
+      </tu>
       <tu tuid="ImageToolbox.EditMetadataLink">
          <tuv xml:lang="en">
             <seg>Edit...</seg>
@@ -208,7 +225,7 @@
             <seg>This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो 'पढ्ने कला' बिभाग हो। माथिको बाकसमा आफूले खोज्न चाहेको कुरा टाइप गर्नुहोस् र ENTER थिच्नुहोस्। तपाईंले अङ्ग्रेजी र इन्डोनेसियाली भाषामा शब्दहरू टाइप गर्न सक्नुहुन्छ।</seg>
+            <seg>यो 'पढ्ने कला' को सङ्ग्रह हो।माथिको बाकसमा आफूले खोज्न चाहेको कुरा टाइप गर्नुहोस् र ENTER थिच्नुहोस्। तपाईंले अङ्ग्रेजी र इन्डोनेसियाली भाषामा शब्दहरू टाइप गर्न सक्नुहुन्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.FileButton">
@@ -251,6 +268,39 @@
             <seg>तस्‍विरको उपकरण पेटी</seg>
          </tuv>
       </tu>
+      <tu tuid="ImageToolbox.InstallArtOfReading">
+         <tuv xml:lang="en">
+            <seg>Install the Art Of Reading package (this may be very slow)</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>पढ्ने कलाको प्याकेज स्थापना गर्नुहोस् (यो एकदमै सुस्त हुन सक्छ)</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ImageToolbox.MatchingImages">
+         <note>The {0} will be replaced by the number of matching images</note>
+         <tuv xml:lang="en">
+            <seg>Found {0} images</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>{0} तस्बिरहरू फेला परे</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ImageToolbox.NewMultilingual">
+         <tuv xml:lang="en">
+            <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>के तपाईंलाई अरबिक, बङ्गाली, चिनियाँ, अङ्ग्रेजी, फ्रेन्च, इन्डोनेसियाली, हिन्दी, पर्चुगाली, स्पेनिश, थाई वा स्वाहिली भाषामा खोजी गर्न सकिने यस सङ्ग्रहको एउटा नयाँ संस्करण उपलब्ध छ भन्ने कुरा थाहा छ ? यसलाई तपाईंले निःशुल्क रूपमा डाउनलोड गर्न सक्नुहुन्छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ImageToolbox.NoArtOfReading">
+         <tuv xml:lang="en">
+            <seg>This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो कम्प्युटरमा अहिले सम्म 'पढ्ने कला' को सङ्ग्रह स्थापना गरिएको छ जस्तो देखिदैन </seg>
+         </tuv>
+      </tu>
       <tu tuid="ImageToolbox.NoMatchingImages">
          <tuv xml:lang="en">
             <seg>Found no matching images</seg>
@@ -289,7 +339,7 @@
             <seg>This image does not know:\n\nWho created it?\nWho can use it?</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो तस्‍विरमा निम्न विवरण छैन:\n\nयसलाई कसले सिर्जना गरेको हो?\nयसलाई कसले प्रयोग गर्न सक्छ?</seg>
+            <seg>यो तस्बिरमा निम्न विवरणहरू छैनन्:\n\nयसलाई कसले सिर्जना गरेको हो?\nयसलाई कसले प्रयोग गर्न सक्छ?</seg>
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.Scanner">
@@ -298,6 +348,22 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>स्क्यानर</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ImageToolbox.SearchArtOfReading">
+         <tuv xml:lang="en">
+            <seg>Search the Art of Reading Gallery</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>पढ्ने कलाको सङ्ग्रह खोज्नुहोस्</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ImageToolbox.SearchLanguage">
+         <tuv xml:lang="en">
+            <seg>The search box is currently set to {0}</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>खोज बाकसलाई हाल {0} मा सेट गरिएको छ</seg>
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.SetUpMetadataLink">
@@ -347,7 +413,7 @@
             <seg>About Language 639-3 Codes &amp; How To Apply For New Ones</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>ISO-639-3 भाषाका कोडहरूको बारेमा र नयाँ कोडहरूको लागि कसरी आवेदन दिने</seg>
+            <seg>भाषाका 639-3 कोडहरूको बारेमा र नयाँ कोडहरूको लागि कसरी आवेदन दिने</seg>
          </tuv>
       </tu>
       <tu tuid="LanguageLookup.CannotFindMyLanguageWindowTitle">
@@ -433,6 +499,14 @@
             <seg>नाम</seg>
          </tuv>
       </tu>
+      <tu tuid="LanguageLookup.ShowRegionalDialectsLabel">
+         <tuv xml:lang="en">
+            <seg>Show regional dialects</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>क्षेत्रीय भाषाहरू देखाउनुहोस्</seg>
+         </tuv>
+      </tu>
       <tu tuid="LanguageLookup.UnlistedLanguage">
          <tuv xml:lang="en">
             <seg>Unlisted Language</seg>
@@ -449,12 +523,28 @@
             <seg>आफ्नो भाषा फेला पार्न सक्नुभएन?</seg>
          </tuv>
       </tu>
+      <tu tuid="MemoryWarning">
+         <tuv xml:lang="en">
+            <seg>Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>दुर्भाग्यवश, {0} मा मेमोरी अपुग हुन थालेको छ, र यो छिटै सुस्त हुन वा यसमा अन्य समस्याहरू आउन सक्छ। हामी तपाईंलाई यसलाई बन्द गरेर पुनः आफूलाई पायक पर्ने समयमा सुरू गर्न सिफारिस गर्दछौं।</seg>
+         </tuv>
+      </tu>
       <tu tuid="MetadataDisplay.Creator">
          <tuv xml:lang="en">
             <seg>Creator: {0}</seg>
          </tuv>
          <tuv xml:lang="ne">
             <seg>सर्जक: {0}</seg>
+         </tuv>
+      </tu>
+      <tu tuid="MetadataDisplay.CreatorLabel">
+         <tuv xml:lang="en">
+            <seg>Creator</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>सर्जक</seg>
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.LicenseInfo">
@@ -532,7 +622,7 @@
             <seg>For permission to reuse, contact the copyright holder.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>पुनः प्रयोग गर्ने अनुमति लिन, प्रतिलिपि अघिकार धारकलाई सम्पर्क गर्नुहोस्।</seg>
+            <seg>पुनः प्रयोग गर्ने अनुमति लिन, प्रतिलिपि अघिकार धारकसंग  सम्पर्क गर्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.NoLicense">
@@ -548,7 +638,7 @@
             <seg>Allow commercial uses of your work?</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>आफ्नो रचनालाई व्यापारिक प्रयोजनका लागि दिने?</seg>
+            <seg>आफ्नो रचनालाई व्यापारिक प्रयोजनका लागि अनुमति दिने?</seg>
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.AllowDerivatives">
@@ -556,7 +646,7 @@
             <seg>Allow modifications of your work?</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>आफ्नो रचना परिमार्जन गर्न दिने?</seg>
+            <seg>आफ्नो रचना परिमार्जन गर्न अनुमति दिने?</seg>
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.CopyrightHolder">
@@ -630,7 +720,7 @@
             <seg>Contact the copyright holder for any permissions</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>कुनै पनि अनुमति लिन प्रतिलिपि अधिकार धारकलाई सम्पर्क गर्नुहोस्</seg>
+            <seg>कुनै पनि अनुमति लिन प्रतिलिपि अधिकार धारकसंग सम्पर्क गर्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.YesShareAlike">
@@ -766,6 +856,46 @@
             <seg>ImageToolbox.CopyExemplarMetadata</seg>
          </tuv>
       </tu>
+      <tu tuid="WSFontControl.Font">
+         <tuv xml:lang="en">
+            <seg>&amp;Font:</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>&amp;फन्ट:</seg>
+         </tuv>
+      </tu>
+      <tu tuid="WSFontControl.FontNotAvailable">
+         <tuv xml:lang="en">
+            <seg>(The selected font is not available on this machine. Using default.)</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>(चयन गरिएको फन्ट यो यन्त्रमा उपलब्ध छैन। पूर्वनिर्धारित फन्ट प्रयोग गरिनेछ।)</seg>
+         </tuv>
+      </tu>
+      <tu tuid="WSFontControl.RightToLeftWS">
+         <tuv xml:lang="en">
+            <seg>This is a &amp;right to left writing system.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो &amp;दायाँ देखि बायाँतिर लेख्ने प्रणाली हो।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="WSFontControl.Size">
+         <tuv xml:lang="en">
+            <seg>&amp;Size:</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>&amp;आकार:</seg>
+         </tuv>
+      </tu>
+      <tu tuid="WSFontControl.TestArea">
+         <tuv xml:lang="en">
+            <seg>&amp;Test Area:</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>&amp;परीक्षण क्षेत्र:</seg>
+         </tuv>
+      </tu>
       <tu tuid="WSKeyboardControl.KeyboardNotListed">
          <tuv xml:lang="en">
             <seg>If the keyboard you need is not listed, click the appropriate link below to set it up</seg>
@@ -828,6 +958,30 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>&amp;परीक्षण क्षेत्र (आफ्नो किबोर्डको परीक्षण गर्न केही कुरा टाइप गर्न यो क्षेत्र प्रयोग गर्नुहोस्।)</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Warning">
+         <tuv xml:lang="en">
+            <seg>Warning</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>चेतावनी</seg>
+         </tuv>
+      </tu>
+      <tu tuid="WritingSystemSetupView.UnableToConnectToSldrCaption">
+         <tuv xml:lang="en">
+            <seg>Unable to connect to SLDR</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>SLDR मा जडान गर्न सकिएन</seg>
+         </tuv>
+      </tu>
+      <tu tuid="WritingSystemSetupView.UnableToConnectToSldrText">
+         <tuv xml:lang="en">
+            <seg>The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो भाषाको बारेमा नवीनतम जानकारी प्राप्त गर्न यो अनुप्रयोगले SIL Locale Data Repository माथि पहुँच गर्न सकेन। तपाईंले यो लेखन प्रणाली सिर्जना गर्नुभयो भने, पूर्वनिर्धारित सेटिङहरू गलत वा पुराना हुन सक्छन्। तपाईं निश्चित रूपमा नयाँ लेखन प्रणाली सिर्जना गर्न चाहनुहुन्छ?</seg>
          </tuv>
       </tu>
    </body>
