@@ -29,9 +29,12 @@ namespace Bloom.WebLibraryIntegration
 		public const string UnitTestBucketName = "BloomLibraryBooks-UnitTests";
 		public const string SandboxBucketName = "BloomLibraryBooks-Sandbox";
 		public const string ProductionBucketName = "BloomLibraryBooks";
+		public const string ProblemBookUploadsBucketName = "bloom-problem-books";
+		public const string BloomDesktopFiles = "bloom-desktop-files";
 
-		public BloomS3Client()
+		public BloomS3Client(string bucketName)
 		{
+			_bucketName = bucketName;
 			_s3Config = new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" };
 			var proxy = new ProxyManager();
 			if (!string.IsNullOrEmpty(proxy.Hostname))
@@ -131,17 +134,42 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		/// <summary>
-		/// The thing here is that we need to guarantee unique names at the top level, so we wrap the books inside a folder
-		/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
-		/// except the one we want.
+		/// Allows a file to be put into the root of the bucket. 
+		/// Could be enhanced to specify a sub folder path, but I don't need that for the current use.
 		/// </summary>
-		/// <param name="storageKeyOfBookFolder"></param>
-		/// <param name="pathToBloomBookDirectory"></param>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress, string pdfToInclude = null)
+		/// <returns>url to the uploaded file</returns>
+		public string UploadSingleFile(string pathToFile, IProgress progress)
+		{
+			using(var transferUtility = new TransferUtility(GetAmazonS3(_bucketName)))
+			{
+				var request = new TransferUtilityUploadRequest
+				{
+					BucketName = _bucketName,
+					FilePath = pathToFile,
+					Key = Path.GetFileName(pathToFile),
+					CannedACL = S3CannedACL.PublicRead // Allows any browser to download it.
+				};
+				progress.WriteStatus("Uploading book to Bloom Support...");
+				transferUtility.Upload(request);
+				return "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(request.Key);
+			}
+		}
+
+
+		/// <summary>
+				/// The thing here is that we need to guarantee unique names at the top level, so we wrap the books inside a folder
+				/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
+				/// except the one we want.
+				/// </summary>
+				/// <param name="storageKeyOfBookFolder"></param>
+				/// <param name="pathToBloomBookDirectory"></param>
+			public
+			void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,  string pdfToInclude = null)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
-			DeleteBookData(BookTransfer.UploadBucketNameForCurrentEnvironment, storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
+			DeleteBookData(_bucketName, storageKeyOfBookFolder); // In case we're overwriting, get rid of any deleted files.
+
 			//first, let's copy to temp so that we don't have to worry about changes to the original while we're uploading,
 			//and at the same time introduce a wrapper with the last part of the unique key for this person+book
 			string prefix = ""; // storageKey up to last slash (or empty)
@@ -200,6 +228,7 @@ namespace Bloom.WebLibraryIntegration
 		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".bloompack", ".bak", ".userprefs" };
 		private AmazonS3Config _s3Config;
 		private string _previousBucketName;
+		private string _bucketName;
 
 		/// <summary>
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
@@ -216,7 +245,6 @@ namespace Bloom.WebLibraryIntegration
 			prefix = prefix + Path.GetFileName(directoryPath) + kDirectoryDelimeterForS3;
 
 			var filesToUpload = Directory.GetFiles(directoryPath);
-			var bucketName = BookTransfer.UploadBucketNameForCurrentEnvironment;
 
 			// Remember the url that can be used to download files like thumbnails and preview.pdf. This seems to work but I wish
 			// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
@@ -224,7 +252,7 @@ namespace Bloom.WebLibraryIntegration
 			// We want to keep the one that ends in the book name...the main root directory.
 			// This should be the first non-empty directory we are passed (the root only has a folder in it)
 			if (BaseUrl == null && filesToUpload.Length > 0)
-				BaseUrl = "https://s3.amazonaws.com/" + bucketName + "/" + HttpUtility.UrlEncode(prefix);;
+				BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);;
 
 			using(var transferUtility = new TransferUtility(_amazonS3))
 			{
@@ -236,7 +264,7 @@ namespace Bloom.WebLibraryIntegration
 
 					var request = new TransferUtilityUploadRequest()
 					{
-						BucketName = bucketName,
+						BucketName = _bucketName,
 						FilePath = file,
 						Key = prefix + fileName
 					};
@@ -275,7 +303,7 @@ namespace Bloom.WebLibraryIntegration
 					{
 						// Remember the url that can be used to download the book. This seems to work but I wish
 						// I could find a way to get a definitive URL from the response to UploadPart or some similar way.
-						BookOrderUrlOfRecentUpload = BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "=" + bucketName + "/" +
+						BookOrderUrlOfRecentUpload = BloomLinkArgs.kBloomUrlPrefix + BloomLinkArgs.kOrderFile + "=" + _bucketName + "/" +
 						                             HttpUtility.UrlEncode(prefix + fileName);
 					}
 				}

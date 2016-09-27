@@ -13,11 +13,15 @@ mixin text(i18nKey, englishText)
 
 html
 	head
+		//review: I suspect we don't actually have a way to suck these up into our little panel (though that would be great). Instead, the js comes in as part of the webpack bundle, and the css has to be declared in the toolbox.jade
 		script(src='/bloom/bookEdit/toolbox/bookSettings/bookSettings.js')
+		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/bookSettings/bookSettings.css')
 	body
 		h3(data-panelId='bookSettingsTool', data-order='100')
 			img(src="/bloom/bookEdit/toolbox/bookSettings/icon.svg")
 		div(data-panelId='bookSettingsTool')
-			form.bookSettings.showOnlyWhenBookWouldNormallyBeLocked
-				+text('EditTab.Toolbox.Settings.UnlockShellBookIntroductionText','Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.')
-				+checkbox('unlockShellBook', 'EditTab.Toolbox.Settings.Unlock', 'Allow changes to this shellbook')
+			div#bookSettingsTool
+				form.bookSettings.showOnlyWhenBookWouldNormallyBeLocked
+					+text('EditTab.Toolbox.Settings.UnlockShellBookIntroductionText','Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.')
+					+checkbox('unlockShellBook', 'EditTab.Toolbox.Settings.Unlock', 'Allow changes to this shellbook')
+				a(data-i18n='EditTab.Toolbox.Zoom.Reset', href="javascript:window.FrameExports.handleResetZoom(this);") Reset Zoom

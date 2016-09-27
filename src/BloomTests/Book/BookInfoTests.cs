@@ -115,7 +115,6 @@ namespace BloomTests.Book
 				Credits = "JohnT",
 				Summary = "A very nice book\\ in a very nice nook",
 				Tags= new []{"Animals"},
-				Authors = new[] { "John", "Steve" },
 				CurrentTool = "mytool",
 				BookletMakingIsAppropriate = false, PageCount=7,
 				LanguageTableReferences = new [] {new ParseDotComObjectPointer() { ClassName = "Language", ObjectId = "23456" }},
@@ -138,7 +137,6 @@ namespace BloomTests.Book
 			Assert.That(meta2.FormatVersion, Is.EqualTo("1.0"));
 			Assert.That(meta2.Credits, Is.EqualTo("JohnT"));
 			Assert.That(meta2.Tags, Has.Length.EqualTo(1));
-			Assert.That(meta2.Authors, Has.Length.EqualTo(2));
 			Assert.That(meta2.Summary, Is.EqualTo("A very nice book\\ in a very nice nook"));
 			Assert.That(meta2.PageCount, Is.EqualTo(7));
 			Assert.That(meta2.LanguageTableReferences, Has.Length.EqualTo(1));

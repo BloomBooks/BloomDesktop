@@ -17,6 +17,7 @@ using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
 using Bloom.ToPalaso;
+using Bloom.web;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
@@ -490,7 +491,7 @@ namespace Bloom.Workspace
 
 		private void _webSiteMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start("http://bloomlibrary.org");
+			Process.Start(UrlLookup.LookupUrl(UrlType.LibrarySite));
 		}
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
@@ -643,7 +644,7 @@ namespace Bloom.Workspace
 
 		private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
 		{
-			var path = FileLocator.GetFileDistributedWithApplication(false,"infoPages", "TrainingVideos-en.md");
+			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.md");
 			//enhance: change the name of this class in SIL.Windows.Forms to just "MarkDownDialog"
 			using(var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.BloomIcon, path))
 			{

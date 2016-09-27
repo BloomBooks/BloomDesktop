@@ -84,8 +84,8 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
-    <Reference Include="DesktopAnalytics, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DesktopAnalytics.1.2.1\lib\net40\DesktopAnalytics.dll</HintPath>
+    <Reference Include="DesktopAnalytics, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DesktopAnalytics.1.2.3\lib\net40\DesktopAnalytics.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EasyHttp">
@@ -517,6 +517,7 @@
     <Compile Include="ApplicationUpdateSupport.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
+    <Compile Include="WebLibraryIntegration\ProblemBookUploader.cs" />
     <Compile Include="web\ApiRequest.cs" />
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
@@ -526,6 +527,7 @@
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersApi.cs" />
     <Compile Include="web\controllers\ExternalLinkController.cs" />
+    <Compile Include="web\UrlLookup.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -904,6 +906,7 @@
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\current-service-urls.json" />
     <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <ItemGroup>

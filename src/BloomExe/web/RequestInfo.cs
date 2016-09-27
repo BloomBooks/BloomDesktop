@@ -24,17 +24,25 @@ namespace Bloom.Api
 
 		public string LocalPathWithoutQuery
 		{
-			get { return GetLocalPathWithoutQuery(_actualContext.Request.Url); }
-		}
+			get
+			{
+				var queryStart = RawUrl.IndexOf("?", StringComparison.Ordinal);
+				var urlToDecode = queryStart == -1 ? RawUrl : RawUrl.Substring(0, queryStart);
+				// this (done in fix for BL-3750) by itself caused us to lose + signs, which according to http://stackoverflow.com/a/1006074/723299 are *not* to be
+				// replaced by space if they are in the "path component" of the url (hence the approach comment out below). In the "query" component,
+				// plus signs do have a special meaning. So if this is correct, UrlDecode appears to be WRONG in its
+				// handling of + signs. They should be treated literally, not turned into spaces.
+				//no:	return HttpUtility.UrlDecode(urlToDecode);
+				
+				// So let's workaround that problem with UrlDecode and still do decoding on the path component:
+				var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+","%2B");
+				return HttpUtility.UrlDecode(pathWithoutLiteralPlusSigns);
 
-		public static string GetLocalPathWithoutQuery(Uri uri)
-		{
-			// The problem with LocalPath alone is that it stops when it encounters even an
-			// encoded #.  Since Bloom doesn't worry about internal addresses, and does allow
-			// book titles (and thus file names) to have a # character, we need to piece together
-			// the original information.  Note that LocalPath removes all Http escaping, but
-			// Fragment does not.  See https://jira.sil.org/browse/BL-951 for details.
-			return uri.LocalPath + HttpUtility.UrlDecode(uri.Fragment);
+				// This uses the wrong encoding to decode the LocalPath. (BL-3750)
+				// See unit test LocalPathWithoutQuery_SpecialCharactersDecodedCorrectly for example.
+				//var uri = _actualContext.Request.Url;
+				//return uri.LocalPath + HttpUtility.UrlDecode(uri.Fragment);
+			}
 		}
 
 		public string ContentType

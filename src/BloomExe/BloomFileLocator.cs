@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
+using L10NSharp;
 using SIL.IO;
 
 namespace Bloom
@@ -52,7 +53,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// This is Bloom's achilles heel.
+		/// These are used (as of 26 aug 2016) only by LibPalaso's FileLocator.LocateFile(). Not used by GetFileDistributedWIthApplication().
 		/// </summary>
 		/// <returns></returns>
 		protected override IEnumerable<string> GetSearchPaths()
@@ -149,6 +150,31 @@ namespace Bloom
 		public static string GetInstalledXMatterDirectory()
 		{
 			return BloomFileLocator.GetBrowserDirectory("xMatter");
+		}
+
+		/// <summary>
+		/// This can be used to find the best localized file when there is only one file with the given name, 
+		/// and the file is part of the files distributed with Bloom (i.e., not something in a downloaded template).
+		/// </summary>
+		public static string GetBestLocalizableFileDistributedWithApplication(bool existenceOfEnglishVersionIsOptional, params string[] partsOfEnglishFilePath)
+		{
+			var englishPath = FileLocator.GetFileDistributedWithApplication(existenceOfEnglishVersionIsOptional, partsOfEnglishFilePath);
+			if(!File.Exists(englishPath))
+			{
+				return englishPath; // just return whatever the original GetFileDistributedWithApplication gave. "", null, whatever it is.
+			}
+			return BloomFileLocator.GetBestLocalizedFile(englishPath);
+		}
+
+
+		/// <summary>
+		/// If there is a file sitting next to the english one with the desired language, get that path.
+		/// Otherwise, returns the English path.
+		/// </summary>
+		public static string GetBestLocalizedFile(string pathToEnglishFile)
+		{
+			var pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + LocalizationManager.UILanguageId + ".");
+			return File.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
 		}
 	}
 }

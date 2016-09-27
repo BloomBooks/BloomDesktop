@@ -100,11 +100,11 @@ export class LocalizationManager {
     public getText(stringId: string, englishText?: string, ...args): string {
         if(typeof stringId === 'undefined')
         {
-            try { 
+            try {
                 throw new Error('localizationManager.getText() stringid was undefined');
             }
-            catch (e) { 
-                    throw(e.message+e.stack); 
+            catch (e) {
+                    throw(e.message+e.stack);
             }
         }
         if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
@@ -193,6 +193,7 @@ export class LocalizationManager {
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
         var deferred = $.Deferred();
+
         //when the async call comes back, we massage the text
         axios.get("/bloom/i18n/translate",
         {
@@ -206,7 +207,8 @@ export class LocalizationManager {
             }
             deferred.resolve(text);
         })
-        //reviewslog: verify that this block gets activated when needed
+
+        //TODO: I (JH) could not get this to fire, in a unit test environment, when there was no response.
         .catch(text => {
             if (englishDefault) {
                 text = HtmlDecode(englishText);
@@ -219,6 +221,12 @@ export class LocalizationManager {
             }
         });
         return deferred.promise();
+    }
+
+    localizeThenSetElementText(element: HTMLElement, stringId:string, englishText:string): void {
+        this.asyncGetText(stringId, englishText).then( (translation) => {
+            element.innerText = translation;
+        });
     }
 
 /**
@@ -290,9 +298,12 @@ export class LocalizationManager {
  * @param {String} text
  */
 function HtmlDecode(text): string {
-  var div = document.createElement('div');
-  div.innerHTML = text;
-  return div.firstChild.nodeValue;
+    if(text === "") {   //an empty string leads to div.firstChild, below, being null.
+        return text;
+    }
+    var div = document.createElement('div');
+    div.innerHTML = text;
+    return div.firstChild.nodeValue;
 }
 
 var theOneLocalizationManager: LocalizationManager = new LocalizationManager();

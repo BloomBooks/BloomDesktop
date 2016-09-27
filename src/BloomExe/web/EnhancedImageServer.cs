@@ -81,6 +81,7 @@ namespace Bloom.Api
 		private object I18NLock = new object();
 		// used to synchronize access to various other methods
 		private object SyncObj = new object();
+		private static string _keyToCurrentPage;
 
 		public string CurrentPageContent { get; set; }
 		public string ToolboxContent { get; set; }
@@ -114,11 +115,11 @@ namespace Bloom.Api
 		/// A marker is inserted into the generated urls if the input HtmlDom wants to use original images.
 		/// </summary>
 		/// <param name="dom"></param>
-		/// <param name="forSrcAttr">If this is true, the url will be inserted by JavaScript into
+		/// <param name="escapeUrlAsNeededForSrcAttribute">If this is true, the url will be inserted by JavaScript into
 		/// a src attr for an IFrame. We need to account for this because un-escaped quotation marks in the
 		/// URL can cause errors in JavaScript strings.</param>
 		/// <returns></returns>
-		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool forSrcAttr = false)
+		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool escapeUrlAsNeededForSrcAttribute = false, bool setAsCurrentPageForDebugging = false)
 		{
 			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".htm");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
@@ -133,7 +134,7 @@ namespace Bloom.Api
 				pathToSimulatedPageFile = OriginalImageMarker + "/" + pathToSimulatedPageFile;
 			var url = pathToSimulatedPageFile.ToLocalhost();
 			var key = pathToSimulatedPageFile.Replace('\\', '/');
-			if (forSrcAttr)
+			if (escapeUrlAsNeededForSrcAttribute)
 			{
 				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript. 
 				url = EscapeUrlQuotes(url);
@@ -141,6 +142,10 @@ namespace Bloom.Api
 				// We need to modify our key so that when the JavaScript comes looking for the page its modified url will
 				// generate the right key.
 				key = SimulateJavaScriptHandlingOfHtml(key);
+			}
+			if(setAsCurrentPageForDebugging)
+			{
+				_keyToCurrentPage = key;
 			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
@@ -211,6 +216,11 @@ namespace Bloom.Api
 			//OK, no more obvious simple API requests, dive into the rat's nest of other possibilities
 			if (base.ProcessRequest(info))
 				return true;
+
+			if(localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8091/bloom/CURRENTPAGE.htm will always show the page we're on.
+			{
+				localPath = _keyToCurrentPage;
+			}
 
 			string content;
 			bool gotSimulatedPage;
@@ -503,12 +513,37 @@ namespace Bloom.Api
 
 				if(stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
 					return false;
-				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Server could not find the file "+path,"LocalPath was "+localPath);
+
+				// we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
+				// I suspect our disposal algorithm is just flawed: the page is removed from the _url cache as soon as we navigated away, 
+				// which is too soon. But that will take more research and we're trying to finish 3.7. 
+				// So for now, let's just not to bother the user about an error that is only going to effect thumbnailing.
+				if (IsSimulatedFileUrl(localPath)) 
+				{
+					//even beta users should not be confronted with this
+					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);
+				}
+				else
+				{
+					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Cannot Find File", "Server could not find the file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
+				}
 				return false;
 			}
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		protected bool IsSimulatedFileUrl(string localPath)
+		{
+			var extension = Path.GetExtension(localPath);
+			if(extension != null && !extension.StartsWith("htm"))
+				return false;
+
+			// a good improvement might be to make these urls more obviously cache requests. But for now, let's just see if they are filename guids
+			var filename = Path.GetFileNameWithoutExtension(localPath);
+			Guid result;
+			return Guid.TryParse(filename, out result);
 		}
 
 		/// <summary>
@@ -521,6 +556,16 @@ namespace Bloom.Api
 		{
 			return base.IsRecursiveRequestContext(context) || context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
 		}
+
+		/// <summary>
+		/// Enhancing the code to not generate a new Book object every time we call Book.FindTemplateBook (BL-3782)
+		/// exposed a threading bug in the Mono library.  The same book can now being navigated at the same time
+		/// on multiple threads.  This appears to work okay on Windows/.Net, but throws exceptions on Linux/Mono.
+		/// (The error message in Mono even admitted it might reflect a bug in their XML library code.)
+		/// Locking three different lines of code below fixes this problem.  The locking doesn't seem to hurt
+		/// performance significantly, so I haven't tried to make it system specific.
+		/// </summary>
+		private static object templateLock = new object();
 
 		/// <summary>
 		/// Currently used in the Add Page dialog, a path with ?generateThumbnaiIfNecessary=true indicates a thumbnail for
@@ -559,34 +604,43 @@ namespace Bloom.Api
 			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
 			if (isLandscape)
 				caption = caption.Substring(0, caption.Length - "-landscape".Length);
-			int dummy = 0;
 			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
-			var templatePage = template.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
+			IPage templatePage = null;
+			lock (templateLock) { templatePage = template.GetPages().FirstOrDefault(page => page.Caption != null && page.Caption.Replace("&", "+") == caption); }
 			if (templatePage == null)
-				templatePage = template.GetPages().FirstOrDefault(); // may get something useful?? or throw??
+				lock (templateLock) { templatePage = template.GetPages().FirstOrDefault(); }	// may get something useful?? or throw??
 
-			Image image = _thumbNailer.GetThumbnailForPage(template, templatePage, isLandscape);
+			Image thumbnail = null;
+			lock (templateLock) { thumbnail = _thumbNailer.GetThumbnailForPage(template, templatePage, isLandscape); }
 
-			// The clone here is an attempt to prevent an unexplained exception complaining that the source image for the bitmap is in use elsewhere.
-			using (Bitmap b = new Bitmap((Image)image.Clone()))
+			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
+			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this
+			// same contention problem (but, in hindsite, only partially, see?). But for some reason if we just lock the image
+			// until it is saved, we get all grey rectangles. So for now, we just quickly do the clone and unlock.
+			var resultPath = "";
+			Bitmap clone;
+			lock(thumbnail)
 			{
-				try
-				{
+				clone = new Bitmap((Image) thumbnail.Clone());
+			}
+			using(clone)
+			{
+					try
 					{
 						Directory.CreateDirectory(Path.GetDirectoryName(pngpath));
-						b.Save(pngpath);
+						clone.Save(pngpath);
+						resultPath = pngpath;
 					}
-					ReplyWithFileContentAndType(info, pngpath);
-				}
-				catch (Exception)
-				{
-					using (var file = new TempFile())
+					catch(Exception)
 					{
-						b.Save(file.Path);
-						ReplyWithFileContentAndType(info, file.Path);
+						using(var file = new TempFile())
+						{
+							clone.Save(file.Path);
+							resultPath = file.Path;
+						}
 					}
-				}
 			}
+			ReplyWithFileContentAndType(info, resultPath);
 			return true; // We came up with some reply
 		}
 

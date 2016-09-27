@@ -14,19 +14,22 @@ DIV.bloom-frontMatter *.bloom-translationGroup textarea:not([lang="VERNACULAR"])
 }
 */
 
-.customPage .bloom-translationGroup {
+/* Use flex-box to control the order in which the languages are displayed.
+   Must constrain tightly here lest we end up displaying items which should
+   have been hidden via display:none. */
+.customPage .bloom-translationGroup, #titlePageTitleBlock {
 	display: flex;
 	flex-direction: column;
 }
-.customPage .bloom-translationGroup .bloom-content1 {
+.customPage .bloom-translationGroup .bloom-content1, #titlePageTitleBlock .bloom-content1 {
 	display: block; /* we don't want to inherit flex from parent */
 	order: 1;
 }
-.customPage .bloom-translationGroup .bloom-content2 {
+.customPage .bloom-translationGroup .bloom-content2, #titlePageTitleBlock .bloom-contentNational1 {
 	display: block; /* we don't want to inherit flex from parent */
 	order: 2;
 }
-.customPage .bloom-translationGroup .bloom-content3 {
+.customPage .bloom-translationGroup .bloom-content3,  #titlePageTitleBlock .bloom-contentNational2 {
 	display: block; /* we don't want to inherit flex from parent */
 	order: 3;
 }

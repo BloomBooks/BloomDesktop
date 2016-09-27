@@ -206,7 +206,7 @@ namespace Bloom.Book
 				// the system will never let us write, is not worth bothering the user at all. We can't fix it. Too bad.
 				if (IsInstalledFile(imagePath))
 					return;
-				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Could not update license image (BL-3227).", "Image was at" +imagePath, exception: error);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Could not update license image (BL-3227).", "Image was at" +imagePath, exception: error);
 			}
 		}
 

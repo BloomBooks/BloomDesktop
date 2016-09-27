@@ -15,6 +15,7 @@ using System.Xml;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using Bloom.web;
 using L10NSharp;
 using SIL.Code;
 using SIL.Extensions;
@@ -203,7 +204,7 @@ namespace Bloom.Book
 			{
 				var msg = LocalizationManager.GetString("Errors.NeedNewerVersion",
 					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}","{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
-				msg = string.Format(msg, path,"<a href='http://bloomlibrary.org'>BloomLibrary.org</a>");
+				msg = string.Format(msg, path, string.Format("<a href='{0}'>BloomLibrary.org</a>", UrlLookup.LookupUrl(UrlType.LibrarySite)));
 				msg += string.Format(". (Format {0} vs. {1})",versionString, kBloomFormatVersion);
 				return msg;
 			}
@@ -880,8 +881,8 @@ namespace Bloom.Book
 				if(_alreadyNotifiedAboutOneFailedCopy)
 					return;//don't keep bugging them
 				_alreadyNotifiedAboutOneFailedCopy = true;
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					"Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", documentPath, factoryPath);
+				var msg = String.Format("Could not update one of the support files in this document ({0} to {1}).", documentPath, factoryPath);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Can't Update Support File", msg, exception: e);
 			}
 		}
 

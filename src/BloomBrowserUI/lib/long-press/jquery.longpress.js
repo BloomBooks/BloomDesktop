@@ -9,7 +9,7 @@
  *  Modified August 2015 to add instructions at the bottom
  *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
-import {EditableDivUtils} from "../../bookEdit/js/editableDivUtils"; 
+import {EditableDivUtils} from "../../bookEdit/js/editableDivUtils";
 require("./jquery.mousewheel.js");
 
 (function ($, window, undefined) {
@@ -41,7 +41,7 @@ require("./jquery.mousewheel.js");
         'R':'ŔŘɌⱤ',
         'S':'ßſŚŜŞṢŠÞ§',
         'T':'ŢŤṮƬƮ',
-        'U':'ÙÚÛŨÜŪŬŮŰŲɄƯƱ', 
+        'U':'ÙÚÛŨÜŪŬŮŰŲɄƯƱ',
         'V':'Ʋ',
         'W':'ŴẄΩ',
         'Y':'ÝŶŸƔƳ',
@@ -52,7 +52,7 @@ require("./jquery.mousewheel.js");
         'b':'ßβɓ',
         'c': 'çςćĉɔ̃ċč¢ɔ',
         'd':'ðďđɖḏɖɗ',
-        'e':'èéêẽëēėęẹěəæεɛ€', 
+        'e':'èéêẽëēėęẹěəæεɛ€',
         'f':'ƒʃƭ',
         'g':'ĝğġģɠƣ',
         'h':'ĥħɦẖ',
@@ -124,7 +124,6 @@ require("./jquery.mousewheel.js");
     $(window).mousewheel(onWheel);
 
 
-
     function makeShortcuts(skipKey){
         shortcuts=[];
         //while numbers are the most convenient, we are not using them because
@@ -171,10 +170,10 @@ require("./jquery.mousewheel.js");
             }
         }
 
-        
+
         if (ignoredKeyDownKeyCodes.indexOf(e.which)>-1) return;
         activeElement=e.target;
-
+;
         if (e.key==activationKey) {
             e.preventDefault();
             e.stopPropagation(); //attempt to stop ckeditor from seeing this event
@@ -184,14 +183,10 @@ require("./jquery.mousewheel.js");
         }
         activationKey=e.key;
     }
-    
+
     function onKeyUp(e) {
         if (ignoredKeyUpKeys.indexOf(e.which) > -1) return;
         if (activeElement == null) return;
-
-        // allow them to hold down the shift key after pressing a letter, 
-        // then use their other hand to do mouse or arrow keys.
-        if (e.shiftKey) return;
 
         activationKey=null;
         clearTimeout(timer);
@@ -220,6 +215,35 @@ require("./jquery.mousewheel.js");
             letter.click(onPopupLetterClick);
             popup.find('ul').append(letter);
         }
+
+        //When the parent body is scaled, we don't want our popup to scale
+        var bodyScale = document.body.getBoundingClientRect().width / document.body.offsetWidth;
+        var compensationScale = 1.0/bodyScale;
+
+        // for now, a good test case is 1024px wide bloom window, and hold down 'i'
+        var heightNeededForPopup = 300; // just made up based on experiments with 'i'
+        var top = (window.top.innerHeight + $(window).scrollTop() ) - heightNeededForPopup;
+        popup.css('top', top * compensationScale + "px");
+
+        //limit to the visible width that we can use
+        var visibleWidth = window.innerWidth||document.documentElement.clientWidth||document.body.clientWidth||0
+        visibleWidth = visibleWidth - 25; // fudge
+        popup.css('width', visibleWidth +"px");
+
+        // next problem: if the screen is much taller than the page, then the popup --which doesn't really know what
+        // its height will be (depends on number of keys & width of screen-- doesn't extend its background color
+        // beyond the bottom of the body. If it had an explict height, it would.
+        // So, there may be a better way, but here we set the height of the popup explicity to just take up all the
+        // remaining vertical space.
+        // TODO: this is not giving the right value. I keeps it on screen for likely values of bodyScale, but it
+        // is often too large, causing scroll bars to appear.  If zoomed in, it isn't heigh enough.
+        var visibleHeight = window.innerHeight||document.documentElement.clientHeight||document.body.clientHeight||0;
+        popup.css('height',  (visibleHeight - top) + "px");
+
+        //reverse the scaling that we get from parent
+        popup.css('transform', "scale("+ compensationScale +")");
+        popup.css('transform-origin', "top left");
+
         $('body').append(popup);
         selectedCharIndex=-1;
         longpressPopupVisible = true;
@@ -295,6 +319,7 @@ require("./jquery.mousewheel.js");
     }
 
     function replacePreviousLetterWithText(text) {
+
         if (isTextArea()) {
             var pos=getTextAreaCaretPosition(activeElement);
             var arVal=$(activeElement).val().split('');
@@ -390,7 +415,9 @@ require("./jquery.mousewheel.js");
         this._defaults = defaults;
         this._name = pluginName;
 
-        popup = $('<div  class=long-press-popup><ul />' + this.options.instructions + '</div>');
+        //popup = $('<div id="longpress" class="long-press-popup"><ul />' + this.options.instructions + '</div>');
+
+        popup = window.top.$('<div id="longpress" class="long-press-popup"><ul />' + this.options.instructions + '</div>');
         this.init();
     }
 

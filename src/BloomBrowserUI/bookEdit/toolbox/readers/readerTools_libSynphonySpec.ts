@@ -88,6 +88,8 @@ describe("readerTools-libSynphony tests", function() {
         expect(getTheOneReaderToolsModel().allWords).toEqual({the: 4, cat: 2, sat: 2, on: 2, mat: 1, rat: 1});
     });
 
+
+/* skipping See BL-3554
     it("addWordsToSynphony", function() {
 
         generateTestData();
@@ -105,6 +107,7 @@ describe("readerTools-libSynphony tests", function() {
         expect(synphony.stages[1].sightWords).toEqual('carnivore omnivore');
         expect(synphony.stages[2].sightWords).toEqual('rodent');
     });
+*/
 
     /**
      * Test for BL-223, div displaying markup if there is no text

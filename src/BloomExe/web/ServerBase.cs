@@ -183,7 +183,7 @@ namespace Bloom.Api
 			{
 				Logger.WriteEvent("Here, file not found is actually what you get if the port is in use:" + error.Message);
 				if (!Program.RunningUnitTests)
-					NonFatalProblem.Report(ModalIf.None,PassiveIf.Alpha,"Could not start server on that port");
+					NonFatalProblem.Report(ModalIf.None,PassiveIf.Alpha, "Could not open " + ServerUrlEndingInSlash, "Could not start server on that port", error);
 				try
 				{
 					if(_listener != null)
@@ -462,20 +462,6 @@ namespace Bloom.Api
 			if (idx > 0 && localPathWithoutQuery.StartsWith(BloomUrlPrefix))
 				return localPathWithoutQuery.Substring(0, idx) + "//" + localPathWithoutQuery.Substring(idx);
 			return localPathWithoutQuery;
-		}
-
-		/// <summary>
-		/// This method allows getting the actual local path that the image server would retrieve given a Bloom URL
-		/// that ends up at a local file. For now it is mainly useful for things in the book folder; it doesn't have
-		/// all the smarts to locate files shipped with the application, it is just concerned with reversing
-		/// the various tricks we use to encode paths as URLs.
-		/// </summary>
-		/// <param name="url"></param>
-		/// <returns></returns>
-		public static string GetLocalPathWithoutQuery(string url)
-		{
-			var uri = new Uri(url);
-			return GetLocalPathWithoutQuery(RequestInfo.GetLocalPathWithoutQuery(uri), url);
 		}
 
 		protected internal static string GetLocalPathWithoutQuery(IRequestInfo info)

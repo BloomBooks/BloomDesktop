@@ -589,6 +589,10 @@ namespace Bloom.Book
 			return pages[pageIndex];
 		}
 
+		// Reduce repetitive reloading of books when looking up the related "TemplateBook".
+		string _cachedTemplateKey;
+		Book _cachedTemplateBook;
+
 		public Book FindTemplateBook()
 		{
 				Guard.AgainstNull(_templateFinder, "_templateFinder");
@@ -601,7 +605,14 @@ namespace Bloom.Book
 				{
 					if (templateKey.ToLowerInvariant() == "basicbook")//catch this pre-beta spelling with no space
 						templateKey = "Basic Book";
+					// We can assume that a book's "TemplateBook" does not change over time.  To be even safer,
+					// we'll add a check for the same "TemplateKey" to allow reusing a cached "TemplateBook".
+					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
+					if (templateKey == _cachedTemplateKey && _cachedTemplateBook != null)
+						return _cachedTemplateBook;
 					book = _templateFinder.FindTemplateBook(templateKey);
+					_cachedTemplateBook = book;
+					_cachedTemplateKey = templateKey;
 					if(book==null)
 					{
 						ErrorReport.NotifyUserOfProblem("Bloom could not find the source of template pages named {0} (as in {0}.htm).\r\nThis comes from the <meta name='pageTemplateSource' content='{0}'/>.\r\nCheck that name matches the html exactly.",templateKey);
@@ -1454,7 +1465,7 @@ namespace Bloom.Book
 		public string AboutBookMarkdownPath  {
 			get
 			{
-				return _storage.FolderPath.CombineForPath("ReadMe_en.md");
+				return BloomFileLocator.GetBestLocalizedFile(_storage.FolderPath.CombineForPath("ReadMe-en.md"));
 			}
 		}
 
@@ -1743,12 +1754,16 @@ namespace Bloom.Book
 			Debug.Assert(IsEditable);
 			try
 			{
-				//replace the corresponding page contents in our DOM with what is in this PageDom
-				XmlElement divElement = editedPageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
-				string pageDivId = divElement.GetAttribute("id");
-				var page = GetPageFromStorage(pageDivId);
+				// This is needed if the user did some ChangeLayout (origami) manipulation. This will populate new
+				// translationGroups with .bloom-editables and set the proper classes on those editables to match the current multilingual settings. 
+				UpdateEditableAreasOfElement(editedPageDom);
 
-				HtmlDom.ProcessPageAfterEditing(page, divElement);
+				//replace the corresponding page contents in our DOM with what is in this PageDom
+				XmlElement pageFromEditedDom = editedPageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
+				string pageId = pageFromEditedDom.GetAttribute("id");
+				var pageFromStorage = GetPageFromStorage(pageId);
+
+				HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
 
 				_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
@@ -1756,7 +1771,7 @@ namespace Bloom.Book
 				if (userModifiedStyles != null)
 				{
 					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
-					Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
+					//Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
 				Save();
 
@@ -1846,7 +1861,7 @@ namespace Bloom.Book
 			{
 				body.InsertAfter(pageDiv, pages[indexOfItemAfterRelocation-1]);
 			}
-
+			BuildPageCache();
 			Save();
 			InvokeContentsChanged(null);
 			return true;

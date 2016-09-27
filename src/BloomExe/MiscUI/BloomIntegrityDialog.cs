@@ -65,7 +65,7 @@ namespace Bloom.MiscUI
 
 			using(var dlg = new BloomIntegrityDialog())
 			{
-				var messagePath = FileLocator.GetFileDistributedWithApplication("IntegrityFailureAdvice-en.md");
+				var messagePath = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false,"IntegrityFailureAdvice-en.md");
 				string message;
 				if(messagePath == null) // maybe we can't even get at this file we need for a good description of the problem
 				{
