@@ -194,7 +194,7 @@
             <seg>Allow changes to this shellbook</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो आवरण पुस्तकमा फेरबदल गर्न दिनुहोस्</seg>
+            <seg>यो खाका पुस्तकमा फेरबदल गर्न दिनुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText">
@@ -203,7 +203,41 @@
             <seg>Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>सामान्यतया Bloom ले आवरण पुस्तकहरूमा फेरबदल गर्न दिँदैन।तपाईंले पृष्ठहरू थप्ने, छविहरू परिवर्तन गर्ने, इत्यादि गर्नुपर्ने भएमा तलको बाकसमा ठीक चिन्ह लगाउनुहोस्।</seg>
+            <seg>सामान्यतया Bloom ले खाका पुस्तकहरूमा फेरबदल गर्न दिँदैन।तपाईंले पृष्ठहरू थप्ने, छविहरू परिवर्तन गर्ने, इत्यादि गर्नुपर्ने भएमा तलको बाकसमा ठीक चिन्ह लगाउनुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.TalkingBook.BadState">
+         <note>This is very low priority for translation.</note>
+         <tuv xml:lang="en">
+            <seg>Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom रेकर्डिङ असामान्य स्थितिमा छ। शायद माइक्रोफोन निकालेको हुनाले यसो भएको हुन सक्छ।तपाईंले यसलाई पुनः सुरू गर्नुपर्ने हुन्छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.TalkingBook.NoInput">
+         <tuv xml:lang="en">
+            <seg>No input device</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>इनपुट यन्त्र छैन</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.TalkingBook.NoMic">
+         <tuv xml:lang="en">
+            <seg>This computer appears to have no sound recording device available. You will need one to record audio for a talking book.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो कम्प्युटरमा ध्वनि रेकर्ड गर्ने कुनै उपकरण उपलब्ध छैन जस्तो छ।श्रव्य पुस्तक बनाउन तपाईंले अडियो रेकर्ड गर्न आवश्यक हुन्छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.TalkingBook.PleaseHoldMessage">
+         <note>Appears when the speak/record button is pressed very briefly</note>
+         <tuv xml:lang="en">
+            <seg>Please hold the button down until you have finished recording</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>कृपया रेकर्ड गर्ने कार्य नसकिँदासम्म यो बटन थिचिराख्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
@@ -224,12 +258,28 @@
             <seg>यदि तपाईंलाई यस पुस्तकको बारेमा थप जानकारी राख्न ठाउँ चाहिएमा, तपाईंले यो पृष्ठ प्रयोग गर्न सक्नुहुन्छ, जुन पछाडिको आवरण पृष्ठको बाहिरपट्टीको भाग हो।</seg>
          </tuv>
       </tu>
+      <tu tuid="BloomIntegrity.WindowTitle">
+         <tuv xml:lang="en">
+            <seg>Bloom Problem</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom मा समस्या</seg>
+         </tuv>
+      </tu>
+      <tu tuid="BloomIntegrityDialog.ReportProblem">
+         <tuv xml:lang="en">
+            <seg>Report Problem</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>समस्या रिपोर्ट गर्नुहोस्</seg>
+         </tuv>
+      </tu>
       <tu tuid="BloomPackInstallDialog.BadCharsInFileName">
          <tuv xml:lang="en">
             <seg>Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>सम्भवतः यो पुरानो Bloom प्याक हो। शायद यसलाई Bloom प्याकहरूको फाइलको नाममा विशेष वर्णहरू समावेश गर्न पाइनुभन्दा पहिले सिर्जना गरिएको थियो। तपाईंले यसको लेखकलाई हालको संस्करण प्रयोग गरेर यसलाई पुनः बनाउन अनुरोध गर्न सक्नुहुन्छ। त्यसो गर्न सम्भव छैन भने, प्राविधिक विशेषज्ञले यो समस्या समाधान गर्न मद्दत गर्न सक्छ।</seg>
+            <seg>सम्भवतः यो पुरानो Bloom प्याक हो जुन शायद फाइलको नामहरूमा भएको विशेष वर्णहरूलाई Bloom प्याकले समावेश गर्न सक्नुभन्दा पहिले सिर्जना गरिएको थियो।तपाईंले यसको लेखकलाई हालको संस्करण प्रयोग गरेर यसलाई पुनः बनाउन अनुरोध गर्न सक्नुहुन्छ। त्यसो गर्न सम्भव छैन भने, प्राविधिक विशेषज्ञले यो समस्या समाधान गर्न मद्दत गर्न सक्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
@@ -247,7 +297,7 @@
         </seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>{0} सङ्ग्रह अब यो कम्प्युटरमा प्रयोग गर्नका लागि तयार छ।</seg>
+            <seg>{0} सङ्ग्रह अब यो कम्प्युटरमा प्रयोग गरिनको लागि तयार छ।</seg>
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.BloomPackInstaller">
@@ -259,12 +309,20 @@
             <seg>Bloom प्याक स्थापनाकर्ता</seg>
          </tuv>
       </tu>
+      <tu tuid="BloomPackInstallDialog.CorruptBloomPack">
+         <tuv xml:lang="en">
+            <seg>This BloomPack appears to be incomplete or corrupt.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो Bloom प्याक अपूर्ण वा खराब छ जस्तो देखिन्छ।</seg>
+         </tuv>
+      </tu>
       <tu tuid="BloomPackInstallDialog.DoesNotExist">
          <tuv xml:lang="en">
             <seg>{0} does not exist</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>{0} सङ्ग्रह अब यो कम्प्युटरमा प्रयोग गर्नका लागि तयार छ।</seg>
+            <seg>{0} विद्यमान छैन</seg>
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.ErrorInstallingBloomPack">
@@ -272,7 +330,7 @@
             <seg>Bloom was not able to install that Bloom Pack</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>Bloom ले Bloom प्याक स्थापना गर्न सकेन</seg>
+            <seg>Bloom ले  त्यो Bloom प्याक स्थापना गर्न सकेन</seg>
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.Extracting">
@@ -289,7 +347,7 @@
             <seg>Bloom is already running, but the contents will not show up until the next time you run Bloom</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>Bloom चलिरहेको छ, तर तपाईंले Bloom लाई अर्कोपटक फेरि नचलाउँदासम्म यी सामग्रीहरू देखिनेछैनन्</seg>
+            <seg>Bloom चलिरहेको छ, तर तपाईंले Bloom लाई अर्कोपटक फेरि सुरु नगर्दासम्म यी सामग्रीहरू देखिनेछैनन्</seg>
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.NotInstalled">
@@ -297,7 +355,7 @@
             <seg>The Bloom collection will not be installed.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>Bloom को सङ्ग्रह स्थापना गरिनेछैन।</seg>
+            <seg>Bloom  सङ्ग्रह स्थापना गरिनेछैन।</seg>
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.Opening">
@@ -313,7 +371,7 @@
             <seg>This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो कम्प्युटरमा पहिले नै '{0}' नामक Bloom सङ्ग्रह छ। तपाईं यसलाई यो Bloom प्याकको सङ्ग्रहले प्रतिस्थापन गर्न चाहनुहुन्छ?</seg>
+            <seg>यो कम्प्युटरमा पहिले नै '{0}' नामक Bloom सङ्ग्रह रहेको छ। के तपाईं यसलाई यो Bloom प्याकको कुनै एउटा सङ्ग्रहले प्रतिस्थापन गर्न चाहनुहुन्छ?</seg>
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.SingleCollectionFolder">
@@ -321,7 +379,7 @@
             <seg>Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>Bloom प्याकमा .ZIP फाइलको शीर्ष तहमा एउटा मात्र सङ्ग्रह फोल्डर हुनुपर्छ।</seg>
+            <seg> .ZIP फाइलको शीर्ष तहमा Bloom प्याकको केवल एउटा मात्र सङ्ग्रह फोल्डर हुनुपर्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.UnableToReplace">
@@ -329,7 +387,7 @@
             <seg>Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>Bloom ले '{0}' को विद्यमान प्रतिलिपि हटाउन सकेन। यदि Bloom चलिरहेको छ भने बन्द गर्नुहोस् र फेरि प्रयास गर्नुहोस्। अथवा, आफ्नो कम्प्युटर रिस्टार्ट गरेर फेरि प्रयास गर्नुहोस्।</seg>
+            <seg>Bloom ले '{0}' को विद्यमान प्रतिलिपिलाई हटाउन सकेन। यदि Bloom चलिरहेको छ भने बन्द गर्नुहोस् र फेरि प्रयास गर्नुहोस्। अथवा, आफ्नो कम्प्युटर रिस्टार्ट गरेर फेरि प्रयास गर्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="Book title in {lang}">
@@ -368,7 +426,7 @@
             <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2} pt.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>'{0}' शैली र '{1}' भाषाका सबै बाकसहरूमा पाठको आकार परिवर्तन गर्छ।\nहालको आकार {2} pt छ।</seg>
+            <seg>'{0}' शैली र '{1}' भाषाका सबै बाकसहरूमा भएको वर्णको आकार परिवर्तन गर्छ।\nहालको वर्णको आकार {2} pt छ।</seg>
          </tuv>
       </tu>
       <tu tuid="BookEditor.ForText">
@@ -398,6 +456,14 @@
             <seg>माफ गर्नुहोस्, पाठ्यपुस्तक टेम्प्लेटहरूले ढाँचा परिवर्तन गर्न दिँदैन।</seg>
          </tuv>
       </tu>
+      <tu tuid="BookStorage.FolderMoved">
+         <tuv xml:lang="en">
+            <seg>It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो पुस्तक अवस्थित फोल्डरको पथबाट केही भाग कतै सारिएको वा नाम परिवर्तन गरिएको छ जस्तो देखिन्छ।फलस्वरूप, Bloom ले तपाईंले यो पृष्ठमा गर्नुभएका परिवर्तनहरू सुरक्षित गर्न सक्दैन, र यसलाई तुरुन्त बन्द गर्न आवश्यक हुनेछ।तपाईंले फोल्डरको पथको कुनैपनि भागको नाम परिवर्तन गर्नुभएको छैन वा कतै सार्नुभएको छैन भने, तल विस्तृत विवरणमा क्लिक गर्नुहोस् र यस समस्याको बारेमा यो सफ्टवेयर विकासकर्ताहरूलाई सूचित गर्नुहोस्।</seg>
+         </tuv>
+      </tu>
       <tu tuid="Click to choose topic">
          <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
@@ -413,7 +479,15 @@
             <seg>Advanced Program Settings</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>उन्नत प्रोग्राम सेटिङहरू</seg>
+            <seg>प्रोग्रामको उन्नत सेटिङहरू</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
+         <tuv xml:lang="en">
+            <seg>Automatically update Bloom</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom लाई स्वचालित रूपमा अद्यावधिक गर्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
@@ -464,7 +538,7 @@
             <seg>Bloom is switching the default font for "{0}" to the new "Andika New Basic".</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>Bloom ले "{0}" को पूर्वनिर्धारित फन्टलाई नयाँ "Andika New Basic" फन्टमा बदल्दै छ।</seg>
+            <seg>Bloom ले "{0}" को पूर्वनिर्धारित फन्टलाई नयाँ "Andika New Basic" फन्ट मा बदल्दै छ।</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate2">
@@ -473,7 +547,7 @@
             <seg>This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो फन्ट अधिकांश भाषामा राम्रो देखिन्छ र छपाई सुधार्नेछ। यदि तपाईंको भाषा "Andika" फन्ट चाहिने थोरै भाषाहरू मध्ये एक हो भने, तपाईंले यसलाई सेटिङहरू:पुस्तक बनाउनेमा गएर पुनः बदल्न सक्नुहुन्छ।</seg>
+            <seg> यो फन्टले अधिकांस भाषाहरूमा मुद्रित सामग्रीहरूलाई सुधार्ने छ यदि तपाईंको भाषा "Andika" फन्ट चाहिने थोरै भाषाहरू मध्ये एक हो भने, तपाईंले यसलाई सेटिङहरू:पुस्तक तयार पर्नेमा गएर पुनः बदल्न सक्नुहुन्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
@@ -481,7 +555,7 @@
             <seg>Book Making</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>पुस्तक बनाउने</seg>
+            <seg>पुस्तक तयार पार्नु</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
@@ -533,6 +607,14 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>दायाँ देखि बायाँतिर लेख्ने प्रणाली</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
+         <tuv xml:lang="en">
+            <seg>Special Script Settings</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>विशेष लिपि सम्बन्धी सेटिङहरू</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
@@ -683,7 +765,7 @@
             <seg>Project Information</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>प्रोजेक्टको जानकारी</seg>
+            <seg>परियोजनाको जानकारी</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Province">
@@ -717,7 +799,7 @@
             <seg>Bloom will close and re-open this project with the new settings.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>Bloom बन्द हुनेछ र नयाँ सेटिङहरू सहित यस प्रोजेक्टलाई पुनः खोल्नेछ।</seg>
+            <seg>Bloom बन्द हुनेछ र नयाँ सेटिङहरू सहित यस यो परियोजनालाई पुनः खोल्नेछ।</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.label1">
@@ -799,7 +881,7 @@
             <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>Bloom ले अब यस HTML डकुमेन्टलाई तपाईंको शब्द प्रशोधन प्रोग्राम (सामान्तया Word वा LibreOffice) मा खोल्नेछ। तपाईंले यस पुस्तकको लिखित सामग्री र छविहरूमा काम गर्न सक्नुहुनेछ, तर यी प्रोग्रामहरूले पुस्तकको सजावट राम्रोसँग संरक्षण गर्न नसक्ने भएकाले, बढी अपेक्षा नराख्नुहोस्।</seg>
+            <seg>Bloom ले अब यस HTML डकुमेन्टलाई तपाईंको शब्द प्रशोधन प्रोग्राम (सामान्तया Word वा LibreOffice) मा खोल्नेछ। तपाईंले यस पुस्तकको लिखित सामग्री र छविहरूमा काम गर्न सक्नुहुनेछ।यी प्रोग्रामहरूले पुस्तकको सजावट राम्रोसँग संरक्षण गर्न नसक्ने भएकाले, खासै राम्रो हुने अपेक्षा नगर्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
@@ -816,6 +898,14 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>थम्बनेल अद्यावधिक गर्नुहोस्</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.BookMenu.CopyBook">
+         <tuv xml:lang="en">
+            <seg>Copy Book</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>पुस्तक नक्कल गर्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.BookMenu.DeleteBook">
@@ -888,7 +978,7 @@
             <seg>Collection Notes...</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>सङ्ग्रह सम्बन्धी टिपोटहरू...</seg>
+            <seg>सङ्ग्रहसम्बन्धी  टिपोटहरू...</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.CollectionTabLabel">
@@ -937,7 +1027,7 @@
             <seg>Make a book using this source</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो स्रोत प्रयोग गरेर पुस्तक बनाउनुहोस्</seg>
+            <seg>यो स्रोत प्रयोग गरेर पुस्तक तयार पार्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
@@ -945,7 +1035,7 @@
             <seg>Create a book in my language using this source book</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो स्रोत पुस्तक प्रयोग गरेर मेरो भाषामा पुस्तक बनाउनुहोस्</seg>
+            <seg>यो स्रोत पुस्तक प्रयोग गरेर मेरो भाषामा पुस्तक तयार पार्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.Open/CreateCollectionButton">
@@ -974,6 +1064,24 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>PNG जनावरका कथाहरू - प्रतिलिपि</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.Progress">
+         <prop type="x-nolongerused">true</prop>
+         <tuv xml:lang="en">
+            <seg>({0}%  complete)</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg/>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.RestartToUpdate">
+         <prop type="x-nolongerused">true</prop>
+         <tuv xml:lang="en">
+            <seg>Restart to Update</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg/>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.Sample Shells">
@@ -1036,6 +1144,72 @@
             <seg>शीर्षक छैन</seg>
          </tuv>
       </tu>
+      <tu tuid="CollectionTab.UnableToCheckForUpdate">
+         <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
+         <tuv xml:lang="en">
+            <seg>Could not connect to the server to check for an update. Are you connected to the internet?</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>अद्यावधिकको जाँच गर्न सर्भरमा पहुँच गर्न सकिएन। के तपाईं इन्टरनेटमा जडित हुनुहुन्छ?</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.UpToDate">
+         <tuv xml:lang="en">
+            <seg>Your Bloom is up to date.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>तपाईंको Bloom नवीनतम छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.UpdateCheckInProgress">
+         <tuv xml:lang="en">
+            <seg>Bloom is already working on checking for updates.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom ले अद्यावधिकहरू जाँच्ने कार्य पहिले नै थालिसकेको छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.UpdateFailed">
+         <tuv xml:lang="en">
+            <seg>A new version appears to be available, but Bloom could not install it.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>एउटा नयाँ संस्करण उपलब्ध छ जस्तो छ, तर Bloom ले सो संस्करण स्थापना गर्न सकेन।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.UpdateInstalled">
+         <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
+         <tuv xml:lang="en">
+            <seg>Update for {0} is ready</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>{0} को अद्यावधिक तयार छ</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.UpdateNow">
+         <tuv xml:lang="en">
+            <seg>Update Now</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>अहिले अद्यावधिक गर्नुहोस्</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.UpdatesAvailable">
+         <tuv xml:lang="en">
+            <seg>A new version of Bloom is available.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom को नयाँ संस्करण उपलब्ध छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.Updating">
+         <tuv xml:lang="en">
+            <seg>Downloading update to {0} ({1}kb)</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>अद्यावधिकलाई {0} मा डाउनलोड गर्दै ({1}केबि)</seg>
+         </tuv>
+      </tu>
       <tu tuid="CollectionTab.Vernacular Collection Heading">
          <prop type="x-nolongerused">true</prop>
          <note>The {0} is where we fill in the name of the Vernacular</note>
@@ -1089,12 +1263,28 @@
             <seg>पाठ्यपुस्तक टेम्प्लेटको Bloom प्याक बनाउनुहोस्...</seg>
          </tuv>
       </tu>
+      <tu tuid="CollectionTab.AdminManagesUpdates">
+         <tuv xml:lang="en">
+            <seg>Your system administrator manages Bloom updates for this computer.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>तपाईंको प्रणालीको प्रशासकले यो कम्प्युटरमा Bloom को अद्यावधिकहरू व्यवस्थापन गर्दछ।</seg>
+         </tuv>
+      </tu>
       <tu tuid="CollectionTab.AdvancedToolStripMenuItem">
          <tuv xml:lang="en">
             <seg>Advanced</seg>
          </tuv>
          <tuv xml:lang="ne">
             <seg>उन्नत</seg>
+         </tuv>
+      </tu>
+      <tu tuid="CollectionTab.Applying">
+         <tuv xml:lang="en">
+            <seg>Applying updates</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>अद्यावधिकहरू लागू गर्दै</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.BloomLibraryLinkLabel">
@@ -1136,7 +1326,7 @@
             <seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो एउटा स्रोत सङ्ग्रह भएकाले Bloom ले कुनै विद्यमान आवरणहरूलाई नयाँ आवरणको स्रोतको रूपमा प्रदान गरिरहेको छैन। तपाईं कुनै आवरणमा भाषा थप्न चाहनुहुन्छ भने, तपाईंले सो आवरणको प्रतिलिपि बनाउनुभन्दा सो आवरण समावेश सङ्ग्रहलाई सम्पादन गर्नु उचित हुन्छ। साथै, अहिले भित्ते पात्रोलाई हाल नयाँ आवरण बनाउन प्रयोग गर्न सकिँदैन।</seg>
+            <seg>यो एउटा स्रोत सङ्ग्रह भएकाले Bloom ले कुनै विद्यमान आवरणहरूलाई नयाँ आवरणको स्रोतको रूपमा प्रदान गरिरहेको छैन। तपाईं कुनै खाकामा भाषा थप्न चाहनुहुन्छ भने, तपाईंले सो खाकाको प्रतिलिपि बनाउनुभन्दा सो खाका समावेश सङ्ग्रहलाई सम्पादन गर्नु उचित हुन्छ।साथै, हाल भित्ते पात्रोलाई नयाँ खाका बनाउन प्रयोग गर्न सकिँदैन।</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.hiddenBooksNotice">
@@ -1341,6 +1531,62 @@
             <seg>यो चरणमा प्रयोग गर्न पाइने शब्दहरू</seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles">
+         <tuv xml:lang="en">
+            <seg>Text files</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>पाठ्य फाइलहरू</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
+         <tuv xml:lang="en">
+            <seg>Letters: {0}</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>अक्षरहरू: {0}</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage">
+         <tuv xml:lang="en">
+            <seg>The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>देहायको प्रतिवेदन {0} को डिकोडेबल चरणहरूको प्रतिवेदन हो।तपाईंले यो फाइलमा आफूले चाहेको कुनैपनि कुरा परिवर्तन गर्न सक्नुहुन्छ, तर Bloom ले तपाईंले गरेका परिवर्तनहरूलाई ध्यान दिने छैन।यो एउटा प्रतिवेदन मात्र हो।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords">
+         <tuv xml:lang="en">
+            <seg>New Decodable Words: {0}</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>डिकोड गर्न सकिने नयाँ शब्द: {0}</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords">
+         <tuv xml:lang="en">
+            <seg>New Sight Words: {0}</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>धेरै प्रयोग हुने नयाँ शब्द: {0}</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage">
+         <tuv xml:lang="en">
+            <seg>Stage {0}</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>चरण {0}</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList">
+         <tuv xml:lang="en">
+            <seg>Complete Word List</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>पूर्ण शब्द सूची</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -1400,6 +1646,14 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>डाउनलोड पूरा भयो</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Download.CopyFailed">
+         <tuv xml:lang="en">
+            <seg>Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom ले पुस्तक डाउनलोड गर्‍यो तर सो पुस्तकलाई Bloom मा उपलब्ध गराउनमा समस्या भयो।कृपया आफ्नो कम्प्युटर पुनः सुरू गरेर फेरि प्रयास गर्नुहोस्।तपाईंले यो सन्देश फेरि प्राप्त गर्नुभयो भने, कृपया 'विस्तृत विवरण' बटनमा क्लिक गर्नुहोस् र यस समस्याको बारेमा Bloom का विकासकर्ताहरूलाई सूचित गर्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="Download.DownloadingDialogTitle">
@@ -1525,7 +1779,7 @@
         </seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यो PDF बनाउन प्रयोग गरिएको HTML लाई Firefox मा खोल्नुहोस् (पथ निर्धारित हुनुपर्छ)</seg>
+            <seg>यो PDF बनाउन प्रयोग गरिएको HTML लाई Firefox मा खोल्नुहोस् (निर्धारित पथमा हुनुपर्छ)</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.Borders">
@@ -2022,7 +2276,7 @@
             <seg>Click to Edit Copyright and License</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>प्रतिलिपि अधिकार र इजाजतपत्र सम्पादन गर्न क्लिक गर्नुहोस्।</seg>
+            <seg>प्रतिलिपि अधिकार र इजाजतपत्र सम्पादन गर्न क्लिक गर्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FrontMatter.FundingAgenciesPrompt">
@@ -2031,7 +2285,7 @@
             <seg>Use this to acknowledge any funding agencies.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>आर्थिक सहयोग दिएको कुनैपनि निकायलाई आभार प्रकट गर्न यो बाकस प्रयोग गर्नुहोस्।</seg>
+            <seg>आर्थिक सहयोग गर्ने कुनैपनि निकायलाई आभार प्रकट गर्न यो बाकस प्रयोग गर्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FrontMatter.ISBNPrompt">
@@ -2086,6 +2340,14 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>अनुवादकको नाम, {lang} मा</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.HowToUnlockBook">
+         <tuv xml:lang="en">
+            <seg>To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो खाका पुस्तिकाको लक खोल्न, दायाँपट्टी रहेको उपकरण पेटीमा जानुहोस्, गियर आइकन फेला पार्नुहोस्, अनि 'यो खाका पुस्तिकामा परिवर्तनहरू गर्न दिनुहोस्' मा क्लिक गर्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.Image.ChangeImage">
@@ -2167,7 +2429,7 @@
         If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>तपाईंले चयन गर्नुभएको फाइल 'JPEG' फाइल हो।JPEG फाइलहरू फोटो र रङ्गीन चित्रकलाका लागि उत्तम हुन्छन्।यद्यपि, धर्का कोरेर बनाइएका कालो र सेतो रङका चित्रहरूका लागि JPEG फाइलहरूले ठूलो समस्या खडा गर्छन्। समस्याहरूमा निम्नलिखित पर्दछन्:\n• अस्पष्टता र खरानी रङका थोप्लाहरू।\n• फाइलको आकार ठूलो हुने, जस कारणले पुस्तक आदान प्रदान गर्न गाह्रो हुन्छ।\n• धेरै सङ्ख्यामा ठूला JPEG फाइलहरू छन् भने, PDF फाइलहरू बनाउनका लागि Bloom मा पर्याप्त मेमोरी नहुन सक्छ।\n\nnध्यान दिनुपर्ने कुरा: JPEG फाइल “क्षतिकारक” (अर्थात्, यसबाट अनावश्यक जानकारी हटाइने) भएकाले JPEG फाइललाई PNG, TIFF, वा BMP फाइलमा रूपान्तर गर्नाले झन समस्या निम्त्याउँछ।यदि यो धर्का कोरेर बनाइएको कालो र सेतो रङको चित्र हो भने, तपाईंले ती मध्ये एउटा ढाँचामा मूल स्क्यान प्राप्त गर्नु उचित हुन्छ।\n\nकृपया निम्नलिखित मध्येबाट एउटा चयन गर्नुहोस् र “ठीक छ” मा क्लिक गर्नुहोस्:</seg>
+            <seg>तपाईंले चयन गर्नुभएको फाइल "JPEG" फाइल हो।JPEG फाइलहरू फोटो र रङ्गीन चित्रकलाका लागि उत्तम हुन्छन्।यद्यपि, धर्का कोरेर बनाइएका कालो र सेतो रङका चित्रहरूका लागि JPEG फाइलहरूले ठूलो समस्या खडा गर्छन्।समस्याहरूमा निम्नलिखित पर्दछन्:\n• अस्पष्टता र खरानी रङका थोप्लाहरू।\n• फाइलको आकार ठूलो हुने, जस कारणले पुस्तक आदान प्रदान गर्न गाह्रो हुन्छ।\n• धेरै सङ्ख्यामा ठूला JPEG फाइलहरू छन् भने, PDF फाइलहरू बनाउनका लागि Bloom मा मेमोरी नपुग्न सक्छ।\n\nध्यान दिनुपर्ने कुरा: JPEG फाइल “क्षतिकारक” (अर्थात्, यसबाट अनावश्यक जानकारी हटाइने) भएकाले JPEG फाइललाई PNG, TIFF, वा BMP फाइलमा रूपान्तर गर्नाले झन ठूलो समस्या निम्त्याउँछ।यदि यो धर्का कोरेर बनाइएको कालो र सेतो रङको चित्र हो भने, तपाईंले ती मध्ये एउटा ढाँचामा मूल स्क्यान प्राप्त गर्नु उचित हुन्छ।\n\nकृपया निम्नलिखित मध्येबाट एउटा चयन गर्नुहोस् र “ठीक छ” मा क्लिक गर्नुहोस्:</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.LayoutMode.ChangeLayout">
@@ -2335,6 +2597,14 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>टेम्प्लेट पृष्ठहरू</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+         <tuv xml:lang="en">
+            <seg>Picture On Bottom</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>तलको तस्बिर</seg>
          </tuv>
       </tu>
       <tu tuid="TemplateBooks.PageLabel.1">
@@ -2887,7 +3157,7 @@
             <seg>Remove\n  Page</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>पृष्ठ\nहटाउनुहोस्</seg>
+            <seg>पृष्ठ\n हटाउनुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.DeletePageButton.ToolTip">
@@ -2921,7 +3191,7 @@
         </seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>प्रतिलिपि\n   पृष्ठ</seg>
+            <seg>प्रतिलिपि\n पृष्ठ</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.DuplicatePageButton.ToolTip">
@@ -3076,12 +3346,28 @@
             <seg>तीनवटा भाषा</seg>
          </tuv>
       </tu>
+      <tu tuid="Errors.BookProblem">
+         <tuv xml:lang="en">
+            <seg>Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom लाई यो पुस्तक देखाउनमा समस्या भयो।यसको मतलब तपाईंको काम गुमेको होइन। यसको मतलब कुनै कुराको म्याद सकिएको छ, कुनै कुरा छुटेको छ वा केही गडबड भएको छ भन्ने हो।</seg>
+         </tuv>
+      </tu>
       <tu tuid="Errors.BrokenBook">
          <tuv xml:lang="en">
             <seg>Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.</seg>
          </tuv>
          <tuv xml:lang="ne">
             <seg>Bloom लाई यो पुस्तक देखाउनमा समस्या भयो। यसको मतलब तपाईंको काम गुमेको होइन। यसको मतलब कुनै कुराको म्याद सकिएको छ, कुनै कुरा छुटेको छ वा केही गडबड भएको छ भन्ने हो। 'मद्दत' मेनुमा गएर 'समस्या रिपोर्ट गर्नुहोस्' नामक आदेश प्रयोग गर्नुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Errors.CannotConnectToBloomServer">
+         <tuv xml:lang="en">
+            <seg>Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom ले यसमा अन्तरनिहित Firefox ब्राउजरसँग अन्तरक्रिया गर्न प्रयोग गर्ने यसको आफ्नो HTTP श्रोता सुरू गर्न सकेन।तपाईंले आफ्नो कम्प्युटर भर्खरै सुरू गरेको भए तापनि यसो भइरहेको छ भने, तपाईंको कम्प्युटरमा आक्रामक फायरवाल सफ्टवेयर स्थापना गरिएको छ कि भनी जाँच्न कसैलाई आग्रह गर्नुहोस्।तपाईंले Bloom प्रयोग गर्नु अघि सो आक्रामक फायरवाल सफ्टवेयरलाई हटाउन आवश्यक हुन सक्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="Errors.CouldNotSavePage">
@@ -3093,6 +3379,47 @@
             <seg>Bloom लाई एउटा पृष्ठ सुरक्षित गर्नमा समस्या भयो। कृपया तल विस्तृत विवरणमा क्लिक गर्नुहोस् र यस बारेमा हामीलाई रिपोर्ट गर्नुहोस्। त्यसपछि Bloom बन्द गर्नुहोस्, यसलाई फेरि खोल्नुहोस्, र तपाईंले भर्खरै सम्पादन गर्नुभएको पृष्ठमा केही कुरा छुटेको छ कि छैन हेर्नुहोस्। माफ गर्नुहोस्!</seg>
          </tuv>
       </tu>
+      <tu tuid="Errors.DeniedAccess">
+         <tuv xml:lang="en">
+            <seg>Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>तपाईंको कम्प्युटरले Bloom लाई पुस्तकमाथि पहुँच गर्न दिएन।यो फाइलको लागि सञ्चालन प्रणालीका अनुमतिहरू समायोजन गर्न तपाईंलाई प्राविधिकको सहयोग चाहिन सक्छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Errors.ErrorSelecting">
+         <tuv xml:lang="en">
+            <seg>There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो पुस्तक चयन गर्नमा समस्या भयो।Bloom लाई पुनः सुरू गरेपछि यो समस्या हल हुन सक्छ।यसो गर्दा नि समस्या हल भएन भने, कृपया 'विस्तृत विवरण' बटनमा क्लिक गर्नुहोस् र यस समस्याको बारेमा Bloom का विकासकर्ताहरूलाई सूचित गर्नुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Errors.ErrorUpdating">
+         <tuv xml:lang="en">
+            <seg>There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>पुस्तक अद्यावधिक गर्नमा समस्या भयो।Bloom लाई पुनः सुरू गरेपछि यो समस्या हल हुन सक्छ।यसो गर्दा नि समस्या हल भएन भने, कृपया 'विस्तृत विवरण' बटनमा क्लिक गर्नुहोस् र यस समस्याको बारेमा Bloom का विकासकर्ताहरूलाई सूचित गर्नुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Errors.NeedNewerVersion">
+         <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
+         <tuv xml:lang="en">
+            <seg>{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>{0} को लागि Bloom को नया संस्करण चाहिन्छ। {1} मा गई Bloom को नवीनतम संस्करण डाउनलोड गर्नुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Errors.ProblemDeletingFile">
+         <tuv xml:lang="en">
+            <seg>Bloom had a problem deleting this file: {0}</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom लाई यो फाइल मेटाउनमा समस्या भयो: {0}</seg>
+         </tuv>
+      </tu>
       <tu tuid="Errors.ProblemImportingPicture">
          <tuv xml:lang="en">
             <seg>Bloom had a problem importing this picture.</seg>
@@ -3101,12 +3428,36 @@
             <seg>Bloom लाई यो तस्बिर आयात गर्नमा समस्या भयो।</seg>
          </tuv>
       </tu>
+      <tu tuid="Errors.ReportThisProblemButton">
+         <tuv xml:lang="en">
+            <seg>Report this problem to Bloom Support</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो समस्याको बारेमा Bloom सहायतालाई सूचित गर्नुहोस्</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Errors.SomethingWentWrong">
+         <tuv xml:lang="en">
+            <seg>Sorry, something went wrong.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>माफ गर्नुहोस्, केही गडबड भयो।</seg>
+         </tuv>
+      </tu>
       <tu tuid="Errors.XMatterNotFound">
          <tuv xml:lang="en">
             <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer.You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>यस पुस्तकले '{0}' नामक अगाडि/पछाडिको आवरण पृष्ठमा लेख्ने सामग्रीको प्याक माग गर्‍यो, तर Bloom ले सो सामग्रीलाई यो कम्प्युटरमा फेला पार्न सकेन।तपाईंले या त '{0}' उपलब्ध गराउने Bloom प्याक स्थापना गर्न, वा सेटिङहरू:पुस्तक बनाउनेमा गएर अगाडि/पछाडिको आवरण पृष्ठमा लेख्ने सामग्रीको अर्को प्याक परिवर्तन गर्न सक्नुहुन्छ।</seg>
+            <seg>यस पुस्तकले अगाडि/पछाडिको आवरण पृष्ठमा लेख्ने सामग्रीको '{0}' नामक प्याक माग गर्‍यो, तर Bloom ले सो सामग्रीलाई यो कम्प्युटरमा फेला पार्न सकेन।तपाईंले या त '{0}' उपलब्ध गराउने Bloom प्याक स्थापना गर्न, वा सेटिङहरू:पुस्तक बनाउनेमा गएर अगाडि/पछाडिको आवरण पृष्ठमा लेख्ने सामग्रीको अर्को प्याक परिवर्तन गर्न सक्नुहुन्छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Errors.ZoneAlarm">
+         <tuv xml:lang="en">
+            <seg>Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom सुचारू रूपमा सुरू हुन सक्दैन, र यो लक्षण ZoneAlarm स्थापना गरिएका उपकरणहरूमा देखिने गरेको छ।ध्यान दिनुपर्ने कुरा: ZoneAlarm लाई अक्षम बनाएर यो समस्या हल हुँदैन।न त यसलाई बन्द गरेर पुनः सुरू गरेर नै यो समस्या हल हुन्छ।ZoneAlarm स्थापना गर्दाको कुनै तत्वले गर्दा यो समस्या हुन्छ, र अहिलेसमम्म ZoneAlarm लाई हटाउँदा मात्र यो समस्या हल हुने देखिएको छ।</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.ExperimentalNotice">
@@ -3371,6 +3722,47 @@
             <seg>प्रशिक्षण पुस्तिका</seg>
          </tuv>
       </tu>
+      <tu tuid="HelpMenu.trainingVideos">
+         <tuv xml:lang="en">
+            <seg>Training Videos</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>प्रशिक्षण भिडियोहरू</seg>
+         </tuv>
+      </tu>
+      <tu tuid="InstallProblem.BloomPdfMaker">
+         <tuv xml:lang="en">
+            <seg>A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom को एउटा अवयव, BloomPdfMaker.exe छैन जस्तो देखिन्छ।यो नहुँदा पूर्वावलोकन गर्न र छाप्न सकिँदैन।कहिलेकाहीँ एन्टिभाइरस सफ्टवेयरको कारणले यसो हुन्छ।Bloom लाई राम्रोसँग स्थापना गर्न र भविष्यमा यो फाइल फेरि मेटिन नदिन तपाईंलाई प्राविधिकको सहयोग आवश्यक पर्न सक्छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="LameEncoder.Progress">
+         <note>Appears in progress indicator</note>
+         <tuv xml:lang="en">
+            <seg>Converting to mp3</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>mp3 ढाँचामा रूपान्तर गर्दै</seg>
+         </tuv>
+      </tu>
+      <tu tuid="LanguageFontDetails.RightToLeftCheck">
+         <tuv xml:lang="en">
+            <seg>This script is right to left</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो लिपि दायाँदेखि बायाँतिर लेखिने लिपि हो</seg>
+         </tuv>
+      </tu>
+      <tu tuid="LanguageFontDetails.TallerLinesCheck">
+         <tuv xml:lang="en">
+            <seg>This script requires taller lines</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो लिपिको लागि अग्ला पङ्क्तिहरू चाहिन्छ</seg>
+         </tuv>
+      </tu>
       <tu tuid="PublishTab.InDesignDialog.WindowTitle">
          <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
          <tuv xml:lang="en">
@@ -3402,7 +3794,7 @@
             <seg>A4Landscape</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>A4 ल्याण्डस्केप तेसेा</seg>
+            <seg>A4Landscape</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.A4Landscape SideBySide">
@@ -3411,7 +3803,7 @@
             <seg>A4Landscape SideBySide</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>A4 ल्याण्डस्केप एकको छेउमा अर्को</seg>
+            <seg>A4Landscape SideBySide</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.A4Landscape SplitAcrossPages">
@@ -3420,7 +3812,7 @@
             <seg>A4Landscape SplitAcrossPages</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>A4 ल्याण्डस्केप पृष्ठहरू  विभाजन गरेर </seg>
+            <seg>A4Landscape SplitAcrossPages</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.A4Portrait">
@@ -3429,7 +3821,7 @@
             <seg>A4Portrait</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>A4 पोर्ट्रेट ठाडो</seg>
+            <seg>A4Portrait</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.A5Landscape">
@@ -3438,7 +3830,7 @@
             <seg>A5Landscape</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>A5 ल्याण्डस्केप तेसेा</seg>
+            <seg>A5Landscape</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.A5Portrait">
@@ -3447,7 +3839,7 @@
             <seg>A5Portrait</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>A5 पोर्ट्रेट ठाडो</seg>
+            <seg>A5Portrait</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.A5Portrait BottomAlign">
@@ -3456,7 +3848,7 @@
             <seg>A5Portrait BottomAlign</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>A5 पोर्ट्रेट तलतिर पङ्क्तिबद्ध</seg>
+            <seg>A5Portrait BottomAlign</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.A6Landscape">
@@ -3465,7 +3857,7 @@
             <seg>A6Landscape</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>A6 ल्याण्डस्केप  तेसेा</seg>
+            <seg>A6Landscape</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.A6Portrait">
@@ -3474,7 +3866,7 @@
             <seg>A6Portrait</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>A6 पोर्ट्रेट</seg>
+            <seg>A6Portrait</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.B5Portrait">
@@ -3483,7 +3875,7 @@
             <seg>B5Portrait</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>B5 पोर्ट्रेट</seg>
+            <seg>B5Portrait</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.HalfLetterPortrait">
@@ -3492,7 +3884,7 @@
             <seg>HalfLetterPortrait</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>आधा पत्र पोर्ट्रेट</seg>
+            <seg>HalfLetterPortrait</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.LetterLandscape">
@@ -3501,7 +3893,7 @@
             <seg>LetterLandscape</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>पत्र ल्याण्डस्केप</seg>
+            <seg>LetterLandscape</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.LetterPortrait">
@@ -3510,7 +3902,7 @@
             <seg>LetterPortrait</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>पत्र पोर्ट्रेट</seg>
+            <seg>LetterPortrait</seg>
          </tuv>
       </tu>
       <tu tuid="LayoutChoices.QuarterLetterLandscape">
@@ -3519,7 +3911,7 @@
             <seg>QuarterLetterLandscape</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>एक चौथाई पत्र ल्याण्डस्केप</seg>
+            <seg>QuarterLetterLandscape</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.Toolbox.LeveledReaderTool.Actual">
@@ -3611,7 +4003,7 @@
             <seg> of </seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg> मध्ये </seg>
+            <seg> मध्ये </seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.Toolbox.LeveledReaderTool.Max">
@@ -3733,12 +4125,28 @@
             <seg>शब्द सङ्ख्या</seg>
          </tuv>
       </tu>
+      <tu tuid="LicenseDialog.WindowTitle">
+         <tuv xml:lang="en">
+            <seg>Bloom {0}</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom {0}</seg>
+         </tuv>
+      </tu>
+      <tu tuid="LicenseDialog._acceptButton">
+         <tuv xml:lang="en">
+            <seg>I accept the terms of the license agreement</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>म इजाजतपत्रको सम्झौताका सर्तहरू स्वीकार्छु</seg>
+         </tuv>
+      </tu>
       <tu tuid="LoginDialog.AgreeToTerms">
          <tuv xml:lang="en">
             <seg>I agree to the Bloom Library's Terms of Use</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>म  Bloom Library को प्रयोगका सर्तहरूमा सहमत छु</seg>
+            <seg>म Bloom Library को प्रयोगका सर्तहरूमा सहमत छु</seg>
          </tuv>
       </tu>
       <tu tuid="LoginDialog.Email">
@@ -3811,7 +4219,7 @@
             <seg>There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>&lt;a href='file://{0}'&gt;{0}&lt;/a&gt; मा सो नामको सङ्ग्रह पहिले नै छ।\nकृपया नाम छान्नुहोस्।</seg>
+            <seg>&lt;a href='file://{0}'&gt;{0}&lt;/a&gt; मा सो नामको सङ्ग्रह पहिले नै छ।\nकृपया विशेष वा फरक नाम छान्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="NewCollectionWizard.ChooseLanguagePage">
@@ -3862,6 +4270,14 @@
             <seg>नयाँ सङ्ग्रह बनाउन तयार </seg>
          </tuv>
       </tu>
+      <tu tuid="NewCollectionWizard.FontAndScriptPage">
+         <tuv xml:lang="en">
+            <seg>Font and Script</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>फन्ट र लिपि</seg>
+         </tuv>
+      </tu>
       <tu tuid="NewCollectionWizard.KindOfCollectionPage">
          <tuv xml:lang="en">
             <seg>Choose the Collection Type</seg>
@@ -3875,7 +4291,7 @@
             <seg>If you already have a collection you want to open, click  the 'Cancel' button.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>आफूले खोल्न चाहेको सङ्ग्रह तपाईंसँग पहिले नै छ भने, 'रद्द  बटनळथि‍च्‍नुहोस्</seg>
+            <seg>आफूले खोल्न चाहेको सङ्ग्रह तपाईंसँग पहिले नै छ भने, 'रद्द बटनळथि‍च्‍नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
@@ -3891,7 +4307,7 @@
             <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make vernacular books with your shells.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>एक वा बढी साझा भाषाहरूमा लेखिएका खाका वा टेम्प्लेट पुस्तकहरूको सङ्ग्रह।तपाईंले यी खाकाहरूलाई BloomLibrary.org मा अपलोड गर्न सक्नुहुन्छ र अरूले तपाईंका खाकाहरू प्रयोग गरेर आफ्नो मातृभाषामा पुस्तकहरू लेख्न सकून् भनेर तपाईंले Bloom प्याक बनाएर अरूलाई उपलब्ध गराउन सक्नुहुन्छ।</seg>
+            <seg>एक वा बढी साझा भाषाहरूमा लेखिएका खाका वा टेम्प्लेट पुस्तकहरूको सङ्ग्रह।तपाईंले यी खाकाहरूलाई BloomLibrary.org मा अपलोड गर्न सक्नुहुन्छ।अरूले तपाईंका खाकाहरू प्रयोग गरेर आफ्नो मातृभाषामा पुस्तकहरू लेख्न सकून् भनेर तपाईंले Bloom प्याक बनाएर अरूलाई उपलब्ध गराउन पनि सक्नुहुन्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
@@ -4004,7 +4420,7 @@
             <seg>In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>सबै कुरालाई सरल र व्यवस्थित राख्न, Bloom ले तपाईंले बनाउनुभएका सबै पुस्तकहरूलाई एक वा एकभन्दा बढी सङ्ग्रहहरूमा राख्दछ। तसर्थ सर्वप्रथम तपाईंको लागि एउटा सङ्ग्रह बनाउन आवश्यक छ।</seg>
+            <seg>सबै कुरालाई सरल र व्यवस्थित राख्न, Bloom ले तपाईंले बनाउनुभएका सबै पुस्तकहरूलाई एक वा एकभन्दा बढी सङ्ग्रहहरूमा राख्दछ। &lt;i&gt;&lt;/i&gt;सर्वप्रथम तपाईंको लागि एउटा सङ्ग्रह बनाउन आवश्यक छ।</seg>
          </tuv>
       </tu>
       <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine3">
@@ -4013,6 +4429,22 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>सुरू गर्न 'अर्को' मा थिच्‌नुहोस् गर्नुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="OpenCreateCloneControl.InDropboxMessage">
+         <tuv xml:lang="en">
+            <seg>Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>Bloom ले यो सङ्ग्रह तपाईंको Dropbox फोल्डरमा छ भनी पत्ता लगाएको छ।कहिलेकाहीँ Dropbox ले Bloom लाई यसका फाइलहरूमाथि पहुँच नदिने भएकाले यसले समस्या निम्त्याउन सक्छ।समस्या देखिएको खण्डमा, हामी तपाईंलाई आफ्नो सङ्ग्रह अन्य कतै सार्न वा Bloom प्रयोग गर्दा Dropbox अक्षम बनाउन सिफारिस गर्दछौं।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="OpenCreateCloneControl.InSourceCollectionMessage">
+         <tuv xml:lang="en">
+            <seg>This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>यो सङ्ग्रह तपाईंको 'नयाँ पुस्तकहरूको स्रोत' को अंश हो जसलाई तपाईंले सङ्ग्रहहरू नामक ट्याबको तल्लो भागको बायाँपट्टी हेर्न सक्नुहुन्छ।यसलाई सम्पादन गर्न सकिँदैन।</seg>
          </tuv>
       </tu>
       <tu tuid="OpenCreateNewCollectionsDialog.Bloom Collections">
@@ -4086,7 +4518,7 @@
             <seg>Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>अरू कसैले तपाईंसँग कुनै सङ्ग्रह आदान-प्रदान गर्न पठाउने/प्राप्त गर्ने प्रकार्य प्रयोग गर्नुभएको छ?\nnउनीहरूको सङ्ग्रहलाई आफ्नो कम्प्युटरमा प्रतिलिपि गर्न यी राता बटनहरू मध्ये एउटा प्रयोग गर्नुहोस्।\nपछि, उनीहरूसँग आफ्नो रचना आदान-प्रदान गर्न पठाउने/प्राप्त गर्ने प्रकार्य प्रयोग गर्नुहोस्।</seg>
+            <seg>के कसैले तपाईंसँग कुनै सङ्ग्रह आदान-प्रदान गर्न पठाउने/प्राप्त गर्ने प्रकार्य प्रयोग गर्नुभएको छ?\nउनीहरूको सङ्ग्रहलाई आफ्नो कम्प्युटरमा प्रतिलिपि गर्न यी राता बटनहरू मध्ये एउटा प्रयोग गर्नुहोस्।\nपछि, उनीहरूसँग आफ्नो रचना आदान-प्रदान गर्न पठाउने/प्राप्त गर्ने प्रकार्य प्रयोग गर्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
@@ -4126,7 +4558,7 @@
             <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. Here are some things you can try:</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>Bloom लाई यो पुस्तकको PDF फाइल बनाउनमा समस्या भयो। तपाईंलाई प्राविधिक सहयोग चाहिन वा विकासकर्ताहरूलाई सम्पर्क गर्न आवश्यक हुन सक्छ। यहाँ केही उपायहरू दिइएका छन्:</seg>
+            <seg>Bloom लाई यो पुस्तकको PDF बनाउनमा समस्या भयो। तपाईंलाई प्राविधिक सहयोग चाहिन वा विकासकर्ताहरूलाई सम्पर्क गर्न आवश्यक हुन सक्छ। यहाँ केही उपायहरू दिइएका छन्:</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
@@ -4134,7 +4566,7 @@
             <seg>Try doing this on a computer with more memory</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>बढी मेमोरी भएको कम्प्युटरमा गर्ने प्रयास गर्नुहोस्।</seg>
+            <seg>बढी मेमोरी भएको कम्प्युटरमा गर्ने प्रयास गर्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.PdfMaker.TryRestart">
@@ -4142,7 +4574,7 @@
             <seg>Restart your computer and try this again right away</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>आफ्नो कम्प्युटरलाई रिस्टार्ट गर्नुहोस् र त्यसपछि तुरुन्त यो कार्य गर्ने प्रयास गर्नुहोस्।</seg>
+            <seg>आफ्नो कम्प्युटरलाई पुनः सुरू गर्नुहोस् र त्यसपछि तुरुन्त यो कार्य गर्ने प्रयास गर्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.PdfMaker.TrySmallerImages">
@@ -4150,7 +4582,15 @@
             <seg>Replace large, high-resolution images in your document with lower-resolution ones</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>तपाईंको डकुमेन्टमा भएका ठूला, उच्च रेजोल्युसनका छविहरूलाई कम रेजोल्युसनका छविहरूले प्रतिस्थापन गर्नुहोस्।</seg>
+            <seg>तपाईंको डकुमेन्टमा भएका ठूला, उच्च रेजोल्युसनका छविहरूलाई कम रेजोल्युसनका छविहरूले प्रतिस्थापन गर्नुहोस्</seg>
+         </tuv>
+      </tu>
+      <tu tuid="PageList.CantMoveWhenTranslating">
+         <tuv xml:lang="en">
+            <seg>Pages can not be re-ordered when you are translating a book.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>तपाईंले पुस्तक अनुवाद गरिरहँदा पृष्ठहरूको क्रम मिलाउन सकिँदैन।</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
@@ -4174,7 +4614,7 @@
             <seg>Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>दुःखको कुरा।Bloom ले Adobe Reader माथि पहुँच गर्न सकेन, तसर्थ Bloom ले तपाईंको तयार पुस्तक देखाउन सक्दैन।\nतपाईसँग भएको Adobe Reader को स्थापना रद्द गरेर Adobe Reader पुनः स्थापना गर्नुहोस्।\nयसको समाधान नहुँदासम्म, तपाईंले यस PDF पुस्तकलाई सुरक्षित गरेर यसलाई अन्य कुनै प्रोग्रामबाट खोल्न सक्नुहुन्छ।</seg>
+            <seg>दुःखको कुरा।Bloom ले Adobe Reader माथि पहुँच गर्न सकेन, तसर्थ Bloom ले तपाईंको तयार पुस्तक देखाउन सक्दैन।\nतपाईसँग भएको Adobe Reader हटाएर नयाँ Adobe Reader (पुनः) स्थापना गर्नुहोस्।\nयसको समाधान नहुँदासम्म, तपाईंले यस PDF पुस्तकलाई सुरक्षित गरेर यसलाई अन्य कुनै प्रोग्रामबाट खोल्न सक्नुहुन्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.BodyOnlyRadio">
@@ -4226,6 +4666,22 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>रङ्गीन कागजमा छाप्नका लागि अगाडि र पछाडिको आवरण पृष्ठको (भित्र र बाहिर दुवै पट्टीको) छुट्टै PDF बनाउनुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="PublishTab.EpubButton">
+         <tuv xml:lang="en">
+            <seg>ePUB</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>ePUB</seg>
+         </tuv>
+      </tu>
+      <tu tuid="PublishTab.Notifications.AdobeReaderRecommendation">
+         <tuv xml:lang="en">
+            <seg>This PDF viewer can be improved by installing the free Adobe Reader on this computer.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>PDF हेर्ने यो अनुप्रयोगलाई आफ्नो कम्प्युटरमा निःशुल्क रूपमा उपलब्ध Adobe Reader स्थापना गरेर सुधार्न सकिन्छ।</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.OnPagePerPaperRadio">
@@ -4303,7 +4759,15 @@
             <seg>&amp;Save PDF...</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>PDF &amp;सुरक्षित गर्नुहोस्...</seg>
+            <seg>&amp;PDF सुरक्षित गर्नुहोस्...</seg>
+         </tuv>
+      </tu>
+      <tu tuid="PublishTab.SaveEpub">
+         <tuv xml:lang="en">
+            <seg>&amp;Save ePUB...</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>&amp;ePUB सुरक्षित गर्नुहोस्...</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.ShowCropMarks">
@@ -4327,7 +4791,7 @@
             <seg>Additional Requests: </seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>अतिरिक्त अनुरोध:</seg>
+            <seg>अतिरिक्त अनुरोधहरू:</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.Upload.AllReserved">
@@ -4368,6 +4832,14 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>तपाईंको पुस्तक डाउनलोड गर्दा समस्या आयो।तपाईंले Bloom फेरि सुरू गर्न वा प्राविधिक सहयोग लिन आवश्यक हुन सक्छ।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="Download.TimeoutProblemNotice">
+         <tuv xml:lang="en">
+            <seg>There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>पुस्तक डाउनलोड गर्दा समस्या भयो: कुनै कुराले धेरै समय लगायो।तपाईंले पछि फेरि प्रयास गर्न सक्नुहुन्छ, वा यदि तपाईंले आफ्नो स्थानबाट डाउनलोड गर्न सक्नुभएन भने, यस समस्याको बारेमा लेखेर issues@bloomlibrary.org मा इमेल पठाउनुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.Upload.ErrorUploading">
@@ -4594,12 +5066,28 @@
             <seg>थम्बनेल छवि बनाउँदै...</seg>
          </tuv>
       </tu>
+      <tu tuid="PublishTab.Upload.NoLangsFound">
+         <tuv xml:lang="en">
+            <seg>(None found)</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>(कुनै फेला परेन)</seg>
+         </tuv>
+      </tu>
       <tu tuid="PublishTab.Upload.OldVersion">
          <tuv xml:lang="en">
             <seg>Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>माफ गर्नुहोस्, Bloom को यो संस्करण BloomLibrary.org को हालको संस्करणसँग अनुकूल छैन। कृपया नयाँ संस्करणमा स्तरवृद्धि गर्नुहोस्।</seg>
+            <seg>माफ गर्नुहोस्, Bloom Desktop को यो संस्करण BloomLibrary.org को हालको संस्करणसँग अनुकूल छैन।कृपया नयाँ संस्करणमा स्तरवृद्धि गर्नुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="PublishTab.Upload.Partial">
+         <tuv xml:lang="en">
+            <seg>(partial)</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>(आंशिक)</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.Upload.PleaseLogIn">
@@ -4665,6 +5153,14 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>प्रयोगका सर्तहरू देखाउनुहोस्</seg>
+         </tuv>
+      </tu>
+      <tu tuid="PublishTab.Upload.TimeProblem">
+         <tuv xml:lang="en">
+            <seg>There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>तपाईंको पुस्तक अपलोड गर्दा समस्या आयो।सम्भवतः तपाईंको कम्प्युटरमा गलत समय क्षेत्र सेट गरिएको वा तपाईंको प्रणालीको समय एकदमै गलत भएको हुनाले यस्तो भएको हुन सक्छ।यो समस्या समाधान गर्ने उपायका लागि http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html मा हेर्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="PublishTab.Upload.Title">
@@ -4771,6 +5267,14 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>BloomLibrary.org मा साइन अप गर्नुहोस्</seg>
+         </tuv>
+      </tu>
+      <tu tuid="PublishView._saveButton">
+         <tuv xml:lang="en">
+            <seg>Save stub</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>अधकट्टी सुरक्षित गर्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.AboutSampleTexts1">
@@ -5007,7 +5511,7 @@
             <seg>Notice that the English list includes symbols that are used to make words, like ' in </seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>अङ्ग्रेजी भाषाको सूचीमा शब्दहरू बनाउन प्रयोग हुने चिन्हहरू, जस्तै </seg>
+            <seg>अङ्ग्रेजी भाषाको सूचीमा शब्दहरू बनाउन प्रयोग हुने चिन्हहरू, जस्तै </seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.Letters.LetterHelp3">
@@ -5025,7 +5529,7 @@
             <seg>.</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>।</seg>
+            <seg>मा प्रयोग हुने ' समावेश हुन्छ भन्ने कुरा ध्यानमा राख्नुहोस्।</seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.LevelHeader">
@@ -5043,7 +5547,7 @@
             <seg>Level </seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>स्तर</seg>
+            <seg>स्तर </seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.Levels">
@@ -5070,7 +5574,7 @@
             <seg>Maximum Unique Words per Book</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg> पुस्तक अधिकतम अद्वीतीय शब्दहरू</seg>
+            <seg>प्रति पुस्तक अधिकतम अद्वीतीय शब्दहरू</seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.MoreWords">
@@ -5115,7 +5619,7 @@
             <seg>Powered by </seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>प्रायोजक: </seg>
+            <seg>प्रायोजक: </seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.ReaderLevels">
@@ -5556,7 +6060,7 @@
             <seg>&amp;Submit</seg>
          </tuv>
          <tuv xml:lang="ne">
-            <seg>&amp;Sपेश गर्नुहोस्</seg>
+            <seg>&amp;पेश गर्नुहोस्</seg>
          </tuv>
       </tu>
       <tu tuid="ReportProblemDialog.Submitting">
@@ -5599,6 +6103,66 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>पुस्तक जिप गर्दै...</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ReportProblemDialog.linkLabel1">
+         <tuv xml:lang="en">
+            <seg>Will not be private</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>गोप्य हुनेछैन</seg>
+         </tuv>
+      </tu>
+      <tu tuid="SamplePrintNotification.IGetIt">
+         <tuv xml:lang="en">
+            <seg>I get it. Do not show this again.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>मैले बुझेँ।यो कुरा फेरि नदेखाउनुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="SamplePrintNotification.PleaseNotice">
+         <tuv xml:lang="en">
+            <seg>Please notice the sample printer settings below. Use them as a guide while you set up the printer.</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>कृपया तल प्रिन्टरको नमूना सेटिङहरूलाई ध्यान दिएर हेर्नुहोस्।आफ्नो प्रिन्टर सेट अप गर्दा यिनीहरूलाई मार्गदर्शनको रूपमा प्रयोग गर्नुहोस्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="SamplePrintNotification.WindowTitle">
+         <prop type="x-nolongerused">true</prop>
+         <tuv xml:lang="en">
+            <seg>Sample Print Settings</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg/>
+         </tuv>
+      </tu>
+      <tu tuid="ScriptSettingsDialog.RightToLeftScriptCheckBox">
+         <prop type="x-nolongerused">true</prop>
+         <tuv xml:lang="en">
+            <seg>This script is right to left</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg/>
+         </tuv>
+      </tu>
+      <tu tuid="ScriptSettingsDialog.ScriptSettingsWindowTitle">
+         <prop type="x-nolongerused">true</prop>
+         <tuv xml:lang="en">
+            <seg>Special Script Settings...</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg/>
+         </tuv>
+      </tu>
+      <tu tuid="ScriptSettingsDialog.TallerLinesCheckBox">
+         <prop type="x-nolongerused">true</prop>
+         <tuv xml:lang="en">
+            <seg>This script requires taller lines</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg/>
          </tuv>
       </tu>
       <tu tuid="SendReceiveutton">
