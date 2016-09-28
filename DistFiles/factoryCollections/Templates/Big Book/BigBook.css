@@ -13,8 +13,8 @@ STARTLAYOUTS
 }
 ENDLAYOUTS
 This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
-.bigbookInstructions * {
-  font-size: 12pt !important;
+.bigbookInstructions {
+  font-size: 12pt;
 }
 .bigbookInstructions H1 {
   text-align: center;
@@ -55,7 +55,7 @@ height: 786px;
 }
 Text Whole Page
 The key to this text being aligned vertically is the bloom-centerContentVertiaclly on the tranlsation group, which gets picked up in the jscript, which then aligns it*/
-.A4Landscape .bloom-editable {
+.bloom-editable {
   font-size: 62pt;
   overflow: visible;
 }
