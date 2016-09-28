@@ -14,6 +14,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.PlatformUtilities;
 using System.Text;
+using SIL.Reporting;
 
 namespace Bloom.Publish
 {
@@ -120,13 +121,14 @@ namespace Bloom.Publish
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, null);
 			if (res.DidTimeOut || !File.Exists (outputPdfPath))
 			{
-#if DEBUG
-				Debug.WriteLine(@"PDF generation failed: res.StandardOutput =");
-				Debug.WriteLine(res.StandardOutput);
-#endif
+				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = "+res.StandardOutput);
+
 				var msg = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.Failed",
 					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
 					@"Error message displayed in a message dialog box");
+
+				msg += System.Environment.NewLine + res.StandardOutput;
+
 				var except = new ApplicationException(String.Format(msg, outputPdfPath, Environment.NewLine));
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.
 				// If not, but the caller provides a DoWorkEventArgs, pass the exception through
