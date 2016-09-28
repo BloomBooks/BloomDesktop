@@ -70,8 +70,6 @@ namespace Bloom.Collection
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this._showExperimentCommands = new System.Windows.Forms.CheckBox();
 			this._showExperimentalTemplates = new System.Windows.Forms.CheckBox();
-			this._showSendReceive = new System.Windows.Forms.CheckBox();
-			this._useImageServer = new System.Windows.Forms.CheckBox();
 			this._okButton = new System.Windows.Forms.Button();
 			this._restartReminder = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -79,6 +77,8 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+			this._brandingCombo = new System.Windows.Forms.ComboBox();
+			this.label2 = new System.Windows.Forms.Label();
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -100,7 +100,7 @@ namespace Bloom.Collection
 			this._tab.Location = new System.Drawing.Point(1, 2);
 			this._tab.Name = "_tab";
 			this._tab.SelectedIndex = 0;
-			this._tab.Size = new System.Drawing.Size(618, 341);
+			this._tab.Size = new System.Drawing.Size(618, 403);
 			this._tab.TabIndex = 0;
 			this._tab.SelectedIndexChanged += new System.EventHandler(this._tab_SelectedIndexChanged);
 			// 
@@ -122,7 +122,7 @@ namespace Bloom.Collection
 			this.tabPage1.Location = new System.Drawing.Point(4, 26);
 			this.tabPage1.Name = "tabPage1";
 			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage1.Size = new System.Drawing.Size(610, 311);
+			this.tabPage1.Size = new System.Drawing.Size(610, 373);
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Languages";
 			this.tabPage1.UseVisualStyleBackColor = true;
@@ -260,12 +260,14 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel");
 			this._language1Label.Location = new System.Drawing.Point(26, 24);
 			this._language1Label.Name = "_language1Label";
-			this._language1Label.Size = new System.Drawing.Size(140, 19);
+			this._language1Label.Size = new System.Drawing.Size(139, 19);
 			this._language1Label.TabIndex = 7;
 			this._language1Label.Text = "Vernacular Language";
 			// 
 			// tabPage2
 			// 
+			this.tabPage2.Controls.Add(this._brandingCombo);
+			this.tabPage2.Controls.Add(this.label2);
 			this.tabPage2.Controls.Add(this._fontSettings3Link);
 			this.tabPage2.Controls.Add(this._fontSettings2Link);
 			this.tabPage2.Controls.Add(this._fontSettings1Link);
@@ -284,7 +286,7 @@ namespace Bloom.Collection
 			this.tabPage2.Location = new System.Drawing.Point(4, 26);
 			this.tabPage2.Name = "tabPage2";
 			this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage2.Size = new System.Drawing.Size(610, 311);
+			this.tabPage2.Size = new System.Drawing.Size(610, 373);
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "Book Making";
 			this.tabPage2.UseVisualStyleBackColor = true;
@@ -356,7 +358,7 @@ namespace Bloom.Collection
 			this._xmatterDescription.Location = new System.Drawing.Point(293, 149);
 			this._xmatterDescription.Multiline = true;
 			this._xmatterDescription.Name = "_xmatterDescription";
-			this._xmatterDescription.Size = new System.Drawing.Size(310, 115);
+			this._xmatterDescription.Size = new System.Drawing.Size(310, 68);
 			this._xmatterDescription.TabIndex = 29;
 			// 
 			// _fontComboLanguage3
@@ -464,7 +466,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage3, "CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel");
 			this.tabPage3.Location = new System.Drawing.Point(4, 26);
 			this.tabPage3.Name = "tabPage3";
-			this.tabPage3.Size = new System.Drawing.Size(610, 311);
+			this.tabPage3.Size = new System.Drawing.Size(610, 373);
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "Project Information";
 			this.tabPage3.UseVisualStyleBackColor = true;
@@ -536,7 +538,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._countryLabel, "CollectionSettingsDialog.ProjectInformationTab.Country");
 			this._countryLabel.Location = new System.Drawing.Point(28, 23);
 			this._countryLabel.Name = "_countryLabel";
-			this._countryLabel.Size = new System.Drawing.Size(59, 19);
+			this._countryLabel.Size = new System.Drawing.Size(60, 19);
 			this._countryLabel.TabIndex = 2;
 			this._countryLabel.Text = "Country";
 			// 
@@ -571,15 +573,13 @@ namespace Bloom.Collection
 			this.tabPage4.Controls.Add(this._automaticallyUpdate);
 			this.tabPage4.Controls.Add(this._showExperimentCommands);
 			this.tabPage4.Controls.Add(this._showExperimentalTemplates);
-			this.tabPage4.Controls.Add(this._showSendReceive);
-			this.tabPage4.Controls.Add(this._useImageServer);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
 			this.tabPage4.Location = new System.Drawing.Point(4, 26);
 			this.tabPage4.Name = "tabPage4";
 			this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage4.Size = new System.Drawing.Size(610, 311);
+			this.tabPage4.Size = new System.Drawing.Size(610, 373);
 			this.tabPage4.TabIndex = 3;
 			this.tabPage4.Text = "Advanced Program Settings";
 			this.tabPage4.UseVisualStyleBackColor = true;
@@ -591,7 +591,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._automaticallyUpdate, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._automaticallyUpdate, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._automaticallyUpdate, "CollectionSettingsDialog.AdvancedTab.AutoUpdate");
-			this._automaticallyUpdate.Location = new System.Drawing.Point(50, 207);
+			this._automaticallyUpdate.Location = new System.Drawing.Point(50, 124);
 			this._automaticallyUpdate.Name = "_automaticallyUpdate";
 			this._automaticallyUpdate.Size = new System.Drawing.Size(201, 23);
 			this._automaticallyUpdate.TabIndex = 5;
@@ -606,9 +606,9 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._showExperimentCommands, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentCommands, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._showExperimentCommands, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands");
-			this._showExperimentCommands.Location = new System.Drawing.Point(50, 165);
+			this._showExperimentCommands.Location = new System.Drawing.Point(50, 82);
 			this._showExperimentCommands.Name = "_showExperimentCommands";
-			this._showExperimentCommands.Size = new System.Drawing.Size(404, 23);
+			this._showExperimentCommands.Size = new System.Drawing.Size(217, 23);
 			this._showExperimentCommands.TabIndex = 4;
 			this._showExperimentCommands.Text = "Show Experimental Commands";
 			this._showExperimentCommands.UseVisualStyleBackColor = true;
@@ -621,45 +621,13 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._showExperimentalTemplates, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentalTemplates, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._showExperimentalTemplates, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates");
-			this._showExperimentalTemplates.Location = new System.Drawing.Point(50, 120);
+			this._showExperimentalTemplates.Location = new System.Drawing.Point(50, 37);
 			this._showExperimentalTemplates.Name = "_showExperimentalTemplates";
-			this._showExperimentalTemplates.Size = new System.Drawing.Size(354, 23);
+			this._showExperimentalTemplates.Size = new System.Drawing.Size(353, 23);
 			this._showExperimentalTemplates.TabIndex = 3;
 			this._showExperimentalTemplates.Text = "Show Experimental Templates (e.g. Picture Dictionary)";
 			this._showExperimentalTemplates.UseVisualStyleBackColor = true;
 			this._showExperimentalTemplates.CheckedChanged += new System.EventHandler(this._showExperimentalTemplates_CheckedChanged);
-			// 
-			// _showSendReceive
-			// 
-			this._showSendReceive.AutoSize = true;
-			this._showSendReceive.Enabled = false;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._showSendReceive, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._showSendReceive, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._showSendReceive, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive");
-			this._showSendReceive.Location = new System.Drawing.Point(50, 78);
-			this._showSendReceive.Name = "_showSendReceive";
-			this._showSendReceive.Size = new System.Drawing.Size(291, 23);
-			this._showSendReceive.TabIndex = 1;
-			this._showSendReceive.Text = "(Experimental) Show Send/Receive Controls";
-			this._showSendReceive.UseVisualStyleBackColor = true;
-			this._showSendReceive.CheckedChanged += new System.EventHandler(this._showSendReceive_CheckedChanged);
-			// 
-			// _useImageServer
-			// 
-			this._useImageServer.AutoSize = true;
-			this._useImageServer.Enabled = false;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._useImageServer, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._useImageServer, "This option will probably go away, as any bugs with the Image Server get ironed o" +
-        "ut. This has to do with how Bloom works internally; the I.S. makes it work bette" +
-        "r on slow computers.");
-			this._L10NSharpExtender.SetLocalizingId(this._useImageServer, "CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer");
-			this._useImageServer.Location = new System.Drawing.Point(50, 35);
-			this._useImageServer.Name = "_useImageServer";
-			this._useImageServer.Size = new System.Drawing.Size(406, 23);
-			this._useImageServer.TabIndex = 0;
-			this._useImageServer.Text = "Use Image Server to reduce memory usage with large images.";
-			this._useImageServer.UseVisualStyleBackColor = true;
 			// 
 			// _okButton
 			// 
@@ -667,7 +635,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
-			this._okButton.Location = new System.Drawing.Point(422, 393);
+			this._okButton.Location = new System.Drawing.Point(422, 455);
 			this._okButton.Name = "_okButton";
 			this._okButton.Size = new System.Drawing.Size(91, 23);
 			this._okButton.TabIndex = 1;
@@ -684,7 +652,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._restartReminder, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._restartReminder, null);
 			this._L10NSharpExtender.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog.RestartMessage");
-			this._restartReminder.Location = new System.Drawing.Point(273, 348);
+			this._restartReminder.Location = new System.Drawing.Point(273, 410);
 			this._restartReminder.MaximumSize = new System.Drawing.Size(380, 0);
 			this._restartReminder.Name = "_restartReminder";
 			this._restartReminder.Size = new System.Drawing.Size(346, 34);
@@ -704,7 +672,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._cancelButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._cancelButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._cancelButton, "Common.CancelButton");
-			this._cancelButton.Location = new System.Drawing.Point(533, 393);
+			this._cancelButton.Location = new System.Drawing.Point(533, 455);
 			this._cancelButton.Name = "_cancelButton";
 			this._cancelButton.Size = new System.Drawing.Size(75, 23);
 			this._cancelButton.TabIndex = 21;
@@ -718,7 +686,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this.settingsProtectionLauncherButton1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.settingsProtectionLauncherButton1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.settingsProtectionLauncherButton1, "CollectionSettingsDialog.SettingsProtectionLauncherButton");
-			this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 345);
+			this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 407);
 			this.settingsProtectionLauncherButton1.Margin = new System.Windows.Forms.Padding(0);
 			this.settingsProtectionLauncherButton1.Name = "settingsProtectionLauncherButton1";
 			this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(257, 37);
@@ -730,7 +698,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._helpButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._helpButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._helpButton, "Common.HelpButton");
-			this._helpButton.Location = new System.Drawing.Point(13, 393);
+			this._helpButton.Location = new System.Drawing.Point(13, 455);
 			this._helpButton.Name = "_helpButton";
 			this._helpButton.Size = new System.Drawing.Size(75, 23);
 			this._helpButton.TabIndex = 22;
@@ -738,13 +706,39 @@ namespace Bloom.Collection
 			this._helpButton.UseVisualStyleBackColor = true;
 			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
 			// 
+			// _brandingCombo
+			// 
+			this._brandingCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this._brandingCombo.FormattingEnabled = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._brandingCombo, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._brandingCombo, null);
+			this._L10NSharpExtender.SetLocalizingId(this._brandingCombo, "CollectionSettingsDialog._fontComboLanguage3");
+			this._brandingCombo.Location = new System.Drawing.Point(32, 302);
+			this._brandingCombo.Name = "_brandingCombo";
+			this._brandingCombo.Size = new System.Drawing.Size(189, 25);
+			this._brandingCombo.TabIndex = 35;
+			this._brandingCombo.SelectedIndexChanged += new System.EventHandler(this._brandingCombo_SelectedIndexChanged);
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.label2, "{0} is a language name.");
+			this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
+			this.label2.Location = new System.Drawing.Point(28, 280);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(65, 19);
+			this.label2.TabIndex = 34;
+			this.label2.Text = "Branding";
+			// 
 			// CollectionSettingsDialog
 			// 
 			this.AcceptButton = this._okButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this._cancelButton;
-			this.ClientSize = new System.Drawing.Size(620, 431);
+			this.ClientSize = new System.Drawing.Size(620, 493);
 			this.ControlBox = false;
 			this.Controls.Add(this._helpButton);
 			this.Controls.Add(this._cancelButton);
@@ -803,9 +797,7 @@ namespace Bloom.Collection
 		private SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.TabPage tabPage4;
-		private System.Windows.Forms.CheckBox _useImageServer;
 		private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.CheckBox _showSendReceive;
         protected System.Windows.Forms.Label _language1Name;
         private System.Windows.Forms.TextBox _bloomCollectionName;
         private System.Windows.Forms.Label label1;
@@ -825,5 +817,7 @@ namespace Bloom.Collection
 		private LinkLabel _fontSettings3Link;
 		private LinkLabel _fontSettings2Link;
 		private LinkLabel _fontSettings1Link;
+		private ComboBox _brandingCombo;
+		private Label label2;
 	}
 }

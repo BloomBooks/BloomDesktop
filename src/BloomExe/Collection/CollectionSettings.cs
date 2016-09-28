@@ -42,6 +42,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public CollectionSettings()
 		{
+			BrandingProjectName = "Default";
 			XMatterPackName = "Traditional";
 			Language2Iso639Code = "en";
 			AllowNewBooks = true;
@@ -71,6 +72,8 @@ namespace Bloom.Collection
 			District = collectionInfo.District;
 			IsSourceCollection = collectionInfo.IsSourceCollection;
 			XMatterPackName = collectionInfo.XMatterPackName;
+			BrandingProjectName = collectionInfo.BrandingProjectName;
+
 			Save();
 		}
 
@@ -307,6 +310,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("Language3LineHeight", Language3LineHeight));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
+			library.Add(new XElement("BrandingProjectName", BrandingProjectName));
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
@@ -363,6 +367,8 @@ namespace Bloom.Collection
 				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
 				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
+				BrandingProjectName = GetValue(library, "BrandingProjectName", "Default");
+				
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
 				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
@@ -561,6 +567,8 @@ namespace Bloom.Collection
 		public string DefaultLanguage2FontName { get; set; }
 
 		public string DefaultLanguage3FontName { get; set; }
+
+		public string BrandingProjectName { get; set; }
 
 		public int OneTimeCheckVersionNumber { get; set; }
 
