@@ -155,7 +155,7 @@ mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+field-prototypeDeclaredExplicity#titlePageTitleBlock
 			label.bubble Book title in {lang}
-			+editable(kLanguageForPrototypeOnly).Title-On-Title-Page-style(data-book='bookTitle')
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
 		+field-prototypeDeclaredExplicity#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
