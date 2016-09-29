@@ -146,6 +146,43 @@ namespace BloomTests.Book
 		   Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz"));
 	   }
 
+		/// <summary>
+		/// Normally, the data we need to preserve in the datadiv is the contents of some element.
+		/// But in the case of data-xmatter-page-layout-options, it's the value of that attribute,
+		/// itself, which needs to be preserved in the datadiv.
+		/// </summary>
+		[Test]
+		public void SuckInDataFromEditedDom_XmatterPageLayout()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div class='bloom-page bloom-frontMatter' id='guid2' data-page-layout-options='apple'>
+				</div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+			Assert.AreEqual("apple", data.GetVariableOrNull("data-page-layout-options-for-xmatter", "*"));
+		}
+
+		/// <summary>
+		/// Make sure that the xmatterPageLayoutOptions get pushed down into every page that 
+		/// has a data-xmatter-page-layout-options.
+		/// </summary>
+		[Test]
+		public void UpdateFieldsAndVariables_XmatterPagesAreOutOfSync_AllGetValuesFromFirstPage()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+				<div class='bloom-page bloom-frontMatter' id='guid1' data-page-layout-options='one two'></div>
+				<div class='bloom-page bloom-backMatter' id='guid2' data-page-layout-options='some old value'></div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			data.UpdateVariablesAndDataDivThroughDOM();
+			//got in the datadiv
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='page-layout-options-for-xmatter' and text()='one two']", 1);
+			//got distributed to all xmatter pages
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and @data-page-layout-options='one two']", 2);
+		}
+
 		[Test]
 		public void UpdateFieldsAndVariables_CustomLibraryVariable_CopiedToOtherElement()
 		{

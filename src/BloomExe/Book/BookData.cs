@@ -698,12 +698,64 @@ namespace Bloom.Book
 					}
 
 				}
+
+				//The data we've dealt with above is the innards of elements that have a data-book attribute.
+				//The other bit of data is actually *in* the attribute data-page-layout-options, on the element.
+				GatherDataFromPageLayoutOptionsAttribute(data, sourceElement);
 			}
 			catch (Exception error)
 			{
 				throw new ApplicationException(
 					"Error in GatherDataItemsFromDom(," + elementName + "). RawDom was:\r\n" + sourceElement.OuterXml,
 					error);
+			}
+		}
+
+		/// <summary>
+		/// The user can control some layout options via checkboxes in the toolbox.
+		/// These are stored in an attribute, data-page-layout-options, on the page.
+		/// Since xmatter pages are rebuilt every time we open the book, this would get lost. So
+		/// we need to read that into our DataSet so that it will be preserved.
+		/// </summary>
+		private static void GatherDataFromPageLayoutOptionsAttribute(DataSet data, XmlNode sourceElement)
+		{
+			//Any page may have a data-page-layout-options. For interior pages, we don't need to do anything, they just
+			//get saved. But for xmatter, which are always rebuilt, we need to grab that and store it. Note that
+			//we aren't supporting different xmatter pages having different sets of options; they are all lumped together.
+
+			//We only gather after editing, and currently we only edit one page at time, so here let's just find a page
+			//and store its current data-page-layout-options
+			var firstPageDiv = sourceElement.SelectSingleNode(".//div[(contains(@class, 'bloom-frontMatter') or contains(@class, 'bloom-backMatter')) and @data-page-layout-options]");
+			if(firstPageDiv==null)
+				return;
+
+			if(!((XmlElement) firstPageDiv).HasAttribute("data-page-layout-options"))
+			{
+				return;
+			}
+
+			var layoutOptions = firstPageDiv.GetOptionalStringAttribute("data-page-layout-options","");
+			//notice, we're not even  trying to merge in multiple sources for this; we're assuming we are only reading from a single page
+			//note: we want to do this even if we just got back a null or empty string. An empty list of options is itself a declaration of the desired layout configuration.
+			data.UpdateGenericLanguageString("page-layout-options-for-xmatter", layoutOptions, false);
+		}
+
+		private void UpdatePageLayoutOptionsFromDataSet(DataSet data , XmlDocument targetDom)
+		{
+			if(!data.TextVariables.ContainsKey("page-layout-options-for-xmatter"))
+				return;
+
+			// Unlike interior pages, all xmatter pages have to share the same page layout options. This is't a feature, it
+			// just keeps the code simpler and we think it might be fine. The only requirement to make it work is that the
+			// layout option keys need to be unique to each page. E.g., if we have a key for whether to show the national 
+			// language title on the cover, and another for whether to show it on the title page, the keys for those two
+			// need to be distinct.
+			var layoutOptions = data.TextVariables["page-layout-options-for-xmatter"].TextAlternatives.GetFirstAlternative();
+
+			// so for all xmatter pages, push those layout settings in.
+			foreach (XmlElement pageDiv in targetDom.SafeSelectNodes("//div[contains(@class, 'bloom-frontMatter') or contains(@class, 'bloom-backMatter')]"))
+			{
+				pageDiv.SetAttribute("data-page-layout-options", layoutOptions);
 			}
 		}
 
@@ -724,6 +776,8 @@ namespace Bloom.Book
 		{
 			try
 			{
+				UpdatePageLayoutOptionsFromDataSet(data, targetDom);
+
 				var query = String.Format("//{0}[(@data-book or @data-collection or @data-library)]", elementName);
 				var nodesOfInterest = targetDom.SafeSelectNodes(query);
 

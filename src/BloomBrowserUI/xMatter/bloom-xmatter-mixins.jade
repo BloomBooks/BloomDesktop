@@ -68,6 +68,11 @@ mixin block-licenseAndCopyright
 				| {License Notes}
 
 
+mixin checkbox(key, i18nKey, englishLabel)
+	.optionCheckbox(data-option=key)
+		input(type='checkbox')
+		label(data-i18n=i18nKey)
+			=englishLabel
 
 //- -------------------------------------------------------------------------------
 //-	Unless every page of your xmatter pack needs to be different than the "factory"
@@ -87,6 +92,11 @@ mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
 	+page-cover('Front Cover')(data-export='front-matter-cover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
 
+		.pageLayoutOptions(style="display:none")
+			+checkbox('showN1Title', 'Options.showN1Title', 'Show National Language 1 Title')
+			+checkbox('showN2Title', 'Options.showN2Title', 'Show National Language 2 Title')
+			+checkbox('showLangNames', 'Options.showLangNames', 'Show Language Name(s)')
+
 		//- enhance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
 		//- 	+field-matter('bookTitle').Title-On-Cover-style
 		//- 		label.bubble Book title in {lang}
@@ -105,7 +115,7 @@ mixin factoryStandard-outsideFrontCover
 			//- 'V' means this field is only available in the vernacular
 			+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.bloom-copyFromOtherLanguageIfNecessary.Cover-Default-style
 		.bottomBlock.test
-			.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
+			.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook', data-page-flag="{key:'front-lang-names',en:'Show Language Name(s)'}", data-page-flag-front-lang-names="true")
 			+chooser-topic.coverBottomBookTopic
 
 mixin factoryStandard-creditsInsideFrontCover
