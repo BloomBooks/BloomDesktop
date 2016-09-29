@@ -301,6 +301,10 @@ namespace Bloom.Edit
 			{
 				foreach (XmlElement imgNode in imgNodes)
 				{
+					//We can't handle doing anything special with these /api/branding/ images yet, they get mangled.
+					if(HtmlDom.GetImageElementUrl(imgNode).NotEncoded.Contains("/api/"))
+						continue;
+
 					var filename = HtmlDom.GetImageElementUrl(imgNode).UrlEncoded;
 					if(!string.IsNullOrWhiteSpace(filename))
 					{

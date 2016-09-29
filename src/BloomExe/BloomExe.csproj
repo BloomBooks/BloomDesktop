@@ -522,6 +522,7 @@
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
     <Compile Include="web\controllers\KeybordingConfigAPI.cs" />
+    <Compile Include="web\controllers\BrandingApi.cs" />
     <Compile Include="web\CurrentBookHandler.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />

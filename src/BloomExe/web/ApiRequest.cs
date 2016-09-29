@@ -91,7 +91,11 @@ namespace Bloom.Api
 			_requestInfo.ContentType = "application/json";
 			_requestInfo.WriteCompleteOutput(JsonConvert.SerializeObject(objectToMakeJson));
 		}
-		
+		public void ReplyWithImage(string imagePath)
+		{
+			_requestInfo.ReplyWithImage(imagePath);
+		}
+
 
 		public void Failed(string text)
 		{

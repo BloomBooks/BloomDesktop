@@ -105,6 +105,7 @@ namespace Bloom
 							typeof (AudioRecording),
 							typeof(CurrentBookHandler),
 							typeof(ReadersApi),
+							typeof(BrandingApi),
 							typeof(KeybordingConfigApi)
 						}.Contains(t));
 
@@ -268,6 +269,7 @@ namespace Bloom
 			_scope.Resolve<KeybordingConfigApi>().RegisterWithServer(server);
 			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
+			_scope.Resolve<BrandingApi>().RegisterWithServer(server);
 		}
 
 
