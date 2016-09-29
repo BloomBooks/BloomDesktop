@@ -710,9 +710,6 @@ namespace Bloom.Collection
 			// 
 			this._brandingCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this._brandingCombo.FormattingEnabled = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._brandingCombo, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._brandingCombo, null);
-			this._L10NSharpExtender.SetLocalizingId(this._brandingCombo, "CollectionSettingsDialog._fontComboLanguage3");
 			this._brandingCombo.Location = new System.Drawing.Point(32, 302);
 			this._brandingCombo.Name = "_brandingCombo";
 			this._brandingCombo.Size = new System.Drawing.Size(189, 25);
@@ -724,8 +721,7 @@ namespace Bloom.Collection
 			this.label2.AutoSize = true;
 			this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.label2, "{0} is a language name.");
-			this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
+			this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.BookMakingTab.Branding");
 			this.label2.Location = new System.Drawing.Point(28, 280);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(65, 19);
