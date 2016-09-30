@@ -54,6 +54,7 @@ namespace Bloom.Book
 		string GetValidateErrors();
 		void CheckBook(IProgress progress,string pathToFolderOfReplacementImages = null);
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
+		string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack);
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
 		void CleanupUnusedImageFiles();
@@ -777,8 +778,9 @@ namespace Bloom.Book
 				}
 			}
 
-			//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
+			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
 			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
+			nameOfXMatterPack = HandleRetiredXMatterPacks(_dom, nameOfXMatterPack);
 
 			try
 			{
@@ -901,6 +903,7 @@ namespace Bloom.Book
 			_dom.RemoveXMatterStyleSheets();
 
 			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
+			nameOfXMatterPack = HandleRetiredXMatterPacks(dom, nameOfXMatterPack);
 			var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
 
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation));
@@ -917,6 +920,25 @@ namespace Bloom.Book
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+		}
+
+		public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)
+		{
+			// Bloom 3.7 retired the BigBook xmatter pack.
+			// If we ever create another xmatter pack called BigBook (or rename the Factory pack) we'll need to redo this.
+			string[] retiredPacks = { "BigBook" };
+			const string xmatterSuffix = "-XMatter.css";
+
+			if (retiredPacks.Contains(nameOfXMatterPack))
+			{
+				EnsureDoesntHaveLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
+				nameOfXMatterPack = "Factory";
+				EnsureHasLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
+				// Since HtmlDom.GetMetaValue() is always called with the collection's xmatter pack as default,
+				// we can just remove this wrong meta element.
+				dom.RemoveMetaElement("xmatter");
+			}
+			return nameOfXMatterPack;
 		}
 
 		private void EnsureDoesntHaveLinkToStyleSheet(HtmlDom dom, string path)
