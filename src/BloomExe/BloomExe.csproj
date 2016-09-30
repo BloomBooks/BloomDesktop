@@ -8,6 +8,8 @@
     </TargetFrameworkProfile>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <PackagesConfig Condition="'$(OS)'=='Windows_NT'">$(MSBuildProjectDirectory)\packages.config</PackagesConfig>
+    <PackagesConfig Condition="'$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)/Linux/packages.config</PackagesConfig>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
