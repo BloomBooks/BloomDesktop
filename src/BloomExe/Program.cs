@@ -223,6 +223,12 @@ namespace Bloom
 					if (IsBloomBookOrder(args))
 					{
 						skipReleaseToken = HandleDownload(args[0], skipReleaseToken);
+						// After BloomLibrary initiates a download in response to a query from Bloom, it starts a new
+						// Bloom to handle the download.  The new Bloom gets here and was dying because it could not
+						// acquire the token below.  It needs to just exit quietly because its work is done.  See
+						// https://silbloom.myjetbrains.com/youtrack/issue/BL-3822.
+						if (skipReleaseToken)
+							return 0;
 					}
 
 					if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
