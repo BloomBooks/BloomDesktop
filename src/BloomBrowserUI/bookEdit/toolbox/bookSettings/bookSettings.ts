@@ -1,4 +1,6 @@
-﻿///<reference path="../../../typings/axios/axios.d.ts"/>
+﻿"use strict";
+
+///<reference path="../../../typings/axios/axios.d.ts"/>
 import axios = require('axios');
 import * as JQuery from 'jquery';
 import * as $ from 'jquery';
@@ -37,30 +39,33 @@ function loadPageOptions(){
     var page = getPage().find('.bloom-page')[0];
     var initialOptions = page.getAttribute("data-page-layout-options") || "";
 
-     $(page).find('.pageLayoutOptions div').each( (index, element) => {
+    const optionDivs = $(page).find('.pageLayoutOptions div');
+     if(optionDivs.length > 0) {
+        $('.pageLayoutOptions').empty();
+        optionDivs.each( (index, element) => {
+            var wiredUpOptionControls = $(element).clone(false);
 
-         var localCopy = $(element).clone(false);
+            //load the checkboxes according to the current value of the page's data-page-layout-options
+            const key = $(wiredUpOptionControls).data('option');
+            const checkbox:HTMLInputElement = <HTMLInputElement>$(wiredUpOptionControls).find('input')[0];
+            checkbox.checked = initialOptions.indexOf(key) > -1;
 
-        //load the checkboxes according to the current value of the page's data-page-layout-options
-        const key = $(localCopy).data('option');
-        const checkbox:HTMLInputElement = <HTMLInputElement>$(localCopy).find('input')[0];
-        checkbox.checked = initialOptions.indexOf(key) > -1;
+            //when the user clicks on something, update the page's data
+            $(wiredUpOptionControls).click((event) => {
 
-        //when the user clicks on something, update the page's data
-        $(localCopy).click((event) => {
+                const page = getPage().find('.bloom-page')[0];
+                let currentOptions = page.getAttribute("data-page-layout-options") || "";
+                currentOptions = currentOptions.replace(key,"").trim();
 
-            const page = getPage().find('.bloom-page')[0];
-            let currentOptions = page.getAttribute("data-page-layout-options") || "";
-            currentOptions = currentOptions.replace(key,"").trim();
+                if(checkbox.checked) {
+                    currentOptions += " "+ key;
+                }
+                page.setAttribute("data-page-layout-options", currentOptions);
+            });
 
-            if(checkbox.checked) {
-                currentOptions += " "+ key;
-            }
-            page.setAttribute("data-page-layout-options", currentOptions);
+            $('.pageLayoutOptions').append(wiredUpOptionControls);
         });
-
-        $('.pageLayoutOptions').append(localCopy);
-    })
+    }
 }
 
 export function handleBookSettingCheckboxClick(clickedButton: any) {

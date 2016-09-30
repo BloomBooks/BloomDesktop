@@ -1,7 +1,36 @@
 ﻿#bookSettingsTool{
+    margin-left: 10px;
     a{
-        margin-top: 3em;
         display: block;
+    }
+
+    h4.first {
+        margin-top: 10px;
+        margin-bottom: 14px;
+    }
+    h4{
+        margin-bottom: 14px;
+        margin-top: 20px;
+        font-size: 10pt;
+    }
+    .optionCheckbox{
+        margin-bottom:9px;
+    }
+    p {
+        margin-top: 0;
+    }
+    @IndentForWrappingLabel: 22px;
+    input[type="checkbox"]{
+        left: -3px;// left align with the heading
+        top: -2px;
+        position: relative;
+        margin-right: -1 * @IndentForWrappingLabel; //this trick gets the following label to be able to wrap long translated text, properly indented
+        vertical-align: top;
+    }
+    label{
+        display: inline-block;
+        margin-left: @IndentForWrappingLabel;
+        margin-right: 1em;
     }
 }
 

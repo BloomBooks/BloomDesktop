@@ -4,9 +4,10 @@
 		=englishLabel
 	br
 mixin checkbox(key, i18nKey, englishLabel)
-	input(type='checkbox', name=key, value=theValue, onClick='FrameExports.handleBookSettingCheckboxClick(this);')
+	input(type='checkbox', name=key, onClick='FrameExports.handleBookSettingCheckboxClick(this);')
 	label(data-i18n=i18nKey)
 		=englishLabel
+
 mixin text(i18nKey, englishText)
 	p(data-i18n=i18nKey)
 		=englishText
@@ -21,9 +22,15 @@ html
 			img(src="/bloom/bookEdit/toolbox/bookSettings/icon.svg")
 		div(data-panelId='bookSettingsTool')
 			div#bookSettingsTool
+				h4(data-18n='EditTab.Toolbox.Settings.PageOptions.Label').first Page Options
+				.pageLayoutOptions
+					//this gets replaced by options, where there are any, by bookSettings.ts
+					div(data-18n='EditTab.Toolbox.Settings.PageOptions.NoOptions') This page has no options.
+
 				form.bookSettings.showOnlyWhenBookWouldNormallyBeLocked
+					h4(data-18n='EditTab.Toolbox.Settings.ModeOptions.Label') Mode
 					+text('EditTab.Toolbox.Settings.UnlockShellBookIntroductionText','Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.')
 					+checkbox('unlockShellBook', 'EditTab.Toolbox.Settings.Unlock', 'Allow changes to this shellbook')
-				a(data-i18n='EditTab.Toolbox.Zoom.Reset', href="javascript:window.FrameExports.handleResetZoom(this);") Reset Zoom
-				h4 Page Options
-				.pageLayoutOptions
+
+				h4(data-18n='EditTab.Toolbox.Settings.DisplayOptions.Label') Display
+				a(data-i18n='EditTab.Toolbox.Settings.Zoom.Reset', href="javascript:window.FrameExports.handleResetZoom(this);") Reset Zoom

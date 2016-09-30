@@ -68,10 +68,11 @@ mixin block-licenseAndCopyright
 				| {License Notes}
 
 
-mixin checkbox(key, i18nKey, englishLabel)
+mixin optionCheckbox(key, i18nKey, englishLabel)
+	//NB: a good pattern is to put the input inside of the label. But something, probably our HTMLTidy, is removing the checkbox when you do that
 	.optionCheckbox(data-option=key)
-		input(type='checkbox')
-		label(data-i18n=i18nKey)
+		input(id=key type='checkbox')
+		label(for=key data-i18n=i18nKey)
 			=englishLabel
 
 //- -------------------------------------------------------------------------------
@@ -93,9 +94,10 @@ mixin factoryStandard-outsideFrontCover
 	+page-cover('Front Cover')(data-export='front-matter-cover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
 
 		.pageLayoutOptions(style="display:none")
-			+checkbox('showN1Title', 'Options.showN1Title', 'Show National Language 1 Title')
-			+checkbox('showN2Title', 'Options.showN2Title', 'Show National Language 2 Title')
-			+checkbox('showLangNames', 'Options.showLangNames', 'Show Language Name(s)')
+			+optionCheckbox('FrontCover.ShowN1Title', 'EditTab.Toolbox.Settings.PageOptions.FrontCover.ShowN1Title', 'Show National Language 1 Title')
+			+optionCheckbox('FrontCover.ShowN2Title', 'EditTab.Toolbox.Settings.PageOptions.FrontCover.ShowN2Title', 'Show National Language 2 Title')
+			+optionCheckbox('FrontCover.ShowLanguageNames', 'EditTab.Toolbox.Settings.PageOptions.FrontCover.ShowLanguageNames', 'Show Language Name(s)')
+			// not ready yet: need the qtip to update when this changes +checkbox('FrontCover.ShowTopic', 'EditTab.Toolbox.Settings.PageOptions.FrontCover.ShowTopic', 'Show Topic')
 
 		//- enhance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
 		//- 	+field-matter('bookTitle').Title-On-Cover-style

@@ -160,6 +160,21 @@ namespace BloomTests
 		}
 
 		[Test]
+		public void SaveAsHTM_HasTypicalLabelCheckboxPattern_DoesNotRemoveCheckbox()
+		{
+			var pattern = "<label><input type='checkbox'/>Hello</label>";
+			var dom = new XmlDocument();
+			dom.LoadXml("<!DOCTYPE html><html><body>" +
+				pattern +
+				"</body></html>");
+			using (var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				AssertThatXmlIn.HtmlFile(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//input", 1);
+			}
+		}
+
+		[Test]
 		public void GetXmlDomFromHtml_HasBrTags_TagsNotDoubled()
 		{
 			const string html = "<!DOCTYPE html><html><head></head><body><div><br></br></div></body></html>";
