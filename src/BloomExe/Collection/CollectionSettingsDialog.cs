@@ -266,12 +266,7 @@ namespace Bloom.Collection
 				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
 					continue;
 
-				var labelToShow = pack.Key;
-				if (labelToShow == "Factory")
-				{
-					labelToShow = "Paper Saver";
-				}
-				labelToShow = LocalizationManager.GetDynamicString("Bloom","CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."+labelToShow, labelToShow, "Name of a Front/Back Matter Pack");
+				var labelToShow = LocalizationManager.GetDynamicString("Bloom","CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."+pack.Key, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
 				var item = _xmatterList.Items.Add(labelToShow);
 				item.Tag = pack;
 				if(pack.Key == _collectionSettings.XMatterPackName)

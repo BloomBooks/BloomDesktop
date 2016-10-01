@@ -1,0 +1,15 @@
+
+include ../bloom-xmatter-mixins.jade
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title Super Paper-Saver Front & Back Matter
+		+stylesheets('SuperPaperSaver-XMatter.css')
+	body
+		+factoryStandard-outsideFrontCover
+		+factoryStandard-creditsInsideFrontCover
+		+standard-titlePage-back-cover
+		+factoryStandard-outsideBackCover
