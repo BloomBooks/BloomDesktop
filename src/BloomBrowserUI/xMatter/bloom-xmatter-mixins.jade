@@ -151,23 +151,35 @@ mixin credits-contents
 		// not yet +field-credits-branding
 
 mixin factoryStandard-titlePage
-	// TITLE PAGE
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
-		+field-prototypeDeclaredExplicity#titlePageTitleBlock
-			label.bubble Book title in {lang}
-			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
-		+field-prototypeDeclaredExplicity#originalContributions
-			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
-			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
-		+field-prototypeDeclaredExplicity#funding
-			label.bubble Use this to acknowledge any funding agencies.
-			+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
-		#languageInformation.Content-On-Title-Page-style
-			.languagesOfBook(data-book='languagesOfBook')
-			//- review: can we get rid of these "langName" classes?
-			.langName('data-library'='dialect')
-			.langName(data-library='languageLocation').bloom-writeOnly
-		+field-title-page-branding
+		+title-page-contents
+
+mixin standard-titlePage-inside-front-cover
+	+page-xmatter('Inside Front Cover').cover.coverColor.titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#aacd48aa-aaab-4a07-afd4-6a24d03983aa
+		+title-page-contents
+
+mixin standard-creditsPage-back-cover
+	//re data-export: if we export this, we still want to export it as front matter
+	+page-xmatter('Inside Back Cover').cover.coverColor.credits.bloom-backMatter(data-export='front-matter-credits-page')&attributes(attributes)#bbcd48aa-bbab-4a07-afd4-6a24d03983bb
+		+credits-contents
+
+mixin title-page-contents
+	// TITLE PAGE
+	+field-prototypeDeclaredExplicity#titlePageTitleBlock
+		label.bubble Book title in {lang}
+		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+	+field-prototypeDeclaredExplicity#originalContributions
+		label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
+		+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
+	+field-prototypeDeclaredExplicity#funding
+		label.bubble Use this to acknowledge any funding agencies.
+		+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+	#languageInformation.Content-On-Title-Page-style
+		.languagesOfBook(data-book='languagesOfBook')
+		//- review: can we get rid of these "langName" classes?
+		.langName('data-library'='dialect')
+		.langName(data-library='languageLocation').bloom-writeOnly
+	+field-title-page-branding
 
 mixin standard-blankInsideFrontCover
 	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
