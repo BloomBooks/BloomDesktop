@@ -112,8 +112,8 @@ namespace Bloom
 							typeof(AddOrChangePageApi),
 							typeof(BloomWebSocketServer),
 							typeof(KeybordingConfigApi),
-							typeof(ImageApi)
-							typeof(BrandingApi),
+							typeof(ImageApi),
+							typeof(BrandingApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
