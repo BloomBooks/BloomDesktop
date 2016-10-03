@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using L10NSharp;
 
 namespace Bloom.Book
@@ -31,6 +32,34 @@ namespace Bloom.Book
 			}
 		}
 
+		public string EnglishLabel
+		{
+			get
+			{
+				var x = Path.GetFileName(PathToFolder);
+				var end = x.ToLowerInvariant().IndexOf("-xmatter");
+				var label =  x.Substring(0, end);
+				if (label == "Factory") //historical name
+				{
+					label= "PaperSaver";
+				}
+				return SplitCamelCase(label);
+			}
+		}
+
+		// from http://stackoverflow.com/a/5796793/723299
+		private static string SplitCamelCase(string str)
+		{
+			return Regex.Replace(
+				Regex.Replace(
+					str,
+					@"(\P{Ll})(\P{Ll}\p{Ll})",
+					"$1 $2"
+				),
+				@"(\p{Ll})(\P{Ll})",
+				"$1 $2"
+			);
+		}
 		public string GetDescription()
 		{
 			const string desc = "description";
