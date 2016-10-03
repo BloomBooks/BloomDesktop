@@ -487,6 +487,12 @@ namespace Bloom.Api
 					return true;
 				}
 			}
+			if (!File.Exists(localPath) && info.RawUrl.Contains("%25"))
+			{
+				// possibly doubly encoded?  decode one more time and try.
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3835.
+				path = System.Web.HttpUtility.UrlDecode(localPath);
+			}
 			if (!File.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
