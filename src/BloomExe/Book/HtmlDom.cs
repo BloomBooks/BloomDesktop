@@ -946,16 +946,15 @@ namespace Bloom.Book
 				var match = regex.Match(styleRule);
 				if (match.Groups.Count == 2)
 				{
-					return UrlPathString.CreateFromUrlEncodedString(match.Groups[1].Value.Trim(new[] {'\'', '"'}));
+					return UrlPathString.CreateFromUrlEncodedString(match.Groups[1].Value.Trim(new[] { '\'', '"' }));
 				}
 			}
 			//we choose to return this instead of null to reduce errors created by things like 
 			// HtmlDom.GetImageElementUrl(element).UrlEncoded. If we just returned null, that has to be written
 			// as something that checks for null, like:
 			//  var url = HtmlDom.GetImageElementUrl(element). if(url!=null) url.UrlEncoded
-			return UrlPathString.CreateFromUnencodedString("");
+			return UrlPathString.CreateFromUnencodedString(string.Empty);
 		}
-
 
 		/// <summary>
 		/// Sets the url attribute either of an img (the src attribute) 

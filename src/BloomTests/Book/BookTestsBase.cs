@@ -56,6 +56,8 @@ namespace BloomTests.Book
 			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
 			_metadata = new BookInfo(_tempFolder.Path, true);
 			_storage.SetupGet(x => x.MetaData).Returns(_metadata);
+			_storage.Setup(x => x.HandleRetiredXMatterPacks(It.IsAny<HtmlDom>(), It.IsAny<string>()))
+				.Returns((HtmlDom dom, string y) => { return y == "BigBook" ? "Factory" : y; });
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();

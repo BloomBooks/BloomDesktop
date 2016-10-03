@@ -547,6 +547,7 @@
     <Compile Include="web\controllers\PageTemplatesApi.cs" />
     <Compile Include="web\controllers\KeybordingConfigAPI.cs" />
     <Compile Include="web\controllers\BookSettingsApi.cs" />
+    <Compile Include="web\controllers\BrandingApi.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersApi.cs" />

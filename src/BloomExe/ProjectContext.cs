@@ -113,6 +113,7 @@ namespace Bloom
 							typeof(BloomWebSocketServer),
 							typeof(KeybordingConfigApi),
 							typeof(ImageApi)
+							typeof(BrandingApi),
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -279,6 +280,7 @@ namespace Bloom
 			_scope.Resolve<BookSettingsApi>().RegisterWithServer(server);
 			_scope.Resolve<ImageApi>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
+			_scope.Resolve<BrandingApi>().RegisterWithServer(server);
 		}
 
 

@@ -197,6 +197,12 @@ namespace Bloom.Api
 		{
 			var localPath = GetLocalPathWithoutQuery(info);
 
+			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
+			if(localPath.IndexOf("api/branding") > 20) // this 20 is just arbitrary... the point is, if it doesn't start with api/branding, it is bogus
+			{
+				return false;
+			}
+
 			if (localPath.ToLower().StartsWith("api/"))
 			{
 				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});

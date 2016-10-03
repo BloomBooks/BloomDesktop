@@ -1851,6 +1851,12 @@
         <seg>Factory</seg>
       </tuv>
     </tu>
+	<tu tuid="TemplateBooks.PageLabel.Super Paper Saver">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Super Paper Saver</seg>
+      </tuv>
+    </tu>
     <tu tuid="TemplateBooks.PageLabel.Paper Saver">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">

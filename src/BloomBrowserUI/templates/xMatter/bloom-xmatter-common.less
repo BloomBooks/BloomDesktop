@@ -3,9 +3,14 @@
 
 @XMatterPackName: "unknown";
 
+//This hack is used to localize the xMatter label. data-after-content is set in bloomEditing.ts
 .bloom-frontMatter, .bloom-backMatter {
+    .pageLabel:before {
+        content: "@{XMatterPackName}";
+        display: none;
+    }
     .pageLabel:after {
-        content: ": @{XMatterPackName} Front/Back Matter";
+        content: ": " attr(data-after-content);
     }
 }
 
@@ -23,22 +28,6 @@
             /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
             max-width: @PageWidth - (2 * @MarginOuter);
         }
-    }
-    .SetMarginBoxDevice(@PageWidth, @PageHeight) {
-		height: @PageHeight ;
-		width: @PageWidth;
-		IMG {
-			max-width: @PageWidth ;
-		}
-		top:0;
-		left:0 !important;
-	}
-    .Device16x9Portrait& {
-        //border:thick solid purple;
-        .SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
-    }
-    .Device16x9Landscape& {
-        .SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
     }
     .A4Portrait& {
         .SetMarginBoxCover(@A4Portrait-Height, @A4Portrait-Width);
@@ -83,7 +72,7 @@
 
 .insideFrontCover {
     .bloom-content1 {
-        display: block;
+        display: inherit;
     }
     .bloom-editable {
         height: 100%;
@@ -94,9 +83,6 @@
     display: inline;
 }
 
-.Device16x9Landscape.frontCover, .Device16x9Portrait.frontCover{
-
-}
 .frontCover {
     @BottomRowHeight: 20px;
     @MarginBetweenMajorItems: 15px;
@@ -111,6 +97,8 @@
     }
     .bloom-translationGroup.bookTitle {
         flex: 0 0 auto; // how this behaves for the marginBox flex layout
+        order: 0; // top of the page
+
         //within this, we also need flex, so we can set the order the child edit boxes
         //independently of their appearance order in the html
         display: flex;
@@ -143,73 +131,100 @@
         }
     }
     .placeholder, .bloom-imageContainer {
-        order: 1;
+        order: 1; //second part of the page, after the title
         flex: 1 1 auto;
         margin-top: @MarginBetweenMajorItems;
         margin-bottom: @MarginBetweenMajorItems;
     }
-    .creditsWrapper {
-        order: 2;
-        flex: 0 0 auto;
-        .bloom-editable.smallCoverCredits {
-            display: inherit;
-            text-align: center;
-            line-height: 1.7em;
-            min-height: 1.7em;
-            height: auto;
-        }
-    }
+
     .bottomBlock {
         flex: 0 0 auto;
-        order: 4;
-        height: 2em;
-        .coverBottomBookTopic {
-            position: absolute;
-            bottom: 7px;
-            right: 0;
-            height: @BottomRowHeight;
+        order: 2; // third part of the page, after title and main picture
 
-            text-align: right;
-            width: 6cm;
-            .bloom-contentNational1 {
-                display: inline !important;
-                bottom: -4px;
-                padding-right: 1px;
-                text-align: right;
-            }
+        // we want two columns: the first is for the optional branding logo, the second is for everything else
+        display: flex;
+        flex-direction: row;
+
+        //branding will often be empty, if there is no front cover logo
+        .branding {
+            order: 0; // first (left) in the flex list
+            margin: 0; //unlike a long of logo placements, we're not trying to center this one with left/right auto margins
+            margin-right: 10px; // this only has an effect if the image is there, beecause in the html, we set display:none if the image isn't found
         }
 
-        .coverBottomBookTopic {
-            .bloom-editable {
-                margin-top: 0;
-            }
-            .bloom-contentNational2 {
-                color: gray;
-            }
-            .bloom-content1 {
-                &:not(.bloom-contentNational1) {
-                    color: gray;
-                }
-            }
-        }
+        // this contains the smallCoverCredits text box row, followed by the row that has the language names and topic
+        .bottomTextContent{
+            flex: 1 0 auto; // this element is happy to take up space relative to its parent, bottomBlock
+            order: 1; // after the optional branding logo
 
-        .publishMode {
-            .coverBottomBookTopic {
-                .bloom-contentNational2 {
-                    display: none;
+            //this block is flex box of 2 rows
+            display: flex;
+            flex-direction: column;
+
+            .creditsRow {
+                .bloom-editable.smallCoverCredits {
+                    display: inherit;
+                    text-align: center;
+                    line-height: 1.7em;
+                    min-height: 1.7em;
+                    height: auto;
                 }
-                .bloom-content1 {
-                    &:not(.bloom-contentNational1) {
-                        display: none;
+            }
+            .bottomRow {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+
+                &[data-have-topic="false"] {
+                    .coverBottomLangName {
+                        //since there is no topic, center the language name.
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                }
+                .coverBottomLangName {
+                    line-height: 1.6em !important;
+                }
+
+                .coverBottomBookTopic {
+                    height: @BottomRowHeight;
+                    min-width: 1px; //without this, we don't get the qtip that lets you choose a topic
+                    text-align: right;
+                    .bloom-contentNational1 {
+                        display: inline !important;
+                        bottom: -4px;
+                        padding-right: 1px;
+                        text-align: right;
+                    }
+                }
+
+                .coverBottomBookTopic {
+                    .bloom-editable {
+                        margin-top: 0;
+                    }
+                    .bloom-contentNational2 {
+                        color: gray;
+                    }
+                    .bloom-content1 {
+                        &:not(.bloom-contentNational1) {
+                            color: gray;
+                        }
+                    }
+                }
+
+                .publishMode {
+                    .coverBottomBookTopic {
+                        .bloom-contentNational2 {
+                            display: none;
+                        }
+                        .bloom-content1 {
+                            &:not(.bloom-contentNational1) {
+                                display: none;
+                            }
+                        }
                     }
                 }
             }
-        }
-
-        .coverBottomLangName {
-            position: absolute;
-            left: 0;
-            line-height: 1.6em !important;
         }
     }
 }
@@ -222,7 +237,7 @@
         //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
         &.bloom-contentNational1 {
             //NB: we show the national language even if this is a monolingual book
-            display: block;
+            display: inherit;
             font-size: 120%;
             //min-height: 2em;
             line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnท             line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test
@@ -232,7 +247,7 @@
         //   which we can tell because Bloom will stick a "bloom-content3" on the appropriate element
         //NOPE: .bloom-contentNational2 {
         &.bloom-content3 {
-            display: block;
+            display: inherit;
         }
         &.bloom-content1 {
             //main title
@@ -413,8 +428,6 @@ BODY[bookcreationtype="translation"] {
 
     #languageInformation {
         width: 100%;
-        position: absolute;
-        bottom: 0;
         .languagesOfBook {
         }
         //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
@@ -435,8 +448,27 @@ BODY[bookcreationtype="translation"] {
 }
 
 .outsideBackCover .bloom-editable {
-    height: 100%;
+    height: inherit; // let this shrink to make room for branding at bottom, if present
     text-align: center;
+}
+
+// we might end up with some branding that isn't supposed to be anchored at the bottom, but at the momement, this is all we have
+.branding {
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    width: auto;
+}
+
+.outsideBackCover{
+    .marginBox {
+        display: flex;
+        flex-direction: column;
+
+        .branding {
+            margin-top: 10px;
+        }
+    }
 }
 
 //don't put this under any particular page, you don't know where some xmatter pack will want it
