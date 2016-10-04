@@ -467,5 +467,47 @@ namespace BloomTests.web
 				Assert.That(transaction.ReplyContents, Is.EqualTo(".miscStylesCssTest{}"));
 			}
 		}
+
+		[Test]
+		public void HandleDoubleEncodedUrls()
+		{
+			// https://silbloom.myjetbrains.com/youtrack/issue/BL-3835 describes a problem that can occur when
+			// Url encoded filenames are stored for the coverImage data.  One of the uploaded books
+			// in the library has coverImage data stored as
+			// <div data-book="coverImage" lang="*">
+			//     The%20Moon%20and%20The%20Cap_Cover.png
+			// </div>
+			// and the image file was not being found by the server because a second level of encoding was
+			// applied before requesting the file.  So this test arbitrarily applies a double level of Url
+			// encoding (the third time) to ensure that the server can handle it.
+			using (var server = CreateImageServer())
+			{
+				Directory.CreateDirectory(_collectionPath);
+				var txtFile = Path.Combine(_collectionPath, "File With Spaces.txt");
+				const string testData = @"This is a test!\r\n";
+				File.WriteAllText(txtFile, testData);
+
+				// no Url encoding of spaces fed to server
+				var url = txtFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url);
+				server.MakeReply(transaction);
+				Assert.That(transaction.ReplyContents, Is.EqualTo(testData));
+
+				// single level of Url encoding fed to server
+				var encUrl = txtFile.ToLocalhost().Replace(" ", "%20");		// ToLocalHost() does partial encoding, but not for spaces.
+				var encTransaction = new PretendRequestInfo(encUrl);
+				Assert.That(encTransaction.RawUrl.Contains("%20"), Is.True);
+				server.MakeReply(encTransaction);
+				Assert.That(encTransaction.ReplyContents, Is.EqualTo(testData));
+
+				// double level of Url encoding fed to server
+				var enc2TxtFile = txtFile.Replace(" ", "%20");		// encodes spaces
+				var enc2Url = enc2TxtFile.ToLocalhost();			// double encodes spaces
+				var enc2Transaction = new PretendRequestInfo(enc2Url);
+				Assert.That(enc2Transaction.RawUrl.Contains("%2520"), Is.True);
+				server.MakeReply(enc2Transaction);
+				Assert.That(enc2Transaction.ReplyContents, Is.EqualTo(testData));
+			}
+		}
 	}
 }

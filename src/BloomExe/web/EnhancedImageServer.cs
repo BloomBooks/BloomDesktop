@@ -466,6 +466,34 @@ namespace Bloom.Api
 					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
 			}
 
+			if (!File.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
+			{
+				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
+				// template page, look for that thumbnail in the book that is the template source,
+				// rather than in the folder that stores the page choose dialog HTML and code.
+				var templatePath = Path.Combine(_bookSelection.CurrentSelection.FindTemplateBook().FolderPath,
+					localPath.Substring("pageChooser/".Length));
+				if (File.Exists(templatePath))
+				{
+					info.ReplyWithImage(templatePath);
+					return true;
+				}
+			}
+			// Use '%25' to detect that the % in a Url encoded character (for example space encoded as %20) was encoded as %25.
+			// In this example we would have %2520 in info.RawUrl and %20 in localPath instead of a space.  Note that if an
+			// image has a % in the filename, like 'The other 50%', and it isn't doubly encoded, then this shouldn't be a
+			// problem because we're triggering here only if the file isn't found.
+			if (!File.Exists(localPath) && info.RawUrl.Contains("%25"))
+			{
+				// possibly doubly encoded?  decode one more time and try.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3835.
+				// Some existing books have somehow acquired Url encoded coverImage data like the following:
+				// <div data-book="coverImage" lang="*">
+				//     The%20Moon%20and%20The%20Cap_Cover.png
+				// </div>
+				// This leads to data being stored doubly encoded in the program's run-time data.  The coverImage data is supposed to be
+				// Html/Xml encoded (using &), not Url encoded (using %).
+				path = System.Web.HttpUtility.UrlDecode(localPath);
+			}
 			if (!File.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
