@@ -56,6 +56,18 @@
             "userDataDir": "${workspaceRoot}/output/chrome"
             //,"diagnosticLogging": true
         },
+        {
+            "name": "Launch Linux Chromium",
+            "type": "chrome",
+            "request": "launch",
+            "externalConsole": true, // so console.log shows up in vscode "Debug Console"
+            "runtimeExecutable": "/usr/bin/chromium-browser",
+            "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
+            "webRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/output/chrome"
+            //,"diagnosticLogging": true
+        },
         {   // Note: you have to launch the test runner separately (karma start --browsers Chrome)
             // and you may have to do a browser REFRESH before breakpoints are caught
             // Enhance: could we get it to attach to the chrome that karma starts? Maybe need to have kara start one with the debug port open?
