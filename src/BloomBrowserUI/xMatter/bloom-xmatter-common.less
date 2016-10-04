@@ -70,9 +70,6 @@
     }
 }
 
-.outsideFrontCover[data-page-options*='showLangNames'] {
-    border: solid thick yellow;
-}
 .insideFrontCover {
     .bloom-content1 {
         display: inherit;
@@ -98,7 +95,8 @@
     .Cover-Default-style {
         font-size: 12pt;
     }
-    .bloom-translationGroup.bookTitle {
+
+    .bookTitle {
         flex: 0 0 auto; // how this behaves for the marginBox flex layout
         //within this, we also need flex, so we can set the order the child edit boxes
         //independently of their appearance order in the html
@@ -111,26 +109,38 @@
             //a bit confusingly (for me), text-align:center stops working because of the flex layout, so we need this:
             justify-content: center;
 
-            //NB: THe order here is important. bloom-content1 should be last so that if a box is *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections), we want the  bloom-content1 rule to win.
-            &.bloom-contentNational1 {
-                //NB: we show the national language even if this is a monolingual book
+            &.bloom-contentNational1  {
+                //NB: we show the title in national language(s) according to the pageLayoutOptions, independent of the
+                // mono/bi/tri lingual settings of the book, which are for the *content*, not the metadata.
                 order: 1;
                 display: block; // don't want to inherit flex (BL-2681), but need to override display:none for inactive languages
             }
-            //...but we show the regional language only if the book is tri-lingual,
-            //   which we can tell because Bloom will stick a "bloom-content3" on the appropriate element
-            //NOPE: .bloom-contentNational2 {
-            &.bloom-content3 {
-                display: block; // don't want to inherit flex (BL-2681), but need to override display:none for inactive languages
+            &.bloom-contentNational2  {
                 order: 2;
+                display: block;
             }
+            //NB: THe order here is important. bloom-content1 should be last so that if a box is *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections), we want the  bloom-content1 rule to win.
             &.bloom-content1 {
                 //main title
                 order: 0;
-                display: block; // don't want to inherit flex (BL-2681), but need to override display:none for inactive languages
+                display: block;
             }
         }
     }
+
+    //Respond to pageLayoutOptions Settings
+    &:not([data-page-layout-options*='FrontCover.ShowN1Title']) .bookTitle .bloom-contentNational1{
+        display:none;
+    }
+
+    &:not([data-page-layout-options*='FrontCover.ShowN2Title']) .bookTitle .bloom-contentNational2{
+        display:none;
+    }
+
+    &:not([data-page-layout-options*='FrontCover.ShowLanguageNames']) .coverBottomLangName {
+        display:none;
+    }
+
     .placeholder, .bloom-imageContainer {
         order: 1;
         flex: 1 1 auto;
@@ -200,95 +210,6 @@
             left: 0;
             line-height: 1.6em !important;
         }
-    }
-}
-
-.xfrontCover {
-    @BottomRowHeight: 20px;
-    @MarginBetweenMinorItems: 5px;
-    @MarginBetweenMajorItems: 15px;
-    .bookTitle {
-        //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
-        &.bloom-contentNational1 {
-            //NB: we show the national language even if this is a monolingual book
-            display: inherit;
-            font-size: 120%;
-            //min-height: 2em;
-            line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnท             line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test
-            margin-bottom: @MarginBetweenMinorItems;
-        }
-        //...but we show the regional language only if the book is tri-lingual,
-        //   which we can tell because Bloom will stick a "bloom-content3" on the appropriate element
-        //NOPE: .bloom-contentNational2 {
-        &.bloom-content3 {
-            display: inherit;
-        }
-        &.bloom-content1 {
-            //main title
-            display: inherit;
-            font-size: 250%;
-            line-height: 1.4em; //1.4em is the minimum to show ทไปทั่วพื้  without clipping. (Which we don't really *have* to support by default; the user could change the line-height.)
-            margin-bottom: @MarginBetweenMinorItems;
-        }
-
-        margin-bottom: @MarginBetweenMajorItems;
-    }
-    .bloom-imageContainer {
-        height: 60%;
-        margin-bottom: @MarginBetweenMajorItems;
-    }
-    .bloom-editable.smallCoverCredits {
-        display: inherit;
-        text-align: center;
-        line-height: 1.7em;
-        min-height: 20px;
-        height: auto;
-    }
-    .coverBottomBookTopic {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        height: @BottomRowHeight;
-
-        text-align: right;
-        width: 6cm;
-        .bloom-contentNational1 {
-            display: inline !important;
-            height: 25px !important;
-            padding-right: 1px;
-            text-align: right;
-        }
-    }
-
-    .coverBottomBookTopic {
-        .bloom-contentNational2 {
-            color: gray;
-        }
-        .bloom-content1 {
-            &:not(.bloom-contentNational1) {
-                color: gray;
-            }
-        }
-    }
-
-    .publishMode {
-        .coverBottomBookTopic {
-            .bloom-contentNational2 {
-                display: none;
-            }
-            .bloom-content1 {
-                &:not(.bloom-contentNational1) {
-                    display: none;
-                }
-            }
-        }
-    }
-
-    .coverBottomLangName {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: @BottomRowHeight;
     }
 }
 
@@ -372,6 +293,7 @@ BODY[bookcreationtype="translation"] {
     }
     text-align: center;
 
+
     //enhance: this is necessary because we're showing langs that aren't chosen for the content of the book
     #titlePageTitleBlock {
         .bloom-editable {
@@ -382,14 +304,13 @@ BODY[bookcreationtype="translation"] {
             display: block;
             //margin-bottom: @MarginBetweenMinorItems; messes up BL-1200
         }
-        //NB: we show the national language even if this is a monolingual book
-        .bloom-contentNational1 {
+        //NB: we show the title in national language(s) according to the pageLayoutOptions,
+        //not the mono/bi/tri lingual settings of the content of the book. So this says
+        //to show it, and then there are other rules to hide them
+        .bloom-contentNational1, .bloom-contentNational2 {
             display: block;
             //margin-bottom: @MarginBetweenMinorItems; messes up BL-1200
         }
-        //...but we show the regional language only if the book is tri-lingual,
-        //   which we can tell because Bloom will stick a "bloom-content3" on the appropriate element
-        //NOPE: .bloom-contentNational2 {
         .bloom-content3 {
             display: block;
         }

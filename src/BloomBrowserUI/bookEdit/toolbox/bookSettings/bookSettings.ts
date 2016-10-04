@@ -30,30 +30,32 @@ function getPageFrame(): HTMLIFrameElement {
 
 // The body of the editable page, a root for searching for document content.
 function getPage(): JQuery {
-    var page = getPageFrame();
-    if (!page) return null;
+    const page = getPageFrame();
+    if (!page) {
+        return null;
+    }
     return $(page.contentWindow.document.body);
 }
 
-function loadPageOptions(){
-    var page = getPage().find('.bloom-page')[0];
-    var initialOptions = page.getAttribute("data-page-layout-options") || "";
+function loadPageOptions() {
+    // for an example of these options, see bloom-xmatter-mixins.jade, search for pageLayoutOptions
 
-    const optionDivs = $(page).find('.pageLayoutOptions div');
+    const page = getPage().find(".bloom-page")[0];
+    const initialOptions = page.getAttribute("data-page-layout-options") || "";
+
+    const optionDivs = $(page).find(".pageLayoutOptions div");
      if(optionDivs.length > 0) {
-        $('.pageLayoutOptions').empty();
+        $(".pageLayoutOptions").empty();
         optionDivs.each( (index, element) => {
-            var wiredUpOptionControls = $(element).clone(false);
+            const wiredUpOptionControls = $(element).clone(false);
 
             //load the checkboxes according to the current value of the page's data-page-layout-options
-            const key = $(wiredUpOptionControls).data('option');
+            const key = $(wiredUpOptionControls).data("option");
             const checkbox:HTMLInputElement = <HTMLInputElement>$(wiredUpOptionControls).find('input')[0];
             checkbox.checked = initialOptions.indexOf(key) > -1;
 
             //when the user clicks on something, update the page's data
             $(wiredUpOptionControls).click((event) => {
-
-                const page = getPage().find('.bloom-page')[0];
                 let currentOptions = page.getAttribute("data-page-layout-options") || "";
                 currentOptions = currentOptions.replace(key,"").trim();
 
@@ -63,7 +65,7 @@ function loadPageOptions(){
                 page.setAttribute("data-page-layout-options", currentOptions);
             });
 
-            $('.pageLayoutOptions').append(wiredUpOptionControls);
+            $(".pageLayoutOptions").append(wiredUpOptionControls);
         });
     }
 }

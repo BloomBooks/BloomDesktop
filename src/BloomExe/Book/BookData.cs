@@ -734,7 +734,7 @@ namespace Bloom.Book
 				return;
 			}
 
-			var layoutOptions = firstPageDiv.GetOptionalStringAttribute("data-page-layout-options","");
+			var layoutOptions = firstPageDiv.GetStringAttribute("data-page-layout-options");
 			//notice, we're not even  trying to merge in multiple sources for this; we're assuming we are only reading from a single page
 			//note: we want to do this even if we just got back a null or empty string. An empty list of options is itself a declaration of the desired layout configuration.
 			data.UpdateGenericLanguageString("page-layout-options-for-xmatter", layoutOptions, false);

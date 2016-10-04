@@ -163,8 +163,7 @@ namespace BloomTests.Book
 		}
 
 		/// <summary>
-		/// Make sure that the xmatterPageLayoutOptions get pushed down into every page that 
-		/// has a data-xmatter-page-layout-options.
+		/// Make sure that the xmatterPageLayoutOptions get pushed down into every xmatter page.
 		/// </summary>
 		[Test]
 		public void UpdateFieldsAndVariables_XmatterPagesAreOutOfSync_AllGetValuesFromFirstPage()
@@ -172,8 +171,10 @@ namespace BloomTests.Book
 			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
 				</div>
-				<div class='bloom-page bloom-frontMatter' id='guid1' data-page-layout-options='one two'></div>
-				<div class='bloom-page bloom-backMatter' id='guid2' data-page-layout-options='some old value'></div>
+					<div class='bloom-page bloom-frontMatter' id='guid1' data-page-layout-options='one two'></div>
+					<div class='bloom-page bloom-backMatter' id='guid2' data-page-layout-options='some old value'></div>
+					<div class='bloom-page' id='guid3'></div>
+					<div class='bloom-page' id='guid4'  data-page-layout-options='something of my own not related to xmatter'></div>
 				</body></html>");
 			var data = new BookData(dom, _collectionSettings, null);
 			data.UpdateVariablesAndDataDivThroughDOM();
@@ -181,6 +182,10 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='page-layout-options-for-xmatter' and text()='one two']", 1);
 			//got distributed to all xmatter pages
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and @data-page-layout-options='one two']", 2);
+			//non xmatter page that didn't have this attribute is left alone
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and @data-page-layout-options]", 3);
+			//non xmatter page that had its own value for this attribute is left alone
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and @data-page-layout-options='something of my own not related to xmatter']", 1);
 		}
 
 		[Test]
