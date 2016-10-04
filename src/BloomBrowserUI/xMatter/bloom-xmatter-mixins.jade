@@ -23,6 +23,7 @@ mixin image-common(key)
 mixin image-xmatter(key)
 	+image-common(key)&attributes(attributes)
 
+
 mixin page-xmatter(label)
 	+page(label)(data-page="required singleton")&attributes(attributes)
 		block
@@ -59,17 +60,18 @@ mixin field-acknowledgments-originalVersion
 
 //use Bloom's "branding" api (see BrandingApi.cs) to get an image if it exists in the current Branding folder, selected in Settings
 mixin optional-branding-image(key)
-	img(src="/bloom/api/branding/image?id="+key+".svg" type='image/svg' onerror="this.style.display='none'")&attributes(attributes)
+	img(src="/bloom/api/branding/image?id="+key+".png" type='image/png' onerror="this.style.display='none'")&attributes(attributes)
 
 mixin field-bottom-left-branding
 	+optional-branding-image('cover-bottom-left').branding
 
-// not yet: needs styling work
-//- mixin field-credits-branding
-//- 	+optional-branding-image('credits-page').branding
+mixin field-credits-branding
+	.bottomImageWrapper
+		+optional-branding-image('credits-page').branding
 
 mixin field-title-page-branding
-	+optional-branding-image('title-page').branding
+	.bottomImageWrapper
+		+optional-branding-image('title-page').branding
 
 mixin field-cover-branding
 	+optional-branding-image('back-cover-outside').branding
@@ -144,11 +146,11 @@ mixin factoryStandard-credits-interiorPage
 		+credits-contents
 
 mixin credits-contents
+		+field-acknowledgments-originalVersion
 		+block-licenseAndCopyright
 		+field-ISBN
-		+field-acknowledgments-originalVersion
 		+field-acknowledgments-localizedVersion
-		// not yet +field-credits-branding
+		+field-credits-branding
 
 mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381

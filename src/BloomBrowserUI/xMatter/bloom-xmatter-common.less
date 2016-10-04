@@ -350,6 +350,17 @@
         //    .licenseBlock{margin-bottom: 1em;}
         //}
     }
+
+   .bottomImageWrapper{
+        width: 100%; // this allows the branding to center.
+        position: absolute;
+        bottom: 0;
+        text-align: center; // centers the child image, believe it or not
+        .branding{
+            height: 1in;
+        }
+    }
+
 }
 
 BODY[bookcreationtype="original"] {
@@ -425,6 +436,9 @@ BODY[bookcreationtype="translation"] {
     #originalContributions {
         margin-bottom: @MarginBetweenMinorItems;
     }
+    #funding {
+        margin-bottom: @MarginBetweenTitleAndFunding;
+    }
 
     #languageInformation {
         width: 100%;
@@ -441,6 +455,14 @@ BODY[bookcreationtype="translation"] {
             display: inherit;
         }
     }
+    .bottomImageWrapper{
+        width: 100%; // this allows the branding to center.
+        position: absolute;
+        bottom: 0;
+        .branding{
+            height: 1in;
+        }
+    }
 }
 
 .insideBackCover .bloom-editable {
@@ -454,7 +476,8 @@ BODY[bookcreationtype="translation"] {
 
 // we might end up with some branding that isn't supposed to be anchored at the bottom, but at the momement, this is all we have
 .branding {
-    height: auto;
+    //height: auto; might work in 3.8 when SVGs are possible, but in 3.7 we have to use PNGs so we need to declare a height:
+    height: .5in;
     margin-left: auto;
     margin-right: auto;
     width: auto;
