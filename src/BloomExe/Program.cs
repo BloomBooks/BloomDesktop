@@ -861,8 +861,9 @@ namespace Bloom
 		{
 			if (_errorHandlingHasBeenSetUp)
 				return;
-
-			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);
+			string issueTrackingUrl = "https://silbloom.myjetbrains.com/youtrack";		// location as of October 2016
+			if (IsInternetAvailable())
+				issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);
 			ExceptionReportingDialog.PrivacyNotice = string.Format(@"If you don't care who reads your bug report, you can skip this notice.
 
 When you submit a crash report or other issue, the contents of your email go in our issue tracking system, ""YouTrack"", which is available via the web at {0}. This is the normal way to handle issues in an open-source project.
@@ -879,6 +880,36 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			_errorHandlingHasBeenSetUp = true;
 		}
 
+		/// <summary>
+		/// Check whether or not the internet is currently available.
+		/// </summary>
+		/// <remarks>
+		/// credit is due to http://stackoverflow.com/questions/520347/how-do-i-check-for-a-network-connection
+		/// and https://forums.xamarin.com/discussion/19491/check-internet-connectivity.
+		/// </remarks>
+		public static bool IsInternetAvailable()
+		{
+			// The next line detects whether the computer is hooked up to a local network, wired or wireless.
+			// If it's not on a network at all, we know the Internet isn't available!
+			var networkConnected = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+			if (!networkConnected)
+				return false;
+			// Test whether we can talk to a known site of interest on the internet.  This will tell us
+			// close enough whether or not the internet is available.
+			try
+			{
+				// test site suggested by http://stackoverflow.com/a/21340180/723299
+				var iNetRequest = (HttpWebRequest)WebRequest.Create("http://www.msftncsi.com/ncsi.txt");
+				iNetRequest.Timeout = 2500;
+				var iNetResponse = iNetRequest.GetResponse();
+				iNetResponse.Close();
+				return true;
+			}
+			catch (WebException ex)
+			{
+				return false;
+			}
+		}
 
 		public static void OldVersionCheck()
 		{
