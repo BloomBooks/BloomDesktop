@@ -43,6 +43,7 @@ namespace Bloom
 				if (book.HasFatalError) //NB: we might not know yet... we don't fully load every book just to show its thumbnail
 				{
 					callback(Resources.Error70x70);
+					return;
 				}
 				Image thumb;
 				if (book.Storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb))
