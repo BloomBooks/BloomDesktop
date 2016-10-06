@@ -788,7 +788,7 @@ namespace Bloom.Book
 			foreach (XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']"))
 			{
 				var lang = e.GetAttribute("lang");
-				result.SetAlternative(lang ?? "", e.InnerText);
+				result.SetAlternative(lang ?? "", e.InnerXml);
 			}
 			return result;
 		}
@@ -829,8 +829,26 @@ namespace Bloom.Book
 				node.SetAttribute("data-book", key);
 				node.SetAttribute("lang", writingSystemId);
 			}
-			node.InnerText = form; // not InnerXml as it may contain things like SILA & LASI that are not valid XML
+			SetElementFromUserStringPreservingLineBreaks(node, form);
 			dataDiv.AppendChild(node);
+		}
+
+		public static void SetElementFromUserStringPreservingLineBreaks(XmlElement node, string form)
+		{
+			//Note: this method is a compromise... it replaces a couple instances where we were
+			//explicitly using innerText instead of innerXml, presumably on purpose. Of course that
+			//makes it impossible to have any html markup. My particular need right now (BL-3832) is to 
+			//allow <br> to get through this filter. So that's all this does. A future alternative
+			//might be to remove the filter altogether and see if there's a better way to handle
+			//whatever scenarios the filtering was designed to prevent.
+
+			// not InnerXml as it may contain things like SILA & LASI that are not valid XML
+			const string kBR = "LINEBREAKHERE";
+			var withBreaksHidden = form.Replace("<br />", kBR).Replace("<br/>", kBR);		
+			//going to innertext means we treat everything literally, for better or worse (definitely safer)
+			node.InnerText = withBreaksHidden;
+			// finally, unhide the breaks
+			node.InnerXml = node.InnerXml.Replace(kBR, "<br/>");
 		}
 
 		/// <summary>
@@ -989,6 +1007,12 @@ namespace Bloom.Book
 			return dataDiv;
 		}
 
-
+		public static string ConvertHtmlBreaksToNewLines(string html)
+		{
+			// newlines had no meaning in html-land, may well have been introduced for readability of the xml/html
+			html = html.Replace("\r", "").Replace("\n", ""); // words for /n (linux) and /r/n (windows)
+															 //now we can move from the html br to newlines for non-html use
+			return html.Replace("<br/>", Environment.NewLine).Replace("<br />", Environment.NewLine).Replace("<br>", Environment.NewLine);
+		}
 	}
 }
