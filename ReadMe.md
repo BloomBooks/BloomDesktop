@@ -164,7 +164,7 @@ At various points you will be asked for your password.
 
 		bash -c 'PATH=/opt/monodevelop/bin:$PATH; \
 			export MONO_ENVIRON="$HOME/palaso/bloom-desktop/environ"; \
-			export MONO_GAC_PREFIX=/opt/monodevelop:/opt/mono-sil:/usr:/usr/local; \
+			export MONO_GAC_PREFIX=/opt/monodevelop:/opt/mono4-sil:/usr:/usr/local; \
 			monodevelop-launcher.sh'
 
 	Correct the path in MONO_ENVIRON to point to the Bloom source code directory.
@@ -174,20 +174,20 @@ At various points you will be asked for your password.
 		cd $HOME/palaso/bloom-desktop/build
 		./install-deps # (Note the initial dot)
 
-	This will also install a custom mono version in `/opt/mono-sil`. However, to successfully
+	This will also install a custom mono version in `/opt/mono4-sil`. However, to successfully
 	use it with MonoDevelop, you'll need to do some additional steps.
 
-	Copy this script to /opt/mono-sil/bin:
+	Copy this script to /opt/mono4-sil/bin:
 
 		wget https://raw.githubusercontent.com/sillsdev/mono-calgary/develop/mono-sil
-		sudo mv mono-sil /opt/mono-sil/bin
-		sudo chmod +x /opt/mono-sil/bin/mono-sil
+		sudo mv mono4-sil /opt/mono4-sil/bin
+		sudo chmod +x /opt/mono4-sil/bin/mono-sil
 
-	Delete /opt/mono-sil/bin/mono and create two symlinks instead:
+	Delete /opt/mono4-sil/bin/mono and create two symlinks instead:
 
-		sudo rm /opt/mono-sil/bin/mono
-		sudo ln -s /opt/mono-sil/bin/mono-sgen /opt/mono-sil/bin/mono-real
-		sudo ln -s /opt/mono-sil/bin/mono-sil /opt/mono-sil/bin/mono
+		sudo rm /opt/mono4-sil/bin/mono
+		sudo ln -s /opt/mono4-sil/bin/mono-sgen /opt/mono4-sil/bin/mono-real
+		sudo ln -s /opt/mono4-sil/bin/mono-sil /opt/mono4-sil/bin/mono
 
 8. Get binary dependencies:
 
@@ -204,14 +204,14 @@ At various points you will be asked for your password.
 	`https://www.nuget.org/api/v2/`, and `http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/`
 	(not sure the second is necessary).
 
-	Add the /opt/mono-sil/ as additional runtime in MonoDevelop (`Edit -> Preferences`, `Projects/.NET Runtimes`). Currently, this is 3.0.4.1 (Oct. 2014).
+	Add the /opt/mono4-sil/ as additional runtime in MonoDevelop (`Edit -> Preferences`, `Projects/.NET Runtimes`). Currently, this is 3.0.4.1 (Oct. 2014).
 
-	When you want to run Bloom you'll have to select the /opt/mono-sil/ as current runtime (Project/Active Runtime).
+	When you want to run Bloom you'll have to select the /opt/mono4-sil/ as current runtime (Project/Active Runtime).
 
 	At this point you should be able to build the whole BloomLinux solution (right-click in
 	Solution pane, choose Build).
 
-10. You'll have to remember to redo the symlink step (end of #7) every time you install a new mono-sil package. You'll notice quickly if you forget because you get an error saying that it can't find XULRUNNER - that's an indication that it didn't source the environ file, either because the wrong runtime is selected or /opt/mono-sil/bin/mono points to mono-sgen instead of the wrapper script mono-sil.
+10. You'll have to remember to redo the symlink step (end of #7) every time you install a new mono4-sil package. You'll notice quickly if you forget because you get an error saying that it can't find XULRUNNER - that's an indication that it didn't source the environ file, either because the wrong runtime is selected or /opt/mono4-sil/bin/mono points to mono-sgen instead of the wrapper script mono4-sil.
 
 Hopefully we can streamline this process eventually.
 

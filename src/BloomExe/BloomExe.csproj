@@ -41,7 +41,7 @@
       <EnvironmentVariables>
         <Variable name="DISPLAY" value=":2" />
         <Variable name="FEEDBACK" value="off" />
-        <Variable name="MONO_PREFIX" value="/opt/mono-sil" />
+        <Variable name="MONO_PREFIX" value="/opt/mono4-sil" />
       </EnvironmentVariables>
     </EnvironmentVariables>
   </PropertyGroup>
