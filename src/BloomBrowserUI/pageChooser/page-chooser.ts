@@ -249,7 +249,15 @@ class PageChooser {
             
             // Grab all pages in this group
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
-            var pages = $(pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
+            // Creating a jquery object via $(pageData) causes any img elements in the html string to be dereferenced,
+            // which can cause the Bloom server to complain about not finding files of the form "pageChooser/read.png".
+            // So we must remove the img elements from the returned string before the conversion to a jquery object.
+            // Note that none of the img elements in the template file are needed at this point for laying out the
+            // Add Page dialog, or for creating thumbnails, so it's safe to delete them.  See
+            // https://silbloom.myjetbrains.com/youtrack/issue/BL-3819 for details of the symptoms experienced when
+            // running Bloom without this ugly hack.
+            var pageNoImg = (<string>pageData).replace(/<img[^>]*><\/img>/g, "");
+            var pages = $(pageNoImg).filter('.bloom-page[id]').filter('[data-page="extra"]');
             
             if(pages.length ==0)
             {
@@ -257,7 +265,7 @@ class PageChooser {
                 return; //don't add a group for books that don't have template pages
             }
                 
-            var dataBookArray = $( "div[data-book='bookTitle']", pageData );
+            var dataBookArray = $( "div[data-book='bookTitle']", pageNoImg );
             var groupTitle = $( dataBookArray.first() ).text();
             // Add title and container to dialog
             var groupToAdd = $(groupHTML).clone();
@@ -311,7 +319,7 @@ class PageChooser {
             if (currentId === defaultPageToSelect)
                 this._indexOfPageToSelect = index;
                 
-            // if we're looking to change the layout, grey out thumbnail corresponding to the layotu we already have
+            // if we're looking to change the layout, grey out thumbnail corresponding to the layout we already have
             if (this._forChooseLayout && currentId === this._currentPageLayout)
                 $(currentGridItemHtml).addClass('disabled');
             
