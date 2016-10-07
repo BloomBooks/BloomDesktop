@@ -66,6 +66,33 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		/// <summary>
+		/// Gets or sets the request timeout.
+		/// </summary>
+		public TimeSpan? Timeout
+		{
+			get { return _s3Config.Timeout; }
+			set { _s3Config.Timeout = value; }
+		}
+
+		/// <summary>
+		/// Gets or sets the timeout for socket read or write operations.
+		/// </summary>
+		public TimeSpan? ReadWriteTimeout
+		{
+			get { return _s3Config.ReadWriteTimeout; }
+			set { _s3Config.ReadWriteTimeout = value; }
+		}
+
+		/// <summary>
+		/// Gets or sets the maximum number of times to retry when errors occur.
+		/// </summary>
+		public int MaxErrorRetry
+		{
+			get { return _s3Config.MaxErrorRetry; }
+			set { _s3Config.MaxErrorRetry = value; }
+		}
+
+		/// <summary>
 		/// This is set during UploadBook to the URL holding files like various thumbnails, preview, etc.
 		/// It ends up in a parse.com column named "baseUrl", and the angular appends things like "/thumbnail256.png" to it.
 		/// It only contains useful information after UploadBook.
