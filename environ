@@ -1,15 +1,13 @@
 # Environment settings for running programs with the SIL version of mono
 # Set MONO_ENVIRON to this file's pathname, then run, for example,
-#    /opt/mono-sil/bin/mono --debug Bloom.exe
-# These setting assume that the packaged SIL Mono is installed in /opt/mono-sil.
-# This may well change to /opt, simplifying the script to not need to distinguish as much
-# between RUNMODE values.  (The first if below may still be needed, but not the second?)
+#    /opt/mono4-sil/bin/mono --debug Bloom.exe
+# These setting assume that the packaged SIL Mono is installed in /opt/mono4-sil.
 # Note that this file is intended to be "sourced", not "executed".
 
 # the sourcing script should cd/pushd to the directory containing this script
 BASE="$(pwd)"
 [ -z "$BUILD" ] && BUILD=Debug
-[ -z "$MONO_PREFIX" ] && MONO_PREFIX=/opt/mono-sil
+[ -z "$MONO_PREFIX" ] && MONO_PREFIX=/opt/mono4-sil
 
 # Dependency locations
 # Search for xulrunner and geckofx, select the best, and add its location to LD_LIBRARY_PATH.
@@ -43,10 +41,10 @@ fi
 if [ "$RUNMODE" = "PACKAGE" -o "$RUNMODE" = "INSTALLED" ]
 then
 	# Add packaged mono items to paths
-	PATH="/opt/mono-sil/bin:${PATH}"
-	LD_LIBRARY_PATH="/opt/mono-sil/lib:${LD_LIBRARY_PATH}"
-	PKG_CONFIG_PATH="/opt/mono-sil/lib/pkgconfig:${PKG_CONFIG_PATH}"
-	MONO_GAC_PREFIX="/opt/mono-sil:/usr"
+	PATH="/opt/mono4-sil/bin:${PATH}"
+	LD_LIBRARY_PATH="/opt/mono4-sil/lib:${LD_LIBRARY_PATH}"
+	PKG_CONFIG_PATH="/opt/mono4-sil/lib/pkgconfig:${PKG_CONFIG_PATH}"
+	MONO_GAC_PREFIX="/opt/mono4-sil:/usr"
 else
 	# Add locally-built mono items to paths
 	# We also add the default values for PKG_CONFIG_PATH - MonoDevelop resets the PKG_CONFIG_PATH

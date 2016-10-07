@@ -4,7 +4,7 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-export MONO_PREFIX = /opt/mono-sil
+export MONO_PREFIX = /opt/mono4-sil
 export BUILD = Release
 
 PACKAGE = bloom-desktop-unstable
@@ -76,11 +76,11 @@ override_dh_auto_install:
 # Don't export any assemblies to other packages
 override_dh_makeclilibs:
 
-# Include mono-sil in shlib dirs searched
+# Include mono4-sil in shlib dirs searched
 override_dh_shlibdeps:
 	dh_shlibdeps -l$(MONO_PREFIX)/lib
 
-# Include mono-sil in cli dirs searched
+# Include mono4-sil in cli dirs searched
 override_dh_clideps:
 	mkdir -p debian/tmp/usr && ln -s $(MONO_PREFIX)/* debian/tmp/usr/ && \
 	PATH=$(MONO_PREFIX)/bin:$(PATH) \
