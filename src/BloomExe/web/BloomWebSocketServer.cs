@@ -29,33 +29,43 @@ namespace Bloom.Api
 		{
 			FleckLog.Level = LogLevel.Warn;
 			_allSockets = new List<IWebSocketConnection>();
-			_server = new WebSocketServer("ws://127.0.0.1:"+ port);
-			
-			try
+			int portNumber = Int32.Parse(port);
+			SocketException exception = null;
+			// A former BloomWebSocketServer (or another instance of Bloom) might be holding the desired port,
+			// so try up to 9 times to get a working port that lets us start the server.
+			for (int i = 0; i < 8; ++i)
 			{
-				_server.Start(socket =>
+				var portToTry = (portNumber + i).ToString();
+				_server = new WebSocketServer("ws://127.0.0.1:" + portToTry);
+				try
 				{
-					socket.OnOpen = () =>
+					_server.Start(socket =>
 					{
-						Debug.WriteLine("Backend received an request to open a BloomWebSocketServer socket");
-						_allSockets.Add(socket);
-					};
-					socket.OnClose = () =>
-					{
-						Debug.WriteLine("Backend received an request to close  BloomWebSocketServer socket");
-						_allSockets.Remove(socket);
-					};
-				});
+						socket.OnOpen = () =>
+						{
+							Debug.WriteLine("Backend received an request to open a BloomWebSocketServer socket");
+							_allSockets.Add(socket);
+						};
+						socket.OnClose = () =>
+						{
+							Debug.WriteLine("Backend received an request to close  BloomWebSocketServer socket");
+							_allSockets.Remove(socket);
+						};
+					});
+					return;
+				}
+				catch (SocketException ex)
+				{
+					exception = ex;
+				}
 			}
-			catch (SocketException ex)
-			{
-				ErrorReport.NotifyUserOfProblem(ex, "Bloom cannot start properly (cannot set up some internal communications){0}{0}" +
-					"What caused this?{0}" +
-					"Possibly another version of Bloom is running, perhaps not very obviously.{0}{0}" +
-					"What can you do?{0}" +
-					"Click OK, then exit Bloom and restart your computer.{0}" +
-					"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine);
-			}
+			ErrorReport.NotifyUserOfProblem(exception,
+				"Bloom cannot start properly (cannot set up some internal communications){0}{0}" +
+				"What caused this?{0}" +
+				"Possibly another version of Bloom is running, perhaps not very obviously.{0}{0}" +
+				"What can you do?{0}" +
+				"Click OK, then exit Bloom and restart your computer.{0}" +
+				"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine);
 		}
 
 		public void Send(string message)
