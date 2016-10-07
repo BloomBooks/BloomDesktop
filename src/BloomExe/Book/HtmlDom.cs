@@ -1010,7 +1010,7 @@ namespace Bloom.Book
 		public static string ConvertHtmlBreaksToNewLines(string html)
 		{
 			// newlines had no meaning in html-land, may well have been introduced for readability of the xml/html
-			html = html.Replace("\r", "").Replace("\n", ""); // words for /n (linux) and /r/n (windows)
+			html = html.Replace("\r", "").Replace("\n", ""); // works for \n (linux) and \r\n (windows)
 															 //now we can move from the html br to newlines for non-html use
 			return html.Replace("<br/>", Environment.NewLine).Replace("<br />", Environment.NewLine).Replace("<br>", Environment.NewLine);
 		}
