@@ -2167,7 +2167,8 @@ namespace Bloom.Book
 		public Metadata GetLicenseMetadata()
 		{
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
-			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom);
+			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom, _collectionSettings.BrandingProjectName);
+			
 			//Logger.WriteEvent("After");
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
 			return result;
