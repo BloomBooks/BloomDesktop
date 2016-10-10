@@ -111,6 +111,7 @@ namespace Bloom.Api
 			_stop = new ManualResetEvent(false);
 			_ready = new ManualResetEvent(false);
 			_listenerThread = new Thread(EnqueueIncomingRequests);
+			_listenerThread.Name = "ServerBase Listener Thread";
 		}
 
 #if DEBUG
@@ -252,8 +253,9 @@ namespace Bloom.Api
 		// to avoid race conditions modifying the _workers collection.
 		private void SpinUpAWorker()
 		{
-			_workers.Add(new Thread(RequestProcessorLoop));
-			_workers.Last().Name = "Server thread " + _workers.Count;
+			var thread = new Thread(RequestProcessorLoop);
+			thread.Name = "Server Worker Thread " + _workers.Count;
+			_workers.Add(thread);
 			_workers.Last().Start();
 		}
 
