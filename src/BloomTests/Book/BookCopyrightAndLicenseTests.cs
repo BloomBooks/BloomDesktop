@@ -77,6 +77,16 @@ namespace BloomTests.Book
 			Assert.IsTrue(creativeCommonsLicense.DerivativeRule== CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike);
 		}
 		[Test]
+		public void GetLicenseMetadata_HasCCLicenseURLWithIGOQualifier_ConvertedToFulCCLicenseObject()
+		{
+			//nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
+			string dataDivContent = @"<div lang='en' data-book='licenseUrl'>http://creativecommons.org/licenses/by/3.0/igo</div>";
+			var creativeCommonsLicense = (CreativeCommonsLicense)(GetMetadata(dataDivContent).License);
+			Assert.IsTrue(creativeCommonsLicense.AttributionRequired);
+			Assert.IsTrue(creativeCommonsLicense.CommercialUseAllowed);
+			Assert.IsTrue(creativeCommonsLicense.IntergovernmentalOriganizationQualifier);
+		}
+		[Test]
 		public void GetLicenseMetadata_HasOnlyCopyrightAndDescription_IsNullLicense()
 		{
 			//nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
@@ -226,6 +236,7 @@ namespace BloomTests.Book
 			CheckUpdateDomFromDataDiv("licenseNotes", null, description: "if licenseNotes is not in datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("licenseNotes", "", description: "if licenseNotes is empty datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("licenseNotes", "some notes", description: "if licenseNotes is in datadiv, on page the corresponding element should be a copy");
+			CheckUpdateDomFromDataDiv("licenseNotes", "line 1<br />line 2", description: "can include br in license notes", customXPath:"//div[@id='test']/div/br");
 		}
 		[Test]
 		public void CheckDataDivToPagePropagation_LicenseDescription()
@@ -233,6 +244,7 @@ namespace BloomTests.Book
 			CheckUpdateDomFromDataDiv("licenseDescription", null, description: "if licenseDescription is not in datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("licenseDescription", "", description: "if licenseDescription is empty datadiv, on page the corresponding element should be empty");
 			CheckUpdateDomFromDataDiv("licenseDescription", "some Description", description: "if licenseDescription is in datadiv, on page the corresponding element should be a copy");
+			CheckUpdateDomFromDataDiv("licenseDescription", "line 1<br />line 2", description: "can include br in description", customXPath: "//div[@id='test']/div/br");
 		}
 		[Test]
 		public void CheckDataDivToPagePropagation_LicenseImage()
@@ -285,7 +297,7 @@ namespace BloomTests.Book
 		/// <param name="lang2"></param>
 		/// <param name="lang3"></param>
 		/// <param name="description"></param>
-		private void CheckUpdateDomFromDataDiv(string key, string dataDivValue,  string lang1="en", string lang2="", string lang3="", string description=null)
+		private void CheckUpdateDomFromDataDiv(string key, string dataDivValue,  string lang1="en", string lang2="", string lang3="", string description=null, string customXPath=null)
 		{
 			if (description == null)
 				description = string.Format("{0} should be '{1}'", key, dataDivValue);
@@ -323,6 +335,10 @@ namespace BloomTests.Book
 				valuePredicate = string.IsNullOrEmpty(dataDivValue) ? "(text()='' or not(text()))" : "text()='" + dataDivValue + "'";
 			}
 			var xpath = "//div[@id='test']/*[@data-derived='" + key + "' and " + valuePredicate + "]";
+			if(!string.IsNullOrEmpty(customXPath))
+			{
+				xpath = customXPath;
+			}
 			try
 			{
 				AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
