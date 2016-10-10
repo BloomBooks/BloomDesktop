@@ -53,18 +53,18 @@ namespace Bloom.Book
 			}
 			var htmName = nameOfXMatterPack + "-XMatter.html";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
-			if(!File.Exists(PathToXMatterHtml))
+			if(!RobustFile.Exists(PathToXMatterHtml))
 			{
 				htmName = nameOfXMatterPack + "-XMatter.htm"; // pre- Bloom 3.7
 				PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			}
-			if (!File.Exists(PathToXMatterHtml))
+			if (!RobustFile.Exists(PathToXMatterHtml))
 			{
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1} (also checked .html)", htmName, directoryPath);
 				throw new ApplicationException();
 			}
 			PathToStyleSheetForPaperAndOrientation = directoryPath.CombineForPath(GetStyleSheetFileName());
-			if (!File.Exists(PathToXMatterHtml))
+			if (!RobustFile.Exists(PathToXMatterHtml))
 			{
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", GetStyleSheetFileName(), directoryPath);
 				throw new ApplicationException();
@@ -110,7 +110,7 @@ namespace Bloom.Book
 				string path = Path.GetDirectoryName(PathToXMatterHtml);
 				foreach (var file in Directory.GetFiles(path, "*.png").Concat(Directory.GetFiles(path, "*.jpg").Concat(Directory.GetFiles(path, "*.gif").Concat(Directory.GetFiles(path, "*.bmp")))))
 				{
-					File.Copy(file, FolderPathForCopyingXMatterFiles.CombineForPath(Path.GetFileName(file)), true);
+					RobustFile.Copy(file, FolderPathForCopyingXMatterFiles.CombineForPath(Path.GetFileName(file)), true);
 				}
 			}
 

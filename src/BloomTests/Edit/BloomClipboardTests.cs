@@ -1,7 +1,7 @@
 ﻿using Bloom.Workspace;
 using NUnit.Framework;
 using SIL.IO;
-using SIL.Windows.Forms.ImageToolbox;
+using RobustIO = Bloom.RobustIO;
 
 namespace BloomTests.Edit
 {
@@ -26,7 +26,7 @@ namespace BloomTests.Edit
 		public void ClipboardRoundTripWorks_Png()
 		{
 			var imagePath = GetPathToImage("LineSpacing.png");
-			using (var image = PalasoImage.FromFile(imagePath))
+			using (var image = RobustIO.PalasoImageFromFile(imagePath))
 			{
 				BloomClipboard.CopyImageToClipboard(image);
 				using (var resultingImage = BloomClipboard.GetImageFromClipboard())
@@ -44,7 +44,7 @@ namespace BloomTests.Edit
 		public void ClipboardRoundTripWorks_Bmp()
 		{
 			var imagePath = GetPathToImage("PasteHS.bmp");
-			using (var image = PalasoImage.FromFile(imagePath))
+			using (var image = RobustIO.PalasoImageFromFile(imagePath))
 			{
 				BloomClipboard.CopyImageToClipboard(image);
 				using (var resultingImage = BloomClipboard.GetImageFromClipboard())
@@ -62,7 +62,7 @@ namespace BloomTests.Edit
 		public void ClipboardRoundTripWorks_GetsExistingMetadata()
 		{
 			var imagePath = GetPathToImage("AOR_EAG00864.png");
-			using (var image = PalasoImage.FromFile(imagePath))
+			using (var image = RobustIO.PalasoImageFromFile(imagePath))
 			{
 				var preCopyLicense = image.Metadata.License.Token;
 				var preCopyCollectionUri = image.Metadata.CollectionUri;

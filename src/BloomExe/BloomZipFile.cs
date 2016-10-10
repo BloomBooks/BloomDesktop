@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
-
+using SIL.IO;
 
 namespace Bloom
 {
@@ -15,7 +15,7 @@ namespace Bloom
 
 		public BloomZipFile(string path)
 		{
-			var fsOut = File.Create(path);
+			var fsOut = RobustFile.Create(path);
 			_zipStream = new ZipOutputStream(fsOut);
 			_zipStream.SetLevel(9); //REVIEW: what does this mean?
 		}
@@ -40,7 +40,7 @@ namespace Bloom
 
 			// Zip the file in buffered chunks
 			var buffer = new byte[4096];
-			using (var streamReader = File.OpenRead(path))
+			using (var streamReader = RobustFile.OpenRead(path))
 			{
 				StreamUtils.Copy(streamReader, _zipStream, buffer);
 			}

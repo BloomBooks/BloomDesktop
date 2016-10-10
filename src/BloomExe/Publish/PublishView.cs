@@ -373,7 +373,7 @@ namespace Bloom.Publish
 					_workingIndicator.Visible = true;
 					break;
 				case PublishModel.DisplayModes.ShowPdf:
-					if (File.Exists(_model.PdfFilePath))
+					if (RobustFile.Exists(_model.PdfFilePath))
 					{
 						_pdfViewer.Visible = true;
 						_workingIndicator.Visible = false;
@@ -529,12 +529,12 @@ namespace Bloom.Publish
 			else if(_model.BookHasAudio)
 				audioSituationClass = "isTalkingBook";
 
-			var htmlContents = File.ReadAllText(previewHtmlTemplatePath)
+			var htmlContents = RobustFile.ReadAllText(previewHtmlTemplatePath)
 				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory))
 				.Replace("_AudioSituationClass_", audioSituationClass);
 
 			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
-			File.WriteAllText(previewHtmlInstancePath, htmlContents);
+			RobustFile.WriteAllText(previewHtmlInstancePath, htmlContents);
 			_epubPreviewBrowser.Navigate(previewHtmlInstancePath.ToLocalhost(), false);
 		}
 
@@ -660,14 +660,14 @@ namespace Bloom.Publish
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				printSettingsSampleName = printSettingsSamplePrefix + "Linux-" + LocalizationManager.UILanguageId + ".png";
-				if (!File.Exists(printSettingsSampleName))
+				if (!RobustFile.Exists(printSettingsSampleName))
 					printSettingsSampleName = printSettingsSamplePrefix + "Linux-en.png";
 			}
-			if (printSettingsSampleName == null || !File.Exists(printSettingsSampleName))
+			if (printSettingsSampleName == null || !RobustFile.Exists(printSettingsSampleName))
 				printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
-			if (!File.Exists(printSettingsSampleName))
+			if (!RobustFile.Exists(printSettingsSampleName))
 				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
-			if (File.Exists(printSettingsSampleName))
+			if (RobustFile.Exists(printSettingsSampleName))
 			{
 				// We display the _previewBox to show sample print settings. We need to get rid of it when the
 				// print dialog goes away. For Windows, the only way I've found to know when that happens is

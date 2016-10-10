@@ -6,6 +6,7 @@ using System.Net;
 using Bloom.Api;
 using Bloom.Collection;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
@@ -214,7 +215,7 @@ namespace Bloom.Book
 			var licenseImage = metadata.License.GetImage();
 			var imagePath = bookFolderPath.CombineForPath("license.png");
 			// Don't try to overwrite the license image for a template book.  (See BL-3284.)
-			if (File.Exists(imagePath) && IsInstalledFile(imagePath))
+			if (RobustFile.Exists(imagePath) && IsInstalledFile(imagePath))
 				return;
 			try
 			{
@@ -222,13 +223,13 @@ namespace Bloom.Book
 				{
 					using(Stream fs = new FileStream(imagePath, FileMode.Create))
 					{
-						licenseImage.Save(fs, ImageFormat.Png);
+						SIL.IO.RobustIO.SaveImage(licenseImage, fs, ImageFormat.Png);
 					}
 				}
 				else
 				{
-					if(File.Exists(imagePath))
-						File.Delete(imagePath);
+					if(RobustFile.Exists(imagePath))
+						RobustFile.Delete(imagePath);
 				}
 			}
 			catch(Exception error)

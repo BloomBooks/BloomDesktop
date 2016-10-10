@@ -7,9 +7,8 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using SIL.IO;
 using SIL.Reporting;
-using SIL.Windows.Forms.ImageToolbox;
-using File = System.IO.File;
 
 namespace Bloom.ImageProcessing
 {
@@ -76,9 +75,9 @@ namespace Bloom.ImageProcessing
 				{
 					try
 					{
-						if (File.Exists(path))
+						if (RobustFile.Exists(path))
 						{
-							File.Delete(path);
+							RobustFile.Delete(path);
 							Debug.WriteLine("RuntimeImageProcessor Successfully deleted: " + path);
 						}
 					}
@@ -114,7 +113,7 @@ namespace Bloom.ImageProcessing
 				string pathToProcessedVersion;
 				if (_originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out pathToProcessedVersion))
 				{
-					if (File.Exists(pathToProcessedVersion) &&
+					if (RobustFile.Exists(pathToProcessedVersion) &&
 						new FileInfo(originalPath).LastWriteTimeUtc <= new FileInfo(pathToProcessedVersion).LastWriteTimeUtc)
 					{
 						return pathToProcessedVersion;
@@ -158,7 +157,7 @@ namespace Bloom.ImageProcessing
 
 		private static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth)
 		{
-			using (var originalImage = PalasoImage.FromFile(originalPath))
+			using (var originalImage = RobustIO.PalasoImageFromFile(originalPath))
 			{
 				// check if it needs resized
 				if (originalImage.Image.Width <= newWidth) return false;
@@ -169,7 +168,7 @@ namespace Bloom.ImageProcessing
 
 				using (var newImg = originalImage.Image.GetThumbnailImage(newW, newH, () => false, IntPtr.Zero))
 				{
-					newImg.Save(pathToProcessedImage);
+					SIL.IO.RobustIO.SaveImage(newImg, pathToProcessedImage);
 				}
 			}
 
@@ -181,7 +180,7 @@ namespace Bloom.ImageProcessing
 		{
 			try
 			{
-				using (var originalImage = PalasoImage.FromFile(originalPath))
+				using (var originalImage = RobustIO.PalasoImageFromFile(originalPath))
 				{
 					//if it's a jpeg, we don't resize, we don't mess with transparency, nothing. These things
 					//are scary in .net. Just send the original back and wash our hands of it.
@@ -218,7 +217,7 @@ namespace Bloom.ImageProcessing
 							try
 							{
 								error = null;
-								processedBitmap.Save(pathToProcessedImage, originalImage.Image.RawFormat);
+								SIL.IO.RobustIO.SaveImage(processedBitmap, pathToProcessedImage, originalImage.Image.RawFormat);
 								break;
 							}
 							catch (Exception e)

@@ -232,7 +232,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 				// If we are passed a bloom book order, download the corresponding book and open it.
 			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookTransfer.BookOrderExtension.ToLowerInvariant()) &&
-					 File.Exists(_downloadRequest))
+					 RobustFile.Exists(_downloadRequest))
 			{
 				HandleBookOrder(_downloadRequest);
 			}
@@ -360,7 +360,7 @@ namespace Bloom.WebLibraryIntegration
 				// and we want the file name to indicate which book, so use the name of the book folder.
 				var metadataPath = BookMetaData.MetaDataPath(bookFolder);
 				var orderPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
-				File.Copy(metadataPath, orderPath, true);
+				RobustFile.Copy(metadataPath, orderPath, true);
 				parseId = "";
 				try
 				{
@@ -444,7 +444,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private static string MetaDataText(string bookFolder)
 		{
-			return File.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
+			return RobustFile.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
 		}
 
 		private string S3BookId(BookMetaData metadata)
@@ -495,7 +495,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public void HandleBookOrder(string bookOrderPath, string projectPath)
 		{
-			var metadata = BookMetaData.FromString(File.ReadAllText(bookOrderPath));
+			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookOrderPath));
 			var s3BookId = metadata.DownloadSource;
 			var bucket = BloomS3Client.ProductionBucketName; //TODO
 			_s3Client.DownloadBook(bucket, s3BookId, Path.GetDirectoryName(projectPath));
@@ -503,7 +503,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public bool IsBookOnServer(string bookPath)
 		{
-			var metadata = BookMetaData.FromString(File.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
+			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
 			return _parseClient.GetSingleBookRecord(metadata.Id) != null;
 		}
 
@@ -676,9 +676,9 @@ namespace Bloom.WebLibraryIntegration
 			{
 				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
 				publishView.MakePublishPreview();
-				if (File.Exists(publishView.PdfPreviewPath))
+				if (RobustFile.Exists(publishView.PdfPreviewPath))
 				{
-					File.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
+					RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
 				}
 			}
 			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath));

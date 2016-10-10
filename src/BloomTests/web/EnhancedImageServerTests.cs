@@ -262,11 +262,11 @@ namespace BloomTests.web
 
 			// settingsCollectionStyles.css
 			var cssFile = Path.Combine(_collectionPath, "settingsCollectionStyles.css");
-			File.WriteAllText(cssFile, @".settingsCollectionStylesCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".settingsCollectionStylesCssTest{}");
 
 			// customCollectionStyles.css
 			cssFile = Path.Combine(_collectionPath, "customCollectionStyles.css");
-			File.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
 
 			// create book directory
 			var bookPath = Path.Combine(_collectionPath, "TestBook");
@@ -274,22 +274,22 @@ namespace BloomTests.web
 
 			// languageDisplay.css
 			cssFile = Path.Combine(bookPath, "languageDisplay.css");
-			File.WriteAllText(cssFile, @".languageDisplayCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".languageDisplayCssTest{}");
 
 			cssFile = Path.Combine(bookPath, "ForUnitTest-XMatter.css");
-			File.WriteAllText(cssFile, @"This is the one in the book");
+			RobustFile.WriteAllText(cssFile, @"This is the one in the book");
 			
 			// Factory-XMatter.css
 			cssFile = Path.Combine(bookPath, "Factory-XMatter.css");
-			File.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
 
 			// customBookStyles.css
 			cssFile = Path.Combine(bookPath, "customBookStyles.css");
-			File.WriteAllText(cssFile, @".customBookStylesCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".customBookStylesCssTest{}");
 
 			// miscStyles.css - a file name not distributed with or created by Bloom
 			cssFile = Path.Combine(bookPath, "miscStyles.css");
-			File.WriteAllText(cssFile, @".miscStylesCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".miscStylesCssTest{}");
 		}
 
 		[Test]

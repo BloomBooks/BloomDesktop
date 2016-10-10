@@ -224,9 +224,9 @@ namespace Bloom.CollectionTab
 		public void ExportDocFormat(string path)
 		{
 			string sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
-			if (File.Exists(path))
+			if (RobustFile.Exists(path))
 			{
-				File.Delete(path);
+				RobustFile.Delete(path);
 			}
 			// Linux (Trusty) LibreOffice requires slightly different metadata at the beginning
 			// of the file in order to recognize it as HTML.  Otherwise it opens the file as raw
@@ -234,9 +234,9 @@ namespace Bloom.CollectionTab
 			// believe me.)  I don't know any perfect way to add this information to the file,
 			// but a simple string replace should be safe.  This change works okay for both
 			// Windows and Linux and for all three programs (Word, OpenOffice and Libre Office).
-			string content = File.ReadAllText(sourcePath);
+			string content = RobustFile.ReadAllText(sourcePath);
 			string fixedContent = content.Replace("<meta charset=\"UTF-8\">", "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
-			File.WriteAllText(path, fixedContent);
+			RobustFile.WriteAllText(path, fixedContent);
 		}
 
 		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
@@ -252,10 +252,10 @@ namespace Bloom.CollectionTab
 		{
 			try
 			{
-				if(File.Exists(path))
+				if(RobustFile.Exists(path))
 				{
 					// UI already got permission for this
-					File.Delete(path);
+					RobustFile.Delete(path);
 				}
 
 				Logger.WriteEvent("Making BloomPack at "+path+" forReaderTools="+forReaderTools.ToString());
@@ -277,7 +277,7 @@ namespace Bloom.CollectionTab
 						var dirNameOffest = dir.Length - rootName.Length;
 
 						Logger.WriteEvent("BloomPack path will be " + path + ", made from " + dir + " with rootName " + rootName);
-						using (var fsOut = File.Create(path))
+						using (var fsOut = RobustFile.Create(path))
 						{
 							using (ZipOutputStream zipStream = new ZipOutputStream(fsOut))
 							{
@@ -371,7 +371,7 @@ namespace Bloom.CollectionTab
 				{
 					// Zip the file in buffered chunks
 					byte[] buffer = new byte[4096];
-					using (var streamReader = File.OpenRead(filePath))
+					using (var streamReader = RobustFile.OpenRead(filePath))
 					{
 						StreamUtils.Copy(streamReader, zipStream, buffer);
 					}
@@ -394,7 +394,7 @@ namespace Bloom.CollectionTab
 
 		private static string GetMetaJsonModfiedForTemplate(string path)
 		{
-			var meta = BookMetaData.FromString(File.ReadAllText(path));
+			var meta = BookMetaData.FromString(RobustFile.ReadAllText(path));
 			meta.IsSuitableForMakingShells = true;
 			return meta.Json;
 		}
@@ -409,7 +409,7 @@ namespace Bloom.CollectionTab
 			//Whereas currently, we use the meta.json as the authoritative source.
 			//TODO Should we just get rid of these tags in the HTML? Can they be accessed from javascript? If so,
 			//then they will be needed eventually (as we involve c# less in the UI)
-			var text = File.ReadAllText(bookPath, Encoding.UTF8);
+			var text = RobustFile.ReadAllText(bookPath, Encoding.UTF8);
 			// Note that we're getting rid of preceding newline but not following one. Hopefully we cleanly remove a whole line.
 			// I'm not sure the </meta> ever occurs in html files, but just in case we'll match if present.
 			var regex = new Regex("\\s*<meta\\s+name=(['\\\"])lockedDownAsShell\\1 content=(['\\\"])true\\2>(</meta>)? *");
@@ -480,7 +480,7 @@ namespace Bloom.CollectionTab
 				{
 					MessageBox.Show("Bloom will now open a list of problems it found.");
 					var path = Path.GetTempFileName() + ".txt";
-					File.WriteAllText(path, dlg.ProgressString.Text);
+					RobustFile.WriteAllText(path, dlg.ProgressString.Text);
 					PathUtilities.OpenFileInApplication(path);
 				}
 				else
@@ -505,7 +505,7 @@ namespace Bloom.CollectionTab
 				}
 
 				var path = Path.GetTempFileName() + ".txt";
-				File.WriteAllText(path, dlg.ProgressString.Text);
+				RobustFile.WriteAllText(path, dlg.ProgressString.Text);
 				try
 				{
 					PathUtilities.OpenFileInApplication(path);
