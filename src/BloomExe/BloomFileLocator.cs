@@ -176,5 +176,25 @@ namespace Bloom
 			var pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + LocalizationManager.UILanguageId + ".");
 			return File.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
 		}
+
+		/// <summary>
+		/// Gets a file in the specified branding folder
+		/// </summary>
+		/// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
+		//  but unit tests can instead provide a path to the folder.
+		/// </param>
+		/// <param name="fileName"></param>
+		/// <returns></returns>
+		public static string GetOptionalBrandingFile(string brandingNameOrFolderPath, string fileName)
+		{
+			if(Path.IsPathRooted(brandingNameOrFolderPath)) //if it looks like a path
+			{
+				var path = Path.Combine(brandingNameOrFolderPath, fileName);
+				if(File.Exists(path))
+					return path;
+				return null;
+			}
+			return BloomFileLocator.GetFileDistributedWithApplication(true, "branding", brandingNameOrFolderPath, fileName);
+		}
 	}
 }

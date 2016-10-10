@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
@@ -16,6 +17,8 @@ namespace BloomTests.Book
 		private CollectionSettings _collectionSettings;
 		private LocalizationManager _localizationManager;
 		private LocalizationManager _palasoLocalizationManager;
+		private static TemporaryFolder _brandingFolder;
+		private string _pathToBrandingSettingJson;
 
 		[SetUp]
 		public void Setup()
@@ -34,6 +37,9 @@ namespace BloomTests.Book
 				null, "", new string[] {});
 			_palasoLocalizationManager = LocalizationManager.Create("fr", "Palaso","Palaso", "1.0.0", localizationDirectory, "SIL/Bloom",
 				null, "", new string[] { });
+
+			_brandingFolder = new TemporaryFolder("unitTestBrandingFolder");
+			_pathToBrandingSettingJson = _brandingFolder.Combine("settings.json");
 		}
 
 		[TearDown]
@@ -41,6 +47,7 @@ namespace BloomTests.Book
 		{
 			_localizationManager.Dispose();
 			_palasoLocalizationManager.Dispose();
+			_brandingFolder.Dispose();
 		}
 
 		[Test]
@@ -116,6 +123,77 @@ namespace BloomTests.Book
 			BookCopyrightAndLicense.SetMetadata(newMetaData, dom,  null, settings);
 			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
 		}
+
+		// BRANDING-RELATED TESTS
+
+		[Test]
+		public void GetLicenseMetadata_SettingsExistsButIsEmpty_MetadataMatches()
+		{
+			File.WriteAllText(_pathToBrandingSettingJson,@"{}");
+			var dataDivContent = @"";
+			var metadata = GetMetadata(dataDivContent);
+			Assert.AreEqual("http://creativecommons.org/licenses/by/4.0/", metadata.License.Url, "Expected default CC license");
+			Assert.IsNullOrEmpty(metadata.License.RightsStatement);
+			Assert.IsNullOrEmpty(metadata.CopyrightNotice);
+		}
+		[Test]
+		public void GetLicenseMetadata_SettingsExistsButHasBogusJson_MetadataMatches()
+		{
+			File.WriteAllText(_pathToBrandingSettingJson, @"");
+			var dataDivContent = @"{'foo':'bar'}";
+			var metadata = GetMetadata(dataDivContent);
+			Assert.AreEqual("http://creativecommons.org/licenses/by/4.0/", metadata.License.Url, "Expected default CC license");
+			Assert.IsNullOrEmpty(metadata.License.RightsStatement);
+			Assert.IsNullOrEmpty(metadata.CopyrightNotice);
+		}
+		[Test]
+		public void GetLicenseMetadata_BrandingHasLicenseAndNotesButNotCopyright_MetadataMatches()
+		{
+			File.WriteAllText(_pathToBrandingSettingJson,
+				@"{
+					'LicenseUrl':'http://creativecommons.org/licenses/by/3.0/igo/',
+					'LicenseRightsStatement': 'These are custom notes.'
+				}");
+			var dataDivContent = @"";
+			var metadata = GetMetadata(dataDivContent);
+			Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
+			Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
+			Assert.IsNullOrEmpty(metadata.CopyrightNotice);
+		}
+
+		[Test]
+		public void GetLicenseMetadata_HasCopyrightAndLicenseAndLicenseNotes_MetadataMatches()
+		{
+			File.WriteAllText(_pathToBrandingSettingJson,
+				@"{
+					'CopyrightNotice':'Copyright © 2016',
+					'LicenseUrl':'http://creativecommons.org/licenses/by/3.0/igo/',
+					'LicenseRightsStatement': 'These are custom notes.'
+				}");
+			var dataDivContent = @"";
+			var metadata = GetMetadata(dataDivContent);
+			Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
+			Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
+			Assert.AreEqual("Copyright © 2016", metadata.CopyrightNotice);
+		}
+
+		// we don't want shell books to get this notice
+		[Test]
+		public void GetLicenseMetadata_HasCopyrightAlready_CustomBrandingStuffIgnored()
+		{
+			File.WriteAllText(_pathToBrandingSettingJson,
+				@"{
+					'CopyrightNotice':'Copyright © 2016',
+					'LicenseUrl':'http://creativecommons.org/licenses/by/3.0/igo/',
+					'LicenseRightsStatement': 'These are custom notes.'
+				}");
+			var dataDivContent = @"<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
+			var metadata = GetMetadata(dataDivContent);
+			Assert.IsTrue(metadata.CopyrightNotice.Contains("2012"));
+			Assert.IsTrue(metadata.License is NullLicense);
+			Assert.IsNullOrEmpty(metadata.License.RightsStatement);
+		}
+
 
 		[Test, Ignore("Enable once we have French CC License Localization") /*meanwhile, I have tested on my machine*/]
 		public void SetLicenseMetadata_CCLicenseWithFrenchNationalLanguage_DataDivHasFrenchDescription()
@@ -208,7 +286,11 @@ namespace BloomTests.Book
 		private static Metadata GetMetadata(string dataDivContent)
 		{
 			var dom = MakeDom(dataDivContent);
-			return BookCopyrightAndLicense.GetMetadata(dom);
+			//normally, the branding is just a name, which we look up in the official branding folder
+			//but in order to allow unit tests to test particular contents of it, we also allow
+			//it to be a path to a constructed branding folder.
+			//These unit tests can then write to a temp file and point to that.
+			return BookCopyrightAndLicense.GetMetadata(dom, _brandingFolder.Path);
 		}
 
 		private static HtmlDom MakeDom(string dataDivContent)
