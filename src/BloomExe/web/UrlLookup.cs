@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using Newtonsoft.Json;
@@ -40,8 +41,17 @@ namespace Bloom.web
 
 		private static readonly ConcurrentDictionary<UrlType, string> s_liveUrlCache = new ConcurrentDictionary<UrlType, string>();
 
+		private static bool _internetAvailable = true;	// assume it's available to start out
+
 		public static string LookupUrl(UrlType urlType, bool sandbox = false, bool excludeProtocolPrefix = false)
 		{
+#if DEBUG
+			// This hack is just because I didn't want to refactor everything for the unit test case.
+			// And this is probably changing soon anyway.
+			// Without this, it gets the sandbox url which is incorrect (but may soon be correct).
+			if (Program.RunningUnitTests && (urlType == UrlType.Parse || urlType == UrlType.ParseSandbox))
+				return "https://api.parse.com/1/";
+#endif
 			string fullUrl = LookupFullUrl(urlType, sandbox);
 			if (excludeProtocolPrefix)
 				return StripProtocol(fullUrl);
@@ -84,10 +94,17 @@ namespace Bloom.web
 
 		private static bool TryLookupUrl(UrlType urlType, out string url)
 		{
+			url = null;
+			// Once the internet has been found missing, don't bother trying it again for the duration of the program.
+			if (!_internetAvailable)
+				return false;
 			try
 			{
 				using (var s3Client = new BloomS3Client(null))
 				{
+					s3Client.Timeout = TimeSpan.FromMilliseconds(2500.0);
+					s3Client.ReadWriteTimeout = TimeSpan.FromMilliseconds(3000.0);
+					s3Client.MaxErrorRetry = 1;
 					var jsonContent = s3Client.DownloadFile(BloomS3Client.BloomDesktopFiles, kUrlLookupFileName);
 					Urls urls = JsonConvert.DeserializeObject<Urls>(jsonContent);
 					url = urls.GetUrlById(urlType.ToJsonPropertyString());
@@ -98,10 +115,55 @@ namespace Bloom.web
 			}
 			catch (Exception e)
 			{
-				Logger.WriteEvent("Exception while attemping look up of URL type " + urlType + ": " + e);
+				_internetAvailable = false;
+				Logger.WriteEvent("Exception while attempting look up of URL type " + urlType + ": " + e);
 			}
-			url = null;
 			return false;
+		}
+
+		/// <summary>
+		/// Check whether or not the internet is currently available.  This may delay 2.5 seconds if the computer
+		/// is on a local network, but the internet is inaccessible.
+		/// </summary>
+		/// <remarks>
+		/// credit is due to http://stackoverflow.com/questions/520347/how-do-i-check-for-a-network-connection
+		/// and https://forums.xamarin.com/discussion/19491/check-internet-connectivity.
+		/// </remarks>
+		public static bool IsInternetAvailable()
+		{
+			// The next line detects whether the computer is hooked up to a local network, wired or wireless.
+			// If it's not on a network at all, we know the Internet isn't available!
+			var networkConnected = System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
+			if (!networkConnected)
+			{
+				_internetAvailable = false;
+				return false;
+			}
+			// Test whether we can talk to a known site of interest on the internet.  This will tell us
+			// close enough whether or not the internet is available.
+			try
+			{
+				// test site same as what we use to talk to Amazon S3
+				var iNetRequest = (HttpWebRequest)WebRequest.Create("https://s3.amazonaws.com");
+				iNetRequest.Timeout = 2500;
+				var iNetResponse = iNetRequest.GetResponse();
+				iNetResponse.Close();
+				_internetAvailable = true;
+				return true;
+			}
+			catch (WebException ex)
+			{
+				_internetAvailable = false;
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Return the cached variable indicating Internet availability.
+		/// </summary>
+		public static bool FastInternetAvailable
+		{
+			get { return _internetAvailable; }
 		}
 
 		private static string LookupFallbackUrl(UrlType urlType)

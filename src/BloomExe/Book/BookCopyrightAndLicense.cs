@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using Bloom.Api;
 using Bloom.Collection;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -24,18 +25,16 @@ namespace Bloom.Book
 		/// <summary>
 		/// Create a Clearshare.Metadata object by reading values out of the dom's bloomDataDiv
 		/// </summary>
-		public static Metadata GetMetadata(HtmlDom dom)
+		/// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
+		//but unit tests can instead provide a path to the folder.
+		/// </param>
+		public static Metadata GetMetadata(HtmlDom dom, string brandingNameOrFolderPath = "")
 		{
-			var metadata = new Metadata();
-			if (ShouldSetToDefaultLicense(dom))
+			if (ShouldSetToDefaultCopyrightAndLicense(dom))
 			{
-				Logger.WriteEvent("For BL-3166 Investigation: GetMetadata() setting to default license");
-
-				//start the book off with a simple cc-by
-				metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
-				return metadata;
+				return GetMetadataWithDefaultCopyrightAndLicense(brandingNameOrFolderPath);
 			}
-
+			var metadata = new Metadata();
 			var copyright = dom.GetBookSetting("copyright");
 			if (!copyright.Empty)
 			{
@@ -65,8 +64,38 @@ namespace Bloom.Book
 
 				//are there notes that go along with that?
 				var licenseNotes = dom.GetBookSetting("licenseNotes");
-				if (!licenseNotes.Empty)
-					metadata.License.RightsStatement = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative());
+				if(!licenseNotes.Empty)
+				{
+					var s = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative());
+					metadata.License.RightsStatement = HtmlDom.ConvertHtmlBreaksToNewLines(s);
+				}
+			}
+			return metadata;
+		}
+
+		private static Metadata GetMetadataWithDefaultCopyrightAndLicense(string brandingNameOrPath)
+		{
+			var metadata = new Metadata();
+			Logger.WriteEvent("For BL-3166 Investigation: GetMetadata() setting to default license");
+			metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
+
+			//OK, that's all we need, the rest is blank. That is, unless we are we are working with a brand
+			//that has declared some defaults in a settings.json file:
+			var settings = BrandingApi.GetSettings(brandingNameOrPath);
+			if(settings != null)
+			{
+				if(!string.IsNullOrEmpty(settings.CopyrightNotice))
+				{
+					metadata.CopyrightNotice = settings.CopyrightNotice;
+				}
+				if(!string.IsNullOrEmpty(settings.LicenseUrl))
+				{
+					metadata.License = CreativeCommonsLicense.FromLicenseUrl(settings.LicenseUrl);
+				}
+				if(!string.IsNullOrEmpty(settings.LicenseUrl))
+				{
+					metadata.License.RightsStatement = settings.LicenseRightsStatement;
+				}
 			}
 			return metadata;
 		}
@@ -94,12 +123,12 @@ namespace Bloom.Book
 			//we localize it and place it in the datadiv.
 			dom.RemoveBookSetting("licenseDescription");
 			var description = metadata.License.GetDescription(collectionSettings.LicenseDescriptionLanguagePriorities, out languageUsedForDescription);
-			dom.SetBookSetting("licenseDescription", languageUsedForDescription, description);
+			dom.SetBookSetting("licenseDescription", languageUsedForDescription, ConvertNewLinesToHtmlBreaks(description));
 
 			// Book may have old licenseNotes, typically in 'en'. This can certainly show up again if licenseNotes in '*' is removed,
 			// and maybe anyway. Safest to remove it altogether if we are setting it using the new scheme.
 			dom.RemoveBookSetting("licenseNotes");
-			dom.SetBookSetting("licenseNotes", "*", metadata.License.RightsStatement);
+			dom.SetBookSetting("licenseNotes", "*", ConvertNewLinesToHtmlBreaks(metadata.License.RightsStatement));
 
 			// we could do away with licenseImage in the bloomDataDiv, since the name is always the same, but we keep it for backward compatibility
 			if (metadata.License is CreativeCommonsLicense)
@@ -112,8 +141,12 @@ namespace Bloom.Book
 				dom.RemoveBookSetting("licenseImage");
 			}
 
-
 			UpdateDomFromDataDiv(dom, bookFolderPath, collectionSettings);
+		}
+
+		private static string ConvertNewLinesToHtmlBreaks(string s)
+		{
+			return string.IsNullOrEmpty(s) ? s : s.Replace("\r", "").Replace("\n", "<br/>");
 		}
 
 		/// <summary>
@@ -157,7 +190,7 @@ namespace Bloom.Book
 				var form = source.GetBestAlternative(languagePreferences);
 				if (form != null && !string.IsNullOrWhiteSpace(form.Form))
 				{
-					target.InnerText = form.Form;
+					HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, form.Form);
 					target.SetAttribute("lang", form.WritingSystemId); //this allows us to set the font to suit the language
 				}
 			}
@@ -212,7 +245,7 @@ namespace Bloom.Book
 		}
 
 
-		private static bool ShouldSetToDefaultLicense(HtmlDom dom)
+		private static bool ShouldSetToDefaultCopyrightAndLicense(HtmlDom dom)
 		{
 			var hasCopyright = !dom.GetBookSetting("copyright").Empty;
 			var hasLicenseUrl = !dom.GetBookSetting("licenseUrl").Empty;
