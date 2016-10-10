@@ -48,7 +48,8 @@ mixin field-acknowledgments-localizedVersion
 	//- Why both versionAcknowledgments && inside-cover-version-Credits-Page-style?
 	//-   versionAcknowledgments governs placement on the page, inside-cover-version-Credits-Page-style is a
 	//-   holding place for user style adjustments (like font-size)
-	+editable("N1").versionAcknowledgments.Credits-Page-style.bloom-readOnlyInAuthorMode(data-book="versionAcknowledgments", data-hint="Name of Translator, in {lang}")
+	// removed .bloom-readOnlyInAuthorMode because when you're putting together a shell book, you often have to put in the name of the translator
+	+editable("N1").versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments", data-hint="Name of Translator, in {lang}")
 
 // TODO: this is a mess
 mixin field-acknowledgments-originalVersion
