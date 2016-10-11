@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Bloom;
 using Bloom.ImageProcessing;
 using NUnit.Framework;
 using SIL.TestUtilities;
@@ -53,7 +54,7 @@ namespace BloomTests.ImageProcessing
 		private static void ProcessAndSaveImageIntoFolder_AndTestResults(string testImageName, ImageFormat expectedOutputFormat)
 		{
 			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
-			using (var image = PalasoImage.FromFile(inputPath))
+			using (var image = RobustIO.PalasoImageFromFile(inputPath))
 			{
 				using (var folder = new TemporaryFolder())
 				{
@@ -78,7 +79,7 @@ namespace BloomTests.ImageProcessing
 		{
 			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirtWithTransparentBg.png");
 			var originalFileSize = new FileInfo(inputPath).Length;
-			using (var image = PalasoImage.FromFile(inputPath))
+			using (var image = RobustIO.PalasoImageFromFile(inputPath))
 			{
 				using (var folder = new TemporaryFolder("TransparentPngTest"))
 				{

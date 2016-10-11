@@ -10,7 +10,6 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
-using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -227,10 +226,10 @@ namespace Bloom.WebLibraryIntegration
 			// Don't upload audio (todo: test).
 			string audioDir = Path.Combine(destDirName, "audio");
 			if (Directory.Exists(audioDir))
-				Directory.Delete(audioDir, true);
+				SIL.IO.RobustIO.DeleteDirectory(audioDir, true);
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
 			foreach (var file in unwantedPdfs)
-				File.Delete(file);
+				RobustFile.Delete(file);
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
@@ -396,14 +395,14 @@ namespace Bloom.WebLibraryIntegration
 		// Return true if both files exist, are readable, and have the same content.
 		static bool SameFileContent(string path1, string path2)
 		{
-			if (!File.Exists(path1))
+			if (!RobustFile.Exists(path1))
 				return false;
-			if (!File.Exists(path2))
+			if (!RobustFile.Exists(path2))
 				return false;
 			try
 			{
-				var first = File.ReadAllBytes(path1);
-				var second = File.ReadAllBytes(path2);
+				var first = RobustFile.ReadAllBytes(path1);
+				var second = RobustFile.ReadAllBytes(path2);
 				if (first.Length != second.Length)
 					return false;
 				for (int i = 0; i < first.Length; i++)
@@ -514,7 +513,7 @@ namespace Bloom.WebLibraryIntegration
 					{
 						try
 						{
-							Directory.Delete(destinationPath, true);
+							SIL.IO.RobustIO.DeleteDirectory(destinationPath, true);
 							didDelete = true;
 						}
 						catch(IOException)
@@ -531,7 +530,7 @@ namespace Bloom.WebLibraryIntegration
 					{
 						try
 						{
-							Directory.Move(tempDirectory, destinationPath);
+							SIL.IO.RobustIO.MoveDirectory(tempDirectory, destinationPath);
 							done = true;
 						}
 						catch(IOException)

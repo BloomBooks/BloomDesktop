@@ -39,7 +39,7 @@ namespace Bloom.web
 			var completeUiLangPath = completeEnglishPath.Replace("-en.htm", "-" + langCode + ".htm");
 
 			string url;
-			if (langCode != "en" && File.Exists(completeUiLangPath))
+			if (langCode != "en" && RobustFile.Exists(completeUiLangPath))
 				url = completeUiLangPath;
 			else
 				url = completeEnglishPath;

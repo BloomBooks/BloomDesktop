@@ -146,7 +146,7 @@ namespace Bloom.Book
 					NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not find " + fileName+" while looking for size choices");
 					continue;
 				}
-				var contents = File.ReadAllText(path);
+				var contents = RobustFile.ReadAllText(path);
 				var start = contents.IndexOf("STARTLAYOUTS");
 				if (start < 0)
 					 continue; //yield break; // continue;//move on to the next stylesheet

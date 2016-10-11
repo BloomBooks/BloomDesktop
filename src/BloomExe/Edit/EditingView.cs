@@ -11,10 +11,8 @@ using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Api;
 using L10NSharp;
-using SIL.Extensions;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Windows.Forms;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageGallery;
 using SIL.Windows.Forms.ImageToolbox;
@@ -22,6 +20,7 @@ using Gecko;
 using TempFile = SIL.IO.TempFile;
 using Bloom.Workspace;
 using Gecko.DOM;
+using SIL.IO;
 using SIL.Windows.Forms.Widgets;
 
 namespace Bloom.Edit
@@ -514,7 +513,7 @@ namespace Bloom.Edit
 			PalasoImage imageInfo = null;
 			try
 			{
-				imageInfo = PalasoImage.FromFile(path);
+				imageInfo = RobustIO.PalasoImageFromFile(path);
 			}
 			catch(TagLib.CorruptFileException e)
 			{
@@ -609,7 +608,7 @@ namespace Bloom.Edit
 			{
 				// Replace current image with placeHolder.png
 				var path = Path.Combine(bookFolderPath, "placeHolder.png");
-				using(var palasoImage = PalasoImage.FromFile(path))
+				using(var palasoImage = RobustIO.PalasoImageFromFile(path))
 				{
 					_model.ChangePicture(GetImageNode(ge), palasoImage, new NullProgress());
 				}
@@ -683,15 +682,15 @@ namespace Bloom.Edit
 							Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png");
 						Logger.WriteMinorEvent("[Paste Image] Saving {0} ({1}) as {2} and converting to PNG", clipboardImage.FileName,
 							clipboardImage.OriginalFilePath, pathToPngVersion);
-						if(File.Exists(pathToPngVersion))
+						if(RobustFile.Exists(pathToPngVersion))
 						{
-							File.Delete(pathToPngVersion);
+							RobustFile.Delete(pathToPngVersion);
 						}
 						using(var temp = TempFile.TrackExisting(pathToPngVersion))
 						{
-							clipboardImage.Image.Save(pathToPngVersion, ImageFormat.Png);
+							SIL.IO.RobustIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
 
-							using(var palasoImage = PalasoImage.FromFile(temp.Path))
+							using(var palasoImage = RobustIO.PalasoImageFromFile(temp.Path))
 							{
 								_model.ChangePicture(imageElement, palasoImage, new NullProgress());
 							}
@@ -728,7 +727,7 @@ namespace Bloom.Edit
 				var path = Path.Combine(bookFolderPath, url.NotEncoded);
 				try
 				{
-					using(var image = PalasoImage.FromFile(path))
+					using(var image = RobustIO.PalasoImageFromFile(path))
 					{
 						BloomClipboard.CopyImageToClipboard(image);
 					}
@@ -812,11 +811,11 @@ namespace Bloom.Edit
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
 
 			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
-			if(!currentPath.ToLowerInvariant().Contains("placeholder") && File.Exists(existingImagePath))
+			if(!currentPath.ToLowerInvariant().Contains("placeholder") && RobustFile.Exists(existingImagePath))
 			{
 				try
 				{
-					imageInfo = PalasoImage.FromFile(existingImagePath);
+					imageInfo = RobustIO.PalasoImageFromFile(existingImagePath);
 				}
 				catch(Exception e)
 				{

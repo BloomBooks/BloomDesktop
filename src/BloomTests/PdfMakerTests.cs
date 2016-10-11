@@ -78,8 +78,8 @@ namespace BloomTestsThatAvoidTheSetupFixture
 			using (var input = TempFile.WithFilename("北京.html"))
 			using (var output = TempFile.WithFilename("北京.pdf"))
 			{
-				File.WriteAllText(input.Path, "<html><body>北京</body></html>");
-				File.Delete(output.Path);
+				RobustFile.WriteAllText(input.Path, "<html><body>北京</body></html>");
+				RobustFile.Delete(output.Path);
 				RunMakePdf(maker, input.Path, output.Path, "A5", false, false,
 					PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.BookletPages);
 				//we don't actually have a way of knowing it did a booklet

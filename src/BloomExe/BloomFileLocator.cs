@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
@@ -185,12 +183,12 @@ namespace Bloom
 		/// </summary>
 		public static bool IsInstalledFileOrDirectory(string filepath)
 		{
-			var file = Assembly.GetExecutingAssembly().CodeBase.Replace("file://", String.Empty);
+			var file = Assembly.GetExecutingAssembly().CodeBase.Replace("file://", string.Empty);
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				file = file.TrimStart('/');
 			var folder = Path.GetDirectoryName(file);
 			if (folder.EndsWith("/output/Debug"))
-				folder = folder.Replace("/Debug", String.Empty);	// files now copied to output/browser for access
+				folder = folder.Replace("/Debug", string.Empty);	// files now copied to output/browser for access
 			return filepath.Contains(folder);
 		}
 
@@ -201,7 +199,7 @@ namespace Bloom
 		public static string GetBestLocalizableFileDistributedWithApplication(bool existenceOfEnglishVersionIsOptional, params string[] partsOfEnglishFilePath)
 		{
 			var englishPath = FileLocator.GetFileDistributedWithApplication(existenceOfEnglishVersionIsOptional, partsOfEnglishFilePath);
-			if(!File.Exists(englishPath))
+			if(!RobustFile.Exists(englishPath))
 			{
 				return englishPath; // just return whatever the original GetFileDistributedWithApplication gave. "", null, whatever it is.
 			}
@@ -216,7 +214,7 @@ namespace Bloom
 		public static string GetBestLocalizedFile(string pathToEnglishFile)
 		{
 			var pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + LocalizationManager.UILanguageId + ".");
-			return File.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
+			return RobustFile.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
 		}
 
 		/// <summary>
@@ -232,7 +230,7 @@ namespace Bloom
 			if(Path.IsPathRooted(brandingNameOrFolderPath)) //if it looks like a path
 			{
 				var path = Path.Combine(brandingNameOrFolderPath, fileName);
-				if(File.Exists(path))
+				if(RobustFile.Exists(path))
 					return path;
 				return null;
 			}

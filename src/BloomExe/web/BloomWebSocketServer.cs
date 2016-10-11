@@ -68,7 +68,7 @@ namespace Bloom.Api
 			//that's (currently) fine.
 			lock(this)
 			{
-				foreach(var socket in _allSockets)
+				foreach (var socket in _allSockets)
 				{
 					socket.Send(e.ToString());
 				}

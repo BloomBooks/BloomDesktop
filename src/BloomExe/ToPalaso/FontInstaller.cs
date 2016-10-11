@@ -67,7 +67,7 @@ namespace Bloom.ToPalaso
 			foreach (var fontFile in Directory.GetFiles(sourcePath, "*.ttf"))
 			{
 				var destPath = Path.Combine(fontFolder, Path.GetFileName(fontFile));
-				if (!File.Exists(destPath))
+				if (!RobustFile.Exists(destPath))
 					return false;
 			}
 			return true;

@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.IO;
 using Bloom.Book;
 using SIL.Code;
+using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.Api
@@ -77,7 +78,7 @@ namespace Bloom.Api
 				// Using a stream this way, according to one source,
 				// http://stackoverflow.com/questions/552467/how-do-i-reliably-get-an-image-dimensions-in-net-without-loading-the-image,
 				// supposedly avoids loading the image into memory when we only want its dimensions
-				using(var stream = File.OpenRead(path))
+				using(var stream = RobustFile.OpenRead(path))
 				using(var img = Image.FromStream(stream, false, false))
 				{
 					result.width = img.Width;

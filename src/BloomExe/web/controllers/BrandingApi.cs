@@ -1,7 +1,7 @@
 ﻿using System;
-using System.IO;
 using Bloom.Collection;
 using Newtonsoft.Json;
+using SIL.IO;
 
 namespace Bloom.Api
 {
@@ -56,7 +56,7 @@ namespace Bloom.Api
 				var settingsPath = BloomFileLocator.GetOptionalBrandingFile(brandingNameOrFolderPath, "settings.json");
 				if(!string.IsNullOrEmpty(settingsPath))
 				{
-					var content = File.ReadAllText(settingsPath);
+					var content = RobustFile.ReadAllText(settingsPath);
 					var settings = JsonConvert.DeserializeObject<Settings>(content);
 					if(settings == null)
 					{

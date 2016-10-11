@@ -12,8 +12,9 @@ using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Retry;
 using SIL.TestUtilities;
-using SIL.Windows.Forms.ImageToolbox;
+using RobustIO = Bloom.RobustIO;
 
 namespace BloomTests.Book
 {
@@ -135,13 +136,13 @@ namespace BloomTests.Book
 		protected void MakeSamplePngImageWithMetadata(string path)
 		{
 			var x = new Bitmap(10, 10);
-			x.Save(path, ImageFormat.Png);
+			SIL.IO.RobustIO.SaveImage(x, path, ImageFormat.Png);
 			x.Dispose();
-			using (var img = PalasoImage.FromFile(path))
+			using (var img = RobustIO.PalasoImageFromFile(path))
 			{
 				img.Metadata.Creator = "joe";
 				img.Metadata.CopyrightNotice = "Copyright 1999 by me";
-				img.SaveUpdatedMetadataIfItMakesSense();
+				RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
 			}
 		}
 

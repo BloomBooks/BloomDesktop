@@ -205,10 +205,10 @@ namespace Bloom
 							if (path.ToLowerInvariant().StartsWith("bloom://"))
 							{
 								path = path.Substring("bloom://".Length);
-								if (!File.Exists(path))
+								if (!RobustFile.Exists(path))
 								{
 									path = FileLocator.GetFileDistributedWithApplication(true, path);
-									if(!File.Exists(path))
+									if (!RobustFile.Exists(path))
 										return 1;
 								}
 							}
@@ -726,7 +726,7 @@ namespace Bloom
 				//if(Settings.Default.MruProjects.Latest == null)
 				//{
 				//	var path = NewCollectionWizard.CreateNewCollection();
-				//	if (!string.IsNullOrEmpty(path) && File.Exists(path))
+				//	if (!string.IsNullOrEmpty(path) && RobustFile.Exists(path))
 				//	{
 				//		OpenCollection(path);
 				//		return;
@@ -1031,13 +1031,13 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			foreach(var entry in filesToCheck)
 			{
 				var destFile = entry.Value;
-				if (!File.Exists(destFile))
+				if (!RobustFile.Exists(destFile))
 				{
 					var sourceFile = Path.Combine(sourceDir, "debian", entry.Key);
-					if (File.Exists(sourceFile))
+					if (RobustFile.Exists(sourceFile))
 					{
 						updateNeeded = true;
-						File.Copy(sourceFile, destFile);
+						RobustFile.Copy(sourceFile, destFile);
 					}
 				}
 			}
@@ -1150,11 +1150,11 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 				Logger.WriteEvent("Cannot open user config file "+ex.Filename);
 				Logger.WriteEvent(ex.Message);
 
-				if (File.Exists(ex.Filename))
+				if (RobustFile.Exists(ex.Filename))
 				{
-					Logger.WriteEvent("Config file content:\n{0}", File.ReadAllText(ex.Filename));
+					Logger.WriteEvent("Config file content:\n{0}", RobustFile.ReadAllText(ex.Filename));
 					Logger.WriteEvent("Deleting "+ ex.Filename);
-					File.Delete(ex.Filename);
+					RobustFile.Delete(ex.Filename);
 					Properties.Settings.Default.Upgrade();
 					// Properties.Settings.Default.Reload();
 					// you could optionally restart the app instead

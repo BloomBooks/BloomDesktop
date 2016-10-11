@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -16,6 +15,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.WritingSystems;
 using SIL.Extensions;
+using SIL.IO;
 
 namespace Bloom.Collection
 {
@@ -89,7 +89,7 @@ namespace Bloom.Collection
 			var libraryDirectory = Path.GetDirectoryName(desiredOrExistingSettingsFilePath);
 			var parentDirectoryPath = Path.GetDirectoryName(libraryDirectory);
 
-			if (File.Exists(desiredOrExistingSettingsFilePath))
+			if (RobustFile.Exists(desiredOrExistingSettingsFilePath))
 			{
 				Load();
 			}
@@ -316,12 +316,12 @@ namespace Bloom.Collection
 			library.Add(new XElement("Province", Province));
 			library.Add(new XElement("District", District));
 			library.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
-			library.Save(SettingsFilePath);
+			SIL.IO.RobustIO.SaveXElement(library, SettingsFilePath);
 
-			SavesettingsCollectionStylesCss();
+			SaveSettingsCollectionStylesCss();
 		}
 
-		private void SavesettingsCollectionStylesCss()
+		private void SaveSettingsCollectionStylesCss()
 		{
 			string path = FolderPath.CombineForPath("settingsCollectionStyles.css");
 
@@ -337,7 +337,7 @@ namespace Bloom.Collection
 				{
 					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, Language3LineHeight);
 				}
-				File.WriteAllText(path, sb.ToString());
+				RobustFile.WriteAllText(path, sb.ToString());
 			}
 			catch (Exception error)
 			{
@@ -363,7 +363,7 @@ namespace Bloom.Collection
 		{
 			try
 			{
-				XElement library = XElement.Load(SettingsFilePath);
+				XElement library = SIL.IO.RobustIO.LoadXElement(SettingsFilePath);
 				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "Language1Iso639Code", ""));
 				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
 				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
@@ -393,26 +393,25 @@ namespace Bloom.Collection
 				string settingsContents = "";
 				try
 				{
-					settingsContents = File.ReadAllText(SettingsFilePath);
+					settingsContents = RobustFile.ReadAllText(SettingsFilePath);
 				}
 				catch (Exception error)
 				{
 					settingsContents = error.Message;
 				}
 				Logger.WriteEvent("Contents of "+SettingsFilePath+": /r/n"+ settingsContents);
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
-																 "There was an error reading the file {0}.  Please report this error to the developers. To get access to your books, you should make a new collection, then copy your book folders from this broken collection into the new one, then run Bloom again.",SettingsFilePath);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was an error reading the file {0}.  Please report this error to the developers. To get access to your books, you should make a new collection, then copy your book folders from this broken collection into the new one, then run Bloom again.",SettingsFilePath);
 				throw;
 			}
 
 			try
 			{
 				string oldcustomCollectionStylesPath = FolderPath.CombineForPath("collection.css");
-				if(File.Exists(oldcustomCollectionStylesPath))
+				if(RobustFile.Exists(oldcustomCollectionStylesPath))
 				{
 					string newcustomCollectionStylesPath = FolderPath.CombineForPath("customCollectionStyles.css");
 
-					File.Move(oldcustomCollectionStylesPath, newcustomCollectionStylesPath);
+					RobustFile.Move(oldcustomCollectionStylesPath, newcustomCollectionStylesPath);
 				}
 			}
 			catch (Exception)
@@ -603,7 +602,7 @@ namespace Bloom.Collection
 			FindSettingsFileInFolder(fromDirectory);
 
 //first rename the directory, as that is the part more likely to fail (because *any* locked file in there will cause a failure)
-			Directory.Move(fromDirectory, toDirectory);
+			SIL.IO.RobustIO.MoveDirectory(fromDirectory, toDirectory);
 			string  collectionSettingsPath;
 			try
 			{
@@ -618,15 +617,15 @@ namespace Bloom.Collection
 			{
 				//we now make a default name based on the name of the directory
 				string destinationPath = Path.Combine(toDirectory, Path.GetFileName(toDirectory)+".bloomCollection");
-				if (!File.Exists(destinationPath))
-					File.Move(collectionSettingsPath, destinationPath);
+				if (!RobustFile.Exists(destinationPath))
+					RobustFile.Move(collectionSettingsPath, destinationPath);
 
 				return destinationPath;
 			}
 			catch (Exception error)
 			{
 				//change the directory name back, so the rename isn't half-done.
-				Directory.Move(toDirectory, fromDirectory);
+				SIL.IO.RobustIO.MoveDirectory(toDirectory, fromDirectory);
 				throw new ApplicationException(string.Format("Could change the folder name, but not the collection file name",fromDirectory,toDirectory),error);
 			}
 		}

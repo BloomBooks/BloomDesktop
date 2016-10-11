@@ -276,6 +276,7 @@
     <Compile Include="Edit\TalkingBookTool.cs" />
     <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
+    <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
       <SubType>UserControl</SubType>
@@ -697,7 +698,9 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="SourceCollectionsList.cs" />
-    <Compile Include="Workspace\TabStrip.cs" />
+    <Compile Include="Workspace\TabStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
     <Compile Include="Publish\PublishView.cs">

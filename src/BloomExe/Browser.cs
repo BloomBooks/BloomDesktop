@@ -388,9 +388,9 @@ namespace Bloom
 			var line = (int) e.Line;
 			var dir = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			var mapPath = Path.Combine(dir, file + ".map");
-			if(File.Exists(mapPath))
+			if(RobustFile.Exists(mapPath))
 			{
-				var consumer = new SourceMapDotNet.SourceMapConsumer(File.ReadAllText(mapPath));
+				var consumer = new SourceMapDotNet.SourceMapConsumer(RobustFile.ReadAllText(mapPath));
 				foreach(var match in consumer.OriginalPositionsFor(line))
 				{
 					file = match.File;
@@ -620,7 +620,7 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			string path = Path.GetTempFileName().Replace(".tmp",".html");
-			File.Copy(_url, path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
+			RobustFile.Copy(_url, path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
 			Process.Start(GetPathToStylizer(), path);
 		}
 
@@ -740,7 +740,7 @@ namespace Bloom
 			}
 
 			var tf = TempFile.WithExtension("htm"); // For some reason Gecko won't recognize a utf-8 file as html unless it has the right extension
-			File.WriteAllText(tf.Path,html, Encoding.UTF8);
+			RobustFile.WriteAllText(tf.Path,html, Encoding.UTF8);
 			SetNewDependent(tf);
 			_url = tf.Path;
 			UpdateDisplay();
@@ -967,7 +967,7 @@ namespace Bloom
 		public void AddScriptSource(string filename)
 		{
 			Debug.Assert(!InvokeRequired);
-			if (!File.Exists(Path.Combine(Path.GetDirectoryName(_url), filename)))
+			if (!RobustFile.Exists(Path.Combine(Path.GetDirectoryName(_url), filename)))
 				throw new FileNotFoundException(filename);
 
 			GeckoDocument doc = WebBrowser.Document;

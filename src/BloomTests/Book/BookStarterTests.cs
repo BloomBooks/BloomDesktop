@@ -569,7 +569,7 @@ namespace BloomTests.Book
 		{
 			var source = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
 			var goodPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
-			Directory.Delete(goodPath, true); //remove that good one. We just did it to get an idea of what the path is
+			DirectoryUtilities.DeleteDirectoryRobust(goodPath); //remove that good one. We just did it to get an idea of what the path is
 
 			//now fail while making a book
 

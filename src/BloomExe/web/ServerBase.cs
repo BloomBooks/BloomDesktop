@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
+using SIL.IO;
 using SIL.Reporting;
 using ThreadState = System.Threading.ThreadState;
 
@@ -463,11 +464,11 @@ namespace Bloom.Api
 			{
 				localPath = localPath.Substring(1);
 			}
-			if (localPath.Contains("?") && !File.Exists(localPath))
+			if (localPath.Contains("?") && !RobustFile.Exists(localPath))
 			{
 				var idx = localPath.LastIndexOf("?", StringComparison.Ordinal);
 				var temp = localPath.Substring(0, idx);
-				if (localPath.EndsWith("?thumbnail=1") || File.Exists(localPath))
+				if (localPath.EndsWith("?thumbnail=1") || RobustFile.Exists(localPath))
 					return temp;
 			}
 			return localPath;

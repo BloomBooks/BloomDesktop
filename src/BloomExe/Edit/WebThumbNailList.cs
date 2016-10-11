@@ -14,6 +14,7 @@ using Gecko;
 using SIL.Windows.Forms.Reporting;
 using SIL.Xml;
 using L10NSharp;
+using SIL.IO;
 
 namespace Bloom.Edit
 {
@@ -200,7 +201,7 @@ namespace Bloom.Edit
 			}
 			var frame = BloomFileLocator.GetBrowserFile("bookEdit", "pageThumbnailList", "pageThumbnailList.html");
 			var backColor = ColorToHtmlCode(BackColor);
-			var htmlText = System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
+			var htmlText = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 			_usingTwoColumns = RoomForTwoColumns;
 			if (!RoomForTwoColumns)
 				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
