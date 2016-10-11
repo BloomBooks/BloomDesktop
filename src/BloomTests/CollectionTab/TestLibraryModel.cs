@@ -13,7 +13,7 @@ namespace BloomTests.CollectionTab
 		public readonly string TestFolderPath;
 
 		public TestLibraryModel(TemporaryFolder testFolder)
-			: base(testFolder.Path, new CollectionSettings(), null, new BookSelection(), new SourceCollectionsList(),
+			: base(testFolder.Path, new CollectionSettings(), new BookSelection(), new SourceCollectionsList(),
 			null, null, new CreateFromSourceBookCommand(), null, null, null)
 		{
 			TestFolderPath = testFolder.Path;

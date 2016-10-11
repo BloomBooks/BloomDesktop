@@ -20,7 +20,7 @@ namespace Bloom.CollectionChoosing
 			base.Dispose(disposing);
 		}
 
-		#region Component Designer generated code
+#region Component Designer generated code
 
 		/// <summary>
 		/// Required method for Designer support - do not modify
@@ -120,7 +120,7 @@ namespace Bloom.CollectionChoosing
 			this.button6.Text = "Copy from USB Drive";
 			this.button6.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.button6.UseVisualStyleBackColor = true;
-			this.button6.Click += new System.EventHandler(this.OnGetFromUsb);
+;
 			//
 			// button7
 			//
@@ -141,7 +141,7 @@ namespace Bloom.CollectionChoosing
 			this.button7.Text = "Copy from Internet";
 			this.button7.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.button7.UseVisualStyleBackColor = true;
-			this.button7.Click += new System.EventHandler(this.OnGetFromInternet);
+
 			//
 			// button8
 			//
@@ -162,7 +162,7 @@ namespace Bloom.CollectionChoosing
 			this.button8.Text = "Copy From Chorus Hub on Local Network";
 			this.button8.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.button8.UseVisualStyleBackColor = true;
-			this.button8.Click += new System.EventHandler(this.OnGetFromChorusHub);
+
 			//
 			// button9
 			//
@@ -265,7 +265,7 @@ namespace Bloom.CollectionChoosing
 
 		}
 
-		#endregion
+#endregion
 
 		private System.Windows.Forms.Timer _debounceListIndexChangedEvent;
 		private System.Windows.Forms.ToolTip toolTip1;

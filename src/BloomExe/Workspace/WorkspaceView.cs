@@ -18,8 +18,6 @@ using Bloom.Publish;
 using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.web;
-using Chorus;
-using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
 using SIL.IO;
@@ -38,7 +36,11 @@ namespace Bloom.Workspace
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
 		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
-		private readonly ChorusSystem _chorusSystem;
+#if CHORUS
+			private readonly ChorusSystem _chorusSystem;
+#else
+		private readonly object _chorusSystem;
+#endif
 		private bool _viewInitialized;
 		private int _originalToolStripPanelWidth;
 		private int _originalToolSpecificPanelHorizPos;
@@ -74,7 +76,7 @@ namespace Bloom.Workspace
 							LocalizationChangedEvent localizationChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
 							ProblemReporterDialog.Factory problemReportDialogFactory,
-							ChorusSystem chorusSystem,
+							//ChorusSystem chorusSystem,
 							LocalizationManager localizationManager
 
 			)
@@ -86,7 +88,7 @@ namespace Bloom.Workspace
 			_localizationChangedEvent = localizationChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_problemReportDialogFactory = problemReportDialogFactory;
-			_chorusSystem = chorusSystem;
+			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
@@ -266,6 +268,7 @@ namespace Bloom.Workspace
 
 		private void OnSendReceive(object obj)
 		{
+#if CHORUS
 			using (SyncDialog dlg = (SyncDialog) _chorusSystem.WinForms.CreateSynchronizationDialog())
 			{
 				dlg.ShowDialog();
@@ -274,6 +277,7 @@ namespace Bloom.Workspace
 					Invoke(ReopenCurrentProject);
 				}
 			}
+#endif
 		}
 
 		void OnSettingsProtectionChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -653,7 +657,7 @@ namespace Bloom.Workspace
 			}
 		}
 
-		#region Responsive Toolbar
+#region Responsive Toolbar
 
 		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
@@ -885,7 +889,7 @@ namespace Bloom.Workspace
 		}
 
 
-		#endregion
+#endregion
 
 	}
 

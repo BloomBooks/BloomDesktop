@@ -32,7 +32,7 @@ namespace Bloom.CollectionTab
 
 		private readonly LibraryModel _model;
 		private readonly BookSelection _bookSelection;
-		private readonly HistoryAndNotesDialog.Factory _historyAndNotesDialogFactory;
+		//private readonly HistoryAndNotesDialog.Factory _historyAndNotesDialogFactory;
 		private Font _headerFont;
 		private Font _editableBookFont;
 		private Font _collectionBookFont;
@@ -59,13 +59,13 @@ namespace Bloom.CollectionTab
 
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
-		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent,
-			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent)
+			//HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
 			_bookSelection = bookSelection;
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
-			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
+			//_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
 			_buttonsNeedingSlowUpdate = new ConcurrentQueue<ButtonRefreshInfo>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
@@ -1038,20 +1038,25 @@ namespace Bloom.CollectionTab
 
 		private void OnVernacularProjectHistoryClick(object sender, EventArgs e)
 		{
+		#if Chorus
 			using(var dlg = _historyAndNotesDialogFactory())
 			{
 				dlg.ShowDialog();
 			}
+		#endif
 		}
 
 		private void OnShowNotesMenu(object sender, EventArgs e)
 		{
+			#if Chorus
 			using (var dlg = _historyAndNotesDialogFactory())
 			{
 				dlg.ShowNotesFirst = true;
 				dlg.ShowDialog();
 			}
+			#endif
 		}
+
 
 		private void _doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
 		{

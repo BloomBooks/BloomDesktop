@@ -1,4 +1,5 @@
-﻿using Chorus.sync;
+﻿#if Chorus 
+using Chorus.sync;
 
 namespace Bloom.SendReceive
 {
@@ -21,3 +22,4 @@ namespace Bloom.SendReceive
 		}
 	}
 }
+#endif

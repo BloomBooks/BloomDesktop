@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.SendReceive;
+//using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using DesktopAnalytics;
@@ -30,7 +30,7 @@ namespace Bloom.CollectionTab
 		private readonly BookSelection _bookSelection;
 		private readonly string _pathToLibrary;
 		private readonly CollectionSettings _collectionSettings;
-		private readonly SendReceiver _sendReceiver;
+		//private readonly SendReceiver _sendReceiver;
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
 		private readonly EditBookCommand _editBookCommand;
@@ -40,7 +40,7 @@ namespace Bloom.CollectionTab
 		private readonly BookThumbNailer _thumbNailer;
 
 		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
-			SendReceiver sendReceiver,
+			//SendReceiver sendReceiver,
 			BookSelection bookSelection,
 			SourceCollectionsList sourceCollectionsList,
 			BookCollection.Factory bookCollectionFactory,
@@ -53,7 +53,7 @@ namespace Bloom.CollectionTab
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
 			_collectionSettings = collectionSettings;
-			_sendReceiver = sendReceiver;
+			//_sendReceiver = sendReceiver;
 			_sourceCollectionsList = sourceCollectionsList;
 			_bookCollectionFactory = bookCollectionFactory;
 			_editBookCommand = editBookCommand;
@@ -164,7 +164,9 @@ namespace Bloom.CollectionTab
 				{
 					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					_bookSelection.SelectBook(null);
+					#if Chorus
 					_sendReceiver.CheckInNow(string.Format("Deleted '{0}'", title));
+					#endif
 					return true;
 				}
 			}

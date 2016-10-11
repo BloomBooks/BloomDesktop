@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-using Chorus.UI.Clone;
+//using Chorus.UI.Clone;
 using SIL.Windows.Forms.Extensions;
 using SIL.i18n;
 using System.Collections.Generic;
@@ -124,7 +124,7 @@ namespace Bloom.CollectionChoosing
 			tableLayoutPanel2.SetColumn(button, 0);
 			return button;
 		}
-
+#if Chorus
 		private void OnGetFromInternet(object sender, EventArgs e)
 		{
 			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(NewCollectionWizard.DefaultParentDirectoryForCollections))
@@ -169,7 +169,7 @@ namespace Bloom.CollectionChoosing
 																 error.Message);
 			}
 		}
-
+#endif
 		private void OnOpenRecentCollection(object sender, EventArgs e)
 		{
 			SelectCollectionAndClose(((Button) sender).Tag as string);

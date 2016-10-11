@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if Chorus
+using System;
 using System.IO;
 using Chorus.VcsDrivers.Mercurial;
 using Chorus.merge;
@@ -345,3 +346,4 @@ namespace BloomTests.Chorus
 		}
 	  }
 }
+#endif

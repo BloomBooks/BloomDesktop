@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.MiscUI;
-using Bloom.SendReceive;
+//using Bloom.SendReceive;
 using Bloom.Api;
 using Gecko;
 using Gecko.DOM;
@@ -17,7 +17,7 @@ namespace Bloom.CollectionTab
 	public partial class LibraryBookView : UserControl
 	{
 		private readonly BookSelection _bookSelection;
-		private readonly SendReceiver _sendReceiver;
+		//private readonly SendReceiver _sendReceiver;
 		private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
 		private readonly EditBookCommand _editBookCommand;
 		private Shell _shell;
@@ -27,7 +27,7 @@ namespace Bloom.CollectionTab
 		public delegate LibraryBookView Factory();//autofac uses this
 
 		public LibraryBookView(BookSelection bookSelection,
-			SendReceiver sendReceiver,
+			//SendReceiver sendReceiver,
 			CreateFromSourceBookCommand createFromSourceBookCommand,
 			EditBookCommand editBookCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
@@ -37,7 +37,7 @@ namespace Bloom.CollectionTab
 			_previewBrowser.Isolator = isolator;
 			_readmeBrowser.Isolator = isolator;
 			_bookSelection = bookSelection;
-			_sendReceiver = sendReceiver;
+			//_sendReceiver = sendReceiver;
 			_createFromSourceBookCommand = createFromSourceBookCommand;
 			_editBookCommand = editBookCommand;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
@@ -148,7 +148,7 @@ namespace Bloom.CollectionTab
 					var checkinNotice = string.Format("Created book from '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay);
 
 					_createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
-					_sendReceiver.CheckInNow(checkinNotice);
+					//_sendReceiver.CheckInNow(checkinNotice);
 				}
 				catch(Exception error)
 				{
