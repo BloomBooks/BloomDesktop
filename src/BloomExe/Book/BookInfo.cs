@@ -540,9 +540,15 @@ namespace Bloom.Book
 		[JsonProperty("folio")]
 		public bool IsFolio { get; set; }
 
-		// Todo: multilingual
+		// Enhance: multilingual?
+		// BL-3774 was caused by a book with a meta.json value for Title of null.
+		// So here let's just ensure we have store strings in that situation.
+		private string _title = string.Empty;
 		[JsonProperty("title")]
-		public string Title { get; set; }
+		public string Title {
+			get { return _title; }
+			set { _title = value == null ? string.Empty : value; }
+		}
 
 		[JsonProperty("allTitles")]
 		public string AllTitles { get; set; }
