@@ -930,7 +930,6 @@ namespace Bloom
 		{
 			if (_errorHandlingHasBeenSetUp)
 				return;
-
 			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);
 			ExceptionReportingDialog.PrivacyNotice = string.Format(@"If you don't care who reads your bug report, you can skip this notice.
 
@@ -947,7 +946,6 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
 			_errorHandlingHasBeenSetUp = true;
 		}
-
 
 		public static void OldVersionCheck()
 		{

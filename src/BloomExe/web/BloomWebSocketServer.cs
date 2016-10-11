@@ -66,18 +66,29 @@ namespace Bloom.Api
 
 			//note, if there is no open socket, this isn't going to do anything, and
 			//that's (currently) fine.
-			foreach (var socket in _allSockets)
+			lock(this)
 			{
-				socket.Send(e.ToString());
+				foreach(var socket in _allSockets)
+				{
+					socket.Send(e.ToString());
+				}
 			}
 		}
 
 		public void Dispose()
 		{
-			if (_server != null)
+			lock(this)
 			{
-				_server.Dispose();
-				_server = null;
+				if(_server != null)
+				{
+					foreach(var socket in _allSockets)
+					{
+						socket.Close();
+					}
+					_allSockets.Clear();
+					_server.Dispose();
+					_server = null;
+				}
 			}
 		}
 	}

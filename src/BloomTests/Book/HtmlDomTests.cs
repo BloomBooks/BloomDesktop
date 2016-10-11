@@ -413,6 +413,7 @@ namespace BloomTests.Book
 			var result = bookDom.GetBookSetting("getMe");
 			Assert.AreEqual(0, result.Count);
 		}
+
 		[Test]
 		public void SetBookSetting_WasMissingCompletely_DataDivHasNewString()
 		{
@@ -475,6 +476,36 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='en' and text()='English']", 1);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='fr' and text()='French']", 1);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']", 3);
+		}
+
+		[Test]
+		public void SetElementFromUserStringPreservingLineBreaks_Various()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<div></div>");
+			var target = dom.FirstChild as XmlElement;
+			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1<br />2");
+			Assert.AreEqual("<div>1<br />2</div>", dom.InnerXml);
+			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1<br/>2");
+			Assert.AreEqual("<div>1<br />2</div>",dom.InnerXml);
+
+			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1<br/>2<br />3");
+			Assert.AreEqual("<div>1<br />2<br />3</div>", dom.InnerXml);
+
+			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1 2 3");
+			Assert.AreEqual("<div>1 2 3</div>", dom.InnerXml);
+
+			HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, "1 < 3 > 0");
+			Assert.AreEqual("<div>1 &lt; 3 &gt; 0</div>", dom.InnerXml);
+		}
+
+		[Test]
+		public void ConvertHtmlBreaksToNewLines_Works()
+		{
+			var NL = System.Environment.NewLine;
+			Assert.AreEqual("1"+NL+"2",HtmlDom.ConvertHtmlBreaksToNewLines("1<br />2"));
+			Assert.AreEqual("1" + NL + "2", HtmlDom.ConvertHtmlBreaksToNewLines("1<br>2"));
+			Assert.AreEqual("1" + NL + "2", HtmlDom.ConvertHtmlBreaksToNewLines("1<br/>2"));
 		}
 	}
 }

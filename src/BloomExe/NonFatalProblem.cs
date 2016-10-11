@@ -103,7 +103,11 @@ namespace Bloom
 			}
 			catch(Exception errorWhileReporting)
 			{
-				Debug.Fail("error in nonfatalError reporting");
+				// Don't annoy developers for expected error if the internet is not available.
+				if (errorWhileReporting.Message.StartsWith("Bloom could not retrieve the URL") && Bloom.web.UrlLookup.FastInternetAvailable)
+				{
+					Debug.Fail("error in nonfatalError reporting");
+				}
 				if (channel.Contains("alpha"))
 					ErrorReport.NotifyUserOfProblem(errorWhileReporting,"Error while reporting non fatal error");
 			}
