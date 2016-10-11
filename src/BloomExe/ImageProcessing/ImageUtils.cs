@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
 using Logger = SIL.Reporting.Logger;
@@ -82,7 +83,7 @@ namespace Bloom.ImageProcessing
 				{
 					SaveAsTopQualityJpeg(imageInfo.Image, destinationPath);
 				}
-				imageInfo.Save(destinationPath);
+				RobustIO.SavePalasoImage(imageInfo, destinationPath);
 
 				return imageFileName;
 
@@ -95,7 +96,7 @@ namespace Bloom.ImageProcessing
 				{
 					using (var tmp = new TempFile())
 					{
-						image.Save(tmp.Path, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
+						SIL.IO.RobustIO.SaveImage(image, tmp.Path, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
 						SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tmp.Path, destinationPath, null);
 					}
 
@@ -118,7 +119,7 @@ namespace Bloom.ImageProcessing
 			}*/
 			catch (Exception error)
 			{
-				if (!string.IsNullOrEmpty(imageInfo.FileName) && File.Exists(imageInfo.OriginalFilePath))
+				if (!string.IsNullOrEmpty(imageInfo.FileName) && RobustFile.Exists(imageInfo.OriginalFilePath))
 				{
 					var megs = new System.IO.FileInfo(imageInfo.OriginalFilePath).Length/(1024*1000);
 					if (megs > 2)
@@ -163,7 +164,7 @@ namespace Bloom.ImageProcessing
 			}
 			var i = 0;
 			var suffix = "";
-			while (File.Exists(Path.Combine(bookFolderPath, basename + suffix + extension)))
+			while (RobustFile.Exists(Path.Combine(bookFolderPath, basename + suffix + extension)))
 			{
 				++i;
 				suffix = i.ToString(CultureInfo.InvariantCulture);
@@ -198,7 +199,7 @@ namespace Bloom.ImageProcessing
 					return;
 
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
-				using(var pi = PalasoImage.FromFile(path))
+				using(var pi = RobustIO.PalasoImageFromFile(path))
 				{
 					if (!AppearsToBeJpeg(pi))
 					{
@@ -215,7 +216,7 @@ namespace Bloom.ImageProcessing
 			using (var b = new Bitmap(original.Width, original.Height))
 			{
 				DrawImageWithWhiteBackground(original, b);
-				b.Save(path, ImageFormat.Png);
+				SIL.IO.RobustIO.SaveImage(b, path, ImageFormat.Png);
 			}
 		}
 
@@ -255,7 +256,7 @@ namespace Bloom.ImageProcessing
 					using(var jpegFile = new TempFile())
 					using(var pngFile = new TempFile())
 					{
-						image.Save(pngFile.Path, ImageFormat.Png);
+						SIL.IO.RobustIO.SaveImage(image, pngFile.Path, ImageFormat.Png);
 						SaveAsTopQualityJpeg(safetyImage, jpegFile.Path);
 						var jpegInfo = new FileInfo(jpegFile.Path);
 						var pngInfo = new FileInfo(pngFile.Path);
@@ -291,7 +292,7 @@ namespace Bloom.ImageProcessing
 				{
 					//0 = max compression, 100 = least
 					parameters.Param[0] = new EncoderParameter(encoder, 100L);
-					safetyImage.Save(tempPath.Path, jpgEncoder, parameters);
+					SIL.IO.RobustIO.SaveImage(safetyImage, tempPath.Path, jpgEncoder, parameters);
 				}
 				SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath.Path, destinationPath, null);
 			}
@@ -308,7 +309,7 @@ namespace Bloom.ImageProcessing
 		/// </remarks>
 		public static Image GetImageFromFile(string path)
 		{
-			Debug.Assert(File.Exists(path), String.Format("{0} does not exist for ImageUtils.GetImageFromFile()?!", path));
+			Debug.Assert(RobustFile.Exists(path), String.Format("{0} does not exist for ImageUtils.GetImageFromFile()?!", path));
 			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 			{
 				using (var image = new Bitmap(stream))

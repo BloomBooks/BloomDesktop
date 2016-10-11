@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
+using SIL.IO;
 using SIL.Reporting;
 using ThreadState = System.Threading.ThreadState;
 
@@ -111,6 +112,7 @@ namespace Bloom.Api
 			_stop = new ManualResetEvent(false);
 			_ready = new ManualResetEvent(false);
 			_listenerThread = new Thread(EnqueueIncomingRequests);
+			_listenerThread.Name = "ServerBase Listener Thread";
 		}
 
 #if DEBUG
@@ -252,8 +254,9 @@ namespace Bloom.Api
 		// to avoid race conditions modifying the _workers collection.
 		private void SpinUpAWorker()
 		{
-			_workers.Add(new Thread(RequestProcessorLoop));
-			_workers.Last().Name = "Server thread " + _workers.Count;
+			var thread = new Thread(RequestProcessorLoop);
+			thread.Name = "Server Worker Thread " + _workers.Count;
+			_workers.Add(thread);
 			_workers.Last().Start();
 		}
 
@@ -446,32 +449,13 @@ namespace Bloom.Api
 			info.WriteError(404);
 		}
 
-		protected internal static string CorrectedLocalPath(IRequestInfo info)
-		{
-			// Note that LocalPathWithoutQuery removes all % escaping from the URL.
-			return CorrectedLocalPath(info.LocalPathWithoutQuery, info.RawUrl);
-		}
-
-		internal static string CorrectedLocalPath (string localPathWithoutQuery, string rawUrl)
-		{
-
-			// for some reason Url.LocalPath strips out two of the three slashes that we get
-			// with network drive paths when we stick /bloom/ (or /bloom/something/) in front
-			// of a path like //mydrive/myfolder/...
-			var idx = rawUrl.IndexOf("///");
-			if (idx > 0 && localPathWithoutQuery.StartsWith(BloomUrlPrefix))
-				return localPathWithoutQuery.Substring(0, idx) + "//" + localPathWithoutQuery.Substring(idx);
-			return localPathWithoutQuery;
-		}
-
 		protected internal static string GetLocalPathWithoutQuery(IRequestInfo info)
 		{
-			return GetLocalPathWithoutQuery(info.LocalPathWithoutQuery, info.RawUrl);
+			return GetLocalPathWithoutQuery(info.LocalPathWithoutQuery);
 		}
 
-		internal static string GetLocalPathWithoutQuery(string localPathWithoutQuery, string rawUrl)
+		private static string GetLocalPathWithoutQuery(string localPath)
 		{
-			var localPath = CorrectedLocalPath(localPathWithoutQuery, rawUrl);
 			if (localPath.StartsWith(BloomUrlPrefix))
 				localPath = localPath.Substring(BloomUrlPrefix.Length);
 
@@ -480,11 +464,11 @@ namespace Bloom.Api
 			{
 				localPath = localPath.Substring(1);
 			}
-			if (localPath.Contains("?") && !File.Exists(localPath))
+			if (localPath.Contains("?") && !RobustFile.Exists(localPath))
 			{
 				var idx = localPath.LastIndexOf("?", StringComparison.Ordinal);
 				var temp = localPath.Substring(0, idx);
-				if (localPath.EndsWith("?thumbnail=1") || File.Exists(localPath))
+				if (localPath.EndsWith("?thumbnail=1") || RobustFile.Exists(localPath))
 					return temp;
 			}
 			return localPath;

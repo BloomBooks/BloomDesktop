@@ -262,11 +262,11 @@ namespace BloomTests.web
 
 			// settingsCollectionStyles.css
 			var cssFile = Path.Combine(_collectionPath, "settingsCollectionStyles.css");
-			File.WriteAllText(cssFile, @".settingsCollectionStylesCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".settingsCollectionStylesCssTest{}");
 
 			// customCollectionStyles.css
 			cssFile = Path.Combine(_collectionPath, "customCollectionStyles.css");
-			File.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
 
 			// create book directory
 			var bookPath = Path.Combine(_collectionPath, "TestBook");
@@ -274,22 +274,22 @@ namespace BloomTests.web
 
 			// languageDisplay.css
 			cssFile = Path.Combine(bookPath, "languageDisplay.css");
-			File.WriteAllText(cssFile, @".languageDisplayCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".languageDisplayCssTest{}");
 
 			cssFile = Path.Combine(bookPath, "ForUnitTest-XMatter.css");
-			File.WriteAllText(cssFile, @"This is the one in the book");
+			RobustFile.WriteAllText(cssFile, @"This is the one in the book");
 			
 			// Factory-XMatter.css
 			cssFile = Path.Combine(bookPath, "Factory-XMatter.css");
-			File.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
 
 			// customBookStyles.css
 			cssFile = Path.Combine(bookPath, "customBookStyles.css");
-			File.WriteAllText(cssFile, @".customBookStylesCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".customBookStylesCssTest{}");
 
 			// miscStyles.css - a file name not distributed with or created by Bloom
 			cssFile = Path.Combine(bookPath, "miscStyles.css");
-			File.WriteAllText(cssFile, @".miscStylesCssTest{}");
+			RobustFile.WriteAllText(cssFile, @".miscStylesCssTest{}");
 		}
 
 		[Test]
@@ -465,6 +465,48 @@ namespace BloomTests.web
 				server.MakeReply(transaction);
 
 				Assert.That(transaction.ReplyContents, Is.EqualTo(".miscStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void HandleDoubleEncodedUrls()
+		{
+			// https://silbloom.myjetbrains.com/youtrack/issue/BL-3835 describes a problem that can occur when
+			// Url encoded filenames are stored for the coverImage data.  One of the uploaded books
+			// in the library has coverImage data stored as
+			// <div data-book="coverImage" lang="*">
+			//     The%20Moon%20and%20The%20Cap_Cover.png
+			// </div>
+			// and the image file was not being found by the server because a second level of encoding was
+			// applied before requesting the file.  So this test arbitrarily applies a double level of Url
+			// encoding (the third time) to ensure that the server can handle it.
+			using (var server = CreateImageServer())
+			{
+				Directory.CreateDirectory(_collectionPath);
+				var txtFile = Path.Combine(_collectionPath, "File With Spaces.txt");
+				const string testData = @"This is a test!\r\n";
+				File.WriteAllText(txtFile, testData);
+
+				// no Url encoding of spaces fed to server
+				var url = txtFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url);
+				server.MakeReply(transaction);
+				Assert.That(transaction.ReplyContents, Is.EqualTo(testData));
+
+				// single level of Url encoding fed to server
+				var encUrl = txtFile.ToLocalhost().Replace(" ", "%20");		// ToLocalHost() does partial encoding, but not for spaces.
+				var encTransaction = new PretendRequestInfo(encUrl);
+				Assert.That(encTransaction.RawUrl.Contains("%20"), Is.True);
+				server.MakeReply(encTransaction);
+				Assert.That(encTransaction.ReplyContents, Is.EqualTo(testData));
+
+				// double level of Url encoding fed to server
+				var enc2TxtFile = txtFile.Replace(" ", "%20");		// encodes spaces
+				var enc2Url = enc2TxtFile.ToLocalhost();			// double encodes spaces
+				var enc2Transaction = new PretendRequestInfo(enc2Url);
+				Assert.That(enc2Transaction.RawUrl.Contains("%2520"), Is.True);
+				server.MakeReply(enc2Transaction);
+				Assert.That(enc2Transaction.ReplyContents, Is.EqualTo(testData));
 			}
 		}
 	}

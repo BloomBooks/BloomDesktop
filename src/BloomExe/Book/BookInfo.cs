@@ -14,6 +14,7 @@ using Bloom.Edit;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 
@@ -45,15 +46,15 @@ namespace Bloom.Book
 			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
 			
 			var jsonPath = MetaDataPath;
-			if (File.Exists(jsonPath))
+			if (RobustFile.Exists(jsonPath))
 			{
-				_metadata = BookMetaData.FromString(File.ReadAllText(jsonPath)); // Enhance: error handling?
+				_metadata = BookMetaData.FromString(RobustFile.ReadAllText(jsonPath)); // Enhance: error handling?
 			}
 			else
 			{
 				// Look for old tags files not yet migrated
 				var oldTagsPath = Path.Combine(folderPath, "tags.txt");
-				if (File.Exists(oldTagsPath))
+				if (RobustFile.Exists(oldTagsPath))
 				{
 					Book.ConvertTagsToMetaData(oldTagsPath, this);
 				}
@@ -219,7 +220,7 @@ namespace Bloom.Book
 		public bool TryGetPremadeThumbnail(out Image image)
 		{
 			string path = Path.Combine(FolderPath, "thumbnail.png");
-			if (File.Exists(path))
+			if (RobustFile.Exists(path))
 			{
 				try
 				{
@@ -245,7 +246,7 @@ namespace Bloom.Book
 			{
 				try
 				{
-					File.WriteAllText(MetaDataPath, MetaData.Json);
+					RobustFile.WriteAllText(MetaDataPath, MetaData.Json);
 					return;
 				}
 				catch (IOException e)
@@ -446,7 +447,7 @@ namespace Bloom.Book
 
 		public static BookMetaData FromFolder(string bookFolderPath)
 		{
-			return FromString(File.ReadAllText(MetaDataPath(bookFolderPath)));
+			return FromString(RobustFile.ReadAllText(MetaDataPath(bookFolderPath)));
 		}
 
 		public static string MetaDataPath(string bookFolderPath)
@@ -456,7 +457,7 @@ namespace Bloom.Book
 
 		public void WriteToFolder(string bookFolderPath)
 		{
-			File.WriteAllText(MetaDataPath(bookFolderPath), Json);
+			RobustFile.WriteAllText(MetaDataPath(bookFolderPath), Json);
 		}
 
 		[JsonIgnore]
@@ -539,9 +540,15 @@ namespace Bloom.Book
 		[JsonProperty("folio")]
 		public bool IsFolio { get; set; }
 
-		// Todo: multilingual
+		// Enhance: multilingual?
+		// BL-3774 was caused by a book with a meta.json value for Title of null.
+		// So here let's just ensure we have store strings in that situation.
+		private string _title = string.Empty;
 		[JsonProperty("title")]
-		public string Title { get; set; }
+		public string Title {
+			get { return _title; }
+			set { _title = value == null ? string.Empty : value; }
+		}
 
 		[JsonProperty("allTitles")]
 		public string AllTitles { get; set; }

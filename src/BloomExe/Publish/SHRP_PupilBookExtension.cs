@@ -5,14 +5,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.ComponentModel.Composition;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
-using System.Linq;
-using SIL.Progress;
-using SIL.Xml;
 
 namespace Bloom.Publish
 {
@@ -78,7 +74,7 @@ namespace Bloom.Publish
 			if (Directory.Exists(exportFolder))
 			{
 				//state.StatusLabel = "Deleting existing thumbnail directory";
-				Directory.Delete(exportFolder, true);
+				SIL.IO.RobustIO.DeleteDirectory(exportFolder, true);
 				Thread.Sleep(1000); //let any open windows explorers deal with this before we move on
 			}
 			Directory.CreateDirectory(exportFolder);
@@ -171,7 +167,7 @@ namespace Bloom.Publish
 			//just doing image.Save() works for .bmp and .jpg, but not .png
 			using (var b = new Bitmap(image))
 			{
-				b.Save(Path.Combine(exportFolder, fileName));
+				SIL.IO.RobustIO.SaveImage(b, Path.Combine(exportFolder, fileName));
 			}
 		}
 	}

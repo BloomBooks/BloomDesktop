@@ -7,11 +7,12 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-using Chorus.UI.Clone;
+//using Chorus.UI.Clone;
 using SIL.Windows.Forms.Extensions;
 using SIL.i18n;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.IO;
 
 namespace Bloom.CollectionChoosing
 {
@@ -63,7 +64,7 @@ namespace Bloom.CollectionChoosing
 			{
 				collectionsToShow.AddRange(Directory.GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
 					.Select(d => Path.Combine(d, Path.ChangeExtension(Path.GetFileName(d),"bloomCollection")))
-					.Where(c => File.Exists(c) && !collectionsToShow.Contains(c))
+					.Where(c => RobustFile.Exists(c) && !collectionsToShow.Contains(c))
 					.OrderBy(c => Directory.GetLastWriteTime(Path.GetDirectoryName(c)))
 					.Reverse()
 					.Take(maxMruItems - collectionsToShow.Count()));
@@ -123,7 +124,7 @@ namespace Bloom.CollectionChoosing
 			tableLayoutPanel2.SetColumn(button, 0);
 			return button;
 		}
-
+#if Chorus
 		private void OnGetFromInternet(object sender, EventArgs e)
 		{
 			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(NewCollectionWizard.DefaultParentDirectoryForCollections))
@@ -168,7 +169,7 @@ namespace Bloom.CollectionChoosing
 																 error.Message);
 			}
 		}
-
+#endif
 		private void OnOpenRecentCollection(object sender, EventArgs e)
 		{
 			SelectCollectionAndClose(((Button) sender).Tag as string);
@@ -211,7 +212,7 @@ namespace Bloom.CollectionChoosing
 			if (!string.IsNullOrEmpty(path))
 			{
 				if (ReportIfInvalidCollectionToEdit(path)) return;
-				CheckForBeingInDropboxFolder(path);
+				//CheckForBeingInDropboxFolder(path);
 				_mruList.AddNewPath(path);
 				Invoke(DoneChoosingOrCreatingLibrary);
 			}
@@ -235,11 +236,12 @@ namespace Bloom.CollectionChoosing
 				|| path.StartsWith(ProjectContext.FactoryCollectionsDirectory);
 		}
 
+#if NotOkToBeInDropbox
 		/// <summary>
 		/// Path(s) to the user's Dropbox folder(s).  It is static because we only want to look these up once.
 		/// </summary>
 		private static List<string> _dropboxFolders;
-
+	
 		/// <summary>
 		/// This method checks 'path' for being in a Dropbox folder.  If so, it displays a warning message.
 		/// </summary>
@@ -273,18 +275,18 @@ namespace Bloom.CollectionChoosing
 						dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
 
 					//on my windows 10 box, the file we want is in AppData\Local\Dropbox
-					if (!File.Exists(dropboxInfoFile))
+					if (!RobustFile.Exists(dropboxInfoFile))
 					{
 						baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 						if (SIL.PlatformUtilities.Platform.IsWindows)
 							dropboxInfoFile = Path.Combine(baseFolder, @"Dropbox\info.json");
 						else
 							dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
-						if (!File.Exists(dropboxInfoFile))
+						if (!RobustFile.Exists(dropboxInfoFile))
 							return; // User appears to not have Dropbox installed
 					}
 
-					var info = File.ReadAllText(dropboxInfoFile);
+					var info = RobustFile.ReadAllText(dropboxInfoFile);
 					var matches = Regex.Matches(info, @"{""path"": ""([^""]+)"",");
 					foreach (Match match in matches)
 					{
@@ -325,6 +327,7 @@ namespace Bloom.CollectionChoosing
 				Debug.Fail(e.Message);
 			}
 		}
+#endif
 
 		private void _readMoreLabel_Click(object sender, LinkLabelLinkClickedEventArgs e)
 		{

@@ -12,8 +12,9 @@ using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Code;
 using SIL.TestUtilities;
-using SIL.Windows.Forms.ImageToolbox;
+using RobustIO = Bloom.RobustIO;
 
 namespace BloomTests.Book
 {
@@ -56,6 +57,8 @@ namespace BloomTests.Book
 			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
 			_metadata = new BookInfo(_tempFolder.Path, true);
 			_storage.SetupGet(x => x.MetaData).Returns(_metadata);
+			_storage.Setup(x => x.HandleRetiredXMatterPacks(It.IsAny<HtmlDom>(), It.IsAny<string>()))
+				.Returns((HtmlDom dom, string y) => { return y == "BigBook" ? "Factory" : y; });
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
@@ -135,13 +138,13 @@ namespace BloomTests.Book
 		protected void MakeSamplePngImageWithMetadata(string path)
 		{
 			var x = new Bitmap(10, 10);
-			x.Save(path, ImageFormat.Png);
+			SIL.IO.RobustIO.SaveImage(x, path, ImageFormat.Png);
 			x.Dispose();
-			using (var img = PalasoImage.FromFile(path))
+			using (var img = RobustIO.PalasoImageFromFile(path))
 			{
 				img.Metadata.Creator = "joe";
 				img.Metadata.CopyrightNotice = "Copyright 1999 by me";
-				img.SaveUpdatedMetadataIfItMakesSense();
+				RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
 			}
 		}
 

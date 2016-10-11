@@ -1,7 +1,9 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using L10NSharp;
+using SIL.IO;
 
 namespace Bloom.Book
 {
@@ -31,6 +33,34 @@ namespace Bloom.Book
 			}
 		}
 
+		public string EnglishLabel
+		{
+			get
+			{
+				var x = Path.GetFileName(PathToFolder);
+				var end = x.ToLowerInvariant().IndexOf("-xmatter");
+				var label =  x.Substring(0, end);
+				if (label == "Factory") //historical name
+				{
+					label= "PaperSaver";
+				}
+				return SplitCamelCase(label);
+			}
+		}
+
+		// from http://stackoverflow.com/a/5796793/723299
+		private static string SplitCamelCase(string str)
+		{
+			return Regex.Replace(
+				Regex.Replace(
+					str,
+					@"(\P{Ll})(\P{Ll}\p{Ll})",
+					"$1 $2"
+				),
+				@"(\p{Ll})(\P{Ll})",
+				"$1 $2"
+			);
+		}
 		public string GetDescription()
 		{
 			const string desc = "description";
@@ -39,10 +69,10 @@ namespace Bloom.Book
 				// try to read English XMatter pack description first
 				// we need version number at least
 				var pathEnglish = Path.Combine(PathToFolder, desc + "-en.txt");
-				if (!File.Exists(pathEnglish))
+				if (!RobustFile.Exists(pathEnglish))
 					return string.Empty;
 
-				var englishDescription = File.ReadAllText(pathEnglish);
+				var englishDescription = RobustFile.ReadAllText(pathEnglish);
 				if (!englishDescription.StartsWith("[V"))
 					return englishDescription;
 
@@ -52,10 +82,10 @@ namespace Bloom.Book
 				var enVersion = GetVersionNumberString(englishDescription);
 				englishDescription = StripVersionOff(englishDescription);
 				var pathUiLang = Path.Combine(PathToFolder, desc + "-" + uiLangId + ".txt");
-				if (uiLangId == "en" || !File.Exists(pathUiLang))
+				if (uiLangId == "en" || !RobustFile.Exists(pathUiLang))
 					return englishDescription;
 
-				var uiLangDescription = File.ReadAllText(pathUiLang);
+				var uiLangDescription = RobustFile.ReadAllText(pathUiLang);
 				var uiVersion = GetVersionNumberString(uiLangDescription);
 				uiLangDescription = StripVersionOff(uiLangDescription);
 				return enVersion > uiVersion || uiVersion == 0 || uiLangDescription.Length < 2 ? englishDescription : uiLangDescription;

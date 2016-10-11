@@ -59,6 +59,12 @@ The key to this text being aligned vertically is the bloom-centerContentVertiacl
   font-size: 62pt;
   overflow: visible;
 }
+.titlePage .bloom-editable {
+  font-size: 26pt;
+}
+.titlePage #titlePageTitleBlock .Title-On-Title-Page-style.bloom-content1 {
+  font-size: 30pt;
+}
 .textWholePage .bloom-translationGroup {
   width: 100%;
   max-height: 100%;

@@ -280,7 +280,9 @@ namespace Bloom.Publish
 		{
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
-			_epubRadio.Visible = true;
+			// Disable and hide ePUB for Linux in Bloom 3.7.  It's not working, and we don't have time to fix it.
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3412 and https://silbloom.myjetbrains.com/youtrack/issue/BL-3858.
+			_epubRadio.Visible = SIL.PlatformUtilities.Platform.IsWindows;
 
 			_layoutChoices.Text = _model.PageLayout.ToString();
 
@@ -298,7 +300,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Enabled = _model.ShowBookletOption;
 			_bookletCoverRadio.Enabled = _model.ShowCoverOption;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
-			_epubRadio.Enabled = true; // Review: any situation where we shouldn't be able to do this?
+			_epubRadio.Enabled = SIL.PlatformUtilities.Platform.IsWindows; // Review: any other situation where we shouldn't be able to do this?
 
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
@@ -371,7 +373,7 @@ namespace Bloom.Publish
 					_workingIndicator.Visible = true;
 					break;
 				case PublishModel.DisplayModes.ShowPdf:
-					if (File.Exists(_model.PdfFilePath))
+					if (RobustFile.Exists(_model.PdfFilePath))
 					{
 						_pdfViewer.Visible = true;
 						_workingIndicator.Visible = false;
@@ -483,8 +485,10 @@ namespace Bloom.Publish
 			_model.PrepareToStageEpub();
 			if (!_publishWithoutAudio && !LameEncoder.IsAvailable() && _model.IsCompressedAudioMissing)
 			{
-				var missingLameModulePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "ePUB", "MissingLameModule.htm");
-				_epubPreviewBrowser.Navigate(missingLameModulePath, false);
+				var fileLocator = _model.BookSelection.CurrentSelection.GetFileLocator();
+				var englishMissingLameModulePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "MissingLameModule-en.html");
+				var localizedMissingLameModulePath = BloomFileLocator.GetBestLocalizedFile(englishMissingLameModulePath);
+				_epubPreviewBrowser.Navigate(localizedMissingLameModulePath, false);
 				_epubPreviewBrowser.OnBrowserClick += (sender, e) =>
 				{
 					var element = (GeckoHtmlElement)(e as DomEventArgs).Target.CastToGeckoElement();
@@ -519,7 +523,8 @@ namespace Bloom.Publish
 			// approach at least works.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
 
-			var previewHtmlTemplatePath = fileLocator.LocateFileWithThrow("ePUB/bloomEpubPreview.html");
+			var englishTemplatePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "bloomEpubPreview-en.html");
+			var localizedTemplatePath = BloomFileLocator.GetBestLocalizedFile(englishTemplatePath);
 
 			var audioSituationClass = "noAudioAvailable";
 			if(_publishWithoutAudio)
@@ -527,12 +532,12 @@ namespace Bloom.Publish
 			else if(_model.BookHasAudio)
 				audioSituationClass = "isTalkingBook";
 
-			var htmlContents = File.ReadAllText(previewHtmlTemplatePath)
+			var htmlContents = RobustFile.ReadAllText(localizedTemplatePath)
 				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory))
 				.Replace("_AudioSituationClass_", audioSituationClass);
 
 			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
-			File.WriteAllText(previewHtmlInstancePath, htmlContents);
+			RobustFile.WriteAllText(previewHtmlInstancePath, htmlContents);
 			_epubPreviewBrowser.Navigate(previewHtmlInstancePath.ToLocalhost(), false);
 		}
 
@@ -658,14 +663,14 @@ namespace Bloom.Publish
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				printSettingsSampleName = printSettingsSamplePrefix + "Linux-" + LocalizationManager.UILanguageId + ".png";
-				if (!File.Exists(printSettingsSampleName))
+				if (!RobustFile.Exists(printSettingsSampleName))
 					printSettingsSampleName = printSettingsSamplePrefix + "Linux-en.png";
 			}
-			if (printSettingsSampleName == null || !File.Exists(printSettingsSampleName))
+			if (printSettingsSampleName == null || !RobustFile.Exists(printSettingsSampleName))
 				printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
-			if (!File.Exists(printSettingsSampleName))
+			if (!RobustFile.Exists(printSettingsSampleName))
 				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
-			if (File.Exists(printSettingsSampleName))
+			if (RobustFile.Exists(printSettingsSampleName))
 			{
 				// We display the _previewBox to show sample print settings. We need to get rid of it when the
 				// print dialog goes away. For Windows, the only way I've found to know when that happens is

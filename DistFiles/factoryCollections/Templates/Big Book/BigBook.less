@@ -72,11 +72,24 @@ height: 786px;
 }
 Text Whole Page
 The key to this text being aligned vertically is the bloom-centerContentVertiaclly on the tranlsation group, which gets picked up in the jscript, which then aligns it*/
+
+// Most text on a Big Book should be quite large
 .bloom-editable
 {
 	font-size: 62pt;
 	overflow: visible;
 }
+.titlePage {
+	// ... but not on the title page so much
+	.bloom-editable {
+		font-size: 26pt;
+	}
+	// ... but the vernacular title should be bigger than other fields
+	#titlePageTitleBlock .Title-On-Title-Page-style.bloom-content1 {
+		font-size: 30pt;
+	}
+}
+
 .textWholePage {
 	.bloom-translationGroup {
 		width: 100%;

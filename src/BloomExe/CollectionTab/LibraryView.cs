@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using Bloom.Properties;
-using Bloom.SendReceive;
+//using Bloom.SendReceive;
 using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
@@ -41,8 +41,10 @@ namespace Bloom.CollectionTab
 
 			if (sendReceiveCommand != null)
 			{
+#if Chorus
 				_sendReceiveButton.Click += (x, y) => sendReceiveCommand.Raise(this);
 				_sendReceiveButton.Enabled = !SendReceiver.SendReceiveDisabled;
+#endif
 			}
 			else
 				_sendReceiveButton.Enabled = false;

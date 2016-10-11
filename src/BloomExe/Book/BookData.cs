@@ -287,10 +287,18 @@ namespace Bloom.Book
 			topicPageElement.InnerText = "";
 
 			NamedMutliLingualValue topicData;
-			//if we have no topic element in the data-div, just leave now, 
-			//leaving the field in the page with an empty text.
+
+			var parentOfTopicDisplayElement = ((XmlElement)(topicPageElement.ParentNode));
+			//this just lets us have css rules that vary if there is a topic (allows other text to be centered instead left-aligned)
+			//we'll change it later if we find there is a topic
+			parentOfTopicDisplayElement.SetAttribute("data-have-topic", "false");
+
+			//if we have no topic element in the data-div
+			//leave the field in the page with an empty text.
 			if (!data.TextVariables.TryGetValue("topic", out topicData))
+			{				
 				return;
+			}
 
 			//we use English as the "key" for topics.
 			var englishTopic = topicData.TextAlternatives.GetExactAlternative("en");
@@ -298,6 +306,8 @@ namespace Bloom.Book
 			//if we have no topic, just clear it out from the page
 			if (string.IsNullOrEmpty(englishTopic) || englishTopic == "NoTopic")
 				return;
+
+			parentOfTopicDisplayElement.SetAttribute("data-have-topic", "true");
 
 			var stringId = "Topics." + englishTopic;
 

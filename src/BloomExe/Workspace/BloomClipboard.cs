@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ImageToolbox;
 
@@ -116,7 +117,7 @@ namespace Bloom.Workspace
 			if (GtkUtils.GtkClipboard.ContainsText())
 			{
 				//REVIEW: I can find no documentation on GtkClipboard. If ContainsText means we have a file
-				//	path, then it would be better to do PalasoImage.FromFile(); on the file path
+				//	path, then it would be better to do RobustIO.PalasoImageFromFile(); on the file path
 				return PalasoImage.FromImage(GtkUtils.GtkClipboard.GetImageFromText());
 			}
 
@@ -135,13 +136,13 @@ namespace Bloom.Workspace
 				try
 				{
 					plainImage = PalasoImage.FromImage(Clipboard.GetImage()); // this method won't copy any metadata
-					var haveFileUrl = !String.IsNullOrEmpty(textData) && File.Exists(textData);
+					var haveFileUrl = !String.IsNullOrEmpty(textData) && RobustFile.Exists(textData);
 
 					// If we have an image on the clipboard, and we also have text that is a valid url to an image file,
 					// use the url to create a PalasoImage (which will pull in any metadata associated with the image too)
 					if (haveFileUrl)
 					{
-						var imageWithPathAndMaybeMetadata = PalasoImage.FromFile(textData);
+						var imageWithPathAndMaybeMetadata = RobustIO.PalasoImageFromFile(textData);
 						plainImage.Dispose();//important: don't do this until we've successfully created the imageWithPathAndMaybeMetadata
 						return imageWithPathAndMaybeMetadata;
 					}
@@ -176,11 +177,11 @@ namespace Bloom.Workspace
 				string[] files = dataObject.GetData(DataFormats.FileDrop) as string[];
 				if (files == null) return null;
 
-				foreach (var file in files.Where(f => File.Exists(f)))
+				foreach (var file in files.Where(f => RobustFile.Exists(f)))
 				{
 					try
 					{
-						return PalasoImage.FromFile(file);
+						return RobustIO.PalasoImageFromFile(file);
 					}
 					catch (Exception)
 					{}
@@ -189,7 +190,7 @@ namespace Bloom.Workspace
 				return null; //not an image
 			}
 
-			if (!Clipboard.ContainsText() || !File.Exists(Clipboard.GetText())) return null;
+			if (!Clipboard.ContainsText() || !RobustFile.Exists(Clipboard.GetText())) return null;
 
 			try
 			{

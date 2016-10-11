@@ -70,7 +70,7 @@ namespace Bloom.ImageProcessing
 			var processImage = !isSvg;
 
 			// This happens with the new way we are serving css files
-			if (!File.Exists(imageFile))
+			if (!RobustFile.Exists(imageFile))
 			{
 				var fileName = Path.GetFileName(imageFile);
 				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);

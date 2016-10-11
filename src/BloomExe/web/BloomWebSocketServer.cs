@@ -60,20 +60,34 @@ namespace Bloom.Api
 
 		public void Send(string message)
 		{
-			//note, if there is no open socket, this isn't going to do anything, and
-			//that's (currently) fine.
-			foreach (var socket in _allSockets)
+			// In bl-3850, we had an unexplained failure to close the socket during an internal restart (collection settings change)
+			// This lock and its partner in Dispose are just there to remove one possibility, which is that the socket was 
+			// busy sending while the server was being shut down, and somehow that caused the problem.
+			lock (this)
 			{
-				socket.Send(message);
+				//note, if there is no open socket, this isn't going to do anything, and
+				//that's (currently) fine.
+				foreach (var socket in _allSockets)
+				{
+					socket.Send(message);
+				}
 			}
 		}
 
 		public void Dispose()
 		{
-			if (_server != null)
+			lock(this)
 			{
-				_server.Dispose();
-				_server = null;
+				if(_server != null)
+				{
+					foreach(var socket in _allSockets)
+					{
+						socket.Close();
+					}
+					_allSockets.Clear();
+					_server.Dispose();
+					_server = null;
+				}
 			}
 		}
 	}

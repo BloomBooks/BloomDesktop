@@ -12,7 +12,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
-using Bloom.SendReceive;
+//using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
 using DesktopAnalytics;
@@ -37,7 +37,7 @@ namespace Bloom.Edit
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly CollectionSettings _collectionSettings;
-		private readonly SendReceiver _sendReceiver;
+		//private readonly SendReceiver _sendReceiver;
 		private HtmlDom _domForCurrentPage;
 		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
 		// is the only resource being used, and there is only one instance of this object.
@@ -79,7 +79,7 @@ namespace Bloom.Edit
 			LibraryClosing libraryClosingEvent,
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
-			SendReceiver sendReceiver,
+			//SendReceiver sendReceiver,
 			EnhancedImageServer server)
 		{
 			_bookSelection = bookSelection;
@@ -88,7 +88,7 @@ namespace Bloom.Edit
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
 			_collectionSettings = collectionSettings;
-			_sendReceiver = sendReceiver;
+			//_sendReceiver = sendReceiver;
 			_server = server;
 			_templatePagesDict = null;
 			_lastPageAdded = String.Empty;
@@ -154,9 +154,10 @@ namespace Bloom.Edit
 				_oldActiveForm = Form.ActiveForm;
 				Application.Idle += ReactivateFormOnIdle;
 				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
-				//won't polute the history
-				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", CurrentBook.TitleBestForUserDisplay));
-
+				//won't pollute the history
+				#if Chorus
+					_sendReceiver.CheckInNow(string.Format("Edited '{0}'", CurrentBook.TitleBestForUserDisplay));
+				#endif
 			}
 		}
 
@@ -625,7 +626,7 @@ namespace Bloom.Edit
 			// We don't really make a file for the page, the contents are just saved in our local server.
 			// But we give it a url that makes it seem to be in the book folder so local urls work.
 			// See EnhancedImageServer.MakeSimulatedPageFileInBookFolder() for more details.
-			var frameText = File.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
+			var frameText = RobustFile.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
 

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Newtonsoft.Json;
 using System.IO;
+using SIL.IO;
 using SIL.Reporting;
 
 
@@ -21,11 +22,11 @@ namespace Bloom.Book
 				return null;
 
 			UserPrefs userPrefs = null;
-			if(File.Exists(fileName))
+			if(RobustFile.Exists(fileName))
 			{
 				try
 				{
-					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(File.ReadAllText(fileName));
+					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(RobustFile.ReadAllText(fileName));
 					if (userPrefs == null)
 						throw new ApplicationException("JsonConvert.DeserializeObject() returned null");
 				}
@@ -81,8 +82,8 @@ namespace Bloom.Book
 			{
 				if(!string.IsNullOrWhiteSpace(prefs))
 				{
-					var temp = new SIL.IO.TempFileForSafeWriting(_filePath);
-					File.WriteAllText(temp.TempFilePath, prefs);
+					var temp = new TempFileForSafeWriting(_filePath);
+					RobustFile.WriteAllText(temp.TempFilePath, prefs);
 					temp.WriteWasSuccessful();
 				}
 			}

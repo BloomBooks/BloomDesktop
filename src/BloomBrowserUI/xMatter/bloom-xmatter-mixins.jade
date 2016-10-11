@@ -23,6 +23,7 @@ mixin image-common(key)
 mixin image-xmatter(key)
 	+image-common(key)&attributes(attributes)
 
+
 mixin page-xmatter(label)
 	+page(label)(data-page="required singleton")&attributes(attributes)
 		block
@@ -47,7 +48,8 @@ mixin field-acknowledgments-localizedVersion
 	//- Why both versionAcknowledgments && inside-cover-version-Credits-Page-style?
 	//-   versionAcknowledgments governs placement on the page, inside-cover-version-Credits-Page-style is a
 	//-   holding place for user style adjustments (like font-size)
-	+editable("N1").versionAcknowledgments.Credits-Page-style.bloom-readOnlyInAuthorMode(data-book="versionAcknowledgments", data-hint="Name of Translator, in {lang}")
+	// removed .bloom-readOnlyInAuthorMode because when you're putting together a shell book, you often have to put in the name of the translator
+	+editable("N1").versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments", data-hint="Name of Translator, in {lang}")
 
 // TODO: this is a mess
 mixin field-acknowledgments-originalVersion
@@ -55,6 +57,25 @@ mixin field-acknowledgments-originalVersion
 		label.bubble Original (or Shell) Acknowledgments in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')
 			| {Original Acknowledgments}
+
+
+//use Bloom's "branding" api (see BrandingApi.cs) to get an image if it exists in the current Branding folder, selected in Settings
+mixin optional-branding-image(key)
+	img(src="/bloom/api/branding/image?id="+key+".png" type='image/png' onerror="this.style.display='none'")&attributes(attributes)
+
+mixin field-bottom-left-branding
+	+optional-branding-image('cover-bottom-left').branding
+
+mixin field-credits-branding
+	.bottomImageWrapper
+		+optional-branding-image('credits-page').branding
+
+mixin field-title-page-branding
+	.bottomImageWrapper
+		+optional-branding-image('title-page').branding
+
+mixin field-cover-branding
+	+optional-branding-image('back-cover-outside').branding
 
 mixin block-licenseAndCopyright
 	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
@@ -99,14 +120,21 @@ mixin factoryStandard-outsideFrontCover
 
 		.bloom-imageContainer.bloom-backgroundImage(data-book='coverImage', style="background-image:url('placeHolder.png')")
 
-			//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
-			// because it is never empty
-		.creditsWrapper(data-hint='You may use this space for author/illustrator, or anything else.')
-			//- 'V' means this field is only available in the vernacular
-			+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.bloom-copyFromOtherLanguageIfNecessary.Cover-Default-style
-		.bottomBlock.test
-			.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
-			+chooser-topic.coverBottomBookTopic
+		// 2 columns: first for an optional logo, then text content
+		.bottomBlock
+			+field-bottom-left-branding.bottom-left-branding
+
+			// 2 rows
+			.bottomTextContent
+				//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
+				// because it is never empty
+				.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
+					//- 'V' means this field is only available in the vernacular
+					+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.bloom-copyFromOtherLanguageIfNecessary.Cover-Default-style
+
+				.bottomRow
+					.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
+					+chooser-topic.coverBottomBookTopic
 
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE
@@ -119,28 +147,42 @@ mixin factoryStandard-credits-interiorPage
 		+credits-contents
 
 mixin credits-contents
+		+field-acknowledgments-originalVersion
 		+block-licenseAndCopyright
 		+field-ISBN
-		+field-acknowledgments-originalVersion
 		+field-acknowledgments-localizedVersion
+		+field-credits-branding
 
 mixin factoryStandard-titlePage
-	// TITLE PAGE
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
-		+field-prototypeDeclaredExplicity#titlePageTitleBlock
-			label.bubble Book title in {lang}
-			+editable(kLanguageForPrototypeOnly).Title-On-Title-Page-style(data-book='bookTitle')
-		+field-prototypeDeclaredExplicity#originalContributions
-			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
-			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Original-Contributors-On-Title-Page-style(data-book='originalContributions')
-		+field-prototypeDeclaredExplicity#funding
-			label.bubble Use this to acknowledge any funding agencies.
-			+editable(kLanguageForPrototypeOnly).funding.Funding-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
-		#languageInformation
-			.languagesOfBook(data-book='languagesOfBook')
-			//- review: can we get rid of these "langName" classes?
-			.langName('data-library'='dialect')
-			.langName(data-library='languageLocation').bloom-writeOnly
+		+title-page-contents
+
+mixin standard-titlePage-inside-front-cover
+	+page-xmatter('Inside Front Cover').cover.coverColor.titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#aacd48aa-aaab-4a07-afd4-6a24d03983aa
+		+title-page-contents
+
+mixin standard-creditsPage-back-cover
+	//re data-export: if we export this, we still want to export it as front matter
+	+page-xmatter('Inside Back Cover').cover.coverColor.credits.bloom-backMatter(data-export='front-matter-credits-page')&attributes(attributes)#bbcd48aa-bbab-4a07-afd4-6a24d03983bb
+		+credits-contents
+
+mixin title-page-contents
+	// TITLE PAGE
+	+field-prototypeDeclaredExplicity#titlePageTitleBlock
+		label.bubble Book title in {lang}
+		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+	+field-prototypeDeclaredExplicity#originalContributions
+		label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
+		+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
+	+field-prototypeDeclaredExplicity#funding
+		label.bubble Use this to acknowledge any funding agencies.
+		+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+	#languageInformation.Content-On-Title-Page-style
+		.languagesOfBook(data-book='languagesOfBook')
+		//- review: can we get rid of these "langName" classes?
+		.langName('data-library'='dialect')
+		.langName(data-library='languageLocation').bloom-writeOnly
+	+field-title-page-branding
 
 mixin standard-blankInsideFrontCover
 	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
@@ -159,10 +201,10 @@ mixin factoryStandard-outsideBackCover
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
+		+field-cover-branding
 
 mixin standard-ISOLanguageCode
 	.iso693Code
 		// TODO we need this to be localizable, so we can have "ISO 639-3 Language Code" or "Code langue ISO 639-3"
 		| ISO 639 Language Code:
 		DIV(data-collection='iso639Code')
-

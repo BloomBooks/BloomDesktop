@@ -1,4 +1,5 @@
-﻿namespace Bloom.CollectionTab
+﻿#if CHORUS
+namespace Bloom.CollectionTab
 {
 	partial class HistoryAndNotesDialog
 	{
@@ -20,7 +21,7 @@
 			base.Dispose(disposing);
 		}
 
-		#region Windows Form Designer generated code
+#region Windows Form Designer generated code
 
 		/// <summary>
 		/// Required method for Designer support - do not modify
@@ -101,7 +102,7 @@
 
 		}
 
-		#endregion
+#endregion
 
 		private System.Windows.Forms.TabControl tabControl1;
 		private System.Windows.Forms.TabPage _historyPage;
@@ -109,3 +110,4 @@
 		private System.Windows.Forms.Button _closeButton;
 	}
 }
+#endif

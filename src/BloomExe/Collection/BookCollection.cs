@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
-using File = System.IO.File;
 
 namespace Bloom.Collection
 {
@@ -56,9 +55,9 @@ namespace Bloom.Collection
 		private void MakeCollectionCSSIfMissing()
 		{
 			string path = Path.Combine(_path, "customCollectionStyles.css");
-			if(File.Exists(path))
+			if(RobustFile.Exists(path))
 				return;
-			File.Copy(BloomFileLocator.GetBrowserFile("bookLayout", "collection styles override template.css"), path);
+			RobustFile.Copy(BloomFileLocator.GetBrowserFile("bookLayout", "collection styles override template.css"), path);
 		}
 
 		public CollectionType Type { get; private set; }
@@ -123,7 +122,7 @@ namespace Bloom.Collection
 					continue;
 				if (Path.GetFileName(folder.FullName).ToLowerInvariant().Contains("xmatter"))
 					continue;
-				if(File.Exists(Path.Combine(folder.FullName, ".bloom-ignore")))
+				if(RobustFile.Exists(Path.Combine(folder.FullName, ".bloom-ignore")))
 					continue;
 				AddBookInfo(folder.FullName);
 			}
@@ -180,7 +179,7 @@ namespace Bloom.Collection
 				Logger.WriteError("Reading "+ jsonPath, e);
 				try
 				{
-					Logger.WriteEvent(jsonPath +" Contents: " +System.Environment.NewLine+ File.ReadAllText(jsonPath));
+					Logger.WriteEvent(jsonPath +" Contents: " +System.Environment.NewLine+ RobustFile.ReadAllText(jsonPath));
 				}
 				catch(Exception readError)
 				{

@@ -113,8 +113,8 @@ namespace Bloom
 				// where we will put a version-independent icon
 				try
 				{
-					if (File.Exists(versionIconPath))
-						File.Copy(versionIconPath, iconPath, true);
+					if (RobustFile.Exists(versionIconPath))
+						RobustFile.Copy(versionIconPath, iconPath, true);
 				}
 				catch (Exception)
 				{

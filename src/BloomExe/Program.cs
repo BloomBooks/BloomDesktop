@@ -168,10 +168,10 @@ namespace Bloom
 							if (path.ToLowerInvariant().StartsWith("bloom://"))
 							{
 								path = path.Substring("bloom://".Length);
-								if (!File.Exists(path))
+								if (!RobustFile.Exists(path))
 								{
 									path = FileLocator.GetFileDistributedWithApplication(true, path);
-									if (!File.Exists(path))
+									if (!RobustFile.Exists(path))
 										return;
 								}
 							}
@@ -558,7 +558,7 @@ namespace Bloom
 
 			if (!string.IsNullOrEmpty(path))
 			{
-				CollectionChoosing.OpenCreateCloneControl.CheckForBeingInDropboxFolder(path);
+				//CollectionChoosing.OpenCreateCloneControl.CheckForBeingInDropboxFolder(path);
 				while (CollectionChoosing.OpenCreateCloneControl.IsInvalidCollectionToEdit(path))
 				{
 					// Somehow...from a previous version?...we have an invalid file in our MRU list.
@@ -660,7 +660,7 @@ namespace Bloom
 				//if(Settings.Default.MruProjects.Latest == null)
 				//{
 				//	var path = NewCollectionWizard.CreateNewCollection();
-				//	if (!string.IsNullOrEmpty(path) && File.Exists(path))
+				//	if (!string.IsNullOrEmpty(path) && RobustFile.Exists(path))
 				//	{
 				//		OpenCollection(path);
 				//		return;
@@ -696,6 +696,7 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		static void HandleProjectWindowClosed(object sender, EventArgs e)
 		{
+			#if Chorus
 			try
 			{
 				_projectContext.SendReceiver.CheckPointWithDialog("Storing History Of Your Work");
@@ -704,6 +705,7 @@ namespace Bloom
 			{
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
 			}
+			#endif
 
 			_projectContext.Dispose();
 			_projectContext = null;
@@ -861,7 +863,6 @@ namespace Bloom
 		{
 			if (_errorHandlingHasBeenSetUp)
 				return;
-
 			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);
 			ExceptionReportingDialog.PrivacyNotice = string.Format(@"If you don't care who reads your bug report, you can skip this notice.
 
@@ -878,7 +879,6 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
 			_errorHandlingHasBeenSetUp = true;
 		}
-
 
 		public static void OldVersionCheck()
 		{
@@ -964,13 +964,13 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			foreach(var entry in filesToCheck)
 			{
 				var destFile = entry.Value;
-				if (!File.Exists(destFile))
+				if (!RobustFile.Exists(destFile))
 				{
 					var sourceFile = Path.Combine(sourceDir, "debian", entry.Key);
-					if (File.Exists(sourceFile))
+					if (RobustFile.Exists(sourceFile))
 					{
 						updateNeeded = true;
-						File.Copy(sourceFile, destFile);
+						RobustFile.Copy(sourceFile, destFile);
 					}
 				}
 			}
@@ -1083,11 +1083,11 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 				Logger.WriteEvent("Cannot open user config file "+ex.Filename);
 				Logger.WriteEvent(ex.Message);
 
-				if (File.Exists(ex.Filename))
+				if (RobustFile.Exists(ex.Filename))
 				{
-					Logger.WriteEvent("Config file content:\n{0}", File.ReadAllText(ex.Filename));
+					Logger.WriteEvent("Config file content:\n{0}", RobustFile.ReadAllText(ex.Filename));
 					Logger.WriteEvent("Deleting "+ ex.Filename);
-					File.Delete(ex.Filename);
+					RobustFile.Delete(ex.Filename);
 					Properties.Settings.Default.Upgrade();
 					// Properties.Settings.Default.Reload();
 					// you could optionally restart the app instead

@@ -10,6 +10,7 @@ using SIL.Windows.Forms.WritingSystems;
 using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Bloom.Collection
 {
@@ -38,7 +39,6 @@ namespace Bloom.Collection
 				_language3Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language3InSourceCollection", "Language 3", "In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label");
 			}
 
-			_showSendReceive.Checked = Settings.Default.ShowSendReceive;
 			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
 			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
 			// AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
@@ -56,20 +56,6 @@ namespace Bloom.Collection
 //		                                                  UpdateDisplay();
 //		                                              };
 
-			switch(Settings.Default.ImageHandler)
-			{
-				case "":
-					_useImageServer.CheckState = CheckState.Checked;
-					break;
-				case "off":
-					_useImageServer.CheckState = CheckState.Unchecked;
-					break;
-				case "http":
-					_useImageServer.CheckState = CheckState.Checked;
-					break;
-			}
-
-			_useImageServer.CheckStateChanged += _useImageServer_CheckedChanged;
 
 			UpdateDisplay();
 		}
@@ -201,6 +187,10 @@ namespace Bloom.Collection
 			{
 				_collectionSettings.DefaultLanguage3FontName = _fontComboLanguage3.SelectedItem.ToString();
 			}
+			if (_brandingCombo.SelectedItem != null)
+			{
+				_collectionSettings.BrandingProjectName = _brandingCombo.SelectedItem.ToString();
+			}
 
 			//no point in letting them have the Nat lang 2 be the same as 1
 			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
@@ -235,37 +225,6 @@ namespace Bloom.Collection
 			}
 		}
 
-		private void _useImageServer_CheckedChanged(object sender, EventArgs e)
-		{
-			if (_useImageServer.CheckState == CheckState.Unchecked
-				//&& (Settings.Default.ImageHandler == "http" || Settings.Default.ImageHandler == "")
-	&& DialogResult.Yes != MessageBox.Show(
-	"Don't turn the image server off unless you are trying to solve a problem... it will likely just cause other problems.\r\n\r\n Really turn it off?", "Really?", MessageBoxButtons.YesNo))
-			{
-				var oldRestartRequired = _restartRequired;//don't restart if they repented of clicking the button
-				_useImageServer.CheckState = CheckState.Checked;
-				_restartRequired = oldRestartRequired;
-				UpdateDisplay();
-				return;
-			}
-
-			switch(_useImageServer.CheckState)
-			{
-				case CheckState.Unchecked:
-					Settings.Default.ImageHandler = "off";
-					break;
-				case CheckState.Checked:
-					Settings.Default.ImageHandler = "http";
-					break;
-//				case CheckState.Indeterminate:
-//					Settings.Default.ImageHandler = "";//leave at default
-//					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-			ChangeThatRequiresRestart();
-		}
-
 		private void ChangeThatRequiresRestart()
 		{
 			if (!_loaded)//ignore false events that come while setting upt the dialog
@@ -287,6 +246,7 @@ namespace Bloom.Collection
 			_districtText.Text = _collectionSettings.District;
 			_bloomCollectionName.Text = _collectionSettings.CollectionName;
 			LoadFontCombo();
+			LoadBrandingCombo();
 			AdjustFontComboDropdownWidth();
 			
 			_loaded = true;
@@ -306,12 +266,7 @@ namespace Bloom.Collection
 				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
 					continue;
 
-				var labelToShow = pack.Key;
-				if (labelToShow == "Factory")
-				{
-					labelToShow = "Paper Saver";
-				}
-				labelToShow = LocalizationManager.GetDynamicString("Bloom","CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."+labelToShow, labelToShow, "Name of a Front/Back Matter Pack");
+				var labelToShow = LocalizationManager.GetDynamicString("Bloom","CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."+pack.Key, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
 				var item = _xmatterList.Items.Add(labelToShow);
 				item.Tag = pack;
 				if(pack.Key == _collectionSettings.XMatterPackName)
@@ -348,6 +303,18 @@ namespace Bloom.Collection
 					_fontComboLanguage2.SelectedIndex = _fontComboLanguage2.Items.Count - 1;
 				if (font == _collectionSettings.DefaultLanguage3FontName)
 					_fontComboLanguage3.SelectedIndex = _fontComboLanguage3.Items.Count - 1;
+			}
+		}
+
+		private void LoadBrandingCombo()
+		{
+			var brandingDirectory = BloomFileLocator.GetDirectoryDistributedWithApplication("branding");
+			foreach(var brandDirectory in Directory.GetDirectories(brandingDirectory))
+			{
+				var brand = Path.GetFileName(brandDirectory);
+				_brandingCombo.Items.Add(brand);
+				if (brand == _collectionSettings.BrandingProjectName)
+					_brandingCombo.SelectedIndex = _brandingCombo.Items.Count - 1;
 			}
 		}
 
@@ -413,12 +380,6 @@ namespace Bloom.Collection
 		{
 			if (_fontComboLanguage3.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage3FontName.ToLower())
 				ChangeThatRequiresRestart();
-		}
-
-		private void _showSendReceive_CheckedChanged(object sender, EventArgs e)
-		{
-			Settings.Default.ShowSendReceive = _showSendReceive.Checked;
-			ChangeThatRequiresRestart();
 		}
 
 		private void _showExperimentalTemplates_CheckedChanged(object sender, EventArgs e)
@@ -494,6 +455,12 @@ namespace Bloom.Collection
 					ChangeThatRequiresRestart();
 				}
 			}
+		}
+
+		private void _brandingCombo_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (_brandingCombo.SelectedItem.ToString() != _collectionSettings.BrandingProjectName)
+				ChangeThatRequiresRestart();
 		}
 	}
 }
