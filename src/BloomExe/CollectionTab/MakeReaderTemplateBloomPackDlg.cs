@@ -29,9 +29,7 @@ namespace Bloom.CollectionTab
 		{
 			_bookList.SuspendLayout();
 			_bookList.Items.Clear();
-			var titles = files.Where(f => f !=null); //added to bandaid overBL-3774 since we could not reproduce
-			if(titles.Count() < files.Count())
-				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Please Report problem with one or more titles (BL-3774)");
+			var titles = files.Where(f => !string.IsNullOrWhiteSpace(f));
 			_bookList.Items.AddRange(titles.ToArray());
 			_bookList.ResumeLayout();
 		}
