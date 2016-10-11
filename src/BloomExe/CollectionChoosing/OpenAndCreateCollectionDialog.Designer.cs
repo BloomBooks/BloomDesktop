@@ -20,7 +20,7 @@
 			base.Dispose(disposing);
 		}
 
-		#region Windows Form Designer generated code
+#region Windows Form Designer generated code
 
 		/// <summary>
 		/// Required method for Designer support - do not modify
@@ -81,7 +81,7 @@
 
 		}
 
-		#endregion
+#endregion
 
         private OpenCreateCloneControl _openAndCreateControl;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;

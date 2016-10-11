@@ -12,13 +12,13 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
-using Bloom.SendReceive;
+//using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
 using Bloom.web;
 using Bloom.web.controllers;
-using Chorus;
+//using Chorus;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -125,13 +125,13 @@ namespace Bloom
 
 					try
 					{
-						//nb: we split out the ChorusSystem.Init() so that this won't ever fail, so we have something registered even if we aren't
+#if Chorus                      //nb: we split out the ChorusSystem.Init() so that this won't ever fail, so we have something registered even if we aren't
 						//going to be able to do HG for some reason.
 						var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
 						builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
 						builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, () => ProjectWindow))
 							.InstancePerLifetimeScope();
-#if USING_CHORUS
+
 					chorusSystem.Init(string.Empty/*user name*/);
 #endif
 					}
@@ -164,7 +164,10 @@ namespace Bloom
 
 					builder.Register<LibraryModel>(
 						c =>
-							new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(),
+							new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(),
+							#if Chorus
+								c.Resolve<SendReceiver>(),
+							#endif
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>())).InstancePerLifetimeScope();
@@ -460,10 +463,12 @@ namespace Bloom
 			}
 		}
 
+#if CHORUS
 		public SendReceiver SendReceiver
 		{
 			get { return _scope.Resolve<SendReceiver>(); }
 		}
+#endif
 
 		internal BloomFileLocator OptimizedFileLocator
 		{

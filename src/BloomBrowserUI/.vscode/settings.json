@@ -1,4 +1,4 @@
-// Place your settings in this file to overwrite default and user settings. 
+// Place your settings in this file to overwrite default and user settings.
 // This can be checked in
 {
     "search.exclude": {
@@ -7,7 +7,8 @@
 		"*.map": true,
 		"**/output":true
 	},
-    
+
     // Controls if the editor will insert spaces for tabs. Accepted values:  "auto", true, false. If set to "auto", the value will be guessed when a file is opened.
-	"editor.insertSpaces": "auto"
+	"editor.detectIndentation": true,
+	"editor.formatOnSave": true
 }

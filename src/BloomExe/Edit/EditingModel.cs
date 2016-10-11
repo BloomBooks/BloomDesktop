@@ -13,7 +13,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
-using Bloom.SendReceive;
+//using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
 using DesktopAnalytics;
@@ -37,7 +37,7 @@ namespace Bloom.Edit
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly CollectionSettings _collectionSettings;
-		private readonly SendReceiver _sendReceiver;
+		//private readonly SendReceiver _sendReceiver;
 		private HtmlDom _domForCurrentPage;
 		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
 		// is the only resource being used, and there is only one instance of this object.
@@ -78,7 +78,7 @@ namespace Bloom.Edit
 			LibraryClosing libraryClosingEvent,
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
-			SendReceiver sendReceiver,
+			//SendReceiver sendReceiver,
 			EnhancedImageServer server,
 			BloomWebSocketServer webSocketServer)
 		{
@@ -87,7 +87,7 @@ namespace Bloom.Edit
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
 			_collectionSettings = collectionSettings;
-			_sendReceiver = sendReceiver;
+			//_sendReceiver = sendReceiver;
 			_server = server;
 			_webSocketServer = webSocketServer;
 			_templatePagesDict = null;
@@ -165,9 +165,10 @@ namespace Bloom.Edit
 				_oldActiveForm = Form.ActiveForm;
 				Application.Idle += ReactivateFormOnIdle;
 				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
-				//won't polute the history
-				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", CurrentBook.TitleBestForUserDisplay));
-
+				//won't pollute the history
+				#if Chorus
+					_sendReceiver.CheckInNow(string.Format("Edited '{0}'", CurrentBook.TitleBestForUserDisplay));
+				#endif
 			}
 		}
 

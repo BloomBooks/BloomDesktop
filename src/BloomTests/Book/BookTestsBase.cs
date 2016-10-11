@@ -12,7 +12,7 @@ using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
-using SIL.Retry;
+using SIL.Code;
 using SIL.TestUtilities;
 using RobustIO = Bloom.RobustIO;
 

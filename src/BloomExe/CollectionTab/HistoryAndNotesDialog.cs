@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿#if CHORUS
+using System.Windows.Forms;
 using Chorus;
 
 namespace Bloom.CollectionTab
@@ -32,3 +33,4 @@ namespace Bloom.CollectionTab
 		}
 	}
 }
+#endif

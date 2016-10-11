@@ -9,7 +9,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<description>{Bloom description and version provided by build script}</description>
     <releaseNotes>None</releaseNotes>
-    <copyright>Copyright SIL International 2015</copyright>
+    <copyright>Copyright SIL International 2016</copyright>
 	<iconUrl>https://s3.amazonaws.com/bloomlibrary.org/squirrel/BloomSetup.ico</iconUrl>
   </metadata>
 	<files>
@@ -19,8 +19,9 @@
 		<file src="..\..\output\release\Bloom*.pdb" exclude="**\*Tests.*;**\*Chorus*.*" target="lib\net45\"/>
 		<file src="..\..\output\release\SIL.*.pdb" target="lib\net45\"/> <!-- Palaso library debug symbols -->
 		<file src="..\..\distfiles\**\*.*"  target="lib\net45\"/>
-		<file src="..\..\Mercurial\**\*.*" target="\lib\net45\Mercurial"/>
+		<!-- <file src="..\..\Mercurial\**\*.*" target="\lib\net45\Mercurial"/>
 		<file src="..\..\MercurialExtensions\**\*.*" target="\lib\net45\MercurialExtensions"/>
+		 -->
 		<file src="..\..\output\browser\**\*.*" target="\lib\net45\browser" exclude="**\*.ts;**\*.map;**\*.jade;**\*.less;**\*Spec.js;**\*.jsx"/>
 		<file src="Bloom*.ico" target="\lib\net45\"/>
 		<file src="..\..\src\BloomBrowserUI\**\*.*" target="\lib\net45\BloomBrowserUI" exclude="..\..\src\BloomBrowserUI\node_modules\**\*.*"/>

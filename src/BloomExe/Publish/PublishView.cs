@@ -494,8 +494,10 @@ namespace Bloom.Publish
 			_model.PrepareToStageEpub();
 			if (!_publishWithoutAudio && !LameEncoder.IsAvailable() && _model.IsCompressedAudioMissing)
 			{
-				var missingLameModulePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "ePUB", "MissingLameModule.htm");
-				_epubPreviewBrowser.Navigate(missingLameModulePath, false);
+				var fileLocator = _model.BookSelection.CurrentSelection.GetFileLocator();
+				var englishMissingLameModulePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "MissingLameModule-en.html");
+				var localizedMissingLameModulePath = BloomFileLocator.GetBestLocalizedFile(englishMissingLameModulePath);
+				_epubPreviewBrowser.Navigate(localizedMissingLameModulePath, false);
 				_epubPreviewBrowser.OnBrowserClick += (sender, e) =>
 				{
 					var element = (GeckoHtmlElement)(e as DomEventArgs).Target.CastToGeckoElement();
@@ -530,7 +532,8 @@ namespace Bloom.Publish
 			// approach at least works.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
 
-			var previewHtmlTemplatePath = fileLocator.LocateFileWithThrow("ePUB/bloomEpubPreview.html");
+			var englishTemplatePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "bloomEpubPreview-en.html");
+			var localizedTemplatePath = BloomFileLocator.GetBestLocalizedFile(englishTemplatePath);
 
 			var audioSituationClass = "noAudioAvailable";
 			if(_publishWithoutAudio)
@@ -538,7 +541,7 @@ namespace Bloom.Publish
 			else if(_model.BookHasAudio)
 				audioSituationClass = "isTalkingBook";
 
-			var htmlContents = RobustFile.ReadAllText(previewHtmlTemplatePath)
+			var htmlContents = RobustFile.ReadAllText(localizedTemplatePath)
 				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory))
 				.Replace("_AudioSituationClass_", audioSituationClass);
 

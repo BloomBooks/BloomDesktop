@@ -762,6 +762,7 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		static void HandleProjectWindowClosed(object sender, EventArgs e)
 		{
+			#if Chorus
 			try
 			{
 				_projectContext.SendReceiver.CheckPointWithDialog("Storing History Of Your Work");
@@ -770,6 +771,7 @@ namespace Bloom
 			{
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
 			}
+			#endif
 
 			_projectContext.Dispose();
 			_projectContext = null;
@@ -928,6 +930,7 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		internal static void SetUpErrorHandling()
 		{
+			return;
 			if (_errorHandlingHasBeenSetUp)
 				return;
 			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);

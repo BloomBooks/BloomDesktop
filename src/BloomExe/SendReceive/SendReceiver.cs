@@ -1,9 +1,11 @@
-﻿using System;
+﻿#if CHORUS
+using System;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Chorus;
 using Chorus.UI.Sync;
 using SIL.Code;
+
 using SIL.Reporting;
 
 namespace Bloom.SendReceive
@@ -139,3 +141,4 @@ namespace Bloom.SendReceive
 		}
 	}
 }
+#endif
