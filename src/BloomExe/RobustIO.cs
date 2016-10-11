@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NAudio.Wave;
-using SIL.Retry;
+using SIL.Code;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using TidyManaged;
