@@ -624,7 +624,7 @@ namespace Bloom
 
 			if (!string.IsNullOrEmpty(path))
 			{
-				CollectionChoosing.OpenCreateCloneControl.CheckForBeingInDropboxFolder(path);
+				//CollectionChoosing.OpenCreateCloneControl.CheckForBeingInDropboxFolder(path);
 				while (CollectionChoosing.OpenCreateCloneControl.IsInvalidCollectionToEdit(path))
 				{
 					// Somehow...from a previous version?...we have an invalid file in our MRU list.
@@ -930,7 +930,6 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		internal static void SetUpErrorHandling()
 		{
-			return;
 			if (_errorHandlingHasBeenSetUp)
 				return;
 			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);

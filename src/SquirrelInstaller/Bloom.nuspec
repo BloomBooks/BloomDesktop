@@ -18,7 +18,8 @@
 		This pattern should cover Bloom.pdb or BloomAlpha.pdb or anything similar (but we don't need BloomTests.pdb or BloomChorusPlugin.pdb).-->
 		<file src="..\..\output\release\Bloom*.pdb" exclude="**\*Tests.*;**\*Chorus*.*" target="lib\net45\"/>
 		<file src="..\..\output\release\SIL.*.pdb" target="lib\net45\"/> <!-- Palaso library debug symbols -->
-		<file src="..\..\distfiles\**\*.*"  target="lib\net45\"/>
+		<!-- Starting with 3.8 we can switch to svgs for branding, but in 3.7 gecko makes them fuzzy in pdfs, so don't ship the svgs -->
+		<file src="..\..\distfiles\**\*.*"  target="lib\net45\" exclude="**\branding\*.svg"/>
 		<!-- <file src="..\..\Mercurial\**\*.*" target="\lib\net45\Mercurial"/>
 		<file src="..\..\MercurialExtensions\**\*.*" target="\lib\net45\MercurialExtensions"/>
 		 -->
@@ -26,9 +27,9 @@
 		<file src="Bloom*.ico" target="\lib\net45\"/>
 		<file src="..\..\src\BloomBrowserUI\**\*.*" target="\lib\net45\BloomBrowserUI" exclude="..\..\src\BloomBrowserUI\node_modules\**\*.*"/>
 
-		<!-- Starting with 3.7, for JS modules we get via javascript import, webpack bundles them into outpt/browser and so don't need to be mentioned. 
+		<!-- Starting with 3.7, for JS modules we get via javascript import, webpack bundles them into outpt/browser and so don't need to be mentioned.
 			However any that still show up in html <script> tags need to be added here (especially, see editalbePage.tss).
-			
+
 			Also, some note modules have their own stylesheets. Ideally, these should be @import-ed in one of our less files.
 			If not, they too need to be listed here. -->
 

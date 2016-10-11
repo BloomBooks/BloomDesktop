@@ -213,7 +213,7 @@
 		already exists from a previous build. -->
 		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe $(RootDir)\output\$(Configuration)\Bloom$(channel).exe"/>
 		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe.config $(RootDir)\output\$(Configuration)\Bloom$(channel).exe.config"/>
-		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom$(channel).pdb"/>
+		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom.pdb"/>
 		<Message Text="Making Nuget package: $(Version)" Importance="high"  />
 
 		<!-- Bloom expects an icon with a name corresponding to the EXE, which gets used for the desktop shortcut.
