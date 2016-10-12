@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+#if !__MonoCS__
 using NAudio.Wave;
+#endif
 using SIL.Code;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
@@ -19,10 +21,12 @@ namespace Bloom
 	/// </summary>
 	public class RobustIO
 	{
+#if !__MonoCS__
 		public static WaveFileReader CreateWaveFileReader(string wavFile)
 		{
 			return RetryUtility.Retry(() => new WaveFileReader(wavFile));
 		}
+#endif
 
 		public static Document DocumentFromFile(string filePath)
 		{
