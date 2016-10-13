@@ -95,4 +95,4 @@ Andika-R.ttf
 *~
 Bloom/
 .vs/config/applicationhost.config
-
+build/Bloom*.nupkg
