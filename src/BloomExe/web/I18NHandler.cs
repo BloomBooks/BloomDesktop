@@ -83,17 +83,28 @@ namespace Bloom.Api
 					}
 					else
 					{
-						// it's ok if we don't have a translation, but if the string isn't even in the list of things that need translating,
-						// then we want to remind the developer to add it to the english tmx file.
-						if(!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
+						// Don't report missing strings if they are numbers
+						// Enhance: We might get the Javascript to do locale specific numbers someday
+						// The C# side doesn't currently have the smarts to do DigitSubstitution
+						// See Remark at https://msdn.microsoft.com/en-us/library/system.globalization.numberformatinfo.digitsubstitution(v=vs.110).aspx
+						if (IsInteger(id))
 						{
-							ReportL10NMissingString(id, englishText);
+							englishText = id;
 						}
-						else 
+						else
 						{
-							//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
-							// And return the English string, which is what we would do the next time anyway.  (BL-3374)
-							LocalizationManager.GetDynamicString("Bloom", id, englishText);
+							// it's ok if we don't have a translation, but if the string isn't even in the list of things that need translating,
+							// then we want to remind the developer to add it to the english tmx file.
+							if (!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
+							{
+								ReportL10NMissingString(id, englishText);
+							}
+							else
+							{
+								//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
+								// And return the English string, which is what we would do the next time anyway.  (BL-3374)
+								LocalizationManager.GetDynamicString("Bloom", id, englishText);
+							}
 						}
 						info.ContentType = "text/plain";
 						info.WriteCompleteOutput(englishText);
@@ -132,17 +143,34 @@ namespace Bloom.Api
 			}
 			else
 			{
-				// We don't have the string in the desired localization, so will return the English.
-				translation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", key, null, null, "en");
-				// If somehow we don't have even an English version of it, keep whatever was in the element
-				// to begin with.
-				if (string.IsNullOrWhiteSpace(translation))
+				// Don't report missing strings if they are numbers
+				// Enhance: We might get the Javascript to do locale specific numbers someday
+				// The C# side doesn't currently have the smarts to do DigitSubstitution
+				// See Remark at https://msdn.microsoft.com/en-us/library/system.globalization.numberformatinfo.digitsubstitution(v=vs.110).aspx
+				if (IsInteger(key))
 				{
-					translation = defaultCurrent;
-					ReportL10NMissingString(key, translation);
+					translation = key;
+				}
+				else
+				{
+					// We don't have the string in the desired localization, so will return the English.
+					translation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", key, null, null, "en");
+					// If somehow we don't have even an English version of it, keep whatever was in the element
+					// to begin with.
+					if (string.IsNullOrWhiteSpace(translation))
+					{
+						translation = defaultCurrent;
+						ReportL10NMissingString(key, translation);
+					}
 				}
 			}
 			return translation;
+		}
+
+		private static bool IsInteger(string key)
+		{
+			int dummy;
+			return int.TryParse(key, out dummy);
 		}
 
 		private static void ReportL10NMissingString(string id, string englishText)
