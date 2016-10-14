@@ -16,6 +16,7 @@ using Bloom.Api;
 using DesktopAnalytics;
 using SIL.IO;
 using PdfDroplet.LayoutMethods;
+using SIL.Progress;
 
 namespace Bloom.Publish
 {
@@ -109,6 +110,9 @@ namespace Bloom.Publish
 
 			try
 			{
+				// In case we have any new settings since the last time we were in the Edit tab (BL-3881)
+				_currentlyLoadedBook.BringBookUpToDate(new NullProgress());
+
 				using(var tempHtml = MakeFinalHtmlForPdfMaker())
 				{
 					if (doWorkEventArgs.Cancel)

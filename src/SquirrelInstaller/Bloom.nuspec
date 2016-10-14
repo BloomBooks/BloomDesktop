@@ -13,7 +13,7 @@
 	<iconUrl>https://s3.amazonaws.com/bloomlibrary.org/squirrel/BloomSetup.ico</iconUrl>
   </metadata>
 	<files>
-		<file src="..\..\output\release\**\*.*" exclude="*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;remoteDebugging" target="lib\net45\"/>
+		<file src="..\..\output\release\**\*.*" exclude="*.xml;Bloom.vshost.exe;**\*.pdb;**\BloomTests.*;remoteDebugging;**\Moq.*" target="lib\net45\"/>
 		<!-- Having excluded all pdbs, we do want the main one for the Bloom exe, so we get better stack dumps.
 		This pattern should cover Bloom.pdb or BloomAlpha.pdb or anything similar (but we don't need BloomTests.pdb or BloomChorusPlugin.pdb).-->
 		<file src="..\..\output\release\Bloom*.pdb" exclude="**\*Tests.*;**\*Chorus*.*" target="lib\net45\"/>
