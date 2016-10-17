@@ -785,15 +785,21 @@ namespace BloomTests.Publish
 			GetZipEntry(_epub, "content/audio_2fi0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
 		}
 
+		// Sometimes the tests were failing on TeamCity because the file was in use by another process
+		// (I'm assuming that was another test since a few use the same path).
+		private static readonly object s_thisLock = new object();
 		protected void MakeFakeAudio(string path)
 		{
-			Directory.CreateDirectory(Path.GetDirectoryName(path));
-			// Bloom is going to try to figure its duration, so put a real audio file there.
-			// Some of the paths are for mp4s, but it doesn't hurt to use an mp3.
-			var src = SIL.IO.FileLocator.GetFileDistributedWithApplication("src/BloomTests/Publish/sample_audio.mp3");
-			File.Copy(src, path);
-			var wavSrc = Path.ChangeExtension(src, ".wav");
-			File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);
+			lock (s_thisLock)
+			{
+				Directory.CreateDirectory(Path.GetDirectoryName(path));
+				// Bloom is going to try to figure its duration, so put a real audio file there.
+				// Some of the paths are for mp4s, but it doesn't hurt to use an mp3.
+				var src = SIL.IO.FileLocator.GetFileDistributedWithApplication("src/BloomTests/Publish/sample_audio.mp3");
+				File.Copy(src, path);
+				var wavSrc = Path.ChangeExtension(src, ".wav");
+				File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);
+			}
 		}
 
 		private string GetZipContent(ZipFile zip, string path)
