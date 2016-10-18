@@ -181,10 +181,10 @@ namespace Bloom
 			((IShellLinkW)link).GetPath(sb, sb.Capacity, out data, 0);
 			return sb.ToString();
 #else
-			if (!RobustFile.Exists(filename))
+			if (!SIL.IO.RobustFile.Exists(filename))
 				return string.Empty;
 
-			return RobustFile.ReadAllText(filename);
+			return SIL.IO.RobustFile.ReadAllText(filename);
 #endif
 		}
 	}
