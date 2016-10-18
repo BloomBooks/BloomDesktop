@@ -105,7 +105,6 @@ namespace Bloom
 			}
 
 			//Debug.Fail("Attach Now");
-			bool skipReleaseToken = false;
 			try
 			{
 				Application.EnableVisualStyles();
@@ -222,12 +221,21 @@ namespace Bloom
 					}
 					if (IsBloomBookOrder(args))
 					{
-						skipReleaseToken = HandleDownload(args[0], skipReleaseToken);
+						HandleDownload(args[0]);
+						// If another instance is running, this one has served its purpose and can exit right away. Otherwise,
+						// carry on with starting up normally.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822.
+						if (!UniqueToken.AcquireTokenQuietly(_mutexId))
+							return 0;
 					}
-
-					if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
-						return 1;
-
+					else
+					{
+						// Check whether another instance of Bloom is running.  That should happen only when downloading a book because
+						// BloomLibrary starts a new Bloom process even when one is already running.  But that is taken care of in the
+						// other branch of this if/else.  So quit if we find another instance of Bloom running at this point.
+						// (A message will pop up to tell the user about this situation if it happens.)
+						if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
+							return 1;
+					}
 					OldVersionCheck();
 
 					SetUpErrorHandling();
@@ -311,8 +319,7 @@ namespace Bloom
 			{
 				// Check memory one final time for the benefit of developers.  The user won't see anything.
 				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
-				if (!skipReleaseToken)
-					UniqueToken.ReleaseToken();
+				UniqueToken.ReleaseToken();
 			}
 			return 0;
 		}
@@ -337,10 +344,7 @@ namespace Bloom
 		/// older Bloom will be in trouble.
 		/// Most of the core implementation of the download process is common.
 		/// </summary>
-		/// <param name="order"></param>
-		/// <param name="skipReleaseToken"></param>
-		/// <returns></returns>
-		private static bool HandleDownload(string order, bool skipReleaseToken)
+		private static void HandleDownload(string order)
 		{
 			// We will start up just enough to download the book. This avoids the code that normally tries to keep only a single instance running.
 			// There is probably a pathological case here where we are overwriting an existing template just as the main instance is trying to
@@ -361,26 +365,15 @@ namespace Bloom
 					_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
 				transfer.HandleBloomBookOrder(order);
 				PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
-
-				// If another instance is running, this one has served its purpose and can exit right away.
-				// Otherwise, carry on with starting up normally.
-				if(UniqueToken.AcquireTokenQuietly(_mutexId))
-					Run();
-				else
+				// BL-2143: Don't show download complete message if download was not successful
+				if (!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))
 				{
-					skipReleaseToken = true; // we don't own it, so we better not try to release it
-
-					// BL-2143: Don't show download complete message if download was not successful
-					if(!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))
-					{
-						var caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
-						var message = LocalizationManager.GetString("Download.Completed",
-							@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.");
-						message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
-						MessageBox.Show(message, caption);
-					}
+					var caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
+					var message = LocalizationManager.GetString("Download.Completed",
+						@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.");
+					message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
+					MessageBox.Show(message, caption);
 				}
-				return skipReleaseToken;
 			}
 		}
 
