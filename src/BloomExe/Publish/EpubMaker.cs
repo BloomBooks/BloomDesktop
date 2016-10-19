@@ -389,8 +389,8 @@ namespace Bloom.Publish
 #if __MonoCS__
 						pageDuration += new TimeSpan(new FileInfo(path).Length);	// TODO: this needs to be fixed for Linux/Mono
 #else
-						WaveFileReader wf = RobustIO.CreateWaveFileReader(wavPath);
-						pageDuration += wf.TotalTime;
+						using (WaveFileReader wf = RobustIO.CreateWaveFileReader(wavPath))
+							pageDuration += wf.TotalTime;
 #endif
 					}
 					else
