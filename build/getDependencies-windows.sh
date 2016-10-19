@@ -98,62 +98,55 @@ cd -
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
 #     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [4] build: chorus-win32-master-nostrongname Continuous (bt437)
-#     project: Chorus
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt437
-#     clean: false
-#     revision: bloom-3.7.tcbuildtag
-#     paths: {"policy_9_0_Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "Vulcan.Uczniowie.HelpProvider.dll"=>"output/release", "Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "ChorusMergeModule.msm"=>"build\\ChorusInstallerStuff", "*.exe"=>"lib/dotnet", "*.dll"=>"lib/dotnet", "Mercurial.zip!**"=>".", "MercurialExtensions/**"=>"MercurialExtensions"}
-#     VCS: https://github.com/sillsdev/chorus.git [master]
-# [5] build: geckofx29-win32-continuous (bt399)
+# [4] build: geckofx29-win32-continuous (bt399)
 #     project: GeckoFx
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt399
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"Geckofx-Core.dll"=>"lib/dotnet", "Geckofx-Core.dll.config"=>"lib/dotnet", "Geckofx-Core.pdb"=>"lib/dotnet", "Geckofx-Winforms.dll"=>"lib/dotnet", "Geckofx-Winforms.pdb"=>"lib/dotnet"}
 #     VCS: https://bitbucket.org/geckofx/geckofx-29.0 [default]
-# [6] build: geckofx29-win32-continuous (bt399)
+# [5] build: geckofx29-win32-continuous (bt399)
 #     project: GeckoFx
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt399
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://bitbucket.org/geckofx/geckofx-29.0 [default]
-# [7] build: XulRunner29-win32 (bt400)
+# [6] build: XulRunner29-win32 (bt400)
 #     project: GeckoFx
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt400
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"xulrunner-29.0.1.en-US.win32.zip!**"=>"lib"}
-# [8] build: GeckofxHtmlToPdf-Win32-continuous (bt463)
+# [7] build: GeckofxHtmlToPdf-Win32-continuous (bt463)
 #     project: GeckofxHtmlToPdf
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt463
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/hatton/geckofxHtmlToPdf [refs/heads/master]
-# [9] build: palaso-win32-master-nostrongname Continuous (bt436)
+# [8] build: palaso-win32-master-nostrongname Continuous (bt436)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt436
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"Palaso.BuildTasks.dll"=>"build/", "*.dll"=>"lib/dotnet"}
-#     VCS: https://github.com/sillsdev/libpalaso.git [libpalaso-3.1]
-# [10] build: NAudio continuous (bt402)
+#     VCS: https://github.com/sillsdev/libpalaso.git []
+# [9] build: NAudio continuous (bt402)
 #     project: NAudio
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt402
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"NAudio.dll"=>"lib/dotnet"}
 #     VCS: https://hg.codeplex.com/forks/tombogle/supportlargewavfiles2 []
-# [11] build: PdfDroplet-Win-Dev-Continuous (bt54)
+# [10] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt54
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [12] build: TidyManaged-master-win32-continuous (bt349)
+# [11] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt349
 #     clean: false
@@ -162,18 +155,13 @@ cd -
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
 
 # make sure output directories exist
-mkdir -p ../.
 mkdir -p ../DistFiles
 mkdir -p ../DistFiles/pdf
 mkdir -p ../Downloads
-mkdir -p ../MercurialExtensions
-mkdir -p ../MercurialExtensions/fixutf8
 mkdir -p ../build
 mkdir -p ../build/
-mkdir -p ../build/ChorusInstallerStuff
 mkdir -p ../lib
 mkdir -p ../lib/dotnet
-mkdir -p ../output/release
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.7.tcbuildtag/optipng-0.7.4-win32/optipng.exe ../DistFiles/optipng.exe
@@ -308,6 +296,5 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/bloom-3.7.
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/bloom-3.7.tcbuildtag/libtidy.dll ../lib/dotnet/libtidy.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
-unzip -uqo ../Downloads/Mercurial.zip -d ../.
 unzip -uqo ../Downloads/xulrunner-29.0.1.en-US.win32.zip -d ../lib
 # End of script
