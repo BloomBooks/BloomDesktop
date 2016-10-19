@@ -6,6 +6,10 @@
 
     To unlock the book, go into the toolbox (which lives to the right of the page in the Edit Tab). Click on the icon of gear, and tick the checkbox there. The book will remain unlocked only during the current editing session; the next time you come back to this book, it will be locked again.
 
+- A new "Branding" collection setting allows organizations to specify logos, copyright, and license.
+
+- The Copyright & License box now allows you to select the "Intergovernmental" version of the Creative Commons License.
+
 - Leveled Readers now display the average sentence length, and you can set a maximum average sentence length for the book.
 
 - When you drag the splitters to resize elements on the page, Bloom now shows a percentage indicator. You can use this number to set splitters to the same value on different pages, so that elements line up when they are on facing pages in the printed book.
@@ -17,6 +21,10 @@
 - When you do Help:Report a Problem, Bloom now has a better approach to sending us the problem book, so that you can send us larger books than before.
 
 - Previously, some text-heavy parts of the interface (like the descriptions of various Reader templates and how to use them) could not be translated into a different language. Now they can.
+
+- A new "Super Paper Saver" Front/Back Matter pack puts the title page on the inside of the front cover, and the credits on the inside of the back cover.
+
+- If no topic is set, the language name on the front cover is now centered._
 
 - Over 170 fixes and small improvements.
 
