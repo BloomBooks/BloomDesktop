@@ -52,10 +52,9 @@ namespace BloomTests.WebLibraryIntegration
 		}
 
 		[Test]
-		[ExpectedException(typeof(DirectoryNotFoundException))]
 		public void DownloadBook_DoesNotExist_Throws()
 		{
-			_client.DownloadBook(BloomS3Client.UnitTestBucketName, "notthere", _workFolder.FolderPath);
+			Assert.Throws<DirectoryNotFoundException>(() => _client.DownloadBook(BloomS3Client.UnitTestBucketName, "notthere", _workFolder.FolderPath));
 		}
 	}
 }

@@ -14,13 +14,13 @@ namespace BloomTests
 	[SetUpFixture]
 	public class SetupFixture
 	{
-		[SetUp]
+		[OneTimeSetUp]
 		public void Setup()
 		{
 			Browser.SetUpXulRunner();
 		}
 
-		[TearDown]
+		[OneTimeTearDown]
 		public void TearDown()
 		{
 			Xpcom.Shutdown();

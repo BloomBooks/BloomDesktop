@@ -64,10 +64,10 @@ namespace BloomTests.ToPalaso
 		}
 
 		[Test]
-		[NUnit.Framework.Category("UsesObsoleteExpectedExceptionAttribute"), ExpectedException(typeof (ArgumentNullException))]
+		[Category("UsesObsoleteExpectedExceptionAttribute")]
 		public void AddNewPath_NullPath_Throws()
 		{
-			_MostRecentPathsList.AddNewPath(null);
+			Assert.Throws<ArgumentNullException>(() =>_MostRecentPathsList.AddNewPath(null));
 		}
 
 		[Test]

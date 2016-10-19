@@ -133,8 +133,8 @@ namespace BloomTests.Book
 			var dataDivContent = @"";
 			var metadata = GetMetadata(dataDivContent);
 			Assert.AreEqual("http://creativecommons.org/licenses/by/4.0/", metadata.License.Url, "Expected default CC license");
-			Assert.IsNullOrEmpty(metadata.License.RightsStatement);
-			Assert.IsNullOrEmpty(metadata.CopyrightNotice);
+			Assert.That(metadata.License.RightsStatement, Is.Null.Or.Empty);
+			Assert.That(metadata.CopyrightNotice, Is.Null.Or.Empty);
 		}
 		[Test]
 		public void GetLicenseMetadata_SettingsExistsButHasBogusJson_MetadataMatches()
@@ -143,8 +143,8 @@ namespace BloomTests.Book
 			var dataDivContent = @"{'foo':'bar'}";
 			var metadata = GetMetadata(dataDivContent);
 			Assert.AreEqual("http://creativecommons.org/licenses/by/4.0/", metadata.License.Url, "Expected default CC license");
-			Assert.IsNullOrEmpty(metadata.License.RightsStatement);
-			Assert.IsNullOrEmpty(metadata.CopyrightNotice);
+			Assert.That(metadata.License.RightsStatement, Is.Null.Or.Empty);
+			Assert.That(metadata.CopyrightNotice, Is.Null.Or.Empty);
 		}
 		[Test]
 		public void GetLicenseMetadata_BrandingHasLicenseAndNotesButNotCopyright_MetadataMatches()
@@ -158,7 +158,7 @@ namespace BloomTests.Book
 			var metadata = GetMetadata(dataDivContent);
 			Assert.AreEqual("http://creativecommons.org/licenses/by/3.0/igo/", metadata.License.Url);
 			Assert.AreEqual("These are custom notes.", metadata.License.RightsStatement);
-			Assert.IsNullOrEmpty(metadata.CopyrightNotice);
+			Assert.That(metadata.CopyrightNotice, Is.Null.Or.Empty);
 		}
 
 		[Test]
@@ -191,7 +191,7 @@ namespace BloomTests.Book
 			var metadata = GetMetadata(dataDivContent);
 			Assert.IsTrue(metadata.CopyrightNotice.Contains("2012"));
 			Assert.IsTrue(metadata.License is NullLicense);
-			Assert.IsNullOrEmpty(metadata.License.RightsStatement);
+			Assert.That(metadata.License.RightsStatement, Is.Null.Or.Empty);
 		}
 
 

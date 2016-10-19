@@ -104,10 +104,9 @@ namespace BloomTests.WebLibraryIntegration
 		}
 
 		[Test]
-		[ExpectedException(typeof(ApplicationException))]
 		public void CreateBookRecord_NotLoggedIn_Throws()
 		{
-			_client.CreateBookRecord("{\"bookInstanceId\":\"123\"}");
+			Assert.Throws<ApplicationException>(() =>_client.CreateBookRecord("{\"bookInstanceId\":\"123\"}"));
 		}
 
 		/// <summary>

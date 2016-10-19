@@ -32,7 +32,7 @@ namespace BloomTests.Book
 			Assert.AreEqual(3, x.Count());
 			Assert.AreEqual("A5", x.First().SizeAndOrientation.PageSizeName);
 			Assert.IsFalse(x.First().SizeAndOrientation.IsLandScape);
-			Assert.IsNullOrEmpty(x.First().Style);
+			Assert.That(x.First().Style, Is.Null.Or.Empty);
 
 			Layout a4landscapeDefault = x.ToArray()[1];
 			Assert.AreEqual("A4", a4landscapeDefault.SizeAndOrientation.PageSizeName);

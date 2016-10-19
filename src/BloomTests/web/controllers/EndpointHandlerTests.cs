@@ -77,11 +77,11 @@ namespace BloomTests.web
 			Assert.That(result, Is.EqualTo("OK"));
 		}
 
-		[Test,ExpectedException]
+		[Test]
 		public void Get_Unrecognized_Throws()
 		{
-			var result = ApiTest.GetString(_server, endPoint: "foo[0-9]bar", endOfUrlForTest: "foobar",
-				 handler: request => request.Succeeded());
+			Assert.Throws<System.Net.WebException>(() => ApiTest.GetString(_server, endPoint: "foo[0-9]bar", endOfUrlForTest: "foobar",
+				 handler: request => request.Succeeded()));
 		}
 		[Test]
 		public void Get_RegexEndPoint()
