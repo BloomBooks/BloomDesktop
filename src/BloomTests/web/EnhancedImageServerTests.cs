@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -128,23 +129,24 @@ namespace BloomTests.web
 		[Test]
 		public void Topics_ReturnsFrenchFor_NoTopic_()
 		{
-			Assert.AreEqual("Sans thème", QueryServerForJson("topics").NoTopic.ToString());
+			Assert.AreEqual("Sans thème", QueryServerForJson("topics")["NoTopic"]);
 		}
 
 		[Test]
 		public void Topics_ReturnsFrenchFor_Dictionary_()
 		{
-			Assert.AreEqual("Dictionnaire", QueryServerForJson("topics").Dictionary.ToString());
+			Assert.AreEqual("Dictionnaire", QueryServerForJson("topics")["Dictionary"]);
 		}
 
-		private dynamic QueryServerForJson(string query)
+		private Dictionary<string, string> QueryServerForJson(string query)
 		{
 			using (var server = CreateImageServer())
 			{
 				var transaction = new PretendRequestInfo(ServerBase.ServerUrlWithBloomPrefixEndingInSlash + query);
 				server.MakeReply(transaction);
 				Debug.WriteLine(transaction.ReplyContents);
-				return Newtonsoft.Json.JsonConvert.DeserializeObject(transaction.ReplyContents);
+				var jss = new System.Web.Script.Serialization.JavaScriptSerializer();
+				return jss.Deserialize<Dictionary<string, string>>(transaction.ReplyContents);
 			}
 		}
 

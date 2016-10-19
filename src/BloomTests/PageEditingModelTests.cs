@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml;
 using Bloom;
-using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
-using Gecko;
 using NUnit.Framework;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
-using RestSharp.Contrib;
 
 namespace BloomTests
 {
