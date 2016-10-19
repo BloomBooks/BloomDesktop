@@ -10,11 +10,10 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
+using RestSharp.Extensions.MonoHttp;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Windows.Forms.Progress;
-using RestSharp.Contrib;
 
 namespace Bloom.WebLibraryIntegration
 {
