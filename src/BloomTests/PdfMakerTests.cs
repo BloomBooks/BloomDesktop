@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
 using Bloom.Publish;
 using NUnit.Framework;
 using SIL.IO;
-using Bloom;
 
 //we have this "SetupFixture" which calls Browser.SetUpXulRunner(). I think Eberhard added it, but there is no comment saying what
 //its purpose is. //In any case on our new TeamCity Build agent, that causes these unit tests to fail (and only these).

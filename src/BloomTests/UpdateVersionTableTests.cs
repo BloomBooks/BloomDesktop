@@ -25,7 +25,7 @@ namespace BloomTests
 			t.TextContentsOfTable = @"0.0.0,3.1.99999, http://first.com/first";
 			t.RunningVersion = Version.Parse("3.2.0");
 			var lookupResult = t.LookupURLOfUpdate();
-			Assert.IsNullOrEmpty(lookupResult.URL);
+			Assert.That(lookupResult.URL, Is.Null.Or.Empty);
 			Assert.That(lookupResult.Error.Message, Is.EqualTo("http://bloomlibrary.org/channels/UpgradeTableTestChannel.txt contains no record for this version of Bloom"));
 		}
 
@@ -48,7 +48,7 @@ namespace BloomTests
 			t.TextContentsOfTable = @"0.0.0,3,1,99999, http://first.com/first"; // too many commas
 			t.RunningVersion = Version.Parse("3.2.0");
 			var lookupResult = t.LookupURLOfUpdate();
-			Assert.IsNullOrEmpty(lookupResult.URL);
+			Assert.That(lookupResult.URL, Is.Null.Or.Empty);
 			Assert.IsTrue(lookupResult.Error.Message.StartsWith("Could not parse a line of the UpdateVersionTable"));
 		}
 
@@ -59,7 +59,7 @@ namespace BloomTests
 			t.TextContentsOfTable = @"0.0.0, http://first.com/first"; // too few commas
 			t.RunningVersion = Version.Parse("3.2.0");
 			var lookupResult = t.LookupURLOfUpdate();
-			Assert.IsNullOrEmpty(lookupResult.URL);
+			Assert.That(lookupResult.URL, Is.Null.Or.Empty);
 			Assert.IsTrue(lookupResult.Error.Message.StartsWith("Could not parse a line of the UpdateVersionTable"));
 		}
 
@@ -70,7 +70,7 @@ namespace BloomTests
 			t.TextContentsOfTable = @"random,3.1.99999, http://first.com/first"; // bad version number
 			t.RunningVersion = Version.Parse("3.2.0");
 			var lookupResult = t.LookupURLOfUpdate();
-			Assert.IsNullOrEmpty(lookupResult.URL);
+			Assert.That(lookupResult.URL, Is.Null.Or.Empty);
 			Assert.IsTrue(lookupResult.Error.Message.StartsWith("Could not parse a version number in the UpdateVersionTable"));
 		}
 

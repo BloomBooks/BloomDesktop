@@ -158,7 +158,7 @@ namespace BloomTests.CollectionTab
 			// get the reader file from the BloomPack
 			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
 			var zipEntryName = actualFiles.FirstOrDefault(file => file.EndsWith(testFileName));
-			Assert.IsNotNullOrEmpty(zipEntryName);
+			Assert.That(zipEntryName, Is.Not.Null.And.Not.Empty);
 
 			string outputText;
 			using (var zip = new ZipFile(bloomPackName))
@@ -179,7 +179,7 @@ namespace BloomTests.CollectionTab
 			}
 
 			// check for the lockFormatting meta tag
-			Assert.IsNotNullOrEmpty(outputText);
+			Assert.That(outputText, Is.Not.Null.And.Not.Empty);
 			Assert.IsTrue(outputText.Contains("<meta name=\"lockFormatting\" content=\"true\">"));
 		}
 	}
