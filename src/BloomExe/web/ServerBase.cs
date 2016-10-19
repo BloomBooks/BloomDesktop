@@ -445,8 +445,30 @@ namespace Bloom.Api
 
 		private void ReportMissingFile(IRequestInfo info)
 		{
-			Logger.WriteEvent("**{0}: File Missing: {1}", GetType().Name, GetLocalPathWithoutQuery(info));
+			var localPath = GetLocalPathWithoutQuery(info);
+			if (!IgnoreFileIfMissing(localPath))
+				Logger.WriteEvent("**{0}: File Missing: {1}", GetType().Name, localPath);
 			info.WriteError(404);
+		}
+
+		/// <summary>
+		/// Check for files that may be missing but that we know aren't important enough to complain about.
+		/// </summary>
+		protected bool IgnoreFileIfMissing(string localPath)
+		{
+			var stuffToIgnore = new[] {
+				// browser/debugger stuff
+				"favicon.ico", ".map",
+				// Audio files may well be missing because we look for them as soon
+				// as we define an audio ID, but they wont' exist until we record something.
+				"/audio/",
+				// Branding image files are expected to be missing in the normal case.  Only organizations that care about branding would have these images.
+				"/branding/image",
+				// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
+				// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
+				Bloom.Publish.EpubMaker.kEPUBExportFolder.ToLowerInvariant()
+			};
+			return stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s)));
 		}
 
 		protected internal static string GetLocalPathWithoutQuery(IRequestInfo info)
