@@ -29,6 +29,7 @@ distribution=$(lsb_release -i -s)
 version=$(lsb_release -c -s)
 arch=$(dpkg --print-architecture)
 
+export DEBIAN_FRONTEND=noninteractive
 sudo apt-get update
 install $(getPackages common.any)
 install $(getPackages common.$arch)
