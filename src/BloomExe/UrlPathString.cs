@@ -144,6 +144,30 @@ namespace Bloom
 			return (_notEncoded != null ? _notEncoded.GetHashCode() : 0);
 		}
 
-
+		/// <summary>
+		/// Some library books have been uploaded with the cover image filename URL encoded in the file instead of HTML/XML encoded.
+		/// So if the file doesn't exist, try one more level of decoding to see if that may be the problem, but preserve the original
+		/// path in case an error message is still needed.
+		/// </summary>
+		/// <param name="directory">path of the containing folder</param>
+		/// <param name="filename">base filename to be combined with directory.  This may be modified by HttpUtility.UrlDecode().</param>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
+		/// </remarks>
+		public static string GetFullyDecodedPath(string directory, ref string filename)
+		{
+			var path = System.IO.Path.Combine(directory, filename);
+			if (!SIL.IO.RobustFile.Exists(path) && filename.Contains("%"))
+			{
+				var filename1 = System.Web.HttpUtility.UrlDecode(filename);
+				var path1 = System.IO.Path.Combine(directory, filename1);
+				if (SIL.IO.RobustFile.Exists(path1))
+				{
+					filename = filename1;
+					return path1;
+				}
+			}
+			return path;
+		}
 	}
 }
