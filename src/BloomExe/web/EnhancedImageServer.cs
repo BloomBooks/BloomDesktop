@@ -547,7 +547,7 @@ namespace Bloom.Api
 		protected bool IsSimulatedFileUrl(string localPath)
 		{
 			var extension = Path.GetExtension(localPath);
-			if(extension != null && !extension.StartsWith("htm"))
+			if(extension != null && !extension.StartsWith(".htm"))
 				return false;
 
 			// a good improvement might be to make these urls more obviously cache requests. But for now, let's just see if they are filename guids
