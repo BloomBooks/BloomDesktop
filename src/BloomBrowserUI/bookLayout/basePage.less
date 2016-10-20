@@ -149,15 +149,14 @@ div#bloomDataDiv
 	display: none;
 	height: 100%;
 }
-/*Outside of frontmatter, we assume that if bloom gives it a content tag, then it should be visible*/
-.bloom-page:not(.bloom-frontMatter) .bloom-content1, .bloom-page:not(.bloom-frontMatter) .bloom-content2, .bloom-page:not(.bloom-frontMatter) .bloom-content3
-{
-	display: inherit;
+
+/*Outside of xmatter, we assume that if bloom gives it a content tag, then it should be visible*/
+.bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) {
+  .bloom-content1, .bloom-content2, .bloom-content3 {
+    display:inherit;
+  }
 }
-.bloom-page:not(.bloom-frontMatter) .bloom-content2
-{
-	display: inherit;
-}
+
 /*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
 these should be 14.8, but wkhtmltopdf shinks it
 The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out
