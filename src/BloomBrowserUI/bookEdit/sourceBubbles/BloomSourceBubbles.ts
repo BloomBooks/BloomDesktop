@@ -96,6 +96,12 @@ export default class BloomSourceBubbles {
                 $(this).remove();
             }
         });
+        // BL-3888 Don't show regional book title in bubble, since it's already visible on the title page
+        divForBubble.find('*.bloom-contentNational2').each(function () {
+            if ($(this).attr('data-book') === 'bookTitle') {
+                $(this).remove();
+            }
+        });
 
         //in case some formatting didn't get cleaned up
         StyleEditor.CleanupElement(divForBubble);
