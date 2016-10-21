@@ -37,24 +37,25 @@ export class ToolBox {
             // of giving each tool a chance to update things when the user stops typing
             // (while maintaining the selection if at all possible).
             $(container).find('.bloom-editable').keypress(function (event) {
-                if(event.ctrlKey){
+                if (event.ctrlKey) {
                     // this is check is a workaround for BL-3490, but when doKeypressMarkup() get's fixed, it should be removed
                     // because as is, we're not updating markup when you paste in text
                     console.log("Skipping markup on paste because of faulty insertion logic. See BL-3490");
                     return;
                 }
                 //don't do markup on cursor keys
-                if(event.keyCode >= 37 && event.keyCode <= 40){
+                if (event.keyCode >= 37 && event.keyCode <= 40) {
                     // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
                     // if all they did was move the cursor, we don't need to look at markup.
                     console.log("skipping markup on arrow key");
                     return;
                 }
-                  console.log("doing markup "+event.ctrlKey);
-                 doKeypressMarkup();
+                console.log("doing markup " + event.ctrlKey);
+                doKeypressMarkup();
             });
-       }
+        }
     }
+
     /**
      * Fires an event for C# to handle
      * @param {String} eventName
@@ -62,17 +63,17 @@ export class ToolBox {
      */
     static fireCSharpToolboxEvent(eventName: string, eventData: string) {
 
-    var event = new MessageEvent(eventName, {'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    document.dispatchEvent(event);
+        var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
+        document.dispatchEvent(event);
     }
 
-    static getTabModels() { return tabModels;}
+    static getTabModels() { return tabModels; }
 }
 
 var toolbox = new ToolBox();
 
 export function getTheOneToolbox() {
-  return toolbox;
+    return toolbox;
 }
 
 // Array of models, typically one for each tab. The code for each tab inserts an appropriate model
@@ -98,7 +99,7 @@ export function showOrHidePanel_click(chkbox) {
     else {
         chkbox.innerHTML = '';
         ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t0");
-        $('*[data-panelId]').filter(function() { return $(this).attr('data-panelId') === panel; }).remove();
+        $('*[data-panelId]').filter(function () { return $(this).attr('data-panelId') === panel; }).remove();
     }
 
     resizeToolbox();
@@ -106,7 +107,7 @@ export function showOrHidePanel_click(chkbox) {
 
 
 export function restoreToolboxSettings() {
-    axios.get<any>("/bloom/api/toolbox/settings").then(result=>{
+    axios.get<any>("/bloom/api/toolbox/settings").then(result => {
         savedSettings = result.data;
         var pageFrame = getPageFrame();
         if (pageFrame.contentWindow.document.readyState === 'loading') {
@@ -141,7 +142,7 @@ function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
         // If any instance on the page (e.g., one per div) is not ready, wait until all are.
         // (The instances property leads to an object in which a field editorN is defined for each
         // editor, so we just loop until some value of N which doesn't yield an editor instance.)
-        for (var i = 1;; i++) {
+        for (var i = 1; ; i++) {
             var instance = editorInstances['editor' + i];
             if (instance == null) {
                 if (i === 0) {
@@ -179,15 +180,14 @@ function getPageFrame(): HTMLIFrameElement {
     return <HTMLIFrameElement>parent.window.document.getElementById('page');
 }
 
-    // The body of the editable page, a root for searching for document content.
+// The body of the editable page, a root for searching for document content.
 function getPage(): JQuery {
     var page = getPageFrame();
     if (!page) return null;
     return $(page.contentWindow.document.body);
 }
 
-function switchTool(newToolName: string)
-{
+function switchTool(newToolName: string) {
     ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + newToolName); // Have Bloom remember which tool is active. (Might be none)
     var newTool = null;
     if (newToolName) {
@@ -234,7 +234,7 @@ function setCurrentPanel(currentPanel) {
     if (currentPanel) {
 
         // find the index of the panel whose "data-panelId" attribute equals the value of "currentPanel"
-        toolbox.find('> h3').each(function() {
+        toolbox.find('> h3').each(function () {
             if ($(this).attr('data-panelId') === currentPanel) {
                 // the index is the last segment of the element id
                 idx = this.id.substr(this.id.lastIndexOf('-') + 1);
@@ -286,7 +286,7 @@ function setCurrentPanel(currentPanel) {
  * Normally that job goes to an equivalent c# function. Enhance: remove the c# one.
  */
 // these last three parameters were never used: function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPanel) {
-function beginAddPanel(checkBoxId:string, panelId:string): Promise<void> {
+function beginAddPanel(checkBoxId: string, panelId: string): Promise<void> {
     var chkBox = document.getElementById(checkBoxId);
     if (chkBox) {
         chkBox.innerHTML = checkMarkString;
@@ -297,9 +297,9 @@ function beginAddPanel(checkBoxId:string, panelId:string): Promise<void> {
             'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
             'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html'
         }
-        return axios.get<any>("/bloom/bookEdit/toolbox/"+ subpath[panelId]).then(result=>{
-                loadToolboxPanel(result.data, panelId);
-            });
+        return axios.get<any>("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
+            loadToolboxPanel(result.data, panelId);
+        });
     }
 }
 
@@ -315,8 +315,8 @@ function doKeypressMarkup(): void {
     //if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
     //  this.keypressTimer.clearTimeout();
     //}
-    if(keypressTimer)
-      clearTimeout(keypressTimer);
+    if (keypressTimer)
+        clearTimeout(keypressTimer);
 
     keypressTimer = setTimeout(function () {
 
@@ -424,9 +424,9 @@ function loadToolboxPanel(newContent, panelId) {
 }
 
 function showToolboxChanged(wasShowing: boolean): void {
-  ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "visibility\t" + (wasShowing ? "" : "visible"));
+    ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "visibility\t" + (wasShowing ? "" : "visible"));
     if (currentTool) {
-      if (wasShowing) currentTool.hideTool();
+        if (wasShowing) currentTool.hideTool();
         else activateTool(currentTool);
     } else {
         // starting up for the very first time in this book...no tool is current,
@@ -449,6 +449,6 @@ $(document).ready(function () {
     });
 });
 
-$(parent.window.document).ready(function() {
-    $(parent.window.document).find('#pure-toggle-right').change(function() { showToolboxChanged(!this.checked); });
+$(parent.window.document).ready(function () {
+    $(parent.window.document).find('#pure-toggle-right').change(function () { showToolboxChanged(!this.checked); });
 })
