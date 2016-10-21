@@ -1,0 +1,17 @@
+
+include ../../xMatter/bloom-xmatter-mixins.jade
+// The above filepath will need updating if this xmatter ever becomes an official Bloom xmatter pack
+// since it will get moved from customXMatter to xMatter
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title ILV Mexico Pamphlet Front & Back Matter
+		+stylesheets('MXBPamphlet-XMatter.css')
+	body
+		+factoryStandard-outsideFrontCover
+		+standard-combinedTitleCreditsPage-inside-front-cover
+		+standard-nationalSummaryprinterStatement-insideBackCover
+		+factoryStandard-outsideBackCover

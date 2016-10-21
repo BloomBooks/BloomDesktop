@@ -19,7 +19,7 @@
 //a smaller bottom margin, since there is no page number
 .outsideFrontCover .marginBox, .outsideBackCover .marginBox {
     .SetMarginBoxCover(@PageHeight, @PageWidth) {
-        /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+        /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
         height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
         //Just center the margin box, (for now, we're ignoring the binding)
         left: @MarginOuter;
@@ -361,6 +361,9 @@
         }
     }
 
+    #printingInfo .bloom-contentNational1 {
+        display: inherit;
+    }
 }
 
 BODY[bookcreationtype="original"] {
@@ -442,8 +445,7 @@ BODY[bookcreationtype="translation"] {
 
     #languageInformation {
         width: 100%;
-        .languagesOfBook {
-        }
+
         //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
         .langName.bloom-content1 {
             display: none;
@@ -455,6 +457,7 @@ BODY[bookcreationtype="translation"] {
             display: inherit;
         }
     }
+    
     .bottomImageWrapper{
         width: 100%; // this allows the branding to center.
         position: absolute;
@@ -465,13 +468,39 @@ BODY[bookcreationtype="translation"] {
     }
 }
 
-.insideBackCover .bloom-editable {
-    display: inherit;
-    height: 100%;
+.insideBackCover {
+    .marginBox {
+        .bloom-editable:only-child {
+            height: 100%;
+            display: inherit;
+        }
+        .bloom-editable:not(:only-child) {
+            flex: auto;
+            display: block;
+            &.Inside-Back-Cover-style {
+                order: 0;
+            }
+            &.Printer-Statement-style {
+                order: 1;
+                height: auto;
+                padding-bottom: 20px;
+                font-size: 10pt;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+        // set a default style for the new Printer's Statement
+        .Printer-Statement-style {
+            font-size: 10pt;
+            line-height: 1.2;
+        }
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 .outsideBackCover .bloom-editable {
-    display: block;
+    display: inherit;
     height: inherit; // let this shrink to make room for branding at bottom, if present
     text-align: center;
 }
