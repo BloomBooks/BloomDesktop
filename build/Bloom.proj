@@ -129,10 +129,11 @@
 	<Target Name="TestOnly" DependsOnTargets="RunNUnitTC;RunNUnit"/>
 
 	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != ''">
-		<NUnitTeamCity
-			Assemblies="@(TestAssemblies)"
-			ExcludeCategory="SkipOnTeamCity"
-			NUnitVersion="NUnit-3" />
+		<!-- The TC docs (https://confluence.jetbrains.com/display/TCD10/NUnit+for+MSBuild) suggest this is the best way to do this with NUnit3 -->
+		<Exec IgnoreExitCode="True" Command="nunit3-console.exe @(TestAssemblies) --exclude=SkipOnTeamCity">
+			<Output TaskParameter="ExitCode" ItemName="exitCode" />
+		</Exec>
+		<Error Text="Error while running tests" Condition="@(exitCode) &lt; 0" />
 	</Target>
 
 	<Target Name="RunNUnit" Condition="'$(teamcity_version)' == ''">
