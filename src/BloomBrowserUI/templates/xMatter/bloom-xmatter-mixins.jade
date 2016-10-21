@@ -86,8 +86,6 @@ mixin block-licenseAndCopyright
 			.licenseNotes(data-derived="licenseNotes", lang="en").Credits-Page-style
 				| {License Notes}
 
-
-
 //- -------------------------------------------------------------------------------
 //-	Unless every page of your xmatter pack needs to be different than the "factory"
 //-	one that comes with Bloom, use the following mixins to reuse the pages that
@@ -159,6 +157,31 @@ mixin standard-titlePage-inside-front-cover
 	+page-xmatter('Inside Front Cover').cover.coverColor.titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#aacd48aa-aaab-4a07-afd4-6a24d03983aa
 		+title-page-contents
 
+mixin standard-combinedTitleCreditsPage-inside-front-cover
+	+page-xmatter('Inside Front Cover').cover.coverColor.titlePage.credits.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#0d61e568-6814-4836-82ad-81b2bcd106a5
+		+field-prototypeDeclaredExplicity#titlePageTitleBlock
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+		#languageInformation.Credits-Page-style('lang'='N1')
+			.languagesOfBook(data-book='languagesOfBook')
+			//- review: can we get rid of these "langName" classes?
+			.langName('data-library'='dialect')
+			.langName(data-library='languageLocation').bloom-writeOnly
+		+field-prototypeDeclaredExplicity#originalContributions
+			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
+			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalContributions')
+		+field-acknowledgments-localizedVersion
+		+field-acknowledgments-originalVersion
+		+field-prototypeDeclaredExplicity#funding
+			label.bubble Use this to acknowledge any funding agencies.
+			+editable(kLanguageForPrototypeOnly).funding.Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+		+field-prototypeDeclaredExplicity#printingInfo
+			label.bubble Use this for Printing Info (1st Edition, etc.)
+			+editable(kLanguageForPrototypeOnly).printInfo.PrintingInfo-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
+		+block-licenseAndCopyright
+		+field-ISBN
+		+field-title-page-branding
+
 mixin standard-creditsPage-back-cover
 	//re data-export: if we export this, we still want to export it as front matter
 	+page-xmatter('Inside Back Cover').cover.coverColor.credits.bloom-backMatter(data-export='front-matter-credits-page')&attributes(attributes)#bbcd48aa-bbab-4a07-afd4-6a24d03983bb
@@ -192,6 +215,14 @@ mixin factoryStandard-insideBackCover
 	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')&attributes(attributes)#502BE62F-A4D0-4225-A598-1A203FA73239
 		+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
+
+mixin standard-nationalSummaryprinterStatement-insideBackCover
+	// Inside Back Cover
+	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')&attributes(attributes)#839e8eee-5e1a-45a7-bb01-2c171b56f8a4
+		+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble If your publication is not diglot, you can include a national language summary here, which is the inside of the back cover.
+		+field-mono-meta("N1","printerStatement").Printer-Statement-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble Printer's Statement goes here.
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover

@@ -1,0 +1,69 @@
+@import '../../xMatter/bloom-xmatter-common.less';
+
+@XMatterPackName: "MXB Pamphlet";
+
+// moving the license and copyright block to a new place, it needs some top space
+.licenseAndCopyrightBlock {
+    margin-top: 0.5em;
+}
+
+.titlePage {
+    // shrink this down from 3em because we're combining the title and credits pages
+    #titlePageTitleBlock {
+        margin-bottom: 1em;
+    }
+    // shrink things down even more if it's a small paper size
+    &.A6Landscape, &.A6Portrait, &.QuarterLetterLandscape, &.QuarterLetterPortrait {
+        #titlePageTitleBlock {
+            margin-bottom: 0;
+            DIV {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+// default values for the printInfo section
+.PrintingInfo-style.bloom-contentNational1 {
+  font-size: 10pt;
+  display: block;
+}
+
+// a few rules to scrunch things down as much as possible
+.credits .originalAcknowledgments .bloom-contentNational1,.bloom-content1 {
+    margin-bottom: 0.5em;
+}
+
+.titlePage #funding {
+    margin-bottom: 0.5em;
+}
+
+BODY[bookcreationtype="original"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-content1 {
+                min-height: 1em;
+            }
+        }
+        #funding {
+            .bloom-content1 {
+                min-height: 1em;
+            }
+        }
+    }
+}
+
+BODY[bookcreationtype="translation"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-contentNational1 {
+                min-height: 1em;
+            }
+        }
+        #funding {
+            .bloom-contentNational1 {
+                min-height: 1em;
+            }
+        }
+    }
+}
