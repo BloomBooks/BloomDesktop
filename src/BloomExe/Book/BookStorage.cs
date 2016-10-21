@@ -861,7 +861,7 @@ namespace Bloom.Book
 					SIL.Reporting.ErrorReport.NotifyUserOfProblem(msg);
 					return;
 				}
-				Logger.WriteMinorEvent("BookStorage.Update() Updating file {0} to {1}", factoryPath, documentPath);
+				Logger.WriteMinorEvent("BookStorage.Update() Copying file {0} to {1}", factoryPath, documentPath);
 
 				RobustFile.Copy(factoryPath, documentPath, true);
 				//if the source was locked, don't copy the lock over
