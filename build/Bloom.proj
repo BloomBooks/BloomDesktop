@@ -40,12 +40,6 @@
 	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnit3" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="NUnitTeamCity"
-		AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"
-		Condition=" '$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'"/>
-	<UsingTask TaskName="NUnitTeamCity"
-		AssemblyFile="$(teamcity_agent_home_dir)/plugins/dotnetPlugin/bin/JetBrains.BuildServer.MSBuildLoggers.dll"
-		Condition=" '$(teamcity_version)' != '' And '$(OS)'!='Windows_NT'"/>
 	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
 	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
 	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets" Condition="'$(OS)'=='Windows_NT'"/>
@@ -126,23 +120,26 @@
 		<CallTarget Targets="TestOnly"/>
 	</Target>
 
-	<Target Name="TestOnly" DependsOnTargets="RunNUnitTC;RunNUnit"/>
+	<Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
 
-	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != ''">
-		<NUnitTeamCity
+	<Target Name="RunNUnit">
+		<NUnit3 Condition="'$(teamcity_version)' == ''"
 			Assemblies="@(TestAssemblies)"
-			ExcludeCategory="SkipOnTeamCity"
-			NUnitVersion="NUnit-3" />
-	</Target>
-
-	<Target Name="RunNUnit" Condition="'$(teamcity_version)' == ''">
-		<NUnit3 Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.5.0/tools"
 			ExcludeCategory="$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
 			Verbose="true"
-			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"/>
+			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
+			TeamCity="false"/>
+		<NUnit3 Condition="'$(teamcity_version)' != ''"
+			Assemblies="@(TestAssemblies)"
+			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.5.0/tools"
+			ExcludeCategory="$SkipOnTeamCity;(excludedCategories)"
+			WorkingDirectory="$(RootDir)/output/$(Configuration)"
+			Force32Bit="$(useNUnit-x86)"
+			Verbose="true"
+			TeamCity="true"/>
 	</Target>
 
 	<Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
