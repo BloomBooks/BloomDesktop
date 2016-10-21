@@ -1,4 +1,5 @@
-﻿using Bloom.Workspace;
+﻿using System.Threading;
+using Bloom.Workspace;
 using NUnit.Framework;
 using SIL.IO;
 using RobustIO = Bloom.RobustIO;
@@ -6,7 +7,7 @@ using RobustIO = Bloom.RobustIO;
 namespace BloomTests.Edit
 {
 	[TestFixture]
-	[RequiresSTA] // or you get a ThreadStateException
+	[Apartment(ApartmentState.STA)] // or you get a ThreadStateException
 	class BloomClipboardTests
 	{
 		private const string TestImageDir = "src/BloomTests/Edit/BloomClipboardTestImages";
