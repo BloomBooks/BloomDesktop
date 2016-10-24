@@ -18,7 +18,7 @@ interface JQueryStatic {
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $
  */
-(function($) {
+(function ($) {
 
   $.extend({
 
@@ -28,7 +28,7 @@ interface JQueryStatic {
      * will line up correctly.
      * @param {String} cssClassName
      */
-    divsToColumns: function(cssClassName) {
+    divsToColumns: function (cssClassName) {
 
       var div = $('div.' + cssClassName + ':first');
       if (div.length === 0) return;
@@ -38,11 +38,11 @@ interface JQueryStatic {
       var marginRight = parseInt(div.css('margin-right'));
 
       // limit the list to elements with text wider than min-width allows
-      var elements = $('div.' + cssClassName).filter(function() { return this.offsetWidth > minWidth});
+      var elements = $('div.' + cssClassName).filter(function () { return this.offsetWidth > minWidth });
 
-      elements.css('width', function() {
+      elements.css('width', function () {
         var w = this.offsetWidth;
-        var i =  Math.ceil(w / minWidth);
+        var i = Math.ceil(w / minWidth);
         w = minWidth * i + (i - 1) * (marginLeft + marginRight);
         return w + 'px';
       });
@@ -54,7 +54,7 @@ interface JQueryStatic {
      * @param {String} cssClassName
      * @param {String} longestWord
      */
-    divsToColumnsBasedOnLongestWord: function(cssClassName: string, longestWord: string) {
+    divsToColumnsBasedOnLongestWord: function (cssClassName: string, longestWord: string) {
 
       var div = $('div.' + cssClassName + ':first');
       if (div.length === 0) return;
@@ -69,18 +69,18 @@ interface JQueryStatic {
 
       var colCount = Math.floor(parentWidth / maxWidth);
       if (colCount === 0)
-         colCount = 1;
+        colCount = 1;
       parent.css('column-count', colCount);
     }
   });
 
   /**
    * Calculates the width of an element containing the specified text
-   * @param {HTMLDivElement} div
+   * @param {JQuery} div
    * @param {String} text
    * @returns {number}
    */
-  function textWidth(div: HTMLDivElement, text: string): number {
+  function textWidth(div: JQuery, text: string): number {
 
     var _t = jQuery(div);
     var html_calcS = '<span>' + text + '</span>';
@@ -88,13 +88,13 @@ interface JQueryStatic {
 
     var _lastSpan = jQuery('span').last();
     _lastSpan.css({
-      'font-size' : _t.css('font-size'),
-      'font-family' : _t.css('font-family')
+      'font-size': _t.css('font-size'),
+      'font-family': _t.css('font-family')
     });
 
-    var width =_lastSpan.width() + 5;
+    var width = _lastSpan.width() + 5;
 
     _lastSpan.remove();
     return width;
   }
-}(jQuery));
+} (jQuery));
