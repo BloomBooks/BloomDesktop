@@ -29,7 +29,9 @@ namespace Bloom.Api
 		{
 			FleckLog.Level = LogLevel.Warn;
 			_allSockets = new List<IWebSocketConnection>();
-			_server = new WebSocketServer("ws://127.0.0.1:"+ port);
+			var websocketaddr = "ws://127.0.0.1:" + port;
+			Logger.WriteMinorEvent("Attempting to open a WebSocketServer on " + websocketaddr);
+			_server = new WebSocketServer(websocketaddr);
 			
 			try
 			{
@@ -49,6 +51,7 @@ namespace Bloom.Api
 			}
 			catch (SocketException ex)
 			{
+				Logger.WriteEvent("Opening a WebSocketServer on " + websocketaddr + " failed.  Error = " + ex);
 				ErrorReport.NotifyUserOfProblem(ex, "Bloom cannot start properly (cannot set up some internal communications){0}{0}" +
 					"What caused this?{0}" +
 					"Possibly another version of Bloom is running, perhaps not very obviously.{0}{0}" +

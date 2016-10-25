@@ -177,7 +177,6 @@ namespace Bloom.Api
 				Logger.WriteMinorEvent("Attempting to start http listener on "+ ServerUrlEndingInSlash);
 				_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
 				_listener.Prefixes.Add(ServerUrlEndingInSlash);
-				_listener.Prefixes.Add(ServerUrlWithBloomPrefixEndingInSlash);
 				_listener.Start();
 				return true;
 			}
