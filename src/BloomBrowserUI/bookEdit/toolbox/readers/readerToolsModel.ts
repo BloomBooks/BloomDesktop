@@ -815,6 +815,12 @@ export class ReaderToolsModel {
     }
 
     var pageStrings = _.values(this.pageIDToText);
+    // In obtaining pageStrings, for some reason lines can be separated by \\n instead of \r\n (or \n?).
+    // Fix this for counting purposes by converting \\n to \r\n.  Otherwise, counts can be wrong.
+    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3498.
+    for (var i = 0; i < pageStrings.length; i++) {
+      pageStrings[i] = (pageStrings[i] as string).replace('\\n', '\r\n');
+    }
 
     this.updateActualCount(this.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
     this.updateActualCount(this.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
