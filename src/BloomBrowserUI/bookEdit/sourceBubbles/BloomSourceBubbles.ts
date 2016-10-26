@@ -346,6 +346,27 @@ export default class BloomSourceBubbles {
                             $tip.addClass('passive-bubble');
                             $tip.attr('data-max-height', maxHeight);
                         }
+                    },
+                    render: function (event, api) {
+                        api.elements.tooltip.keydown((kevent) => {
+                            // When the user types <Control-A> inside a source bubble, we don't
+                            // want the whole page selected.  We want just the current text of
+                            // the bubble to be selected.
+                            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
+                            // The selection code was adapted from one of the answers given on
+                            // http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
+                            if (kevent.ctrlKey && kevent.which == 65) {
+                                kevent.preventDefault();
+                                kevent.stopImmediatePropagation();
+                                var bubble = kevent.target;
+                                var obj = $(bubble)[0].firstElementChild;
+                                var selection = obj.ownerDocument.defaultView.getSelection();
+                                var range = obj.ownerDocument.createRange();
+                                range.selectNodeContents(obj);
+                                selection.removeAllRanges();
+                                selection.addRange(range);
+                            }
+                        });
                     }
                 }
             });
