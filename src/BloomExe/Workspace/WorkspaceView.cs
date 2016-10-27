@@ -640,6 +640,17 @@ namespace Bloom.Workspace
 
 		private void _reportAProblemMenuItem_Click(object sender, EventArgs e)
 		{
+			// Screen shots were showing the menu still open on Linux, so delay a bit by starting the
+			// dialog on the next idle loop.  Also allow one repaint event to be handled immediately.
+			// (This method has to return for the menu to fully hide itself on Linux.)
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3792.
+			Application.DoEvents();
+			Application.Idle += StartProblemReport;
+		}
+
+		private void StartProblemReport(object sender, EventArgs e)
+		{
+			Application.Idle -= StartProblemReport;
 			using (var dlg = _problemReportDialogFactory(this))
 			{
 				dlg.SetDefaultIncludeBookSetting(true);
