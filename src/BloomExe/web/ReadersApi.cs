@@ -195,8 +195,11 @@ namespace Bloom.Api
 		{
 			// As http://stackoverflow.com/questions/42068/how-do-i-handle-newlines-in-json attempts to explain,
 			// it takes TWO backslashes before r or n in JSON to get an actual embedded newline into the string.
-			// (And of course FOUR here in the C# source to produce two in the literal passed to Replace.)
-			return value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\\\r").Replace("\n", "\\\\n");
+			// That's from the perspective of seeing it in C# or the debugger.  It's only one real backslash.
+			// See also https://silbloom.myjetbrains.com/youtrack/issue/BL-3498.  If we put two real backslashes
+			// in the string, represented by four backslashes here, before the r or n, then javascript receives
+			// two real backslashes followed by r or n, not a carriage return or linefeed character.
+			return value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
 		}
 
 		private string GetSampleTextsList(string settingsFilePath)

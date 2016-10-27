@@ -1191,7 +1191,7 @@ export class ReaderToolsModel {
           axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
               .then(result => this.setAllowedWordsListList(result.data, index));
       }
-    });
+    }.bind(this));  // this bind is needed on Linux if not on Windows
   }
 
   setAllowedWordsListList(fileContents: string, stageIndex: number): void {
