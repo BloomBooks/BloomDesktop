@@ -45,13 +45,9 @@ namespace Bloom.web
 
 		public static string LookupUrl(UrlType urlType, bool sandbox = false, bool excludeProtocolPrefix = false)
 		{
-#if DEBUG
-			// This hack is just because I didn't want to refactor everything for the unit test case.
-			// And this is probably changing soon anyway.
-			// Without this, it gets the sandbox url which is incorrect (but may soon be correct).
-			if (Program.RunningUnitTests && (urlType == UrlType.Parse || urlType == UrlType.ParseSandbox))
-				return "https://api.parse.com/1/";
-#endif
+			if (Program.RunningUnitTests && (urlType == UrlType.Parse))
+				return "http://bloom-parse-server-unittest.azurewebsites.net/parse"; //it's fine for the unit test url to be hard-coded, putting in the json buys us nothing.
+
 			string fullUrl = LookupFullUrl(urlType, sandbox);
 			if (excludeProtocolPrefix)
 				return StripProtocol(fullUrl);

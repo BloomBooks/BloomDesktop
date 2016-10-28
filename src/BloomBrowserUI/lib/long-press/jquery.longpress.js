@@ -318,34 +318,47 @@ require("./jquery.mousewheel.js");
         }, 1);
     }
 
+
+    // See notes on BL-3900 in toolbox.ts for important regression information.
     function replacePreviousLetterWithText(text) {
 
         if (isTextArea()) {
-            var pos=getTextAreaCaretPosition(activeElement);
-            var arVal=$(activeElement).val().split('');
-            arVal[pos-1]=text;
+            var pos = getTextAreaCaretPosition(activeElement);
+            var arVal = $(activeElement).val().split('');
+            arVal[pos - 1] = text;
             $(activeElement).val(arVal.join(''));
             setTextAreaCaretPosition(activeElement, pos);
-        } else {
-            var sel, textNode, clone;
-            var range = getCaretPosition();
-            if (window.getSelection && range && range.startOffset != 0) {
-                sel = window.getSelection();
+        }
+        else {
+            var insertPointRange = getCaretPosition();
+            if (window.getSelection && insertPointRange && insertPointRange.startOffset != 0) {
+                var sel = window.getSelection();
                 if (sel.getRangeAt && sel.rangeCount) {
-                    textNode = document.createTextNode(text);
+                    //NB: From BL-3900 investigation:
+                    //if the startContainer is a span, then it has an internal text node, and so deleting
+                    //span:0-->1 takes out the entire text node, not just one character.
+                    //My hypothesis is that the markup code was leaving the selection a bit messed up.
+                    //That code has been changed, so this should not happen, but if it does, this will save
+                    //some debugging time.
+                    if (insertPointRange.startContainer.nodeName != "#text") {
+                        throw "longpress: aborting becuase deleteContents() would have deleted all contents of a " + insertPointRange.startContainer.nodeName;
+                    }
 
-                    clone = range.cloneRange();
-                    clone.setStart(range.startContainer, range.startOffset - 1);
-                    clone.setEnd(range.startContainer, range.startOffset);
-                    clone.deleteContents();
-                    range.insertNode(textNode);
+                    //remove the character they typed to open this tool
+                    var rangeToRemoveStarterCharacter = insertPointRange.cloneRange();
+                    rangeToRemoveStarterCharacter.setStart(insertPointRange.startContainer, insertPointRange.startOffset - 1);
+                    rangeToRemoveStarterCharacter.setEnd(insertPointRange.startContainer, insertPointRange.startOffset);
+                    rangeToRemoveStarterCharacter.deleteContents();
+
+                    //stick in the replacement character
+                    var textNode = document.createTextNode(text);
+                    insertPointRange.insertNode(textNode);
 
                     // Move caret to the end of the newly inserted text node
-                    range.setStart(textNode, textNode.length);
-                    range.setEnd(textNode, textNode.length);
-
+                    insertPointRange.setStart(textNode, textNode.length);
+                    insertPointRange.setEnd(textNode, textNode.length);
                     sel.removeAllRanges();
-                    sel.addRange(range);
+                    sel.addRange(insertPointRange);
                 }
             }
         }

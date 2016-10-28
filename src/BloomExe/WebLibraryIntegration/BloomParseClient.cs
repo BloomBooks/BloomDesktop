@@ -23,8 +23,8 @@ namespace Bloom.WebLibraryIntegration
 
 			var keys = AccessKeys.GetAccessKeys(BookTransfer.UploadBucketNameForCurrentEnvironment);
 
-			ApiKey = keys.ParseApiKey;
-			ApplicationKey = keys.ParseApplicationKey;
+			RestApiKey = keys.ParseApiKey;
+			ApplicationId = keys.ParseApplicationKey;
 		}
 
 		private RestClient Client
@@ -40,8 +40,8 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		// REST key. Unit tests update these.
-		public string ApiKey { get; private set; }
-		public string ApplicationKey { get; private set; }
+		public string RestApiKey { get; private set; }
+		public string ApplicationId { get; private set; }
 
 		// Don't even THINK of making this mutable so each unit test uses a different class.
 		// Those classes hang around, can only be deleted manually, and eventually use up a fixed quota of classes.
@@ -82,8 +82,8 @@ namespace Bloom.WebLibraryIntegration
 
 		private void SetCommonHeaders(RestRequest request)
 		{
-			request.AddHeader("X-Parse-Application-Id", ApplicationKey);
-			request.AddHeader("X-Parse-REST-API-Key", ApiKey);
+			request.AddHeader("X-Parse-Application-Id", ApplicationId);
+			request.AddHeader("X-Parse-REST-API-Key", RestApiKey); // REVIEW: Is this actually needed/used by our own parse-server? parse-server index.js suggests it is optional.
 		}
 
 		private RestRequest MakePostRequest(string path)

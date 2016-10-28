@@ -129,7 +129,7 @@ namespace BloomTests.web
 		[Test]
 		public void Topics_ReturnsFrenchFor_NoTopic_()
 		{
-			Assert.AreEqual("Sans thème", QueryServerForJson("topics")["NoTopic"]);
+			Assert.AreEqual("Aucun thème", QueryServerForJson("topics")["NoTopic"].ToString());
 		}
 
 		[Test]

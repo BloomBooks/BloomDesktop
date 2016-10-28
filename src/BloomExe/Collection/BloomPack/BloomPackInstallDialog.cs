@@ -233,10 +233,10 @@ namespace Bloom.Collection.BloomPack
 		}
 
 		//xmatter in bloompacks was an afterthought... at the moment we unpack everything to programdata/../Collections,
-		//but now we need to move xmatter over to programdata/../xmatter
+		//but now we need to move xmatter over to programdata/../XMatter
 		private static void CopyXMatterFoldersToWhereTheyBelong(string newlyAddedFolderOfThePack)
 		{
-			foreach (var dir in Directory.GetDirectories(newlyAddedFolderOfThePack, "*-xmatter"))
+			foreach (var dir in Directory.GetDirectories(newlyAddedFolderOfThePack, "*-XMatter"))
 			{
 				var destDirName = Path.Combine(ProjectContext.XMatterAppDataFolder, Path.GetFileName(dir));
 				try

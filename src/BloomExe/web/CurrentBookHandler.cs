@@ -68,11 +68,13 @@ namespace Bloom.Api
 			{
 				var fileName = request.RequiredFileNameOrPath("image");
 				Guard.AgainstNull(_bookSelection.CurrentSelection, "CurrentBook");
-				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName.NotEncoded);
+				var plainfilename = fileName.NotEncoded;
+				// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
+				var path = UrlPathString.GetFullyDecodedPath(_bookSelection.CurrentSelection.FolderPath, ref plainfilename);
 				RequireThat.File(path).Exists();
 				var fileInfo = new FileInfo(path);
 				dynamic result = new ExpandoObject();
-				result.name = fileName.NotEncoded;
+				result.name = plainfilename;
 				result.bytes = fileInfo.Length;
 
 				// Using a stream this way, according to one source,

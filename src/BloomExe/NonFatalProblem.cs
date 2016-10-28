@@ -48,14 +48,11 @@ namespace Bloom
 
 				if(exception == null)
 				{
-					try
-					{
-						throw new ApplicationException("Not actually an exception, just a message.");
-					}
-					catch(Exception errorToGetStackTrace)
-					{
-						exception = errorToGetStackTrace;
-					}
+					//the code below is simpler if we always have an exception, even this thing that gives
+					//us the stacktrace we would otherwise be missing. Note, you might be tempted to throw
+					//and then catch an exception instead, but for some reason the resulting stack trace
+					//would contain only this method.
+					exception = new ApplicationException(new StackTrace().ToString());
 				}
 
 				if(Program.RunningUnitTests) 
@@ -93,11 +90,10 @@ namespace Bloom
 					return;
 				}
 
-				//just convert from InformIf to ThrowIf so that we don't have to duplicate code
+				//just convert from PassiveIf to ModalIf so that we don't have to duplicate code
 				var passive = (ModalIf) ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
 				if(!string.IsNullOrEmpty(shortUserLevelMessage) && Matches(passive).Any(s => channel.Contains(s)))
 				{
-
 					ShowToast(shortUserLevelMessage, exception, fullDetailedMessage);
 				}
 			}

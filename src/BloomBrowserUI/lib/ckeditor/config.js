@@ -3,19 +3,19 @@
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
-CKEDITOR.editorConfig = function( config ) {
+CKEDITOR.editorConfig = function (config) {
 	// Define changes to default configuration here.
 	// For complete reference see:
 	// http://docs.ckeditor.com/#!/api/CKEDITOR.config
 
 	// The toolbar groups arrangement, optimized for a single toolbar row.
 	config.toolbarGroups = [
-		{ name: 'document',	   groups: [ 'mode', 'document', 'doctools' ] },
-		{ name: 'clipboard',   groups: [ 'clipboard', 'undo' ] },
-		{ name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ] },
+		{ name: 'document', groups: ['mode', 'document', 'doctools'] },
+		{ name: 'clipboard', groups: ['clipboard', 'undo'] },
+		{ name: 'editing', groups: ['find', 'selection', 'spellchecker'] },
 		{ name: 'forms' },
-		{ name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-		{ name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ] },
+		{ name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
+		{ name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi'] },
 		{ name: 'links' },
 		{ name: 'insert' },
 		{ name: 'styles' },
@@ -41,17 +41,19 @@ CKEDITOR.editorConfig = function( config ) {
 	// Remove the annoying tooltip "Rich Text Editor, editorN".
 	config.title = false;
 
-    // Don't filter out any html that couldn't be produced by the toolbar
-	config.allowedContent = true;
+	// Filter out any html that might be dangerous.  Specifically, a div element might be copied from the same book and
+	// could introduce duplicate ids.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
+	// See http://docs.ckeditor.com/#!/guide/dev_acf for a description of this setting.
+	config.allowedContent = 'h1 h2 h3 p span blockquote strong em table tr th td caption; a[!href]';
 
-    //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
-    //http://stackoverflow.com/a/23983357/723299
-    CKEDITOR.dtd.$removeEmpty.span = 0;
+	//BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
+	//http://stackoverflow.com/a/23983357/723299
+	CKEDITOR.dtd.$removeEmpty.span = 0;
 
-    //pasteFromWord works if the plugin is added to plugins, and then these are uncommented,
-    //but gives ckeditor "Uncaught TypeError: Cannot read property 'icons' of null".
-    //Also, need to add pasteFromWordCleanupFile (of which I could find no example)
-    //in order to stop pictures; the on('paste') stops working if you enable this, at least for pastes that come from Word
-    //CKEDITOR.config.extraPlugins  = 'pasteFromWord';
-    // CKEDITOR.config.pasteFromWordPromptCleanup = true;
+	//pasteFromWord works if the plugin is added to plugins, and then these are uncommented,
+	//but gives ckeditor "Uncaught TypeError: Cannot read property 'icons' of null".
+	//Also, need to add pasteFromWordCleanupFile (of which I could find no example)
+	//in order to stop pictures; the on('paste') stops working if you enable this, at least for pastes that come from Word
+	//CKEDITOR.config.extraPlugins  = 'pasteFromWord';
+	// CKEDITOR.config.pasteFromWordPromptCleanup = true;
 };
