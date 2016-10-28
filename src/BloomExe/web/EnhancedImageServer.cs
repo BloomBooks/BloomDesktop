@@ -521,18 +521,7 @@ namespace Bloom.Api
 				{
 					path = "(was null)";
 				}
-				var stuffToIgnore = new[] {
-					//browser/debugger stuff
-					"favicon.ico", ".map",
-					// Audio files may well be missing because we look for them as soon
-					// as we define an audio ID, but they wont' exist until we record something.
-					"/audio/",					
-					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation 
-					// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
-					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
-				};
-
-				if(stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
+				if (IgnoreFileIfMissing(localPath))
 					return false;
 
 				// we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
@@ -543,6 +532,11 @@ namespace Bloom.Api
 				{
 					//even beta users should not be confronted with this
 					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);
+				}
+				else if (IsImageTypeThatCanBeReturned(localPath))
+				{
+					// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
+					NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Cannot Find Image File", "Server could not find the image file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
 				}
 				else
 				{
@@ -558,7 +552,7 @@ namespace Bloom.Api
 		protected bool IsSimulatedFileUrl(string localPath)
 		{
 			var extension = Path.GetExtension(localPath);
-			if(extension != null && !extension.StartsWith("htm"))
+			if(extension != null && !extension.StartsWith(".htm"))
 				return false;
 
 			// a good improvement might be to make these urls more obviously cache requests. But for now, let's just see if they are filename guids

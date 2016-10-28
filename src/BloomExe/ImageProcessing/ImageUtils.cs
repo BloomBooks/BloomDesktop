@@ -229,12 +229,11 @@ namespace Bloom.ImageProcessing
 
 		private static void DrawImageWithWhiteBackground(Image source, Bitmap target)
 		{
-			target.SetResolution(source.HorizontalResolution, source.VerticalResolution);
-
+			Rectangle rect = new Rectangle(Point.Empty, source.Size);
 			using (Graphics g = Graphics.FromImage(target))
 			{
 				g.Clear(Color.White);
-				g.DrawImageUnscaled(source, 0, 0);
+				g.DrawImageUnscaledAndClipped(source, rect);
 			}
 		}
 

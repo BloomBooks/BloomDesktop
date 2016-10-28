@@ -36,25 +36,64 @@ export class ToolBox {
             // the toolbox itself handles keypresses in order to manage the process
             // of giving each tool a chance to update things when the user stops typing
             // (while maintaining the selection if at all possible).
-            $(container).find('.bloom-editable').keypress(function (event) {
-                if(event.ctrlKey){
+            /* Note: BL-3900: "Decodable & Talking Book tools delete text after longpress".
+               In that bug, longpress.replacePreviousLetterWithText() would delete back
+               to the start of the current markup span (e.g. a sentence in
+               Talking Book, or a non-decodable word in Decodable Reader).
+               The current fix is to trigger markup on keydown, rather than keyup or keypress.
+               ****This is exactly the opposite of what we would expect****
+
+               If we trigger on keyup here, the sequence looks right but longpress will eat up the span.
+               Here's the sequence:
+                    longpress: replacePreviousLetterWithText()
+                    Toolbox: setting timer markup
+                    Toolbox: doing markup
+                    Toolbox: Restoring Selection after markup
+
+                So the mystery in the above case is, what is going on with the dom and longpress.replacePreviousLetterWithText()
+                such that replacePreviousLetterWithText() replaces a bunch of characters instead of 1 character?
+
+                Counterintuitively, if we instead trigger on keydown here, the settimeout()
+                doesn't fire until longpress is all done and all is well:
+                    1) Toolbox: setting timer markup
+                    2) longpress: replacePreviousLetterWithText()
+                    3) Toolbox: doing markup
+                    4) Toolbox: Restoring Selection after markup
+
+                (3) is delayed presumably because (2) is still in the event-handling loop. That's fine. But the
+                mystery then was: why does it help longpress.replacePreviousLetterWithText() to not eat up a whole span?
+
+                It turns out that when longpress goes to get the selection,
+                in the keyup or keypress senarios, the selection's startContainer is the markup span (which has the #text
+                node inside of it). So then a deleteContents() wiped out *all* the text in the span (I've added a check for
+                that scenario so that if it happens again, longpress will fail instead of deleting text).
+                However in the keydown case, we get a #text node for the selection, as expected. My hypothesis is that by doing
+                the work during the keyDown event, some code somewhere runs when the key goes up, restoring a good selection.
+                So when longpress is used, it doesn't trip over the span.
+
+                For now I'm just going to commit the fix and if someday we revisit this, maybe another piece of the
+                puzzle will emerge.
+            */
+
+            $(container).find('.bloom-editable').keydown(function (event) {
+                if (event.ctrlKey) {
                     // this is check is a workaround for BL-3490, but when doKeypressMarkup() get's fixed, it should be removed
                     // because as is, we're not updating markup when you paste in text
                     console.log("Skipping markup on paste because of faulty insertion logic. See BL-3490");
                     return;
                 }
                 //don't do markup on cursor keys
-                if(event.keyCode >= 37 && event.keyCode <= 40){
+                if (event.keyCode >= 37 && event.keyCode <= 40) {
                     // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
                     // if all they did was move the cursor, we don't need to look at markup.
                     console.log("skipping markup on arrow key");
                     return;
                 }
-                  console.log("doing markup "+event.ctrlKey);
-                 doKeypressMarkup();
+                doKeypressMarkup();
             });
-       }
+        }
     }
+
     /**
      * Fires an event for C# to handle
      * @param {String} eventName
@@ -62,17 +101,17 @@ export class ToolBox {
      */
     static fireCSharpToolboxEvent(eventName: string, eventData: string) {
 
-    var event = new MessageEvent(eventName, {'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    document.dispatchEvent(event);
+        var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
+        document.dispatchEvent(event);
     }
 
-    static getTabModels() { return tabModels;}
+    static getTabModels() { return tabModels; }
 }
 
 var toolbox = new ToolBox();
 
 export function getTheOneToolbox() {
-  return toolbox;
+    return toolbox;
 }
 
 // Array of models, typically one for each tab. The code for each tab inserts an appropriate model
@@ -98,7 +137,7 @@ export function showOrHidePanel_click(chkbox) {
     else {
         chkbox.innerHTML = '';
         ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t0");
-        $('*[data-panelId]').filter(function() { return $(this).attr('data-panelId') === panel; }).remove();
+        $('*[data-panelId]').filter(function () { return $(this).attr('data-panelId') === panel; }).remove();
     }
 
     resizeToolbox();
@@ -106,7 +145,7 @@ export function showOrHidePanel_click(chkbox) {
 
 
 export function restoreToolboxSettings() {
-    axios.get<any>("/bloom/api/toolbox/settings").then(result=>{
+    axios.get<any>("/bloom/api/toolbox/settings").then(result => {
         savedSettings = result.data;
         var pageFrame = getPageFrame();
         if (pageFrame.contentWindow.document.readyState === 'loading') {
@@ -141,7 +180,7 @@ function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
         // If any instance on the page (e.g., one per div) is not ready, wait until all are.
         // (The instances property leads to an object in which a field editorN is defined for each
         // editor, so we just loop until some value of N which doesn't yield an editor instance.)
-        for (var i = 1;; i++) {
+        for (var i = 1; ; i++) {
             var instance = editorInstances['editor' + i];
             if (instance == null) {
                 if (i === 0) {
@@ -179,15 +218,14 @@ function getPageFrame(): HTMLIFrameElement {
     return <HTMLIFrameElement>parent.window.document.getElementById('page');
 }
 
-    // The body of the editable page, a root for searching for document content.
+// The body of the editable page, a root for searching for document content.
 function getPage(): JQuery {
     var page = getPageFrame();
     if (!page) return null;
     return $(page.contentWindow.document.body);
 }
 
-function switchTool(newToolName: string)
-{
+function switchTool(newToolName: string) {
     ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + newToolName); // Have Bloom remember which tool is active. (Might be none)
     var newTool = null;
     if (newToolName) {
@@ -234,7 +272,7 @@ function setCurrentPanel(currentPanel) {
     if (currentPanel) {
 
         // find the index of the panel whose "data-panelId" attribute equals the value of "currentPanel"
-        toolbox.find('> h3').each(function() {
+        toolbox.find('> h3').each(function () {
             if ($(this).attr('data-panelId') === currentPanel) {
                 // the index is the last segment of the element id
                 idx = this.id.substr(this.id.lastIndexOf('-') + 1);
@@ -286,7 +324,7 @@ function setCurrentPanel(currentPanel) {
  * Normally that job goes to an equivalent c# function. Enhance: remove the c# one.
  */
 // these last three parameters were never used: function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPanel) {
-function beginAddPanel(checkBoxId:string, panelId:string): Promise<void> {
+function beginAddPanel(checkBoxId: string, panelId: string): Promise<void> {
     var chkBox = document.getElementById(checkBoxId);
     if (chkBox) {
         chkBox.innerHTML = checkMarkString;
@@ -297,9 +335,9 @@ function beginAddPanel(checkBoxId:string, panelId:string): Promise<void> {
             'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
             'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html'
         }
-        return axios.get<any>("/bloom/bookEdit/toolbox/"+ subpath[panelId]).then(result=>{
-                loadToolboxPanel(result.data, panelId);
-            });
+        return axios.get<any>("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
+            loadToolboxPanel(result.data, panelId);
+        });
     }
 }
 
@@ -315,9 +353,8 @@ function doKeypressMarkup(): void {
     //if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
     //  this.keypressTimer.clearTimeout();
     //}
-    if(keypressTimer)
-      clearTimeout(keypressTimer);
-
+    if (keypressTimer)
+        clearTimeout(keypressTimer);
     keypressTimer = setTimeout(function () {
 
         // This happens 500ms after the user stops typing.
@@ -357,10 +394,13 @@ function doKeypressMarkup(): void {
         // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
         // actually go back to where it was: it gets shifted to the right.
         const bookmarks = ckeditorSelection.createBookmarks(true);
-
         currentTool.updateMarkup();
 
         //set the selection to wherever our bookmark node ended up
+        //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
+        //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
+        // in some way that is still not understood. This was fixed by changing all this to trigger on
+        // a different event (keydown instead of keypress).
         ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
 
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
@@ -424,9 +464,9 @@ function loadToolboxPanel(newContent, panelId) {
 }
 
 function showToolboxChanged(wasShowing: boolean): void {
-  ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "visibility\t" + (wasShowing ? "" : "visible"));
+    ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "visibility\t" + (wasShowing ? "" : "visible"));
     if (currentTool) {
-      if (wasShowing) currentTool.hideTool();
+        if (wasShowing) currentTool.hideTool();
         else activateTool(currentTool);
     } else {
         // starting up for the very first time in this book...no tool is current,
@@ -449,6 +489,6 @@ $(document).ready(function () {
     });
 });
 
-$(parent.window.document).ready(function() {
-    $(parent.window.document).find('#pure-toggle-right').change(function() { showToolboxChanged(!this.checked); });
+$(parent.window.document).ready(function () {
+    $(parent.window.document).find('#pure-toggle-right').change(function () { showToolboxChanged(!this.checked); });
 })

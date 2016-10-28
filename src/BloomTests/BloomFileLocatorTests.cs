@@ -43,6 +43,9 @@ namespace BloomTests
 			userInstalledSearchPaths.Add(_otherFilesForTestingFolder.Path);
 			_fileLocator = new BloomFileLocator(new CollectionSettings(), _xMatterFinder, ProjectContext.GetFactoryFileLocations(), userInstalledSearchPaths,
 				ProjectContext.GetAfterXMatterFileLocations());
+
+			//Without this, tests can interact with one another, leaving the language set as something unexpected.
+			LocalizationManager.SetUILanguage("en", false);
 		}
 
 		[TearDown]

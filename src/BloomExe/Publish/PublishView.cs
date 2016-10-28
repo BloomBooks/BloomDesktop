@@ -487,12 +487,19 @@ namespace Bloom.Publish
 			{
 				var fileLocator = _model.BookSelection.CurrentSelection.GetFileLocator();
 				var englishMissingLameModulePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "MissingLameModule-en.html");
+				// I hesitate to change the definition of BloomFileLocator.BrowserRoot to return absolute paths.  But apparently we need to feed
+				// _epubPreviewBrowser an absolute path or it mysteriously tries to open the relative path in an actual browser window, not itself.
+				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-3906 if you don't believe this, which I don't except I see it happening.)
+				// So ensure that our file path is an absolute filepath.
+				var baseFolder = FileLocator.DirectoryOfApplicationOrSolution;
+				if (!englishMissingLameModulePath.StartsWith(baseFolder))
+					englishMissingLameModulePath = Path.Combine(baseFolder, englishMissingLameModulePath);
 				var localizedMissingLameModulePath = BloomFileLocator.GetBestLocalizedFile(englishMissingLameModulePath);
 				_epubPreviewBrowser.Navigate(localizedMissingLameModulePath, false);
 				_epubPreviewBrowser.OnBrowserClick += (sender, e) =>
 				{
 					var element = (GeckoHtmlElement)(e as DomEventArgs).Target.CastToGeckoElement();
-					if (element.Attributes["id"].NodeValue == "proceedWithoutAudio")
+					if (element.GetAttribute("id") == "proceedWithoutAudio")
 					{
 						_publishWithoutAudio = true;
 						SetupEpubControlContent();
