@@ -369,15 +369,16 @@ LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
      **************************************************************************/
     regex = XRegExp(
         '(^' + punct + '+)'                             // punctuation at the beginning of a string
-        + '|(' + punct + '+[\\s\\p{Z}]+' + punct + '+)' // punctuation within a sentence, between 2 words (word" "word)
-        + '|([\\s\\p{Z}]+' + punct + '+)'               // punctuation within a sentence, before a word
-        + '|(' + punct + '+[\\s\\p{Z}]+)'               // punctuation within a sentence, after a word
+        + '|(' + punct + '+[\\s\\p{Z}\\p{C}]]+' + punct + '+)' // punctuation within a sentence, between 2 words (word" "word)
+        + '|([\\s\\p{Z}\\p{C}]+' + punct + '+)'               // punctuation within a sentence, before a word
+        + '|(' + punct + '+[\\s\\p{Z}\\p{C}]+)'               // punctuation within a sentence, after a word
         + '|(' + punct + '+$)',                         // punctuation at the end of a string
         'g');
     s = XRegExp.replace(s, regex, ' ');
 
-    // split into words using space characters
-    regex = XRegExp('[\\p{Z}]+', 'xg');
+    // split into words using Separator and Control characters
+    // (ZERO WIDTH SPACE is a Control charactor.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3933.)
+    regex = XRegExp('[\\p{Z}\\p{C}]+', 'xg');
     return XRegExp.split(s.trim(), regex);
 };
 
