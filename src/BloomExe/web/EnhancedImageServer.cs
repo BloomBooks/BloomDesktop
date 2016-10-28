@@ -533,6 +533,11 @@ namespace Bloom.Api
 					//even beta users should not be confronted with this
 					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);
 				}
+				else if (IsImageTypeThatCanBeReturned(localPath))
+				{
+					// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
+					NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Cannot Find Image File", "Server could not find the image file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
+				}
 				else
 				{
 					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Cannot Find File", "Server could not find the file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
