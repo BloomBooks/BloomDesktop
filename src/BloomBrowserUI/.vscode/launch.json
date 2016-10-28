@@ -25,14 +25,13 @@
     //     "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --remote-debugging-port=9222 --no-first-run --incognito --disable-extensions
     // * Try restarting your computer (clears out the bazillion chromes around), which somehow interfer.
     // * Try avoiding using chrome for other things while doing this (e.g. use FF).
-
     "version": "0.2.0",
     "configurations": [
         {
             "name": "Launch in Firefox",
             "type": "firefox",
             "request": "launch",
-            "url": "http://localhost:8091/bloom/CURRENTPAGE.htm",
+            "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
             "webRoot": "${workspaceRoot}",
             "log": {
                 "consoleLevel": {
@@ -49,8 +48,7 @@
             "runtimeExecutable": "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
             // these args don't appear to work... trying to get it to not offer to restore previous pages
             //"runtimeArgs": [ "--no-first-run --kiosk --disable-session-crashed-bubble --disable-infobars --incognito --disable-extensions"],
-
-            "url": "http://localhost:8091/bloom/CURRENTPAGE.htm",
+            "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
             "webRoot": "${workspaceRoot}",
             "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/output/chrome"
