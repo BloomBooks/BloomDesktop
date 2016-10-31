@@ -224,8 +224,13 @@ namespace Bloom
 
 			try
 			{
-				_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
-				_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
+				// BL-3658 GeckoFx-45 has a bug in the CanXSelection Properties, they always return 'true'
+				// Tom Hindle suggested a workaround that seems to work.
+				var isTextSelection = IsThereACurrentTextSelection();
+				_cutCommand.Enabled = _browser != null && isTextSelection;
+				_copyCommand.Enabled = _browser != null && isTextSelection;
+				//_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
+				//_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
 				_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
 				if (_pasteCommand.Enabled)
 				{
@@ -243,6 +248,21 @@ namespace Bloom
 				//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
 				//so it's probably just not ok to check if you're not front-most.
 			}
+		}
+
+		/// <summary>
+		/// Workaround suggested by Tom Hindle, since GeckoFx-45's CanXSelection properties aren't working.
+		/// </summary>
+		/// <returns></returns>
+		private bool IsThereACurrentTextSelection()
+		{
+			using (var win = new GeckoWindow(_browser.WebBrowserFocus.GetFocusedWindowAttribute()))
+			{
+				var sel = win.Selection;
+				if (sel.IsCollapsed || sel.FocusNode is GeckoImageElement)
+					return false;
+			}
+			return true;
 		}
 
 		enum JavaScriptUndoState
