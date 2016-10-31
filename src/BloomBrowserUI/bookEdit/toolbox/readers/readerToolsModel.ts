@@ -1189,13 +1189,14 @@ export class ReaderToolsModel {
 
     stages.forEach((stage, index) => {
       if (stage.allowedWordsFile) {
-          //axios.get<string>('/bloom/api/readers/allowedWordsList?fileName=' + encodeURIComponent(stage.allowedWordsFile))
-          axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
-              .then(result => this.setAllowedWordsListList(result.data, index));
+        //axios.get<string>('/bloom/api/readers/allowedWordsList?fileName=' + encodeURIComponent(stage.allowedWordsFile))
+        axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
+          .then(result => this.setAllowedWordsListList(result.data, index));
       }
-    // During Linux testing of BL-3498, the this (_this in the TS converted to JS), in the axios.get callback was
-    // undefined without this bind().  This .bind() is also the fix for BL-3496.
-    }.bind(this));
+      // During Linux testing of BL-3498, the this (_this in the TS converted to JS), in the axios.get callback was
+      // undefined without this bind().  This .bind() is also the fix for BL-3496.
+      // But apparently when we switched to TS v2.0, it's no longer needed
+    }/*.bind(this)*/);
   }
 
   setAllowedWordsListList(fileContents: string, stageIndex: number): void {
