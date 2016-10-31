@@ -263,8 +263,14 @@ function beginRefreshEverything(settings: ReaderSettings) : Promise<void> {
   synphony.loadSettings(settings);
   getTheOneReaderToolsModel().setSynphony(synphony);
 
-  // reload the sample texts
-  return <any>axios.get<string>('/bloom/api/readers/io/sampleTextsList').then(result => beginSetTextsList(result.data));
+  if (synphony.source.useAllowedWords) {
+    // reload the allowed words for each stage
+    getTheOneReaderToolsModel().getAllowedWordsLists();
+  }
+  else {
+    // reload the sample texts
+    return <any>axios.get<string>('/bloom/api/readers/io/sampleTextsList').then(result => beginSetTextsList(result.data));
+  }
 }
 
 export function beginSaveChangedSettings(settings: ReaderSettings, previousMoreWords: string): Promise<void> {
