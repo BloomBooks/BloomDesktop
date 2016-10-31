@@ -369,7 +369,7 @@ LibSynphony.prototype.getWordsFromHtmlString = function(textHTML, letters) {
      **************************************************************************/
     regex = XRegExp(
         '(^' + punct + '+)'                             // punctuation at the beginning of a string
-        + '|(' + punct + '+[\\s\\p{Z}\\p{C}]]+' + punct + '+)' // punctuation within a sentence, between 2 words (word" "word)
+        + '|(' + punct + '+[\\s\\p{Z}\\p{C}]+' + punct + '+)' // punctuation within a sentence, between 2 words (word" "word)
         + '|([\\s\\p{Z}\\p{C}]+' + punct + '+)'               // punctuation within a sentence, before a word
         + '|(' + punct + '+[\\s\\p{Z}\\p{C}]+)'               // punctuation within a sentence, after a word
         + '|(' + punct + '+$)',                         // punctuation at the end of a string
