@@ -57,6 +57,7 @@ namespace Bloom.Publish
 			this.label11 = new System.Windows.Forms.Label();
 			this._optional1 = new System.Windows.Forms.Label();
 			this._progressBox = new SIL.Windows.Forms.Progress.LogBox();
+			this._userId = new System.Windows.Forms.Label();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1a = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
@@ -414,7 +415,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizingId(this.label11, "PublishTab.Upload.Gaurantee");
 			this.label11.Location = new System.Drawing.Point(0, 0);
 			this.label11.Name = "label11";
-			this.label11.Size = new System.Drawing.Size(592, 13);
+			this.label11.Size = new System.Drawing.Size(591, 13);
 			this.label11.TabIndex = 3;
 			this.label11.Text = "By uploading, you confirm your agreement with the Bloom Library Terms of Use and " +
     "grant the rights it describes";
@@ -456,6 +457,21 @@ namespace Bloom.Publish
 			this._progressBox.ShowMenu = true;
 			this._progressBox.Size = new System.Drawing.Size(604, 175);
 			this._progressBox.TabIndex = 30;
+			// 
+			// _userId
+			// 
+			this._userId.AutoSize = true;
+			this._userId.Dock = System.Windows.Forms.DockStyle.Right;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._userId, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._userId, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._userId, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._userId, "PublishTab.Upload.BloomLibraryPublishControl._userId");
+			this._userId.Location = new System.Drawing.Point(439, 0);
+			this._userId.Name = "_userId";
+			this._userId.Size = new System.Drawing.Size(26, 13);
+			this._userId.TabIndex = 22;
+			this._userId.Text = "UID";
+			this._userId.Visible = false;
 			// 
 			// tableLayoutPanel1
 			// 
@@ -519,6 +535,7 @@ namespace Bloom.Publish
 			// 
 			// panel1a
 			// 
+			this.panel1a.Controls.Add(this._userId);
 			this.panel1a.Controls.Add(this.label8);
 			this.panel1a.Controls.Add(this._signUpLink);
 			this.panel1a.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -653,6 +670,6 @@ namespace Bloom.Publish
 		private System.Windows.Forms.LinkLabel _termsLink;
 		private System.Windows.Forms.Panel panel4;
 		private FlowLayoutPanel _languagesFlow;
-
+		private Label _userId;
 	}
 }
