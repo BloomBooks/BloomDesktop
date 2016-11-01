@@ -316,6 +316,19 @@ namespace BloomTests.Book
 			Assert.IsTrue(File.Exists(Path.Combine(path, newName + ".htm")));
 		}
 
+		[Test]
+		public void PathToExistingHtml_WorksWithFullHtmlName()
+		{
+			var filenameOnly = "BigBook";
+			var fullFilename = "BigBook.html";
+			var storage = GetInitialStorageWithDifferentFileName(filenameOnly);
+			var oldFullPath = Path.Combine(storage.FolderPath, filenameOnly + ".htm");
+			var newFullPath = Path.Combine(storage.FolderPath, fullFilename);
+			File.Move(oldFullPath, newFullPath); // rename to .html
+			var path = storage.PathToExistingHtml;
+			Assert.AreEqual(fullFilename, Path.GetFileName(path), "If this fails, 'path' will be empty string.");
+		}
+
 		/// <summary>
 		/// This is really testing some Book.cs functionality, but it has to manipulate real files with a real storage,
 		/// so it seems to fit better here.
