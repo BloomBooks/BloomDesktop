@@ -15,8 +15,9 @@ ENDLAYOUTS
 This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
 
 .bigbookInstructions {
-	*{font-size: 12pt !important;}
-	 H1 {
+	font-size: 12pt;
+
+	H1 {
 		text-align: center;
 		color: #000000;
 		font-size: 14pt;
@@ -25,11 +26,12 @@ This is a dummy rule used to transmit to javascript what size/orientations this 
 	.bloom-editable {
 		overflow: visible;
 		font-size: 11pt;
+		line-height: 2.0;
 	}
 
 	P {
 		margin-left: 0px;
-		margin-top: 18px;
+		//margin-top: 18px; // interferes with line-height setting
 	}
 
 	LI{
@@ -71,7 +73,7 @@ height: 786px;
 }
 Text Whole Page
 The key to this text being aligned vertically is the bloom-centerContentVertiaclly on the tranlsation group, which gets picked up in the jscript, which then aligns it*/
-.A4Landscape .bloom-editable
+.bloom-editable
 {
 	font-size: 62pt;
 	overflow: visible;
