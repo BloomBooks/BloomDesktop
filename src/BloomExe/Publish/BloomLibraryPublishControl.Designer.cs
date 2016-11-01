@@ -65,6 +65,7 @@ namespace Bloom.Publish
 			this._ccPanel = new System.Windows.Forms.Panel();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this._languagesFlow = new System.Windows.Forms.FlowLayoutPanel();
+			this._userId = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.panel1a.SuspendLayout();
@@ -519,6 +520,7 @@ namespace Bloom.Publish
 			// 
 			// panel1a
 			// 
+			this.panel1a.Controls.Add(this._userId);
 			this.panel1a.Controls.Add(this.label8);
 			this.panel1a.Controls.Add(this._signUpLink);
 			this.panel1a.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -584,6 +586,20 @@ namespace Bloom.Publish
 			this._languagesFlow.Name = "_languagesFlow";
 			this._languagesFlow.Size = new System.Drawing.Size(0, 0);
 			this._languagesFlow.TabIndex = 11;
+			// 
+			// _userId
+			// 
+			this._userId.AutoSize = true;
+			this._userId.Dock = System.Windows.Forms.DockStyle.Right;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._userId, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._userId, null);
+			this._L10NSharpExtender.SetLocalizingId(this._userId, "PublishTab.Upload.label2");
+			this._userId.Location = new System.Drawing.Point(439, 0);
+			this._userId.Name = "_userId";
+			this._userId.Size = new System.Drawing.Size(26, 13);
+			this._userId.TabIndex = 22;
+			this._userId.Text = "UID";
+			this._userId.Visible = false;
 			// 
 			// BloomLibraryPublishControl
 			// 
@@ -653,6 +669,6 @@ namespace Bloom.Publish
 		private System.Windows.Forms.LinkLabel _termsLink;
 		private System.Windows.Forms.Panel panel4;
 		private FlowLayoutPanel _languagesFlow;
-
+		private Label _userId;
 	}
 }
