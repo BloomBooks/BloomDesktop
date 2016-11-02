@@ -22,7 +22,7 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 ## Building Web Source Code ##
 
-You'll need [nodjs](https://nodejs.org/en/) installed. On windows, the degree of [nesting inside of node_modules](https://github.com/Microsoft/nodejstools/issues/69) becomes a problem, but this is helped by NPM versions >= 3. To get a newish NPM, you should install a newish [nodjs](https://nodejs.org/en/), e.g. 5.4 or greater.
+You'll need [nodejs](https://nodejs.org/en/) installed. On windows, the degree of [nesting inside of node_modules](https://github.com/Microsoft/nodejstools/issues/69) becomes a problem, but this is helped by NPM versions >= 3. To get a newish NPM, you should install a newish [nodejs](https://nodejs.org/en/), e.g. 5.4 or greater.
 
 This will build and test the Typescript, javascript, less, and jade:
 
