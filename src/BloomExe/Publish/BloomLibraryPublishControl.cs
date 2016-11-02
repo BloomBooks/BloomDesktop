@@ -1,20 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Data;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
-using SIL.IO;
 using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom.Publish
@@ -236,6 +230,15 @@ namespace Bloom.Publish
 			}
 			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("PublishTab.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
 			_signUpLink.Visible = !_bookTransferrer.LoggedIn;
+			if (_bookTransferrer.LoggedIn)
+			{
+				_userId.Text = Settings.Default.WebUserId;
+				_userId.Visible = true;
+			}
+			else
+			{
+				_userId.Visible = false;
+			}
 		}
 
 		private void _loginLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
