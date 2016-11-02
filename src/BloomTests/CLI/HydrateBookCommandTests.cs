@@ -169,7 +169,7 @@ namespace BloomTests.CLI
 				VernacularIsoCode = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
-			Assert.That(File.Exists(Path.Combine(_eventualHtmlPath, "../license.png")));
+			Assert.That(File.Exists(Path.Combine(Path.GetDirectoryName(_eventualHtmlPath), "license.png")));
 		}
 
 		[Test]
@@ -229,7 +229,7 @@ namespace BloomTests.CLI
 		[Test]
 		public void HasNoBloomPlayerFile_AddsOne()
 		{
-			var bloomPlayerPath = Path.Combine(_eventualHtmlPath, "../bloomPlayer.js");
+			var bloomPlayerPath = Path.Combine(Path.GetDirectoryName(_eventualHtmlPath), "bloomPlayer.js");
 			Assert.False(File.Exists(bloomPlayerPath));
 			HydrateBookCommand.Handle(new HydrateParameters
 			{
@@ -243,7 +243,7 @@ namespace BloomTests.CLI
 		[Test]
 		public void AlreadyHasBloomPlayerFile_ReplacesIt()
 		{
-			var bloomPlayerPath = Path.Combine(_eventualHtmlPath, "../bloomPlayer.js");
+			var bloomPlayerPath = Path.Combine(Path.GetDirectoryName(_eventualHtmlPath), "bloomPlayer.js");
 			File.WriteAllText(bloomPlayerPath, "Some initial text in the file");
 			Assert.True(File.Exists(bloomPlayerPath));
 			Assert.True(new FileInfo(bloomPlayerPath).Length < 100);
