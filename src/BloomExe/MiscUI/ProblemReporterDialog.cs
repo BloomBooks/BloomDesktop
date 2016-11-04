@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
@@ -17,7 +18,6 @@ using SIL.Progress;
 using SIL.Reporting;
 using YouTrackSharp.Infrastructure;
 using YouTrackSharp.Issues;
-
 
 namespace Bloom.MiscUI
 {
@@ -35,6 +35,7 @@ namespace Bloom.MiscUI
 		protected enum State { WaitingForSubmission, UploadingBook, Submitting, CouldNotAutomaticallySubmit, Success }
 
 		public Book.Book Book;
+		private string _projectName;
 		private Bitmap _screenshot;
 		protected State _state;
 		private string _emailableReportFilePath;
@@ -82,6 +83,10 @@ namespace Bloom.MiscUI
 				GetScreenshot(targetOfScreenshot);
 				_includeScreenshot.Checked = _screenshot != null; // if for some reason we couldn't get a screenshot, this will be null
 				_includeScreenshot.Visible = _screenshot != null;
+				if (targetOfScreenshot is WorkspaceView)
+				{
+					_projectName = ((WorkspaceView) targetOfScreenshot).Text;
+				}
 			}
 			else
 			{
@@ -95,7 +100,6 @@ namespace Bloom.MiscUI
 
 			_screenshotHolder.Image = _screenshot;
 
-		
 			ChangeState(State.WaitingForSubmission);
 		}
 
@@ -470,8 +474,45 @@ namespace Bloom.MiscUI
 			bldr.AppendLine("=Problem Description=");
 			bldr.AppendLine(_description.Text);
 			bldr.AppendLine();
+			GetAdditionalEnvironmentInfo(bldr);
 			GetStandardErrorReportingProperties(bldr, appendLog);
 			return bldr.ToString();
+		}
+
+		private void GetAdditionalEnvironmentInfo(StringBuilder bldr)
+		{
+			bldr.AppendLine("=Additional User Environment Information=");
+			if (Book == null)
+			{
+				if (!string.IsNullOrEmpty(_projectName))
+					bldr.AppendLine("Collection name: " + _projectName);
+				bldr.AppendLine("No Book was selected.");
+				return;
+			}
+			try
+			{
+				var sizeOrient = Book.GetLayout().SizeAndOrientation;
+				bldr.AppendLine("Page Size/Orientation: " + sizeOrient);
+			}
+			catch (Exception)
+			{
+				bldr.AppendLine("GetLayout() or SizeAndOrientation threw an exception.");
+			}
+			var settings = Book.CollectionSettings;
+			if (settings == null)
+			{
+				// paranoia, shouldn't happen
+				bldr.AppendLine("Book's CollectionSettings was null.");
+				return;
+			}
+			bldr.AppendLine("Collection name: " + settings.CollectionName);
+			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
+			bldr.AppendLine("Language1 iso: " + settings.Language1Iso639Code + " font: " +
+			                settings.DefaultLanguage1FontName + (settings.IsLanguage1Rtl ? " RTL" : string.Empty));
+			bldr.AppendLine("Language2 iso: " + settings.Language2Iso639Code + " font: " +
+			                settings.DefaultLanguage2FontName + (settings.IsLanguage2Rtl ? " RTL" : string.Empty));
+			bldr.AppendLine("Language3 iso: " + settings.Language3Iso639Code + " font: " +
+			                settings.DefaultLanguage3FontName + (settings.IsLanguage3Rtl ? " RTL" : string.Empty));
 		}
 
 		//enhance: this is just copied from LibPalaso. When we move this whole class over there, we can get rid of it.
