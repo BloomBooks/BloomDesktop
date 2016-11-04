@@ -95,7 +95,6 @@ namespace Bloom.MiscUI
 
 			_screenshotHolder.Image = _screenshot;
 
-		
 			ChangeState(State.WaitingForSubmission);
 		}
 
@@ -470,8 +469,32 @@ namespace Bloom.MiscUI
 			bldr.AppendLine("=Problem Description=");
 			bldr.AppendLine(_description.Text);
 			bldr.AppendLine();
+			GetAdditionalEnvironmentInfo(bldr);
 			GetStandardErrorReportingProperties(bldr, appendLog);
 			return bldr.ToString();
+		}
+
+		private void GetAdditionalEnvironmentInfo(StringBuilder bldr)
+		{
+			if (Book == null)
+				return;
+
+			bldr.AppendLine("=Additional User Environment Information=");
+			var sizeOrient = Book.GetLayout().SizeAndOrientation;
+			bldr.AppendLine("Page Size/Orientation: " + sizeOrient);
+
+			var settings = Book.CollectionSettings;
+			if (settings == null)
+				return; // paranoia, shouldn't happen
+
+			bldr.AppendLine("Collection name: " + settings.CollectionName);
+			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
+			bldr.AppendLine("Language1 iso: " + settings.Language1Iso639Code + " font: " +
+			                settings.DefaultLanguage1FontName + (settings.IsLanguage1Rtl ? " RTL" : string.Empty));
+			bldr.AppendLine("Language2 iso: " + settings.Language2Iso639Code + " font: " +
+			                settings.DefaultLanguage2FontName + (settings.IsLanguage2Rtl ? " RTL" : string.Empty));
+			bldr.AppendLine("Language3 iso: " + settings.Language3Iso639Code + " font: " +
+			                settings.DefaultLanguage3FontName + (settings.IsLanguage3Rtl ? " RTL" : string.Empty));
 		}
 
 		//enhance: this is just copied from LibPalaso. When we move this whole class over there, we can get rid of it.
