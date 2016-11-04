@@ -589,6 +589,8 @@ function SetupElements(container) {
 function AddXMatterLabelAfterPageLabel(container) {
     // All this rigamarole so we can localize...
     var pageLabel = <HTMLDivElement>document.getElementsByClassName("pageLabel")[0];
+    if (!pageLabel)
+        return;
     var xMatterLabel = window.getComputedStyle(pageLabel, ':before').content;
     xMatterLabel = xMatterLabel.replace(new RegExp("\"", 'g'), ""); //No idea why the quotes are still in there at this point.
     if (xMatterLabel == "" || xMatterLabel == "none")
