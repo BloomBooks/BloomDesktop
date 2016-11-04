@@ -44,7 +44,7 @@ CKEDITOR.editorConfig = function (config) {
 	// Filter out any html that might be dangerous.  Specifically, a div element might be copied from the same book and
 	// could introduce duplicate ids.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
 	// See http://docs.ckeditor.com/#!/guide/dev_acf for a description of this setting.
-	config.allowedContent = 'h1 h2 h3 p span blockquote strong em table tr th td caption; a[!href]';
+	config.allowedContent = 'h1 h2 h3 p blockquote table tr th td caption b bdi bdo br em i q span strong sub sup u; a[!href]';
 
 	//BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
 	//http://stackoverflow.com/a/23983357/723299
