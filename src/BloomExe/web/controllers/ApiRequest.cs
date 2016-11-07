@@ -90,7 +90,8 @@ namespace Bloom.Api
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + json);
 			_requestInfo.ContentType = "application/json";
-			_requestInfo.WriteCompleteOutput(JsonConvert.SerializeObject(objectToMakeJson));
+			var json = JsonConvert.SerializeObject(objectToMakeJson);
+			_requestInfo.WriteCompleteOutput(json);
 		}
 		public void ReplyWithImage(string localPath)
 		{
