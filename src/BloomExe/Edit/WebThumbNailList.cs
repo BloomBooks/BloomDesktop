@@ -267,7 +267,8 @@ namespace Bloom.Edit
 				cellDiv.AppendChild(captionDiv);
 				string captionI18nId;
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
-				captionDiv.InnerText = I18NHandler.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
+				if (!string.IsNullOrEmpty(captionOrPageNumber))
+					captionDiv.InnerText = I18NHandler.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
 			}
 
 			// set interval based on physical RAM
