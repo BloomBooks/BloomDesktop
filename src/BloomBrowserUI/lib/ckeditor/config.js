@@ -41,10 +41,18 @@ CKEDITOR.editorConfig = function (config) {
 	// Remove the annoying tooltip "Rich Text Editor, editorN".
 	config.title = false;
 
+
+	// See http://docs.ckeditor.com/#!/guide/dev_acf for a description of this setting.
+	config.allowedContent = true;
+
 	// Filter out any html that might be dangerous.  Specifically, a div element might be copied from the same book and
 	// could introduce duplicate ids.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
-	// See http://docs.ckeditor.com/#!/guide/dev_acf for a description of this setting.
-	config.allowedContent = 'h1 h2 h3 p blockquote table tr th td caption b bdi bdo br em i q span strong sub sup u; a[!href]';
+	// Note that the first attempt to fix BL-3899 set allowedContent rather than pasteFilter, but that caused 
+	// http://issues.bloomlibrary.org/youtrack/issue/BL-3976.
+	// The current code (line above and below) should give us what we want in both situations, namely when we change
+	// the html via javascript, we can do whatever we want. When the user pastes, he is bounded by the following set.
+	// See http://docs.ckeditor.com/#!/api/CKEDITOR.config-cfg-pasteFilter for a description of this setting.
+	config.pasteFilter = 'h1 h2 h3 p blockquote table tr th td caption b bdi bdo br em i q span strong sub sup u; a[!href]';
 
 	//BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
 	//http://stackoverflow.com/a/23983357/723299
