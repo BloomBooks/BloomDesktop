@@ -1018,7 +1018,15 @@ export class ReaderToolsModel {
     return (<any>axios).all(this.texts.map(fileName => {
       return axios.get<string>('/bloom/api/readers/io/sampleFileContents', { params: { fileName: fileName } })
         .then(result => {
-          this.setSampleFileContents(result.data);
+          // this same code runs both for simple word list text files, and for synphony .json files
+          // downstream here, code actually changes the json string back into an object, sigh. But
+          // we're looking for a non-risky patch here as 3.7 is about to go out the door.
+          // We had two bugs related to getting this wrong: BL-3969, BL-3970
+          if (typeof result.data === "string" || <any>result.data instanceof String) {
+            this.setSampleFileContents(result.data); // simple wordlist file
+          } else {
+            this.setSampleFileContents(JSON.stringify(result.data)); //synphony json
+          }
         });
     }));
   }
