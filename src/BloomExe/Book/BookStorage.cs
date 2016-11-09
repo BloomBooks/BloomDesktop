@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Security;
 using System.Text;
 using System.Xml;
+using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.web;
@@ -489,6 +490,11 @@ namespace Bloom.Book
 				// Also, at present the user can't insert them into a book. Don't report them.
 				// TODO: if we ever allow the user to add .svg files, we'll need to change this
 				if (Path.HasExtension(imageFileName) && Path.GetExtension(imageFileName).ToLowerInvariant() == ".svg")
+					continue;
+
+				// Branding images are handled in a special way in BrandingApi.cs.
+				// Without this, we get "Warning: Image /bloom/api/branding/image is missing from the folder xxx" (see BL-3975)
+				if (imageFileName.EndsWith(BrandingApi.kBrandingImageUrlPart))
 					continue;
 
 				//trim off the end of "license.png?123243"
