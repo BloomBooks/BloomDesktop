@@ -138,7 +138,15 @@ namespace Bloom.Book
 				captionI18nId = pageNumber.ToString();
 				return pageNumber.ToString();
 			}
-			captionI18nId = CaptionI18nId ?? "TemplateBooks.PageLabel." + Caption;
+			if (CaptionI18nId == null)
+			{
+				if (string.IsNullOrEmpty(Caption))
+					captionI18nId = null;
+				else
+					captionI18nId = "TemplateBooks.PageLabel." + Caption;
+			}
+			else
+				captionI18nId = CaptionI18nId;
 			return Caption;
 		}
 
