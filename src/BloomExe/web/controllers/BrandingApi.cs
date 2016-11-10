@@ -10,6 +10,7 @@ namespace Bloom.Api
 	/// </summary>
 	class BrandingApi
 	{
+		public const string kBrandingImageUrlPart = "branding/image";
 		private readonly CollectionSettings _collectionSettings;
 
 		public BrandingApi(CollectionSettings collectionSettings)
@@ -19,7 +20,7 @@ namespace Bloom.Api
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("branding/image", request =>
+			server.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
 			{
 				var fileName = request.RequiredFileNameOrPath("id");
 

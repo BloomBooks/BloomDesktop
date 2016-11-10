@@ -88,7 +88,9 @@ export function showSetupDialog(showWhat) {
                 }
             }),
             close: function () {
-                $(this).remove();
+                // $(this).remove(); uses the wrong document (see https://silbloom.myjetbrains.com/youtrack/issue/BL-3962)
+                // the following derives from http://stackoverflow.com/questions/2864740/jquery-how-to-completely-remove-a-dialog-on-close
+                setupDialogElement.dialog('destroy').remove();
                 fireCSharpEvent('setModalStateEvent', 'false');
             },
             open: function () {

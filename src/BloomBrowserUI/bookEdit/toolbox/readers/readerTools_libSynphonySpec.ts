@@ -88,26 +88,34 @@ describe("readerTools-libSynphony tests", function() {
         expect(getTheOneReaderToolsModel().allWords).toEqual({the: 4, cat: 2, sat: 2, on: 2, mat: 1, rat: 1});
     });
 
+    it("addWordsFromFile properly handles paragraphs", function () {
+        getTheOneReaderToolsModel().clearForTest();
+        var fileContents = 'one\r\ntwo\nthree four five.\r\n six. seven';
 
-/* skipping See BL-3554
-    it("addWordsToSynphony", function() {
-
-        generateTestData();
-        var synphony = getTheOneReaderToolsModel().synphony;
-
-        expect(synphony.stages.length).toBe(3);
-        getTheOneReaderToolsModel().setStageNumber(1);
-        expect(_.pluck(getTheOneReaderToolsModel().getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat']);
-        getTheOneReaderToolsModel().setStageNumber(2);
-        expect(_.pluck(getTheOneReaderToolsModel().getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat', 'sat']);
-        getTheOneReaderToolsModel().setStageNumber(3);
-        expect(_.pluck(getTheOneReaderToolsModel().getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'on', 'one', 'rat', 'sat', 'the', 'three']);
-
-        expect(synphony.stages[0].sightWords).toEqual('canine feline');
-        expect(synphony.stages[1].sightWords).toEqual('carnivore omnivore');
-        expect(synphony.stages[2].sightWords).toEqual('rodent');
+        getTheOneReaderToolsModel().addWordsFromFile(fileContents);
+        expect(getTheOneReaderToolsModel().allWords).toEqual({ one: 1, two: 1, three: 1, four: 1, five: 1, six: 1, seven: 1 });
     });
-*/
+
+
+    /* skipping See BL-3554
+        it("addWordsToSynphony", function() {
+
+            generateTestData();
+            var synphony = getTheOneReaderToolsModel().synphony;
+
+            expect(synphony.stages.length).toBe(3);
+            getTheOneReaderToolsModel().setStageNumber(1);
+            expect(_.pluck(getTheOneReaderToolsModel().getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat']);
+            getTheOneReaderToolsModel().setStageNumber(2);
+            expect(_.pluck(getTheOneReaderToolsModel().getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat', 'sat']);
+            getTheOneReaderToolsModel().setStageNumber(3);
+            expect(_.pluck(getTheOneReaderToolsModel().getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'on', 'one', 'rat', 'sat', 'the', 'three']);
+
+            expect(synphony.stages[0].sightWords).toEqual('canine feline');
+            expect(synphony.stages[1].sightWords).toEqual('carnivore omnivore');
+            expect(synphony.stages[2].sightWords).toEqual('rodent');
+        });
+    */
 
     /**
      * Test for BL-223, div displaying markup if there is no text
