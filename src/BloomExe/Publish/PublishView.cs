@@ -436,6 +436,9 @@ namespace Bloom.Publish
 				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveEpub", "&Save ePUB...");
 			else
 				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveButton", "&Save PDF...");
+			// Grow the parent panel if a localization requires more space.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3995.
+			if (_topBarPanel.Width < _saveButton.Location.X + _saveButton.Width)
+				_topBarPanel.Width = _saveButton.Location.X + _saveButton.Width;
 		}
 
 		private void SetupPublishControl()
