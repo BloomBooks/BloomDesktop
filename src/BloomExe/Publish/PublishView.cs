@@ -36,6 +36,12 @@ namespace Bloom.Publish
 
 		public delegate PublishView Factory();//autofac uses this
 
+		/// <summary>
+		/// Flag whether to produce PDF files one page at a time or the whole book at once.  (The default is the whole book at once.)
+		/// </summary>
+		/// <value>The single page mode.</value>
+		public bool SinglePageMode { get; set; }
+
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator)
 		{
@@ -339,6 +345,13 @@ namespace Bloom.Publish
 			}
 			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 
+			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
+			var textItem = LocalizationManager.GetDynamicString("Bloom", "SinglePageModePdf", "Create PDF File One Page At A Time");
+			var menuItem = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(textItem);
+			menuItem.Checked = SinglePageMode;
+			menuItem.CheckOnClick = true;
+			menuItem.CheckedChanged += OnSinglePageModeChanged;
+
 			// "EditTab" because it is the same text.  No sense in having it listed twice.
 			_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
 				"Choose a page size and orientation");
@@ -352,6 +365,12 @@ namespace Bloom.Publish
 			ClearRadioButtons();
 			UpdateDisplay();
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
+		}
+
+		private void OnSinglePageModeChanged(object sender, EventArgs e)
+		{
+			var item = (ToolStripMenuItem)sender;
+			SinglePageMode = item.Checked;
 		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)

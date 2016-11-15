@@ -39,7 +39,7 @@ namespace Bloom.Publish
 	class MakePdfUsingGeckofxHtmlToPdfProgram
 	{
 		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName,
-			bool landscape, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
+			bool landscape, bool singlePageMode, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 #if !__MonoCS__
 			// Mono doesn't current provide System.Printing.  Leave the 'if' here to emphasize the
@@ -115,7 +115,7 @@ namespace Bloom.Publish
 			{
 				exePath = filePath;
 			}
-			SetArguments(bldr, inputHtmlPath, outputPdfPath, paperSizeName, landscape);
+			SetArguments(bldr, inputHtmlPath, outputPdfPath, paperSizeName, landscape, singlePageMode);
 			var arguments = bldr.ToString();
 			var progress = new NullProgress();
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, null);
@@ -125,11 +125,15 @@ namespace Bloom.Publish
 
 				var msg = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.Failed",
 					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
+					@"Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.");
+
+				var msg2 = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.TrySinglePage",
+					"If the problem appears to be running out of memory, try checking the \"Create PDF File One Page At A Time\" item in the page size and orientation pulldown menu and try again.",
 					@"Error message displayed in a message dialog box");
 
-				msg += System.Environment.NewLine + res.StandardOutput;
+				var fullMsg = String.Format(msg, outputPdfPath, Environment.NewLine) + Environment.NewLine + msg2 + Environment.NewLine + res.StandardOutput;
 
-				var except = new ApplicationException(String.Format(msg, outputPdfPath, Environment.NewLine));
+				var except = new ApplicationException(fullMsg);
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.
 				// If not, but the caller provides a DoWorkEventArgs, pass the exception through
 				// that object rather than throwing it.
@@ -157,13 +161,15 @@ namespace Bloom.Publish
 		//OutputPdfPath = tempOutput.Path,
 		//PageSizeName = paperSizeName
 		void SetArguments(StringBuilder bldr, string inputHtmlPath, string outputPdfPath,
-			string paperSizeName, bool landscape)
+			string paperSizeName, bool landscape, bool singlePageMode)
 		{
 			bldr.AppendFormat("\"{0}\" \"{1}\"", inputHtmlPath, outputPdfPath);
 			bldr.AppendFormat(" -B 0 -T 0 -L 0 -R 0 -s {0}", paperSizeName);
 			bldr.Append(" --graphite");
 			if (landscape)
 				bldr.Append(" -Landscape");
+			if (singlePageMode)
+				bldr.Append(" --single-pages");
 		}
 	}
 }
