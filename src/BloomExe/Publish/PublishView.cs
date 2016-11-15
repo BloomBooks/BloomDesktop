@@ -339,6 +339,13 @@ namespace Bloom.Publish
 			}
 			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 
+			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
+			var textItem = LocalizationManager.GetDynamicString("Bloom", "lessMemoryPdfMode", "Use less memory (slower)");
+			var menuItem = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(textItem);
+			menuItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse;
+			menuItem.CheckOnClick = true;
+			menuItem.CheckedChanged += OnSinglePageModeChanged;
+
 			// "EditTab" because it is the same text.  No sense in having it listed twice.
 			_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
 				"Choose a page size and orientation");
@@ -352,6 +359,12 @@ namespace Bloom.Publish
 			ClearRadioButtons();
 			UpdateDisplay();
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
+		}
+
+		private void OnSinglePageModeChanged(object sender, EventArgs e)
+		{
+			var item = (ToolStripMenuItem)sender;
+			_model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse = item.Checked;
 		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
