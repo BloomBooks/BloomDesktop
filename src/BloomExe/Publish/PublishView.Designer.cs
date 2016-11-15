@@ -87,6 +87,7 @@
 			// 
 			// _topBarPanel
 			// 
+			this._topBarPanel.AutoSize = true;
 			this._topBarPanel.Controls.Add(this._saveButton);
 			this._topBarPanel.Controls.Add(this._printButton);
 			this._topBarPanel.Location = new System.Drawing.Point(296, 320);
