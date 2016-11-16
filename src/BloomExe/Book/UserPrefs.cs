@@ -13,6 +13,7 @@ namespace Bloom.Book
 		private bool _loading = true;
 		private string _filePath;
 		private int _mostRecentPage;
+		private bool _reducePdfMemory;
 
 		private UserPrefs() {}
 
@@ -64,6 +65,17 @@ namespace Bloom.Book
 			set
 			{
 				_mostRecentPage = value;
+				Save();
+			}
+		}
+
+		[JsonProperty("reducePdfMemory")]
+		public bool ReducePdfMemoryUse
+		{
+			get { return _reducePdfMemory; }
+			set
+			{
+				_reducePdfMemory = value;
 				Save();
 			}
 		}
