@@ -25,12 +25,12 @@ override_dh_auto_build:
 	build/getDependencies-Linux.sh
 	. ./environ && \
 		xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$(FULL_BUILD_NUMBER) build/Bloom.proj && \
-		xbuild /p:Configuration=$(BUILD) "BloomLinux.sln"
+		xbuild /p:Configuration=$(BUILD) "Bloom.sln"
 
 override_dh_auto_test:
 
 override_dh_auto_clean:
-	. ./environ && xbuild /p:Configuration=$(BUILD) "BloomLinux.sln" /t:Clean
+	. ./environ && xbuild /p:Configuration=$(BUILD) "Bloom.sln" /t:Clean
 	dh_clean
 
 override_dh_auto_install:
