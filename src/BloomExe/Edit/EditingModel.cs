@@ -969,7 +969,11 @@ namespace Bloom.Edit
 
 				//we have to save so that when asked by the thumbnailer, the book will give the proper image
 				SaveNow();
-				CurrentBook.Storage.CleanupUnusedImageFiles();
+				// BL-3717: if we cleanup unused image files whenever we change a picture then Cut can lose
+				// all of an image's metadata (because the actual file is missing from the book folder when we go to
+				// paste in the image that was copied onto the clipboard, which doesn't have metadata.)
+				// Let's only do this on ExpensiveIntialization() when loading a book.
+				//CurrentBook.Storage.CleanupUnusedImageFiles();
 				//but then, we need the non-cleaned version back there
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 
