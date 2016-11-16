@@ -7,19 +7,19 @@ Pour en savoir plus sur l'utilisation des outils de livres gradués dans Bloom 
 - Rendez vous sur le menu Aide et sélectionnez "Créer des modèles de livres".
 ### Lien avec les livres de base
 Comment les *niveaux* de "livres gradués" sont-ils applicables aux *étapes* des livres de base ? Ces deux concepts étant complémentaires, Bloom permet d'écrire un livre comportant à la fois des étapes de *déchiffrage* et de *lecture graduée*. Les livres de niveau 1, voire aussi de niveau 2, devront par exemple être écrits en gardant les différentes étapes de *déchiffrage* à l'esprit. Les livres de niveau 1 et 2 devront aussi être *déchiffrables*, c'est-à-dire n'employer que des lettres déjà apprises par les lecteurs visés. Voici un exemple de séquence de livres :
-
-
- Niveau de livre gradué 
- Étape de déchiffrage 
-
- 1  1 
- 1  2 
- 1  3 
- 1  4 
- 1  5 
- 1  6 
- 2  N/A 
- 3  N/A 
- 4  N/A 
- 5  N/A 
-
+<table>
+  <tr style="font-weight:bold">
+    <td style="width:10em">Niveau de livre gradué </td>
+    <td>Étape de déchiffrage </td>
+  </tr>
+  <tr>    <td>1 </td>    <td>1 </td>  </tr>
+  <tr>    <td>1 </td>    <td>2 </td>  </tr>
+  <tr>    <td>1 </td>    <td>3 </td>  </tr>
+  <tr>    <td>1 </td>    <td>4 </td>  </tr>
+  <tr>    <td>1 </td>    <td>5 </td>  </tr>
+  <tr>    <td>1 </td>    <td>6 </td>  </tr>
+  <tr>    <td>2 </td>    <td>N/A </td>  </tr>
+  <tr>    <td>3 </td>    <td>N/A </td>  </tr>
+  <tr>    <td>4 </td>    <td>N/A </td>  </tr>
+  <tr>    <td>5 </td>    <td>N/A </td>  </tr>
+</table>

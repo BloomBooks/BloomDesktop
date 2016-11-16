@@ -14,19 +14,19 @@ Untuk mempelajari tentang cara menggunakan Pembaca Bertingkat di Bloom, Anda dap
 
 Jadi bagaimana *tingkat* pembaca bertingkat sesuai dengan *tahapan* pembaca yang dapat didekodekan? Kedua konsep ini saling melengkapi, dan Bloom memungkinkan Anda mengatur sebuah *tahapan yang dapat didekodekan* dan sebuah *tingkat pembaca berltingkat* untuk buku yang Anda tulis. Biasanya buku pada tingkat 1 dan mungkin tingkat 2 juga harus ditulis dengan mempertimbangkan *tahapan kemampuan mendekodekan*. Buku pada tingkat pertama atau tingkat dua juga harus diperhatikan saat *dapat didekodekan* (yaitu penggunaan huruf yang telah dipelajari oleh pembaca). Jadi urutan bukunya mungkin akan tampak seperti ini:
 
-
-
- Tingkat Pembaca Bertingkat 
- Tahapan Dapat Didekodekan 
-
- 1  1 
- 1  2 
- 1  3 
- 1  4 
- 1  5 
- 1  6 
- 2  t/t 
- 3  t/t 
- 4  t/t 
- 5  t/t 
-
+<table>
+  <tr style="font-weight:bold">
+    <td style="width:10em">Tingkat Pembaca Bertingkat </td>
+    <td>Tahapan Dapat Didekodekan </td>
+  </tr>
+  <tr>    <td>1 </td>    <td>1 </td>  </tr>
+  <tr>    <td>1 </td>    <td>2 </td>  </tr>
+  <tr>    <td>1 </td>    <td>3 </td>  </tr>
+  <tr>    <td>1 </td>    <td>4 </td>  </tr>
+  <tr>    <td>1 </td>    <td>5 </td>  </tr>
+  <tr>    <td>1 </td>    <td>6 </td>  </tr>
+  <tr>    <td>2 </td>    <td>t/t </td>  </tr>
+  <tr>    <td>3 </td>    <td>t/t </td>  </tr>
+  <tr>    <td>4 </td>    <td>t/t </td>  </tr>
+  <tr>    <td>5 </td>    <td>t/t </td>  </tr>
+</table>

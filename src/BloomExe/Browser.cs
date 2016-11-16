@@ -528,7 +528,7 @@ namespace Bloom
 		private MenuItem AddOpenPageInFFItem(GeckoContextMenuEventArgs e)
 		{
 			return e.ContextMenu.MenuItems.Add(
-				LocalizationManager.GetString("Browser.OpenPageInFirefox", "Open Page in Firefox (which must be in the PATH environment variable)"),
+				LocalizationManager.GetString("Browser.OpenPageInFirefox", "Open Page in Firefox (which must be in the PATH environment variable)."),
 				OnOpenPageInSystemBrowser);
 		}
 

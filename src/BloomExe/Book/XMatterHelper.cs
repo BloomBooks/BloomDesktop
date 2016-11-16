@@ -44,7 +44,7 @@ namespace Bloom.Book
 			catch(ApplicationException error)
 			{
 				var errorTemplate = LocalizationManager.GetString("Errors.XMatterNotFound",
-					"This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a BloomPack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.");
+                    "This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.");
 				var msg = string.Format(errorTemplate, nameOfXMatterPack);
 
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), msg);
