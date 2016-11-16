@@ -349,7 +349,9 @@ namespace Bloom.Publish
 						Analytics.Track("Save PDF", new Dictionary<string, string>()
 							{
 								{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
-								{"Layout", PageLayout.ToString()}
+								{"Layout", PageLayout.ToString()},
+								{"BookId", BookSelection.CurrentSelection.ID },
+								{"Country", _collectionSettings.Country}
 							});
 					}
 				}
@@ -535,9 +537,18 @@ namespace Bloom.Publish
 				{
 					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
 					_epubMaker.FinishEpub(dlg.FileName);
-					Analytics.Track("Save ePUB");
+					ReportAnalytics("Save ePUB");
 				}
 			}
+		}
+
+		public void ReportAnalytics(string eventName)
+		{
+			Analytics.Track(eventName, new Dictionary<string, string>()
+			{
+				{"BookId", BookSelection.CurrentSelection.ID},
+				{"Country", _collectionSettings.Country}
+			});
 		}
 	}
 }
