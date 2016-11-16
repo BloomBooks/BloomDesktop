@@ -564,7 +564,11 @@ namespace Bloom.CollectionTab
 				if (sourceBook.IsShellOrTemplate)
 				{
 					Analytics.Track("Create Book",
-						new Dictionary<string, string>() {{"Category", sourceBook.CategoryForUsageReporting}});
+						new Dictionary<string, string>() {
+							{ "Category", sourceBook.CategoryForUsageReporting},
+							{ "BookId", newBook.ID},
+							{ "Country", _collectionSettings.Country}
+						});
 				}
 				_editBookCommand.Raise(newBook);
 			}
