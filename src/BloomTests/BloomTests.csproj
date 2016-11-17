@@ -164,6 +164,7 @@
     <Compile Include="Book\UserPrefsTests.cs" />
     <Compile Include="Book\BookTestsBase.cs" />
     <Compile Include="CLI\HydrateBookCommandTests.cs" />
+    <Compile Include="Collection\CollectionSettingsTests.cs" />
     <Compile Include="MiscellaneousTests.cs" />
     <Compile Include="Publish\ExportEpubTests.cs" />
     <Compile Include="Book\HtmlDomTests.cs" />
