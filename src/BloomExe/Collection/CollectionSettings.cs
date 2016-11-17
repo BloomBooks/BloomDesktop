@@ -37,12 +37,21 @@ namespace Bloom.Collection
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
 
+		public static readonly string[] PageNumberStyleKeys =
+		{
+			"Decimal", "Arabic-Indic", "Armenian", "Upper-Armenian", "Lower-Armenian", "Bengali",
+			"Cambodian", "Khmer", "Cjk-Decimal", "Devanagari", "Georgian", "Gujarati", "Gurmukhi",
+			"Hebrew", "Kannada", "Lao", "Malayalam", "Mongolian", "Myanmar", "Oriya", "Persian",
+			"Tamil", "Telugu", "Thai", "Tibetan"
+		};
+
 		/// <summary>
 		/// for moq in unit tests only
 		/// </summary>
 		public CollectionSettings()
 		{
 			BrandingProjectName = "Default";
+			PageNumberStyle = "Decimal";
 			XMatterPackName = "Traditional";
 			Language2Iso639Code = "en";
 			AllowNewBooks = true;
@@ -73,6 +82,7 @@ namespace Bloom.Collection
 			District = collectionInfo.District;
 			IsSourceCollection = collectionInfo.IsSourceCollection;
 			XMatterPackName = collectionInfo.XMatterPackName;
+			PageNumberStyle = collectionInfo.PageNumberStyle;
 			BrandingProjectName = collectionInfo.BrandingProjectName;
 
 			Save();
@@ -311,6 +321,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("Language3LineHeight", Language3LineHeight));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
+			library.Add(new XElement("PageNumberStyle", PageNumberStyle));
 			library.Add(new XElement("BrandingProjectName", BrandingProjectName));
 			library.Add(new XElement("Country", Country));
 			library.Add(new XElement("Province", Province));
@@ -337,12 +348,24 @@ namespace Bloom.Collection
 				{
 					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, Language3LineHeight);
 				}
+				AddNumberingStyleCssRule(sb, PageNumberStyle);
 				RobustFile.WriteAllText(path, sb.ToString());
 			}
 			catch (Exception error)
 			{
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
 			}
+		}
+
+		// styleNameKey must be the non-localized version
+		private void AddNumberingStyleCssRule(StringBuilder sb, string styleNameKey)
+		{
+			var selector = ".numberedPage:after";
+			sb.AppendLine();
+			sb.AppendLine(selector);
+			sb.AppendLine("{");
+			sb.AppendLine(" content: counter(pageNumber, " + styleNameKey.ToLower() + ");");
+			sb.AppendLine("}");
 		}
 
 		private void AddFontCssRule(StringBuilder sb, string selector, string fontName, decimal lineHeight)
@@ -368,6 +391,10 @@ namespace Bloom.Collection
 				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
 				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
+
+				var style = GetValue(library, "PageNumberStyle", "Decimal");
+				PageNumberStyle = PageNumberStyleKeys.Contains(style) ? style : "Decimal";
+
 				BrandingProjectName = GetValue(library, "BrandingProjectName", "Default");
 				
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
@@ -567,6 +594,8 @@ namespace Bloom.Collection
 		public string DefaultLanguage2FontName { get; set; }
 
 		public string DefaultLanguage3FontName { get; set; }
+
+		public string PageNumberStyle { get; set; }
 
 		public string BrandingProjectName { get; set; }
 
