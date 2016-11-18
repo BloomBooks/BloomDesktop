@@ -2062,13 +2062,18 @@ namespace Bloom.Book
 
 			using (var temp = TempFile.WithExtension(".css"))
 			{
-				RobustFile.WriteAllText(temp.Path,
+				// Use a temporary file pathname in the current book's folder.  This is needed to ensure proper permissions are granted
+				// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
+				// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+				// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
+				var tempPath = Path.Combine(_storage.FolderPath, Path.GetFileName(temp.Path));
+				RobustFile.WriteAllText(tempPath,
 					template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code)
 						.Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
 
 				//hoping this helps with the occasional report we were getting where the files were in Dropbox and
 				//the previous File.Delete(path) would fail:
-				FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, path, null);
+				FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, path, null);
 			}
 			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.

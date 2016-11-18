@@ -15,6 +15,7 @@ using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.web;
 using L10NSharp;
+using L10NSharp.TMXUtils;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -241,6 +242,8 @@ namespace Bloom.Book
 				//hack so we can package this for palaso reporting
 				errors += string.Format("{0}{0}{0}Contents:{0}{0}{1}", Environment.NewLine,
 					RobustFile.ReadAllText(badFilePath));
+				if (!String.IsNullOrEmpty(tempPath) && File.Exists(tempPath))
+					File.Delete(tempPath);
 				var ex = new XmlSyntaxException(errors);
 
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
@@ -335,13 +338,26 @@ namespace Bloom.Book
 		public string SaveHtml(HtmlDom dom)
 		{
 			AssertIsAlreadyInitialized();
-			string tempPath = Path.GetTempFileName();
+			string tempPath = GetTempHtmlFileName();
 			MakeCssLinksAppropriateForStoredFile(dom);
 			SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
 			//CopyXMatterStylesheetsIntoFolder
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
 
+		/// <summary>
+		/// Get a temporary file pathname in the current book's folder.  This is needed to ensure proper permissions are granted
+		/// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
+		/// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+		/// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
+		/// </summary>
+		private string GetTempHtmlFileName()
+		{
+			using (var temp = new SIL.IO.TempFile())
+			{
+				return Path.Combine(_folderPath, Path.GetFileName(temp.Path));
+			}
+		}
 
 		/// <summary>
 		/// creates a relocatable copy of our main HtmlDom
