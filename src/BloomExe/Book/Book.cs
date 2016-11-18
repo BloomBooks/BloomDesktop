@@ -2060,7 +2060,11 @@ namespace Bloom.Book
 			var template = RobustFile.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 
-			using (var temp = TempFile.WithExtension(".css"))
+			// Use a temporary file pathname in the current book's folder.  This is needed to ensure proper permissions are granted
+			// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
+			// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+			// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
+			using (var temp = TempFile.InFolderOf(path))	// We don't need a .css extension for the temporary file.
 			{
 				RobustFile.WriteAllText(temp.Path,
 					template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code)

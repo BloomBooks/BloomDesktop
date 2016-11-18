@@ -284,7 +284,11 @@ namespace Bloom.ImageProcessing
 
 			//nb: there are cases (notably http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
 
-			using (var tempPath = new TempFile())
+			// Use a temporary file pathname in the destination folder.  This is needed to ensure proper permissions are granted
+			// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
+			// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+			// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
+			using (var tempPath = TempFile.InFolderOf(destinationPath))
 			using (var safetyImage = new Bitmap(image))
 			{
 				using(var parameters = new EncoderParameters(1))
