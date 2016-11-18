@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
@@ -727,13 +728,23 @@ namespace Bloom.Edit
 				var path = Path.Combine(bookFolderPath, url.NotEncoded);
 				try
 				{
-					using(var image = RobustIO.PalasoImageFromFile(path))
+					using (var image = RobustIO.PalasoImageFromFile(path))
 					{
 						BloomClipboard.CopyImageToClipboard(image);
 					}
 					return true;
 				}
-				catch(Exception e)
+				catch (ExternalException e)
+				{
+					Logger.WriteEvent("CopyImageToClipboard -> ExternalException: " + e.Message);
+					var msg = LocalizationManager.GetDynamicString("Bloom", "EditTab.Image.CopyImageFailed",
+						"Bloom had problems using your computer's clipboard. Some other program may be interfering.") +
+						Environment.NewLine + Environment.NewLine +
+						LocalizationManager.GetDynamicString("Bloom", "EditTab.Image.TryRestart",
+						"Try closing other programs and restart your computer if necessary.");
+					MessageBox.Show(msg);
+				}
+				catch (Exception e)
 				{
 					Debug.Fail(e.Message);
 					Logger.WriteEvent("CopyImageToClipboard:" + e.Message);
