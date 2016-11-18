@@ -1636,6 +1636,18 @@
         <seg>Copy Image</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Image.CopyImageFailed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom had problems using your computer's clipboard. Some other program may be interfering.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.TryRestart">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Try closing other programs and restart your computer if necessary.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ImageChangeWarning">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
