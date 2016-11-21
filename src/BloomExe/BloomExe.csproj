@@ -286,9 +286,6 @@
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
     </Reference>
-    <Reference Include="GtkUtils" Condition="'$(OS)'!='Windows_NT'">
-      <HintPath>..\..\lib\dotnet\GtkUtils.dll</HintPath>
-    </Reference>
     <Reference Include="YouTrackSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\YouTrackSharp.dll</HintPath>
@@ -968,7 +965,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="web\EnhancedImageServer.cs" />
-    <Compile Include="Workspace\BloomClipboard.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
   <ItemGroup>

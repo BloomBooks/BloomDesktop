@@ -38,21 +38,6 @@ namespace Bloom
 			return RetryUtility.Retry(() => Metadata.FromFile(path));
 		}
 
-		public static PalasoImage PalasoImageFromFile(string path)
-		{
-			return RetryUtility.Retry(() => PalasoImage.FromFile(path),
-				RetryUtility.kDefaultMaxRetryAttempts,
-				RetryUtility.kDefaultRetryDelay,
-				new HashSet<Type>
-				{
-					Type.GetType("System.IO.IOException"),
-					// Odd type to catch... but it seems that Image.FromFile (which is called in the bowels of PalasoImage.FromFile)
-					// throws OutOfMemoryException when the file is inaccessible.
-					// See http://stackoverflow.com/questions/2610416/is-there-a-reason-image-fromfile-throws-an-outofmemoryexception-for-an-invalid-i
-					Type.GetType("System.OutOfMemoryException")
-				});
-		}
-
 		public static void SavePalasoImage(PalasoImage image, string path)
 		{
 			RetryUtility.Retry(() => image.Save(path));

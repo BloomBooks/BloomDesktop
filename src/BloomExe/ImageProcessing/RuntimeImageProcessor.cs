@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using SIL.IO;
 using SIL.Reporting;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.ImageProcessing
 {
@@ -157,7 +158,7 @@ namespace Bloom.ImageProcessing
 
 		private static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth)
 		{
-			using (var originalImage = RobustIO.PalasoImageFromFile(originalPath))
+			using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
 			{
 				// check if it needs resized
 				if (originalImage.Image.Width <= newWidth) return false;
@@ -180,7 +181,7 @@ namespace Bloom.ImageProcessing
 		{
 			try
 			{
-				using (var originalImage = RobustIO.PalasoImageFromFile(originalPath))
+				using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
 				{
 					//if it's a jpeg, we don't resize, we don't mess with transparency, nothing. These things
 					//are scary in .net. Just send the original back and wash our hands of it.

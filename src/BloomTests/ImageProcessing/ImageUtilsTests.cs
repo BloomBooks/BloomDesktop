@@ -54,7 +54,7 @@ namespace BloomTests.ImageProcessing
 		private static void ProcessAndSaveImageIntoFolder_AndTestResults(string testImageName, ImageFormat expectedOutputFormat)
 		{
 			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
-			using (var image = RobustIO.PalasoImageFromFile(inputPath))
+			using (var image = PalasoImage.FromFileRobustly(inputPath))
 			{
 				using (var folder = new TemporaryFolder())
 				{
@@ -79,7 +79,7 @@ namespace BloomTests.ImageProcessing
 		{
 			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirtWithTransparentBg.png");
 			var originalFileSize = new FileInfo(inputPath).Length;
-			using (var image = RobustIO.PalasoImageFromFile(inputPath))
+			using (var image = PalasoImage.FromFileRobustly(inputPath))
 			{
 				using (var folder = new TemporaryFolder("TransparentPngTest"))
 				{

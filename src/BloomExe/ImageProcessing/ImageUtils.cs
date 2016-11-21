@@ -199,7 +199,7 @@ namespace Bloom.ImageProcessing
 					return;
 
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
-				using(var pi = RobustIO.PalasoImageFromFile(path))
+				using(var pi = PalasoImage.FromFileRobustly(path))
 				{
 					if (!AppearsToBeJpeg(pi))
 					{

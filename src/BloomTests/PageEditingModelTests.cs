@@ -68,14 +68,14 @@ namespace BloomTests
 			var x = new Bitmap(kSampleImageDimension, kSampleImageDimension);
 			x.Save(path,ImageFormat.Png);
 			x.Dispose();
-			return  RobustIO.PalasoImageFromFile(path);
+			return  PalasoImage.FromFileRobustly(path);
 		}
 
 		private PalasoImage MakeSampleTifImage(string path)
 		{
 			var x = new Bitmap(kSampleImageDimension, kSampleImageDimension);
 			x.Save(path, ImageFormat.Tiff);
-			return RobustIO.PalasoImageFromFile(path);
+			return PalasoImage.FromFileRobustly(path);
 		}
 
 		private PalasoImage MakeSampleJpegImage(string path)
@@ -83,7 +83,7 @@ namespace BloomTests
 			var x = new Bitmap(kSampleImageDimension, kSampleImageDimension);
 			x.Save(path, ImageFormat.Jpeg);
 			//nb: even if we reload the image from the file, the rawformat will be memory bitmap, not jpg as we'd wish
-			return RobustIO.PalasoImageFromFile(path);
+			return PalasoImage.FromFileRobustly(path);
 		}
 
 		/// <summary>

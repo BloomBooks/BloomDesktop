@@ -16,6 +16,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageGallery;
 using SIL.Windows.Forms.ImageToolbox;
+using SIL.Windows.Forms.Miscellaneous;
 using Gecko;
 using TempFile = SIL.IO.TempFile;
 using Bloom.Workspace;
@@ -513,7 +514,7 @@ namespace Bloom.Edit
 			PalasoImage imageInfo = null;
 			try
 			{
-				imageInfo = RobustIO.PalasoImageFromFile(path);
+				imageInfo = PalasoImage.FromFileRobustly(path);
 			}
 			catch(TagLib.CorruptFileException e)
 			{
@@ -608,7 +609,7 @@ namespace Bloom.Edit
 			{
 				// Replace current image with placeHolder.png
 				var path = Path.Combine(bookFolderPath, "placeHolder.png");
-				using(var palasoImage = RobustIO.PalasoImageFromFile(path))
+				using(var palasoImage = PalasoImage.FromFileRobustly(path))
 				{
 					_model.ChangePicture(GetImageNode(ge), palasoImage, new NullProgress());
 				}
@@ -690,7 +691,7 @@ namespace Bloom.Edit
 						{
 							SIL.IO.RobustIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
 
-							using(var palasoImage = RobustIO.PalasoImageFromFile(temp.Path))
+							using(var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
 							{
 								_model.ChangePicture(imageElement, palasoImage, new NullProgress());
 							}
@@ -712,7 +713,7 @@ namespace Bloom.Edit
 
 		private static PalasoImage GetImageFromClipboard()
 		{
-			return BloomClipboard.GetImageFromClipboard();
+			return PortableClipboard.GetImageFromClipboard();
 		}
 
 		private static bool CopyImageToClipboard(DomEventArgs ge, string bookFolderPath)
@@ -727,11 +728,20 @@ namespace Bloom.Edit
 				var path = Path.Combine(bookFolderPath, url.NotEncoded);
 				try
 				{
-					using(var image = RobustIO.PalasoImageFromFile(path))
+					using(var image = PalasoImage.FromFileRobustly(path))
 					{
-						BloomClipboard.CopyImageToClipboard(image);
+						PortableClipboard.CopyImageToClipboard(image);
 					}
 					return true;
+				}
+				catch (NotImplementedException)
+				{
+					var msg = LocalizationManager.GetDynamicString("Bloom", "ImageToClipboard",
+						"Copying an image to the clipboard is not yet implemented in Bloom for Linux.",
+						"message for messagebox warning to user");
+					var header = LocalizationManager.GetDynamicString("Bloom", "NotImplemented",
+						"Not Yet Implemented", "header for messagebox warning to user");
+					MessageBox.Show(msg, header);
 				}
 				catch(Exception e)
 				{
@@ -815,7 +825,7 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					imageInfo = RobustIO.PalasoImageFromFile(existingImagePath);
+					imageInfo = PalasoImage.FromFileRobustly(existingImagePath);
 				}
 				catch(Exception e)
 				{
