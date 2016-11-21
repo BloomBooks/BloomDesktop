@@ -13,12 +13,12 @@ namespace Bloom.Edit
 		{
 			InitializeComponent();
 			_warningText.Text = LocalizationManager.GetString("EditTab.JpegWarningDialog.WarningText",
-				@"The file you’ve chosen is a “jpeg” file. JPEGs are perfect for photographs and color artwork. However, JPEGs are a big problem for black and white line art. Problems include:
+                @"The file you’ve chosen is a “JPEG” file. JPEG files are perfect for photographs and color artwork. However, JPEG files are a big problem for black and white line art. Problems include:
 • Fuzziness and grey dots.
 • Large file sizes, making the book hard to share.
-• If there are many large JPEGs, Bloom may not have enough memory to make PDFs.
+• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.
 
-Note: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or bmp actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.
+Note: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.
 
 Please select from one of the following, then click “OK”:").Replace("\r\n","\n").Replace("\n", Environment.NewLine);
 		}

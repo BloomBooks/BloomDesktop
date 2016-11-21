@@ -73,7 +73,7 @@ namespace Bloom.Publish
 				}
 				else
 				{
-					_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AdditionalRequests", "AdditionalRequests: ") + license.RightsStatement;
+					_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AdditionalRequests", "Additional Requests: ") + license.RightsStatement;
 				}
 			}
 			else if (license is NullLicense)
@@ -223,7 +223,7 @@ namespace Bloom.Publish
 				if (!okToUpload)
 				{
 					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.FieldsNeedAttention",
-						"One or more fields above need your attention before uploading"));
+						"One or more fields above need your attention before uploading."));
 				}
 				if (!_bookTransferrer.LoggedIn)
 				{

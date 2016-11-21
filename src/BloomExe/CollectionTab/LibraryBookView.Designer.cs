@@ -50,14 +50,14 @@
 			this._addToCollectionButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._addToCollectionButton.Image = global::Bloom.Properties.Resources.newBook;
 			this._addToCollectionButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._addToCollectionButton, "Create a book in my language using this source book");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._addToCollectionButton, "Create a book in my language using this source book.");
 			this._L10NSharpExtender.SetLocalizationComment(this._addToCollectionButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._addToCollectionButton, "CollectionTab.MakeBookUsingThisTemplate");
 			this._addToCollectionButton.Location = new System.Drawing.Point(12, 6);
 			this._addToCollectionButton.Name = "_addToCollectionButton";
 			this._addToCollectionButton.Size = new System.Drawing.Size(255, 48);
 			this._addToCollectionButton.TabIndex = 0;
-			this._addToCollectionButton.Text = "Make a book using this source";
+			this._addToCollectionButton.Text = "Make a book using this source.";
 			this._addToCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._addToCollectionButton.UseVisualStyleBackColor = false;
 			this._addToCollectionButton.Click += new System.EventHandler(this.OnAddToLibraryClick);

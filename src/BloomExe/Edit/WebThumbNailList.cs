@@ -429,7 +429,7 @@ namespace Bloom.Edit
 				if (!_pages[i].CanRelocate)
 				{
 					var msg = LocalizationManager.GetString("EditTab.PageList.CantMoveXMatter",
-						"That change is not allowed. Front matter and back matter pages must remain where they are");
+						"That change is not allowed. Front matter and back matter pages must remain where they are.");
 					//previously had a caption that didn't add value, just more translation work
 					if (_pages[i].Book.LockedDown)
 					{

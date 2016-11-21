@@ -112,7 +112,7 @@ namespace Bloom.CollectionCreating
 			var one = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine1",
 																 "You are almost ready to start making books.");
 			var two = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine2",
-																 "In order to keep things simple and organized, Bloom keeps all the books you make in one or more <i>Collections</i>. So the first thing we need to do is make one for you.");
+                                                                 "In order to keep things simple and organized, Bloom keeps all the books you make in one or more <i>Collections</i>. The first thing we need to do is make one for you.");
 			var three = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine3",
 																   "Click 'Next' to get started.");
 			_welcomeHtml.HTML = one + "<br/>" + two + "<br/>" + three;
