@@ -14,6 +14,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Code;
 using SIL.TestUtilities;
+using SIL.Windows.Forms.ImageToolbox;
 using RobustIO = Bloom.RobustIO;
 
 namespace BloomTests.Book
@@ -138,7 +139,7 @@ namespace BloomTests.Book
 			var x = new Bitmap(10, 10);
 			SIL.IO.RobustIO.SaveImage(x, path, ImageFormat.Png);
 			x.Dispose();
-			using (var img = RobustIO.PalasoImageFromFile(path))
+			using (var img = PalasoImage.FromFileRobustly(path))
 			{
 				img.Metadata.Creator = "joe";
 				img.Metadata.CopyrightNotice = "Copyright 1999 by me";

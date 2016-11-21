@@ -19,6 +19,7 @@ using Gecko.DOM;
 using Gecko.Events;
 using SIL.IO;
 using SIL.Reporting;
+using SIL.Windows.Forms.Miscellaneous;
 using Bloom.Workspace;
 using L10NSharp;
 
@@ -235,7 +236,7 @@ namespace Bloom
 				if (_pasteCommand.Enabled)
 				{
 					//prevent pasting images (BL-93)
-					_pasteCommand.Enabled = BloomClipboard.ContainsText();
+					_pasteCommand.Enabled = PortableClipboard.ContainsText();
 				}
 				_undoCommand.Enabled = CanUndo;
 
@@ -470,7 +471,7 @@ namespace Bloom
 			// if we want this we have to get the ts code into the FrameExports system.
 			//if (Control.ModifierKeys == Keys.Control)
 			//{
-			//	var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
+			//	var text = PortableClipboard.GetText(TextDataFormat.UnicodeText);
 			//	text = System.Web.HttpUtility.JavaScriptStringEncode(text);
 			//	RunJavaScript("BloomField.CalledByCSharp_SpecialPaste('" + text + "')");
 			//}
@@ -585,7 +586,7 @@ namespace Bloom
 			{
 				builder.AppendLine(client.DownloadString(_url));
 			}
-			BloomClipboard.SetText(builder.ToString());
+			PortableClipboard.SetText(builder.ToString());
 
 			// NOTE: it seems strange to call BeginInvoke to display the MessageBox. However, this
 			// is necessary on Linux: this method gets called from the context menu which on Linux
