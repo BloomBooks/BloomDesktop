@@ -380,6 +380,136 @@
         <seg>About These Settings</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
+      <tuv xml:lang="en">
+        <seg>Page Numbering Style</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal">
+      <tuv xml:lang="en">
+        <seg>Decimal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
+      <tuv xml:lang="en">
+        <seg>Arabic-Indic</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian">
+      <tuv xml:lang="en">
+        <seg>Armenian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian">
+      <tuv xml:lang="en">
+        <seg>Upper-Armenian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian">
+      <tuv xml:lang="en">
+        <seg>Lower-Armenian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali">
+      <tuv xml:lang="en">
+        <seg>Bengali</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian">
+      <tuv xml:lang="en">
+        <seg>Cambodian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer">
+      <tuv xml:lang="en">
+        <seg>Khmer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal">
+      <tuv xml:lang="en">
+        <seg>Cjk-Decimal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari">
+      <tuv xml:lang="en">
+        <seg>Devanagari</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian">
+      <tuv xml:lang="en">
+        <seg>Georgian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati">
+      <tuv xml:lang="en">
+        <seg>Gujarati</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi">
+      <tuv xml:lang="en">
+        <seg>Gurmukhi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
+      <tuv xml:lang="en">
+        <seg>Hebrew</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
+      <tuv xml:lang="en">
+        <seg>Kannada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao">
+      <tuv xml:lang="en">
+        <seg>Lao</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam">
+      <tuv xml:lang="en">
+        <seg>Malayalam</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian">
+      <tuv xml:lang="en">
+        <seg>Mongolian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar">
+      <tuv xml:lang="en">
+        <seg>Myanmar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya">
+      <tuv xml:lang="en">
+        <seg>Oriya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian">
+      <tuv xml:lang="en">
+        <seg>Persian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil">
+      <tuv xml:lang="en">
+        <seg>Tamil</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
+      <tuv xml:lang="en">
+        <seg>Telugu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai">
+      <tuv xml:lang="en">
+        <seg>Thai</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan">
+      <tuv xml:lang="en">
+        <seg>Tibetan</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionSettingsDialog.ChangeLink">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">

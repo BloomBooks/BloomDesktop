@@ -187,6 +187,10 @@ namespace Bloom.Collection
 			{
 				_collectionSettings.DefaultLanguage3FontName = _fontComboLanguage3.SelectedItem.ToString();
 			}
+			if (_numberStyleCombo.SelectedItem != null)
+			{
+				_collectionSettings.PageNumberStyle = CollectionSettings.PageNumberStyleKeys[_numberStyleCombo.SelectedIndex]; // this must be the non-localized version
+			}
 			if (_brandingCombo.SelectedItem != null)
 			{
 				_collectionSettings.BrandingProjectName = _brandingCombo.SelectedItem.ToString();
@@ -246,6 +250,7 @@ namespace Bloom.Collection
 			_districtText.Text = _collectionSettings.District;
 			_bloomCollectionName.Text = _collectionSettings.CollectionName;
 			LoadFontCombo();
+			LoadPageNumberStyleCombo();
 			LoadBrandingCombo();
 			AdjustFontComboDropdownWidth();
 			
@@ -303,6 +308,19 @@ namespace Bloom.Collection
 					_fontComboLanguage2.SelectedIndex = _fontComboLanguage2.Items.Count - 1;
 				if (font == _collectionSettings.DefaultLanguage3FontName)
 					_fontComboLanguage3.SelectedIndex = _fontComboLanguage3.Items.Count - 1;
+			}
+		}
+
+
+		private void LoadPageNumberStyleCombo()
+		{
+			foreach (var styleKey in CollectionSettings.PageNumberStyleKeys)
+			{
+				var localizedStyle =
+					LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.PageNumberingStyle." + styleKey, styleKey);
+				_numberStyleCombo.Items.Add(localizedStyle);
+				if (styleKey == _collectionSettings.PageNumberStyle)
+					_numberStyleCombo.SelectedIndex = _numberStyleCombo.Items.Count - 1;
 			}
 		}
 
