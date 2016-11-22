@@ -238,6 +238,8 @@ namespace Bloom.Book
 				Logger.WriteEvent("Errors saving book {0}: {1}", PathToExistingHtml, errors);
 				var badFilePath = PathToExistingHtml + ".bad";
 				RobustFile.Copy(tempPath, badFilePath, true);
+				// delete the temporary file since we've made a copy of it.
+				RobustFile.Delete(tempPath);
 				//hack so we can package this for palaso reporting
 				errors += string.Format("{0}{0}{0}Contents:{0}{0}{1}", Environment.NewLine,
 					RobustFile.ReadAllText(badFilePath));
@@ -335,13 +337,26 @@ namespace Bloom.Book
 		public string SaveHtml(HtmlDom dom)
 		{
 			AssertIsAlreadyInitialized();
-			string tempPath = Path.GetTempFileName();
+			string tempPath = GetNameForATempFileInStorageFolder();
 			MakeCssLinksAppropriateForStoredFile(dom);
 			SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
 			//CopyXMatterStylesheetsIntoFolder
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
 
+		/// <summary>
+		/// Get a temporary file pathname in the current book's folder.  This is needed to ensure proper permissions are granted
+		/// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
+		/// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+		/// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
+		/// </summary>
+		private string GetNameForATempFileInStorageFolder()
+		{
+			using (var temp = TempFile.InFolderOf(PathToExistingHtml))
+			{
+				return temp.Path;
+			}
+		}
 
 		/// <summary>
 		/// creates a relocatable copy of our main HtmlDom
