@@ -445,7 +445,7 @@
         <seg>Creative Commons</seg>
       </tuv>
     </tu>
-	<tu tuid="MetadataEditor.CreativeCommons.Intergovernmental">
+    <tu tuid="MetadataEditor.CreativeCommons.Intergovernmental">
       <tuv xml:lang="en">
         <seg>Intergovernmental Version</seg>
       </tuv>
@@ -651,5 +651,5 @@
         <seg>The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</seg>
       </tuv>
     </tu>
-  </body>
+    </body>
 </tmx>
