@@ -32,7 +32,10 @@ namespace Bloom.Collection
 			_queueRenameOfCollection = queueRenameOfCollection;
 			_pageRefreshEvent = pageRefreshEvent;
 			InitializeComponent();
-			if(_collectionSettings.IsSourceCollection)
+			// moved from the Designer where it was deleted if the Designer was touched
+			_xmatterList.Columns.AddRange(new[] { new ColumnHeader() { Width = 250 } });
+
+			if (_collectionSettings.IsSourceCollection)
 			{
 				_language1Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language1InSourceCollection", "Language 1", "In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label");
 				_language2Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language2InSourceCollection", "Language 2", "In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label");
