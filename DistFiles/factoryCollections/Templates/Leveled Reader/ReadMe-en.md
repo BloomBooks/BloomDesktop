@@ -20,15 +20,13 @@ So how do leveled reader *levels* fit in decodable reader *stages*? The two conc
     <td>Decodable Stage</td>
   </tr>
   <tr>    <td>1</td>    <td>1</td>  </tr>
-    <tr>    <td>1</td>    <td>2</td>  </tr>
-    <tr>    <td>1</td>    <td>3</td>  </tr>
-    <tr>    <td>1</td>    <td>4</td>  </tr>
-    <tr>    <td>1</td>    <td>5</td>  </tr>
-    <tr>    <td>1</td>    <td>6</td>  </tr>
-    <tr>    <td>2</td>    <td>n/a</td>  </tr>
-    <tr>    <td>3</td>    <td>n/a</td>  </tr>
-    <tr>    <td>4</td>    <td>n/a</td>  </tr>
-    <tr>    <td>5</td>    <td>n/a</td>  </tr>
+  <tr>    <td>1</td>    <td>2</td>  </tr>
+  <tr>    <td>1</td>    <td>3</td>  </tr>
+  <tr>    <td>1</td>    <td>4</td>  </tr>
+  <tr>    <td>1</td>    <td>5</td>  </tr>
+  <tr>    <td>1</td>    <td>6</td>  </tr>
+  <tr>    <td>2</td>    <td>n/a</td>  </tr>
+  <tr>    <td>3</td>    <td>n/a</td>  </tr>
+  <tr>    <td>4</td>    <td>n/a</td>  </tr>
+  <tr>    <td>5</td>    <td>n/a</td>  </tr>
 </table>
-
-

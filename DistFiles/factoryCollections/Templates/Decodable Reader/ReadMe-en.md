@@ -1,4 +1,4 @@
-A **Decodable Reader** is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 *decodable stages* through which learners progress. 
+A **Decodable Reader** is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically, a language may have 5 - 10 *decodable stages* through which learners progress.
 
 Bloom helps you to define this sequence of *stages* that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is *decodable* (figure out-able) by learners at that *stage*.
 

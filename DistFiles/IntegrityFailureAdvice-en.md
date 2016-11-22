@@ -4,7 +4,7 @@
 
 1) Your antivirus may have "quarantined" one or more Bloom files.
 
-2) Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. 
+2) Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong.
 
 ###What To Do
 

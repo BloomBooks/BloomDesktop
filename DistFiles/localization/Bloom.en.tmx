@@ -320,6 +320,11 @@
             <seg>Book Making</seg>
          </tuv>
       </tu>
+      <tu tuid="CollectionSettingsDialog.BookMakingTab.Branding">
+         <tuv xml:lang="en">
+            <seg>Branding</seg>
+         </tuv>
+      </tu>
       <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
          <note>{0} is a language name.</note>
          <tuv xml:lang="en">
@@ -3788,6 +3793,11 @@
          <prop type="x-nolongerused">true</prop>
          <tuv xml:lang="en">
             <seg>Sample Print Settings</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ScriptSettingsDialog.DefaultLineSpacing">
+         <tuv xml:lang="en">
+            <seg>Default line spacing</seg>
          </tuv>
       </tu>
       <tu tuid="ScriptSettingsDialog.RightToLeftScriptCheckBox">
