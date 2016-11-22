@@ -219,7 +219,7 @@ namespace Bloom.WebLibraryIntegration
 				{
 					var msg = string.Format(
 						LocalizationManager.GetString("PublishTab.Upload.Login.SendingResetPassword",
-							"We are sending an email to {0} with instructions for how to reset your password"), _emailBox.Text);
+							"We are sending an email to {0} with instructions for how to reset your password."), _emailBox.Text);
 					MessageBox.Show(this, msg, LocalizationManager.GetString("PublishTab.Upload.Login.ResetPassword", "Resetting Password"));
 					_client.SendResetPassword(_emailBox.Text);
 				}

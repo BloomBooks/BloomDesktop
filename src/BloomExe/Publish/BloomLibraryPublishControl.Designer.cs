@@ -417,7 +417,7 @@ namespace Bloom.Publish
 			this.label11.Size = new System.Drawing.Size(592, 13);
 			this.label11.TabIndex = 3;
 			this.label11.Text = "By uploading, you confirm your agreement with the Bloom Library Terms of Use and " +
-    "grant the rights it describes";
+    "grant the rights it describes.";
 			// 
 			// _optional1
 			// 
