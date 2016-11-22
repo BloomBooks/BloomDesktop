@@ -294,6 +294,7 @@ namespace Bloom.ImageProcessing
 					SIL.IO.RobustIO.SaveImage(safetyImage, tempPath.Path, jpgEncoder, parameters);
 				}
 				SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath.Path, destinationPath, null);
+				ToPalaso.BloomFileAccess.EnsureInheritedAccessRights(destinationPath);
 			}
 		}
 

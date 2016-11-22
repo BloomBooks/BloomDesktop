@@ -250,7 +250,10 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!string.IsNullOrEmpty(tempPath))
+				{
 					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, null);
+					ToPalaso.BloomFileAccess.EnsureInheritedAccessRights(PathToExistingHtml);
+				}
 			}
 
 			MetaData.Save();
