@@ -280,7 +280,7 @@
 			this._undoButton.Text = "Undo";
 			this._undoButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._undoButton.TextDropShadow = false;
-			this._betterToolTip1.SetToolTip(this._undoButton, "Undo (Ctrl+z)");
+			this._betterToolTip1.SetToolTip(this._undoButton, "Undo (Ctrl+Z)");
 			this._betterToolTip1.SetToolTipWhenDisabled(this._undoButton, "There is nothing to undo");
 			this._undoButton.UseVisualStyleBackColor = false;
 			this._undoButton.Click += new System.EventHandler(this._undoButton_Click);
@@ -321,7 +321,7 @@
 			this._cutButton.Text = "Cut";
 			this._cutButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._cutButton.TextDropShadow = false;
-			this._betterToolTip1.SetToolTip(this._cutButton, "Cut (Ctrl-x)");
+			this._betterToolTip1.SetToolTip(this._cutButton, "Cut (Ctrl+X)");
 			this._cutButton.UseVisualStyleBackColor = false;
 			this._cutButton.Click += new System.EventHandler(this._cutButton_Click);
 			// 
@@ -361,7 +361,7 @@
 			this._pasteButton.Text = "Paste";
 			this._pasteButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._pasteButton.TextDropShadow = false;
-			this._betterToolTip1.SetToolTip(this._pasteButton, "Paste (Ctrl+v)");
+			this._betterToolTip1.SetToolTip(this._pasteButton, "Paste (Ctrl+V)");
 			this._betterToolTip1.SetToolTipWhenDisabled(this._pasteButton, "There is nothing on the Clipboard that you can paste here.");
 			this._pasteButton.UseVisualStyleBackColor = false;
 			this._pasteButton.Click += new System.EventHandler(this._pasteButton_Click);
@@ -402,7 +402,7 @@
 			this._copyButton.Text = "Copy";
 			this._copyButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._copyButton.TextDropShadow = false;
-			this._betterToolTip1.SetToolTip(this._copyButton, "Copy (Ctrl-c)");
+			this._betterToolTip1.SetToolTip(this._copyButton, "Copy (Ctrl+C)");
 			this._betterToolTip1.SetToolTipWhenDisabled(this._copyButton, "You need to select some text before you can copy it");
 			this._copyButton.UseVisualStyleBackColor = false;
 			this._copyButton.Click += new System.EventHandler(this._copyButton_Click);
