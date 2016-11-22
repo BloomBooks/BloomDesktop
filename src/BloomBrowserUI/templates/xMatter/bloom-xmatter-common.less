@@ -19,7 +19,7 @@
 //a smaller bottom margin, since there is no page number
 .outsideFrontCover .marginBox, .outsideBackCover .marginBox {
     .SetMarginBoxCover(@PageHeight, @PageWidth) {
-        /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+        /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
         height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
         //Just center the margin box, (for now, we're ignoring the binding)
         left: @MarginOuter;
@@ -326,7 +326,6 @@
         //min-height: 5em;
         line-height: 1.4em; // supports ไปทั่วพื้ ที่นั่ ชื่ ปู ช้ต่างป
     }
-
     .originalAcknowledgments .bloom-contentNational1 {
         display: block !important;
         margin-bottom: @MarginBetweenBlocks;
@@ -338,7 +337,6 @@
     .licenseUrl {
         display: none;
     }
-
     @MarginBetweenBlocks_SmallPaper: .5em;
     &.A6Landscape, &.A6Portrait, &.QuarterLetterLandscape, &.QuarterLetterPortrait {
         .licenseImage {width: 65px};
@@ -350,7 +348,6 @@
         //    .licenseBlock{margin-bottom: 1em;}
         //}
     }
-
    .bottomImageWrapper{
         width: 100%; // this allows the branding to center.
         position: absolute;
@@ -360,7 +357,6 @@
             height: 1in;
         }
     }
-
 }
 
 BODY[bookcreationtype="original"] {
@@ -442,8 +438,7 @@ BODY[bookcreationtype="translation"] {
 
     #languageInformation {
         width: 100%;
-        .languagesOfBook {
-        }
+
         //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
         .langName.bloom-content1 {
             display: none;
@@ -455,6 +450,7 @@ BODY[bookcreationtype="translation"] {
             display: inherit;
         }
     }
+    
     .bottomImageWrapper{
         width: 100%; // this allows the branding to center.
         position: absolute;
@@ -465,9 +461,9 @@ BODY[bookcreationtype="translation"] {
     }
 }
 
-.insideBackCover .bloom-editable {
-    display: inherit;
-    height: 100%;
+.insideBackCover .bloom-editable { 
+    display: inherit; 
+    height: 100%; 
 }
 
 .outsideBackCover .bloom-editable {
