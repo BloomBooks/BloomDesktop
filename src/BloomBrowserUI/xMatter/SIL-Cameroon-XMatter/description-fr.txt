@@ -1,2 +1,2 @@
-[V1]* Crédits sur la page de copyright.
-* Code ISO 639 sur la page de copyright.
+[V1]* Crédits à l'endos de la page de titre.
+* Inclut le code ISO 639 sur la page crédits.

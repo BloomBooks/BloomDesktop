@@ -1,0 +1,41 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    link(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')
+    link(rel='stylesheet', href='/bloom/lib/jquery-ui.css')
+    script(src='/bloom/node_modules/jquery/dist/jquery.js')
+    script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+    script.
+      $(function () { $('#device').resizable({ minHeight: 300, minWidth: 200, handles: { 'se': '#BottomRightHandle' } }); });
+  //_AudioSituationClass_ is replaced at runtime
+  body._AudioSituationClass_
+    #sideColumn
+      p Voici une version #[a(href = 'https://en.wikipedia.org/wiki/ePUB') ePUB] (e-book).&nbsp;
+        span.showForTalkingBooks Il contient de l'audio, afin que les nouveaux lecteurs puissent écouter en lisant.
+      p.showWhenHaveAudioButNotMakingTalkingBook Ce livre a quelques enregistrements, mais cet audio n'est pas inclus dans l'ePUB.
+
+      h3 Aperçu
+      p Vous pouvez redimensionner l'aperçu en faisant glisser le coin inférieur droit de cet appareil simulé.  Voyez l’aperçu de votre livre sur des écrans de différentes tailles.
+      :marked
+        Cette page utilise le lecteur ePUB [Readium](http://readium.org/).  Les livres sembleront probablement différents sur différents lecteurs.
+      p.showForTalkingBooks
+        | L'aperçu ici ne peut pas encore jouer des livres audio. Vous pouvez l’écouter en utilisant le programme gratuit d'Adobe #[a (href = 'http: //www.adobe.com/solutions/ebook/digital-editions.html') Digital Editions]
+        | 
+      h3 Obtenir ce livre sur votre appareil
+      p Une façon pratique d'obtenir des livres sur votre téléphone consiste à configurer Dropbox ou un service similaire sur votre ordinateur et sur votre téléphone / tablette.  Il suffit de cliquer sur Enregistrer ePUB, puis de choisir votre dossier Dropbox.  Sur votre téléphone, ouvrez l'application Dropbox et sélectionnez votre livre.  Si vous utilisez un ordinateur portable, vous pouvez également essayer le programme gratuit # [a (href = 'http: //shareit.lenovo.com/' ShareIt] pour envoyer des fichiers depuis votre ordinateur portable vers un téléphone ou une tablette.
+      h3 Lecteur recommandé
+      :marked
+        Nos tests ont montré que [Gitden Reader](/bloom/api/help/Concepts/Gitden_Reader.htm) 
+        est un bon choix pour les appareils Android et IOS (IPhone et IPad).
+      p.showForTalkingBooks
+        | Pour écouter ce livre audio à l'aide de Gitden sur un téléphone ou une tablette, vous devrez désactiver la fonctionnalité « Texte-Parole » de Gitden.  Ensuite, il vous montrera les commandes audio.
+      h3.showWhenNoAudio Faites-le parler
+      p.showWhenNoAudio
+        | Si vous voulez faire un « livre audio » que les nouveaux lecteurs peuvent lire et écouter au même temps, utilisez " #[a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') l'outil de livre audio] de Bloom 
+        |  pour ajouter des enregistrements de voix.
+      h3 Écrivez-nous!
+      p Êtes-vous intéressé à distribuer des livres Bloom pour les téléphones et d’autres lecteurs de livres électroniques ?  Y a-t-il quelque chose dont vous auriez besoin avant que cela vous soit utile ?  Veuillez utiliser la commande « Aide » : « signaler un problème » pour nous envoyer vos commentaires.  Merci!
+    #device.ui-resizable
+      iframe(src='readium-cloudreader.htm?epub={EPUBFOLDER}')
+      #BottomRightHandle.ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-grip-diagonal-se
