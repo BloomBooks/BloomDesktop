@@ -232,6 +232,17 @@ namespace Bloom.Edit
 			}
 			try
 			{
+				try
+				{
+					// BL-4035 Save any style changes to the book before deleting the page.
+					SaveNow();
+				}
+				catch(Exception saveError)
+				{
+					// we don't want to prevent deleting a problematic page, so just show a toast
+					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error during pre-delete save", exception: saveError);
+				}
+
 				_inProcessOfDeleting = true;
 				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
 				_currentlyDisplayedBook.DeletePage(page);
