@@ -1,5 +1,5 @@
 //
-// Typescript configuration file for Bloom Wall Calendar
+// Javascript configuration file for Bloom Wall Calendar
 //
 // Creates calendar pages for a Bloom book.
 //
@@ -13,8 +13,6 @@
 //   This script relies on the 2 pages that should be in the DOM it operates on:
 //       One with classes 'calendarMonthTop'
 //       One with classes 'calendarMonthBottom'
-//
-/// <reference path="jquery.d.ts" />
 //
 // This is the main public entry point called by Configurator.ConfigureBookInternal()
 // in a context where the current dom is the book.
