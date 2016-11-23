@@ -1704,8 +1704,11 @@ namespace Bloom.Book
 
 			ClearPagesCache();
 			Save();
-			if (_pageListChangedEvent != null)
-				_pageListChangedEvent.Raise(null);
+			// The only caller calls _view.UpdatePageList(false); immediately after this method returns.
+			// That is all this event handler calls.  If both are called, confusing havoc ensues.  See
+			// http://issues.bloomlibrary.org/youtrack/issue/BL-3715.
+			//if (_pageListChangedEvent != null)
+			//	_pageListChangedEvent.Raise(null);
 
 			InvokeContentsChanged(null);
 
