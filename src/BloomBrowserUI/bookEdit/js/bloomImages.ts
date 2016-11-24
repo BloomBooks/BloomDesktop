@@ -1,4 +1,5 @@
 ﻿///<reference path="../../lib/jquery.myimgscale.d.ts" />
+import '../../lib/jquery.resize'; // makes jquery resize work on all elements
 import axios = require('axios');
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
