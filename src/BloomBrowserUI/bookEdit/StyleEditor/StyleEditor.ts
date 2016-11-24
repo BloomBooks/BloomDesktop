@@ -13,13 +13,14 @@ import '../../node_modules/select2/dist/js/select2.js';
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
-import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
+import { GetDifferenceBetweenHeightAndParentHeight } from '../js/bloomEditing';
 import '../../lib/jquery.alphanum';
 import axios = require("axios");
+import { EditableDivUtils } from "../js/editableDivUtils";
 
-declare function GetSettings() : any; //c# injects this
-declare function WebFxTabPane(element:HTMLElement,useCookie:boolean,callback:any) : any; // from tabpane, from a <script> tag
- 
+declare function GetSettings(): any; //c# injects this
+declare function WebFxTabPane(element: HTMLElement, useCookie: boolean, callback: any): any; // from tabpane, from a <script> tag
+
 export default class StyleEditor {
 
     private _previousBox: Element;
@@ -530,24 +531,8 @@ export default class StyleEditor {
         // config.allowedContent, and data-cke-survive did not work.
         // The only solution we have found is to postpone adding the gear icon until CkEditor has done
         // its nefarious work. The following block achieves this.
-        // Enhance: this logic is roughly duplicated in toolbox.ts restoreToolboxSettingsWhenCkEditorReady.
-        // There may be some way to refactor it into a common place, but I don't know where.
-        var editorInstances = (<any>window).CKEDITOR.instances;
-        for (var i = 1; ; i++) {
-          var instance = editorInstances['editor' + i];
-          if (instance == null) {
-            if (i === 0) {
-              // no instance at all...if one is later created, get us invoked.
-              (<any>window).CKEDITOR.on('instanceReady', e => this.AttachToBox(targetBox));
-              return;
-            }
-            break; // if we get here all instances are ready
-          }
-          if (!instance.instanceReady) {
-            instance.on('instanceReady', e => this.AttachToBox(targetBox));
-            return;
-          }
-        }
+        // gjm: Refactored it into EditableDivUtils.
+        EditableDivUtils.WaitForCKEditorReady(window, targetBox, this.AttachToBox);
 
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
