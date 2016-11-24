@@ -5,7 +5,7 @@ import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import '../../lib/jquery.i18n.custom';
 import "../../lib/jquery.onSafe";
 import axios = require('axios');
-import {EditableDivUtils} from '../js/editableDivUtils';
+import { EditableDivUtils } from '../js/editableDivUtils';
 
 /**
  * The html code for a check mark character
@@ -105,8 +105,8 @@ export class ToolBox {
      */
     static fireCSharpToolboxEvent(eventName: string, eventData: string) {
 
-    var event = new MessageEvent(eventName, {'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    top.document.dispatchEvent(event);
+        var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
+        top.document.dispatchEvent(event);
     }
 
     static getTabModels() { return tabModels; }
@@ -177,28 +177,7 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
 
 function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
     if ((<any>getPageFrame().contentWindow).CKEDITOR) {
-        var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR.instances;
-        // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
-        // This wipes out (at least) our page initialization.
-        // To prevent this we hold our initialization until CKEditor has done initializing.
-        // If any instance on the page (e.g., one per div) is not ready, wait until all are.
-        // (The instances property leads to an object in which a field editorN is defined for each
-        // editor, so we just loop until some value of N which doesn't yield an editor instance.)
-        for (var i = 1; ; i++) {
-            var instance = editorInstances['editor' + i];
-            if (instance == null) {
-                if (i === 0) {
-                    // no instance at all...if one is later created, get us invoked.
-                    (<any>this.getPageFrame().contentWindow).CKEDITOR.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
-                    return;
-                }
-                break; // if we get here all instances are ready
-            }
-            if (!instance.instanceReady) {
-                instance.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
-                return;
-            }
-        }
+        EditableDivUtils.WaitForCKEditorReady(<any>getPageFrame().contentWindow, settings, restoreToolboxSettingsWhenCkEditorReady);
     }
     // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
     var opts = settings;

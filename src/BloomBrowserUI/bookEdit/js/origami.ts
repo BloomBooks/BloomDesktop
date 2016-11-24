@@ -1,9 +1,10 @@
 //not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
 ///<reference path="../../typings/css-element-queries.d.ts" />
-import {fireCSharpEditEvent} from './bloomEditing';
-import {SetupImage} from './bloomImages';
+import { fireCSharpEditEvent } from './bloomEditing';
+import { SetupImage } from './bloomImages';
 import 'split-pane/split-pane.js';
+import TextBoxProperties from '../TextBoxProperties/TextBoxProperties';
 
 //I was not able to get css-element-queries to load from here.. I think this should have worked:
 //import {ElementQueries} from 'css-element-queries'; //nb: this in turn loads resizesensor.js from the same module
@@ -18,7 +19,7 @@ import 'split-pane/split-pane.js';
 //... and that worked, but I didn't like having that path and bypassing what css-element-quereis/index.js does.
 //... What I think is happening is that the module just isn't loading like a module, but rather putting itself
 //... on window. So let's do the minimum to get that, then just use ElementQueries off of window.
-import dummyToGetElementQueriesLoadedIntoWindow  = require('css-element-queries');
+import dummyToGetElementQueriesLoadedIntoWindow = require('css-element-queries');
 var pretentToUseDummy = dummyToGetElementQueriesLoadedIntoWindow; //without this, something in our build process discards the import
 
 $(function () {
@@ -90,13 +91,33 @@ function layoutToggleClickHandler() {
     if (!marginBox.hasClass('origami-layout-mode')) {
         marginBox.addClass('origami-layout-mode');
         setupLayoutMode();
+        // Remove any left over formatButton from normal edit mode
+        marginBox.find('#formatButton').remove();
+        // Hook up TextBoxProperties dialog to each text box
+        var dialog = GetTextBoxPropertiesDialog();
+        var textBoxes = marginBox.find('.textBox-identifier');
+        textBoxes.each(function () {
+            $(this).on('mousedown', function () {
+                if ($(this).find('#formatButton').length == 0) {
+                    $('#formatButton').remove(); // in case there's one elsewhere
+                    dialog.AttachToBox(this);
+                } else {
+                    return false; // handle mouse down as formatButton click
+                }
+            });
+        });
+        textBoxes.first().mousedown(); // display formatButton for first textbox
     } else {
         marginBox.removeClass('origami-layout-mode');
-        marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
+        marginBox.find('.textBox-identifier').remove();
         fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
         origamiUndoStack.length = origamiUndoIndex = 0;
         $('html').off('keydown.origami');
     }
+}
+
+function GetTextBoxPropertiesDialog() {
+    return new TextBoxProperties("/bloom/bookEdit");
 }
 
 // Event handler to split the current box in half (vertically or horizontally)
@@ -171,26 +192,6 @@ function origamiRedo() {
         $('.marginBox').replaceWith(origamiUndoStack[origamiUndoIndex].original);
     }
 }
-
-// Event handler to add a new column or row (was working in demo but never wired up in Bloom)
-//function addClickHandler() {
-//    var topSplitPane = $('.split-pane-frame').children('div').first();
-//    if ($(this).hasClass('right')) {
-//        topSplitPane.wrap(getSplitPaneHtml('vertical'));
-//        topSplitPane.wrap(getSplitPaneComponentHtml('left'));
-//        var newSplitPane = $('.split-pane-frame').children('div').first();
-//        newSplitPane.append(getSplitPaneDividerHtml('vertical'));
-//        newSplitPane.append(getSplitPaneComponentWithNewContent('right'));
-//        newSplitPane.splitPane();
-//    } else if ($(this).hasClass('left')) {
-//        topSplitPane.wrap(getSplitPaneHtml('vertical'));
-//        topSplitPane.wrap(getSplitPaneComponentHtml('right'));
-//        var newSplitPane = $('.split-pane-frame').children('div').first();
-//        newSplitPane.prepend(getSplitPaneDividerHtml('vertical'));
-//        newSplitPane.prepend(getSplitPaneComponentWithNewContent('left'));
-//        newSplitPane.splitPane();
-//    }
-//}
 
 function closeClickHandler() {
     if (!$('.split-pane').length) {
@@ -340,7 +341,20 @@ function makeTextFieldClickHandler(e) {
     $(translationGroup).addClass('normal-style'); // replaces above to make new text boxes normal
     container.append(translationGroup).append(getTextBoxIdentifier());
     $(this).closest('.selector-links').remove();
-    //TODO: figure out if anything needs to get hooked up immediately
+    // hook up TextBoxProperties dialog to this new Text Box
+    var dialog = GetTextBoxPropertiesDialog();
+    var textBox = container.find('.textBox-identifier').first();
+    textBox.each(function () {
+        $(this).on('mousedown', function () {
+            if ($(this).find('#formatButton').length == 0) {
+                $('#formatButton').remove(); // in case there's one elsewhere
+                dialog.AttachToBox(this);
+            } else {
+                return false; // handle mouse down as formatButton click
+            }
+        });
+    })
+    textBox.mousedown();
 }
 function makePictureFieldClickHandler(e) {
     e.preventDefault();
@@ -352,6 +366,8 @@ function makePictureFieldClickHandler(e) {
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(imageContainer);
     $(this).closest('.selector-links').remove();
+    // as our focus has changed, remove any pre-existing formatButtons
+    $('#formatButton').remove();
 }
 
 function setStyle(data, translationGroup) {

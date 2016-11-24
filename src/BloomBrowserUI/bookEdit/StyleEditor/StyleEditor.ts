@@ -13,12 +13,13 @@ import '../../node_modules/select2/dist/js/select2.js';
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
-import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
+import { GetDifferenceBetweenHeightAndParentHeight } from '../js/bloomEditing';
 import '../../lib/jquery.alphanum';
 import axios = require("axios");
+import { EditableDivUtils } from "../js/editableDivUtils";
 
-declare function GetSettings() : any; //c# injects this
-declare function WebFxTabPane(element:HTMLElement,useCookie:boolean,callback:any) : any; // from tabpane, from a <script> tag
+declare function GetSettings(): any; //c# injects this
+declare function WebFxTabPane(element: HTMLElement, useCookie: boolean, callback: any): any; // from tabpane, from a <script> tag
 
 export default class StyleEditor {
 
@@ -530,24 +531,8 @@ export default class StyleEditor {
         // config.allowedContent, and data-cke-survive did not work.
         // The only solution we have found is to postpone adding the gear icon until CkEditor has done
         // its nefarious work. The following block achieves this.
-        // Enhance: this logic is roughly duplicated in toolbox.ts restoreToolboxSettingsWhenCkEditorReady.
-        // There may be some way to refactor it into a common place, but I don't know where.
-        var editorInstances = (<any>window).CKEDITOR.instances;
-        for (var i = 1; ; i++) {
-          var instance = editorInstances['editor' + i];
-          if (instance == null) {
-            if (i === 0) {
-              // no instance at all...if one is later created, get us invoked.
-              (<any>window).CKEDITOR.on('instanceReady', e => this.AttachToBox(targetBox));
-              return;
-            }
-            break; // if we get here all instances are ready
-          }
-          if (!instance.instanceReady) {
-            instance.on('instanceReady', e => this.AttachToBox(targetBox));
-            return;
-          }
-        }
+        // gjm: Refactored it into EditableDivUtils.
+        EditableDivUtils.WaitForCKEditorReady(window, targetBox, this.AttachToBox);
 
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
@@ -753,11 +738,11 @@ export default class StyleEditor {
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
-                StyleEditor.positionInViewport(toolbar);
+                EditableDivUtils.positionInViewport(toolbar);
                 toolbar.draggable("enable");
 
                 $('html').off('click.toolbar');
-                $('html').on("click.toolbar", function(event) {
+                $('html').on("click.toolbar", function (event) {
                     if (event.target !== toolbar.get(0) &&
                         toolbar.has(event.target).length === 0 &&
                         $(event.target).parent() !== toolbar &&
@@ -774,34 +759,6 @@ export default class StyleEditor {
                 });
             });
         });
-    }
-
-    /**
-     * Positions the Style Editor toolbar so that it is completely visible, so that it does not extend below the
-     * current viewport.
-     * @param toolbar
-     */
-    static positionInViewport(toolbar: JQuery): void {
-
-        // get the current size and position of the toolbar
-        var elem: HTMLElement = toolbar[0];
-        var top = elem.offsetTop;
-        var height = elem.offsetHeight;
-
-        // get the top of the toolbar in relation to the top of its containing elements
-        while (elem.offsetParent) {
-            elem = <HTMLElement>elem.offsetParent;
-            top += elem.offsetTop;
-        }
-
-        // diff is the portion of the toolbar that is below the viewport
-        var diff = (top + height) - (window.pageYOffset + window.innerHeight);
-        if (diff > 0) {
-            var offset = toolbar.offset();
-
-            // the extra 30 pixels is for padding
-            toolbar.offset({left: offset.left, top: offset.top - diff - 30});
-        }
     }
 
     getButtonIds() {
