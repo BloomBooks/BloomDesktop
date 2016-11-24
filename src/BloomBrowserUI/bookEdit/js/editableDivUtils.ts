@@ -92,4 +92,23 @@ export class EditableDivUtils {
     // an equivalent place in an adjacent node).
     return false;
   }
+
+  static WaitForCKEditorReady(window: Window, targetBox: any, callback: (target: any) => any) {
+    var editorInstances = (<any>window).CKEDITOR.instances;
+    for (var i = 1; ; i++) {
+      var instance = editorInstances['editor' + i];
+      if (instance == null) {
+        if (i === 0) {
+          // no instance at all...if one is later created, get us invoked.
+          (<any>window).CKEDITOR.on('instanceReady', e => callback(targetBox));
+          return;
+        }
+        break; // if we get here all instances are ready
+      }
+      if (!instance.instanceReady) {
+        instance.on('instanceReady', e => callback(targetBox));
+        return;
+      }
+    }
+  }
 }
