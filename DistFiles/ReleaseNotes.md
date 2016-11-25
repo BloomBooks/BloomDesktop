@@ -24,7 +24,11 @@
 
 - A new "Super Paper Saver" Front/Back Matter pack puts the title page on the inside of the front cover, and the credits on the inside of the back cover.
 
-- If no topic is set, the language name on the front cover is now centered._
+- If no topic is set, the language name on the front cover is now centered.
+
+- Wall Calendar now comes out right when made into a booklet, even when the selected Front Matter has an odd number of pages.
+
+- Formatting changes are now saved, even if you delete the page before Bloom has a chance to save it.
 
 - Over 170 fixes and small improvements.
 
