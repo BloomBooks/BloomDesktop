@@ -1,1 +1,2 @@
 [V1]* Pengakuan ada di bagian belakang halaman judul.
+* Termasuk ISO kode 639 di halaman pengakuan.
