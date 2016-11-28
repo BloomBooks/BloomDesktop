@@ -1,0 +1,1 @@
+[V1]Dirancang untuk menghemat kertas, alat ini menempatkan halaman judul pada bagian dalam sampul depan, dan pengakuan di bagian dalam sampul belakang.
