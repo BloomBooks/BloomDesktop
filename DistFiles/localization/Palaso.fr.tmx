@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
    <header srclang="fr"
            adminlang="en"
@@ -12,11 +12,20 @@
    </header>
    <body>
       <tu tuid="AboutDialog.AboutDialogWindowTitle">
+         <prop type="x-nolongerused">true</prop>
          <tuv xml:lang="en">
             <seg>About</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Au sujet de</seg>
+            <seg/>
+         </tuv>
+      </tu>
+      <tu tuid="AboutDialog.BuiltOnDate">
+         <tuv xml:lang="en">
+            <seg>Built on {0}</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Construit sur {0}</seg>
          </tuv>
       </tu>
       <tu tuid="AboutDialog.NoUpdates">
@@ -25,6 +34,14 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Pas de mises à jour</seg>
+         </tuv>
+      </tu>
+      <tu tuid="AboutDialog.WindowTitle">
+         <tuv xml:lang="en">
+            <seg>About {0}</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Au sujet de {0}</seg>
          </tuv>
       </tu>
       <tu tuid="AboutDialog._checkForUpdates">
@@ -57,7 +74,7 @@
             <seg>Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Une autre copie de {0} est déjà en cours d'exécution.Si la copie de {0} est introuvable, redémarrez votre ordinateur.</seg>
+            <seg>Une autre copie de {0} est déjà en cours d'exécution. Si la copie de {0} est introuvable, redémarrez votre ordinateur.</seg>
          </tuv>
       </tu>
       <tu tuid="Application.ProblemStarting.General">
@@ -127,7 +144,7 @@
          </tuv>
       </tu>
       <tu tuid="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
-         <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files"</note>
+         <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files")</note>
          <tuv xml:lang="en">
             <seg>{0} will be moved to the Recycle Bin.</seg>
          </tuv>
@@ -231,7 +248,7 @@
             <seg>This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Ceci est la galerie Art de la lecture". Dans le champ ci-dessus, écrivez ce que vous rechercher, puis appuyez sur la touche entrée. Vous pouvez écrire des mots en anglais et en indonésien.</seg>
+            <seg>Ceci est la galerie 'Art de la lecture'. Dans le champ ci-dessus, écrivez ce que vous rechercher, puis appuyez sur la touche entrée. Vous pouvez écrire des mots en anglais et en indonésien.</seg>
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.FileButton">
@@ -293,7 +310,7 @@
       </tu>
       <tu tuid="ImageToolbox.NewMultilingual">
          <tuv xml:lang="en">
-            <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</seg>
+            <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</seg>
          </tuv>
          <tuv xml:lang="fr">
             <seg>Saviez-vous qu'il existe une nouvelle version de cette collection permettant de rechercher en anglais, en arabe, en bengali, en chinois, en espagnol, en français, en hindi, en indonésien, en portugais, en swahili ou en thaï ? Cette version peut être téléchargée gratuitement.</seg>
@@ -365,6 +382,7 @@
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.SearchLanguage">
+         <note>The {0} will be replaced by the name of the language used in the searches.</note>
          <tuv xml:lang="en">
             <seg>The search box is currently set to {0}</seg>
          </tuv>
@@ -680,6 +698,14 @@
             <seg>Creative Commons</seg>
          </tuv>
       </tu>
+      <tu tuid="MetadataEditor.CreativeCommons.Intergovernmental">
+         <tuv xml:lang="en">
+            <seg>Intergovernmental Version</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Version intergouvernementale</seg>
+         </tuv>
+      </tu>
       <tu tuid="MetadataEditor.CreatorLabel">
          <tuv xml:lang="en">
             <seg>Creator</seg>
@@ -747,7 +773,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.betterLinkLabel1">
-         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
+         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
          <tuv xml:lang="en">
             <seg>more info</seg>
          </tuv>
@@ -851,6 +877,14 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Protection des paramètres</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ShowReleaseNotesDialog.WindowTitle">
+         <tuv xml:lang="en">
+            <seg>Release Notes</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Notes de version</seg>
          </tuv>
       </tu>
       <tu tuid="Use {0}">
