@@ -164,18 +164,57 @@ namespace Bloom.Book
 					}
 				}
 			}
+			InjectFlyleafIfNeeded(layout);
 		}
 
-//		//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
-//		//page of every book. This screws up thumbnail caching.
-//		private void FixPageId(XmlDocument bookDom)
-//		{
-//			XmlElement page = bookDom.SelectSingleNode("//div[@id='74731b2d-18b0-420f-ac96-6de20f659810']") as XmlElement;
-//			if (page != null)
-//			{
-//				page.SetAttribute("id", Guid.NewGuid().ToString());
-//			}
-//		}
+
+		/// <summary>
+		/// Some book layouts rely on the first page facing the second page. A Wall Calendar is one example.
+		/// Here we check if the first content page has this requirement and, if so, we insert a blank "flyleaf"
+		/// page.
+		/// </summary>
+		private void InjectFlyleafIfNeeded(Layout layout)
+		{
+			// the "inside" here means "not counting the cover"
+			var numberOfFrontMatterPagesInside = XMatterDom.SafeSelectNodes("//div[contains(@class,'bloom-frontMatter')]").Count - 1;
+			var firstPageWouldNotBePartOfASpread = numberOfFrontMatterPagesInside%2 != 0;
+
+			if(firstPageWouldNotBePartOfASpread)
+			{
+				var lastFrontMatterPage = _bookDom.SelectSingleNode("//div[contains(@class,'bloom-frontMatter')][last()]");
+
+				var firstContentPageAndAlsoStartsSpread = _bookDom.SelectSingleNode(
+					"//div[contains(@class,'bloom-frontMatter')][last()]" // last frontmatter page
+					+ "/following-sibling::div[contains(@data-page, 'spread-start')]");
+					// page after that says it needs to be facing the next page
+				if(firstContentPageAndAlsoStartsSpread != null)
+				{
+					var flyDom = new XmlDocument();
+					flyDom.LoadXml(@"
+						<div class='bloom-flyleaf bloom-frontMatter bloom-page' data-page='required singleton'>
+							<div class='pageLabel'>Flyleaf</div>
+							<div style='height: 100px; width:100%' 
+								data-hint='This page was automatically inserted because the following page is marked as part of a two page spread.'>
+							</div>
+						</div>");
+					var flyleaf = _bookDom.RawDom.ImportNode(flyDom.FirstChild, true) as XmlElement;
+					flyleaf.SetAttribute("id", Guid.NewGuid().ToString());
+					lastFrontMatterPage.ParentNode.InsertAfter(flyleaf, lastFrontMatterPage);
+					SizeAndOrientation.UpdatePageSizeAndOrientationClasses(flyleaf, layout);
+				}
+			}
+		}
+
+		//		//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
+		//		//page of every book. This screws up thumbnail caching.
+		//		private void FixPageId(XmlDocument bookDom)
+		//		{
+		//			XmlElement page = bookDom.SelectSingleNode("//div[@id='74731b2d-18b0-420f-ac96-6de20f659810']") as XmlElement;
+		//			if (page != null)
+		//			{
+		//				page.SetAttribute("id", Guid.NewGuid().ToString());
+		//			}
+		//		}
 
 		public static bool IsFrontMatterPage(XmlElement pageDiv)
 		{
