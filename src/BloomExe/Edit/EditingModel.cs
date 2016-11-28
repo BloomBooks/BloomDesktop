@@ -213,7 +213,9 @@ namespace Bloom.Edit
 				SaveNow(); //ensure current page is saved first
 				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
 				_currentlyDisplayedBook.DuplicatePage(page);
-				_view.UpdatePageList(false);
+				// Book.DuplicatePage() updates the page list so we don't need to do it here.
+				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-3715.)
+				//_view.UpdatePageList(false);
 				Logger.WriteEvent("Duplicate Page");
 				Analytics.Track("Duplicate Page");
 			}
