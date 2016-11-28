@@ -5,10 +5,11 @@ html
 		title Set Up Calendar
 		link(rel="stylesheet" href="configuration.css" type="text/css")
 		script(type="text/javascript" src="jquery-1.10.1.js")
-	body
+		script(type="text/javascript" src="configure.js")
+	body(onload="getYear()")
 		form#form
 			label.year Year
-			input.year(name="calendar.year" type="number" value="2015")
+			input.year(name="calendar.year" type="number" value="2015")#dateInput
 			#dayNames
 				h1 Day Names
 				label Sunday

@@ -1,7 +1,19 @@
 //
-// Typescript configuration file for Bloom Wall Calendar
+// Javascript configuration file for Bloom Wall Calendar
 //
-// Creates calendar pages for a Bloom book.
+// This function is input to the configuration dialog (run by "onload").
+// Get a default year for the Calendar configuration dialog
+// If after May use next year, otherwise use the current year.
+function getYear() {
+    var d = new Date();
+    var month = d.getMonth() + 1;
+    var year = d.getFullYear();
+
+    var x = document.getElementById("dateInput");
+    x.value = month > 5 ? year + 1 : year;
+}
+
+// The rest of this file takes the configuration dialog input and creates calendar pages for a Bloom book.
 //
 //   This script is fed a configuration object as a JSON string with the following elements:
 //       configuration.calendar.year
@@ -13,8 +25,6 @@
 //   This script relies on the 2 pages that should be in the DOM it operates on:
 //       One with classes 'calendarMonthTop'
 //       One with classes 'calendarMonthBottom'
-//
-/// <reference path="jquery.d.ts" />
 //
 // This is the main public entry point called by Configurator.ConfigureBookInternal()
 // in a context where the current dom is the book.
