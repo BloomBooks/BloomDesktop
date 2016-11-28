@@ -1,0 +1,103 @@
+@import '../../xMatter/bloom-xmatter-common.less';
+
+@XMatterPackName: "MXB Pamphlet";
+
+// moving the license and copyright block to a new place, it needs some top space
+.licenseAndCopyrightBlock {
+    margin-top: 0.5em;
+}
+
+.titlePage {
+    // shrink this down from 3em because we're combining the title and credits pages
+    #titlePageTitleBlock {
+        margin-bottom: 1em;
+    }
+    // shrink things down even more if it's a small paper size
+    &.A6Landscape, &.A6Portrait, &.QuarterLetterLandscape, &.QuarterLetterPortrait {
+        #titlePageTitleBlock {
+            margin-bottom: 0;
+            DIV {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+.insideBackCover {
+    .marginBox {
+        .bloom-editable:only-child {
+            height: 100%;
+            display: inherit;
+        }
+        .bloom-editable:not(:only-child) {
+            flex: auto;
+            display: block;
+            &.Printer-Statement-style {
+                height: auto;
+                padding-bottom: 20px;
+                font-size: 10pt;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+        // set a default style for the new Printer's Statement
+        .Printer-Statement-style {
+            font-size: 10pt;
+            line-height: 1.2;
+        }
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.credits {
+    #printingHistory .bloom-contentNational1 {
+        display: block;
+    }
+    // default values for the Printing History section
+    .PrintingHistory-style.bloom-contentNational1 {
+    font-size: 10pt;
+    display: block;
+    }
+    // scrunch things down as much as possible
+    .originalAcknowledgments .bloom-contentNational1,.bloom-content1 {
+        margin-bottom: 0.5em;
+    }
+}
+
+// more scrunching
+.titlePage #funding {
+    margin-bottom: 0.5em;
+}
+
+// override .bloom-content1 min-height 3em from bloom-xmatter-common.less
+BODY[bookcreationtype="original"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-content1 {
+                min-height: 1em;
+            }
+        }
+        #funding {
+            .bloom-content1 {
+                min-height: 1em;
+            }
+        }
+    }
+}
+
+// override .bloom-contentNational1 min-height 3em from bloom-xmatter-common.less
+BODY[bookcreationtype="translation"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-contentNational1 {
+                min-height: 1em;
+            }
+        }
+        #funding {
+            .bloom-contentNational1 {
+                min-height: 1em;
+            }
+        }
+    }
+}
