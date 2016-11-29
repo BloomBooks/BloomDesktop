@@ -360,11 +360,15 @@ namespace Bloom.Collection
 		// styleNameKey must be the non-localized version
 		private void AddNumberingStyleCssRule(StringBuilder sb, string styleNameKey)
 		{
-			var selector = ".numberedPage:after";
+			var mediaSelector = "@media print";
+			var selector = " .numberedPage:after";
 			sb.AppendLine();
-			sb.AppendLine(selector);
+			sb.AppendLine(mediaSelector);
 			sb.AppendLine("{");
-			sb.AppendLine(" content: counter(pageNumber, " + styleNameKey.ToLower() + ");");
+			sb.AppendLine(selector);
+			sb.AppendLine(" {");
+			sb.AppendLine("  content: counter(pageNumber, " + styleNameKey.ToLower() + ");");
+			sb.AppendLine(" }");
 			sb.AppendLine("}");
 		}
 
