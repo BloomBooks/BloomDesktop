@@ -778,9 +778,13 @@ namespace Bloom.Publish
 				bool done = false;
 				var dummy = _browser.Handle; // gets WebBrowser created along with handle
 				_browser.WebBrowser.DocumentCompleted += (sender, args) => done = true;
+				_browser.WebBrowser.NavigationError += (object sender, Gecko.Events.GeckoNavigationErrorEventArgs e) => done = true;
 				_browser.Navigate(normalDom);
 				while (!done)
+				{
 					Application.DoEvents();
+					Application.RaiseIdle(new EventArgs());
+				}
 			}
 			// Remove bloom-editable material not in one of the interesting languages
 			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes(".//div").Cast<XmlElement>().ToArray())

@@ -478,8 +478,13 @@ namespace Bloom.Api
 		private static string GetLocalPathWithoutQuery(string localPath)
 		{
 			if (localPath.StartsWith(BloomUrlPrefix))
+			{
 				localPath = localPath.Substring(BloomUrlPrefix.Length);
-
+#if __MonoCS__
+				if (localPath.StartsWith("tmp/ePUB"))
+					localPath = "/" + localPath;	// restore leading slash for full path
+#endif
+			}
 			// and if the file is using localhost:1234/foo.js, at this point it will say "/foo.js", so let's strip off that leading slash
 			else if (localPath.StartsWith("/"))
 			{
