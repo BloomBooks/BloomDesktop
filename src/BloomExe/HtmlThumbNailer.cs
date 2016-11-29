@@ -265,7 +265,10 @@ namespace Bloom
 			{
 				_isolator.Navigate(browser, filePath); // main thread, not async, we really need it now.
 				while (!order.Done)
+				{
 					Application.DoEvents();
+					Application.RaiseIdle(new EventArgs());		// needed on Linux to avoid deadlock starving browser navigation
+				}
 			}
 
 			return true;
