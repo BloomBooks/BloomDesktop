@@ -65,7 +65,7 @@ namespace BloomTests.Collection
 			RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
 			Assert.AreEqual("Decimal", settings.PageNumberStyle,
-				"'xyz' is not in the approved list of numbering styles, should default to 'decimal'");
+				"'xyz' is not in the approved list of numbering styles, should default to 'Decimal'");
 		}
 
 		[Test]
@@ -104,7 +104,7 @@ namespace BloomTests.Collection
 			var mainFile = CollectionSettings.GetPathForNewSettings(_folder.Path, collectionName);
 			var cssFile = Path.Combine(Path.GetDirectoryName(mainFile), "settingsCollectionStyles.css");
 			var css = RobustFile.ReadAllText(cssFile);
-			Assert.IsTrue(Regex.Match(css, @"\.numberedPage:after\s+{\s+content:\s+counter\(pageNumber,\s+" + oldNumberStyle + @"\);\s+}").Success,
+			Assert.IsTrue(Regex.Match(css, @"@media\s+print\s+{\s+\.numberedPage:after\s+{\s+content:\s+counter\(pageNumber,\s+" + oldNumberStyle + @"\);\s+}\s+}").Success,
 							  "Css did not generate PageNumber style rule match.");
 		}
 	}
