@@ -272,6 +272,9 @@ namespace Bloom.Api
 			else if (localPath.StartsWith("node_modules/jquery/dist/jquery.js"))
 			{
 				localPath = BloomFileLocator.GetBrowserFile("jquery.min.js");
+				// Avoid having "output/browser/" removed on Linux developer machines.
+				// GetBrowserFile adds output to the path on developer machines, but not user installs.
+				return ProcessContent(info, localPath);
 			}
 			//Firefox debugger, looking for a source map, was prefixing in this unexpected 
 			//way.
