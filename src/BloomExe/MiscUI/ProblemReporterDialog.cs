@@ -342,7 +342,7 @@ namespace Bloom.MiscUI
 				}
 
 
-				if (_includeBook.Checked)
+				if (_includeBook.Visible && _includeBook.Checked) // only Visible if Book is not null
 				{
 					ChangeState(State.UploadingBook);
 					using (var bookZip = TempFile.WithFilenameInTempFolder(_youTrackIssueId + ".zip"))
@@ -417,7 +417,7 @@ namespace Bloom.MiscUI
 				{
 					stream.WriteLine(GetFullDescriptionContents(false));
 
-					if (_includeBook.Checked)
+					if (_includeBook.Visible && _includeBook.Checked) // only Visible if Book is not null
 					{
 						stream.WriteLine();
 						stream.WriteLine(
@@ -426,7 +426,7 @@ namespace Bloom.MiscUI
 				}
 				zip.AddTopLevelFile(file.Path);
 
-				if (_includeBook.Checked)
+				if (_includeBook.Visible && _includeBook.Checked) // only Visible if Book is not null
 				{
 					zip.AddDirectory(Book.FolderPath);
 				}

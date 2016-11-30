@@ -87,6 +87,7 @@
 			// 
 			// _topBarPanel
 			// 
+			this._topBarPanel.AutoSize = true;
 			this._topBarPanel.Controls.Add(this._saveButton);
 			this._topBarPanel.Controls.Add(this._printButton);
 			this._topBarPanel.Location = new System.Drawing.Point(296, 320);
@@ -185,7 +186,7 @@
 			this._L10NSharpExtender.SetLocalizingId(this._openinBrowserMenuItem, "EditTab.BookContextMenu.openHtmlInBrowser");
 			this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
 			this._openinBrowserMenuItem.Size = new System.Drawing.Size(425, 22);
-			this._openinBrowserMenuItem.Text = "Open the Html used to make this PDF, in Firefox (must be on path)";
+			this._openinBrowserMenuItem.Text = "Open the HTML used to make this PDF, in Firefox (must be on path)";
 			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
 			// 
 			// _openPDF
@@ -195,7 +196,7 @@
 			this._L10NSharpExtender.SetLocalizingId(this._openPDF, "PublishTab.OpenThePDFInTheSystemPDFViewer");
 			this._openPDF.Name = "_openPDF";
 			this._openPDF.Size = new System.Drawing.Size(425, 22);
-			this._openPDF.Text = "Open the PDF in the default system pdf viewer";
+			this._openPDF.Text = "Open the PDF in the default system PDF viewer";
 			this._openPDF.Click += new System.EventHandler(this._openPDF_Click);
 			// 
 			// _epubRadio

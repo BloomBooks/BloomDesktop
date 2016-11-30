@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.5519.15474" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.7.000.0</prop>
+  <header srclang="en"
+          adminlang="en"
+          creationtool="Palaso Localization Manager"
+          creationtoolversion="2.0.30.0"
+          segtype="block"
+          datatype="unknown"
+          o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.1.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -44,7 +50,7 @@
     <tu tuid="Application.AlreadyRunning.Specific">
       <note>{0} is the application name</note>
       <tuv xml:lang="en">
-        <seg>Another copy of {0} is already running. If you cannot find that {0}, restart your computer.</seg>
+        <seg>Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</seg>
       </tuv>
     </tu>
     <tu tuid="Application.ProblemStarting.General">
@@ -90,13 +96,13 @@
       </tuv>
     </tu>
     <tu tuid="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
-      <note>Param 0 is a description of the things being deleted (e.g., "The selected files"</note>
+      <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files")</note>
       <tuv xml:lang="en">
         <seg>{0} will be moved to the Recycle Bin.</seg>
       </tuv>
     </tu>
     <tu tuid="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
-      <note>Param 0 is a file name</note>
+      <note>Parameter {0} is a file name</note>
       <tuv xml:lang="en">
         <seg>{0} will be moved to the Recycle Bin.</seg>
       </tuv>
@@ -196,7 +202,7 @@
     </tu>
     <tu tuid="ImageToolbox.NewMultilingual">
       <tuv xml:lang="en">
-        <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</seg>
+        <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</seg>
       </tuv>
     </tu>
     <tu tuid="ImageToolbox.NoArtOfReading">
@@ -241,6 +247,7 @@
       </tuv>
     </tu>
     <tu tuid="ImageToolbox.SearchLanguage">
+      <note>The {0} will be replaced by the name of the language used in the searches.</note>
       <tuv xml:lang="en">
         <seg>The search box is currently set to {0}</seg>
       </tuv>
@@ -294,7 +301,7 @@
       </tuv>
     </tu>
     <tu tuid="LanguageLookup.CountryCount">
-      <note>Shown when there are multiple countries and it is just confusing to list them all.</note>
+      <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
       <tuv xml:lang="en">
         <seg>{0} Countries</seg>
       </tuv>
@@ -468,12 +475,12 @@
     </tu>
     <tu tuid="MetadataEditor.TitleNoCredit">
       <tuv xml:lang="en">
-        <seg>Copyright &amp; License</seg>
+        <seg>Copyright and License</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataEditor.TitleWithCredit">
       <tuv xml:lang="en">
-        <seg>Credit, Copyright, &amp; License</seg>
+        <seg>Credit, Copyright, and License</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataEditor.UnknownLicense">
@@ -547,7 +554,7 @@
     <tu tuid="SettingsProtection.PasswordNotice">
       <note>Don't forget to have the {0} and {1} in your translated string!</note>
       <tuv xml:lang="en">
-        <seg>Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "factory password"</seg>
+        <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "factory password"</seg>
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.RequirePasswordCheckBox">

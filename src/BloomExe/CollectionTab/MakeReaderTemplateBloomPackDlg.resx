@@ -121,6 +121,6 @@
     <value>17, 17</value>
   </metadata>
   <data name="_willCarrySettingsLabel.Text" xml:space="preserve">
-    <value>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</value>
+    <value>In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack, who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</value>
   </data>
 </root>

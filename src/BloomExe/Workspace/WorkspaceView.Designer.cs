@@ -142,8 +142,8 @@
 			this._openCreateCollectionButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this._openCreateCollectionButton.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._openCreateCollectionButton, "Open/Create/Get Collection");
-			this._L10NSharpExtender.SetLocalizationComment(this._openCreateCollectionButton, "This is is the button you use to create a new collection, open a new one, or get " +
-        "one from a repository somewhere");
+			this._L10NSharpExtender.SetLocalizationComment(this._openCreateCollectionButton, "This is the button you use to create a new collection, open a new one, or get " +
+        "one from a repository somewhere.");
 			this._L10NSharpExtender.SetLocalizingId(this._openCreateCollectionButton, "CollectionTab.Open/CreateCollectionButton");
 			this._openCreateCollectionButton.Name = "_openCreateCollectionButton";
 			this._openCreateCollectionButton.Size = new System.Drawing.Size(98, 43);

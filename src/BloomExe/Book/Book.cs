@@ -176,7 +176,7 @@ namespace Bloom.Book
 					if (!couldBeOldStyleUgandaSHRPBook && (IsEditable || title.Empty))
 					{
 						display = LocalizationManager.GetString("CollectionTab.TitleMissing", "Title Missing",
-							"Shown as the thumbnail caption when the book doesn't have a title");
+							"Shown as the thumbnail caption when the book doesn't have a title.");
 					}
 					//but if this book is just in our list of sources, well then let's look through the names
 					//and try to get one that is likely to be helpful

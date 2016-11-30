@@ -87,7 +87,7 @@ namespace Bloom.Collection.BloomPack
 			}
 			Logger.WriteEvent("Installing Bloom Pack " + _path);
 			_okButton.Enabled = false;
-			_message.Text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Extracting", "Extracting...", "Shown while BloomPacks are being installed");
+			_message.Text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Extracting", "Extracting...", "Shown while Bloom Packs are being installed");
 			_backgroundWorker.RunWorkerAsync();
 		}
 
@@ -158,7 +158,7 @@ namespace Bloom.Collection.BloomPack
 		private void ReportInvalidBloomPack()
 		{
 			string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.SingleCollectionFolder",
-				"Bloom Packs should have only a single collection folder at the top level of the zip file.");
+				"Bloom Packs should have only a single collection folder at the top level of the .ZIP file.");
 			_message.Text = msg;
 			pictureBox1.Image = _errorImage.Image;
 			_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
@@ -272,7 +272,7 @@ namespace Bloom.Collection.BloomPack
 				{
 					_message.Text += Environment.NewLine + Environment.NewLine
 						+ L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BadCharsInFileName",
-						"Possibly this is an old BloomPack created before BloomPacks could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.");
+						"Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.");
 				}
 				_errorImage.Visible = true;
 				_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton","&Cancel");

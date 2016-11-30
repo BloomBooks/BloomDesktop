@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
 
 using SIL.IO;
-using SIL.TestUtilities;
 
 namespace BloomTests.Book
 {
@@ -29,16 +23,19 @@ namespace BloomTests.Book
 			_dataSet.WritingSystemAliases.Add("N1", "fr");
 			_dataSet.WritingSystemAliases.Add("N2", "en");
 		}
-		private XMatterHelper CreateHelper()
+		private XMatterHelper CreatePaperSaverHelper(string xmatterName="PaperSaver")
 		{
+			if(xmatterName == "PaperSaver")
+				xmatterName = "Factory";
+
 			var factoryXMatter = BloomFileLocator.GetInstalledXMatterDirectory();
-			return new XMatterHelper(_dom, "Factory", new FileLocator(new string[] { factoryXMatter }));
+			return new XMatterHelper(_dom, xmatterName, new FileLocator(new string[] { factoryXMatter }));
 		}
 
 		[Test]
 		public void PathToXMatterHtml_AllDefaults_Correct()
 		{
-			string pathToXMatterHtml = CreateHelper().PathToXMatterHtml;
+			string pathToXMatterHtml = CreatePaperSaverHelper().PathToXMatterHtml;
 			Assert.IsTrue(File.Exists(pathToXMatterHtml), pathToXMatterHtml);
 		}
 
@@ -46,13 +43,13 @@ namespace BloomTests.Book
 		[Test]
 		public void GetStyleSheetFileName_AllDefaults_Correct()
 		{
-			Assert.AreEqual("Factory-XMatter.css",CreateHelper().GetStyleSheetFileName());
+			Assert.AreEqual("Factory-XMatter.css",CreatePaperSaverHelper().GetStyleSheetFileName());
 		}
 
 		[Test]
 		public void InjectXMatter_AllDefaults_Inserts3PagesBetweenDataDivAndFirstPage()
 		{
-			CreateHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[1][@id='bloomDataDiv']", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[2][contains(@class,'cover')]", 1);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][contains(@class,'credits')]", 1);
@@ -70,10 +67,10 @@ namespace BloomTests.Book
 		[Test]
 		public void InjectXMatter_AllDefaults_FirstPageHasNewIdInsteadOfCopying()
 		{
-			CreateHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 			var id1 = ((XmlElement) _dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
 			Setup(); //reset for another round
-			CreateHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 			var id2 = ((XmlElement)_dom.SelectSingleNode("//div[contains(@class,'cover')]")).GetAttribute("id");
 
 			Assert.AreNotEqual(id1,id2);
@@ -87,7 +84,7 @@ namespace BloomTests.Book
 						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
 						 <span data-collection='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
 						</div></body></html>");
-			var helper = CreateHelper();
+			var helper = CreatePaperSaverHelper();
 			helper.XMatterDom = frontMatterDom;
 
 			helper.InjectXMatter( _dataSet.WritingSystemAliases, Layout.A5Portrait);
@@ -110,7 +107,7 @@ namespace BloomTests.Book
 						 <span data-collection='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
 						</div>
 						</body></html>");
-			var helper = CreateHelper();
+			var helper = CreatePaperSaverHelper();
 			helper.XMatterDom = xMatterDom;
 
 			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
@@ -122,22 +119,66 @@ namespace BloomTests.Book
 			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
 		}
 
-//		TODO: at the moment, we'd have to creat a whole xmatter folder
+
+		[Test]
+		public void SuperPaperSaver_BookRequiresFacingPages_FlyleafInserted()
+		{
+			RunHelperForBookStartingWithSpread("SuperPaperSaver");
+			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[3][@id and contains(@class, 'bloom-flyleaf')]", 1);
+		}
+
+		[Test]
+		public void Traditional_BookRequiresFacingPages_FlyleafInserted()
+		{
+			RunHelperForBookStartingWithSpread("Traditional");
+			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[5][contains(@class, 'bloom-flyleaf')]", 1);
+		}
+
+		[Test]
+		public void PaperSaver_BookDoesNotRequireFacingPages_FlyleafNotInserted()
+		{
+			CreatePaperSaverHelper().InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[contains(@class, 'bloom-flyleaf')]", 0);
+		}
+
+		//for paper saver, we already place the first book page facing the second, so we should not insert a flyleaf
+		[Test]
+		public void SuperPaperSaver_BookRequiresFacingPages_FlyleafNotInserted()
+		{
+			RunHelperForBookStartingWithSpread("PaperSaver");
+			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[contains(@class, 'bloom-flyleaf')]", 0);
+		}
+
+		private void RunHelperForBookStartingWithSpread(string xmatterPackName)
+		{
+			_dom = new HtmlDom(@"<html><body>
+									 <div class='bloom-page' data-page='required spread-start'>
+									 <span data-collection='nameOfLanguage' lang='N2'  class=''>{Regional}</span>
+									</div>
+									</body></html>");
+
+			var helper = CreatePaperSaverHelper(xmatterPackName);
+			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
+		}
+
+
+
+		//		TODO: at the moment, we'd have to creat a whole xmatter folder
 		/// <summary>
-//		/// NB: It's not clear what the behavior should eventually be... how do we know it isn't supposed to be in english?
-//		/// But for now, this gives us the behavior we want on the title page
-//		/// </summary>
-//		[Test]
-//		public void CreateBookOnDiskFromTemplate_HasParagraphMarkedV_ConvertsToVernacular()//??????????????
-//		{
-//			_starter.TestingSoSkipAddingXMatter = true;
-//			var body = @"<div class='bloom-page'>
-//                        <p id='bookTitle' lang='en' data-book='bookTitle'>Book Title</p>
-//                    </div>";
-//			string sourceTemplateFolder = GetShellBookFolder(body);
-//			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
-//			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//p[@lang='xyz']", 1);
-//		}
+		//		/// NB: It's not clear what the behavior should eventually be... how do we know it isn't supposed to be in english?
+		//		/// But for now, this gives us the behavior we want on the title page
+		//		/// </summary>
+		//		[Test]
+		//		public void CreateBookOnDiskFromTemplate_HasParagraphMarkedV_ConvertsToVernacular()//??????????????
+		//		{
+		//			_starter.TestingSoSkipAddingXMatter = true;
+		//			var body = @"<div class='bloom-page'>
+		//                        <p id='bookTitle' lang='en' data-book='bookTitle'>Book Title</p>
+		//                    </div>";
+		//			string sourceTemplateFolder = GetShellBookFolder(body);
+		//			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+		//			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//p[@lang='xyz']", 1);
+		//		}
 
 
 		//TODO: tests with a different paper size

@@ -736,7 +736,7 @@ namespace Bloom.Publish
 			}
 			_pdfViewer.Print();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
-			Analytics.Track("Print PDF");
+			_model.ReportAnalytics("Print PDF");
 		}
 
 		/// <summary>

@@ -939,7 +939,7 @@ export default class StyleEditor {
         }
         // BL-2386 This one should NOT be language-dependent; only style dependent
         if (this.shouldSetDefaultRule()) {
-            theOneLocalizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
+            theOneLocalizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style.', styleName)
                 .done(translation => {
                     $('#formatCharDesc').html(translation);
                 });
@@ -950,7 +950,7 @@ export default class StyleEditor {
         var lang = theOneLocalizationManager.getLanguageName(iso);
         if (!lang)
             lang = iso;
-        theOneLocalizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
+        theOneLocalizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style.', lang, styleName)
             .done(translation => {
                 $('#formatCharDesc').html(translation);
             });
@@ -964,7 +964,7 @@ export default class StyleEditor {
             if (index > 0) styleName = styleName.substring(0, index);
         }
         // BL-2386 This one should NOT be language-dependent; only style dependent
-        theOneLocalizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
+        theOneLocalizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style.', styleName)
             .done(translation => {
                 $('#formatMoreDesc').html(translation);
             });
