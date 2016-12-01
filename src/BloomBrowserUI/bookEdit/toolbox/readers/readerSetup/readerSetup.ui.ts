@@ -102,21 +102,21 @@ function process_UI_Message(event: MessageEvent): void {
       //noinspection JSJQueryEfficiency
       switch($('#dlstabs').tabs('option', 'active')) {
         case 0:
-          helpFile = '/Tasks/Edit_tasks/Decodable_Reader_Tool/Letters_tab.htm';
+          helpFile = 'Tasks/Edit_tasks/Decodable_Reader_Tool/Letters_tab.htm';
           break;
         case 1:
-          helpFile = '/Tasks/Edit_tasks/Decodable_Reader_Tool/Words_tab.htm';
+          helpFile = 'Tasks/Edit_tasks/Decodable_Reader_Tool/Words_tab.htm';
           break;
         case 2:
-          helpFile = '/Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm';
+          helpFile = 'Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm';
           break;
         case 3:
-          helpFile = '/Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm';
+          helpFile = 'Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm';
           break;
         default:
       }
       if (helpFile)
-        axios.get("/bloom/api/help/"+helpFile);
+        axios.get("/bloom/api/help/" + helpFile);
       return;
 
     default:
