@@ -11,7 +11,7 @@ export default class TalkingBookModel implements ITabModel {
         return result;
     }
 
-    configureElements(container: HTMLElement) {}
+    configureElements(container: HTMLElement) { }
 
     showTool() {
         AudioRecorder.initializeTalkingBookTool();
@@ -29,6 +29,11 @@ export default class TalkingBookModel implements ITabModel {
     name() { return 'talkingBook'; }
 
     hasRestoredSettings: boolean;
+
+    // Some things were impossible to do i18n on via the jade/pug
+    // This gives us a hook to finish up the more difficult spots
+    // So far unneeded in talkingBook
+    finishTabPaneLocalization(paneDOM: HTMLElement) { }
 }
 
 ToolBox.getTabModels().push(new TalkingBookModel());

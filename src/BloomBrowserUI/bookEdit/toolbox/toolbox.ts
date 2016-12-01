@@ -25,6 +25,10 @@ export interface ITabModel {
     updateMarkup();
     name(): string; // without trailing 'Tool'!
     hasRestoredSettings: boolean;
+
+    // Some things were impossible to do i18n on via the jade/pug
+    // This gives us a hook to finish up the more difficult spots
+    finishTabPaneLocalization(pane: HTMLElement);
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
@@ -252,11 +256,31 @@ function activateTool(newTool: ITabModel) {
         // If we're activating this tool for the first time, restore its settings.
         if (!newTool.hasRestoredSettings) {
             newTool.hasRestoredSettings = true;
-            newTool.beginRestoreSettings(savedSettings).then(() => newTool.showTool());
+            var name = newTool.name();
+            newTool.beginRestoreSettings(savedSettings).then(() => {
+                newTool.finishTabPaneLocalization(getCurrentPanel());
+                newTool.showTool();
+            })
         } else {
+            newTool.finishTabPaneLocalization(getCurrentPanel());
             newTool.showTool();
         }
     }
+}
+
+function getCurrentPanel(): HTMLElement {
+    var panel = null;
+    if (currentTool) {
+        var panelName = currentTool.name() + 'Tool';
+        $('#toolbox').find('> h3').each(function () {
+            if ($(this).attr('data-panelId') === panelName) {
+                panel = this;
+                return false; // break from the each() loop
+            }
+            return true; // continue the each() loop
+        });
+    }
+    return <HTMLElement>panel;
 }
 
 /**

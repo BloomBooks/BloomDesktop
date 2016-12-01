@@ -1824,6 +1824,33 @@
             <seg>Cette page ne peut être retirée</seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.DirectFormatting.Bold">
+         <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+         <tuv xml:lang="en">
+           <seg>Bold</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>gras</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.DirectFormatting.Italic">
+         <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+         <tuv xml:lang="en">
+           <seg>Italic</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>italique</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.DirectFormatting.Underline">
+         <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+         <tuv xml:lang="en">
+           <seg>Underline</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>souligné</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.DuplicatePageButton">
          <tuv xml:lang="en">
             <seg>Duplicate\n   Page</seg>
@@ -2763,6 +2790,30 @@
          <tuv xml:lang="fr">
             <seg/>
          </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically">
+        <tuv xml:lang="en">
+          <seg>Sort alphabetically</seg>
+        </tuv>
+        <tuv xml:lang="fr">
+          <seg>ordre alphabétique</seg>
+        </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByWordLength">
+        <tuv xml:lang="en">
+          <seg>Sort by word length</seg>
+        </tuv>
+        <tuv xml:lang="fr">
+          <seg>ordre selon la longueur de mot</seg>
+        </tuv>
+      </tu>
+      <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByFrequency">
+        <tuv xml:lang="en">
+          <seg>Sort by frequency</seg>
+        </tuv>
+        <tuv xml:lang="fr">
+          <seg>ordre selon la fréquence</seg>
+        </tuv>
       </tu>
       <tu tuid="EditTab.Toolbox.LeveledReaderTool">
          <prop type="x-dynamic">true</prop>

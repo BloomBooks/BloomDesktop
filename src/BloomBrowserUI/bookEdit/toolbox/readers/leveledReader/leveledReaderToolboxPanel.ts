@@ -3,7 +3,6 @@ import { getTheOneReaderToolsModel, DRTState, } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool} from "../readerTools";
 import {ITabModel} from "../../toolbox";
 import {ToolBox} from "../../toolbox";
-import {theOneLibSynphony}  from '../libSynphony/synphony_lib';
 
 export default class LeveledReaderToolboxPanel implements ITabModel {
     beginRestoreSettings(opts: string): JQueryPromise<void> {
@@ -14,7 +13,7 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
         });
     }
 
-    configureElements(container: HTMLElement) {}
+    configureElements(container: HTMLElement) { }
 
     showTool() {
         // change markup based on visible options
@@ -33,6 +32,13 @@ export default class LeveledReaderToolboxPanel implements ITabModel {
     name() { return 'leveledReader'; }
 
     hasRestoredSettings: boolean;
+
+    // Some things were impossible to do i18n on via the jade/pug
+    // This gives us a hook to finish up the more difficult spots
+    finishTabPaneLocalization(paneDOM: HTMLElement) {
+        // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
+        // 'translates' external links to include the current UI language.
+    }
 }
 
 ToolBox.getTabModels().push(new LeveledReaderToolboxPanel());

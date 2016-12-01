@@ -19,43 +19,54 @@ var outputDir = "../../output/browser";
 
 //todo: can remove these output exlusions now that output/ is now 2 levels up with the c# outpuuts
 var paths = {
-   less: ['./**/*.less',  '!./node_modules/**/*.less','!./output/**/*.*'],
-   jade: ['./**/*.jade',  '!./node_modules/**/*.jade','!./output/**/*.*'],
-   //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*','!./output/**/*.*'],
+    less: ['./**/*.less', '!./node_modules/**/*.less', '!./output/**/*.*'],
+    jade: ['./**/*.jade', '!./node_modules/**/*.jade', '!./output/**/*.*'],
+    //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*','!./output/**/*.*'],
 
-   //files we are *not* running through some compiler that need to make it into the outputDir directory.
-   filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts','!./**/node_modules/**/*.*','!./output/**/*.*'],
+    //files we are *not* running through some compiler that need to make it into the outputDir directory.
+    filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts', '!./**/node_modules/**/*.*', '!./output/**/*.*'],
 };
 
 gulp.task('less', function () {
-  var less = require('gulp-less');
-  return gulp.src(paths.less)
-    .pipe(debug({title: 'less:'}))
-    .pipe(sourcemaps.init())
-    .pipe(less())
-    .pipe(sourcemaps.write(outputDir))
-    .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
+    var less = require('gulp-less');
+    return gulp.src(paths.less)
+        .pipe(debug({ title: 'less:' }))
+        .pipe(sourcemaps.init())
+        .pipe(less())
+        .pipe(sourcemaps.write(outputDir))
+        .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
 });
 
 gulp.task('jade', function () {
-  var jade = require('gulp-jade');
-  return gulp.src(paths.jade)
-    .pipe(debug({title: 'jade:'}))
-    .pipe(jade({
-        pretty: true
-    }))
-    .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
+    var jade = require('gulp-jade');
+    return gulp.src(paths.jade)
+        .pipe(debug({ title: 'jade:' }))
+        .pipe(jade({
+            pretty: true
+        }))
+        .pipe(gulp.dest(outputDir)); //drop all html's into the same dirs.
 });
 
-gulp.task('webpack', function() {
-  var webpackconfig = require('./webpack.config.js');
-  return gulp.src('unused') // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
-    .pipe(webpack( webpackconfig))
-    .pipe(gulp.dest(outputDir));
+gulp.task('jadeLRT', function () {
+    const lrtInfoPath = '../../DistFiles/leveledRTInfo';
+    var jade = require('gulp-jade');
+    return gulp.src(lrtInfoPath + '/*.jade')
+        .pipe(debug({ title: 'jade:' }))
+        .pipe(jade({
+            pretty: true
+        }))
+        .pipe(gulp.dest(lrtInfoPath)); // these html's stay in place.
+});
+
+gulp.task('webpack', function () {
+    var webpackconfig = require('./webpack.config.js');
+    return gulp.src('unused') // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
+        .pipe(webpack(webpackconfig))
+        .pipe(gulp.dest(outputDir));
 });
 
 gulp.task('clean', function () {
-  return del([outputDir+"/**/*"], {force:true});
+    return del([outputDir + "/**/*"], { force: true });
 });
 
 // gulp.task('jsx?', () => {
@@ -73,14 +84,14 @@ gulp.task('clean', function () {
 //compiler into the outputDir directory.
 gulp.task('copy', function () {
     // this prefix:3 thing strips off node_modules/jquery/dist so that the file ends up right in the ouput dir
-  gulp.src('./node_modules/jquery/dist/jquery.min.js')
-    .pipe(gulpCopy(outputDir, {prefix:3}))
+    gulp.src('./node_modules/jquery/dist/jquery.min.js')
+        .pipe(gulpCopy(outputDir, { prefix: 3 }))
 
-//   gulp.src('./node_modules/jquery.hotkeys/jquery.hotkeys.js')
-//     .pipe(gulpCopy(outputDir, {prefix:2}))
+    //   gulp.src('./node_modules/jquery.hotkeys/jquery.hotkeys.js')
+    //     .pipe(gulpCopy(outputDir, {prefix:2}))
 
-  return gulp.src(paths.filesThatMightBeNeededInOutput)
-    .pipe(gulpCopy(outputDir))
+    return gulp.src(paths.filesThatMightBeNeededInOutput)
+        .pipe(gulpCopy(outputDir))
 });
 
 // gulp.task('typescript', function () {
@@ -95,7 +106,7 @@ gulp.task('copy', function () {
 //     .pipe(gulp.dest(outputDir)); //drop all js's into the same dirs.
 // });
 
-gulp.task('watchInner', function() {
+gulp.task('watchInner', function () {
     watch(paths.less, batch(function (events, done) {
         gulp.start('copy', done);
     }));
@@ -107,19 +118,19 @@ gulp.task('watchInner', function() {
     }));
 })
 
-gulp.task('watchlj', function() {
-      runSequence([ 'less', 'jade'],'watchInner');
+gulp.task('watchlj', function () {
+    runSequence(['less', 'jade'], 'watchInner');
 });
 
-gulp.task('watch', function() {
-      console.log('****** PLEASE run "webpack --watch" in a separate console *********');
-      runSequence('clean', 'copy',  [ 'less', 'jade'],'watchInner');
+gulp.task('watch', function () {
+    console.log('****** PLEASE run "webpack --watch" in a separate console *********');
+    runSequence('clean', 'copy', ['less', 'jade'], 'watchInner');
 });
 
 
 gulp.task('default',
-    function(callback) {
+    function (callback) {
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
         //currently our webpack run is pure javascript, so do it only after the typescript is all done
-         runSequence('clean', 'copy',  [ 'less', 'jade'],'webpack', callback)
-});
+        runSequence('clean', 'copy', ['less', 'jade'], 'jadeLRT', 'webpack', callback)
+    });
