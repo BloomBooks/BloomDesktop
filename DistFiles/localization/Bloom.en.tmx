@@ -1181,6 +1181,24 @@
         <seg>This page cannot be removed</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.DirectFormatting.Bold">
+      <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+      <tuv xml:lang="en">
+        <seg>Bold</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DirectFormatting.Italic">
+      <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+      <tuv xml:lang="en">
+        <seg>Italic</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DirectFormatting.Underline">
+      <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+      <tuv xml:lang="en">
+        <seg>Underline</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n  Page</seg>
@@ -1792,6 +1810,21 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically">
+      <tuv xml:lang="en">
+        <seg>Sort alphabetically</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByWordLength">
+      <tuv xml:lang="en">
+        <seg>Sort by word length</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByFrequency">
+      <tuv xml:lang="en">
+        <seg>Sort by frequency</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Toolbox.LeveledReaderTool">
