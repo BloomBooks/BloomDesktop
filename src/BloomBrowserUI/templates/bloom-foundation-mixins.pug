@@ -72,7 +72,8 @@ mixin page-label-english(englishLabel, englishDescription)
 mixin field
 	-requireZeroArguments('field');
 	.bloom-translationGroup&attributes(attributes)
-		block //this is where <label>s go
+		//- this is where <label>s go
+		block
 		+editable(kLanguageForPrototypeOnly)
 
 mixin field-withSampleText
