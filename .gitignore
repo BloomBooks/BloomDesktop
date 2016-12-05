@@ -65,6 +65,7 @@ lib/dotnet/Palaso*.*
 lib/dotnet/Chorus*.*
 DistFiles/exiftool.exe
 Copy*.bat
+!CopyLocalSquirrelToLocalBloom.bat
 DistFiles/wkhtmltopdf/
 lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
