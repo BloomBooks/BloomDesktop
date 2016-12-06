@@ -699,6 +699,13 @@ namespace Bloom.WebLibraryIntegration
 			_thumbnailer.MakeThumbnailOfCover(book, 256, invokeTarget);
 			if (progressBox.CancelRequested)
 				return "";
+
+			// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
+			// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
+			_thumbnailer.MakeThumbnailOfCover(book, invokeTarget);
+			if (progressBox.CancelRequested)
+				return "";
+
 			var uploadPdfPath = UploadPdfPath(bookFolder);
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
