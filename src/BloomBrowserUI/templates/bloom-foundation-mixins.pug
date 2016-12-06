@@ -69,9 +69,9 @@ mixin page-label-english(englishLabel, englishDescription)
 //-	+field.question
 //-		label.bubble Don't forget to fill this in using {lang}
 //-		label.placeholder question
-mixin field
-	-requireZeroArguments('field');
-	.bloom-translationGroup&attributes(attributes)
+mixin field(languages)
+	-requireOneArgument('field', arguments);
+	.bloom-translationGroup(data-default-languages=languages)&attributes(attributes)
 		//- this is where <label>s go
 		block
 		+editable(kLanguageForPrototypeOnly)
@@ -85,9 +85,9 @@ mixin field-withSampleText
 //- Sometimes, especially when we're just jade-ifying some existing html with existing css,
 //- we need to put attributes directly on the prototyp div instide of a translation group.
 //- This one lets us do that
-mixin field-prototypeDeclaredExplicity
-	- requireZeroArguments('field-prototypeDeclaredExplicity', arguments);
-	.bloom-translationGroup&attributes(attributes)
+mixin field-prototypeDeclaredExplicity(languages)
+	- requireOneArgument('field-prototypeDeclaredExplicity', arguments);
+	.bloom-translationGroup(data-default-languages=languages)&attributes(attributes)
 		block
 
 //- deprecated. Starting with version 2.0, we've changed how placeholders are handled
@@ -114,7 +114,7 @@ mixin grid(rows, columns)
 			tr
 				- for(var c = 0; c < columns; c++)
 					td
-						+field
+						+field("auto")
 
 mixin gridxy(columns, rows)
 	- requireTwoArguments("grid", arguments);
@@ -123,7 +123,7 @@ mixin gridxy(columns, rows)
 			tr
 				- for(var c = 0; c < columns; c++)
 					td
-						+field
+						+field("auto")
 //- ------------------------------------------------
 //- Mixins for Repetition
 //- ------------------------------------------------
@@ -146,9 +146,9 @@ mixin list-numbered(count)
 //- ------------------------------------------------
 
 //- Use this to have an element that repeats on multiple pages with the same value
-mixin field-common(key)
-	- requireOneArgument('field-common', arguments);
-	+field(data-book=key)&attributes(attributes)
+mixin field-common(languages, key)
+	- requireTwoArguments('field-common', arguments);
+	+field(languages)(data-book=key)&attributes(attributes)
 		block
 
 //- REVIEW: How are we going to allow placeholders/bubbles on these mono fields in the new <label> style, unless there is a wrapping element to hold  both?
@@ -162,8 +162,9 @@ mixin field-mono-version1(language, bubbleText)
 //- Language is always mandatory, but you can use '*' to mean "Don't worry what language it is"
 mixin field-mono-meta(language, dataBookName)
 	- requireTwoArguments('field-mono-meta', arguments);
-	+editable(language)(data-book=dataBookName,data-metalanguage=language)&attributes(attributes)
-		block
+	+field-prototypeDeclaredExplicity(language)
+		+editable(language)(data-book=dataBookName)&attributes(attributes)
+			block
 
 mixin  page-splittable-choice-custom(englishLabel, englishDescription)
 	+page-choice(englishLabel, englishDescription).customPage.bloom-combinedPage&attributes(attributes)
@@ -188,25 +189,30 @@ mixin dataDiv
 		block
 
 //- +editable should rarely if ever be used directly in a template; it is for other mixins
+//- REVIEW: should attributes be on translation Group?
 mixin editable(language)
 	- requireOneArgument('editable', arguments)
-	.bloom-content1.bloom-editable(lang=language, contenteditable="true")&attributes(attributes)
+	.bloom-editable(lang=kLanguageForPrototypeOnly, contenteditable="true")&attributes(attributes)
+		block
+	//- .bloom-content1.bloom-editable(lang=language, contenteditable="true")&attributes(attributes)
 		block
 
 
 //----- utility functions------------------------------
+
 - function requireZeroArguments(functionName, args) {
--    if(args && args.length) throw "Usage Error: "+functionName+" takes no parameters."+args.length;
+-    if(args && args.length) throw "Usage Error: "+functionName+"() takes no parameters."+args.length;
 - }
 
 - function requireOneArgument(functionName, args) {
--    if(args.length != 1) throw "Usage Error: "+functionName+" requires 1 parameter.";
+-    if(args.length != 1) throw "Usage Error: "+functionName+"() requires 1 parameter, not "+args.length;
 - }
 
 - function requireTwoArguments(functionName, args) {
--    if(args.length != 2) throw "Usage Error: "+functionName+" requires 2 parameters.";
+-    if(args.length != 2) throw "Usage Error: "+functionName+"() requires 2 parameters.";
 - }
 
 - function requireThreeArguments(functionName, args) {
--    if(args.length != 3) throw "Usage Error: "+functionName+" requires 3 parameters.";
+-    if(args.length != 3) throw "Usage Error: "+functionName+"() requires 3 parameters.";
 - }
+

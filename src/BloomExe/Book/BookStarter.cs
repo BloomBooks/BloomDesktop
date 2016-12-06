@@ -360,34 +360,34 @@ namespace Bloom.Book
 		/// </remarks>
 		public static void SetLanguageForElementsWithMetaLanguage(XmlNode elementOrDom, CollectionSettings settings)
 		{
-			foreach (XmlElement element in elementOrDom.SafeSelectNodes(".//*[@data-metalanguage]"))
-			{
-				string lang = "";
-				string metaLanguage = element.GetStringAttribute("data-metalanguage").Trim();
-				switch (metaLanguage)
-				{
-					case "V":
-						lang = settings.Language1Iso639Code;
-						break;
-					case "N1":
-						lang = settings.Language2Iso639Code;
-						break;
-					case "N2":
-						lang = settings.Language3Iso639Code;
-						break;
-					default:
-						var msg = "Element called for meta language '" + metaLanguage + "', which is unrecognized.";
-						Debug.Fail(msg);
-						Logger.WriteEvent(msg);
-						continue;
-						break;
-				}
-				element.SetAttribute("lang", lang);
-
-				// As an aside: if the field also has a class "bloom-copyFromOtherLanguageIfNecessary", then elsewhere we will copy from the old
-				// national language (or regional, or whatever) to this one if necessary, so as not to lose what they had before.
-
-			}
+//			foreach (XmlElement element in elementOrDom.SafeSelectNodes(".//*[@data-metalanguage]"))
+//			{
+//				string lang = "";
+//				string metaLanguage = element.GetStringAttribute("data-metalanguage").Trim();
+//				switch (metaLanguage)
+//				{
+//					case "V":
+//						lang = settings.Language1Iso639Code;
+//						break;
+//					case "N1":
+//						lang = settings.Language2Iso639Code;
+//						break;
+//					case "N2":
+//						lang = settings.Language3Iso639Code;
+//						break;
+//					default:
+//						var msg = "Element called for meta language '" + metaLanguage + "', which is unrecognized.";
+//						Debug.Fail(msg);
+//						Logger.WriteEvent(msg);
+//						continue;
+//						break;
+//				}
+//				element.SetAttribute("lang", lang);
+//
+//				// As an aside: if the field also has a class "bloom-copyFromOtherLanguageIfNecessary", then elsewhere we will copy from the old
+//				// national language (or regional, or whatever) to this one if necessary, so as not to lose what they had before.
+//
+//			}
 		}
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
 		{

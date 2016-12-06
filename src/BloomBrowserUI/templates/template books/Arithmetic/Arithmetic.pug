@@ -5,7 +5,7 @@ mixin field-languageNeutral()
 
 mixin page-arithmetic(name, count)
 	+page-choice(name,'')&attributes(attributes)
-		+field.Heading1-style
+		+field("auto").Heading1-style
 		.problemSet
 			- for (var i = 0; i < count; ++i)
 				.problem
@@ -34,7 +34,7 @@ html
 		+stylesheets('Arithmetic.css')
 		+standardStyles
 		style(type="text/css" title="userModifiedStyles")
-			.Equation-style { font-size: 28pt !important; text-align: center !important; }
+			| .Equation-style { font-size: 28pt !important; text-align: center !important; }
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Arithmetic')

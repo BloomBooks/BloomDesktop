@@ -75,7 +75,7 @@ namespace BloomTests.Book
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
 
 			AssertThatXmlIn.HtmlFile(path).HasNoMatchForXpath("//div[@id='bloomDataDiv' and @data-book='ISBN']");
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='ISBN' and not(text())]", 1);
+			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//div[@data-book='ISBN' and not(text())]");
 		}
 
 		//regression
@@ -685,10 +685,10 @@ namespace BloomTests.Book
 		public void SetupPage_LanguageSettingsHaveChanged_LangAttributesUpdated()
 		{
 			var contents = @"<div class='bloom-page'>
-						<div>
-							 <div data-book='somethingInN1' lang='en' data-metalanguage='N1'></div>
-							<div data-book='somethingInN2' lang='en' data-metalanguage='N2'></div>
-							<div data-book='somethingInV' lang='en' data-metalanguage='V'></div>
+						<div class='bloom-translationGroup' data-book='foo'>
+							<div class='bloom-editable' lang='en'></div>
+							<div class='bloom-editable' lang='en'></div>
+							<div class='bloom-editable' lang='en'></div>
 						</div>
 					</div>";
 
@@ -696,9 +696,9 @@ namespace BloomTests.Book
 			dom.LoadXml(contents);
 
 			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object, "abc", "def");
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN1' and @lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN2' and @lang='es']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInV' and @lang='xyz']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='xyz']", 1);
 		}
 
 		/// <summary>

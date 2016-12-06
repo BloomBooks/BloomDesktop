@@ -264,32 +264,6 @@ namespace BloomTests.Book
 			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
 		 }
 
-
-		[Test]
-		public void SetupPage_LanguageSettingsHaveChanged_LangAttributesUpdated()
-		{
-				_bookDom = new HtmlDom(@"
-				<html>
-					<body>
-					   <div id='me' class='bloom-page'>
-							<div>
-								 <div data-book='somethingInN1' lang='du' data-metalanguage='N1'></div>
-								<div data-book='somethingInN2' lang='du' data-metalanguage='N2'></div>
-								<div data-book='somethingInV' lang='du' data-metalanguage='V'></div>
-							</div>
-						</div>
-					</body>
-				</html>");
-
-			var book = CreateBook();
-
-			//BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object, "abc", "def");
-			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN1' and @lang='en']", 1);
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN2' and @lang='fr']", 1);
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInV' and @lang='xyz']", 1);
-		}
-
 		[Test]
 		public void GetEditableHtmlDomForPage_BasicBook_HasA5PortraitClass()
 		{
