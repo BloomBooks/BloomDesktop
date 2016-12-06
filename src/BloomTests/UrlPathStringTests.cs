@@ -69,7 +69,7 @@ namespace BloomTests
 
 		[Test]
 		public void Unencoded_toUnencoded_Correct()
-		{ 
+		{
 			Assert.AreEqual("test me", UrlPathString.CreateFromUnencodedString("test me").NotEncoded);
 		}
 

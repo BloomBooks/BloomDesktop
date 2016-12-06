@@ -193,7 +193,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// This can be used to find the best localized file when there is only one file with the given name, 
+		/// This can be used to find the best localized file when there is only one file with the given name,
 		/// and the file is part of the files distributed with Bloom (i.e., not something in a downloaded template).
 		/// </summary>
 		public static string GetBestLocalizableFileDistributedWithApplication(bool existenceOfEnglishVersionIsOptional, params string[] partsOfEnglishFilePath)

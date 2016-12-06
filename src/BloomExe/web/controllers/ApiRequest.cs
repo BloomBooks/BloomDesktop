@@ -109,7 +109,7 @@ namespace Bloom.Api
 			var request = new ApiRequest(info, collectionSettings, currentBook);
 			try
 			{
-				if(Program.RunningUnitTests) 
+				if(Program.RunningUnitTests)
 				{
 					endpointRegistration.Handler(request);
 				}

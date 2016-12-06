@@ -66,7 +66,7 @@ namespace Bloom.CollectionTab
 		private void BackgroundColorsForLinux() {
 
 			// Set the background image for Mono because the background color does not paint,
-			// and if we override the background paint handler, the default styling of the child 
+			// and if we override the background paint handler, the default styling of the child
 			// controls is changed.
 
 			// We are getting an exception if none of the buttons are visible. The tabstrip is set

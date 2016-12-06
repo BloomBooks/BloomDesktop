@@ -201,7 +201,7 @@ namespace BloomTests
 		{
 			var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p>";
 			var html = "<!DOCTYPE html><html><body>"+
-				pattern + 
+				pattern +
 				"</body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//p", 5);

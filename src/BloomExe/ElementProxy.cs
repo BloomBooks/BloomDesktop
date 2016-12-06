@@ -37,7 +37,7 @@ namespace Bloom
 			{
 				_geckoElement.SetAttribute(attributeName, value);
 			}
-			else 
+			else
 			{
 				_xmlElement.SetAttribute(attributeName, value);
 			}

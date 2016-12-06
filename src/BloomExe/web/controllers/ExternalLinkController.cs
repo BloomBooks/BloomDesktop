@@ -14,7 +14,7 @@ namespace Bloom.web
 	/// Handles GET requests to open a page, shipped with Bloom in an external browser.
 	/// For other web resources, just use http/https and the c# Browser class will intercept
 	/// and open the browser.
-	/// 
+	///
 	/// For html pages shipped with bloom, use this controller by writing
 	/// <a href='/api/externalLink/blah/foo.html#fragment=idOfSomeSectionOfFoo'></a>
 	/// </summary>

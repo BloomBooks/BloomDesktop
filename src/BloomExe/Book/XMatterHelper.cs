@@ -193,7 +193,7 @@ namespace Bloom.Book
 					flyDom.LoadXml(@"
 						<div class='bloom-flyleaf bloom-frontMatter bloom-page' data-page='required singleton'>
 							<div class='pageLabel'>Flyleaf</div>
-							<div style='height: 100px; width:100%' 
+							<div style='height: 100px; width:100%'
 								data-hint='This page was automatically inserted because the following page is marked as part of a two page spread.'>
 							</div>
 						</div>");

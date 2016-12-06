@@ -34,8 +34,8 @@ namespace Bloom.Book
 		public static Color[] CoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176, 222, 228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
 
 
-		//We only randomize the initial value for each run. Without it, we were making a lot 
-		// more red books than any other color, because the 
+		//We only randomize the initial value for each run. Without it, we were making a lot
+		// more red books than any other color, because the
 		//first book for a given run would always be red, and people are unlikely to make more
 		//than one book per session.
 		private static int _coverColorIndex=new Random().Next(CoverColors.Length-1);
@@ -94,7 +94,7 @@ namespace Bloom.Book
 			_bookData = new BookData(OurHtmlDom,
 					_collectionSettings, UpdateImageMetadataAttributes);
 
-			InjectStringListingActiveLanguagesOfBook(); 
+			InjectStringListingActiveLanguagesOfBook();
 
 			if (!HasFatalError && IsEditable)
 			{
@@ -104,7 +104,7 @@ namespace Bloom.Book
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
 			}
 
-			//if we're showing the user a shell/template book, pick a color for it 
+			//if we're showing the user a shell/template book, pick a color for it
 			//If it is editable, then we don't want to change to the next color, we
 			//want to use the color that we used for the sample shell/template we
 			//showed them previously.
@@ -819,7 +819,7 @@ namespace Bloom.Book
 		/// As the bloom format evolves, including structure and classes and other attributes, this
 		/// makes changes to old books. It needs to be very fast, because currently we dont' have
 		/// a real way to detect the need for migration. So we do it all the time.
-		/// 
+		///
 		/// Yes, we have format version number, but, for example, one overhaul of the common xmatter
 		/// html introduced a new class, "frontCover". Hardly enough to justify bumping the version number
 		/// and making older Blooms unable to read new books. But because this is run, the xmatter will be
@@ -1772,7 +1772,7 @@ namespace Bloom.Book
 			try
 			{
 				// This is needed if the user did some ChangeLayout (origami) manipulation. This will populate new
-				// translationGroups with .bloom-editables and set the proper classes on those editables to match the current multilingual settings. 
+				// translationGroups with .bloom-editables and set the proper classes on those editables to match the current multilingual settings.
 				UpdateEditableAreasOfElement(editedPageDom);
 
 				//replace the corresponding page contents in our DOM with what is in this PageDom
@@ -2240,7 +2240,7 @@ namespace Bloom.Book
 		internal IBookStorage Storage {get { return _storage; }}
 
 		/// <summary>
-		/// This gets called as a result of a UI action. It sets the new topic in our data, 
+		/// This gets called as a result of a UI action. It sets the new topic in our data,
 		/// but doesn't do anything related to how it is displayed on the page.
 		/// The way to think about this is that we're aiming for a more react™-style flow.
 		/// </summary>

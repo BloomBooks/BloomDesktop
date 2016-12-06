@@ -102,8 +102,8 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Call this when we have a new set of metadata to use. It 
-		/// 1) sets the bloomDataDiv with the data, 
+		/// Call this when we have a new set of metadata to use. It
+		/// 1) sets the bloomDataDiv with the data,
 		/// 2) causes any template fields in the book to get the new values
 		/// 3) updates the license image on disk
 		/// </summary>
@@ -151,7 +151,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Propagating the copyright and license information in the bloomDataDiv to template fields 
+		/// Propagating the copyright and license information in the bloomDataDiv to template fields
 		/// found in the pages of the book (normally just the credits page).
 		/// </summary>
 		/// <remarks>This is "internal" just as a convention, that it is accessible for testing purposes only</remarks>
@@ -200,7 +200,7 @@ namespace Bloom.Book
 				target.SetAttribute(valueAttribute, source.GetBestAlternativeString(languagePreferences));
 				if (source.Empty)
 				{
-					//if the license image is empty, make sure we don't have some alternative text 
+					//if the license image is empty, make sure we don't have some alternative text
 					//about the image being missing or slow to load
 					target.SetAttribute("alt", "");
 					//over in javascript land, @alt will get set appropriately when the image url is not empty.

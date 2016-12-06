@@ -199,7 +199,7 @@ namespace Bloom.Edit
 				//note, this doesn't actually stop... more like... starts the stopping. It does mark the time
 				//we requested to stop. A few seconds later (2, looking at the library code today), it will
 				//actually close the file and raise the Stopped event
-				Recorder.Stop(); 
+				Recorder.Stop();
 				request.Succeeded();
 				//ReportSuccessfulRecordingAnalytics();
 			}
@@ -441,7 +441,7 @@ namespace Bloom.Edit
 		}
 
 		public void HandleCurrentRecordingDevice(ApiRequest request)
-		{ 
+		{
 #if __MonoCS__
 #else
 			if(request.HttpMethod == HttpMethods.Post)

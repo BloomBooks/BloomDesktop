@@ -9,11 +9,11 @@ namespace Bloom.Api
 {
 	/// <summary>
 	/// Runs a websocket on the given port. Useful for high-frequency messages (like audio levels) and allows the backend to send messages to the client.
-	/// 
+	///
 	/// About ports... we could have a single server that is used to pass any number of messages. We could have a single connection on the client
 	/// with a means to distribute messages around the client depending on, say, a message identifier. Or we could have multiple connections (sockets) from
 	/// various parts in the client, each just filtering out the message stream to the ones they are interested in.
-	/// 
+	///
 	/// Alternatively, you could have multiple instances of this class, each with its own "port" parameter, and intended for use by a single, simple end point.
 	/// That is the case as this is introduced in Bloom 3.6, for getting the peak level of the audio coming from a microphone.
 	/// </summary>

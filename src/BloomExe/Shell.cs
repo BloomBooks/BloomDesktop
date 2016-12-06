@@ -130,7 +130,7 @@ namespace Bloom
 
 		public void SetWindowText(string bookName)
 		{
-			// Let's only mark the window text for Alpha and Beta releases. It looks odd to have that in 
+			// Let's only mark the window text for Alpha and Beta releases. It looks odd to have that in
 			// release builds, and doesn't add much since we can treat Release builds as the unmarked case.
 			// Note that developer builds now have a special "channel" marking as well to differentiate them
 			// from true Release builds in screen shots.

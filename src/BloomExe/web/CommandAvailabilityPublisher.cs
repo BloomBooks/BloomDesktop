@@ -8,12 +8,12 @@ using SIL.Reporting;
 namespace Bloom.Api
 {
 	/// <summary>
-	/// 
-	/// 
+	///
+	///
 	/// this is from spike, which worked, but we aren't using (yet).  When searching
 	/// for other parts of the spike, do a text search, as they may be commented out
-	///  
-	/// 
+	///
+	///
 	/// Commands have a status that needs to be communicated to the html client.
 	/// This class does that by wiring up to events on commands and sending
 	/// updated status on commands over a websocket.

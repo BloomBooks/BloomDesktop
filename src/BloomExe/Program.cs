@@ -1127,7 +1127,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			if (error != null)
 			{
 				//Note: this is probably too early to do anything more complicated that writing to a log...
-				//Enhance: we might be able to do a MessageBox.Show(), but it would be better to save this error 
+				//Enhance: we might be able to do a MessageBox.Show(), but it would be better to save this error
 				//and inform the user later when the UI can interact with them.
 				Logger.WriteEvent("error reading palaso user config: "+error.Message);
 				Logger.WriteEvent("Should self-heal");

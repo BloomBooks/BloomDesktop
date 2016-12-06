@@ -57,7 +57,7 @@ namespace Bloom
 						Logger.WriteEvent("UpdateVersionTable looking for UpdateVersionTable URL: " + GetUrlOfTable());
 						TextContentsOfTable = client.DownloadString(GetUrlOfTable());
 
-						//things like captive portals will return an html page rather than the text file what we asked for, if the user isn't 
+						//things like captive portals will return an html page rather than the text file what we asked for, if the user isn't
 						//logged in.
 						if(TextContentsOfTable.ToLower().Contains("<html"))
 						{

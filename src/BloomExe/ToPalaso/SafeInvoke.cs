@@ -76,7 +76,7 @@ namespace Bloom.ToPalaso
 
 		/// <summary>
 		/// This version just makes it clear that the call is permissive, won't bother the user
-		/// if something goes wrong, which is appropriate for 
+		/// if something goes wrong, which is appropriate for
 		/// many background-->foreground ui tasks, like refreshing.
 		/// </summary>
 		public static void InvokeIfPossible(string nameForErrorReporting, Control control, bool forceSynchronous, Action action)

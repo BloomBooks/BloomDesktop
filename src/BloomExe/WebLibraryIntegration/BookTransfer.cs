@@ -78,7 +78,7 @@ namespace Bloom.WebLibraryIntegration
 					return BloomS3Client.UnitTestBucketName;
 				}
 					
-				return BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName; 
+				return BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName;
 			}
 		}
 

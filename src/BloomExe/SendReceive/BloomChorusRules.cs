@@ -1,4 +1,4 @@
-﻿#if Chorus 
+﻿#if Chorus
 using Chorus.sync;
 
 namespace Bloom.SendReceive

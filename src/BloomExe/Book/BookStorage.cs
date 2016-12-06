@@ -223,7 +223,7 @@ namespace Bloom.Book
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})", PathToExistingHtml);
 
 			Dom.UpdateMetaElement("Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
-			if (!Program.RunningUnitTests) 
+			if (!Program.RunningUnitTests)
 			{
 				var ver = Assembly.GetEntryAssembly().GetName().Version;
 				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
@@ -270,7 +270,7 @@ namespace Bloom.Book
 			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license" });
 			foreach (var path in Directory.EnumerateFiles(this._folderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
-			{ 
+			{
 				var filename = Path.GetFileName(path);
 				if (ignoredFilenameStarts.Any(s=>filename.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
 					continue;

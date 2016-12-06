@@ -58,7 +58,7 @@ namespace Bloom.Publish
 				else
 				{
 					System.Printing.PrintQueue defaultPrinter;
-					// BL-2535 it's possible get past the above printQueues.Any() but then get 
+					// BL-2535 it's possible get past the above printQueues.Any() but then get
 					// a System.Printing.PrintQueueException exception with "Access Denied" error here, if
 					// the default printer for some reason is no longer "allowed".
 					try

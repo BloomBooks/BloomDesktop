@@ -302,7 +302,7 @@ namespace BloomTests.WebLibraryIntegration
 			var url =
 			"bloom://localhost/order?orderFile=BloomLibraryBooks/cara_ediger%40sil-lead.org%2ff0665264-4f1f-43d3-aa7e-fc832fe45dd0%2fBreakfast%2fBreakfast.BloomBookOrder&title=Breakfast";
 			var destBookFolder = _transfer.DownloadFromOrderUrl(url, dest, "nonsense");
-			Assert.That(Directory.GetFiles(destBookFolder).Length, Is.GreaterThan(3)); 
+			Assert.That(Directory.GetFiles(destBookFolder).Length, Is.GreaterThan(3));
 		}
 
 		/// <summary>

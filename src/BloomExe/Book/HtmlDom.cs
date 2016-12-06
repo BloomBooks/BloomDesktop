@@ -445,13 +445,13 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Fix BL-2789, where Tok Pisin and Indonesian would show up in the source bubble for book titles, 
+		/// Fix BL-2789, where Tok Pisin and Indonesian would show up in the source bubble for book titles,
 		/// saying the equivalent of "new book" in each language. BasicBook doesn't have that anymore,
 		/// but this cleans it up in books made from old shells.
 		/// </summary>
 		public void RemoveExtraBookTitles()
 		{
-			//NB: here we're just keeping it simple, not even making sure, for example, that 
+			//NB: here we're just keeping it simple, not even making sure, for example, that
 			//"Nupela Book" is in a Tok Pisin div. If it was in English, we'd zap it as well.
 			//This xpath will collect up both divs in the data-div, and also copies of this
 			//that may be in a bloom-translationGroup in the cover and title pages.
@@ -848,7 +848,7 @@ namespace Bloom.Book
 		{
 			//Note: this method is a compromise... it replaces a couple instances where we were
 			//explicitly using innerText instead of innerXml, presumably on purpose. Of course that
-			//makes it impossible to have any html markup. My particular need right now (BL-3832) is to 
+			//makes it impossible to have any html markup. My particular need right now (BL-3832) is to
 			//allow <br> to get through this filter. So that's all this does. A future alternative
 			//might be to remove the filter altogether and see if there's a better way to handle
 			//whatever scenarios the filtering was designed to prevent.
@@ -942,7 +942,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Gets the url for the image, either from an img element or any other element that has 
+		/// Gets the url for the image, either from an img element or any other element that has
 		/// an inline style with background-image set.
 		/// </summary>
 		public static UrlPathString GetImageElementUrl(GeckoHtmlElement imageElement)
@@ -951,7 +951,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Gets the url for the image, either from an img element or any other element that has 
+		/// Gets the url for the image, either from an img element or any other element that has
 		/// an inline style with background-image set.
 		/// </summary>
 		public static UrlPathString GetImageElementUrl(XmlElement imageElement)
@@ -960,7 +960,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Gets the url for the image, either from an img element or any other element that has 
+		/// Gets the url for the image, either from an img element or any other element that has
 		/// an inline style with background-image set.
 		/// </summary>
 		public static UrlPathString GetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage)
@@ -980,7 +980,7 @@ namespace Bloom.Book
 					return UrlPathString.CreateFromUrlEncodedString(match.Groups[1].Value.Trim(new[] {'\'', '"'}));
 				}
 			}
-			//we choose to return this instead of null to reduce errors created by things like 
+			//we choose to return this instead of null to reduce errors created by things like
 			// HtmlDom.GetImageElementUrl(element).UrlEncoded. If we just returned null, that has to be written
 			// as something that checks for null, like:
 			//  var url = HtmlDom.GetImageElementUrl(element). if(url!=null) url.UrlEncoded
@@ -988,7 +988,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Sets the url attribute either of an img (the src attribute) 
+		/// Sets the url attribute either of an img (the src attribute)
 		/// or a div with an inline style with an background-image rule
 		/// </summary>
 		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url)

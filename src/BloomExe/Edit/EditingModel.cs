@@ -749,9 +749,9 @@ namespace Bloom.Edit
 		/// 2) Else, make a new page of the same type as the current one
 		/// </summary>
 		/// <param name="unused"></param>
-		/// 
+		///
 		/// This is, for now, a TODO
-		/// 
+		///
 //		public void HandleAddNewPageKeystroke(string unused)
 //		{
 //			if (!HaveCurrentEditableBook || _currentlyDisplayedBook.LockedDown)

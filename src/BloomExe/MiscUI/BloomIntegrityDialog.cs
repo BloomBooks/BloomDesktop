@@ -26,7 +26,7 @@ namespace Bloom.MiscUI
 			var errors = new StringBuilder();
 			var files = new[] { "Bloom.chm", "PdfDroplet.exe",
 #if Chorus
-				"Chorus.exe", 
+				"Chorus.exe",
 #endif
 				"BloomPdfMaker.exe", "optipng.exe" };
 

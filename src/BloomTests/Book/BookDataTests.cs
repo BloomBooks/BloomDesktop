@@ -1055,7 +1055,7 @@ namespace BloomTests.Book
 
 		/// <summary>
 		/// BL-3078 where when xmatter was injected and updated, the text stored in data-book overwrote
-		/// the innerxml of the div, knocking out the <label></label> in there, which lead to losing 
+		/// the innerxml of the div, knocking out the <label></label> in there, which lead to losing
 		/// the side bubbles explaining what the field was for.
 		/// </summary>
 		[Test]

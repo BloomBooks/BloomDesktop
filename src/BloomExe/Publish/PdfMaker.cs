@@ -31,7 +31,7 @@ namespace Bloom.Publish
 		public bool ShowCropMarks;
 
 		///  <summary>
-		/// 
+		///
 		///  </summary>
 		/// <param name="inputHtmlPath"></param>
 		/// <param name="outputPdfPath"></param>
@@ -164,7 +164,7 @@ namespace Bloom.Publish
 		}
 
 		///  <summary>
-		/// 
+		///
 		///  </summary>
 		/// <param name="pdfPath">this is the path where it already exists, and the path where we leave the transformed version</param>
 		/// <param name="incomingPaperSize"></param>

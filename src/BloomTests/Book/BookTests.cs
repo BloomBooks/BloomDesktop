@@ -407,7 +407,7 @@ namespace BloomTests.Book
 			using(var templateBookFolder = new TemporaryFolder("InsertPageAfter_PageRequiresStylesheetWeDontHave_StylesheetFileCopied"))
 			{
 				//just a boring simple target book
-				SetDom("<div class='bloom-page' id='1'></div>", ""); 
+				SetDom("<div class='bloom-page' id='1'></div>", "");
 				var targetBook = CreateBook();
 
 				//our template folder will have this stylesheet file
@@ -416,7 +416,7 @@ namespace BloomTests.Book
 
 				//we're going to reference one stylesheet that is actually available in the template folder, and one that isn't
 				
-				var templatePage = MakeTemplatePageThatHasABookWithStylesheets( templateBookFolder, new [] {"foo.css","notthere.css"}); 
+				var templatePage = MakeTemplatePageThatHasABookWithStylesheets( templateBookFolder, new [] {"foo.css","notthere.css"});
 
 				targetBook.InsertPageAfter(targetBook.GetPages().First(), templatePage);
 

@@ -67,7 +67,7 @@ namespace Bloom
 			var files = Directory.GetFiles(directoryPath);
 			foreach (var path in files)
 			{
-				var entryName = path.Substring(dirNameOffest); 
+				var entryName = path.Substring(dirNameOffest);
 				entryName = ZipEntry.CleanName(entryName); // Removes drive from name and fixes slash direction
 				AddFile(path, entryName);
 			}

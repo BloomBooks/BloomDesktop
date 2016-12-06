@@ -11,7 +11,7 @@ namespace Bloom.Edit
 	public class PageEditingModel
 	{
 		/// <summary>
-		/// 
+		///
 		/// </summary>
 		/// <param name="bookFolderPath"></param>
 		/// <param name="imgOrDivWithBackgroundImage">Can be an XmlElement (during testing)</param>

@@ -45,7 +45,7 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		private IAmazonS3 GetAmazonS3(string bucketName)
-		{ 
+		{
 			//Note, it would probably be fine to just generate this each time,
 			//but this was the more conservative approach when refactoring
 			//to allow a single client to access arbitrary buckets, thus requiring
@@ -159,7 +159,7 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		/// <summary>
-		/// Allows a file to be put into the root of the bucket. 
+		/// Allows a file to be put into the root of the bucket.
 		/// Could be enhanced to specify a sub folder path, but I don't need that for the current use.
 		/// </summary>
 		/// <returns>url to the uploaded file</returns>

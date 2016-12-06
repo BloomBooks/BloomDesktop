@@ -48,8 +48,8 @@ namespace Bloom.Book
 		/// <summary>
 		/// Normally, the connection between bloom-translationGroups and the dataDiv is that each bloom-editable child
 		/// (which has an @lang) pulls the corresponding string from the dataDiv. This happens in BookData.
-		/// 
-		/// That works except in the case of xmatter which a) start empty and b) only normally get filled with 
+		///
+		/// That works except in the case of xmatter which a) start empty and b) only normally get filled with
 		/// .bloom-editable's for the current languages. Then, when bloom would normally show a source bubble listing
 		/// the string in other languages, well there's nothing to show (the bubble can't pull from dataDiv).
 		/// So our solution here is to pre-pack the translationGroup with bloom-editable's for each of the languages
@@ -254,7 +254,7 @@ namespace Bloom.Book
 			}
 			else //this is the normal situation, where we're just copying the first element
 			{
-				//what we want to do is copy everything in the element, except that which is specific to a language. 
+				//what we want to do is copy everything in the element, except that which is specific to a language.
 				//so classes on the element, non-text children (like images), etc. should be copied
 				newElementInThisLanguage = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
 				//if there is an id, get rid of it, because we don't want 2 elements with the same id

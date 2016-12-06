@@ -14,7 +14,7 @@ using SIL.IO;
 namespace Bloom.web.controllers
 {
 	/// <summary>
-	///  Delivers info on page templates that the user can add. 
+	///  Delivers info on page templates that the user can add.
 	/// </summary>
 	public class PageTemplatesApi
 	{
@@ -28,7 +28,7 @@ namespace Bloom.web.controllers
 		private readonly Book.Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
 
-		public PageTemplatesApi(SourceCollectionsList  sourceCollectionsList,BookSelection bookSelection, 
+		public PageTemplatesApi(SourceCollectionsList  sourceCollectionsList,BookSelection bookSelection,
 			PageSelection pageSelection, TemplateInsertionCommand templateInsertionCommand,
 			BookThumbNailer thumbNailer, Book.Book.Factory bookFactory, BookStorage.Factory storageFactory)
 		{
@@ -119,10 +119,10 @@ namespace Bloom.web.controllers
 
 			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape);
 
-			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below. 
-			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this 
-			// same contention problem (but, in hindsight, only partially, see?). But for some reason if we just lock the image 
-			// until it is saved, we get all gray rectangles. So for now, we just quickly do the clone and unlock. 
+			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
+			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this
+			// same contention problem (but, in hindsight, only partially, see?). But for some reason if we just lock the image
+			// until it is saved, we get all gray rectangles. So for now, we just quickly do the clone and unlock.
 			var resultPath = "";
 			Bitmap clone;
 			// Review: the coarse lock(SyncObj) in EnhancedImageServer.ProcessRequest() may have removed the need for this finer grained lock.
@@ -176,7 +176,7 @@ namespace Bloom.web.controllers
 
 			// 2) Future, add those in their current collection
 
-			// 3) then add in all other template books they have in their sources 
+			// 3) then add in all other template books they have in their sources
 			//requiring "template" to be in the path is low budget, but fast. Maybe we'll do something better later.
 			bookTemplatePaths.AddRange(sourceBookPaths
 				.Where(path => path.ToLowerInvariant().Contains("template")

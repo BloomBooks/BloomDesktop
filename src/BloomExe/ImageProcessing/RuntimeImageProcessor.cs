@@ -253,7 +253,7 @@ namespace Bloom.ImageProcessing
 			}
 			catch (Exception e)
 			{
-				//while beta might make sense, this is actually 
+				//while beta might make sense, this is actually
 				//a common failure at the moment, with the license.png
 				//so I'm setting to alpha.
 				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,"Problem making image transparent.", originalPath,e);

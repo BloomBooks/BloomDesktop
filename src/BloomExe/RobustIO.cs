@@ -15,7 +15,7 @@ namespace Bloom
 	/// The original intent of this class is to attempt to mitigate issues
 	/// where we attempt IO but the file is locked by another application.
 	/// Our theory is that some anti-virus software locks files while it scans them.
-	/// 
+	///
 	/// There is a similar class in SIL.IO, but that handles more generic calls
 	/// which would not require additional dependencies.
 	/// </summary>

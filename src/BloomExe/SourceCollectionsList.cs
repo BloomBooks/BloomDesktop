@@ -23,8 +23,8 @@ namespace Bloom
 		//for moq'ing
 		public SourceCollectionsList(){}
 
-		public SourceCollectionsList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, 
-			string editableCollectionDirectory, 
+		public SourceCollectionsList(Book.Book.Factory bookFactory, BookStorage.Factory storageFactory,
+			string editableCollectionDirectory,
 			IEnumerable<string> sourceRootFolders)
 		{
 			_bookFactory = bookFactory;

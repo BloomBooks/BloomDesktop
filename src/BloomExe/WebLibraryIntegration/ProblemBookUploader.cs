@@ -9,7 +9,7 @@ namespace Bloom.WebLibraryIntegration
 {
 	/// <summary>
 	/// this differs from Book Transfer in that it knows nothing of Parse or the Bloom Library. It simply knows
-	/// how to push a zip to an s3 bucket and give hopefully helpful error messages. 
+	/// how to push a zip to an s3 bucket and give hopefully helpful error messages.
 	/// It is used for sending us problem books
 	/// </summary>
 	public class ProblemBookUploader

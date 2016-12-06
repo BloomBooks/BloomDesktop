@@ -93,8 +93,8 @@ namespace Bloom.WebLibraryIntegration
 		{
 			get
 			{
-				//Don't do this: Application.ExecutablePath.ToLowerInvariant() 
-				//it cause us to have a wrong idea of the case of channels, which 
+				//Don't do this: Application.ExecutablePath.ToLowerInvariant()
+				//it cause us to have a wrong idea of the case of channels, which
 				//leads to urls that AWS S3 rejects when checking for an update. BL-3515
 				return Application.ExecutablePath + " \"%1\"";
 			}

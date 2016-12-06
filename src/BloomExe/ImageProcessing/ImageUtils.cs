@@ -50,7 +50,7 @@ namespace Bloom.ImageProcessing
 		/// <summary>
 		/// Makes the image a png if it's not a jpg and saves in the book's folder.
 		/// If the image has a filename, replaces any file with the same name.
-		/// 
+		///
 		/// WARNING: imageInfo.Image could be replaced (causing the original to be disposed)
 		/// </summary>
 		/// <returns>The name of the file, now in the book's folder.</returns>
@@ -259,7 +259,7 @@ namespace Bloom.ImageProcessing
 						SaveAsTopQualityJpeg(safetyImage, jpegFile.Path);
 						var jpegInfo = new FileInfo(jpegFile.Path);
 						var pngInfo = new FileInfo(pngFile.Path);
-						// this is just our heuristic. 
+						// this is just our heuristic.
 						const double fractionOfTheOriginalThatWouldWarrantChangingToJpeg = .5;
 						return jpegInfo.Length < (pngInfo.Length*(1.0 - fractionOfTheOriginalThatWouldWarrantChangingToJpeg));
 					}

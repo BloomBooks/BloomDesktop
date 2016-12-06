@@ -188,7 +188,7 @@ namespace Bloom.Book
 
 		private void MigrateData(DataSet data)
 		{
-			//Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to 
+			//Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to
 			//translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
 			//By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
 			//an English word as their value for "topic", so there we just switch it over to English.
@@ -263,9 +263,9 @@ namespace Bloom.Book
 		/// on the page.
 		/// To differentiate from fields with @data-book, which are two-way, the topic on the page instead
 		/// has a @data-derived attribute (in the data-div, it is still a data-book... perhaps that too could
-		/// change to something like data-book-source, but it's not clear to me yet, so.. not yet). 
+		/// change to something like data-book-source, but it's not clear to me yet, so.. not yet).
 		/// When the topic is changed, the javascript sends c# a message with the new English Key for the topic is set in the data-div,
-		/// and then the page is re-computed. That leads to this method, which grabs the 
+		/// and then the page is re-computed. That leads to this method, which grabs the
 		/// english topic (which serves as the 'key') from the datadiv. It then finds the placeholder
 		/// for the topic and fills it with the best translation it can find.
 		/// </summary>
@@ -325,7 +325,7 @@ namespace Bloom.Book
 			{
 				langOfTopicToShowOnCover = _collectionSettings.Language3Iso639Code;
 			}
-			else 
+			else
 			{
 				langOfTopicToShowOnCover = "en";
 			}
@@ -528,7 +528,7 @@ namespace Bloom.Book
 			//            SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
-			//REVIEW: the other methods here are, for some reason, acting on a local DataSet, "data". 
+			//REVIEW: the other methods here are, for some reason, acting on a local DataSet, "data".
 			//But then this one is acting on the member variable. First Q: why is the rest of this method acting on a local variable dataset?
 			UpdateTitle();
 			SetUpDisplayOfTopicInBook(_dataset);
@@ -878,11 +878,11 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Given a node in the content section of the book that has a data-book attribute, see 
+		/// Given a node in the content section of the book that has a data-book attribute, see
 		/// if this node holds an image and if so, look up the url of the image from the supplied
 		/// dataset and stick it in there. Handle both img elements and divs that have a
 		/// background-image in an inline style attribute.
-		/// 
+		///
 		/// At the time of this writing, the only image that is handled here is the cover page.
 		/// The URLs of images in the content of the book are not known to the data-div.
 		/// But each time the book is loaded up, we collect up data from the xmatter and stick
@@ -1045,7 +1045,7 @@ namespace Bloom.Book
 			NamedMutliLingualValue title;
 			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
-				//NB: In seleting from an ordered shopping list of priority entries, this is only 
+				//NB: In seleting from an ordered shopping list of priority entries, this is only
 				//handling a scenario where a single (title,writingsystem) pair is of interest.
 				//That's all we've needed thusfar. But we could imagine needing to work through each one.
 

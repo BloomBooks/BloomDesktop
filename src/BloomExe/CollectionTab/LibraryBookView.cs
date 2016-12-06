@@ -204,7 +204,7 @@ namespace Bloom.CollectionTab
 					dlg.Description =
 						"This book had a problem. Please tell us anything that might be helpful in diagnosing the problem here:" +
 						Environment.NewLine;
-                   
+
 					try
 					{
 						dlg.Description += Environment.NewLine + Environment.NewLine + Environment.NewLine;
@@ -227,7 +227,7 @@ namespace Bloom.CollectionTab
 		{
 			var element = (GeckoHtmlElement) (e as DomEventArgs).Target.CastToGeckoElement();
 			//nb: it might not be an actual anchor; could be an input-button that we've stuck href on
-			return element == null ? "" : 
+			return element == null ? "" :
 					element.GetAttribute("href") ?? "";
 		}
 	}

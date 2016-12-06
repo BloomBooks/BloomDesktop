@@ -50,7 +50,7 @@ namespace BloomTests.CLI
 				</body></html>");
 
 			//NOTE: At the moment, if the bookTitle of the selected vernacular language does not match
-			//the name of the file and folder, the hydration process will rename the book's folder and file, 
+			//the name of the file and folder, the hydration process will rename the book's folder and file,
 			//just like opening it in Bloom does. At the moment, we set the name of the folder/file to be
 			//the same as the title in the requested vernacular, so it isn't an issue. But further tests
 			//could make it an issue. For now, these are the same:

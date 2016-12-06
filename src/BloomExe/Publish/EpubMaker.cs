@@ -63,7 +63,7 @@ namespace Bloom.Publish
 		// All the things (files) we need to list in the manifest
 		private List<string> _manifestItems;
 		// Duration of each item of type application/smil+xml (key is ID of item)
-		Dictionary<string, TimeSpan> _pageDurations = new Dictionary<string, TimeSpan>(); 
+		Dictionary<string, TimeSpan> _pageDurations = new Dictionary<string, TimeSpan>();
 		// The things we need to list in the 'spine'...defines the normal reading order of the book
 		private List<string> _spineItems;
 		// We track the first page that is actually content and link to it in our rather trivial table of contents.

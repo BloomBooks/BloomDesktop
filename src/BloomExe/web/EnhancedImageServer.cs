@@ -136,7 +136,7 @@ namespace Bloom.Api
 			var key = pathToSimulatedPageFile.Replace('\\', '/');
 			if (escapeUrlAsNeededForSrcAttribute)
 			{
-				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript. 
+				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript.
 				url = EscapeUrlQuotes(url);
 				// When JavaScript inserts our path into the html it replaces the three magic html characters with these substitutes.
 				// We need to modify our key so that when the JavaScript comes looking for the page its modified url will
@@ -206,7 +206,7 @@ namespace Bloom.Api
 			if (localPath.ToLower().StartsWith("api/"))
 			{
 				var endpoint = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
-				foreach (var pair in _endpointRegistrations.Where(pair => 
+				foreach (var pair in _endpointRegistrations.Where(pair =>
 						Regex.Match(endpoint,
 							"^" + //must match the beginning
 							pair.Key.ToLower()
@@ -276,7 +276,7 @@ namespace Bloom.Api
 				// GetBrowserFile adds output to the path on developer machines, but not user installs.
 				return ProcessContent(info, localPath);
 			}
-			//Firefox debugger, looking for a source map, was prefixing in this unexpected 
+			//Firefox debugger, looking for a source map, was prefixing in this unexpected
 			//way.
 			localPath = localPath.Replace("output/browser/", "");
 
@@ -429,7 +429,7 @@ namespace Bloom.Api
 					path = FileLocator.GetFileDistributedWithApplication("BloomPack.ico");
 
 				// Is this request the full path to an image file? For most images, we just have the filename. However, in at
-				// least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when 
+				// least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when
 				// we are looking at a "folio", a book that gathers up other books into one big PDF. In that case, we want
 				// to find the image in the correct book folder.  See AddChildBookContentsToFolio();
 				var possibleFullImagePath = localPath;
@@ -540,7 +540,7 @@ namespace Bloom.Api
 					// Audio files may well be missing because we look for them as soon
 					// as we define an audio ID, but they wont' exist until we record something.
 					"/audio/",					
-					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation 
+					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
 					// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
 					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
 				};
@@ -549,10 +549,10 @@ namespace Bloom.Api
 				return;
 
 			// we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
-			// I suspect our disposal algorithm is just flawed: the page is removed from the _url cache as soon as we navigated away, 
-			// which is too soon. But that will take more research and we're trying to finish 3.7. 
+			// I suspect our disposal algorithm is just flawed: the page is removed from the _url cache as soon as we navigated away,
+			// which is too soon. But that will take more research and we're trying to finish 3.7.
 			// So for now, let's just not to bother the user about an error that is only going to effect thumbnailing.
-			if (IsSimulatedFileUrl(localPath)) 
+			if (IsSimulatedFileUrl(localPath))
 			{
 				//even beta users should not be confronted with this
 				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);

@@ -229,9 +229,9 @@ namespace BloomTests.Book
 			{
 				CopyrightNotice = "foo",
 				License = new CustomLicense()
-			}, 
-			startingDataDivContent: "<div data-book='licenseImage' lang='*'>license.png</div>", 
-			xpath: "//*[@data-book='licenseImage']", 
+			},
+			startingDataDivContent: "<div data-book='licenseImage' lang='*'>license.png</div>",
+			xpath: "//*[@data-book='licenseImage']",
 			expectedCount: 0);
 		}
 		[Test]
@@ -368,7 +368,7 @@ namespace BloomTests.Book
 
 
 		/// <summary>
-		/// Start out with an html with a bloomDataDiv describe by the parameters, then run it through the derivation of 
+		/// Start out with an html with a bloomDataDiv describe by the parameters, then run it through the derivation of
 		/// elements, then check to see that we got the expected result
 		/// </summary>
 		/// <param name="key">the data key. E.g. 'licenseDescription'</param>

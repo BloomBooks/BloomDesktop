@@ -178,9 +178,9 @@ namespace Bloom.Api
 			if (ApplicationUpdateSupport.ChannelName.StartsWith("Developer"))
 			{
 				//It would be a nice improvement to l10n to allow us to write directly to the source-code TMX file, so that the
-				//developer just has to check it in. But for now, we can write out a TMX element to the "local" TMX which the developer 
+				//developer just has to check it in. But for now, we can write out a TMX element to the "local" TMX which the developer
 				//can put in the distribution one. We prefix it with CopyToDistributionTmx_, which he will have to remove, because
-				//otherwise the next time we look for this string, it would get found and we would lose the ability to point out the 
+				//otherwise the next time we look for this string, it would get found and we would lose the ability to point out the
 				//problem to the developer.
 				LocalizationManager.GetDynamicString("Bloom", "CopyToDistributionTmx_" + id, englishText);
 

@@ -55,18 +55,18 @@ namespace Bloom
 					exception = new ApplicationException(new StackTrace().ToString());
 				}
 
-				if(Program.RunningUnitTests) 
+				if(Program.RunningUnitTests)
 				{
 					//It's not clear to me what we can do that works for all unit test scenarios...
 					//We can imagine those for which throwing an exception at this point would be helpful,
 					//but there are others in which say, not finding a file is expected. Either way,
 					//the rest of the test should fail if the problem is real, so doing anything here
-					//would just be a help, not really necessary for getting the test to fail. 
+					//would just be a help, not really necessary for getting the test to fail.
 					//So, for now I'm going to just go with doing nothing.
 					return;
 				}
 
-				//if this isn't going modal even for devs, it's just background noise and we don't want the 
+				//if this isn't going modal even for devs, it's just background noise and we don't want the
 				//thousands of exceptions we were getting as with BL-3280
 				if (modalThreshold != ModalIf.None)
 				{
