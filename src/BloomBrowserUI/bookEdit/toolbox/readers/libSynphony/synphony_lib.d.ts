@@ -37,7 +37,7 @@ export class LibSynphony {
   selectGPCWordsFromCache(aDesiredGPCs: string[], aKnownGPCs: string[], restrictToKnownGPCs: boolean,
                           allowUpperCase: boolean, aSyllableLengths: number[], aSelectedGroups: string[],
                           aPartsOfSpeech: string[]): string[];
-                          
+
   wrap_words_extra(storyHTML:string, aWords:any, cssClass:string, extra:string);
   checkStory(aFocusWordList:any, aWordCumulativeList:any, aGPCsKnown:any, storyHTML:any, sightWords:any);
 }

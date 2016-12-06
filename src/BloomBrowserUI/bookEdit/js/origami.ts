@@ -1,6 +1,6 @@
 //not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
-///<reference path="../../lib/split-pane/split-pane.d.ts" /> 
-///<reference path="../../typings/css-element-queries.d.ts" /> 
+///<reference path="../../lib/split-pane/split-pane.d.ts" />
+///<reference path="../../typings/css-element-queries.d.ts" />
 import {fireCSharpEditEvent} from './bloomEditing';
 import {SetupImage} from './bloomImages';
 import 'split-pane/split-pane.js';

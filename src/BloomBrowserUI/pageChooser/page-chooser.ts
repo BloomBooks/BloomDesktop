@@ -5,7 +5,7 @@ import * as jQuery from 'jquery';
 import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import axios = require('axios');
-        
+
 window.addEventListener("message", process_EditFrame_Message, false);
 
 function process_EditFrame_Message(event: MessageEvent): void {
@@ -178,7 +178,7 @@ class PageChooser {
             axios.post("/bloom/api/addPage", {templateBookPath: templateBookPath, pageId:id})
         }
         fireCSharpEvent("setModalStateEvent", "false");
-    } 
+    }
 
     continueCheckBoxChanged(): void {
         if (!this._forChooseLayout) return;
@@ -216,7 +216,7 @@ class PageChooser {
         var pageButton = $("#addPageButton", document);
         var okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
         var okButtonLabelText = 'Add This Page';
-        
+
         if (this._forChooseLayout) {
             okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
             okButtonLabelText = 'Use This Layout';
@@ -234,19 +234,19 @@ class PageChooser {
     } // loadPageGroups
 
 
-    // This pops one template book order from the queue, does the async get, 
+    // This pops one template book order from the queue, does the async get,
     // loads it in the dialog, then recursively goes back for another.
     // Doing one at a time does two things for us. First, it makes the
     // books get added in the order we want (which we couldn't control if we ask for them all
     // at once). Secondly, it ensures we get the most important template pages shown and ready
-    // to use as quickly as possible. 
+    // to use as quickly as possible.
     loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect:string): void {
         var order = queue.shift();
         if(!order)
             return; // no more to get
         axios.get("/bloom/" + order.templateBookPath).then( result =>{
             var pageData = result.data;
-            
+
             // Grab all pages in this group
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             // Creating a jquery object via $(pageData) causes any img elements in the html string to be dereferenced,
@@ -258,13 +258,13 @@ class PageChooser {
             // running Bloom without this ugly hack.
             var pageNoImg = (<string>pageData).replace(/<img[^>]*><\/img>/g, "");
             var pages = $(pageNoImg).filter('.bloom-page[id]').filter('[data-page="extra"]');
-            
+
             if(pages.length ==0)
             {
                 console.log("Could not find any template pages in "+order.templateBookPath);
                 return; //don't add a group for books that don't have template pages
             }
-                
+
             var dataBookArray = $( "div[data-book='bookTitle']", pageNoImg );
             var groupTitle = $( dataBookArray.first() ).text();
             // Add title and container to dialog
@@ -281,24 +281,24 @@ class PageChooser {
             this.loadPageFromGroup(groupToAdd, pages, gridItemHTML, order.templateBookFolderUrl, defaultPageToSelect);
 
             this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
-            
+
             this.loadNextPageGroup(queue,  groupHTML, gridItemHTML, defaultPageToSelect);
-            
+
         }).catch(e=>{
             //we don't really want to let one bad template keep us from showing others
-            alert("There was a problem reading: " + order.templateBookPath + ". " + e);            
+            alert("There was a problem reading: " + order.templateBookPath + ". " + e);
 
             this.loadNextPageGroup(queue,  groupHTML, gridItemHTML, defaultPageToSelect)
         });
-    } 
+    }
 
-    
+
     loadPageFromGroup(currentGroup, pageArray, gridItemTemplate, templateBookFolderUrl,  defaultPageToSelect:string )  {
         if ($(pageArray).length < 1) {
             console.log("pageArray empty for "+templateBookFolderUrl);
             return 0;
         }
-        
+
         // Remove default template page
         $(".innerGroupContainer", currentGroup).empty();
 
@@ -318,11 +318,11 @@ class PageChooser {
 
             if (currentId === defaultPageToSelect)
                 this._indexOfPageToSelect = index;
-                
+
             // if we're looking to change the layout, grey out thumbnail corresponding to the layout we already have
             if (this._forChooseLayout && currentId === this._currentPageLayout)
                 $(currentGridItemHtml).addClass('disabled');
-            
+
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
 
@@ -331,7 +331,7 @@ class PageChooser {
 
             var possibleImageUrl = this.getPossibleImageUrl(templateBookFolderUrl, pageLabel);
             $("img", currentGridItemHtml).attr("src",possibleImageUrl);
-            
+
             $(".innerGroupContainer", currentGroup).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
@@ -343,14 +343,14 @@ class PageChooser {
             $(div).click((evt) => {
                 this.thumbnailClickHandler(div, evt);
             }); // invisibleThumbCover click
-        }); // each 
+        }); // each
     } // loadPageFromGroup
 
 
     getPossibleImageUrl(templateBookFolderUrl: string, pageLabel: string): string {
         var label = pageLabel.replace('&', '+'); //ampersands don't work in the svg file names, so we use "+" instead
         // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
-        
+
         //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
         //See EnhancedImageServer.IsRecursiveRequestContext
         return "/bloom/api/pageTemplateThumbnail/" + templateBookFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg?generateThumbnaiIfNecessary=true';
@@ -359,19 +359,19 @@ class PageChooser {
 
 
     //NB: this function does not have access to the PageChooser object which will eventually be created and called.
-   export function showAddPageDialog(forChooseLayout:boolean) {   
+   export function showAddPageDialog(forChooseLayout:boolean) {
     //enhance: might look nicer to start opening the dialog while we get this info
     axios.get("/bloom/api/pageTemplates").then(result =>{
         var templatesJSON= result.data;
         (<any>templatesJSON).forChooseLayout = forChooseLayout;
-         
+
         var theDialog;
-        
+
         //reviewSlog. I don't see why the localiationManager should live on the page. Where stuff is equally relevant to all frames,
         //it should if anything belong to the root frmate (this one)
         //var parentElement = (<any>document.getElementById('page')).contentWindow;
         //var lm = parentElement.localizationManager;
-        
+
         // don't show if a dialog already exists
         if ($(document).find(".ui-dialog").length) {
             return;
@@ -379,12 +379,12 @@ class PageChooser {
 
         var key = 'EditTab.AddPageDialog.Title';
         var english = 'Add Page...';
-            
+
         if (forChooseLayout) {
             key = 'EditTab.AddPageDialog.ChooseLayoutTitle';
             english = 'Choose Different Layout...';
         }
-            
+
         theOneLocalizationManager.asyncGetText(key, english).done(title => {
             var dialogContents = CreateAddPageDiv(templatesJSON);
 
@@ -407,7 +407,7 @@ class PageChooser {
 
             //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
             // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
-        
+
             jQuery(document).on('click', 'body > .ui-widget-overlay', function () {
                 $(".ui-dialog-titlebar-close").trigger('click');
                 return false;
@@ -441,7 +441,7 @@ function CreateAddPageDiv(templatesJSON) {
 //noinspection JSUnusedGlobalSymbols
 // Used by the addPage_frame to initialize the setup dialog with the available template pages
 // 'templatesJSON' will be something like:
-//([{ "templateBookFolderUrl": "/bloom/localhost//...(path to files).../factoryGroups/Templates/Basic Book/", 
+//([{ "templateBookFolderUrl": "/bloom/localhost//...(path to files).../factoryGroups/Templates/Basic Book/",
 //      "templateBookUrl": "/bloom/localhost/...(path to files).../factoryGroups/Templates/Basic Book/Basic Book.htm" }])
 // See property EditingModel.GetJsonTemplatePageObject
 function initializeAddPageDialog(templatesJSON) {

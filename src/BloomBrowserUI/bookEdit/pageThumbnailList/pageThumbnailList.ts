@@ -38,9 +38,9 @@ $(window).ready(function(){
         event.stopPropagation();
         fireCSharpEvent("menuClicked", $(this).parent().parent().attr('id'));
     });
-    
+
     const websocketPort = parseInt(window.location.port) + 1;
-    
+
     //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
     window["webSocket"] = new WebSocket("ws://127.0.0.1:"+websocketPort.toString());
 

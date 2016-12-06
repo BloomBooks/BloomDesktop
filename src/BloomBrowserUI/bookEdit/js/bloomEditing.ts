@@ -1,6 +1,6 @@
 ///<reference path="../../typings/axios/axios.d.ts"/>
 //ignore//<reference path="../../typings/es6-promise/es6-promise.d.ts"/>
-///<reference path="./jquery.hasAttr.d.ts" /> 
+///<reference path="./jquery.hasAttr.d.ts" />
 import * as $ from 'jquery';
 import * as JQuery from 'jquery';
 import bloomQtipUtils from './bloomQtipUtils';
@@ -289,7 +289,7 @@ function SetupElements(container) {
     var toolbox = getToolboxFrameExports().getTheOneToolbox();
     var toolboxVisible = false;
     // toolbox might be undefined in unit testing?
-   
+
     if (toolbox) {
         toolboxVisible = toolbox.toolboxIsShowing();
         toolbox.configureElementsForTools(container);
@@ -672,7 +672,7 @@ export function bootstrap(){
         // Map from ckeditor id strings to the div the ckeditor is wrapping.
         var mapCkeditDiv = new Object();
         if ($(this).find('.bloom-imageContainer').length) {
-            // We would *like* to wire up ckeditor, but would need to get it to stop interfering 
+            // We would *like* to wire up ckeditor, but would need to get it to stop interfering
             // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
             // Currently this is only possible in the grade 4 Uganda books by SIL-LEAD.
             // So for now, we just going to say that you don't get ckeditor inside fields that have an embedded image.
@@ -688,7 +688,7 @@ export function bootstrap(){
 
             if ($(this).css('cursor') == 'not-allowed')
                 return;
-            
+
             var ckedit = CKEDITOR.inline(this);
 
             // Record the div of the edit box for use later in positioning the format bar.

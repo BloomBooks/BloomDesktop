@@ -19,7 +19,7 @@ import axios = require("axios");
 
 declare function GetSettings() : any; //c# injects this
 declare function WebFxTabPane(element:HTMLElement,useCookie:boolean,callback:any) : any; // from tabpane, from a <script> tag
- 
+
 export default class StyleEditor {
 
     private _previousBox: Element;
@@ -434,14 +434,14 @@ export default class StyleEditor {
         var pxSize = parseInt(sizeString);
         var ptSize = this.ConvertPxToPt(pxSize, false);
         var sizes = this.getPointSizes();
-        
+
         // This was a good idea but we need custom values now
         //ptSize = StyleEditor.GetClosestValueInList(sizes, ptSize);
 
         // if(ptSize != StyleEditor.GetClosestValueInList(sizes, ptSize)){
         //     //TODO: we probably need to do rounding
         // }
-        
+
         ptSize = Math.round(ptSize);
         var fontName = box.css('font-family');
         if (fontName[0] == '\'' || fontName[0] == '"') {
@@ -557,7 +557,7 @@ export default class StyleEditor {
         // the user could actually modify a style and thus need the information.
         // More dangerous is using it in getCharTabDescription. But as that is launched by a later
         // async request, I think it should be OK.
-        
+
         axios.get('/bloom/authorMode').then( result=>{
             editor.authorMode = result.data == true;
         });
@@ -708,7 +708,7 @@ export default class StyleEditor {
                     tags: false,
                     minimumResultsForSearch: -1 // result is that no search box is shown
                 });
-                
+
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
                 toolbar.draggable({ distance: 10, scroll: false, containment: $('html') });
@@ -991,7 +991,7 @@ export default class StyleEditor {
         // See http://codepen.io/alexweissman/pen/zremOV
         var newState = new Option(typedStyle, typedStyle, true, true);
         $('#styleSelect').append(newState).trigger('change');
-        
+
         // This control has been hidden, but the user could show it again.
         // And showing it does not run the duplicate style check, since we expect it to be empty
         // at that point, so that made a loophole for creating duplicate styles.
@@ -1021,7 +1021,7 @@ export default class StyleEditor {
         }
 
         items.sort( (a:string,b:string) => Number(a) - Number(b));
-        
+
         for (var i = 0; i < items.length; i++) {
             var selected: string = "";
             if (current == items[i]) selected = ' selected';
@@ -1069,7 +1069,7 @@ export default class StyleEditor {
         rule.style.setProperty("font-family", font, "important");
         this.cleanupAfterStyleChange();
     }
-  
+
     // Return true if font-tab changes (other than font family) for the current element should be applied
     // to the default rule as well as a language-specific rule.
     // Currently this requires that the element's language is the project's first language, which happens
@@ -1089,7 +1089,7 @@ export default class StyleEditor {
 
     changeSize() {
         if (this.ignoreControlChanges) return;
-        
+
         var fontSize = $('#size-select').val();
         var units = 'pt';
         var sizeString = fontSize.toString();
@@ -1120,7 +1120,7 @@ export default class StyleEditor {
     changeWordSpace() {
         //careful here: the labels we get are localized, so you can't just compare to English ones (BL-3527)
         if (this.ignoreControlChanges) return;
-        
+
         var chosenIndex = $("#word-space-select option:selected").index();
         var wordSpace;
         switch (chosenIndex) {
@@ -1243,7 +1243,7 @@ export default class StyleEditor {
         // Now update all the controls to reflect the effect of applying this style.
         var current = this.getFormatValues();
         this.ignoreControlChanges = true;
-        
+
         this.setValueAndUpdateSelect2Control('font-select', current.fontName);
         this.setValueAndUpdateSelect2Control('size-select', current.ptSize.toString());
         this.setValueAndUpdateSelect2Control('line-height-select', current.lineHeight);

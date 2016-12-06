@@ -3,8 +3,8 @@ import * as $ from 'jquery';
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js'; //for dialog()
 import 'errorHandler';
 import 'jquery.i18n.custom.ts'; //localize()
-import 'long-press/jquery.mousewheel.js'; 
-import 'long-press/jquery.longpress.js'; 
+import 'long-press/jquery.mousewheel.js';
+import 'long-press/jquery.longpress.js';
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 
 import '../jquery.div-columns.ts';
@@ -31,9 +31,9 @@ import './readerSetup.ui';
 		// script(src='/bloom/bookEdit/toolbox/decodableReader/readerSetup/readerSetup.io.js')
 		// script(src='/bloom/bookEdit/toolbox/decodableReader/readerSetup/readerSetup.ui.js')
 		// script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
-        
-        
-        
+
+
+
  //was $(function() {$("#dlstabs").tabs();});
  $(document).ready( () => {
      $("#dlstabs").tabs();

@@ -31,7 +31,7 @@ describe("SourceBubbles", function () {
     ].join("\n"));
     $('body').append(testHtml);
     var result = BloomSourceBubbles.MakeSourceTextDivForGroup($('body').find('#testTarget')[0]);
-    
+
     // English in test is vernacular, so no tab for it
     // Tok Pisin tab gets moved to first place, since it is currentCollectionLanguage2
     // French is second, since it is currentCollectionLanguage3

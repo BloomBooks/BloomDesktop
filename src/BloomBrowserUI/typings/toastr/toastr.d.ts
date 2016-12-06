@@ -130,7 +130,7 @@ interface ToastrOptions {
 	*/
 	onclick?: () => void;
 	/**
-	* Set if toastr should parse containing html 
+	* Set if toastr should parse containing html
 	**/
 	allowHtml?: boolean;
 }
@@ -170,7 +170,7 @@ interface Toastr {
 		(): void;
 		/**
 		* Clear specific toast
-		* 
+		*
 		* @param toast Toast to clear
 		*/
 		(toast: JQuery): void;
@@ -196,7 +196,7 @@ interface Toastr {
 	*/
 	warning: ToastrDisplayMethod;
 	/**
-	* Get toastr version 
+	* Get toastr version
 	*/
 	version: string;
 }

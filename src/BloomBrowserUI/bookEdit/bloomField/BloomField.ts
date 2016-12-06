@@ -14,10 +14,10 @@
 // editing, and make sure all is ok when you leave.
 //
 // Next, our field templates need to have embedded images that text can flow around. To allow that, we have to keep the p elements *after* the image elements, even
-// if visually the text is before and after the text (because that's how the image-pusher-downer technique works (zero-width, float-left 
+// if visually the text is before and after the text (because that's how the image-pusher-downer technique works (zero-width, float-left
 // div of the height you want to push the image down to). We do this by noticing a 'bloom-keepFirstInField' class on some div encapsulating the image.
 //
-// Next, we have to keep you from accidentally losing the image placeholder when you do ctrl+a DEL. We prevent this deletion 
+// Next, we have to keep you from accidentally losing the image placeholder when you do ctrl+a DEL. We prevent this deletion
 // for any element marked with a 'bloom-preventRemoval' class.
 
 export default class BloomField {
@@ -62,7 +62,7 @@ export default class BloomField {
             }
         );
     }
-    
+
     private static InsertLineBreak() {
         //we put in a specially marked span which stylesheets can use to give us "soft return" in the midst of paragraphs
         //which have either indents or prefixes (like "step 1", "step 2").
@@ -101,7 +101,7 @@ export default class BloomField {
                     // and got that <span class='bloom-linebreak'></span>, firefox will actually insert that span again, in the
                     // new paragraphs (which would be reasonable if we had turned on a normal text-formating style, like a text color.
                     // So we do the paragraph creation ourselves, so that we don't get any unwanted <span>s in it.
-                    // Note that this is going to remove that "make new spans automatically" feature entirely. 
+                    // Note that this is going to remove that "make new spans automatically" feature entirely.
                     // If we need it someday, we'll have to make this smarter and only override the normal behavior if we can detect
                     // that the span it would create would be one of those bloom-linbreak ones.
 
@@ -150,7 +150,7 @@ export default class BloomField {
         //prevention algorithm below.
 
         //The following checks the top level elemenents and only allows divs; the two items
-        //that we expect in there are the div for the "imagePusherDowner" and the div for 
+        //that we expect in there are the div for the "imagePusherDowner" and the div for
         //the image - container(which in turn contains the caption).
         $(divToProtect).children().filter(function() {
             return this.localName.toLowerCase() != 'div';
@@ -176,7 +176,7 @@ export default class BloomField {
                 var sel = window.getSelection();
                 //Are we at the start of a paragraph with nothing selected?
                 if (sel.anchorOffset == 0 && sel.isCollapsed) {
-                    //Are we in the first paragraph? 
+                    //Are we in the first paragraph?
                     //Embedded image divs come before the first editable paragraph, so we look at the previous element and
                     //see if it is one those. Anything marked with bloom-preventRemoval is probably not something we want to
                     //be merging with.
@@ -269,7 +269,7 @@ export default class BloomField {
     private static HandleFieldFocus(field:HTMLElement) {
        BloomField.MoveCursorToEdgeOfField(field, CursorPosition.start);
     }
-    
+
     private static MoveCursorToEdgeOfField(field: HTMLElement, position: CursorPosition ){
         var range = document.createRange();
         if(position === CursorPosition.start) {
@@ -317,8 +317,8 @@ export default class BloomField {
         //OK, now what if the above fails in some scenario? This adds a last-resort way of getting
         //bloom-editable back to the state it was in when the page was first created, by having
         //the user type in RESETRESET and then clicking out of the field.
-        // Since the elements that should not be deleted are part of a parallel field in a 
-        // template language, initial page setup will copy it into a new version of the messed 
+        // Since the elements that should not be deleted are part of a parallel field in a
+        // template language, initial page setup will copy it into a new version of the messed
         // up one if the relevant language version is missing altogether
         $(field).blur(function (e) {
             if ($(this).html().indexOf('RESETRESET') > -1) {
@@ -369,7 +369,7 @@ export default class BloomField {
             //   $(this).html($(this).html().replace('&nbsp;', ""));
 
             //so now we do the following business, where we select the &nbsp; we want to delete, moments before the character is typed or text pasted
-            
+
             var selection: FFSelection = window.getSelection() as FFSelection;
 
             //if we're at the start of the text, we're to the left of the character we want to replace

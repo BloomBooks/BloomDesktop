@@ -1,4 +1,4 @@
-/* 
+/*
  * The methods here are refugees that had been encamped with DecodableReader
  * (which becaues DecodableReaderToolboxPanel), but which are used just as much for the
  * leveled reader.

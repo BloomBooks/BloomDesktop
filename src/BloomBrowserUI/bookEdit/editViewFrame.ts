@@ -24,7 +24,7 @@ export function handleUndo(): void {
     var toolboxWindow = getToolboxFrameExports();
     if(toolboxWindow && (<any>toolboxWindow).canUndo()) {
         (<any>toolboxWindow).undo();
-    } 
+    }
     else if (contentWindow && contentWindow.ckeditorCanUndo()) {
         contentWindow.ckeditorUndo();
     }

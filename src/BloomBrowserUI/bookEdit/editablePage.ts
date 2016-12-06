@@ -62,7 +62,7 @@ for (var j = 0; j < styleSheets.length; j++) {
 //var scripts = [
 //     'lib/localizationManager/localizationManager.js',
 //     'lib/jquery.i18n.custom.js',
-   
+
 // ];
 
 // for (var i = 0; i < scripts.length; i++) {
@@ -77,9 +77,9 @@ window['ShowTopicChooser'] = () => {
 }
 
 $(document).ready(function() {
-   
+
      $('body').find('*[data-i18n]').localize();
-     bootstrap(); 
+     bootstrap();
 });
 
 export function SayHello() { alert('hello from editable page frame.'); }
