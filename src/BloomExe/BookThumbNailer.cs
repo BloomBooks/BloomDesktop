@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -70,19 +69,26 @@ namespace Bloom
 			}
 		}
 
+		public void MakeThumbnailOfCover(Book.Book book, Control invokeTarget)
+		{
+			MakeThumbnailOfCover(book, -1, invokeTarget);
+		}
+
 		public void MakeThumbnailOfCover(Book.Book book, int height, Control invokeTarget)
 		{
-			string error = null;
-
-			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
+			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions
 			{
-				CenterImageUsingTransparentPadding = false,
 				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
-
-				Height = height,
-				Width = -1,
-				FileName = "thumbnail-" + height + ".png"
+				CenterImageUsingTransparentPadding = false
 			};
+
+			if (height != -1)
+			{
+				options.Height = height;
+				options.Width = -1;
+				options.FileName = "thumbnail-" + height + ".png";
+			}
+			// else use the defaults
 
 			RebuildThumbNailNow(book, options);
 		}
