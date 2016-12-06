@@ -80,6 +80,7 @@ DistFiles/Bloom.chw
 DistFiles/Bloom.chm
 DistFiles/optipng.exe
 DistFiles/bloomPlayer.js
+DistFiles/leveledRTInfo/*.html
 build/ChorusInstallerStuff/ChorusMergeModule.msm
 build/JohnsTestInstallerBuild.bat
 lib/dotnet/

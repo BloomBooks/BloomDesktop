@@ -27,7 +27,7 @@ var paths = {
     filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts', '!./**/*.pug', '!./**/*.less', '!./**/*.bat', '!./**/node_modules/**/*.*', '!./output/**/*.*'],
 };
 
-gulp.task('less', function() {
+gulp.task('less', function () {
     var less = require('gulp-less');
     return gulp.src(paths.less)
         .pipe(debug({ title: 'less:' }))
@@ -37,24 +37,35 @@ gulp.task('less', function() {
         .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
 });
 
-gulp.task('pug', function() {
+gulp.task('pug', function () {
     var pug = require('gulp-pug');
     return gulp.src(paths.pug)
         .pipe(debug({ title: 'pug:' }))
         .pipe(pug({
             pretty: true
         }))
-        .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
+        .pipe(gulp.dest(outputDir)); //drop all html's into the same dirs.
 });
 
-gulp.task('webpack', function() {
+gulp.task('pugLRT', function () {
+    const lrtInfoPath = '../../DistFiles/leveledRTInfo';
+    var pug = require('gulp-pug');
+    return gulp.src(lrtInfoPath + '/*.pug')
+        .pipe(debug({ title: 'pug:' }))
+        .pipe(pug({
+            pretty: true
+        }))
+        .pipe(gulp.dest(lrtInfoPath)); // these html's stay in place.
+});
+
+gulp.task('webpack', function () {
     var webpackconfig = require('./webpack.config.js');
     return gulp.src('unused') // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
         .pipe(webpack(webpackconfig))
         .pipe(gulp.dest(outputDir));
 });
 
-gulp.task('clean', function() {
+gulp.task('clean', function () {
     return del([outputDir + "/**/*"], { force: true });
 });
 
@@ -71,7 +82,7 @@ gulp.task('clean', function() {
 
 //This task is needed to move files we are *not* running through some
 //compiler into the outputDir directory.
-gulp.task('copy', function() {
+gulp.task('copy', function () {
     // this prefix:3 thing strips off node_modules/jquery/dist so that the file ends up right in the ouput dir
     gulp.src('./node_modules/jquery/dist/jquery.min.js')
         .pipe(gulpCopy(outputDir, { prefix: 3 }))
@@ -95,31 +106,31 @@ gulp.task('copy', function() {
 //     .pipe(gulp.dest(outputDir)); //drop all js's into the same dirs.
 // });
 
-gulp.task('watchInner', function() {
-    watch(paths.less, batch(function(events, done) {
+gulp.task('watchInner', function () {
+    watch(paths.less, batch(function (events, done) {
         gulp.start('copy', done);
     }));
-    watch(paths.less, batch(function(events, done) {
+    watch(paths.less, batch(function (events, done) {
         gulp.start('less', done);
     }));
-    watch(paths.pug, batch(function(events, done) {
+    watch(paths.pug, batch(function (events, done) {
         gulp.start('pug', done);
     }));
 })
 
-gulp.task('watchlp', function() {
+gulp.task('watchlp', function () {
     runSequence(['less', 'pug'], 'watchInner');
 });
 
-gulp.task('watch', function() {
+gulp.task('watch', function () {
     console.log('****** PLEASE run "webpack --watch" in a separate console *********');
     runSequence('clean', 'copy', ['less', 'pug'], 'watchInner');
 });
 
 
 gulp.task('default',
-    function(callback) {
+    function (callback) {
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
         //currently our webpack run is pure javascript, so do it only after the typescript is all done
-        runSequence('clean', 'copy', ['less', 'pug'], 'webpack', callback)
+        runSequence('clean', 'copy', ['less', 'pug'], 'pugLRT', 'webpack', callback)
     });

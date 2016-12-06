@@ -659,86 +659,104 @@ export function bootstrap(){
             };
         }
     */
-        //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
-        Cleanup();
+    //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
+    Cleanup();
 
-        SetupElements($('body'));
-        OneTimeSetup();
+    SetupElements($('body'));
+    OneTimeSetup();
 
-        // configure ckeditor
-        if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
-        CKEDITOR.disableAutoInline = true;
+    // configure ckeditor
+    if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
+    CKEDITOR.disableAutoInline = true;
 
-        // Map from ckeditor id strings to the div the ckeditor is wrapping.
-        var mapCkeditDiv = new Object();
-        if ($(this).find('.bloom-imageContainer').length) {
-            // We would *like* to wire up ckeditor, but would need to get it to stop interfering
-            // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
-            // Currently this is only possible in the grade 4 Uganda books by SIL-LEAD.
-            // So for now, we just going to say that you don't get ckeditor inside fields that have an embedded image.
+    // Map from ckeditor id strings to the div the ckeditor is wrapping.
+    var mapCkeditDiv = new Object();
+    if ($(this).find('.bloom-imageContainer').length) {
+        // We would *like* to wire up ckeditor, but would need to get it to stop interfering
+        // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
+        // Currently this is only possible in the grade 4 Uganda books by SIL-LEAD.
+        // So for now, we just going to say that you don't get ckeditor inside fields that have an embedded image.
+        return;
+    }
+    // attach ckeditor to the contenteditable="true" class="bloom-content1"
+    // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
+    // but skip any element with class="bloom-userCannotModifyStyles"
+    $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"],.bloom-contentNational1[contenteditable="true"]').each(function () {
+
+        if ($(this).hasClass('bloom-userCannotModifyStyles'))
+            return; // equivalent to 'continue'
+
+        if ($(this).css('cursor') == 'not-allowed')
             return;
-        }
-        // attach ckeditor to the contenteditable="true" class="bloom-content1"
-        // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
-        // but skip any element with class="bloom-userCannotModifyStyles"
-        $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"],.bloom-contentNational1[contenteditable="true"]').each(function() {
 
-            if ($(this).hasClass('bloom-userCannotModifyStyles'))
-                return; // equivalent to 'continue'
+        var ckedit = CKEDITOR.inline(this);
 
-            if ($(this).css('cursor') == 'not-allowed')
-                return;
-
-            var ckedit = CKEDITOR.inline(this);
-
-            // Record the div of the edit box for use later in positioning the format bar.
-            mapCkeditDiv[ckedit.id] = this;
+        // Record the div of the edit box for use later in positioning the format bar.
+        mapCkeditDiv[ckedit.id] = this;
 
         // show or hide the toolbar when the text selection changes
-            ckedit.on('selectionCheck', function(evt) {
-                var editor = evt['editor'];
-                // Length of selected text is more reliable than comparing
-                // endpoints of the first range.  Mozilla can return multiple
-                // ranges with the first one being empty.
-                var selection = editor.getSelection();
-                var textSelected = selection.getSelectedText();
-                var show = (textSelected.length > 0);
-                var bar = $('body').find('.' + editor.id);
-                show ? bar.show() : bar.hide();
+        ckedit.on('selectionCheck', function (evt) {
+            var editor = evt['editor'];
+            // Length of selected text is more reliable than comparing
+            // endpoints of the first range.  Mozilla can return multiple
+            // ranges with the first one being empty.
+            var selection = editor.getSelection();
+            var textSelected = selection.getSelectedText();
+            var show = (textSelected.length > 0);
+            var bar = $('body').find('.' + editor.id);
+            localizeCkeditorTooltips(bar);
+            show ? bar.show() : bar.hide();
 
-                // Move the format bar on the screen if needed.
-                // (Note that offsets are not defined if it's not visible.)
-                if (show) {
-                    var barTop = bar.offset().top;
-                    var div = mapCkeditDiv[editor.id];
-                    var rect = div.getBoundingClientRect();
-                    var parent = bar.scrollParent();
-                    var scrollTop = (parent) ? parent.scrollTop() : 0;
-                    var boxTop = rect.top + scrollTop;
-                    if (boxTop - barTop < 5) {
-                        var barLeft = bar.offset().left;
-                        var barHeight = bar.height();
-                        bar.offset({ top: boxTop - barHeight, left: barLeft });
-                    }
+            // Move the format bar on the screen if needed.
+            // (Note that offsets are not defined if it's not visible.)
+            if (show) {
+                var barTop = bar.offset().top;
+                var div = mapCkeditDiv[editor.id];
+                var rect = div.getBoundingClientRect();
+                var parent = bar.scrollParent();
+                var scrollTop = (parent) ? parent.scrollTop() : 0;
+                var boxTop = rect.top + scrollTop;
+                if (boxTop - barTop < 5) {
+                    var barLeft = bar.offset().left;
+                    var barHeight = bar.height();
+                    bar.offset({ top: boxTop - barHeight, left: barLeft });
                 }
-            });
-
-            // hide the toolbar when ckeditor starts
-            ckedit.on('instanceReady', function(evt) {
-                var editor = evt['editor'];
-                var bar = $('body').find('.' + editor.id);
-                bar.hide();
-            });
-
-            BloomField.WireToCKEditor(this, ckedit);
+            }
         });
 
-        //this is some sample code for working on CommandAvailabilityPublisher websocket messages
+        // hide the toolbar when ckeditor starts
+        ckedit.on('instanceReady', function (evt) {
+            var editor = evt['editor'];
+            var bar = $('body').find('.' + editor.id);
+            bar.hide();
+        });
+
+        BloomField.WireToCKEditor(this, ckedit);
+    });
+
+    //this is some sample code for working on CommandAvailabilityPublisher websocket messages
     //   var client = new WebSocket("ws://127.0.0.1:8189");
     //   client.onmessage = function(event) {
     //        var commandStatus = JSON.parse(event.data);
     //        alert("DeleteCurrentPage Command "+ (commandStatus.deleteCurrentPage.enabled == true ? "Enabled" : "Disabled")) ;
     //    }
+}
+
+function localizeCkeditorTooltips(bar: JQuery) {
+    // The tooltips for the CKEditor Bold, Italic and Underline buttons need localization.
+    var toolGroup = bar.find('.cke_toolgroup');
+    theOneLocalizationManager.asyncGetText('EditTab.DirectFormatting.Bold', 'Bold')
+        .done(function (result) {
+            $(toolGroup).find('.cke_button__bold').attr('title', result);
+        });
+    theOneLocalizationManager.asyncGetText('EditTab.DirectFormatting.Italic', 'Italic')
+        .done(function (result) {
+            $(toolGroup).find('.cke_button__italic').attr('title', result);
+        });
+    theOneLocalizationManager.asyncGetText('EditTab.DirectFormatting.Underline', 'Underline')
+        .done(function (result) {
+            $(toolGroup).find('.cke_button__underline').attr('title', result);
+        });
 }
 
 // This is invoked from C# when we are about to change pages. It is mainly for origami,

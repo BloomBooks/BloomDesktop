@@ -218,12 +218,11 @@ namespace Bloom.CollectionCreating
 			Close();
 		}
 
-
 		private void OnCancel(object sender, EventArgs e)
 		{
 			DialogResult = DialogResult.Cancel;
-			_collectionInfo = null;
 			Close();
+			_collectionInfo = null;
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)

@@ -6,6 +6,8 @@ import {beginInitializeDecodableReaderTool} from "../readerTools";
 import {ITabModel} from "../../toolbox";
 import {ToolBox} from "../../toolbox";
 import {theOneLibSynphony}  from './../libSynphony/synphony_lib';
+import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
+
 
 export default class DecodableReaderToolboxPanel implements ITabModel {
     beginRestoreSettings(settings: string): JQueryPromise<void> {
@@ -38,7 +40,7 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
             getTheOneReaderToolsModel().noteFocus(this); // 'This' is the element that just got focus.
         });
 
-        $(container).find('.bloom-editable').keydown(function(e) {
+        $(container).find('.bloom-editable').keydown(function (e) {
             if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
                 if (getTheOneReaderToolsModel().currentMarkupType !== MarkupType.None) {
                     e.preventDefault();
@@ -51,6 +53,30 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
                 }
             }
         });
+    }
+
+    // Some things were impossible to do i18n on via the jade/pug
+    // This gives us a hook to finish up the more difficult spots
+    finishTabPaneLocalization(paneDOM: HTMLElement) {
+        // DRT has sort buttons with tooltips that are HTML 'i' elements with 'title' attributes.
+        // Update those 'title' attributes from localizationManager.
+
+        var doc = paneDOM.ownerDocument;
+        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortAlphabetically', 'Sort alphabetically')
+            .done(function (result) {
+                $(doc.getElementById('sortAlphabetic')).find('i').attr('title', result);
+            });
+
+        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByWordLength', 'Sort by word length')
+            .done(function (result) {
+                $(doc.getElementById('sortLength')).find('i').attr('title', result);
+            });
+
+        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByFrequency', 'Sort by frequency')
+            .done(function (result) {
+                // there are actually two here, but JQuery nicely just does it
+                $(doc.getElementById('sortFrequency')).find('i').attr('title', result);
+            });
     }
 
     configureElements(container: HTMLElement) {
