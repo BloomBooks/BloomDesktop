@@ -1,41 +1,41 @@
 ﻿doctype html
 html
-  head
-    meta(charset="UTF-8")
-    link(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')
-    link(rel='stylesheet', href='/bloom/lib/jquery-ui.css')
-    script(src='/bloom/node_modules/jquery/dist/jquery.js')
-    script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
-    script.
-      $(function () { $('#device').resizable({ minHeight: 300, minWidth: 200, handles: { 'se': '#BottomRightHandle' } }); });
-  //_AudioSituationClass_ is replaced at runtime
-  body._AudioSituationClass_
-    #sideColumn
-      p This is an #[a(href='https://en.wikipedia.org/wiki/ePUB') ePUB] (e-book) version of your book.&nbsp;
-        span.showForTalkingBooks It contains audio, so that new readers can listen as they read.
-      p.showWhenHaveAudioButNotMakingTalkingBook This book has some recordings, but this audio is not included in the ePUB.
-      
-      h3 Preview
-      p You can resize the preview by dragging the lower right corner of this simulated device. See how your book will look on screens of various sizes.
-      :marked
-        This page uses the [Readium](http://readium.org/) ePUB reader. Books will likely look different on different readers.
-      p.showForTalkingBooks
-        | The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free #[a(href='http://www.adobe.com/solutions/ebook/digital-editions.html')  Digital Editions]
-        |  e-book reader.
-      h3 Getting this book onto your Device
-      p A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet.  Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free #[a(href='http://shareit.lenovo.com/') ShareIt] program to send files from your laptop to a phone or tablet.
-      h3 Recommended Reader
-      :marked
-        Our testing has shown [Gitden Reader](/bloom/api/help/Concepts/Gitden_Reader.htm)
-        to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
-      p.showForTalkingBooks
-        | To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.
-      h3.showWhenNoAudio Make it Talk
-      p.showWhenNoAudio
-        | If you want to make a "Talking Book" that new readers can read-along with, use Bloom's #[a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') Talking Book Tool]
-        |  to add voice recordings.
-      h3 Write to us!
-      p Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!
-    #device.ui-resizable
-      iframe(src='readium-cloudreader.htm?epub={EPUBFOLDER}')
-      #BottomRightHandle.ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-grip-diagonal-se
+	head
+		meta(charset="UTF-8")
+		link(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')
+		link(rel='stylesheet', href='/bloom/lib/jquery-ui.css')
+		script(src='/bloom/node_modules/jquery/dist/jquery.js')
+		script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+		script.
+			$(function () { $('#device').resizable({ minHeight: 300, minWidth: 200, handles: { 'se': '#BottomRightHandle' } }); });
+	//_AudioSituationClass_ is replaced at runtime
+	body._AudioSituationClass_
+		#sideColumn
+			p This is an #[a(href='https://en.wikipedia.org/wiki/ePUB') ePUB] (e-book) version of your book.&nbsp;
+				span.showForTalkingBooks It contains audio, so that new readers can listen as they read.
+			p.showWhenHaveAudioButNotMakingTalkingBook This book has some recordings, but this audio is not included in the ePUB.
+
+			h3 Preview
+			p You can resize the preview by dragging the lower right corner of this simulated device. See how your book will look on screens of various sizes.
+			:marked
+				This page uses the [Readium](http://readium.org/) ePUB reader. Books will likely look different on different readers.
+			p.showForTalkingBooks
+				| The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free #[a(href='http://www.adobe.com/solutions/ebook/digital-editions.html')  Digital Editions]
+				|  e-book reader.
+			h3 Getting this book onto your Device
+			p A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet.  Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free #[a(href='http://shareit.lenovo.com/') ShareIt] program to send files from your laptop to a phone or tablet.
+			h3 Recommended Reader
+			:marked
+				Our testing has shown [Gitden Reader](/bloom/api/help/Concepts/Gitden_Reader.htm)
+				to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
+			p.showForTalkingBooks
+				| To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.
+			h3.showWhenNoAudio Make it Talk
+			p.showWhenNoAudio
+				| If you want to make a "Talking Book" that new readers can read-along with, use Bloom's #[a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') Talking Book Tool]
+				|  to add voice recordings.
+			h3 Write to us!
+			p Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!
+		#device.ui-resizable
+			iframe(src='readium-cloudreader.htm?epub={EPUBFOLDER}')
+			#BottomRightHandle.ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-grip-diagonal-se

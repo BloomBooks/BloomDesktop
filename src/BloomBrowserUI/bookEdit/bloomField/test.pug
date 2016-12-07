@@ -1,134 +1,134 @@
 ﻿mixin field
-  .bloom-content1.bloom-editable(contenteditable='true')&attributes(attributes)
-    block
+	.bloom-content1.bloom-editable(contenteditable='true')&attributes(attributes)
+		block
 
 doctype html
 html
-  head(lang='en')
-    meta(charset='UTF-8')
-    title Test Page for bloomEditable functions
-    script(src='../../jquery-min.js')
-    script(src='../js/jquery.hotkeys.js')
-    script(src='bloomField.js')
-    style(type='text/css').
-      .bloom-editable {
-        color: red;
-      }
+	head(lang='en')
+		meta(charset='UTF-8')
+		title Test Page for bloomEditable functions
+		script(src='../../jquery-min.js')
+		script(src='../js/jquery.hotkeys.js')
+		script(src='bloomField.js')
+		style(type='text/css').
+			.bloom-editable {
+				color: red;
+			}
 
-      span.bloom-linebreak{
-        display: block;
-        text-indent: 0;
-        background-color: lightgreen;
-      }
-      /* show text that isn't in a p in red */
-      P:after {
-        /*content: '¶';*/
-        color: #808080
-      }
+			span.bloom-linebreak{
+				display: block;
+				text-indent: 0;
+				background-color: lightgreen;
+			}
+			/* show text that isn't in a p in red */
+			P:after {
+				/*content: '¶';*/
+				color: #808080
+			}
 
-      P {
-        text-indent: 15px;
-        color: blue;
-        margin-top: 0;
-        margin-bottom: 0;
-      }
-      p{
-         min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
-        }
+			P {
+				text-indent: 15px;
+				color: blue;
+				margin-top: 0;
+				margin-bottom: 0;
+			}
+			p{
+				 min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+				}
 
-      #hasEmbeddedImage {
-        height: 300px;
-      }
+			#hasEmbeddedImage {
+				height: 300px;
+			}
 
-      .bloom-editable {
-        height: 100px;
-        width: 300px;
-        border: solid thin #0000ff;
-      }
+			.bloom-editable {
+				height: 100px;
+				width: 300px;
+				border: solid thin #0000ff;
+			}
 
-      .caption {
-        width: 60px;
-        border: solid thin yellowgreen;
-      }
-      .bloom-page{
-        counter-reset: n;
-      }
-      .numberedParagraphs p:before{
-          counter-increment: n;
-          content: counter(n);
-      }
-      .imagePusherDowner {
-        float: left;
-        display: block;
-        clear: both;
-        height: 70px;
-        /* width is 0 because we want the space to go to text that we're going to wrap around the image-container */
-        width: 0;
-        /* make room for the caption. Why is that?*/
-        padding-bottom: 20px;
-      }
+			.caption {
+				width: 60px;
+				border: solid thin yellowgreen;
+			}
+			.bloom-page{
+				counter-reset: n;
+			}
+			.numberedParagraphs p:before{
+					counter-increment: n;
+					content: counter(n);
+			}
+			.imagePusherDowner {
+				float: left;
+				display: block;
+				clear: both;
+				height: 70px;
+				/* width is 0 because we want the space to go to text that we're going to wrap around the image-container */
+				width: 0;
+				/* make room for the caption. Why is that?*/
+				padding-bottom: 20px;
+			}
 
-      .bloom-imageContainer {
-        width: 100px;
-        height: 100px;
-        float: left;
-        display: block;
-        clear: both;
-      }
-    script(type='text/javascript').
-      $(document).ready(function () {
-        $(".bloom-editable").each(function () {
-          BloomField.ManageField(this)
-        });
-      });
-  body
-    .bloom-page
-      h4 Fields with bloom-requiresParagraphs
-      div
-        | On this test page, text inside a &lt;b&gt; should show in red (we don't ever want to see that). Text inside of &lt;p&gt; should be
-        | blue, with an indent and a trailing ¶
-      .bloom-requiresParagraphs
-        h4 Simple field
-        +field#simple
-        h4 Field with embedded image-pusher-downer, image-container, and caption, all with bloom-preventRemoval
-        ul
-          li You should be able to type text that flows around the beaker.
-          li You should not be able to delete the image, or caption box.
-          li You should not be able to make the image move either up or down.
-        +field#hasEmbeddedImage
-          .pinnedImage.bloom-keepFirstInField.bloom-preventRemoval
-            .imagePusherDowner.bloom-preventRemoval
-            .bloom-imageContainer.bloom-preventRemoval(contenteditable='false')
-              img(src='../../images/experiment.png', contenteditable='true', alt='Could not load the picture', lang='teo')
-              .caption(contenteditable='true', lang='teo')
-                | Caption
-          //- p.bloom-cloneToOtherLanguages.bloom-preventRemoval
-        +field#brAtStart
-          br
-          | brAtStart There was a br at the start here
-          br
-          | second line with <span style="font-weight:bold">bold</span>
-        +field#leftToRight
-          p(dir='rtl') شششششششششششششششششششششش يني م سينتسيمنبتسينمتبمنسيبمنسيتبمنتيسمبن سيمنبتسيمبسيمشلاؤ
-          p(dir='rtl') شششششششششششششششششششششش يني م سينب سيمنب منبتسيمبسيمشلاؤ
-        +field#brInMiddle
-          | brInMiddle There was no tag at the beginning of this line
-          br
-          | There was a br at the beginning of this line
-        +field#UncontainedTextAtEnd
-          p UncontainedTextAtEnd
-          | This was outside of the P, at the end
-        +field#textThenParagraph
-          | There was no tag at the beginning of this line
-          p There was a p at the beginning of this line
-        +field#allParagraphs
-            P There was a p at the <span style="font-weight:bold">bold beginning</span> of this line
-            p There was a p at the beginning of this line
-        +field#numberedParagraphs.numberedParagraphs
-          P apples
-            span.bloom-linebreak
-            | This should be on a line by itself with no number
-          P oranges
-          BR.bloom-linefeed are good
-          P outer
-            BR.bloom-linefeed inner
+			.bloom-imageContainer {
+				width: 100px;
+				height: 100px;
+				float: left;
+				display: block;
+				clear: both;
+			}
+		script(type='text/javascript').
+			$(document).ready(function () {
+				$(".bloom-editable").each(function () {
+					BloomField.ManageField(this)
+				});
+			});
+	body
+		.bloom-page
+			h4 Fields with bloom-requiresParagraphs
+			div
+				| On this test page, text inside a &lt;b&gt; should show in red (we don't ever want to see that). Text inside of &lt;p&gt; should be
+				| blue, with an indent and a trailing ¶
+			.bloom-requiresParagraphs
+				h4 Simple field
+				+field#simple
+				h4 Field with embedded image-pusher-downer, image-container, and caption, all with bloom-preventRemoval
+				ul
+					li You should be able to type text that flows around the beaker.
+					li You should not be able to delete the image, or caption box.
+					li You should not be able to make the image move either up or down.
+				+field#hasEmbeddedImage
+					.pinnedImage.bloom-keepFirstInField.bloom-preventRemoval
+						.imagePusherDowner.bloom-preventRemoval
+						.bloom-imageContainer.bloom-preventRemoval(contenteditable='false')
+							img(src='../../images/experiment.png', contenteditable='true', alt='Could not load the picture', lang='teo')
+							.caption(contenteditable='true', lang='teo')
+								| Caption
+					//- p.bloom-cloneToOtherLanguages.bloom-preventRemoval
+				+field#brAtStart
+					br
+					| brAtStart There was a br at the start here
+					br
+					| second line with <span style="font-weight:bold">bold</span>
+				+field#leftToRight
+					p(dir='rtl') شششششششششششششششششششششش يني م سينتسيمنبتسينمتبمنسيبمنسيتبمنتيسمبن سيمنبتسيمبسيمشلاؤ
+					p(dir='rtl') شششششششششششششششششششششش يني م سينب سيمنب منبتسيمبسيمشلاؤ
+				+field#brInMiddle
+					| brInMiddle There was no tag at the beginning of this line
+					br
+					| There was a br at the beginning of this line
+				+field#UncontainedTextAtEnd
+					p UncontainedTextAtEnd
+					| This was outside of the P, at the end
+				+field#textThenParagraph
+					| There was no tag at the beginning of this line
+					p There was a p at the beginning of this line
+				+field#allParagraphs
+						P There was a p at the <span style="font-weight:bold">bold beginning</span> of this line
+						p There was a p at the beginning of this line
+				+field#numberedParagraphs.numberedParagraphs
+					P apples
+						span.bloom-linebreak
+						| This should be on a line by itself with no number
+					P oranges
+					BR.bloom-linefeed are good
+					P outer
+						BR.bloom-linefeed inner

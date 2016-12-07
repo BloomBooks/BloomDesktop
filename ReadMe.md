@@ -34,8 +34,8 @@ This will build and test the Typescript, javascript, less, and jade:
 Here npm is really just running some gulp scripts, defined in gulpfile.js. Note that when you're using Visual Studio, the "Task Runner Explorer" can be used to start those gulp tasks, and VS should run the "default" gulp task each time it does a build. To make it run this each time you do a "run", though, make sure you've turned off this option:
 
     Tools:Options:Projects and Solutions:Build and Run:Only build startup projects and dependencies on Run
-    
-We use webpack for building the Typescript, running Javascript through Babel, and packing everything six top-level (apps (ugghhh)). When coding in Typescript/Javascript, then go to the src/BloomBrowserUI folder and run 
+
+We use webpack for building the Typescript, running Javascript through Babel, and packing everything six top-level (apps (ugghhh)). When coding in Typescript/Javascript, then go to the src/BloomBrowserUI folder and run
 
 ``webpack -w``
 
@@ -72,7 +72,7 @@ That will take several minutes the first time, and afterwards will be quick as i
 
 #### About Bloom Dependencies
 
-Javascript dependencies should be introduced using 
+Javascript dependencies should be introduced using
 
     npm install <modulename> --save
 
@@ -95,7 +95,7 @@ Bloom uses various web services that require identification. We can't really kee
 
 We don't want developer and tester runs (and crashes) polluting our statistics. On Windows, add the environment variable "feedback" with value "off". On Linux, edit $HOME/.profile and add:
 
-		export FEEDBACK=off 
+        export FEEDBACK=off
 
 # Special instructions for building on Linux
 
@@ -113,103 +113,103 @@ At various points you will be asked for your password.
 
 1. Install `wget`
 
-		sudo apt-get install wget
+        sudo apt-get install wget
 
 2. Add the SIL keys for the main and testing SIL package repositories
 
-		wget -O - http://linux.lsdev.sil.org/downloads/sil-testing.gpg | sudo apt-key add -
-		wget -O - http://packages.sil.org/sil.gpg | sudo apt-key add -
+        wget -O - http://linux.lsdev.sil.org/downloads/sil-testing.gpg | sudo apt-key add -
+        wget -O - http://packages.sil.org/sil.gpg | sudo apt-key add -
 
 3. Make sure you have your system set up to look at the main and testing SIL repositories
 
-	Install Synaptic if you haven't (sudo apt-get install synaptic).
+    Install Synaptic if you haven't (sudo apt-get install synaptic).
 
-	You need Synaptic to look in some extra places for components. In Synaptic, go to
-	`Settings->Repositories`, `Other Software` tab. You want to see the following lines (replace
-	`precise` with your distribution version):
+    You need Synaptic to look in some extra places for components. In Synaptic, go to
+    `Settings->Repositories`, `Other Software` tab. You want to see the following lines (replace
+    `precise` with your distribution version):
 
-		http://packages.sil.org/ubuntu precise main
-		http://packages.sil.org/ubuntu precise-experimental main
-		http://linux.lsdev.sil.org/ubuntu precise main
-		http://linux.lsdev.sil.org/ubuntu precise-experimental main
+        http://packages.sil.org/ubuntu precise main
+        http://packages.sil.org/ubuntu precise-experimental main
+        http://linux.lsdev.sil.org/ubuntu precise main
+        http://linux.lsdev.sil.org/ubuntu precise-experimental main
 
-	If some are missing, click add and paste the missing line, then insert 'deb' at the start,
-	then confirm.
+    If some are missing, click add and paste the missing line, then insert 'deb' at the start,
+    then confirm.
 
-	(May help to check for and remove any lines that refer to the obsolete `ppa.palaso.org`, if
-	you've been doing earlier work on SIL stuff.)
+    (May help to check for and remove any lines that refer to the obsolete `ppa.palaso.org`, if
+    you've been doing earlier work on SIL stuff.)
 
 4. Update your system:
 
-		sudo apt-get update
-		sudo apt-get upgrade
+        sudo apt-get update
+        sudo apt-get upgrade
 
 5. Clone the Bloom repository:
 
-		mkdir $HOME/palaso
-		cd $HOME/palaso
-		git clone https://github.com/BloomBooks/BloomDesktop.git
+        mkdir $HOME/palaso
+        cd $HOME/palaso
+        git clone https://github.com/BloomBooks/BloomDesktop.git
 
-	This should leave you in the default branch, which is currently correct for Linux. Don't be
-	misled into activating the Linux branch, which is no longer used.
+    This should leave you in the default branch, which is currently correct for Linux. Don't be
+    misled into activating the Linux branch, which is no longer used.
 
 6. Install MonoDevelop 5 (or later)
 
-	A current MonoDevelop can be found on launchpad: https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop
-	or https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop-beta.
+    A current MonoDevelop can be found on launchpad: https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop
+    or https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop-beta.
 
-	Follow the installation instructions on the launchpad website (currently a link called "Read about installing").
+    Follow the installation instructions on the launchpad website (currently a link called "Read about installing").
 
-	Make a shortcut to launch MonoDevelop (or just use this command line). The shortcut should execute something like this:
+    Make a shortcut to launch MonoDevelop (or just use this command line). The shortcut should execute something like this:
 
-		bash -c 'PATH=/opt/monodevelop/bin:$PATH; \
-			export MONO_ENVIRON="$HOME/palaso/bloom-desktop/environ"; \
-			export MONO_GAC_PREFIX=/opt/monodevelop:/opt/mono4-sil:/usr:/usr/local; \
-			monodevelop-launcher.sh'
+        bash -c 'PATH=/opt/monodevelop/bin:$PATH; \
+            export MONO_ENVIRON="$HOME/palaso/bloom-desktop/environ"; \
+            export MONO_GAC_PREFIX=/opt/monodevelop:/opt/mono4-sil:/usr:/usr/local; \
+            monodevelop-launcher.sh'
 
-	Correct the path in MONO_ENVIRON to point to the Bloom source code directory.
+    Correct the path in MONO_ENVIRON to point to the Bloom source code directory.
 
 7. Install the dependencies needed for Bloom
 
-		cd $HOME/palaso/bloom-desktop/build
-		./install-deps # (Note the initial dot)
+        cd $HOME/palaso/bloom-desktop/build
+        ./install-deps # (Note the initial dot)
 
-	This will also install a custom mono version in `/opt/mono4-sil`. However, to successfully
-	use it with MonoDevelop, you'll need to do some additional steps.
+    This will also install a custom mono version in `/opt/mono4-sil`. However, to successfully
+    use it with MonoDevelop, you'll need to do some additional steps.
 
-	Copy this script to /opt/mono4-sil/bin:
+    Copy this script to /opt/mono4-sil/bin:
 
-		wget https://raw.githubusercontent.com/sillsdev/mono-calgary/develop/mono-sil
-		sudo mv mono4-sil /opt/mono4-sil/bin
-		sudo chmod +x /opt/mono4-sil/bin/mono-sil
+        wget https://raw.githubusercontent.com/sillsdev/mono-calgary/develop/mono-sil
+        sudo mv mono4-sil /opt/mono4-sil/bin
+        sudo chmod +x /opt/mono4-sil/bin/mono-sil
 
-	Delete /opt/mono4-sil/bin/mono and create two symlinks instead:
+    Delete /opt/mono4-sil/bin/mono and create two symlinks instead:
 
-		sudo rm /opt/mono4-sil/bin/mono
-		sudo ln -s /opt/mono4-sil/bin/mono-sgen /opt/mono4-sil/bin/mono-real
-		sudo ln -s /opt/mono4-sil/bin/mono-sil /opt/mono4-sil/bin/mono
+        sudo rm /opt/mono4-sil/bin/mono
+        sudo ln -s /opt/mono4-sil/bin/mono-sgen /opt/mono4-sil/bin/mono-real
+        sudo ln -s /opt/mono4-sil/bin/mono-sil /opt/mono4-sil/bin/mono
 
 8. Get binary dependencies:
 
-		cd $HOME/palaso/bloom-desktop/build
-		./getDependencies-Linux.sh  # (Note the initial dot)
-		cd ..
-		. environ #(note the '.')
-		sudo mozroots --import --sync
+        cd $HOME/palaso/bloom-desktop/build
+        ./getDependencies-Linux.sh  # (Note the initial dot)
+        cd ..
+        . environ #(note the '.')
+        sudo mozroots --import --sync
 
 9. Open solution in MonoDevelop
 
-	Run MonoDevelop using the shortcut. Open the solution BloomLinux.sln. Go to
-	`Edit -> Preferences`, `Packages/Sources`. The list should include
-	`https://www.nuget.org/api/v2/`, and `http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/`
-	(not sure the second is necessary).
+    Run MonoDevelop using the shortcut. Open the solution BloomLinux.sln. Go to
+    `Edit -> Preferences`, `Packages/Sources`. The list should include
+    `https://www.nuget.org/api/v2/`, and `http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/`
+    (not sure the second is necessary).
 
-	Add the /opt/mono4-sil/ as additional runtime in MonoDevelop (`Edit -> Preferences`, `Projects/.NET Runtimes`). Currently, this is 3.0.4.1 (Oct. 2014).
+    Add the /opt/mono4-sil/ as additional runtime in MonoDevelop (`Edit -> Preferences`, `Projects/.NET Runtimes`). Currently, this is 3.0.4.1 (Oct. 2014).
 
-	When you want to run Bloom you'll have to select the /opt/mono4-sil/ as current runtime (Project/Active Runtime).
+    When you want to run Bloom you'll have to select the /opt/mono4-sil/ as current runtime (Project/Active Runtime).
 
-	At this point you should be able to build the whole BloomLinux solution (right-click in
-	Solution pane, choose Build).
+    At this point you should be able to build the whole BloomLinux solution (right-click in
+    Solution pane, choose Build).
 
 10. You'll have to remember to redo the symlink step (end of #7) every time you install a new mono4-sil package. You'll notice quickly if you forget because you get an error saying that it can't find XULRUNNER - that's an indication that it didn't source the environ file, either because the wrong runtime is selected or /opt/mono4-sil/bin/mono points to mono-sgen instead of the wrapper script mono4-sil.
 

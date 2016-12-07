@@ -6,14 +6,14 @@
 
 html
 	head
-		
+
 	body
 		h3(data-panelId='talkingBookTool', data-order='30', data-i18n='EditTab.Toolbox.TalkingBookTool.Heading') Talking Book Tool
 		div(data-panelId='talkingBookTool')
 			div.ui-audioBody
 				div
-					// preload=none prevents the audio element from asking for the audio as soon as it gets a new src value, 
-					// which in BL-3153 was faster than the c# thread writing the file could finish with it. 
+					// preload=none prevents the audio element from asking for the audio as soon as it gets a new src value,
+					// which in BL-3153 was faster than the c# thread writing the file could finish with it.
 					// As an alternative, a settimeout() in the javascript also worked, button
 					// this seems more durable. By the time the user can click Play, we'll be done.
 					audio(id='player', preload='none')
