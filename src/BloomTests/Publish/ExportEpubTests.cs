@@ -550,8 +550,8 @@ namespace BloomTests.Publish
 		/// Content whose display properties resolves to display:None should be removed.
 		/// The default rules on a credits page show original acknowledgments only in national language.
 		/// </summary>
-		[Test, Ignore("I've spent too long trying to understand this test for now. This is why many people say one test per test.. else it becomes had to untangle.")]
-		public void OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved()
+		[Test]
+		public void OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved()
 		{
 			// This test does some real navigation so needs the server to be running.
 			using (GetTestServer())
@@ -566,13 +566,13 @@ namespace BloomTests.Publish
 					extraStyleSheet:
 						"<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 					extraEditGroupClasses: "originalAcknowledgments",
-					extraEditDivClasses: "bloom-contentNational1"); // <----- this is no longer used.
-				MakeEpub("output", "OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved", book);
+					extraEditDivClasses: "bloom-visibility-code-on");
+				MakeEpub("output", "OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved", book);
 				CheckBasicsInManifest();
 				CheckBasicsInPage();
 				//Thread.Sleep(20000);
 
-				Console.WriteLine(System.Xml.Linq.XElement.Parse(_page1Data).ToString());
+				Console.WriteLine(XElement.Parse(_page1Data).ToString());
 
 				var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
