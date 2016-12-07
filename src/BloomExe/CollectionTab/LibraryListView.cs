@@ -214,7 +214,7 @@ namespace Bloom.CollectionTab
 			var selection = (BookSelection)sender;
 			if ((selection.CurrentSelection != null) && (selection.CurrentSelection.BookInfo != null))
 			{
-				HighlightBookButtonAndShowContextMenuButton(selection.CurrentSelection.BookInfo);					
+				HighlightBookButtonAndShowContextMenuButton(selection.CurrentSelection.BookInfo);
 			}
 		}
 
@@ -580,7 +580,7 @@ namespace Bloom.CollectionTab
 
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
-			
+
 			button.Text = ShortenTitleIfNeeded(title, button);
 			button.FlatAppearance.BorderSize = 1;
 			button.FlatAppearance.BorderColor = BackColor;
@@ -1221,7 +1221,7 @@ namespace Bloom.CollectionTab
 
 			// copy files
 			CopyDirectory(SelectedBook.FolderPath, newBookDir);
-			
+
 			// rename the book htm file
 			var oldName = Path.Combine(newBookDir, Path.GetFileName(SelectedBook.GetPathHtmlFile()));
 			var newName = Path.Combine(newBookDir, newBookName + ".htm");

@@ -699,7 +699,7 @@ namespace BloomTests.Book
 			{
 				Assert.Fail(description);
 			}
-			
+
 		}
 
 		/// <summary>

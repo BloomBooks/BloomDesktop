@@ -36,7 +36,7 @@ namespace Bloom.Book
 				{
 					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All,"Image metadata problem", "Bloom had a problem accessing the metadata portion of this image " + path+ "  ref(BL-3214)", e);
 				}
-				
+
 				++completed;
 			}
 

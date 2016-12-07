@@ -36,7 +36,7 @@ namespace Bloom.Book
 		//for use by ErrorBookInfo
 		protected BookInfo()
 		{
-			
+
 		}
 		public BookInfo(string folderPath, bool isEditable)
 		{
@@ -44,7 +44,7 @@ namespace Bloom.Book
 
 			//NB: This was coded in an unfortunate way such that touching almost any property causes a new metadata to be quietly created.
 			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
-			
+
 			var jsonPath = MetaDataPath;
 			if (RobustFile.Exists(jsonPath))
 			{

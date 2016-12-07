@@ -361,7 +361,7 @@ namespace BloomTests.Book
 		[Test]
 		public void ShouldNormallyShowEditable_SituationsWhereVernacularShouldBeShown()
 		{
-			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("xyz", new[] {"V"}, "", "", _collectionSettings.Object), 
+			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("xyz", new[] {"V"}, "", "", _collectionSettings.Object),
 				"The data-default-languages calls for the vernacular ");
 			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("xyz", new[] { "N1","V" }, "", "", _collectionSettings.Object),
 				"The data-default-languages calls for the vernacular ");

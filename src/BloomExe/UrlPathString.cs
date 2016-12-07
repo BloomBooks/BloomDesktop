@@ -43,7 +43,7 @@ namespace Bloom
 			// symbol is ambiguous (like '+'), assume it is unencoded (because that's
 			// the name of the method) but if it's obviously encoded, then
 			// decode it.
-			
+
 			if(!strictlyTreatAsEncoded && Regex.IsMatch(unencoded,"%[A-Fa-f0-9]{2}"))
 					unencoded = HttpUtility.UrlDecode(unencoded);
 			return new UrlPathString(unencoded);

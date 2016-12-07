@@ -32,7 +32,7 @@ namespace Bloom.Api
 			var websocketaddr = "ws://127.0.0.1:" + port;
 			Logger.WriteMinorEvent("Attempting to open a WebSocketServer on " + websocketaddr);
 			_server = new WebSocketServer(websocketaddr);
-			
+
 			try
 			{
 				_server.Start(socket =>

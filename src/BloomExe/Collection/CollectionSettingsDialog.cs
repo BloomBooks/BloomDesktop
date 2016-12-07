@@ -256,7 +256,7 @@ namespace Bloom.Collection
 			LoadPageNumberStyleCombo();
 			LoadBrandingCombo();
 			AdjustFontComboDropdownWidth();
-			
+
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
 		}
@@ -421,7 +421,7 @@ namespace Bloom.Collection
 				_xmatterDescription.Text = "";
 			else
 				_xmatterDescription.Text = ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).GetDescription();
-			
+
 			UpdateDisplay(); //may show restart required, if we have changed but not changed back to the orginal.
 		}
 

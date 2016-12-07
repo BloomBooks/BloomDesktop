@@ -169,7 +169,7 @@ namespace Bloom.MiscUI
 				//from http://stackoverflow.com/a/6893571/723299
 				return Regex.IsMatch(emailAddress, @"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*"
 					+ "@"
-					+ @"((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$"); 
+					+ @"((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$");
 		}
 
 		protected virtual void UpdateDisplay()
@@ -185,7 +185,7 @@ namespace Bloom.MiscUI
 				}
 			}
 
-		
+
 			if (!string.IsNullOrWhiteSpace(_email.Text.Trim()))
 			{
 				_email.ForeColor = IsLegalEmail(_email.Text) ? Color.Black : Color.Red;
@@ -313,7 +313,7 @@ namespace Bloom.MiscUI
 				_youTrackIssue.Summary = string.Format(Summary,_name.Text);
 				_youTrackIssue.Description = GetFullDescriptionContents(false);
 				_youTrackIssueId = _issueManagement.CreateIssue(_youTrackIssue);
-				
+
 				// this could all be done in one go, but I'm doing it in stages so as to increase the
 				// chance of success in bad internet situations
 				if (_includeScreenshot.Checked)
@@ -324,7 +324,7 @@ namespace Bloom.MiscUI
 						AddAttachment(file.Path);
 					}
 				}
-				
+
 				if (Logger.Singleton != null)
 				{
 					try

@@ -855,7 +855,7 @@ namespace Bloom.Book
 
 			// not InnerXml as it may contain things like SILA & LASI that are not valid XML
 			const string kBR = "LINEBREAKHERE";
-			var withBreaksHidden = form.Replace("<br />", kBR).Replace("<br/>", kBR);		
+			var withBreaksHidden = form.Replace("<br />", kBR).Replace("<br/>", kBR);
 
 			//going to innertext means we treat everything literally, for better or worse (definitely safer)
 			node.InnerText = withBreaksHidden;

@@ -142,7 +142,7 @@ namespace Bloom.Book
 			// This is the "code" part of the visibility system: https://goo.gl/EgnSJo
 			foreach (XmlElement group in elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
 			{
-				var dataDefaultLanguages = HtmlDom.GetAttributeValue(group, "data-default-languages").Split(new char[] { ',', ' ' }, 
+				var dataDefaultLanguages = HtmlDom.GetAttributeValue(group, "data-default-languages").Split(new char[] { ',', ' ' },
 					StringSplitOptions.RemoveEmptyEntries);
 
 				//nb: we don't necessarily care that a div is editable or not
@@ -195,11 +195,11 @@ namespace Bloom.Book
 		/// <summary>
 		/// Here, "normally" means unless the user overrides via a .bloom-visibility-user-on/off
 		/// </summary>
-		internal static bool ShouldNormallyShowEditable(string lang, string[] dataDefaultLanguages, 
+		internal static bool ShouldNormallyShowEditable(string lang, string[] dataDefaultLanguages,
 			string contentLanguageIso2, string contentLanguageIso3, // these are effected by the multilingual settings for this book
 			CollectionSettings settings) // use to get the collection's current N1 and N2 in xmatter or other template pages that specify default languages
 		{
-			if (dataDefaultLanguages == null || dataDefaultLanguages.Length == 0 
+			if (dataDefaultLanguages == null || dataDefaultLanguages.Length == 0
 				|| string.IsNullOrWhiteSpace(dataDefaultLanguages[0])
 				|| dataDefaultLanguages[0].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
 			{
@@ -311,7 +311,7 @@ namespace Bloom.Book
 				//OK, now any text in there will belong to the prototype language, so remove it, while retaining everything else
 				StripOutText(newElementInThisLanguage);
 			}
-			newElementInThisLanguage.SetAttribute("lang", isoCode);		
+			newElementInThisLanguage.SetAttribute("lang", isoCode);
 		}
 
 		/// <summary>

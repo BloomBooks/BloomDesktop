@@ -34,7 +34,7 @@ namespace Bloom.Api
 				// plus signs do have a special meaning. So if this is correct, UrlDecode appears to be WRONG in its
 				// handling of + signs. They should be treated literally, not turned into spaces.
 				//no:	return HttpUtility.UrlDecode(urlToDecode);
-				
+
 				// So let's workaround that problem with UrlDecode and still do decoding on the path component:
 				var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+","%2B");
 				return HttpUtility.UrlDecode(pathWithoutLiteralPlusSigns);

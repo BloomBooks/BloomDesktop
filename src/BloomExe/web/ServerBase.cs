@@ -100,7 +100,7 @@ namespace Bloom.Api
 		/// Notifies threads in the _workers pool that there is a request in the _queue
 		/// </summary>
 		private readonly ManualResetEvent _ready;
-		
+
 
 		protected ServerBase()
 		{
@@ -149,7 +149,7 @@ namespace Bloom.Api
 
 			if(!success)
 			{
-				
+
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
 				Logger.WriteEvent("Error: Could not start up internal HTTP Server");
 				Analytics.ReportException(new ApplicationException("Could not start server."));

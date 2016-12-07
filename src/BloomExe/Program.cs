@@ -128,7 +128,7 @@ namespace Bloom
 					Settings.Default.NeedUpgrade = false;
 					Settings.Default.MaximizeWindow = true; // this is needed to force this to be written to the file, where a user can find it to modify it by hand (our video maker)
 					Settings.Default.Save();
-					
+
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
 

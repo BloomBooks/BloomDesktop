@@ -91,7 +91,7 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateDirectory("Traditional-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Traditional-XMatter"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("Traditional-XMatter".CombineForPath("Traditional-XMatter.htm"))).Returns(xMatter.CombineForPath("Traditional-XMatter", "Factory-XMatter.htm"));
 
-		
+
 			_fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectoryWithThrow("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("BigBook-XMatter"));

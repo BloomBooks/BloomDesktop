@@ -213,7 +213,7 @@ namespace Bloom.Book
 				"When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Translator",
 				"When you make a book from a shell, use this box to tell who did the translation.");
-			
+
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.InsideBackCoverTextPrompt",
 				"If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.OutsideBackCoverTextPrompt",
@@ -314,7 +314,7 @@ namespace Bloom.Book
 
 			d.Add("browserRoot", FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot).ToLocalhost());
 
-	
+
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
 			var head = pageDom.RawDom.SelectSingleNode("//head");

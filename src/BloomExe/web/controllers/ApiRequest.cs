@@ -51,7 +51,7 @@ namespace Bloom.Api
 			return ServerBase.GetLocalPathWithoutQuery(this._requestInfo);
 		}
 
-	
+
 		public HttpMethods HttpMethod
 		{
 			get

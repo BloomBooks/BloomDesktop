@@ -117,7 +117,7 @@ namespace Bloom.Publish
 		{
 			_publishWithoutAudio = publishWithoutAudio;
 			Debug.Assert(_stagingFolder == null, "EpubMaker should only be used once");
-			
+
 			//I (JH) kept having trouble making epubs because this kept getting locked.
 			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
 

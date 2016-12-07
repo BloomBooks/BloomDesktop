@@ -272,7 +272,7 @@ namespace Bloom
 			catch (Exception error)
 			{
 				Debug.Fail(error.Message);
-				
+
 // ReSharper disable HeuristicUnreachableCode
 				//Not worth bothering the user. Just reset the values to something reasonable.
 				StartPosition = FormStartPosition.WindowsDefaultLocation;

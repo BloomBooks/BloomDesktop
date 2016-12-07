@@ -11,7 +11,7 @@ namespace Bloom.MiscUI
 	public partial class MarkDownTextBox : UserControl
 	{
 		private  string _markdown="Need to set the property \"MarkDownText\"";
-		
+
 		public MarkDownTextBox()
 		{
 			InitializeComponent();

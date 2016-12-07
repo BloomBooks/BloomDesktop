@@ -284,7 +284,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='id']", 0);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='tpi']", 0);
 		}
-		
+
 		[Test]
 		public void SetImageElementUrl_GivenImg_SetsSrc()
 		{

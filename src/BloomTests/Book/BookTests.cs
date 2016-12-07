@@ -389,7 +389,7 @@ namespace BloomTests.Book
 
 
 				//we're going to reference one stylesheet that is actually available in the template folder, and one that isn't
-				
+
 				var templatePage = MakeTemplatePageThatHasABookWithStylesheets( templateBookFolder, new [] {"foo.css","notthere.css"});
 
 				targetBook.InsertPageAfter(targetBook.GetPages().First(), templatePage);
@@ -783,7 +783,7 @@ namespace BloomTests.Book
 
 			//book.BringBookUpToDate(new NullProgress());
 			var dom = book.GetPreviewHtmlFileForWholeBook();
-			
+
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@style=\"background-image:url('theCover.png')\"]", 1);
 		}
 
@@ -1062,7 +1062,7 @@ namespace BloomTests.Book
 			book.Save();
 			Assert.That(_metadata.Isbn, Is.EqualTo(""));
 		}
-		
+
 		public void Save_UpdatesAllTitles()
 		{
 			_bookDom = new HtmlDom(

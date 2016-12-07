@@ -37,7 +37,7 @@ namespace Bloom.Book
 					//otherwise, just give them a new user prefs
 					userPrefs = null;
 				}
-				
+
 			}
 			if(userPrefs == null)
 				userPrefs = new UserPrefs();
@@ -45,7 +45,7 @@ namespace Bloom.Book
 			userPrefs._loading = false;
 			return userPrefs;
 		}
-		
+
 		/// <summary>
 		/// Used when the directory is changed because the book has been renamed
 		/// </summary>

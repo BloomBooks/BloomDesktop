@@ -509,7 +509,7 @@ namespace Bloom.Api
 					return true;
 				}
 			}
-			
+
 			if (!RobustFile.Exists(path))
 			{
 				// On developer machines, we can lose part of path earlier.  Try one more thing.
@@ -539,7 +539,7 @@ namespace Bloom.Api
 					"favicon.ico", ".map",
 					// Audio files may well be missing because we look for them as soon
 					// as we define an audio ID, but they wont' exist until we record something.
-					"/audio/",					
+					"/audio/",
 					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
 					// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
 					EpubMaker.kEPUBExportFolder.ToLowerInvariant()

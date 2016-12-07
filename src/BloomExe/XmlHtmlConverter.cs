@@ -18,7 +18,7 @@ namespace Bloom
 		private static readonly Regex _emptyElementsWithAttributesRegex = new Regex(@"<([ubi]|em|strong|span)(\s+[^><]+\s*)>(\s*)</\1>");
 		private static readonly Regex _emptyElementsToPreserveRegex = new Regex(@"<(p)\s*>(\s*)</\1>");
 		private static readonly Regex _selfClosingElementsToPreserveRegex = new Regex(@"<(p)(\s*[^><]*\s*)/>");
-		
+
 
 		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
 		{

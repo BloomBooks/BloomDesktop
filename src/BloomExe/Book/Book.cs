@@ -305,7 +305,7 @@ namespace Bloom.Book
 
 			// first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
 			//dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
-			
+
 			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
 			dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
 			// Add this last because currently its document ready function has to execute AFTER the bootstrap call in bloomEditing.ts,
@@ -528,7 +528,7 @@ namespace Bloom.Book
 				"<input type='button' value='"+message+"' href='ReportProblem'></input>");
 
 			builder.Append("</body></html>");
-			
+
 			return new HtmlDom(builder.ToString());
 		}
 
@@ -1604,7 +1604,7 @@ namespace Bloom.Book
 			Require.That(pageElement != null,"Page could not be found: "+page.XPathToDiv);
 			if (pageElement != null)
 				pageElement.InnerXml = XmlHtmlConverter.RemoveEmptySelfClosingTags(pageElement.InnerXml);
-				
+
 			return pageElement as XmlElement;
 		}
 
@@ -1632,7 +1632,7 @@ namespace Bloom.Book
 			BuildPageCache();
 			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == newPageDiv);
 			Guard.AgainstNull(newPage,"could not find the page we just added");
-			
+
 			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
 
 			// If copied page references images, copy them.
@@ -1988,7 +1988,7 @@ namespace Bloom.Book
 				//SHRP collection, and we don't do this, we see lots of sample text because every
 				//bloom-editable has "bloom-content1", even the "Z" language ones.
 				childBook.UpdateEditableAreasOfElement(childBook.OurHtmlDom);
-				
+
 				//add links to the template css needed by the children.
 
 				HtmlDom.AddStylesheetFromAnotherBook(childBook.OurHtmlDom, printingDom);
@@ -2177,7 +2177,7 @@ namespace Bloom.Book
 		{
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
 			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom, _collectionSettings.BrandingProjectName);
-			
+
 			//Logger.WriteEvent("After");
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
 			return result;

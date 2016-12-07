@@ -179,7 +179,7 @@ namespace Bloom.Book
 			{
 				return;
 			}
-			
+
 
 			//just put value into the text of the element
 			if (string.IsNullOrEmpty(valueAttribute))

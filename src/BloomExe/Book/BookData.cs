@@ -296,7 +296,7 @@ namespace Bloom.Book
 			//if we have no topic element in the data-div
 			//leave the field in the page with an empty text.
 			if (!data.TextVariables.TryGetValue("topic", out topicData))
-			{				
+			{
 				return;
 			}
 
@@ -332,7 +332,7 @@ namespace Bloom.Book
 
 			var bestTranslation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", stringId, englishTopic,
 				"this is a book topic", langOfTopicToShowOnCover);
-			
+
 			//NB: in a unit test environment, GetDynamicStringOrEnglish is going to give us the id back, which is annoying.
 			if (bestTranslation == stringId)
 				bestTranslation = englishTopic;
@@ -342,7 +342,7 @@ namespace Bloom.Book
 		}
 
 
-		
+
 		private void UpdateIsbn(BookInfo info)
 		{
 			if (info == null)
@@ -988,7 +988,7 @@ namespace Bloom.Book
 			}
 			return null;
 		}
-	
+
 
 		private void RemoveDataDivElementIfEmptyValue(string key, string value)
 		{
@@ -1002,7 +1002,7 @@ namespace Bloom.Book
 			}
 		}
 
-	
+
 
 		public string GetVariableOrNull(string key, string writingSystem)
 		{
@@ -1062,7 +1062,7 @@ namespace Bloom.Book
 					info.Title =form.Form.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 
 				this.Set("bookTitle", form.Form, form.WritingSystemId);
-				
+
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
 			{

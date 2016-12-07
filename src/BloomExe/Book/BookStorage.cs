@@ -306,7 +306,7 @@ namespace Bloom.Book
 					Logger.WriteEvent("Could not remove unused  image: " + path);
 					//It's not worth bothering the user about, we'll get it someday.
 					//We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
-				}		
+				}
 			}
 		}
 
@@ -682,7 +682,7 @@ namespace Bloom.Book
 				ProcessAccessDeniedError(error);
 				return;
 			}
-		
+
 			if (!RobustFile.Exists(pathToExistingHtml))
 			{
 				var files = new List<string>(Directory.GetFiles(_folderPath));

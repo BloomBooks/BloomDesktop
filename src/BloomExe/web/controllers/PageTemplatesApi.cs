@@ -100,7 +100,7 @@ namespace Bloom.web.controllers
 			{
 				return pngpath;
 			}
-			
+
 			// We don't have an image; try to make one.
 			var templatesDirectoryInTemplateBook = Path.GetDirectoryName(expectedPathOfThumbnailImage);
 			var bookPath = Path.GetDirectoryName(templatesDirectoryInTemplateBook);

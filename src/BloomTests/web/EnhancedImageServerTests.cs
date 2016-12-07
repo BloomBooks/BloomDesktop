@@ -280,7 +280,7 @@ namespace BloomTests.web
 
 			cssFile = Path.Combine(bookPath, "ForUnitTest-XMatter.css");
 			RobustFile.WriteAllText(cssFile, @"This is the one in the book");
-			
+
 			// Factory-XMatter.css
 			cssFile = Path.Combine(bookPath, "Factory-XMatter.css");
 			RobustFile.WriteAllText(cssFile, @".factoryXmatterCssTest{}");

@@ -148,7 +148,7 @@ public class HydrateParameters
 		set { _sizeAndOrientation = value; }
 	}
 
-//	
+//
 //	[Option("xmatter", HelpText = "front/back matter pack to apply. E.g. 'Video', 'Factory'", Required = true)]
 //	public string XMatter { get; set; }
 

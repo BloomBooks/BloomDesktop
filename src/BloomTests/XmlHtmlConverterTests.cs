@@ -150,13 +150,13 @@ namespace BloomTests
 			using (var temp = new TempFile())
 			{
 				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
-				var r = new Regex("<p");				
+				var r = new Regex("<p");
 				var text = File.ReadAllText(temp.Path);
 				var matches = r.Matches(text);
 				Assert.AreEqual(6, matches.Count,text);
 				//this one also exercises XmlHtmlConverter.GetXmlDomFromHtmlFile, so we're not really testing anymore
 				AssertThatXmlIn.HtmlFile(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//p", 6);
-			}			
+			}
 		}
 
 		[Test]

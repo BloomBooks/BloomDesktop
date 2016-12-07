@@ -44,7 +44,7 @@ namespace BloomTests.ImageProcessing
 		{
 			ProcessAndSaveImageIntoFolder_AndTestResults("man.jpg", ImageFormat.Jpeg);
 		}
-		
+
 		[Test]
 		public void ProcessAndSaveImageIntoFolder_OneColor_SavesAsPng()
 		{

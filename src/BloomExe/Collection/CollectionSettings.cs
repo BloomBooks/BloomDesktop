@@ -400,7 +400,7 @@ namespace Bloom.Collection
 				PageNumberStyle = PageNumberStyleKeys.Contains(style) ? style : "Decimal";
 
 				BrandingProjectName = GetValue(library, "BrandingProjectName", "Default");
-				
+
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
 				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());

@@ -247,7 +247,7 @@ namespace Bloom.CollectionTab
 			{
 				_thumbNailer.RebuildThumbNailAsync(book, thumbnailOptions, callback, errorCallback);
 			}
-			
+
 		}
 
 		public void MakeBloomPack(string path, bool forReaderTools = false)
@@ -406,7 +406,7 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		/// <param name="bookPath"></param>
 		private static string GetBookReplacedWithTemplate(string bookPath)
-		{		
+		{
 			//TODO: the following, which is the original code before late in 3.6, just modified the tags in the HTML
 			//Whereas currently, we use the meta.json as the authoritative source.
 			//TODO Should we just get rid of these tags in the HTML? Can they be accessed from javascript? If so,
@@ -553,7 +553,7 @@ namespace Bloom.CollectionTab
 				var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
 				if (newBook == null)
 					return; //This can happen if there is a configuration dialog and the user clicks Cancel
-				
+
 				TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 
 				if (_bookSelection != null)

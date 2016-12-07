@@ -170,7 +170,7 @@ namespace Bloom
 				return GetBrowserDirectory("templates");
 			}
 		}
-		
+
 
 		public static string GetFactoryBookTemplateDirectory(string bookName)
 		{

@@ -84,7 +84,7 @@ namespace Bloom.MiscUI
 
 		public string LineHeight
 		{
-			get { return _lineSpacingCombo.Text; }	
+			get { return _lineSpacingCombo.Text; }
 		}
 
 		private void _tallerLinesCheck_CheckedChanged(object sender, System.EventArgs e)

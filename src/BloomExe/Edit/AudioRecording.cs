@@ -38,7 +38,7 @@ namespace Bloom.Edit
 		private AudioRecorder _recorder;
 #endif
 		BloomWebSocketServer _webSocketServer;
-		
+
 		/// <summary>
 		/// The file we want to record to
 		/// </summary>
@@ -137,7 +137,7 @@ namespace Bloom.Edit
 			sb.Append("}");
 			request.ReplyWithJson(sb.ToString());
 #endif
-			
+
 		}
 
 		/// <summary>
@@ -346,7 +346,7 @@ namespace Bloom.Edit
 #endif
 		}
 
-		
+
 
 		private string GetPathToSegment(string segmentId)
 		{

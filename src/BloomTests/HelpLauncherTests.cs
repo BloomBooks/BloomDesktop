@@ -1,4 +1,4 @@
-﻿
+
 using Bloom;
 
 using NUnit.Framework;

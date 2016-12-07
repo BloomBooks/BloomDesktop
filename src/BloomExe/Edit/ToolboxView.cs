@@ -113,7 +113,7 @@ namespace Bloom.Edit
 		private static void HandleSettings(ApiRequest request)
 		{
 			if(request.HttpMethod != HttpMethods.Get)
-				throw new ApplicationException(request.LocalPath()+" only implements 'get'");	
+				throw new ApplicationException(request.LocalPath()+" only implements 'get'");
 
 			var settings = new Dictionary<string, object>
 			{

@@ -22,7 +22,7 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
-			
+
 			using (var src = new TemporaryFolder("bloom pictures test source"))
 			using (var dest = new TemporaryFolder("bloom picture tests dest"))
 			{
@@ -48,7 +48,7 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
-			
+
 			using (var src = new TemporaryFolder("bloom pictures test source"))
 			using (var dest = new TemporaryFolder("bloom picture tests dest"))
 			{
@@ -95,7 +95,7 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
-			
+
 			using (var src = new TemporaryFolder("bloom pictures test source"))
 			using (var dest = new TemporaryFolder("bloom picture tests dest"))
 			using (var original = MakeSampleTifImage(src.Combine("new.tif")))
@@ -115,7 +115,7 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
-			
+
 			using (var src = new TemporaryFolder("bloom pictures test source"))
 			using (var dest = new TemporaryFolder("bloom picture tests dest"))
 			using (var original = MakeSampleJpegImage(src.Combine("new.jpg")))
@@ -135,7 +135,7 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div id='one' style='background-image:url(\"old.png\")'></div></body></html>");
-			
+
 			using (var src = new TemporaryFolder("bloom pictures test source"))
 			using (var dest = new TemporaryFolder("bloom picture tests dest"))
 			using (var original = MakeSampleJpegImage(src.Combine("new.jpg")))

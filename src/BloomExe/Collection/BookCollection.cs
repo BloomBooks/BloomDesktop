@@ -190,7 +190,7 @@ namespace Bloom.Collection
 				{
 					Logger.WriteError("Error reading "+ jsonPath, readError);
 				}
-				
+
 				//_books.Add(new ErrorBook(e, path, Type == CollectionType.TheOneEditableCollection));
 				_bookInfos.Add(new ErrorBookInfo(folderPath, e){});
 			}

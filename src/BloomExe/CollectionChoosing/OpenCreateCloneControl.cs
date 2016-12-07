@@ -241,7 +241,7 @@ namespace Bloom.CollectionChoosing
 		/// Path(s) to the user's Dropbox folder(s).  It is static because we only want to look these up once.
 		/// </summary>
 		private static List<string> _dropboxFolders;
-	
+
 		/// <summary>
 		/// This method checks 'path' for being in a Dropbox folder.  If so, it displays a warning message.
 		/// </summary>

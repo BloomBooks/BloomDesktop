@@ -59,7 +59,7 @@ namespace Bloom.Api
 
 		private void UpdateBookTemplateMode(bool isTemplateBook)
 		{
-			
+
 		}
 	}
 }

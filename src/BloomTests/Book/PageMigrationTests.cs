@@ -98,7 +98,7 @@ namespace BloomTests.Book
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style' contenteditable='true' lang='en'>
 							English in first block
 						</div>
-			
+
 						<div data-hasqtip='true' class='bloom-editable normal-style' contenteditable='true' lang='pis'>
 							Tok Pisin in first block
 						</div>
@@ -108,7 +108,7 @@ namespace BloomTests.Book
 						<div class='bloom-editable normal-style' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
 						</div>
-			
+
 						<div class='bloom-editable normal-style' contenteditable='true' lang='pis'>
 							Wanfala olman nem blong hem Bilanga barava tol an hem no marit tu.
 						</div>
@@ -327,7 +327,7 @@ namespace BloomTests.Book
 			Assert.IsFalse(updatedPage.OuterXml.Contains("imageOnTop"), "imageOnTop refers to the old fixed-stylesheet way of showing pages");
 		}
 
-		
+
 		/// <summary>
 		/// this is a regression test, from BL-2887
 		/// </summary>

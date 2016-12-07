@@ -25,7 +25,7 @@ namespace Bloom.Edit
 			_model = model;
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
-			
+
 			_thumbNailList.Thumbnailer = thumbnailProvider;
 			_thumbNailList.CanSelect = true;
 			_thumbNailList.PreferPageNumbers = true;
