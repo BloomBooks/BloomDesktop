@@ -46,7 +46,7 @@ namespace Bloom.web
 		public static string LookupUrl(UrlType urlType, bool sandbox = false, bool excludeProtocolPrefix = false)
 		{
 			if (Program.RunningUnitTests && (urlType == UrlType.Parse))
-				return "http://bloom-parse-server-unittest.azurewebsites.net/parse"; //it's fine for the unit test url to be hard-coded, putting in the json buys us nothing.
+				return "https://bloom-parse-server-unittest.azurewebsites.net/parse"; //it's fine for the unit test url to be hard-coded, putting in the json buys us nothing.
 
 			string fullUrl = LookupFullUrl(urlType, sandbox);
 			if (excludeProtocolPrefix)
