@@ -183,8 +183,7 @@ class PageChooser {
     continueCheckBoxChanged(): void {
         if (!this._forChooseLayout) return;
         var cb = $('#convertAnywayCheckbox');
-        var isCurrentSelectionOriginal = this._selectedGridItem.hasClass('disabled');
-        $('#addPageButton').prop('disabled', isCurrentSelectionOriginal || !cb.is(':checked'));
+        $('#addPageButton').prop('disabled', !cb.is(':checked'));
     }
 
     // This is the starting-point method that is invoked to initialize the dialog.
@@ -318,10 +317,6 @@ class PageChooser {
 
             if (currentId === defaultPageToSelect)
                 this._indexOfPageToSelect = index;
-
-            // if we're looking to change the layout, grey out thumbnail corresponding to the layout we already have
-            if (this._forChooseLayout && currentId === this._currentPageLayout)
-                $(currentGridItemHtml).addClass('disabled');
 
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
