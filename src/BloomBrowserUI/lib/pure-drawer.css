@@ -11,123 +11,123 @@
 ## Required ##
 *************/
 html, body {
-  height: 100%;
+    height: 100%;
 }
 
 body {
-  margin: 0;
+    margin: 0;
 }
 
 /**************
 ## Container ##
 **************/
 .pure-container {
-  position: relative;
-  height: 100%;
+    position: relative;
+    height: 100%;
 }
 
 /************
 ## Toggler ##
 ************/
 .pure-toggle {
-  left: -9999px;
-  position: absolute;
-  top: -9999px;
+    left: -9999px;
+    position: absolute;
+    top: -9999px;
 }
 
 .pure-toggle:focus ~ .pure-toggle-label {
-  border-color: transparent; /* JohnT: was 1fc08e; color of ring when closed */
-  color: #ff0000; /* JohnT: was 1fc08e; no effect found*/
+    border-color: transparent; /* JohnT: was 1fc08e; color of ring when closed */
+    color: #ff0000; /* JohnT: was 1fc08e; no effect found*/
 }
 
 .pure-toggle-label {
-  display: none;
-  cursor: pointer;
-  display: block;
-  position: fixed;
-  top: 3px; /* JohnT: was 15 */
-  z-index: 99;
-  color: #ff0000; /* JohnT: was 5d809d; no effect found*/
-  background-color: #333333; /* JohnT: not previously set; fixes a bug in FF29 (BL-2968); should match accordion background */
-  width: 20px; /* JohnT: was 70; these two control overall size of control box. */
-  height: 20px; /* JohnT: was 70 */
-  transition: all 400ms ease-in-out;
-  border: 2px solid transparent; /* JohnT: was 5d809d; initial color of the ring */
-  -o-user-select: none;
-  user-select: none;
+    display: none;
+    cursor: pointer;
+    display: block;
+    position: fixed;
+    top: 3px; /* JohnT: was 15 */
+    z-index: 99;
+    color: #ff0000; /* JohnT: was 5d809d; no effect found*/
+    background-color: #333333; /* JohnT: not previously set; fixes a bug in FF29 (BL-2968); should match accordion background */
+    width: 20px; /* JohnT: was 70; these two control overall size of control box. */
+    height: 20px; /* JohnT: was 70 */
+    transition: all 400ms ease-in-out;
+    border: 2px solid transparent; /* JohnT: was 5d809d; initial color of the ring */
+    -o-user-select: none;
+    user-select: none;
 }
 
 .pure-toggle-label:hover {
-  border-color: transparent; /* JohnT: was #1fc08e; the color the circle goes when hovering before clicked*/
-  color: #ff0000; /* JohnT: was 1fc08e; no effect found */
+    border-color: transparent; /* JohnT: was #1fc08e; the color the circle goes when hovering before clicked*/
+    color: #ff0000; /* JohnT: was 1fc08e; no effect found */
 }
 
 .pure-toggle-label:hover .pure-toggle-icon,
 .pure-toggle-label:hover .pure-toggle-icon:before,
 .pure-toggle-label:hover .pure-toggle-icon:after {
-  background-color: #ffffff; /* JohnT: was #1fc08e; the color the lines go when hovering*/
+    background-color: #ffffff; /* JohnT: was #1fc08e; the color the lines go when hovering*/
 }
 
 .pure-toggle-label .pure-toggle-icon,
 .pure-toggle-label .pure-toggle-icon:before,
 .pure-toggle-label .pure-toggle-icon:after {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  height: 2px; /* JohnT: was 4; the thickness of the lines */
-  width: 15px; /* JohnT: was 35; the length of the lines*/
-  cursor: pointer;
-  background: #ddd; /* JohnT: was 5d809d; color of lines when not hovered*/
-  display: block;
-  content: '';
-  transition: all 500ms ease-in-out;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 2px; /* JohnT: was 4; the thickness of the lines */
+    width: 15px; /* JohnT: was 35; the length of the lines*/
+    cursor: pointer;
+    background: #ddd; /* JohnT: was 5d809d; color of lines when not hovered*/
+    display: block;
+    content: '';
+    transition: all 500ms ease-in-out;
 }
 
 .pure-toggle-label .pure-toggle-icon {
-  transform: translate3d(-50%, -2px, 0); /* JohnT: was 4; positions middle line*/
+    transform: translate3d(-50%, -2px, 0); /* JohnT: was 4; positions middle line*/
 }
 
 .pure-toggle-label .pure-toggle-icon:before {
-  transform: translate3d(-50%, -6px, 0); /* JohnT: was 14 (also on next line); positions top line */
+    transform: translate3d(-50%, -6px, 0); /* JohnT: was 14 (also on next line); positions top line */
 }
 
 .pure-toggle-label .pure-toggle-icon:after {
-  transform: translate3d(-50%, 4px, 0); /* JohnT: was 10 (also on next line); positions bottom line.*/
+    transform: translate3d(-50%, 4px, 0); /* JohnT: was 10 (also on next line); positions bottom line.*/
 }
 
 .pure-toggle-label[data-toggle-label='left'] {
-  left: 15px;
-  right: auto;
+    left: 15px;
+    right: auto;
 }
 
 .pure-toggle-label[data-toggle-label='right'] {
-  right: 4px; /* JohnT: was 28; position of icon on screen  */
-  left: auto;
+    right: 4px; /* JohnT: was 28; position of icon on screen  */
+    left: auto;
 }
 
 .pure-toggle-label[data-toggle-label='top'] {
-  left: 50%;
-  transform: translate3d(-50%, 0, 0);
+    left: 50%;
+    transform: translate3d(-50%, 0, 0);
 }
 
 .pure-toggle[data-toggle='left']:checked ~ .pure-toggle-label:not([data-toggle-label='left']),
 .pure-toggle[data-toggle='right']:checked ~ .pure-toggle-label:not([data-toggle-label='right']),
 .pure-toggle[data-toggle='top']:checked ~ .pure-toggle-label:not([data-toggle-label='top']) {
-  opacity: 0;
-  z-index: -1;
+    opacity: 0;
+    z-index: -1;
 }
 
 .pure-toggle[data-toggle='left']:checked ~ .pure-toggle-label[data-toggle-label='left'],
 .pure-toggle[data-toggle='right']:checked ~ .pure-toggle-label[data-toggle-label='right'],
 .pure-toggle[data-toggle='top']:checked ~ .pure-toggle-label[data-toggle-label='top'] {
-  border-color: transparent; /* JohnT: was  #1fc08e; the color of the ring after clicking*/
-  color: #ff0000; /* JohnT: was 1fc08e; no effect found*/
+    border-color: transparent; /* JohnT: was  #1fc08e; the color of the ring after clicking*/
+    color: #ff0000; /* JohnT: was 1fc08e; no effect found*/
 }
 
 .pure-toggle[data-toggle='left']:checked ~ .pure-toggle-label[data-toggle-label='left'] .pure-toggle-icon,
 .pure-toggle[data-toggle='right']:checked ~ .pure-toggle-label[data-toggle-label='right'] .pure-toggle-icon,
 .pure-toggle[data-toggle='top']:checked ~ .pure-toggle-label[data-toggle-label='top'] .pure-toggle-icon {
-  background-color: transparent;
+    background-color: transparent;
 }
 
 .pure-toggle[data-toggle='left']:checked ~ .pure-toggle-label[data-toggle-label='left'] .pure-toggle-icon:before,
@@ -135,170 +135,170 @@ body {
 .pure-toggle[data-toggle='right']:checked ~ .pure-toggle-label[data-toggle-label='right'] .pure-toggle-icon:before,
 .pure-toggle[data-toggle='right']:checked ~ .pure-toggle-label[data-toggle-label='right'] .pure-toggle-icon:after,
 .pure-toggle[data-toggle='top']:checked ~ .pure-toggle-label[data-toggle-label='top'] .pure-toggle-icon:before, .pure-toggle[data-toggle='top']:checked ~ .pure-toggle-label[data-toggle-label='top'] .pure-toggle-icon:after {
-  top: 0;
+    top: 0;
 }
 
 .pure-toggle[data-toggle='left']:checked ~ .pure-toggle-label[data-toggle-label='left'] .pure-toggle-icon:before,
 .pure-toggle[data-toggle='right']:checked ~ .pure-toggle-label[data-toggle-label='right'] .pure-toggle-icon:before,
 .pure-toggle[data-toggle='top']:checked ~ .pure-toggle-label[data-toggle-label='top'] .pure-toggle-icon:before {
-  transform: translateX(-50%) rotate(45deg);
+    transform: translateX(-50%) rotate(45deg);
 }
 
 .pure-toggle[data-toggle='left']:checked ~ .pure-toggle-label[data-toggle-label='left'] .pure-toggle-icon:after,
 .pure-toggle[data-toggle='right']:checked ~ .pure-toggle-label[data-toggle-label='right'] .pure-toggle-icon:after,
 .pure-toggle[data-toggle='top']:checked ~ .pure-toggle-label[data-toggle-label='top'] .pure-toggle-icon:after {
-  transform: translateX(-50%) translateY(-10px) rotate(-45deg);
-  top: 10px;
+    transform: translateX(-50%) translateY(-10px) rotate(-45deg);
+    top: 10px;
 }
 
 /***********
 ## Drawer ##
 ***********/
 .pure-drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  height: 100%;
-  visibility: hidden;
-  background-color: #333333 /* JohnT: was 374c5d; background for above the accordion when open; should match color set in jquery .ui-widget-content */;
-  transition-property: all;
-  transition-duration: 500ms;
-  transition-timing-function: ease-out;
-  width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    height: 100%;
+    visibility: hidden;
+    background-color: #333333 /* JohnT: was 374c5d; background for above the accordion when open; should match color set in jquery .ui-widget-content */;
+    transition-property: all;
+    transition-duration: 500ms;
+    transition-timing-function: ease-out;
+    width: 100%;
 }
 
 @media only screen and (min-width: 40.063em) {
-  .pure-drawer {
-    width: 200px; /* JohnT: was 300 */
-  }
+    .pure-drawer {
+        width: 200px; /* JohnT: was 300 */
+    }
 }
 
 @media only screen and (min-width: 64.063em) {
-  .pure-drawer {
-    width: 200px; /* JohnT: was 300 */
-  }
+    .pure-drawer {
+        width: 200px; /* JohnT: was 300 */
+    }
 }
 
 .pure-drawer[data-position='right'] {
-  left: auto;
-  right: 0;
+    left: auto;
+    right: 0;
 }
 
 .pure-drawer[data-position='top'] {
-  height: 100%;
-  width: 100%;
+    height: 100%;
+    width: 100%;
 }
 
 @media only screen and (min-width: 40.063em) {
-  .pure-drawer[data-position='top'] {
-    height: 100%;
-  }
+    .pure-drawer[data-position='top'] {
+        height: 100%;
+    }
 }
 
 @media only screen and (min-width: 64.063em) {
-  .pure-drawer[data-position='top'] {
-    height: 100px;
-  }
+    .pure-drawer[data-position='top'] {
+        height: 100px;
+    }
 }
 
 /*********************
 ## Pusher Container ##
 *********************/
 .pure-pusher-container {
-  position: relative;
-  height: 100%;
-  overflow: hidden;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
 }
 
 /***********
 ## Pusher ##
 ***********/
 .pure-pusher {
-  position: relative;
-  height: 100%;
-  overflow-y: auto;
-  left: 0;
-  z-index: 2;
-  background-color: #fff;
-  transition-property: transform;
-  transition-duration: 500ms;
-  transition-timing-function: ease-out;
+    position: relative;
+    height: 100%;
+    overflow-y: auto;
+    left: 0;
+    z-index: 2;
+    background-color: #fff;
+    transition-property: transform;
+    transition-duration: 500ms;
+    transition-timing-function: ease-out;
 }
 
 /*******************
 ## Pusher Overlay ##
 *******************/
 .pure-overlay {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 0;
-  height: 0;
-  opacity: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  transition-property: opacity;
-  transition-duration: 500ms;
-  transition-delay: 500ms;
-  transition-timing-function: ease-in-out;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    transition-property: opacity;
+    transition-duration: 500ms;
+    transition-delay: 500ms;
+    transition-timing-function: ease-in-out;
 }
 
 .pure-toggle[data-toggle='left']:checked ~ .pure-overlay[data-overlay='left'] {
-  left: 100%;
+    left: 100%;
 }
 
 @media only screen and (min-width: 40.063em) {
-  .pure-toggle[data-toggle='left']:checked ~ .pure-overlay[data-overlay='left'] {
-    left: 300px;
-  }
+    .pure-toggle[data-toggle='left']:checked ~ .pure-overlay[data-overlay='left'] {
+        left: 300px;
+    }
 }
 
 @media only screen and (min-width: 64.063em) {
-  .pure-toggle[data-toggle='left']:checked ~ .pure-overlay[data-overlay='left'] {
-    left: 300px;
-  }
+    .pure-toggle[data-toggle='left']:checked ~ .pure-overlay[data-overlay='left'] {
+        left: 300px;
+    }
 }
 
 .pure-toggle[data-toggle='right']:checked ~ .pure-overlay[data-overlay='right'] {
-  right: 100%;
+    right: 100%;
 }
 
 @media only screen and (min-width: 40.063em) {
-  .pure-toggle[data-toggle='right']:checked ~ .pure-overlay[data-overlay='right'] {
-    right: 300px;
-  }
+    .pure-toggle[data-toggle='right']:checked ~ .pure-overlay[data-overlay='right'] {
+        right: 300px;
+    }
 }
 
 @media only screen and (min-width: 64.063em) {
-  .pure-toggle[data-toggle='right']:checked ~ .pure-overlay[data-overlay='right'] {
-    right: 300px;
-  }
+    .pure-toggle[data-toggle='right']:checked ~ .pure-overlay[data-overlay='right'] {
+        right: 300px;
+    }
 }
 
 .pure-toggle[data-toggle='top']:checked ~ .pure-overlay[data-overlay='top'] {
-  top: 100%;
+    top: 100%;
 }
 
 @media only screen and (min-width: 40.063em) {
-  .pure-toggle[data-toggle='top']:checked ~ .pure-overlay[data-overlay='top'] {
-    top: 100%;
-  }
+    .pure-toggle[data-toggle='top']:checked ~ .pure-overlay[data-overlay='top'] {
+        top: 100%;
+    }
 }
 
 @media only screen and (min-width: 64.063em) {
-  .pure-toggle[data-toggle='top']:checked ~ .pure-overlay[data-overlay='top'] {
-    top: 100px;
-  }
+    .pure-toggle[data-toggle='top']:checked ~ .pure-overlay[data-overlay='top'] {
+        top: 100px;
+    }
 }
 
 .pure-toggle[data-toggle='left']:checked ~ .pure-overlay[data-overlay='left'],
 .pure-toggle[data-toggle='right']:checked ~ .pure-overlay[data-overlay='right'],
 .pure-toggle[data-toggle='top']:checked ~ .pure-overlay[data-overlay='top'] {
-  width: 100%;
-  height: 100%;
-  opacity: 1;
-  z-index: 2;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    z-index: 2;
 }
 
 /*****************************
@@ -306,33 +306,33 @@ body {
 *****************************/
 /* DRAWER */
 [data-effect='pure-effect-slide'] .pure-drawer {
-  z-index: 3;
-  transition-duration: 500ms;
+    z-index: 3;
+    transition-duration: 500ms;
 }
 
 [data-effect='pure-effect-slide'] .pure-drawer[data-position='left'] {
-  transform: translate3d(-100%, 0, 0);
+    transform: translate3d(-100%, 0, 0);
 }
 
 [data-effect='pure-effect-slide'] .pure-drawer[data-position='right'] {
-  transform: translate3d(100%, 0, 0);
+    transform: translate3d(100%, 0, 0);
 }
 
 [data-effect='pure-effect-slide'] .pure-drawer[data-position='top'] {
-  transform: translate3d(0, -100%, 0);
+    transform: translate3d(0, -100%, 0);
 }
 
 [data-effect='pure-effect-slide'] .pure-toggle[data-toggle='left']:checked ~ .pure-drawer[data-position='left'],
 [data-effect='pure-effect-slide'] .pure-toggle[data-toggle='right']:checked ~ .pure-drawer[data-position='right'],
 [data-effect='pure-effect-slide'] .pure-toggle[data-toggle='top']:checked ~ .pure-drawer[data-position='top'] {
-  visibility: visible;
-  transform: translate3d(0, 0, 0);
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
 }
 
 /* OVERLAY */
 [data-effect='pure-effect-slide'] .pure-overlay {
-  transition-duration: 500ms;
-  transition-delay: 250ms;
+    transition-duration: 500ms;
+    transition-delay: 250ms;
 }
 
 /*********************
@@ -340,83 +340,83 @@ body {
 *********************/
 /* DRAWER */
 [data-effect='pure-effect-push'] .pure-drawer {
-  transition-duration: 500ms;
+    transition-duration: 500ms;
 }
 
 [data-effect='pure-effect-push'] .pure-drawer[data-position='left'] {
-  transform: translate3d(-100%, 0, 0);
+    transform: translate3d(-100%, 0, 0);
 }
 
 [data-effect='pure-effect-push'] .pure-drawer[data-position='right'] {
-  transform: translate3d(100%, 0, 0);
+    transform: translate3d(100%, 0, 0);
 }
 
 [data-effect='pure-effect-push'] .pure-drawer[data-position='top'] {
-  transform: translate3d(0, -100%, 0);
+    transform: translate3d(0, -100%, 0);
 }
 
 [data-effect='pure-effect-push'] .pure-toggle[data-toggle='left']:checked ~ .pure-drawer[data-position='left'],
 [data-effect='pure-effect-push'] .pure-toggle[data-toggle='right']:checked ~ .pure-drawer[data-position='right'],
 [data-effect='pure-effect-push'] .pure-toggle[data-toggle='top']:checked ~ .pure-drawer[data-position='top'] {
-  visibility: visible;
-  transform: translate3d(0, 0, 0);
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
 }
 
 /* PUSHER */
 [data-effect='pure-effect-push'] .pure-pusher-container .pure-pusher {
-          transition-duration: 500ms;
+                    transition-duration: 500ms;
 }
 
 [data-effect='pure-effect-push'] .pure-toggle[data-toggle='left']:checked ~ .pure-pusher-container .pure-pusher {
-  transform: translate3d(100%, 0, 0);
+    transform: translate3d(100%, 0, 0);
 }
 
 @media only screen and (min-width: 40.063em) {
-  [data-effect='pure-effect-push'] .pure-toggle[data-toggle='left']:checked ~ .pure-pusher-container .pure-pusher {
-    transform: translate3d(300px, 0, 0);
-  }
+    [data-effect='pure-effect-push'] .pure-toggle[data-toggle='left']:checked ~ .pure-pusher-container .pure-pusher {
+        transform: translate3d(300px, 0, 0);
+    }
 }
 
 @media only screen and (min-width: 64.063em) {
-  [data-effect='pure-effect-push'] .pure-toggle[data-toggle='left']:checked ~ .pure-pusher-container .pure-pusher {
-    transform: translate3d(300px, 0, 0);
-  }
+    [data-effect='pure-effect-push'] .pure-toggle[data-toggle='left']:checked ~ .pure-pusher-container .pure-pusher {
+        transform: translate3d(300px, 0, 0);
+    }
 }
 
 [data-effect='pure-effect-push'] .pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container .pure-pusher {
-  transform: translate3d(-100%, 0, 0);
+    transform: translate3d(-100%, 0, 0);
 }
 
 @media only screen and (min-width: 40.063em) {
-  [data-effect='pure-effect-push'] .pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container .pure-pusher {
-    transform: translate3d(-300px, 0, 0);
-  }
+    [data-effect='pure-effect-push'] .pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container .pure-pusher {
+        transform: translate3d(-300px, 0, 0);
+    }
 }
 
 @media only screen and (min-width: 64.063em) {
-  [data-effect='pure-effect-push'] .pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container .pure-pusher {
-    transform: translate3d(-300px, 0, 0);
-  }
+    [data-effect='pure-effect-push'] .pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container .pure-pusher {
+        transform: translate3d(-300px, 0, 0);
+    }
 }
 
 [data-effect='pure-effect-push'] .pure-toggle[data-toggle='top']:checked ~ .pure-pusher-container .pure-pusher {
-  transform: translate3d(0, 100%, 0);
+    transform: translate3d(0, 100%, 0);
 }
 
 @media only screen and (min-width: 40.063em) {
-  [data-effect='pure-effect-push'] .pure-toggle[data-toggle='top']:checked ~ .pure-pusher-container .pure-pusher {
-    transform: translate3d(0, 100%, 0);
-  }
+    [data-effect='pure-effect-push'] .pure-toggle[data-toggle='top']:checked ~ .pure-pusher-container .pure-pusher {
+        transform: translate3d(0, 100%, 0);
+    }
 }
 
 @media only screen and (min-width: 64.063em) {
-  [data-effect='pure-effect-push'] .pure-toggle[data-toggle='top']:checked ~ .pure-pusher-container .pure-pusher {
-    transform: translate3d(0, 100px, 0);
-  }
+    [data-effect='pure-effect-push'] .pure-toggle[data-toggle='top']:checked ~ .pure-pusher-container .pure-pusher {
+        transform: translate3d(0, 100px, 0);
+    }
 }
 
 /* OVERLAY */
 [data-effect='pure-effect-push'] .pure-overlay {
-   transition-duration: 500ms;
-   transition-delay: 250ms;
+     transition-duration: 500ms;
+     transition-delay: 250ms;
 }

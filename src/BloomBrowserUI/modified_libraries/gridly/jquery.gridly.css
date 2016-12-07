@@ -3,8 +3,8 @@
  *  1.1.4
  */
 .gridly, .gridly > :not(.dragging) {
-  -webkit-transition: all 0.4s ease-in-out;
-  -moz-transition: all 0.4s ease-in-out;
-  transition: all 0.4s ease-in-out; }
+    -webkit-transition: all 0.4s ease-in-out;
+    -moz-transition: all 0.4s ease-in-out;
+    transition: all 0.4s ease-in-out; }
 .gridly .dragging {
-  z-index: 800; }
+    z-index: 800; }

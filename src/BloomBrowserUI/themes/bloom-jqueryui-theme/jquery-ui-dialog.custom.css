@@ -5,18 +5,18 @@ div.ui-dialog textarea, div.ui-dialog input[type="text"] { border: 1px solid #99
 div.ui-dialog input[type="text"] { padding: 2px; }
 
 div.ui-dialog div.ui-dialog-titlebar {
-	background: white;
-	border: 0;
-	color: #000;
-	border-bottom: 1px solid #666;
+    background: white;
+    border: 0;
+    color: #000;
+    border-bottom: 1px solid #666;
 }
 
 div.ui-dialog div.ui-dialog-content { background: white; padding: 0; margin: 0; }
 
 div.ui-dialog button.ui-dialog-titlebar-close {
-	background: #aaa;
-	border: 1px solid #666;
-	right: 8px;
+    background: #aaa;
+    border: 1px solid #666;
+    right: 8px;
 }
 
 div.ui-dialog button.left-button {
@@ -44,11 +44,11 @@ div.ui-dialog div.ui-dialog-buttonset button.ui-button span.ui-button-text { pad
  * http://docs.jquery.com/UI/Tabs#theming
  */
 div.ui-tabs {
-	position: relative;
-	padding: 0; zoom: 1;
-	background: #fff;
-	font-family: "Segoe UI", Arial, sans-serif;
-	font-size: 11px;
+    position: relative;
+    padding: 0; zoom: 1;
+    background: #fff;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 11px;
 }
 
 div.ui-tabs ul.ui-tabs-nav li.ui-state-default { border: 1px solid #666; font-size: 12px; font-weight: 700; }

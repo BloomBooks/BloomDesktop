@@ -1,44 +1,44 @@
 .long-press-popup {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  text-align: center;
-  background: #96668F;
-  padding-top: 10px;
-  margin:0;
-  z-index: 2001;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    background: #96668F;
+    padding-top: 10px;
+    margin:0;
+    z-index: 2001;
 }
 .long-press-popup li {
-  display:inline-block;
-  list-style: none;
-  padding: 0px 15px 10px 15px;
-  margin-right: 20px;
-  margin-bottom: 10px;
-  background: #000000;
-  cursor:pointer;
-  color: white;
-  border: solid 4px black;
-  border-radius: 12px;
-  font-size: 24pt;
+    display:inline-block;
+    list-style: none;
+    padding: 0px 15px 10px 15px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    background: #000000;
+    cursor:pointer;
+    color: white;
+    border: solid 4px black;
+    border-radius: 12px;
+    font-size: 24pt;
 
-  position: relative;/* without this, we've got 'static' and shortcut letters can't be posititioned*/
+    position: relative;/* without this, we've got 'static' and shortcut letters can't be posititioned*/
 }
 .long-press-popup li::before {
-  content: attr(data-shortcut);
-  position: absolute;
-  font-size: 8pt;
-  bottom: 0;
-  right: 0;
-  color: #96668F;
+    content: attr(data-shortcut);
+    position: absolute;
+    font-size: 8pt;
+    bottom: 0;
+    right: 0;
+    color: #96668F;
 }
 .long-press-popup .selected {
-  border-color: white;
-  -webkit-box-shadow: 0 0 18px rgba(255, 255, 255, 0.75);
-  -moz-box-shadow:    0 0 18px rgba(255, 255, 255, 0.75);
-  box-shadow:         0 0 18px rgba(255, 255, 255, 0.75);
+    border-color: white;
+    -webkit-box-shadow: 0 0 18px rgba(255, 255, 255, 0.75);
+    -moz-box-shadow:    0 0 18px rgba(255, 255, 255, 0.75);
+    box-shadow:         0 0 18px rgba(255, 255, 255, 0.75);
 }
 .long-press-popup .instructions {
-    font-family: Segoe UI, sans-serif;
-    font-size: 12pt;
+        font-family: Segoe UI, sans-serif;
+        font-size: 12pt;
 }
