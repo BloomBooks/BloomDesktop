@@ -2,7 +2,7 @@
 import * as jQuery from 'jquery';
 
 interface JQuery {
-    onSafe(eventName: string, data?: any, handler?: any)
+        onSafe(eventName: string, data?: any, handler?: any)
 }
 
 
@@ -15,12 +15,12 @@ interface JQuery {
  */
 $.fn.onSafe = function(eventName, data, handler) {
 
-    this.each(function() {
-        if (data)
-            $(this).off(eventName).on(eventName, data, handler);
-        else
-            $(this).off(eventName).on(eventName, handler);
-    });
+        this.each(function() {
+                if (data)
+                        $(this).off(eventName).on(eventName, data, handler);
+                else
+                        $(this).off(eventName).on(eventName, handler);
+        });
 
-    return this;
+        return this;
 };

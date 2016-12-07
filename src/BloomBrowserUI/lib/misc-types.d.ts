@@ -6,13 +6,13 @@
 declare function WebFXTabPane(el: HTMLElement, bUseCookie?: boolean, selectFn?: (e: HTMLElement) => any): void;
 
 interface String {
-  startsWith(str: string): boolean
+    startsWith(str: string): boolean
 }
 
 interface Window {
-  postMessage(message: string, context: any): void;
+    postMessage(message: string, context: any): void;
 }
 
 interface longPressInterface extends JQuery {
-  longPress(options?: any): JQuery;
+    longPress(options?: any): JQuery;
 }

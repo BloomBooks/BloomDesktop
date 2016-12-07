@@ -5,7 +5,7 @@ import theOneLocalizationManager from './localizationManager/localizationManager
 
 
  interface JQuery {
-    localize(callbackDone?: Function): void;
+        localize(callbackDone?: Function): void;
 }
 /**
  * jquery.i18n.custom.js
@@ -20,34 +20,34 @@ import theOneLocalizationManager from './localizationManager/localizationManager
  */
 (function($) {
 
-  /**
-   *
-   * @param [callbackDone] Optional function to call when done.
-   */
-  $.fn.localize = function(callbackDone?: any) {
+    /**
+     *
+     * @param [callbackDone] Optional function to call when done.
+     */
+    $.fn.localize = function(callbackDone?: any) {
 
-    // get all the localization keys not already in the dictionary
-    var d = {};
-    this.each(function() {
-      var key = this.dataset['i18n'];
-      if (!theOneLocalizationManager.dictionary[key])
-        d[key] = $(this).text();
-    });
+        // get all the localization keys not already in the dictionary
+        var d = {};
+        this.each(function() {
+            var key = this.dataset['i18n'];
+            if (!theOneLocalizationManager.dictionary[key])
+                d[key] = $(this).text();
+        });
 
-    if (Object.keys(d).length > 0) {
-      // get the translations and localize
-      theOneLocalizationManager.loadStrings(d, this, callbackDone);
-    }
-    else {
-      // just localize
-      this.each(function() {
-        theOneLocalizationManager.setElementText(this);
-      });
+        if (Object.keys(d).length > 0) {
+            // get the translations and localize
+            theOneLocalizationManager.loadStrings(d, this, callbackDone);
+        }
+        else {
+            // just localize
+            this.each(function() {
+                theOneLocalizationManager.setElementText(this);
+            });
 
-      if (typeof callbackDone === 'function') callbackDone();
-    }
+            if (typeof callbackDone === 'function') callbackDone();
+        }
 
 
-  };
+    };
 
 }(jQuery));

@@ -20,17 +20,17 @@ import {origamiUndo} from './js/origami';
 export {origamiUndo}
 
 var styleSheets = [
-    'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
-    'themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css',
-    'lib/jquery.qtip.css',
-    'bookEdit/css/qtipOverrides.css',
-    'js/toolbar/jquery.toolbars.css',
-    'bookEdit/css/origami.css',
-    'bookEdit/css/tab.winclassic.css',
-    'StyleEditor/StyleEditor.css',
-    'bookEdit/css/bloomDialog.css',
-    'lib/long-press/longpress.css',
-    'bookEdit/toolbox/talkingBook/audioRecording.css'
+        'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
+        'themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css',
+        'lib/jquery.qtip.css',
+        'bookEdit/css/qtipOverrides.css',
+        'js/toolbar/jquery.toolbars.css',
+        'bookEdit/css/origami.css',
+        'bookEdit/css/tab.winclassic.css',
+        'StyleEditor/StyleEditor.css',
+        'bookEdit/css/bloomDialog.css',
+        'lib/long-press/longpress.css',
+        'bookEdit/toolbox/talkingBook/audioRecording.css'
 ];
 
 // This is using an implementation secret of a particular version of ckeditor; but it seems to
@@ -38,23 +38,23 @@ var styleSheets = [
 // And we really NEED to get at the ckeditor undo mechanism, since ckeditor intercepts paste
 // in such a way that after a paste the C# browser object answers false to CanUndo.
 export function ckeditorCanUndo(): boolean {
-  // review: do we need to examine all instances?
-  if (CKEDITOR && CKEDITOR.currentInstance
-    && (<any>CKEDITOR.currentInstance).undoManager
-    && (<any>CKEDITOR.currentInstance).undoManager.undoable()) {
-    return true;
-  }
-  return false;
+    // review: do we need to examine all instances?
+    if (CKEDITOR && CKEDITOR.currentInstance
+        && (<any>CKEDITOR.currentInstance).undoManager
+        && (<any>CKEDITOR.currentInstance).undoManager.undoable()) {
+        return true;
+    }
+    return false;
 }
 
 export function ckeditorUndo() {
-  // review: do we need to examine all instances?
-  (<any>CKEDITOR.currentInstance).undoManager.undo();
+    // review: do we need to examine all instances?
+    (<any>CKEDITOR.currentInstance).undoManager.undo();
 }
 
 
 for (var j = 0; j < styleSheets.length; j++) {
-    document.write('<link rel="stylesheet" type="text/css" href="/bloom/' + styleSheets[j] + '">');
+        document.write('<link rel="stylesheet" type="text/css" href="/bloom/' + styleSheets[j] + '">');
 }
 
 
@@ -73,13 +73,13 @@ import TopicChooser from './TopicChooser/TopicChooser';
 
 //ShowTopicChooser() is called by a script tag on a <a> element in a tooltip
 window['ShowTopicChooser'] = () => {
-    TopicChooser.showTopicChooser();
+        TopicChooser.showTopicChooser();
 }
 
 $(document).ready(function() {
 
-     $('body').find('*[data-i18n]').localize();
-     bootstrap();
+         $('body').find('*[data-i18n]').localize();
+         bootstrap();
 });
 
 export function SayHello() { alert('hello from editable page frame.'); }

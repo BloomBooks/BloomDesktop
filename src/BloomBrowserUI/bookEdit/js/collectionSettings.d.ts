@@ -4,11 +4,11 @@
 //declare function GetSettings(): settingsObject;
 
 interface settingsObject {
-  isSourceCollection: boolean;
-  languageForNewTextBoxes: string;
-  defaultSourceLanguage: string;
-  currentCollectionLanguage2: string;
-  currentCollectionLanguage3: string;
-  browserRoot: string;
-  topics: string[];
+    isSourceCollection: boolean;
+    languageForNewTextBoxes: string;
+    defaultSourceLanguage: string;
+    currentCollectionLanguage2: string;
+    currentCollectionLanguage3: string;
+    browserRoot: string;
+    topics: string[];
 }

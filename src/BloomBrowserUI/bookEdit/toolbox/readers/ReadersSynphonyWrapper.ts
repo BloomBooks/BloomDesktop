@@ -10,97 +10,97 @@ import * as _ from 'underscore';
 
 export default class ReadersSynphonyWrapper {
 
-  stages: ReaderStage[] = [];
-  levels: ReaderLevel[] = [];
-  source: ReaderSettings;
+    stages: ReaderStage[] = [];
+    levels: ReaderLevel[] = [];
+    source: ReaderSettings;
 
-  /**
-   *
-   * @param fileContent
-   */
-  loadSettings(fileContent): void {
+    /**
+     *
+     * @param fileContent
+     */
+    loadSettings(fileContent): void {
 
-    //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
+        //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
 
-    if (!fileContent) return;
+        if (!fileContent) return;
 
-    this.source = <ReaderSettings>jQuery.extend(new ReaderSettings(), fileContent);
+        this.source = <ReaderSettings>jQuery.extend(new ReaderSettings(), fileContent);
 
-    if (this.source.letters !== '') {
-      theOneLanguageDataInstance.addGrapheme(this.source.letters.split(' '));
-      theOneLanguageDataInstance.addWord(this.source.moreWords.split(' '));
-      theOneLanguageDataInstance.LanguageSortOrder = this.source.letters.split(' ');
+        if (this.source.letters !== '') {
+            theOneLanguageDataInstance.addGrapheme(this.source.letters.split(' '));
+            theOneLanguageDataInstance.addWord(this.source.moreWords.split(' '));
+            theOneLanguageDataInstance.LanguageSortOrder = this.source.letters.split(' ');
+        }
+
+        var stgs = this.source.stages;
+        if (stgs) {
+            this.stages = [];
+            for (var j = 0; j < stgs.length; j++) {
+                this.AddStage(<ReaderStage>jQuery.extend(true, new ReaderStage((j+1).toString()), stgs[j]));
+            }
+        }
+
+        var lvls = this.source.levels;
+        if (lvls) {
+            this.levels = [];
+            for (var i = 0; i < lvls.length; i++) {
+                this.addLevel(<ReaderLevel>jQuery.extend(true, new ReaderLevel((i+1).toString()), lvls[i]));
+            }
+        }
     }
 
-    var stgs = this.source.stages;
-    if (stgs) {
-      this.stages = [];
-      for (var j = 0; j < stgs.length; j++) {
-        this.AddStage(<ReaderStage>jQuery.extend(true, new ReaderStage((j+1).toString()), stgs[j]));
-      }
+    loadFromLangData(langData: LanguageData): void {
+
+        if (!this.source) this.source = new ReaderSettings();
+
+        if (this.source.letters === '') {
+
+            var sorted = langData.LanguageSortOrder.join(' ').toLowerCase().split(' ');
+            sorted = _.uniq(sorted);
+
+            this.source.letters = sorted.join(' ');
+        }
     }
 
-    var lvls = this.source.levels;
-    if (lvls) {
-      this.levels = [];
-      for (var i = 0; i < lvls.length; i++) {
-        this.addLevel(<ReaderLevel>jQuery.extend(true, new ReaderLevel((i+1).toString()), lvls[i]));
-      }
+    // This is at least useful for testing; maybe for real use.
+    AddStage(stage: ReaderStage): void {
+        this.stages.push(stage);
     }
-  }
 
-  loadFromLangData(langData: LanguageData): void {
+    /**
+     * Add a list of words to the lang_data object
+     * @param {Object} words The keys are the words, and the values are the counts
+     */
+    static addWords(words: Object) {
 
-    if (!this.source) this.source = new ReaderSettings();
+        if (!words) return;
 
-    if (this.source.letters === '') {
+        var wordNames = Object.keys(words);
 
-      var sorted = langData.LanguageSortOrder.join(' ').toLowerCase().split(' ');
-      sorted = _.uniq(sorted);
-
-      this.source.letters = sorted.join(' ');
+        //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
+        for (var i = 0; i < wordNames.length; i++) {
+            theOneLanguageDataInstance.addWord(wordNames[i], words[wordNames[i]]);
+        }
     }
-  }
 
-  // This is at least useful for testing; maybe for real use.
-  AddStage(stage: ReaderStage): void {
-    this.stages.push(stage);
-  }
+    /**
+     *
+     * @param {int} [stageNumber] Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
+     * @returns {ReaderStage[]} An array of ReaderStage objects
+     */
+    getStages(stageNumber?: number): ReaderStage[] {
 
-  /**
-   * Add a list of words to the lang_data object
-   * @param {Object} words The keys are the words, and the values are the counts
-   */
-  static addWords(words: Object) {
-
-    if (!words) return;
-
-    var wordNames = Object.keys(words);
-
-    //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
-    for (var i = 0; i < wordNames.length; i++) {
-      theOneLanguageDataInstance.addWord(wordNames[i], words[wordNames[i]]);
+        if (typeof stageNumber === 'undefined')
+            return this.stages;
+        else
+            return _.first(this.stages, stageNumber);
     }
-  }
 
-  /**
-   *
-   * @param {int} [stageNumber] Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
-   * @returns {ReaderStage[]} An array of ReaderStage objects
-   */
-  getStages(stageNumber?: number): ReaderStage[] {
+    getLevels(): ReaderLevel[] {
+        return this.levels;
+    }
 
-    if (typeof stageNumber === 'undefined')
-      return this.stages;
-    else
-      return _.first(this.stages, stageNumber);
-  }
-
-  getLevels(): ReaderLevel[] {
-    return this.levels;
-  }
-
-  addLevel(aLevel: ReaderLevel): void {
-    this.levels.push(aLevel);
-  }
+    addLevel(aLevel: ReaderLevel): void {
+        this.levels.push(aLevel);
+    }
 }
