@@ -87,6 +87,7 @@ textarea, .bloom-editable
 	line-height: @defaultLineHeight;
 	min-height:  @defaultLineHeight + .3em;
 	width: 100%;
+	height: 100%;
 }
 
 /* The following has been split out from the above rule because it should probably be removed,
@@ -141,20 +142,6 @@ div#bloomDataDiv
 .centerJustify
 {
 	text-align: center;
-}
-
-/*Unless otherwise positioned and made visible, hide all the language elements in there*/
-.bloom-editable
-{
-	display: none;
-	height: 100%;
-}
-
-/*Outside of xmatter, we assume that if bloom gives it a content tag, then it should be visible*/
-.bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) {
-  .bloom-content1, .bloom-content2, .bloom-content3 {
-    display:block;//block is just "normal" for paragraphs.
-  }
 }
 
 /*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
@@ -532,4 +519,50 @@ h2 {
 	//	height: 99%;
 	//	width: 99%;
 	//}
+}
+
+
+/* ------------------------------------------------------
+/*		Visibility System
+/*		https://goo.gl/EgnSJo
+/* ------------------------------------------------------*/
+
+//Each bloom-translationGroup has 0 or more div.bloom-editables.
+//Each .bloom-editable has a lang attribute to tell us what language it is in.
+//Each of these is assumed to be unwanted:
+.bloom-editable	{
+	display: none;
+}
+// The code reads the (bloom-visibility-template-langs + collection langs + multlingual settings)
+// and set this if it determines that this would normally be visible:
+.bloom-editable.bloom-visibility-code-on {
+	display: block;
+}
+//If not the user can still make it visible:
+.bloom-editable.bloom-visibility-user-on {
+	display: block;
+}
+//And the user can alwyas hide it
+.bloom-editable.bloom-visibility-user-off {
+	display: none !important;
+}
+.bloom-translationGroup {
+	display: flex;
+	flex-direction: column;
+}
+// And now we can control the order using Flexbox "order" attribute:
+//sadly, as of Dec 2016, browsers do not implement the full attr() spec, so this rule is rejected
+// [data-language-order]{
+// 	order:  attr(data-language-order integer);
+// }
+// Note, we could still use a data-* attribute and do this instead: [data-language-order='1']
+// But for now, we're sticking with the older .bloom-content* classes.
+.bloom-content1 {
+	order: 1;
+}
+.bloom-content2 {
+	order: 2;
+}
+.bloom-content3 {
+	order: 3;
 }

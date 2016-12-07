@@ -2106,8 +2106,6 @@ namespace Bloom.Book
 		public void UpdateEditableAreasOfElement(HtmlDom dom)
 		{
 			var language1Iso639Code = _collectionSettings.Language1Iso639Code;
-			var language2Iso639Code = _collectionSettings.Language2Iso639Code;
-			var language3Iso639Code = _collectionSettings.Language3Iso639Code;
 			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
 			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
 			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))

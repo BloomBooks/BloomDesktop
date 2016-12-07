@@ -93,26 +93,26 @@ namespace BloomTests.Book
 		public void MigratePictureInMiddle_CopiesBothTextsAndImage()
 		{
 			SetDom(@"<div class='bloom-page' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398383' id='thePage'>
-			   <div class='marginBox'>
-					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-leadingElement normal-style'>
-						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='en'>
+				<div class='marginBox'>
+					<div class='bloom-translationGroup bloom-leadingElement normal-style'>
+						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style' contenteditable='true' lang='en'>
 							English in first block
 						</div>
-
+			
 						<div data-hasqtip='true' class='bloom-editable normal-style' contenteditable='true' lang='pis'>
 							Tok Pisin in first block
 						</div>
 					</div>
 					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
-					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
-						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='en'>
+					<div class='bloom-translationGroup bloom-trailingElement normal-style'>
+						<div class='bloom-editable normal-style' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
 						</div>
-
-						<div data-hasqtip='true' class='bloom-editable normal-style' contenteditable='true' lang='pis'>
+			
+						<div class='bloom-editable normal-style' contenteditable='true' lang='pis'>
 							Wanfala olman nem blong hem Bilanga barava tol an hem no marit tu.
 						</div>
-						<div data-hasqtip='true' class='bloom-editable normal-style' contenteditable='true' lang='xyz'>
+						<div class='bloom-editable normal-style' contenteditable='true' lang='xyz'>
 							Translation into xyz, the primary language.
 						</div>
 						<div class='bloom-editable' contenteditable='true' lang='z'></div>

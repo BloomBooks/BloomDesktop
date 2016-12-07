@@ -14,7 +14,7 @@ mixin image-leading
 //- items marked with 'bloom-trailingElement' will be on the right page of a side-by-side layout
 mixin field-trailing
 	//- REVIEW: is default-style needed? Can it be just omitted from the template?
-	+field(class='bloom-trailingElement default-style')&attributes(attributes)
+	+field("auto")(class='bloom-trailingElement default-style')&attributes(attributes)
 
 doctype html
 html

@@ -13,17 +13,17 @@ html
 
 	body
 		+page-choice('Section Intro').sectionIntroPage#9F9B5C9C-2FDD-4765-9776-9E7842DA5234
-			+field.heading
+			+field("auto").heading
 			+image
-			+field.details
+			+field("auto").details
 		+page-choice('Major Step').majorStepPage#9F9B5C9C-2FDD-4765-9776-9E7842DA5234
 			h1 Step
-				+field.step
+				+field("auto").step
 			// image with three labels the user can drag around
 			+image
-				+field.imageLabel.bloom-draggableLabel
-				+field.imageLabel.bloom-draggableLabel
-				+field.imageLabel.bloom-draggableLabel
+				+field("N1").imageLabel.bloom-draggableLabel
+				+field("N1").imageLabel.bloom-draggableLabel
+				+field("N1").imageLabel.bloom-draggableLabel
 
 
 			h4 Review Chart:
@@ -31,5 +31,5 @@ html
 
 			+repeat(2)
 				.letterFormationContainer
-					+field(data-placeholder="Q")
-					+field(data-placeholder="procedure for writing")
+					+field("V")(data-placeholder="Q")
+					+field("V")(data-placeholder="procedure for writing")

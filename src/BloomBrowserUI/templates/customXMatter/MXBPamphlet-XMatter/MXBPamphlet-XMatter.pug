@@ -13,7 +13,7 @@ mixin mxb-nationalSummaryPrinterStatement-insideBackCover
 
 mixin mxb-combinedTitleCreditsPage-inside-front-cover
 	+page-xmatter('Inside Front Cover').cover.coverColor.titlePage.credits.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#0d61e568-6814-4836-82ad-81b2bcd106a5
-		+field-prototypeDeclaredExplicity#titlePageTitleBlock
+		+field-prototypeDeclaredExplicity("V, N1, N2")#titlePageTitleBlock
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
 		#languageInformation.Credits-Page-style('lang'='N1')
@@ -21,15 +21,15 @@ mixin mxb-combinedTitleCreditsPage-inside-front-cover
 			//- review: can we get rid of these "langName" classes?
 			.langName('data-library'='dialect')
 			.langName(data-library='languageLocation').bloom-writeOnly
-		+field-prototypeDeclaredExplicity#originalContributions
+		+field-prototypeDeclaredExplicity("N1")#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalContributions')
 		+field-acknowledgments-localizedVersion
 		+field-acknowledgments-originalVersion
-		+field-prototypeDeclaredExplicity#funding
+		+field-prototypeDeclaredExplicity("N1")#funding
 			label.bubble Use this to acknowledge any funding agencies.
 			+editable(kLanguageForPrototypeOnly).funding.Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
-		+field-prototypeDeclaredExplicity#printingHistory
+		+field-prototypeDeclaredExplicity("N1")#printingHistory
 			label.bubble Use this for Printing History (1st Edition, etc.)
 			+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
 		+block-licenseAndCopyright

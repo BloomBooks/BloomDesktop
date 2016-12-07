@@ -1,4 +1,4 @@
-include ../bloom-xmatter-mixins.pug
+include ../bloom-xmatter-mixins
 
 
 doctype html
@@ -13,7 +13,7 @@ html
 	//Note: the ".frontCover" here triggers some things in the common stylesheet,
 	//so if you change it, expect to do some more work
 	+page-cover('Opening Screen').frontCover#ad01f8d2-c338-4dca-b4f2-cc4eeb62c1b0(data-book-attributes='frontCover')
-		+field-prototypeDeclaredExplicity.bookTitle
+		+field-prototypeDeclaredExplicity("V").bookTitle
 			label.bubble Title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
 
@@ -35,10 +35,10 @@ html
 		+field-acknowledgments-localizedVersion
 
 	+page-xmatter('Credits Page 2').bloom-backMatter.credits2#786140ba-981a-44d4-a0cf-510f7367aff3
-		+field-prototypeDeclaredExplicity#originalContributions
+		+field-prototypeDeclaredExplicity("N1")#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
 			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Original-Contributors-On-Title-Page-style(data-book='originalContributions')
-		+field-prototypeDeclaredExplicity#funding
+		+field-prototypeDeclaredExplicity("N1")#funding
 			label.bubble Use this to acknowledge any funding agencies.
 			+editable(kLanguageForPrototypeOnly).funding.Funding-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
 	+page-xmatter('The End').bloom-backMatter.theEndPage#aaa140ba-981a-44d4-a0cf-510f7367aaaa
