@@ -7,43 +7,43 @@
 @import "../templates/xMatter/bloom-xmatter-sharedRules.less";
 
 .frontCover {
-    .bloom-translationGroup.bookTitle {
-        .bloom-editable {
-            // Main book stylesheet has justify-content: center, because it is using flexbox
-            text-align: center;
+        .bloom-translationGroup.bookTitle {
+                .bloom-editable {
+                        // Main book stylesheet has justify-content: center, because it is using flexbox
+                        text-align: center;
+                }
         }
-    }
 }
 
 .credits {
-    .licenseAndCopyrightBlock {
-        img {
-            // creative commons license image. Book stylesheet has width:94px.
-            // Don't know why epub should be different.
-            width: 94px;
+        .licenseAndCopyrightBlock {
+                img {
+                        // creative commons license image. Book stylesheet has width:94px.
+                        // Don't know why epub should be different.
+                        width: 94px;
+                }
+                .licenseUrl, .licenseDescription, .licenseNotes {
+                        display: none; // show only the logo
+                }
         }
-        .licenseUrl, .licenseDescription, .licenseNotes {
-            display: none; // show only the logo
+        .ISBNContainer {
+                display: none; // would probably need a separate number for epub anyway
         }
-    }
-    .ISBNContainer {
-        display: none; // would probably need a separate number for epub anyway
-    }
 }
 
 div.bloom-editable {
-    margin-bottom: 0.6em;
+        margin-bottom: 0.6em;
 }
 
 .pictureAndWordPage {
-     .bloom-content1 {font-size:400%;}
-     .bloom-content2, .bloom-content3 {font-size:200%;}
-     .bloom-translationGroup {
+         .bloom-content1 {font-size:400%;}
+         .bloom-content2, .bloom-content3 {font-size:200%;}
+         .bloom-translationGroup {
 		text-align: center;
 		padding-top: 10px;//don't express in em's!
 	}
 }
 
 .bloom-backgroundImage{
-  height:300px; // REVIEW What should this be?
+    height:300px; // REVIEW What should this be?
 }

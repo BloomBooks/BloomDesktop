@@ -11,115 +11,115 @@
 @dialogZindex: 16010;
 
 .bloomDialogContainer .selectedIcon {
-	background-color: rgb(201, 224, 247);
-	border: 1px solid rgb(98, 162, 228);
-	.bdRounded;
+    background-color: rgb(201, 224, 247);
+    border: 1px solid rgb(98, 162, 228);
+    .bdRounded;
 }
 .bloomDialogContainer .iconLetter {
-	width: 19px;
-	height: 19px;
-	display: inline-block;
-	padding: 2px 2px 2px 2px;
-	text-align: center;
+    width: 19px;
+    height: 19px;
+    display: inline-block;
+    padding: 2px 2px 2px 2px;
+    text-align: center;
 }
 .bloomDialogContainer .icon16x16 {
-	width: 19px;
-	height: 19px;
-	display: inline-block;
-	padding: 2px;
+    width: 19px;
+    height: 19px;
+    display: inline-block;
+    padding: 2px;
 }
 .bloomDialogContainer .icon16x16 IMG {
-	margin-top: 1px;
-	margin-left: 1px;
-	vertical-align: 5px;
+    margin-top: 1px;
+    margin-left: 1px;
+    vertical-align: 5px;
 }
 .bloomDialogContainer .iconHtml {
-	width: 22px;
-	height: 22px;
-	margin-top: 10px;
-	display: inline-block;
-	padding: 1px 0 0 1px;
+    width: 22px;
+    height: 22px;
+    margin-top: 10px;
+    display: inline-block;
+    padding: 1px 0 0 1px;
 }
 .bloomDialogContainer .iconBox {
-	width: 14px;
-	height: 14px;
-	margin: 2px;
-	border: 1px solid;
-	display: block;
+    width: 14px;
+    height: 14px;
+    margin: 2px;
+    border: 1px solid;
+    display: block;
 }
 .bloomDialogContainer .iconBack {
-	width: 16px;
-	height: 16px;
-	margin: 2px;
-	display: block;
+    width: 16px;
+    height: 16px;
+    margin: 2px;
+    display: block;
 }
 .bdRounded {
-	border-radius: 4px;
+    border-radius: 4px;
 }
 .bloomDialogContainer .control-section {
-	margin: 0 0 12px 0;
+    margin: 0 0 12px 0;
 }
 .bloomDialogContainer BUTTON, .bloomDialogContainer INPUT{
-	background: linear-gradient(@backgroundColorLight, @backgroundColorDark);
+    background: linear-gradient(@backgroundColorLight, @backgroundColorDark);
 }
 .bloomDialogContainer BUTTON {
-	.bdRounded;
-	border: 1px solid @buttonBorder;
-	box-shadow: 1px 2px 7px @buttonShadow;
+    .bdRounded;
+    border: 1px solid @buttonBorder;
+    box-shadow: 1px 2px 7px @buttonShadow;
 }
 .bloomDialogContainer BUTTON:hover, .bloomDialogContainer INPUT:hover, .bloomDialogContainer SELECT:hover , .bloomDialogContainer .select2-container--default:HOVER, .bloomDialogContainer .select2-container--focus{
-	background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
+    background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
 }
 .bloomDialogContainer BUTTON[disabled] {
-	border: 1px solid @disabledText;
-	background: @backgroundColorLight;
-	color: @disabledText;
+    border: 1px solid @disabledText;
+    background: @backgroundColorLight;
+    color: @disabledText;
 }
 .bloomDialogContainer .propButton:NOT(.selectedIcon) {
-	border: 1px solid @disabledText;
-	.bdRounded;
+    border: 1px solid @disabledText;
+    .bdRounded;
 }
 .bloomDialogContainer .propButton:hover {
-	background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
+    background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
 }
 .bloomDialogContainer {
-	background-color: @backgroundColorWhite;
-	opacity: 1;
-	z-index: @dialogZindex;
-	position: absolute;
-	line-height: 1.8;
-	font-family: Segoe UI, Open Sans, Arial, sans-serif;
+    background-color: @backgroundColorWhite;
+    opacity: 1;
+    z-index: @dialogZindex;
+    position: absolute;
+    line-height: 1.8;
+    font-family: Segoe UI, Open Sans, Arial, sans-serif;
 }
 .bloomDialogContainer .bloomDialogTitleBar {
-	background-color: @backgroundColorTitleBar;
-	opacity:1;
-	position:relative;
-	top:0;
-	left:0;
-	right:0;
-	height: 2em;
-	text-align: center;
+    background-color: @backgroundColorTitleBar;
+    opacity:1;
+    position:relative;
+    top:0;
+    left:0;
+    right:0;
+    height: 2em;
+    text-align: center;
 }
 .bloomDialogContainer .bloomDialogMainPage {
-	background: @backgroundColorWhite;
-	margin-left: 1em;
-	font-family: Segoe UI, Open Sans, Arial, sans-serif;
-	font-size: 10pt;
+    background: @backgroundColorWhite;
+    margin-left: 1em;
+    font-family: Segoe UI, Open Sans, Arial, sans-serif;
+    font-size: 10pt;
 }
 
 .bloomDialogContainer .select2-container--default .select2-selection--single{
-	border-radius: 0;
-	border-color: grey;
-	
+    border-radius: 0;
+    border-color: grey;
+
 }
 
 //the actual dropdown part of select2 controls is appended to the body, rather than our format dialog .iconBox
 .select2-dropdown{
-	border-radius: 0 !important;
-	border-color: black !important;
-	
+    border-radius: 0 !important;
+    border-color: black !important;
+
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered{
-	color: black !important;
+    color: black !important;
 }

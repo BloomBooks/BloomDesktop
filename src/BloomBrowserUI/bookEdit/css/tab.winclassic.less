@@ -1,7 +1,7 @@
 /* Derived from the work of Erik Arvidsson
-	(http://webfx.eae.net/contact.html#erik)
-	in the project WebFX (http://webfx.eae.net/).
-	Considerably changed for Bloom.
+    (http://webfx.eae.net/contact.html#erik)
+    in the project WebFX (http://webfx.eae.net/).
+    Considerably changed for Bloom.
 */
 
 @tabRowHeight: 20px;
@@ -18,78 +18,78 @@
 @tabTextColor: black;
 
 .dynamic-tab-pane-control {
-	font: Segoe UI, Open Sans, Arial, sans-serif;
-	font-size: 10pt;
+    font: Segoe UI, Open Sans, Arial, sans-serif;
+    font-size: 10pt;
 }
 
 .dynamic-tab-pane-control.tab-pane {
-	position: relative;
-	width: 100%;
+    position: relative;
+    width: 100%;
 }
 
 /* In a bloom page, * defaults to position:relative. This somehow breaks the active tab label
-	overlaying the border of the main content. This stylesheet is supposed to have everything
-	it doesn't set explicitly use default positioning.
+    overlaying the border of the main content. This stylesheet is supposed to have everything
+    it doesn't set explicitly use default positioning.
 */
 .dynamic-tab-pane-control, .dynamic-tab-pane-control * {
-	position: static;
+    position: static;
 }
 
 .dynamic-tab-pane-control .tab-row .tab {
-	min-width: @tabWidth;
-	height: @tabRowHeight;
+    min-width: @tabWidth;
+    height: @tabRowHeight;
 
-	cursor: Default;
-	display: inline;
-	margin: 1px -2px 1px 2px;
-	float: left;
-	padding: 0px 5px 3px 5px;
-	background: linear-gradient(@tabBackgroundColorLight, @tabBackgroundColorDark);
-	border: 1px solid;
-	border-color: @borderColor;
-	border-bottom: 0;
-	z-index: 1;
-	position: relative;
-	top: 0;
-	text-align: center;
+    cursor: Default;
+    display: inline;
+    margin: 1px -2px 1px 2px;
+    float: left;
+    padding: 0px 5px 3px 5px;
+    background: linear-gradient(@tabBackgroundColorLight, @tabBackgroundColorDark);
+    border: 1px solid;
+    border-color: @borderColor;
+    border-bottom: 0;
+    z-index: 1;
+    position: relative;
+    top: 0;
+    text-align: center;
 }
 
 .dynamic-tab-pane-control .tab-row .tab.selected {
-	color: @tabTextColor;
-	background: @tabBackgroundColorSelected;
-	border-bottom: 0;
-	z-index: 3;
-	padding: 2px 6px 5px 7px;
-	margin: 1px -3px -2px 0px;
-	top: -2px;
+    color: @tabTextColor;
+    background: @tabBackgroundColorSelected;
+    border-bottom: 0;
+    z-index: 3;
+    padding: 2px 6px 5px 7px;
+    margin: 1px -3px -2px 0px;
+    top: -2px;
 }
 
 .tab-row .tab:hover {
-	background: linear-gradient(@tabBackgroundColorHoverLight, @tabBackgroundColorHoverDark);
+    background: linear-gradient(@tabBackgroundColorHoverLight, @tabBackgroundColorHoverDark);
 }
 
 .dynamic-tab-pane-control .tab-row .tab a {
-	color: @tabTextColor;
-	cursor: default;
-	text-decoration: none;
+    color: @tabTextColor;
+    cursor: default;
+    text-decoration: none;
 }
 
 .dynamic-tab-pane-control .tab-row .tab.selected a {
-	color: @tabTextColor;
-	cursor: default;
+    color: @tabTextColor;
+    cursor: default;
 }
 
 .dynamic-tab-pane-control .tab-page {
-	clear: both;
-	border: 1px solid;
-	background: white;
-	z-index: 2;
-	position: relative;
-	top: -2px;
-	padding: 10px;
+    clear: both;
+    border: 1px solid;
+    background: white;
+    z-index: 2;
+    position: relative;
+    top: -2px;
+    padding: 10px;
 }
 
 .dynamic-tab-pane-control .tab-row {
-	z-index: 1;
-	white-space: nowrap;
+    z-index: 1;
+    white-space: nowrap;
 }

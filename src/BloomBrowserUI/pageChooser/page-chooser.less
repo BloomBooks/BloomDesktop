@@ -13,40 +13,40 @@
 @TransparentHiglightColor: hsla(186.9, 49.1%, 65%, 0.45);
 
 BODY {
-	margin: 4px;
+    margin: 4px;
 }
 #mainContainer {
-	border: none;
-	margin: 0;
-	height: 490px;
-	width: 790px;
+    border: none;
+    margin: 0;
+    height: 490px;
+    width: 790px;
     display: flex;
     flex-direction: row;
-	box-sizing: border-box;
-	padding-top: 10px;
+    box-sizing: border-box;
+    padding-top: 10px;
 }
 .gridItemDisplay {
-	overflow-y: auto;
-	height: auto;
-	flex: 2;
-	display: flex;
-	flex-direction: column;
+    overflow-y: auto;
+    height: auto;
+    flex: 2;
+    display: flex;
+    flex-direction: column;
 }
 #singlePagePreview {
-	flex: 2;
-	order: 2;
-	height: auto;
-	min-width: 320px;
+    flex: 2;
+    order: 2;
+    height: auto;
+    min-width: 320px;
     max-width: 370px; // in the standard dialog width, allows the other pane to be wide enough for 3 columns with scroll bar
-	padding-left: @PreviewPaneLeftPadding;
+    padding-left: @PreviewPaneLeftPadding;
 
-	img{
-		border: 1px solid @HighlightColor;
-		//center it
-			display:block;
-			margin-left: auto;
-			margin-right: auto;
-	}
+    img{
+        border: 1px solid @HighlightColor;
+        //center it
+            display:block;
+            margin-left: auto;
+            margin-right: auto;
+    }
 }
 #preview {
   max-height: 232px;
@@ -59,8 +59,8 @@ BODY {
     }
 }
 #previewCaption {
-	font-weight: bold;
-	text-align: center;
+    font-weight: bold;
+    text-align: center;
 }
 //#previewDescription {
 //	height: 90px;
@@ -72,14 +72,14 @@ BODY {
 //}
 
 .DescriptionText {
-	white-space: normal;
-	max-height: 119px;
-	line-height: 1.5em;
-	overflow: hidden;
+    white-space: normal;
+    max-height: 119px;
+    line-height: 1.5em;
+    overflow: hidden;
   text-overflow: ellipsis;
-	overflow-y: auto ;
-	margin-right: @PreviewPaneLeftPadding;
-	margin-left: @PreviewPaneLeftPadding;
+    overflow-y: auto ;
+    margin-right: @PreviewPaneLeftPadding;
+    margin-left: @PreviewPaneLeftPadding;
 }
 
 
@@ -96,28 +96,28 @@ BODY {
 //    flex-wrap: nowrap;
 //}
 .outerGroupContainer {
-	flex-direction: column;
+    flex-direction: column;
 }
 .group {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 .groupCaption {
-	font-weight: bold;
-	padding-left: 4px;
-	margin-left: 20px;
-	display: block;
+    font-weight: bold;
+    padding-left: 4px;
+    margin-left: 20px;
+    display: block;
 }
 .innerGroupContainer {
-	margin: 0 0 0 0;
+    margin: 0 0 0 0;
 }
 .gridItem {
-	margin: 0 10px 10px 11px;
-	width: 104px;
-	//height: 170px;
-	display: inline-block;
-	position: sticky; //this makes the blue overlay, which is a child, be correctly positioned even when scrolled
+    margin: 0 10px 10px 11px;
+    width: 104px;
+    //height: 170px;
+    display: inline-block;
+    position: sticky; //this makes the blue overlay, which is a child, be correctly positioned even when scrolled
 }
 
 .gridItem:hover {
@@ -131,16 +131,16 @@ BODY {
     }
 }
 .thumbnail {
-	overflow: hidden;
-	display: block;
-	margin-top: 4px;
-	background: inherit;
-	border: 1px solid darkgray;
+    overflow: hidden;
+    display: block;
+    margin-top: 4px;
+    background: inherit;
+    border: 1px solid darkgray;
 
-	//todo: this will have to change depending on orientation
-	width: 60px;
-	//take the height proportionally, from the width
-	margin-left: 20px;//centers the thumbnail in the enclosing grid item
+    //todo: this will have to change depending on orientation
+    width: 60px;
+    //take the height proportionally, from the width
+    margin-left: 20px;//centers the thumbnail in the enclosing grid item
 }
 
 .disabled .thumbnail {
@@ -155,30 +155,30 @@ BODY {
     }
 }
 .gridItem {
-	.gridItemCaption {
-		display: none; // The captions aren't really helping the user, just adding complexity
-		//font-weight: bold;
-		text-align: center;
-		height: 2em; // enough for two lines
-		position: relative;
-		left: 0;
-		overflow: hidden;
-		line-height: 1em;
-	}
-	.pageDescription{display:none;}
+    .gridItemCaption {
+        display: none; // The captions aren't really helping the user, just adding complexity
+        //font-weight: bold;
+        text-align: center;
+        height: 2em; // enough for two lines
+        position: relative;
+        left: 0;
+        overflow: hidden;
+        line-height: 1em;
+    }
+    .pageDescription{display:none;}
 }
 .invisibleThumbCover {
-	z-index: 5;
-	position: absolute;
-	height: 130px;
-	width: 100px;
-	background: url(transparent.gif);
+    z-index: 5;
+    position: absolute;
+    height: 130px;
+    width: 100px;
+    background: url(transparent.gif);
 }
 .selectionOverlay {
-	z-index: 3;
-	position: absolute;
-	height: 100px;
-	width: 100px;
+    z-index: 3;
+    position: absolute;
+    height: 100px;
+    width: 100px;
 }
 
 .landscape {
@@ -188,69 +188,69 @@ BODY {
 }
 
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button{
-	background: @WindowsButton-BackgroundColor !important;
-	color: black;
-	border: @WindowsButton-Border solid thin;
-	font-size: 10pt;
-	margin-left:10px;
+    background: @WindowsButton-BackgroundColor !important;
+    color: black;
+    border: @WindowsButton-Border solid thin;
+    font-size: 10pt;
+    margin-left:10px;
 }
 
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
-	background: @WindowsButton-BackgroundColor-Hover !important;
-	color:
-	black;
+    background: @WindowsButton-BackgroundColor-Hover !important;
+    color:
+    black;
 }
 
 #mainContainer .ui-dialog-buttonpane{
-	padding: 0.3em 20px 20px 0.4em;
+    padding: 0.3em 20px 20px 0.4em;
 }
 #mainContainer div.ui-dialog div.ui-dialog-content, .ui-dialog .ui-dialog-buttonpane, .bloomDialogContainer{
-	background-color: @WindowsDialogBackgroundColor !important;
+    background-color: @WindowsDialogBackgroundColor !important;
 }
 
 #mainContainer div.ui-dialog div.ui-dialog-titlebar{
-	border: none;
-	.ui-dialog-title{
-		font-weight: normal;
-	}
+    border: none;
+    .ui-dialog-title{
+        font-weight: normal;
+    }
 }
 
 #mainContainer .ui-dialog-buttonpane{	display: none;}
 /*
 .ui-dialog-buttonset {
 
-	.normalButton {
-		font-weight: normal !important;
-	}
+    .normalButton {
+        font-weight: normal !important;
+    }
 
-	//.defaultButton {
-	//	.ui-icon-plusthick {
-	//		left: 0.25em !important;
-	//	}
-	//	.ui-button-text {
-	//		//text-align: right !important;
-	//		font-weight: bold;
-	//	}
-	//	border: solid 5px @HighlightColor !important;
-	//}
+    //.defaultButton {
+    //	.ui-icon-plusthick {
+    //		left: 0.25em !important;
+    //	}
+    //	.ui-button-text {
+    //		//text-align: right !important;
+    //		font-weight: bold;
+    //	}
+    //	border: solid 5px @HighlightColor !important;
+    //}
 }*/
 
 #addPageButton {
-	//center it
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
+    //center it
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 
-	padding: 10px;
-	width: 200px;
-	border: 5px solid @HighlightColor;
-	font-weight: bold;
+    padding: 10px;
+    width: 200px;
+    border: 5px solid @HighlightColor;
+    font-weight: bold;
     background-image:none;
 
-	&:disabled{
-		color:lightgrey;
-		border: medium solid lightgray;
-	}
+    &:disabled{
+        color:lightgrey;
+        border: medium solid lightgray;
+    }
 }
 
 #convertAnyway {

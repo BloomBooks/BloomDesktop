@@ -3,120 +3,120 @@
 @import (less) '../../node_modules/select2/dist/css/select2.css';
 
 #format-toolbar {
-	*{
-		font-family: "Segoe UI", Arial, sans-serif;
-	}
-	H2{
-		font-size:10pt;
-	}
-	// Styles specific to the Style Editor dialog
-	.format-toolbar-description {
-		font-size: small;
-		line-height: 1.2;
-		margin: 10px 0px 5px 0px;
-		color: grey;
-	}
-	.mainBlock {
-		display: inline-block;
-		vertical-align: top;
-		line-height: normal;
-	}
-	.leftBlock {
-		width: 150px;
-	}
-	.spacing-fudge {
-		margin: 0px 0px -2px 0px;
-	}
-	#size-select {
-		width: 43px;
-		margin-left: 5px;
-	}
-	#line-height-select {
-		width: 45px;
-		margin-left: 2px;
-	}
-	#word-space-select {
-		margin-left: 2px;
-	}
-	#styleSelect {
-		margin: 0px 0px 12px 0px;
-		width: 145px;
-	}
-	#style-select-input {
-		width: 143px; // with 1px border this makes it the same as the #styleSelect combo
-	}
-	.bloomDialogContainer {
-		width: 350px !important;
-	}
+    *{
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
+    H2{
+        font-size:10pt;
+    }
+    // Styles specific to the Style Editor dialog
+    .format-toolbar-description {
+        font-size: small;
+        line-height: 1.2;
+        margin: 10px 0px 5px 0px;
+        color: grey;
+    }
+    .mainBlock {
+        display: inline-block;
+        vertical-align: top;
+        line-height: normal;
+    }
+    .leftBlock {
+        width: 150px;
+    }
+    .spacing-fudge {
+        margin: 0px 0px -2px 0px;
+    }
+    #size-select {
+        width: 43px;
+        margin-left: 5px;
+    }
+    #line-height-select {
+        width: 45px;
+        margin-left: 2px;
+    }
+    #word-space-select {
+        margin-left: 2px;
+    }
+    #styleSelect {
+        margin: 0px 0px 12px 0px;
+        width: 145px;
+    }
+    #style-select-input {
+        width: 143px; // with 1px border this makes it the same as the #styleSelect combo
+    }
+    .bloomDialogContainer {
+        width: 350px !important;
+    }
 
-	// State Machine styles
-	.state-initial #dont-see {
-		display: block;
-	}
-	.state-initial #createStyle {
-		display: none;
-	}
-	.state-enteringStyle #createStyle {
-		display: block;
-	}
-	.state-enteringStyle #dont-see, .state-enteringStyle #please-use-alpha, .state-enteringStyle #already-exists {
-		display: none;
-	}
-	.state-invalid-characters #please-use-alpha {
-		display: block;
-	}
-	.state-invalid-characters #already-exists, .state-invalid-characters #dont-see {
-		display: none;
-	}
-	.state-already-exists #already-exists {
-		display: block;
-	}
-	.state-already-exists #please-use-alpha, .state-already-exists #dont-see {
-		display: none;
-	}
+    // State Machine styles
+    .state-initial #dont-see {
+        display: block;
+    }
+    .state-initial #createStyle {
+        display: none;
+    }
+    .state-enteringStyle #createStyle {
+        display: block;
+    }
+    .state-enteringStyle #dont-see, .state-enteringStyle #please-use-alpha, .state-enteringStyle #already-exists {
+        display: none;
+    }
+    .state-invalid-characters #please-use-alpha {
+        display: block;
+    }
+    .state-invalid-characters #already-exists, .state-invalid-characters #dont-see {
+        display: none;
+    }
+    .state-already-exists #already-exists {
+        display: block;
+    }
+    .state-already-exists #please-use-alpha, .state-already-exists #dont-see {
+        display: none;
+    }
 }
 
 //the select2 dropdown gets appended to the body, not to our dialog, so it needs a really high z-index to show above the dialog.
 .select2-container{
-	z-index: 30000;
+    z-index: 30000;
 }
 
 #spacingRow{
-	display: flex;
+    display: flex;
 }
 
 #wordSpacing, #lineSpacing {
-	display: flex;
-	flex-direction: row;
+    display: flex;
+    flex-direction: row;
     align-items: center;
 }
 
 #wordSpacing {
-	margin-left: 15px;
+    margin-left: 15px;
 }
 #wordSpacing img{
-	padding-right:4px;
-} 
+    padding-right:4px;
+}
 
 #lineSpacing img{
-	padding-right:5px;
-	height: 16px;
-} 
+    padding-right:5px;
+    height: 16px;
+}
 
 #line-height-select + .select2-container{
-	width: 60px  !important;
+    width: 60px  !important;
 }
 
 #word-space-select + .select2-container{
-	width: 100px  !important;
+    width: 100px  !important;
 }
 #size-select + .select2-container{
-	width: 60px !important;
+    width: 60px !important;
 }
 // #font-select + .select2-container{
 // 	width: 120px;
 // }
 
 .select2-container--open .select2-selection__rendered{
-	background-color: lightblue;
+    background-color: lightblue;
 }

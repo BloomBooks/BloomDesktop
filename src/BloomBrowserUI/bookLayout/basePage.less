@@ -2,106 +2,106 @@
 @import "basePage-sharedRules.less";
 
 .Browser-Reset() {
-	/*+init {*/
-	* {
-		position: relative;
-		margin: 0;
-		padding: 0;
-		font-size: 1em;
-	}
-	h1, h2, h3, h4, h5, h6, th {
-		font-weight: inherit;
-	}
-	address, cite, dfn, var {
-		font-style: inherit;
-	}
-	caption, code, kbd, pre, samp, tt, input, textarea, select, button {
-		font-family: inherit;
-	}
-	table {
-		border-spacing: 0;
-	}
-	th {
-		text-align: left;
-	}
-	html, body, thead, tbody, tfoot, tr, th, td, br {
-		position: static;
-	}
-	input[type=hidden] {
-		display: none !important;
-	}
-	fieldset, a img {
-		border: 0;
-	}
-	body {
-	}
+    /*+init {*/
+    * {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        font-size: 1em;
+    }
+    h1, h2, h3, h4, h5, h6, th {
+        font-weight: inherit;
+    }
+    address, cite, dfn, var {
+        font-style: inherit;
+    }
+    caption, code, kbd, pre, samp, tt, input, textarea, select, button {
+        font-family: inherit;
+    }
+    table {
+        border-spacing: 0;
+    }
+    th {
+        text-align: left;
+    }
+    html, body, thead, tbody, tfoot, tr, th, td, br {
+        position: static;
+    }
+    input[type=hidden] {
+        display: none !important;
+    }
+    fieldset, a img {
+        border: 0;
+    }
+    body {
+    }
 }
 
 .Browser-Reset();
 
 body
 {
-	/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+    /*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
 Therefore, in the editMode.css, we repeat this, but with a 2% larger size.
 So if you change this, change it there. Note, this might not be the best long-term solution
 To handling the mis-match.*/
-	font-size: 10pt;
+    font-size: 10pt;
 }
 
 /* gridItem means this is a page thumbnail */
 .gridItem {
-	.pageOverflows {
-		background-image: url("/bloom/BloomBrowserUI/images/Attention.svg"); /* red triangle with exclamation point */
+    .pageOverflows {
+        background-image: url("/bloom/BloomBrowserUI/images/Attention.svg"); /* red triangle with exclamation point */
         background-position: bottom;
         background-repeat: no-repeat;
         background-size: 70%;
-	}
+    }
 }
 div.ui-tooltip-content
 {
-	overflow: visible !important;
-	font-size: 10pt;
-	padding: 0px 9px;
+    overflow: visible !important;
+    font-size: 10pt;
+    padding: 0px 9px;
 }
 .uibloomSourceTextsBubble .ui-tooltip-content
 {
-	/*This minimum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
-	min-height: 60px !important;
+    /*This minimum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
+    min-height: 60px !important;
 }
 .bloom-imageContainer
 {
-	min-height: 50px;
-	z-index: 100;
+    min-height: 50px;
+    z-index: 100;
 }
 p{
   min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
 }
 textarea, .bloom-editable
 {
-	resize: none;
-	/*don't show those cute little resize controls in Firefox 4 and greater*/
-	overflow: visible;
-	// this is just... bogus! removing it will cause some problems, but.. but... font-size: 143%;
-	line-height: @defaultLineHeight;
-	min-height:  @defaultLineHeight + .3em;
-	width: 100%;
-	height: 100%;
+    resize: none;
+    /*don't show those cute little resize controls in Firefox 4 and greater*/
+    overflow: visible;
+    // this is just... bogus! removing it will cause some problems, but.. but... font-size: 143%;
+    line-height: @defaultLineHeight;
+    min-height:  @defaultLineHeight + .3em;
+    width: 100%;
+    height: 100%;
 }
 
 /* The following has been split out from the above rule because it should probably be removed,
-	but at this point we are about to go release candidate with 3.1 so it will have to wait.
-	When we do remove it, the main things it could effect are the Story Primer template and the dozen or so SIL LEAD Uganda SHRP templates.
+    but at this point we are about to go release candidate with 3.1 so it will have to wait.
+    When we do remove it, the main things it could effect are the Story Primer template and the dozen or so SIL LEAD Uganda SHRP templates.
 */
 TD {
-	resize: none;
-	/*don't show those cute little resize controls in Firefox 4 and greater*/
-	overflow: visible;
-	font-size: 143%;
-	line-height: @defaultLineHeight;
-	min-height: @defaultLineHeight + .3em;
-	width: 100%;
+    resize: none;
+    /*don't show those cute little resize controls in Firefox 4 and greater*/
+    overflow: visible;
+    font-size: 143%;
+    line-height: @defaultLineHeight;
+    min-height: @defaultLineHeight + .3em;
+    width: 100%;
 }
 
 p{
@@ -116,32 +116,32 @@ span.bloom-linebreak {
 
 div.bloom-page
 {
-	display: block;
-	page-break-after: auto;
-	background-color: #FFFFFF;
-	/*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
+    display: block;
+    page-break-after: auto;
+    background-color: #FFFFFF;
+    /*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
 the margin-top is calculated to center the text vertically, but htmltopdf then doesn't shrink the box as it should
 so it just heads down off the page, messing things up.*/
-	overflow: hidden;
+    overflow: hidden;
 }
 div#bloomDataDiv
 {
-	display: none;
+    display: none;
 }
 @media screen
 {
-	div.bloom-page
-	{
-		/*[disabled]border:1px solid #000000;*/
-	}
+    div.bloom-page
+    {
+        /*[disabled]border:1px solid #000000;*/
+    }
 }
 .centered
 {
-	text-align: center;
+    text-align: center;
 }
 .centerJustify
 {
-	text-align: center;
+    text-align: center;
 }
 
 /*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
@@ -156,147 +156,147 @@ preview.css.
 Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 */
 .bloom-page {
-	&.Device16x9Portrait{
-		min-width: @Device16x9Portrait-Width;
-		max-width: @Device16x9Portrait-Width;
-		min-height: @Device16x9Portrait-Height;
-		max-height: @Device16x9Portrait-Height;
-	}
-	&.Device16x9Landscape{
-		min-width: @Device16x9Landscape-Width;
-		max-width: @Device16x9Landscape-Width;
-		min-height: @Device16x9Landscape-Height;
-		max-height: @Device16x9Landscape-Height;
-	}
-	&.A5Portrait {
-		min-width: @A5Portrait-Width;
-		max-width: @A5Portrait-Width;
-		min-height: @A5Portrait-Height;
-		max-height: @A5Portrait-Height;
-	}
-	&.A5Landscape {
-		min-width: @A5Landscape-Width;
-		max-width: @A5Landscape-Width;
-		min-height: @A5Landscape-Height;
-		max-height: @A5Landscape-Height;
-	}
-	&.B5Portrait {
-		min-width: @B5Portrait-Width;
-		max-width: @B5Portrait-Width;
-		min-height: @B5Portrait-Height;
-		max-height: @B5Portrait-Height;
-	}
-	&.A4Landscape, &.A4LandscapeSideBySide {
-		min-width: @A4Landscape-Width;
-		max-width: @A4Landscape-Width;
-		min-height: @A4Landscape-Height;
-		max-height: @A4Landscape-Height;
-	}
+    &.Device16x9Portrait{
+        min-width: @Device16x9Portrait-Width;
+        max-width: @Device16x9Portrait-Width;
+        min-height: @Device16x9Portrait-Height;
+        max-height: @Device16x9Portrait-Height;
+    }
+    &.Device16x9Landscape{
+        min-width: @Device16x9Landscape-Width;
+        max-width: @Device16x9Landscape-Width;
+        min-height: @Device16x9Landscape-Height;
+        max-height: @Device16x9Landscape-Height;
+    }
+    &.A5Portrait {
+        min-width: @A5Portrait-Width;
+        max-width: @A5Portrait-Width;
+        min-height: @A5Portrait-Height;
+        max-height: @A5Portrait-Height;
+    }
+    &.A5Landscape {
+        min-width: @A5Landscape-Width;
+        max-width: @A5Landscape-Width;
+        min-height: @A5Landscape-Height;
+        max-height: @A5Landscape-Height;
+    }
+    &.B5Portrait {
+        min-width: @B5Portrait-Width;
+        max-width: @B5Portrait-Width;
+        min-height: @B5Portrait-Height;
+        max-height: @B5Portrait-Height;
+    }
+    &.A4Landscape, &.A4LandscapeSideBySide {
+        min-width: @A4Landscape-Width;
+        max-width: @A4Landscape-Width;
+        min-height: @A4Landscape-Height;
+        max-height: @A4Landscape-Height;
+    }
 
-	&.A4Portrait {
-		min-width: @A4Portrait-Width;
-		max-width: @A4Portrait-Width;
-		min-height: @A4Portrait-Height;
-		max-height: @A4Portrait-Height;
-	}
-	&.A6Portrait {
-		min-width: @A6Portrait-Width;
-		max-width: @A6Portrait-Width;
-		min-height: @A6Portrait-Height;
-		max-height: @A6Portrait-Height;
-	}
-	&.A6Landscape {
-		min-width: @A6Landscape-Width;
-		max-width: @A6Landscape-Width;
-		min-height: @A6Landscape-Height;
-		max-height: @A6Landscape-Height;
-	}
-	&.QuarterLetterPortrait {
-		min-width: @QuarterLetterPortrait-Width;
-		max-width: @QuarterLetterPortrait-Width;
-		min-height: @QuarterLetterPortrait-Height;
-		max-height: @QuarterLetterPortrait-Height;
-	}
-	&.QuarterLetterLandscape {
-		min-width: @QuarterLetterLandscape-Width;
-		max-width: @QuarterLetterLandscape-Width;
-		min-height: @QuarterLetterLandscape-Height;
-		max-height: @QuarterLetterLandscape-Height;
-	}
-	&.HalfLetterPortrait {
-		min-width: @HalfLetterPortrait-Width;
-		max-width: @HalfLetterPortrait-Width;
-		min-height: @HalfLetterPortrait-Height;
-		max-height: @HalfLetterPortrait-Height;
-	}
-	&.HalfLetterLandscape {
-		min-width: @HalfLetterLandscape-Width;
-		max-width: @HalfLetterLandscape-Width;
-		min-height: @HalfLetterLandscape-Height;
-		max-height: @HalfLetterLandscape-Height;
-	}
-	&.LetterPortrait {
-		min-width: @LetterPortrait-Width;
-		max-width: @LetterPortrait-Width;
-		min-height: @LetterPortrait-Height;
-		max-height: @LetterPortrait-Height;
-	}
-	&.LetterLandscape {
-		min-width: @LetterLandscape-Width;
-		max-width: @LetterLandscape-Width;
-		min-height: @LetterLandscape-Height;
-		max-height: @LetterLandscape-Height;
-	}
-	&.HalfLegalPortrait {
-		min-width: @HalfLegalPortrait-Width;
-		max-width: @HalfLegalPortrait-Width;
-		min-height: @HalfLegalPortrait-Height;
-		max-height: @HalfLegalPortrait-Height;
-	}
-	&.HalfLegalLandscape {
-		min-width: @HalfLegalLandscape-Width;
-		max-width: @HalfLegalLandscape-Width;
-		min-height: @HalfLegalLandscape-Height;
-		max-height: @HalfLegalLandscape-Height;
-	}
-	&.LegalPortrait {
-		min-width: @LegalPortrait-Width;
-		max-width: @LegalPortrait-Width;
-		min-height: @LegalPortrait-Height;
-		max-height: @LegalPortrait-Height;
-	}
-	&.LegalLandscape {
-		min-width: @LegalLandscape-Width;
-		max-width: @LegalLandscape-Width;
-		min-height: @LegalLandscape-Height;
-		max-height: @LegalLandscape-Height;
-	}
+    &.A4Portrait {
+        min-width: @A4Portrait-Width;
+        max-width: @A4Portrait-Width;
+        min-height: @A4Portrait-Height;
+        max-height: @A4Portrait-Height;
+    }
+    &.A6Portrait {
+        min-width: @A6Portrait-Width;
+        max-width: @A6Portrait-Width;
+        min-height: @A6Portrait-Height;
+        max-height: @A6Portrait-Height;
+    }
+    &.A6Landscape {
+        min-width: @A6Landscape-Width;
+        max-width: @A6Landscape-Width;
+        min-height: @A6Landscape-Height;
+        max-height: @A6Landscape-Height;
+    }
+    &.QuarterLetterPortrait {
+        min-width: @QuarterLetterPortrait-Width;
+        max-width: @QuarterLetterPortrait-Width;
+        min-height: @QuarterLetterPortrait-Height;
+        max-height: @QuarterLetterPortrait-Height;
+    }
+    &.QuarterLetterLandscape {
+        min-width: @QuarterLetterLandscape-Width;
+        max-width: @QuarterLetterLandscape-Width;
+        min-height: @QuarterLetterLandscape-Height;
+        max-height: @QuarterLetterLandscape-Height;
+    }
+    &.HalfLetterPortrait {
+        min-width: @HalfLetterPortrait-Width;
+        max-width: @HalfLetterPortrait-Width;
+        min-height: @HalfLetterPortrait-Height;
+        max-height: @HalfLetterPortrait-Height;
+    }
+    &.HalfLetterLandscape {
+        min-width: @HalfLetterLandscape-Width;
+        max-width: @HalfLetterLandscape-Width;
+        min-height: @HalfLetterLandscape-Height;
+        max-height: @HalfLetterLandscape-Height;
+    }
+    &.LetterPortrait {
+        min-width: @LetterPortrait-Width;
+        max-width: @LetterPortrait-Width;
+        min-height: @LetterPortrait-Height;
+        max-height: @LetterPortrait-Height;
+    }
+    &.LetterLandscape {
+        min-width: @LetterLandscape-Width;
+        max-width: @LetterLandscape-Width;
+        min-height: @LetterLandscape-Height;
+        max-height: @LetterLandscape-Height;
+    }
+    &.HalfLegalPortrait {
+        min-width: @HalfLegalPortrait-Width;
+        max-width: @HalfLegalPortrait-Width;
+        min-height: @HalfLegalPortrait-Height;
+        max-height: @HalfLegalPortrait-Height;
+    }
+    &.HalfLegalLandscape {
+        min-width: @HalfLegalLandscape-Width;
+        max-width: @HalfLegalLandscape-Width;
+        min-height: @HalfLegalLandscape-Height;
+        max-height: @HalfLegalLandscape-Height;
+    }
+    &.LegalPortrait {
+        min-width: @LegalPortrait-Width;
+        max-width: @LegalPortrait-Width;
+        min-height: @LegalPortrait-Height;
+        max-height: @LegalPortrait-Height;
+    }
+    &.LegalLandscape {
+        min-width: @LegalLandscape-Width;
+        max-width: @LegalLandscape-Width;
+        min-height: @LegalLandscape-Height;
+        max-height: @LegalLandscape-Height;
+    }
 }
 /*Margins*/
 .textWholePage .marginBox {
-	position: absolute; /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
+    position: absolute; /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
 }
 
 .SetMarginBoxHeight(@PageHeight) {
-	height: @PageHeight - (@MarginTop + @MarginBottom);
+    height: @PageHeight - (@MarginTop + @MarginBottom);
 }
 
 .marginBox{
-	position: absolute;
-	top: @MarginTop;
+    position: absolute;
+    top: @MarginTop;
 }
 
 .Device16x9Landscape{
-	//TODO: This is only for videos
-	background-color: black;
-	img{ background-color: white; } // so that transparent images show
+    //TODO: This is only for videos
+    background-color: black;
+    img{ background-color: white; } // so that transparent images show
 }
 
 .Device16x9Landscape, .Device16x9Portrait{
-	.origami-toggle{display:none}
-	.pageLabel{display:none}
+    .origami-toggle{display:none}
+    .pageLabel{display:none}
 
-	.marginBox {
+    .marginBox {
         .split-pane.horizontal-percent > .split-pane-component.position-top{
             margin-bottom: 0;
         }
@@ -309,88 +309,88 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 }
 
 .marginBox {
-	.SetMarginBox(@PageWidth, @PageHeight) {
-		height: @PageHeight - (@MarginTop + @MarginBottom);
-		width: @PageWidth - ( @MarginOuter + @MarginInner );
-		IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-			max-width: @PageWidth - ( @MarginOuter + @MarginInner );
-		}
-	}
-	.SetMarginBoxDevice(@PageWidth, @PageHeight) {
-		height: @PageHeight ;
-		width: @PageWidth;
-		IMG {
-			max-width: @PageWidth ;
-		}
-		top:0;
-		left:0 !important;
-	}
+    .SetMarginBox(@PageWidth, @PageHeight) {
+        height: @PageHeight - (@MarginTop + @MarginBottom);
+        width: @PageWidth - ( @MarginOuter + @MarginInner );
+        IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+            max-width: @PageWidth - ( @MarginOuter + @MarginInner );
+        }
+    }
+    .SetMarginBoxDevice(@PageWidth, @PageHeight) {
+        height: @PageHeight ;
+        width: @PageWidth;
+        IMG {
+            max-width: @PageWidth ;
+        }
+        top:0;
+        left:0 !important;
+    }
 
-	.Device16x9Portrait & {
-		.SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
+    .Device16x9Portrait & {
+        .SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
 
-		//that makes the margin box actually have no margin. Which looks good for the image, but
-		//looks bad for the text. So here we re-introduce a margin... a bit of a hack
-		.bloom-editable{
-			margin-left: 10px;
-			width: ~"calc(100% - 20px)"; // 10px for the left, 10px for the right
-		}
-	}
+        //that makes the margin box actually have no margin. Which looks good for the image, but
+        //looks bad for the text. So here we re-introduce a margin... a bit of a hack
+        .bloom-editable{
+            margin-left: 10px;
+            width: ~"calc(100% - 20px)"; // 10px for the left, 10px for the right
+        }
+    }
 
-	.Device16x9Landscape & {
-		.SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
+    .Device16x9Landscape & {
+        .SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
 
-		//make the top half take up the whole screen
-		.position-top{bottom: 0 !important;}
-		.position-bottom{display:none;}
-	}
-	.A4Portrait & {
-		.SetMarginBox(@A4Portrait-Width, @A4Portrait-Height);
-	}
-	.A4Landscape & {
-		.SetMarginBox(@A4Landscape-Width, @A4Landscape-Height);
-	}
-	.A5Portrait & {
-		.SetMarginBox(@A5Portrait-Width, @A5Portrait-Height);
-	}
-	.A5Landscape & {
-		.SetMarginBox(@A5Landscape-Width, @A5Landscape-Height);
-	}
-	.A6Portrait & {
-		.SetMarginBox(@A6Portrait-Width, @A6Portrait-Height);
-	}
-	.A6Landscape & {
-		.SetMarginBox(@A6Landscape-Width, @A6Landscape-Height);
-	}
-	.B5Portrait & {
-		.SetMarginBox(@B5Portrait-Width, @B5Portrait-Height);
-	}
+        //make the top half take up the whole screen
+        .position-top{bottom: 0 !important;}
+        .position-bottom{display:none;}
+    }
+    .A4Portrait & {
+        .SetMarginBox(@A4Portrait-Width, @A4Portrait-Height);
+    }
+    .A4Landscape & {
+        .SetMarginBox(@A4Landscape-Width, @A4Landscape-Height);
+    }
+    .A5Portrait & {
+        .SetMarginBox(@A5Portrait-Width, @A5Portrait-Height);
+    }
+    .A5Landscape & {
+        .SetMarginBox(@A5Landscape-Width, @A5Landscape-Height);
+    }
+    .A6Portrait & {
+        .SetMarginBox(@A6Portrait-Width, @A6Portrait-Height);
+    }
+    .A6Landscape & {
+        .SetMarginBox(@A6Landscape-Width, @A6Landscape-Height);
+    }
+    .B5Portrait & {
+        .SetMarginBox(@B5Portrait-Width, @B5Portrait-Height);
+    }
 
-	.QuarterLetterPortrait & {
-		.SetMarginBox(@QuarterLetterPortrait-Width, @QuarterLetterPortrait-Height);
-	}
-	.QuarterLetterLandscape & {
-		.SetMarginBox(@QuarterLetterLandscape-Width, @QuarterLetterLandscape-Height);
-	}
-	.HalfLetterPortrait & {
-		.SetMarginBox(@HalfLetterPortrait-Width, @HalfLetterPortrait-Height);
-	}
-	.LetterPortrait & {
-		.SetMarginBox(@LetterPortrait-Width, @LetterPortrait-Height);
-	}
-	.LetterLandscape & {
-		.SetMarginBox(@LetterLandscape-Width, @LetterLandscape-Height);
-	}
+    .QuarterLetterPortrait & {
+        .SetMarginBox(@QuarterLetterPortrait-Width, @QuarterLetterPortrait-Height);
+    }
+    .QuarterLetterLandscape & {
+        .SetMarginBox(@QuarterLetterLandscape-Width, @QuarterLetterLandscape-Height);
+    }
+    .HalfLetterPortrait & {
+        .SetMarginBox(@HalfLetterPortrait-Width, @HalfLetterPortrait-Height);
+    }
+    .LetterPortrait & {
+        .SetMarginBox(@LetterPortrait-Width, @LetterPortrait-Height);
+    }
+    .LetterLandscape & {
+        .SetMarginBox(@LetterLandscape-Width, @LetterLandscape-Height);
+    }
 
-	.HalfLegalPortrait & {
-		.SetMarginBox(@HalfLegalPortrait-Width, @HalfLegalPortrait-Height);
-	}
-	.LegalPortrait & {
-		.SetMarginBox(@LegalPortrait-Width, @LegalPortrait-Height);
-	}
-	.LegalLandscape & {
-		.SetMarginBox(@LegalLandscape-Width, @LegalLandscape-Height);
-	}
+    .HalfLegalPortrait & {
+        .SetMarginBox(@HalfLegalPortrait-Width, @HalfLegalPortrait-Height);
+    }
+    .LegalPortrait & {
+        .SetMarginBox(@LegalPortrait-Width, @LegalPortrait-Height);
+    }
+    .LegalLandscape & {
+        .SetMarginBox(@LegalLandscape-Width, @LegalLandscape-Height);
+    }
 }
 
 //Currently, in edit mode there is only one page in the html, so every
@@ -398,18 +398,18 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 //as if it were odd is just confusing for the user.
 //Therefore we only turn on left-vs.right distinctions when when making PDF.
 .publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
-	&.bloom-page:nth-of-type(odd){
-		.marginBox{
-			/* shifted margin */
-			left: @MarginOuter;
-		}
-	}
-	&.bloom-page:nth-of-type(even){
-		.marginBox{
-			/* shifted margin */
-			left: @MarginInner;
-		}
-	}
+    &.bloom-page:nth-of-type(odd){
+        .marginBox{
+            /* shifted margin */
+            left: @MarginOuter;
+        }
+    }
+    &.bloom-page:nth-of-type(even){
+        .marginBox{
+            /* shifted margin */
+            left: @MarginInner;
+        }
+    }
 }
 
 // Note: we aren't making any assumption about this or that landscape being calendar fold.
@@ -417,10 +417,10 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 // making the pdf). From the stylesheet's view, we just need to see this calendarFold class on the Body
 
 .calendarFold{
-	.marginBox {
-		/* balanced margin*/
-		left: @MarginBalanced;
-	}
+    .marginBox {
+        /* balanced margin*/
+        left: @MarginBalanced;
+    }
 }
 
 //in right-to-left books, the way our pdf booklet maker works, it just reverses
@@ -430,12 +430,12 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 
 .rightToLeft.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
   &.bloom-page:nth-of-type(odd) .marginBox  {
-	  /* swap margins on right to left */
-	  left: @MarginInner;
+      /* swap margins on right to left */
+      left: @MarginInner;
   }
   &.bloom-page:nth-of-type(even) .marginBox  {
-	  /* swap margins on right to left */
-	  left: @MarginOuter;
+      /* swap margins on right to left */
+      left: @MarginOuter;
   }
 }
 
@@ -450,12 +450,12 @@ body:not(.publishMode) .marginBox{
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
 label.bubble, label.placeholder
 {
-	display: none;
+    display: none;
 }
 .superscript
 {
-	vertical-align: super;
-	font-size: 80%;
+    vertical-align: super;
+    font-size: 80%;
 }
 /* This is the html default, but our Browser.reset.* unfortunately overrides it. */
 sup {
@@ -463,62 +463,62 @@ sup {
 }
 h1
 {
-	font-size: 1.5em;
+    font-size: 1.5em;
 }
 
 h2 {
-	font-size: 1.2em;
+    font-size: 1.2em;
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/
 /* If this is not important, it can be overridden by display:flex in languageDisplayTemplate.css (BL-3555, BL-3711) */
 .box-header-off{
-	display: none !important;
+    display: none !important;
 }
 
 // page-specific stylesheets can call this with (false) to turn it off
 .Common-SeparateMultilingualEditables(@StandardMultilingualEditBoxSeparation);
 
 .customPage {
-	.bloom-imageContainer {
-		width: ~"calc(100% - 1px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
-		height: ~"calc(100% - 3px)"; //hack: this should logically be 1px, but 3 was needed, so I'm missing something, or maybe it's about rounding and such.
+    .bloom-imageContainer {
+        width: ~"calc(100% - 1px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
+        height: ~"calc(100% - 3px)"; //hack: this should logically be 1px, but 3 was needed, so I'm missing something, or maybe it's about rounding and such.
 
-		// above so buttons show
-		z-index: 1000;
-		// Solves BL-1033 small picture frames cycling red overflow
+        // above so buttons show
+        z-index: 1000;
+        // Solves BL-1033 small picture frames cycling red overflow
         overflow: hidden;
-	}
+    }
     .bloom-editable {
         overflow-y: hidden;
     }
-	.bloom-translationGroup{
-		height: ~"calc(100% - 2px)";
-		width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
-	}
-	/* This is in order to divide up the whole section in equal parts.
-		I'm not sure, though...it looks better when you first make the page. But it actually reduces the flexibility for the user a bit. Hmmm*/
-	&.bloom-bilingual{
-		.bloom-editable {
-			// tempting: hard to get right with all the different page layouts in the new customizable world  height:46%;
-			height: auto;
-		}
+    .bloom-translationGroup{
+        height: ~"calc(100% - 2px)";
+        width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
+    }
+    /* This is in order to divide up the whole section in equal parts.
+        I'm not sure, though...it looks better when you first make the page. But it actually reduces the flexibility for the user a bit. Hmmm*/
+    &.bloom-bilingual{
+        .bloom-editable {
+            // tempting: hard to get right with all the different page layouts in the new customizable world  height:46%;
+            height: auto;
+        }
     }
     &.bloom-trilingual{
       .bloom-editable {
-		  // tempting: hard to get right with all the different page layouts in the new customizable world height:28%;
-		  height: auto;
-	  }
+          // tempting: hard to get right with all the different page layouts in the new customizable world height:28%;
+          height: auto;
+      }
     }
 
-	.split-pane-component {
-		//Enhance: this doesn't buy us much... it would be more helpful if the minimum was
-		// the min-height of the child
-		min-height: @defaultLineHeight;
-	}
-	//&.A5Portrait.bloom-monolingual .bloom-translationGroup {
-	//	height: 99%;
-	//	width: 99%;
-	//}
+    .split-pane-component {
+        //Enhance: this doesn't buy us much... it would be more helpful if the minimum was
+        // the min-height of the child
+        min-height: @defaultLineHeight;
+    }
+    //&.A5Portrait.bloom-monolingual .bloom-translationGroup {
+    //	height: 99%;
+    //	width: 99%;
+    //}
 }
 
 
@@ -531,24 +531,24 @@ h2 {
 //Each .bloom-editable has a lang attribute to tell us what language it is in.
 //Each of these is assumed to be unwanted:
 .bloom-editable	{
-	display: none;
+    display: none;
 }
 // The code reads the (bloom-visibility-template-langs + collection langs + multlingual settings)
 // and set this if it determines that this would normally be visible:
 .bloom-editable.bloom-visibility-code-on {
-	display: block;
+    display: block;
 }
 //If not the user can still make it visible:
 .bloom-editable.bloom-visibility-user-on {
-	display: block;
+    display: block;
 }
 //And the user can alwyas hide it
 .bloom-editable.bloom-visibility-user-off {
-	display: none !important;
+    display: none !important;
 }
 .bloom-translationGroup {
-	display: flex;
-	flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 // And now we can control the order using Flexbox "order" attribute:
 //sadly, as of Dec 2016, browsers do not implement the full attr() spec, so this rule is rejected
@@ -558,11 +558,11 @@ h2 {
 // Note, we could still use a data-* attribute and do this instead: [data-language-order='1']
 // But for now, we're sticking with the older .bloom-content* classes.
 .bloom-content1 {
-	order: 1;
+    order: 1;
 }
 .bloom-content2 {
-	order: 2;
+    order: 2;
 }
 .bloom-content3 {
-	order: 3;
+    order: 3;
 }

@@ -5,22 +5,22 @@
 
 
 div.toolboxRoot {
-	display: inline-block;
-	background-color: @toolboxBackgroundColor;
-	color: white;
-	font-size: x-small;
-	position: fixed;
-	top: 25px; // leaves room for pure-drawer control for showing and hiding toolbox
-	bottom: 1px;
-	right: 0;
-	width: 200px;
-	z-index: 18000; /* Just over help bubbles, but under topic dialog */
-	
-	.ui-widget-content{
-		background: none; // clear out the backgroudn image jquery-ui adds
-		background-color: @toolboxBackgroundColor;
-		border: none;
-	}
+    display: inline-block;
+    background-color: @toolboxBackgroundColor;
+    color: white;
+    font-size: x-small;
+    position: fixed;
+    top: 25px; // leaves room for pure-drawer control for showing and hiding toolbox
+    bottom: 1px;
+    right: 0;
+    width: 200px;
+    z-index: 18000; /* Just over help bubbles, but under topic dialog */
+
+    .ui-widget-content{
+        background: none; // clear out the backgroudn image jquery-ui adds
+        background-color: @toolboxBackgroundColor;
+        border: none;
+    }
 }
 
 .ui-accordion-header { -moz-user-select: none; }
@@ -40,62 +40,62 @@ div.clear, table.clear { clear: both; }
 .align-top { vertical-align: top; }
 
 input[type="checkbox"] {
-	color: #fff;
-	background-color: transparent;
-	border-color: #fff;
+    color: #fff;
+    background-color: transparent;
+    border-color: #fff;
 }
 
 div.checkbox {
-	width: 11px !important;
-	height: 11px !important;
-	border: 1px solid #fff;
-	display: inline-block;
-	position: relative;
-	float: left;
-	margin: 2px 6px 6px;
-	font-size: 17px;
-	overflow: visible;
-	line-height: 4px;
-	cursor: pointer;
-	-moz-user-select: none;
+    width: 11px !important;
+    height: 11px !important;
+    border: 1px solid #fff;
+    display: inline-block;
+    position: relative;
+    float: left;
+    margin: 2px 6px 6px;
+    font-size: 17px;
+    overflow: visible;
+    line-height: 4px;
+    cursor: pointer;
+    -moz-user-select: none;
 }
 
 div.checkbox-label {
-	position: relative;
-	float: left;
-	-moz-user-select: none;
-	cursor: default;
+    position: relative;
+    float: left;
+    -moz-user-select: none;
+    cursor: default;
 }
 
 .ui-accordion h3[data-panelId="decodableReaderTool"],
 .ui-accordion h3[data-panelId="leveledReaderTool"],
 .ui-accordion h3[data-panelId="talkingBookTool"] {
-	padding-left: 28px;
+    padding-left: 28px;
 }
 
 .ui-accordion h3[data-panelId="decodableReaderTool"] span.ui-accordion-header-icon,
 .ui-accordion h3[data-panelId="leveledReaderTool"] span.ui-accordion-header-icon {
-	background-size: 16px 16px;
-	background-position: 0 0;
-	display: inline-block;
+    background-size: 16px 16px;
+    background-position: 0 0;
+    display: inline-block;
 }
 
 .ui-accordion h3[data-panelId="talkingBookTool"] span.ui-accordion-header-icon {
-	background-size: 12px 16px;
-	background-position: 2px 0;
-	display: inline-block;
+    background-size: 12px 16px;
+    background-position: 2px 0;
+    display: inline-block;
 }
 
 .ui-accordion h3[data-panelId="decodableReaderTool"] span.ui-accordion-header-icon {
-	background-image:url('/bloom/images/keys-white.png') !important;
+    background-image:url('/bloom/images/keys-white.png') !important;
 }
 
 .ui-accordion h3[data-panelId="leveledReaderTool"] span.ui-accordion-header-icon {
-	background-image:url('/bloom/images/steps-white.png') !important;
+    background-image:url('/bloom/images/steps-white.png') !important;
 }
 
 .ui-accordion h3[data-panelId="talkingBookTool"] span.ui-accordion-header-icon {
-	background-image:url('/bloom/images/microphone-white.svg') !important;
+    background-image:url('/bloom/images/microphone-white.svg') !important;
 }
 
 // Dialogs launched from the toolbox need to be in front of everything,
