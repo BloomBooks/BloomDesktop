@@ -92,4 +92,44 @@ export class EditableDivUtils {
     // an equivalent place in an adjacent node).
     return false;
   }
+
+  static WaitForCKEditorReady(window: Window, targetBox: any, callback: (target: any) => any) {
+    var editorInstances = (<any>window).CKEDITOR.instances;
+    for (var i = 1; ; i++) {
+      var instance = editorInstances['editor' + i];
+      if (instance == null) {
+        break; // if we get here all instances are ready
+      }
+      if (!instance.instanceReady) {
+        instance.on('instanceReady', e => callback(targetBox));
+        return;
+      }
+    }
+  }
+
+  // Positions the dialog box so that it is completely visible, so that it does not extend below the
+  // current viewport.
+  // @param dialogBox
+  static positionInViewport(dialogBox: JQuery): void {
+
+    // get the current size and position of the dialogBox
+    var elem: HTMLElement = dialogBox[0];
+    var top = elem.offsetTop;
+    var height = elem.offsetHeight;
+
+    // get the top of the dialogBox in relation to the top of its containing elements
+    while (elem.offsetParent) {
+      elem = <HTMLElement>elem.offsetParent;
+      top += elem.offsetTop;
+    }
+
+    // diff is the portion of the dialogBox that is below the viewport
+    var diff = (top + height) - (window.pageYOffset + window.innerHeight);
+    if (diff > 0) {
+      var offset = dialogBox.offset();
+
+      // the extra 30 pixels is for padding
+      dialogBox.offset({ left: offset.left, top: offset.top - diff - 30 });
+    }
+  }
 }
