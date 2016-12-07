@@ -399,7 +399,7 @@ namespace BloomTests.web
 
 				server.MakeReply(transaction);
 
-				Assert.AreEqual(transaction.ReplyContents, "This is the one in DistFiles");
+				Assert.AreEqual(transaction.ReplyContents.Trim(), "This is the one in DistFiles");
 			}
 		}
 		[Test]
