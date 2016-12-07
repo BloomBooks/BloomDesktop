@@ -3,11 +3,23 @@ root = true
 # Defaults
 [*]
 trim_trailing_whitespace = true
-
-[*.cs]
-indent_style = tab
+insert_final_newline = true
+end_of_line = crlf
+charset = utf-8
 indent_size = 4
+
+[*.{cs,csproj,sln}]
+indent_style = tab
+
+[*.pug]
+indent_style = tab
+
+[*.{ts,json,js,md,jsx,css,less}]
+indent_style = space
 
 [*.tmx]
 indent_style = space
 indent_size = 2
+
+[*.sh]
+end_of_line = lf
