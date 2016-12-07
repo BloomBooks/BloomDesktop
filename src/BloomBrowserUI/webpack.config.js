@@ -17,70 +17,70 @@ var babelQueryString = 'presets[]='+require.resolve('babel-preset-es2015')+',pre
 var babelString =  require.resolve('babel-loader')+'?'+babelQueryString;
 
 module.exports = {
-    context: __dirname,
-    devtool: 'source-map',
-    //Bloom is not (yet) one webapp; it's actually a several loosely related ones.
-    //So we have multiple "entry points" that we need to emit. Fortunately the
-    //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
-    entry: { editTabRootBundle:  './bookEdit/editViewFrame.ts',
-             //editablePageBootstrap: './bookEdit/editablePageBootstrap.ts',
-             readerSetupBundle: './bookEdit/toolbox/readers/readerSetup/readerSetup.ts',
-             editablePageBundle: './bookEdit/editablePage.ts',
-             bookPreviewBundle: './bookPreview/bookPreview.ts',
-             toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.ts',
-             pageChooserBundle: ['./pageChooser/page-chooser.ts'],//https://github.com/webpack/webpack/issues/300
-             pageThumbnailListBundle: './bookEdit/pageThumbnailList/pageThumbnailList.ts',
-             testBundle: globule.find(["./bookEdit/**/*Spec.ts", "./bookEdit/**/*Spec.js","./lib/**/*Spec.ts", "./lib/**/*Spec.js"])
+        context: __dirname,
+        devtool: 'source-map',
+        //Bloom is not (yet) one webapp; it's actually a several loosely related ones.
+        //So we have multiple "entry points" that we need to emit. Fortunately the
+        //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
+        entry: { editTabRootBundle:  './bookEdit/editViewFrame.ts',
+                         //editablePageBootstrap: './bookEdit/editablePageBootstrap.ts',
+                         readerSetupBundle: './bookEdit/toolbox/readers/readerSetup/readerSetup.ts',
+                         editablePageBundle: './bookEdit/editablePage.ts',
+                         bookPreviewBundle: './bookPreview/bookPreview.ts',
+                         toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.ts',
+                         pageChooserBundle: ['./pageChooser/page-chooser.ts'],//https://github.com/webpack/webpack/issues/300
+                         pageThumbnailListBundle: './bookEdit/pageThumbnailList/pageThumbnailList.ts',
+                         testBundle: globule.find(["./bookEdit/**/*Spec.ts", "./bookEdit/**/*Spec.js","./lib/**/*Spec.ts", "./lib/**/*Spec.js"])
 //             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//This slowed down webpack a ton, becuase the way it works is that it 1st it finds it all, then it excludes node_modules
-           },
+                     },
 
-    output: {
-        path: path.join(__dirname, outputDir),
-        filename: "[name].js",
+        output: {
+                path: path.join(__dirname, outputDir),
+                filename: "[name].js",
 
-        libraryTarget: "var",
+                libraryTarget: "var",
 
-        //makes a single entry point module's epxorts accessible via Exports.
-        //Note that if you include more than one entry point js in the frame, the second one will overwrite the Exports var
-        // (see the other way of doing this, below, if that becomes necessary for some reason)
-        library: "FrameExports"
+                //makes a single entry point module's epxorts accessible via Exports.
+                //Note that if you include more than one entry point js in the frame, the second one will overwrite the Exports var
+                // (see the other way of doing this, below, if that becomes necessary for some reason)
+                library: "FrameExports"
 
-    },
+        },
 
-    resolve: {
-        root: ['.'],
-        alias: {
-              'react-dom': pathToReactDom,
-              'react': pathToReact // the point of this is to use the minified version. https://christianalfoni.github.io/react-webpack-cookbook/Optimizing-rebundling.html
-            },
-        modulesDirectories: [pathToOriginalJavascriptFilesInLib, node_modules, pathToBookEditJS,pathToOriginalJavascriptFilesInModified_Libraries],
-        extensions: ['', '.js', '.jsx', '.ts', '.tsx'] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
-    },
-    plugins: [
-           new webpack.optimize.CommonsChunkPlugin("common", "commonBundle.js"),
-                         //answer on various legacy issues: http://stackoverflow.com/questions/28969861/managing-jquery-plugin-dependency-in-webpack?lq=1
-            //prepend var $ = require("jquery") every time it encounters the global $ identifier or "jQuery".
-            new webpack.ProvidePlugin({
-                $: "jquery",
-                jQuery: "jquery",
-                "window.jQuery": "jquery"
-            })
-      ],
-    module: {
+        resolve: {
+                root: ['.'],
+                alias: {
+                            'react-dom': pathToReactDom,
+                            'react': pathToReact // the point of this is to use the minified version. https://christianalfoni.github.io/react-webpack-cookbook/Optimizing-rebundling.html
+                        },
+                modulesDirectories: [pathToOriginalJavascriptFilesInLib, node_modules, pathToBookEditJS,pathToOriginalJavascriptFilesInModified_Libraries],
+                extensions: ['', '.js', '.jsx', '.ts', '.tsx'] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
+        },
+        plugins: [
+                     new webpack.optimize.CommonsChunkPlugin("common", "commonBundle.js"),
+                                                 //answer on various legacy issues: http://stackoverflow.com/questions/28969861/managing-jquery-plugin-dependency-in-webpack?lq=1
+                        //prepend var $ = require("jquery") every time it encounters the global $ identifier or "jQuery".
+                        new webpack.ProvidePlugin({
+                                $: "jquery",
+                                jQuery: "jquery",
+                                "window.jQuery": "jquery"
+                        })
+            ],
+        module: {
 
-        loaders: [
-           { test: /\.ts(x?)$/, loader: 'ts-loader' },
-           {
-               test: /\.(js|jsx)$/,
-               //jquery-ui is currently *not* excluded because we added some imports to it
-               exclude: [/node_modules/, /ckeditor/, /jquery-ui/, /-min/, /qtip/, /xregexp-all-min.js/],
+                loaders: [
+                     { test: /\.ts(x?)$/, loader: 'ts-loader' },
+                     {
+                             test: /\.(js|jsx)$/,
+                             //jquery-ui is currently *not* excluded because we added some imports to it
+                             exclude: [/node_modules/, /ckeditor/, /jquery-ui/, /-min/, /qtip/, /xregexp-all-min.js/],
 //               loader: 'babel?presets[]=react,presets[]=es2015',
-               //loader: 'babel?presets[]='+__dirname+"/node_modules/babel-preset-es2015",
-               loader: babelString
-           },
-            // { test: /\.ts(x?)$/, loader: 'babel-loader!ts-loader' },
-            // { test: /\.less$/, loader: "style!css!less" }
-        ],
-        noParse: [pathToReactDom,pathToReact]
-    }
+                             //loader: 'babel?presets[]='+__dirname+"/node_modules/babel-preset-es2015",
+                             loader: babelString
+                     },
+                        // { test: /\.ts(x?)$/, loader: 'babel-loader!ts-loader' },
+                        // { test: /\.less$/, loader: "style!css!less" }
+                ],
+                noParse: [pathToReactDom,pathToReact]
+        }
 };

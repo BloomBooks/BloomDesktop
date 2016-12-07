@@ -6,13 +6,13 @@
  * @returns {Object}
  */
 $.fn.onSafe = function (eventName, data, handler) {
-    this.each(function () {
-        if (data)
-            $(this).off(eventName).on(eventName, data, handler);
-        else
-            $(this).off(eventName).on(eventName, handler);
-    });
-    return this;
+        this.each(function () {
+                if (data)
+                        $(this).off(eventName).on(eventName, data, handler);
+                else
+                        $(this).off(eventName).on(eventName, handler);
+        });
+        return this;
 };
 
 //# sourceMappingURL=jquery.onSafe.js.map
