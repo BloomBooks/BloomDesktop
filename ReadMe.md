@@ -24,7 +24,7 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 You'll need [nodejs](https://nodejs.org/en/) installed. On windows, the degree of [nesting inside of node_modules](https://github.com/Microsoft/nodejstools/issues/69) becomes a problem, but this is helped by NPM versions >= 3. To get a newish NPM, you should install a newish [nodejs](https://nodejs.org/en/), e.g. 5.4 or greater.
 
-This will build and test the Typescript, javascript, less, and jade:
+This will build and test the Typescript, javascript, less, and pug:
 
     cd src/BloomBrowserUI
     npm install
@@ -43,7 +43,7 @@ Which will quickly update things each time you save a file.  Similarly, you can 
 
 ``gulp watch``
 
-to keep less and jade (pug) up to date if you're working in those kinds of files.
+to keep less and pug up to date if you're working in those kinds of files.
 
 ## Building C# Source Code ##
 
