@@ -1,0 +1,41 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    link(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')
+    link(rel='stylesheet', href='/bloom/lib/jquery-ui.css')
+    script(src='/bloom/node_modules/jquery/dist/jquery.js')
+    script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+    script.
+      $(function () { $('#device').resizable({ minHeight: 300, minWidth: 200, handles: { 'se': '#BottomRightHandle' } }); });
+  //_AudioSituationClass_ is replaced at runtime
+  body._AudioSituationClass_
+    #sideColumn
+      p এই আপনার বইটির #[a(href='https://bn.wikipedia.org/wiki/ePUB') ePUB] (ই-বুক) সংস্করণ.
+        span.showForTalkingBooks এটি একটি অডিও রয়েছে, যাতে নতুন পাঠকদের যেমন তারা পড়তে শুনতে পারেন।
+      p.showWhenHaveAudioButNotMakingTalkingBook এই বই কিছু রেকর্ডিং হয়েছে, কিন্তু এই অডিওটি EPUB মধ্যে অন্তর্ভুক্ত করা হয় না।
+
+      h3 প্রি
+      p আপনি এই কৃত্রিম যন্ত্রের পর্দার নীচের অংশে ডানদিকে কোণায় অবস্থান টেনে প্রাকদর্শন মাপ পরিবর্তন করতে পারেন। আপনার বই বিভিন্ন আকারের স্ক্রিনে দেখবে কিভাবে দেখুন। 
+      :marked
+        এ পৃষ্ঠায় [Radium](http://readium.org/) ePub পাঠক ব্যবহার। বই সম্ভবত বিভিন্ন পাঠকদের উপর বিভিন্ন দেখবে। 
+      p.showForTalkingBooks
+        | পূর্বরূপ এখানে এখনো খেলতে পারেন টকিং বই। আপনি Adobe এর ফ্রি #[a(href='http://www.adobe.com/solutions/ebook/digital-editions.html') ডিজিটাল এডিশন] ব্যবহার করে শুনতে পারেন
+        | ই-বুক রিডার। 
+      h3 আপনার ডিভাইস সম্মুখের দিকে এই বই পেয়ে
+      p একজন কুশলী ভাবে আপনার ফোন থেকে বই পেতে উভয় আপনার কম্পিউটার এবং আপনার ফোন / ট্যাবলেট উপর ড্রপবক্স বা অনুরূপ সেবা সেট আপ করা হয়। শুধু EPUB সংরক্ষণ ক্লিক করুন এবং তারপর আপনার ড্রপবক্স ফোল্ডারে নির্বাচন। আপনার ফোন উপর, ড্রপবক্স অ্যাপ্লিকেশন খুলুন এবং আপনার বই নির্বাচন। আপনি একটি ল্যাপটপ ব্যবহার করা হলে, আপনি এছাড়াও বিনামূল্যে #[a(href='http://shareit.lenovo.com/') ShareIt] প্রোগ্রাম একটি ফোন বা ট্যাবলেট থেকে আপনার ল্যাপটপ থেকে ফাইল পাঠাতে চেষ্টা করতে পারেন। 
+      h3 প্রস্তাবিত রিডার
+      :marked
+        আমাদের টেস্টিং [Gitden রিডার] (/bloom/api/help/Concepts/Gitden_Reader.htm)
+        দেখিয়েছেন অ্যান্ড্রয়েড ও আইওএস (আইফোন &amp; iPad) জন্য একটি ভাল পছন্দ হতে ডিভাইস। 
+      p.showForTalkingBooks
+        | একটি ফোন বা ট্যাবলেট উপর Gitden ব্যবহার এই টকিং বুক শোনার জন্য, আপনি Gitden এর "টেক্সট ভাষ্য" বৈশিষ্ট্য নিষ্ক্রিয় করার প্রয়োজন হবে। তারপর এটা আপনি অডিও নিয়ন্ত্রণগুলি দেখান হবে। 
+      h3.showWhenNoAudio এটা আলাপ করতে
+      p.showWhenNoAudio
+        | আপনি একটি "টকিং বুক" যে নতুন পাঠকদের পাঠযোগ্য বরাবর সঙ্গে করতে করতে, ব্লুম এর #[a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') টকিং বুক টুল]
+        |  ব্যবহার করতে চান তাহলে ভয়েস রেকর্ডিং যোগ করার জন্য। 
+      h3 আমাদের কাছে লিখুন
+      p আপনি ফোন এবং অন্যান্য ইসলাম পাঠকদের ব্যবহারের জন্য ব্লুম বই বিতরণ আগ্রহী?সেখানে কিছু আপনি আমাদের প্রয়োজন হবে আগে এটা আপনার জন্য দরকারী কি করতে হয়? সাহায্য ব্যবহার করুন: একটি সমস্যার প্রতিবেদন লিখুন কমান্ড আমাদের প্রতিক্রিয়া পাঠাতে। ধন্যবাদ!
+    #device.ui-resizable
+      iframe(src='readium-cloudreader.htm?epub={EPUBFOLDER}')
+      #BottomRightHandle.ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-grip-diagonal-se
