@@ -99,9 +99,6 @@ namespace Bloom.Book
 			if (!HasFatalError && IsEditable)
 			{
 				_bookData.SynchronizeDataItemsThroughoutDOM();
-
-				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
-				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
 			}
 
 			//if we're showing the user a shell/template book, pick a color for it
@@ -278,6 +275,7 @@ namespace Bloom.Book
 			AddCreationTypeAttribute(pageDom);
 
 			pageDom.AddStyleSheet("editPaneGlobal.css");
+			pageDom.AddStyleSheet("languageDisplay.css");
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
@@ -385,7 +383,7 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css" })
+			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "languageDisplay.css" })
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
@@ -1485,8 +1483,7 @@ namespace Bloom.Book
 				DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
 				".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
-			var header = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//head");
-			header.AppendChild(colorStyle);
+			dom.Head.AppendChild(colorStyle);
 		}
 
 
@@ -2049,33 +2046,6 @@ namespace Bloom.Book
 				return PublishModel.BookletLayoutMethod.Calendar;
 			else
 				return PublishModel.BookletLayoutMethod.SideFold;
-		}
-
-		/// <summary>
-		/// This stylesheet is used to hide all the elements we don't want to show, e.g. because they are not in the languages of this publication.
-		/// We read in the template version, then replace some things and write it out to the publication folder.
-		/// </summary>
-		private void WriteLanguageDisplayStyleSheet( )
-		{
-			var template = RobustFile.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
-			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
-
-			// Use a temporary file pathname in the current book's folder.  This is needed to ensure proper permissions are granted
-			// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
-			// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
-			// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
-			using (var temp = TempFile.InFolderOf(path))	// We don't need a .css extension for the temporary file.
-			{
-				RobustFile.WriteAllText(temp.Path,
-					template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code)
-						.Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
-
-				//hoping this helps with the occasional report we were getting where the files were in Dropbox and
-				//the previous File.Delete(path) would fail:
-				FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, path, null);
-			}
-			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
-			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
 		}
 
 		/// <summary>

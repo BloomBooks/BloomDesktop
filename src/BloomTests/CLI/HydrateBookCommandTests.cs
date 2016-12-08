@@ -155,6 +155,9 @@ namespace BloomTests.CLI
 
 			AssertThatXmlIn.Dom(dom)
 				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']",1);
+
+			AssertThatXmlIn.Dom(dom)
+				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='languageDisplay.css']", 1);
 			AssertThatXmlIn.Dom(dom)
 				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='Video-XMatter.css']", 1);
 		}

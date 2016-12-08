@@ -477,6 +477,7 @@ namespace Bloom.Publish
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
+				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"languageDisplay.css"));
 			}
 
 			RemoveUnwantedContent(pageDom);

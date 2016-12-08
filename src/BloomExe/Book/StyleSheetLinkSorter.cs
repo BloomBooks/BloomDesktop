@@ -21,16 +21,18 @@ namespace Bloom.Book
 			{
 				_values = new Dictionary<string, int>();
 				_values.Add("basepage.css", 10); // the opening bid
-				_values.Add("languagedisplay.css", 20); // the opening bid
-				_values.Add("editmode.css", 30);
-				_values.Add("editoriginalmode.css", 40);
-				_values.Add("previewmode.css", 50);
-				_values.Add("origami.css", 60);
+				_values.Add("editmode.css", 20);
+				_values.Add("editoriginalmode.css", 30);
+				_values.Add("previewmode.css", 40);
+				_values.Add("origami.css", 50);
+
 
 				//Note that kDefaultValueForStyleSheetsThatShouldListInTheMiddle should fall in between here
 				//for the template-specific stuff, but we don't know those names
 
-				_values.Add("settingsCollectionStyles.css".ToLowerInvariant(), 1000);
+				//NB: I (JH) don't for sure know yet what the order of this should be. I think it should be last-ish.
+				_values.Add("languageDisplay.css".ToLowerInvariant(), 1000);
+				_values.Add("settingsCollectionStyles.css".ToLowerInvariant(), 1500);
 				_values.Add("customCollectionStyles.css".ToLowerInvariant(), 2000); // the almost last word
 				_values.Add("customBookStyles.css".ToLowerInvariant(), 3000); // the very last word
 			}
