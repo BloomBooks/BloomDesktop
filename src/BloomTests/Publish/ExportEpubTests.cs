@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom;
@@ -97,7 +96,7 @@ namespace BloomTests.Publish
 		/// <returns></returns>
 		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraImages = "",
 			string extraStyleSheet= "", string parentDivId = "somewrapper", string extraPages="", string[] images = null,
-			string extraEditGroupClasses = "", string extraEditDivClasses = "")
+			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto")
 		{
 			if (images == null)
 				images = new string[0];
@@ -106,7 +105,7 @@ namespace BloomTests.Publish
 				imageDivs += "<div><img src='" + image + ".png'></img></div>\n";
 			var body = string.Format(@"<div class='bloom-page" + extraPageClass + @"'>
 						<div id='" + parentDivId + @"' class='marginBox'>
-							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {7}' lang=''>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {7}' lang='' data-default-languages='{8}'>
 								<div class='bloom-editable {6}' lang='{0}'>
 									{1}
 								</div>
@@ -118,7 +117,7 @@ namespace BloomTests.Publish
 						</div>
 					</div>
 					{5}",
-				lang, text, extraContent, imageDivs, extraImages, extraPages, extraEditDivClasses, extraEditGroupClasses);
+				lang, text, extraContent, imageDivs, extraImages, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
 			SetDom(body,
 				string.Format(@"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
 							{0}
@@ -502,7 +501,7 @@ namespace BloomTests.Publish
 		/// Content whose display properties resolves to display:None should be removed.
 		/// This should not include National1 in XMatter.
 		/// </summary>
-		[Test, Ignore("To be fixed: BL-4062")]
+		[Test]
 		public void National1_InXMatter_IsNotRemoved()
 		{
 			// This test does some real navigation so needs the server to be running.
@@ -517,8 +516,11 @@ namespace BloomTests.Publish
 								<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
 					extraStyleSheet: "<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 					extraEditGroupClasses: "bookTitle",
-					extraEditDivClasses: "");
-				//CopyFactoryXMatter(server, book);
+					defaultLanguages: "V,N1");
+
+				// Set up the visibility classes correctly
+				book.UpdateEditableAreasOfElement(book.OurHtmlDom);
+
 				MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
 				CheckBasicsInManifest();
 				CheckBasicsInPage();
@@ -550,8 +552,8 @@ namespace BloomTests.Publish
 		/// Content whose display properties resolves to display:None should be removed.
 		/// The default rules on a credits page show original acknowledgments only in national language.
 		/// </summary>
-		[Test, Ignore("I've spent too long trying to understand this test for now. This is why many people say one test per test.. else it becomes had to untangle.")]
-		public void OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved()
+		[Test]
+		public void OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved()
 		{
 			// This test does some real navigation so needs the server to be running.
 			using (GetTestServer())
@@ -566,13 +568,17 @@ namespace BloomTests.Publish
 					extraStyleSheet:
 						"<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 					extraEditGroupClasses: "originalAcknowledgments",
-					extraEditDivClasses: "bloom-contentNational1"); // <----- this is no longer used.
-				MakeEpub("output", "OriginalAcknowledgents_InCreditsPage_InVernacular_IsRemoved", book);
+					defaultLanguages: "N1");
+
+				// Set up the visibility classes correctly
+				book.UpdateEditableAreasOfElement(book.OurHtmlDom);
+
+				MakeEpub("output", "OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved", book);
 				CheckBasicsInManifest();
 				CheckBasicsInPage();
 				//Thread.Sleep(20000);
 
-				Console.WriteLine(System.Xml.Linq.XElement.Parse(_page1Data).ToString());
+				//Console.WriteLine(XElement.Parse(_page1Data).ToString());
 
 				var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
 				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
