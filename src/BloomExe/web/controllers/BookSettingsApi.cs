@@ -54,12 +54,29 @@ namespace Bloom.Api
 
 		private bool GetIsBookATemplate()
 		{
-			return false;
+			return _bookSelection.CurrentSelection.BookInfo.Type == Book.Book.BookType.Template;
 		}
 
 		private void UpdateBookTemplateMode(bool isTemplateBook)
 		{
+			_bookSelection.CurrentSelection.BookInfo.Type = isTemplateBook ?
+			Book.Book.BookType.Template : Book.Book.BookType.Publication;
 
+			/* TODO (non-exhaustive)
+			 * Actually make changes to the pages of the book.
+			 * Don't lose setting after reopening book.
+			 * Add visual feedback that this is a template
+			 * Add UI pointer to more help on this topic.
+			 * 
+			 * Other things to think about/test
+				User modified styles
+				filename endcoding tests
+				src vs vern collections
+				same name in src collections already
+				multiple copies (different versions) in src collections
+				"template" in name?
+				new pages as extra?
+			 */
 		}
 	}
 }

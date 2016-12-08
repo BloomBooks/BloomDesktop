@@ -23,7 +23,7 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
     // read our controls and send the model back to c#
     // enhance: this is just dirt-poor serialization of checkboxes for now
     var inputs = $(".bookSettings :input");
-    var o = {}; // declaring this inside the method results in only the first item being returned: see BL-3872
+    var o = {};
     var settings = $.map(inputs, (input, i) => {
         o[input.name] = $(input).prop("checked");
         return o;
