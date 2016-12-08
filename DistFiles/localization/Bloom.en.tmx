@@ -1842,6 +1842,46 @@
         <seg>Template Pages</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.TextBoxProperties.Title">
+      <tuv xml:lang="en">
+        <seg>Text Box Properties</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.LanguageTab">
+      <tuv xml:lang="en">
+        <seg>Language</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.NormalLabel">
+      <tuv xml:lang="en">
+        <seg>"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.OtherLanguagesLabel">
+      <tuv xml:lang="en">
+        <seg>Use one of these for simple text boxes that are always in only one language.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Normal">
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.LocalLanguage">
+      <tuv xml:lang="en">
+        <seg>Local Language</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.NationalLanguage">
+      <tuv xml:lang="en">
+        <seg>National Language</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.RegionalLanguage">
+      <tuv xml:lang="en">
+        <seg>Regional Language</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
       <tuv xml:lang="en">
         <seg>Picture On Bottom</seg>
