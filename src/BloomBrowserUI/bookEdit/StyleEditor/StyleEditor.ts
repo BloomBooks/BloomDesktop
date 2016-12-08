@@ -13,12 +13,13 @@ import '../../node_modules/select2/dist/js/select2.js';
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
-import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
+import { GetDifferenceBetweenHeightAndParentHeight } from '../js/bloomEditing';
 import '../../lib/jquery.alphanum';
 import axios = require("axios");
+import { EditableDivUtils } from "../js/editableDivUtils";
 
-declare function GetSettings() : any; //c# injects this
-declare function WebFxTabPane(element:HTMLElement,useCookie:boolean,callback:any) : any; // from tabpane, from a <script> tag
+declare function GetSettings(): any; //c# injects this
+declare function WebFxTabPane(element: HTMLElement, useCookie: boolean, callback: any): any; // from tabpane, from a <script> tag
 
 export default class StyleEditor {
 
@@ -82,7 +83,7 @@ export default class StyleEditor {
         }
 
         static MigratePreStyleBook(target: HTMLElement): string {
-                var parentPage: HTMLDivElement = <HTMLDivElement><any> ($(target).closest(".bloom-page")[0]);
+                var parentPage: HTMLDivElement = <HTMLDivElement><any>($(target).closest(".bloom-page")[0]);
                 // Books created with the original (0.9) version of "Basic Book", lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
                 var pageLineage = $(parentPage).attr('data-pagelineage');
                 if ((pageLineage) && pageLineage.substring(0, 8) == '5dcd48df') {
@@ -97,7 +98,7 @@ export default class StyleEditor {
                 var styleName: string = this.GetStyleClassFromElement(target);
                 if (!styleName) {
                         // The style name is probably on the parent translationGroup element
-                        var parentGroup: HTMLDivElement = <HTMLDivElement><any> ($(target).parent(".bloom-translationGroup")[0]);
+                        var parentGroup: HTMLDivElement = <HTMLDivElement><any>($(target).parent(".bloom-translationGroup")[0]);
                         if (parentGroup) {
                                 styleName = this.GetStyleClassFromElement(parentGroup);
                                 if (styleName)
@@ -199,7 +200,7 @@ export default class StyleEditor {
                                         var index2 = label.lastIndexOf('-style');
                                         if (index2 !== -1 && index2 == label.length - '-style'.length) { // ends in -style
                                                 var index3 = label.lastIndexOf('.');
-                                                var name = label.substring(index3+1, index2);
+                                                var name = label.substring(index3 + 1, index2);
                                                 if (result.indexOf(name) == -1) {
                                                         result.push(name);
                                                 }
@@ -246,7 +247,7 @@ export default class StyleEditor {
                 return result;
         }
 
-         private FindExistingUserModifiedStyleSheet(): StyleSheet {
+        private FindExistingUserModifiedStyleSheet(): StyleSheet {
                 for (var i = 0; i < document.styleSheets.length; i++) {
                         if ((<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title == "userModifiedStyles") {
                                 // alert("Found userModifiedStyles sheet: i= " + i + ", title= " + (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
@@ -310,12 +311,12 @@ export default class StyleEditor {
                         // It's probably pathological to worry about the style name occurring in the body of some other rule,
                         // especially with the -style suffix, but it seems safer not to risk it.
                         if (match.toLowerCase().indexOf(styleAndLang.toLowerCase()) > -1 && (!ignoreLanguage || match.indexOf('[lang') == -1)) {
-                                return <CSSStyleRule> ruleList[i];
+                                return <CSSStyleRule>ruleList[i];
                         }
                 }
                 (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + " { }", ruleList.length);
 
-                return <CSSStyleRule> ruleList[ruleList.length - 1]; //new guy is last
+                return <CSSStyleRule>ruleList[ruleList.length - 1]; //new guy is last
         }
 
         // Replaces a style in 'sheet' at the specified 'index' with a (presumably) modified style.
@@ -411,7 +412,7 @@ export default class StyleEditor {
 
         getPointSizes() {
                 // perhaps temporary until we allow arbitrary values (BL-948), as a favor to Mike:
-                return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '30', '35', '40', '45', '50', '55', '60', '65', '70', '80','90','100'];
+                return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '30', '35', '40', '45', '50', '55', '60', '65', '70', '80', '90', '100'];
 
                 // Same options as Word 2010, plus 13 since used in heading2
                 //return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
@@ -423,8 +424,8 @@ export default class StyleEditor {
 
         getWordSpaceOptions() {
                 return [theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingNormal', 'Normal'),
-                        theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'),
-                        theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
+                theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'),
+                theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
         }
 
         // Returns an object giving the current selection for each format control.
@@ -504,15 +505,16 @@ export default class StyleEditor {
                 var center = box.css('text-align') == 'center';
 
                 return {
-                        ptSize: ptSize, fontName: fontName, lineHeight: lineHeight, wordSpacing: wordSpacing, borderChoice: borderChoice, backColor:backColor, bold:bold, italic:italic, underline:underline, center:center};
+                        ptSize: ptSize, fontName: fontName, lineHeight: lineHeight, wordSpacing: wordSpacing, borderChoice: borderChoice, backColor: backColor, bold: bold, italic: italic, underline: underline, center: center
+                };
         }
 
-        IsPageXMatter(targetBox: HTMLElement):boolean {
+        IsPageXMatter(targetBox: HTMLElement): boolean {
                 var $target = $(targetBox);
                 return typeof ($target.closest('.bloom-frontMatter')[0]) !== 'undefined' || typeof ($target.closest('.bloom-backMatter')[0]) !== 'undefined';
         }
 
-        AdjustFormatButton(element: Element):void {
+        AdjustFormatButton(element: Element): void {
                 var newBottom = -1 * GetDifferenceBetweenHeightAndParentHeight($(element.parentElement));
                 if (newBottom < 0) {
                         newBottom = 0;
@@ -530,24 +532,8 @@ export default class StyleEditor {
                 // config.allowedContent, and data-cke-survive did not work.
                 // The only solution we have found is to postpone adding the gear icon until CkEditor has done
                 // its nefarious work. The following block achieves this.
-                // Enhance: this logic is roughly duplicated in toolbox.ts restoreToolboxSettingsWhenCkEditorReady.
-                // There may be some way to refactor it into a common place, but I don't know where.
-                var editorInstances = (<any>window).CKEDITOR.instances;
-                for (var i = 1; ; i++) {
-                    var instance = editorInstances['editor' + i];
-                    if (instance == null) {
-                        if (i === 0) {
-                            // no instance at all...if one is later created, get us invoked.
-                            (<any>window).CKEDITOR.on('instanceReady', e => this.AttachToBox(targetBox));
-                            return;
-                        }
-                        break; // if we get here all instances are ready
-                    }
-                    if (!instance.instanceReady) {
-                        instance.on('instanceReady', e => this.AttachToBox(targetBox));
-                        return;
-                    }
-                }
+                // gjm: Refactored it into EditableDivUtils.
+                EditableDivUtils.WaitForCKEditorReady(window, targetBox, this.AttachToBox);
 
                 var styleName = StyleEditor.GetStyleNameForElement(targetBox);
                 if (!styleName)
@@ -558,7 +544,7 @@ export default class StyleEditor {
                 // More dangerous is using it in getCharTabDescription. But as that is launched by a later
                 // async request, I think it should be OK.
 
-                axios.get('/bloom/authorMode').then( result=>{
+                axios.get('/bloom/authorMode').then(result => {
                         editor.authorMode = result.data == true;
                 });
                 editor.xmatterMode = this.IsPageXMatter(targetBox);
@@ -577,7 +563,7 @@ export default class StyleEditor {
 
                 //make the button stay at the bottom if we overflow and thus scroll
                 //review: It's not clear to me that this is actually working (JH 3/19/2016)
-                $(targetBox).on("scroll", e=>{this.AdjustFormatButton(e.target)});
+                $(targetBox).on("scroll", e => { this.AdjustFormatButton(e.target) });
 
 
                 // And in case we are starting out on a centerVertically page we might need to adjust it now
@@ -611,8 +597,8 @@ export default class StyleEditor {
                 // The .off prevents adding multiple event handlers as the parent box gains focus repeatedly.
                 // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
                 $(targetBox).off('click.formatButton');
-                $(targetBox).on('click.formatButton', '#formatButton', function() {
-                        axios.get('/bloom/availableFontNames').then( result=>{
+                $(targetBox).on('click.formatButton', '#formatButton', function () {
+                        axios.get('/bloom/availableFontNames').then(result => {
                                 editor.boxBeingEdited = targetBox;
                                 // This line is needed inside the click function to keep from using a stale version of 'styleName'
                                 // and chopping off 6 characters each time!
@@ -628,7 +614,7 @@ export default class StyleEditor {
                                 if (editor.styles.indexOf(styleName) == -1) {
                                         editor.styles.push(styleName);
                                 }
-                                editor.styles.sort(function(a: string, b: string) {
+                                editor.styles.sort(function (a: string, b: string) {
                                         return a.toLowerCase().localeCompare(b.toLowerCase());
                                 });
 
@@ -718,33 +704,33 @@ export default class StyleEditor {
                                         editor.getCharTabDescription();
                                         editor.getMoreTabDescription();
 
-                                        $('#font-select').change(function() { editor.changeFont(); });
+                                        $('#font-select').change(function () { editor.changeFont(); });
                                         editor.AddQtipToElement($('#font-select'), theOneLocalizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
-                                        $('#size-select').change(function() { editor.changeSize(); });
+                                        $('#size-select').change(function () { editor.changeSize(); });
                                         editor.AddQtipToElement($('#size-select'), theOneLocalizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
-                                        $('#line-height-select').change(function() { editor.changeLineheight(); });
+                                        $('#line-height-select').change(function () { editor.changeLineheight(); });
                                         editor.AddQtipToElement($('#line-height-select').parent(), theOneLocalizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
-                                        $('#word-space-select').change(function() { editor.changeWordSpace(); });
+                                        $('#word-space-select').change(function () { editor.changeWordSpace(); });
                                         editor.AddQtipToElement($('#word-space-select').parent(), theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
                                         if (editor.authorMode) {
                                                 if (!editor.xmatterMode) {
-                                                        $('#styleSelect').change(function() { editor.selectStyle(); });
+                                                        $('#styleSelect').change(function () { editor.selectStyle(); });
                                                         (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
                                                         $('#style-select-input').on('input', function () { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
                                                         // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
                                                         // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
-                                                        (<any>$('#style-select-input').get(0)).trimNotification = function() { editor.styleStateChange('invalid-characters'); }
-                                                        $('#show-createStyle').click(function(event) {
+                                                        (<any>$('#style-select-input').get(0)).trimNotification = function () { editor.styleStateChange('invalid-characters'); }
+                                                        $('#show-createStyle').click(function (event) {
                                                                 event.preventDefault();
                                                                 editor.showCreateStyle();
                                                                 return false;
                                                         });
-                                                        $('#create-button').click(function() { editor.createStyle(); });
+                                                        $('#create-button').click(function () { editor.createStyle(); });
                                                 }
                                                 var buttonIds = editor.getButtonIds();
                                                 for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
                                                         var button = $('#' + buttonIds[idIndex]);
-                                                        button.click(function() { editor.buttonClick(this); });
+                                                        button.click(function () { editor.buttonClick(this); });
                                                         button.addClass('propButton');
                                                 }
                                                 editor.selectButtons(current);
@@ -753,11 +739,11 @@ export default class StyleEditor {
                                 }
                                 var offset = $('#formatButton').offset();
                                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
-                                StyleEditor.positionInViewport(toolbar);
+                                EditableDivUtils.positionInViewport(toolbar);
                                 toolbar.draggable("enable");
 
                                 $('html').off('click.toolbar');
-                                $('html').on("click.toolbar", function(event) {
+                                $('html').on("click.toolbar", function (event) {
                                         if (event.target !== toolbar.get(0) &&
                                                 toolbar.has(event.target).length === 0 &&
                                                 $(event.target).parent() !== toolbar &&
@@ -768,40 +754,12 @@ export default class StyleEditor {
                                                 event.preventDefault();
                                         }
                                 });
-                                toolbar.on("click.toolbar", function(event) {
+                                toolbar.on("click.toolbar", function (event) {
                                         // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                                         event.stopPropagation();
                                 });
                         });
                 });
-        }
-
-        /**
-         * Positions the Style Editor toolbar so that it is completely visible, so that it does not extend below the
-         * current viewport.
-         * @param toolbar
-         */
-        static positionInViewport(toolbar: JQuery): void {
-
-                // get the current size and position of the toolbar
-                var elem: HTMLElement = toolbar[0];
-                var top = elem.offsetTop;
-                var height = elem.offsetHeight;
-
-                // get the top of the toolbar in relation to the top of its containing elements
-                while (elem.offsetParent) {
-                        elem = <HTMLElement>elem.offsetParent;
-                        top += elem.offsetTop;
-                }
-
-                // diff is the portion of the toolbar that is below the viewport
-                var diff = (top + height) - (window.pageYOffset + window.innerHeight);
-                if (diff > 0) {
-                        var offset = toolbar.offset();
-
-                        // the extra 30 pixels is for padding
-                        toolbar.offset({left: offset.left, top: offset.top - diff - 30});
-                }
         }
 
         getButtonIds() {
@@ -819,38 +777,38 @@ export default class StyleEditor {
 
         makeCharactersContent(fonts, current): string {
                 return this.makeDiv(null, null, null, null,
-                                this.makeDiv(null, null, null, 'EditTab.Font', 'Font')
-                                + this.makeDiv(null, "control-section", null, null,
-                                        this.makeSelect(fonts, current.fontName, 'font-select', 25) + ' '
-                                        + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select', 99, 'allowCustom'))
-                                + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing')
-                                + this.makeDiv("spacingRow", null, null, null,
-                                        '<span  id="lineSpacing" style="white-space: nowrap">'
-                                        + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.svg">'
-                                        + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' '
-                                        + '</span>' + ' '
-                                        + '<span id="wordSpacing" style="white-space: nowrap">'
-                                        + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.svg">'
-                                        + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
-                                        + '</span>'))
+                        this.makeDiv(null, null, null, 'EditTab.Font', 'Font')
+                        + this.makeDiv(null, "control-section", null, null,
+                                this.makeSelect(fonts, current.fontName, 'font-select', 25) + ' '
+                                + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select', 99, 'allowCustom'))
+                        + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing')
+                        + this.makeDiv("spacingRow", null, null, null,
+                                '<span  id="lineSpacing" style="white-space: nowrap">'
+                                + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.svg">'
+                                + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' '
+                                + '</span>' + ' '
+                                + '<span id="wordSpacing" style="white-space: nowrap">'
+                                + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.svg">'
+                                + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
+                                + '</span>'))
                         + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, null);
         }
 
         // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
-        stateChange(id:string, newState:string) {
-                var stateToAdd = "state-"+newState;
-                var stateElement = $("#"+id);
+        stateChange(id: string, newState: string) {
+                var stateToAdd = "state-" + newState;
+                var stateElement = $("#" + id);
                 var existingClasses = stateElement.attr('class').split(/\s+/);
-                $.each(existingClasses, function(index, elem) {
-                        if(elem.startsWith("state-"))
+                $.each(existingClasses, function (index, elem) {
+                        if (elem.startsWith("state-"))
                                 stateElement.removeClass(elem);
                 });
                 stateElement.addClass(stateToAdd);
         }
 
         // Specific State Machine changes the Style section state
-        styleStateChange(newState:string) {
-                if(newState == 'enteringStyle' && $('#style-select-input').val()) {
+        styleStateChange(newState: string) {
+                if (newState == 'enteringStyle' && $('#style-select-input').val()) {
                         $('#create-button').removeAttr('disabled');
                 } else {
                         $('#create-button').attr('disabled', 'true');
@@ -862,7 +820,7 @@ export default class StyleEditor {
                 var typedStyle = $('#style-select-input').val();
                 // change state based on input
                 if (typedStyle) {
-                        if(this.inputStyleExists()) {
+                        if (this.inputStyleExists()) {
                                 this.styleStateChange('already-exists');
                                 return;
                         }
@@ -882,7 +840,7 @@ export default class StyleEditor {
                 if (index >= 0) {
                         button.addClass('selectedIcon');
                         var group = id.substring(0, index);
-                        $('.propButton').each(function() {
+                        $('.propButton').each(function () {
                                 var item = $(this);
                                 if (this != button.get(0) && item.attr('id').startsWith(group)) {
                                         item.removeClass('selectedIcon');
@@ -915,7 +873,7 @@ export default class StyleEditor {
                 return 'hsl(0,0%,86%)';
         }
 
-        makeImage(fileName: string) : string {
+        makeImage(fileName: string): string {
                 return '<img src="' + this._supportFilesRoot + '/img/' + fileName + '">';
         }
 
@@ -970,8 +928,8 @@ export default class StyleEditor {
                         });
         }
 
-         // did the user type the name of an existing style?
-        inputStyleExists() : boolean {
+        // did the user type the name of an existing style?
+        inputStyleExists(): boolean {
                 var typedStyle = $('#style-select-input').val();
                 for (var i = 0; i < this.styles.length; i++) {
                         if (typedStyle.toLocaleLowerCase() == this.styles[i].toLocaleLowerCase()) {
@@ -1012,15 +970,15 @@ export default class StyleEditor {
                 this.styleStateChange('initial'); // go back to initial state so user knows it worked
         }
 
-        makeSelect(items :string[], current, id, maxlength?, classes?: string) {
+        makeSelect(items: string[], current, id, maxlength?, classes?: string) {
                 classes = classes || "";
-                var result = '<select id="' + id + '" class="'+classes+'">';
-                if(current && items.indexOf(current.toString()) == -1){
+                var result = '<select id="' + id + '" class="' + classes + '">';
+                if (current && items.indexOf(current.toString()) == -1) {
                         //we have a custom point size, so make that an option in addition to the standard ones
                         items.push(current.toString());
                 }
 
-                items.sort( (a:string,b:string) => Number(a) - Number(b));
+                items.sort((a: string, b: string) => Number(a) - Number(b));
 
                 for (var i = 0; i < items.length; i++) {
                         var selected: string = "";
@@ -1038,7 +996,7 @@ export default class StyleEditor {
                 return result + '</select>';
         }
 
- changeBold() {
+        changeBold() {
                 if (this.ignoreControlChanges) return;
                 var rule = this.getStyleRule(true);
                 var val = $('#bold').hasClass('selectedIcon');
@@ -1114,7 +1072,7 @@ export default class StyleEditor {
                         rule = this.getStyleRule(true);
                         rule.style.setProperty("line-height", lineHeight, "important");
                 }
-             this.cleanupAfterStyleChange();
+                this.cleanupAfterStyleChange();
         }
 
         changeWordSpace() {
@@ -1125,9 +1083,9 @@ export default class StyleEditor {
                 var wordSpace;
                 switch (chosenIndex) {
                         case 1: wordSpace = '5pt';
-                             break;
+                                break;
                         case 2: wordSpace = '10pt';
-                             break;
+                                break;
                         default:
                                 wordSpace = 'normal';
                 }
@@ -1137,7 +1095,7 @@ export default class StyleEditor {
                         rule = this.getStyleRule(true);
                         rule.style.setProperty("word-spacing", wordSpace, "important");
                 }
-             this.cleanupAfterStyleChange();
+                this.cleanupAfterStyleChange();
         }
 
         changeBackground() {
@@ -1197,7 +1155,7 @@ export default class StyleEditor {
                 this.cleanupAfterStyleChange();
         }
 
-        getSettings(ruleInput: string) : string[] {
+        getSettings(ruleInput: string): string[] {
                 var index1 = ruleInput.indexOf('{');
                 var rule = ruleInput;
                 if (index1 >= 0) {
@@ -1264,10 +1222,10 @@ export default class StyleEditor {
         // which was eventually fixed by changing createStyle so that it doesn't need to use this
         // method at all. As far as I can tell, doing this works.
         setValueAndUpdateSelect2Control(id: string, value: string) {
-            $('#' + id).val(value).trigger('change');
+                $('#' + id).val(value).trigger('change');
         }
 
-        getStyleRule(ignoreLanguage:boolean) {
+        getStyleRule(ignoreLanguage: boolean) {
                 var target = this.boxBeingEdited;
                 var styleName = StyleEditor.GetStyleNameForElement(target);
                 if (!styleName)
