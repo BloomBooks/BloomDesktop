@@ -50,23 +50,28 @@ export default class TextBoxProperties {
                 html += '<div class="tab-page">'
                     + '<h2 class="tab" data-i18n="EditTab.TextBoxProperties.LanguageTab">Language</h2>'
                     + '<div style="width: 420px; font-size: 8pt; margin-top: 10px;" data-i18n="EditTab.TextBoxProperties.NormalLabel">'
-                    + '"Normal" will show local language, and potentially regional or national, depending on the bilingual settings of the book. Use this for most content.'
+                    + '"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.'
                     + '</div>'
                     + '<div id="language-group">'
-                    + '<input type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="Auto"'
-                    + propDlg.getCheckedValue(languageGroup, "Auto") + '> Normal</input><br/>'
+                    + '<input id="tbprop-normal" type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="Auto"'
+                    + propDlg.getCheckedValue(languageGroup, "Auto")
+                    + '/><label for="tbprop-normal" data-i18n="EditTab.TextBoxProperties.Normal" style="margin-left: 7px;">Normal</label><br/>'
                     + '<div style="width: 420px; font-size: 8pt; margin-top: 10px;" data-i18n="EditTab.TextBoxProperties.OtherLanguagesLabel">'
                     + 'Use one of these for simple text boxes that are always in only one language.'
                     + '</div>'
-                    + '<input type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="N1"'
-                    + propDlg.getCheckedValue(languageGroup, "N1") + '> National Language</input><br/>'
-                    + '<input type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="N2"'
-                    + propDlg.getCheckedValue(languageGroup, "N2") + '> Regional Language</input><br/>'
-                    + '<input type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="V"'
-                    + propDlg.getCheckedValue(languageGroup, "V") + '> Local Language</input><br/>'
+                    + '<input id="tbprop-vernacular" type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="V"'
+                    + propDlg.getCheckedValue(languageGroup, "V")
+                    + '/><label for="tbprop-vernacular" data-i18n="EditTab.TextBoxProperties.LocalLanguage" style="margin-left: 7px;">Local Language</label><br/>'
+                    + '<input id="tbprop-national" type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="N1"'
+                    + propDlg.getCheckedValue(languageGroup, "N1")
+                    + '/><label for="tbprop-national" data-i18n="EditTab.TextBoxProperties.NationalLanguage" style="margin-left: 7px;">National Language</label><br/>'
+                    + '<input id="tbprop-regional" type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="N2"'
+                    + propDlg.getCheckedValue(languageGroup, "N2")
+                    + '/><label for="tbprop-regional" data-i18n="EditTab.TextBoxProperties.RegionalLanguage" style="margin-left: 7px;">Regional Language</label><br/>'
                     + '</div>' // end of #language-group div
                     + '</div>'; // end of Language tab-page div
                 // Here follows a skeleton implementation of tabs 2 and 3
+                // (Don't forget to add the appropriate bits to the .tmx files when activated.)
                 // html += '<div class="tab-page" id="bordersPage"><h2 class="tab" data-i18n="EditTab.TextBoxProperties.BordersTab">Borders</h2>'
                 //     // + propDlg.makeBordersContent(currentBorder)
                 //     + '</div>' // end of tab-page div for borders tab
