@@ -1,6 +1,6 @@
 //not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
-///<reference path="../../lib/split-pane/split-pane.d.ts" /> 
-///<reference path="../../typings/css-element-queries.d.ts" /> 
+///<reference path="../../lib/split-pane/split-pane.d.ts" />
+///<reference path="../../typings/css-element-queries.d.ts" />
 import { fireCSharpEditEvent } from './bloomEditing';
 import { SetupImage } from './bloomImages';
 import 'split-pane/split-pane.js';
@@ -94,7 +94,7 @@ function layoutToggleClickHandler() {
         // Remove any left over formatButton from normal edit mode
         marginBox.find('#formatButton').remove();
         // Hook up TextBoxProperties dialog to each text box
-        var dialog = GetTextBoxPropDlg();
+        var dialog = GetTextBoxPropertiesDialog();
         var textBoxes = marginBox.find('.textBox-identifier');
         textBoxes.each(function () {
             $(this).on('mousedown', function () {
@@ -116,11 +116,7 @@ function layoutToggleClickHandler() {
     }
 }
 
-function textFormatButtonHandler() {
-    var textBoxPropDlg = GetTextBoxPropDlg();
-}
-
-function GetTextBoxPropDlg() {
+function GetTextBoxPropertiesDialog() {
     return new TextBoxProperties("/bloom/bookEdit");
 }
 
@@ -346,7 +342,7 @@ function makeTextFieldClickHandler(e) {
     container.append(translationGroup).append(getTextBoxIdentifier());
     $(this).closest('.selector-links').remove();
     // hook up TextBoxProperties dialog to this new Text Box
-    var dialog = GetTextBoxPropDlg();
+    var dialog = GetTextBoxPropertiesDialog();
     var textBox = container.find('.textBox-identifier').first();
     textBox.each(function () {
         $(this).on('mousedown', function () {
