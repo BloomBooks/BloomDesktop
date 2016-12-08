@@ -170,18 +170,18 @@ export default class TextBoxProperties {
     }
 
     changeLanguageGroup() {
-        // get radio button value and set 'data-languages' attribute
+        // get radio button value and set 'data-default-languages' attribute
         var radioValue = $('input[name="languageRadioGroup"]:checked').val();
         var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
         // currently 'radioValue' should be one of: 'auto', 'N1', 'N2', or 'V'
         if (targetGroup)
-            targetGroup.attr('data-languages', radioValue);
+            targetGroup.attr('data-default-languages', radioValue);
     }
 
     getTextBoxLanguage(targetBox: HTMLElement): string {
         var targetGroup = $(this.getAffectedTranslationGroup(targetBox));
-        if (!targetGroup || !targetGroup.hasAttr('data-languages')) return "auto";
-        return targetGroup.attr('data-languages');
+        if (!targetGroup || !targetGroup.hasAttr('data-default-languages')) return "auto";
+        return targetGroup.attr('data-default-languages');
     }
 
     getAffectedTranslationGroup(targetBox: HTMLElement): HTMLElement {
