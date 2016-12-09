@@ -16,12 +16,14 @@ export default class TextBoxProperties {
     }
 
     // This method is called when the origami panel gets focus.
+    // targetBox is actually an '.origami-ui' div that overlaps with the '.bloom-translationGroup' we want.
     AttachToBox(targetBox: HTMLElement) {
         var propDlg = this;
         this._previousBox = targetBox;
 
-        // put the format button in the text box itself, so that it's always in the right place.
-        $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + propDlg._supportFilesRoot + '/img/cogGrey.svg"></div>');
+        // Put the format button in the text box itself, so that it's always in the right place.
+        // The z-index puts the formatButton above the origami-ui stuff so a click will find it.
+        $(targetBox).append('<div id="formatButton" style="z-index: 60000;" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + propDlg._supportFilesRoot + '/img/cogGrey.svg"></div>');
 
         var formatButton = $('#formatButton');
 

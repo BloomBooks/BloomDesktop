@@ -93,20 +93,21 @@ function layoutToggleClickHandler() {
         setupLayoutMode();
         // Remove any left over formatButton from normal edit mode
         marginBox.find('#formatButton').remove();
-        // Hook up TextBoxProperties dialog to each text box
+        // Hook up TextBoxProperties dialog to each text box (via its origami overlay)
         var dialog = GetTextBoxPropertiesDialog();
-        var textBoxes = marginBox.find('.textBox-identifier');
-        textBoxes.each(function () {
-            $(this).on('mousedown', function () {
+        var overlays = marginBox.find('.origami-ui');
+        overlays.each(function () {
+            $(this).on('mousedown', function (event) {
                 if ($(this).find('#formatButton').length == 0) {
                     $('#formatButton').remove(); // in case there's one elsewhere
                     dialog.AttachToBox(this);
+                    event.stopPropagation(); // to keep from repeating on multiple overlapping origami overlay elements
                 } else {
                     return false; // handle mouse down as formatButton click
                 }
             });
         });
-        textBoxes.first().mousedown(); // display formatButton for first textbox
+        overlays.first().mousedown(); // display formatButton for first textbox
     } else {
         marginBox.removeClass('origami-layout-mode');
         marginBox.find('.textBox-identifier').remove();
@@ -341,20 +342,21 @@ function makeTextFieldClickHandler(e) {
     $(translationGroup).addClass('normal-style'); // replaces above to make new text boxes normal
     container.append(translationGroup).append(getTextBoxIdentifier());
     $(this).closest('.selector-links').remove();
-    // hook up TextBoxProperties dialog to this new Text Box
+    // hook up TextBoxProperties dialog to this new Text Box (via its origami overlay)
     var dialog = GetTextBoxPropertiesDialog();
-    var textBox = container.find('.textBox-identifier').first();
-    textBox.each(function () {
-        $(this).on('mousedown', function () {
+    var overlays = container.find('.origami-ui');
+    overlays.each(function () {
+        $(this).on('mousedown', function (event) {
             if ($(this).find('#formatButton').length == 0) {
                 $('#formatButton').remove(); // in case there's one elsewhere
                 dialog.AttachToBox(this);
+                event.stopPropagation(); // to keep from repeating on overlapping origami overlay elements
             } else {
                 return false; // handle mouse down as formatButton click
             }
         });
     })
-    textBox.mousedown();
+    overlays.first().mousedown();
 }
 function makePictureFieldClickHandler(e) {
     e.preventDefault();
