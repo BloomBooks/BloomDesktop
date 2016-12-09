@@ -14,7 +14,7 @@ mixin upper(percent)
       .split-pane-component-inner
          block
    .split-pane-divider.horizontal-divider(style='bottom: ' + percent + '%')
-   //NB: this split percent has to be the same as that used for upper!!!!!!
+   //- NB: this split percent has to be the same as that used for upper!!!!!!
 
 mixin lower(percent)
    - requireOneArgument('percent', arguments);
@@ -43,7 +43,7 @@ mixin standardPage-Custom
          .box-header-off.bloom-translationGroup
 
 
-//The following list all the pages in Basic Book, Decodable Reader, & Leveled Reader
+//- The following list all the pages in Basic Book, Decodable Reader, & Leveled Reader
 mixin include-standard-pages
    +page-splittable-choice-custom('Basic Text & Picture')#adcd48df-e9ab-4a07-afd4-6a24d0398382
      +stack
