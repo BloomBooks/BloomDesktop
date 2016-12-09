@@ -176,11 +176,12 @@ namespace Bloom.web.controllers
 
 			// 2) Future, add those in their current collection
 
-			// 3) then add in all other template books they have in their sources
-			//requiring "template" to be in the path is low budget, but fast. Maybe we'll do something better later.
+			// 3) Next look through the books that came with bloom and other that this user has installed (e.g. via download or bloompack)
+			//    and add in all other template books that are designed for inclusion in other books. These should end in "template.html".
+			//    Requiring the book to end in the word "template" is low budget, but fast. Maybe we'll do something better later.
 			bookTemplatePaths.AddRange(sourceBookPaths
-				.Where(path => path.ToLowerInvariant().Contains("template")
-				               && path.ToLowerInvariant() != pathToCurrentTemplateHtml.ToLowerInvariant())
+				.Where(path => ( (path.ToLower().EndsWith("template.html") || path.ToLower().EndsWith("basic book.html"))
+									&& !string.Equals(path, pathToCurrentTemplateHtml, StringComparison.InvariantCultureIgnoreCase)))
 				.Select(path => path));
 
 			var indexOfBasicBook = bookTemplatePaths.FindIndex(p => p.ToLowerInvariant().Contains("basic book"));
