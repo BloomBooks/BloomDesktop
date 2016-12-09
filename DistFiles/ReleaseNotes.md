@@ -1,8 +1,19 @@
+## 3.8
+
+- Upgraded to a new Firefox engine which reduces memory use, particularly when making PDFs.
+- Edit tab
+    - In "Change Layout", you can now set the language of the text box. This will allow people making translations and glossaries in the back of the book to create a box, for example, which only holds the national language.
+    - In the "Add Page box", Bloom now lets you add pages from the "Basic Book" template, even if your book was created from other templates, like Arithmetic.
+    - Bloom now offers a button for superscripting selected text.
+- In the Publish tab, Bloom now display the user ID you are logged into  bloomlibrary.org with.
+- Windows installer is less likely to trigger over-eager anti-malware programs.
+- Many other fixes and tiny improvements.
+
 ## 3.7
 - You can now "unlock" a shell book that you are translating, so that you can do things like:
- - add pages
- - delete pages
- - edit fields that are normally locked during translation
+    - add pages
+    - delete pages
+    - edit fields that are normally locked during translation
 
     To unlock the book, go into the toolbox (which lives to the right of the page in the Edit Tab). Click on the icon of gear, and tick the checkbox there. The book will remain unlocked only during the current editing session; the next time you come back to this book, it will be locked again.
 
