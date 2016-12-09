@@ -15,6 +15,13 @@ STARTLAYOUTS
 		 }
 	  },
 	  {
+		 "A5Landscape":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
 		 "A6Portrait":{
 			"Styles":[
 			   "Default"
@@ -41,6 +48,13 @@ STARTLAYOUTS
 			   "Default",
 			   "SideBySide",
 			   "SplitAcrossPages"
+			]
+		 }
+	  },
+	  {
+		 "A3Landscape":{
+			"Styles":[
+			   "Default"
 			]
 		 }
 	  },
@@ -473,12 +487,18 @@ in javascript. Search for 'bloom-centerContentVertically'.
 	&.A5Portrait {
 		.Setup(62%, 400%);
 	}
+	&.A5Landscape {
+		.Setup(55%, 600%);
+	}
 	&.A4Portrait {
 		.Setup(74%, 600%);
 	}
 	&.A4Landscape {
 		.Setup(55%, 600%);
 	}
+    &.A3Landscape {
+        .Setup(55%, 600%);
+    }
 	&.QuarterLetterPortrait {
 		.Setup(62%, 400%);
 	}
