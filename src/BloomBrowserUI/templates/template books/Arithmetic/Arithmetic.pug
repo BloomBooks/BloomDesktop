@@ -1,6 +1,15 @@
 include ../standard-page-mixins.pug
 
 mixin field-languageNeutral()
+	//- As of 3.8, we normally would wrap this in a translationGroup, even
+	//- though it has only a single possible value.
+	//- I set out to add this, but stopped becuase, unless/until we also migrate
+	//- existing pages, that would put us in a situation where different books
+	//- had different internal structures and then if the stylesheet changes
+	//- we have some books that now look wrong. It would thus be better to
+	//- wait and if we want to do this, detect these kinds of fields and auto
+	//- upgrade them in code (and then it would also be save to change them here.)
+	//- i.bloom-translationGroup(data-default-languages='*')
 	+editable("*")&attributes(attributes)
 
 mixin page-arithmetic(name, count)
