@@ -684,6 +684,9 @@ namespace Bloom.Publish
 					const double legalPortraitWidth = 8.5 * mmPerInch;
 					switch (pageClass)
 					{
+						case "A3Landscape":
+							pageWidthMm = A4Width*2.0;
+							break;
 						case "A5Portrait":
 							pageWidthMm = A4Height/2.0;
 							break;
@@ -693,6 +696,7 @@ namespace Bloom.Publish
 						case "A5Landscape":
 							pageWidthMm = A4Width / 2.0;
 							break;
+						case "A3Portrait":
 						case "A4Landscape":
 							pageWidthMm = A4Height;
 							break;

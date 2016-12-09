@@ -9,7 +9,7 @@ body {
         If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
     transform: scale(0.075) translate(-617%,-617%);
     position: absolute;
-    &.A4Portrait {
+    &.A4Portrait, &.A3Portrait {
         transform: scale(0.05) translate(950%,-950%);
         position: absolute;
         right: 0px;
@@ -26,7 +26,7 @@ body {
     &.A4Portrait {
         width: 40px;
     }
-    &.A4Landscape {
+    &.A4Landscape, &.A3Landscape {
         width: 85px;
     }
 }

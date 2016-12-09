@@ -192,12 +192,23 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
         min-height: @A4Landscape-Height;
         max-height: @A4Landscape-Height;
     }
-
     &.A4Portrait {
         min-width: @A4Portrait-Width;
         max-width: @A4Portrait-Width;
         min-height: @A4Portrait-Height;
         max-height: @A4Portrait-Height;
+    }
+    &.A3Landscape {
+        min-width: @A3Landscape-Width;
+        max-width: @A3Landscape-Width;
+        min-height: @A3Landscape-Height;
+        max-height: @A3Landscape-Height;
+    }
+    &.A3Portrait {
+        min-width: @A3Portrait-Width;
+        max-width: @A3Portrait-Width;
+        min-height: @A3Portrait-Height;
+        max-height: @A3Portrait-Height;
     }
     &.A6Portrait {
         min-width: @A6Portrait-Width;
@@ -343,6 +354,9 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
         //make the top half take up the whole screen
         .position-top{bottom: 0 !important;}
         .position-bottom{display:none;}
+    }
+    .A3Landscape & {
+        .SetMarginBox(@A3Landscape-Width, @A3Landscape-Height);
     }
     .A4Portrait & {
         .SetMarginBox(@A4Portrait-Width, @A4Portrait-Height);
