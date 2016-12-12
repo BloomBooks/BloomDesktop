@@ -85,23 +85,9 @@ export default class BloomSourceBubbles {
             $this.addClass("source-text");
         });
 
-        //don't want the vernacular or languages in use for bilingual/trilingual boxes to be shown in the bubble
-        divForBubble.find("*.bloom-content1, *.bloom-content2, *.bloom-content3").each(function () {
-            $(this).remove();
-        });
-
-        // BL-2734 Don't show national book title in bubble, since it's already visible on the page
-        divForBubble.find('*.bloom-contentNational1').each(function () {
-            if ($(this).attr('data-book') === 'bookTitle') {
-                $(this).remove();
-            }
-        });
-        // BL-3888 Don't show regional book title in bubble, since it's already visible on the title page
-        divForBubble.find('*.bloom-contentNational2').each(function () {
-            if ($(this).attr('data-book') === 'bookTitle') {
-                $(this).remove();
-            }
-        });
+        //don't want languages we're already showing in the text to be shown in the bubble
+        //also ignore any elements that are lang='z', which are just prototypes
+        divForBubble.find("*.bloom-visibility-code-on, [lang='z']").remove();
 
         //in case some formatting didn't get cleaned up
         StyleEditor.CleanupElement(divForBubble);
@@ -143,15 +129,8 @@ export default class BloomSourceBubbles {
         items.each(function() {
             var iso = $(this).attr('lang');
             if (iso) {
-                var languageName = theOneLocalizationManager.getLanguageName(iso);
-                if (!languageName)
-                    languageName = iso;
-                var shouldShowOnPage = (iso === vernacularLang) /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
-
-                // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
-                if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
-                    $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
-                }
+                var localizedLanguageName = theOneLocalizationManager.getLanguageName(iso) || iso;
+                $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + localizedLanguageName + '</a></li>');
             }
         });
 
