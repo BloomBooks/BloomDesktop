@@ -514,7 +514,7 @@ namespace BloomTests.Publish
 						@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
 								<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
 								<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
-					extraStyleSheet: "<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
+					extraStyleSheet: "<link rel='stylesheet' href='languageDisplay.css' type='text/css'/><link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 					extraEditGroupClasses: "bookTitle",
 					defaultLanguages: "V,N1");
 
@@ -566,7 +566,7 @@ namespace BloomTests.Publish
 								<div class='bloom-editable' lang='fr'>National 2 should not be displayed</div>
 								<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
 					extraStyleSheet:
-						"<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
+						"<link rel='stylesheet' href='languageDisplay.css' type='text/css'/> <link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 					extraEditGroupClasses: "originalAcknowledgments",
 					defaultLanguages: "N1");
 

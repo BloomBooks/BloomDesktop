@@ -152,9 +152,9 @@ namespace Bloom.Book
 		internal bool UseOriginalImages { get; set; }
 
 
-		public void AddStyleSheet(string locateFile)
+		public void AddStyleSheet(string path)
 		{
-			RawDom.AddStyleSheet(locateFile);
+			RawDom.AddStyleSheet(path);
 		}
 
 		public XmlNodeList SafeSelectNodes(string xpath)
