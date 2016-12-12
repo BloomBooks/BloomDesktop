@@ -246,9 +246,11 @@
 		or BloomBookUploader which is not used (obsolete).-->
 	</Target>
 
-	<!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
+	<!-- This target is designed to be an target on TeamCity (but using Upload is more likely). Review: squirrel itself
 	can sign things if passed the right command line arguments. Is that a better thing to do? -->
-	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
+	<!-- NOTE: The Installer target is assumed to have been run previously with the same build parameters.
+	This allows us to efficiently run them as two separate build steps on TeamCity. Else, failed tests do not prevent an upload! -->
+	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers">
 		<Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"'></Exec>
 		<Message Text="Signed squirrel installer at $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
 	</Target>
@@ -302,7 +304,9 @@
 		<CallTarget Targets ='MakeDownloadPointers'/>
 	</Target>
 
-	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
+	<!-- NOTE: The Installer target is assumed to have been run previously with the same build parameters.
+	This allows us to efficiently run them as two separate build steps on TeamCity. Else, failed tests do not prevent an upload! -->
+	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers">
 		<Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"' ContinueOnError="true"></Exec>
 	</Target>
 
