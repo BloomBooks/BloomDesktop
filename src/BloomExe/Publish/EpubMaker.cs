@@ -463,6 +463,12 @@ namespace Bloom.Publish
 		private HtmlDom MakePageFile(XmlElement pageElement, int pageIndex, int firstContentPageIndex)
 		{
 			var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
+
+			// Note, the following stylsheet stuff can be quite bewildering...
+			// Testing shows that these stylesheets are not actually used
+			// in RemoveUnwantedContent(), which falls back to the stylsheets in place for the book, which in turn,
+			// in unit tests, is backed by a simple mocked BookStorage which doesn't have the stylesheet smarts. Sigh.
+
 			pageDom.RemoveModeStyleSheets();
 			if (Unpaginated)
 			{
@@ -477,11 +483,11 @@ namespace Bloom.Publish
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
-				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"languageDisplay.css"));
 			}
 
 			RemoveUnwantedContent(pageDom);
 
+			pageDom.AddStyleSheet("languageDisplay.css");
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
 
