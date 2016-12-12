@@ -3,7 +3,7 @@
 - Upgraded to a new Firefox engine which reduces memory use, particularly when making PDFs.
 - Edit tab
     - In "Change Layout", you can now set the language of the text box. This will allow people making translations and glossaries in the back of the book to create a box, for example, which only holds the national language.
-    - In the "Add Page box", Bloom now lets you add pages from the "Basic Book" template, even if your book was created from other templates, like Arithmetic.
+    - In the "Add Page box", Bloom now lets you add pages from the "Basic Book" and "Arithmetic" templates, regardless of the template your book started with.
     - Bloom now offers a button for superscripting selected text.
 - In the Publish tab, Bloom now displays the user ID you are logged into bloomlibrary.org with.
 - Windows installer is less likely to trigger over-eager anti-malware programs.

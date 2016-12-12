@@ -1,0 +1,99 @@
+.oneProblem, .twoProblems, .threeProblems, .fourProblems {
+    .marginBox {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .bloom-translationGroup {
+        flex: 0 0 auto;
+    }
+    .problemSet {
+        max-height: 100%;
+    }
+    .problem {
+        padding-bottom: 10px;
+        border-bottom: solid thin black;
+        margin-top: 10px;
+    }
+    .imageRow {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        width: 80%;
+        overflow: hidden;
+        .bloom-imageContainer {
+            flex: 1 1 auto;
+            max-width: 50%;
+            max-height: 99%;
+            min-height: 99%;
+            height: 99%;
+        }
+    }
+
+    .numberRow {
+        height: 44px;
+        display: flex;
+        flex-direction: row;
+
+        position: relative;
+        bottom: -7px;
+        margin-left: 6%;
+
+        .bloom-editable {
+            min-height: unset !important;
+            display: block !important; // so that text-align works
+            text-align: center;
+            line-height: 1em;
+        }
+        padding-right: 5px;
+        & > .bloom-editable {
+            min-width: 20%;
+        }
+
+        .equals {
+            line-height: 1em;
+            min-width: 29px;
+            text-align: center;
+            &:before {
+                content: '=';
+            }
+
+        }
+        .fillInBox {
+            flex: 0 0 auto;
+            border: thin solid black;
+            border-radius: 12px;
+            width: 61px;
+            height: 61px;
+            z-index: 1000;
+            //needs to stick up into the image
+            position: relative;
+            bottom: 18px;
+        }
+    }
+    //the header text needs some special care in this flex environment, when multilingual. See BL-2884.
+    .marginBox > .bloom-translationGroup {
+        display: flex;
+        flex-direction: row; // show multiple language side-by-side
+        .bloom-editable {
+            margin-top: 0; //don't want any of these to have top margins, because they are side-by-side
+            margin-left: 10px; //all but the first want a small horizontal margin
+        }
+        .bloom-editable:first-child {
+            margin-left: 0px;
+        }
+    }
+}
+
+.oneProblem .imageRow, .twoProblems .imageRow {
+    height: 200px;
+}
+
+.threeProblems .imageRow {
+    height: 145px;
+}
+
+.fourProblems .imageRow {
+    height: 90px;
+}
+
