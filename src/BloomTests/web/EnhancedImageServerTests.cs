@@ -274,10 +274,6 @@ namespace BloomTests.web
 			var bookPath = Path.Combine(_collectionPath, "TestBook");
 			Directory.CreateDirectory(bookPath);
 
-			// languageDisplay.css
-			cssFile = Path.Combine(bookPath, "languageDisplay.css");
-			RobustFile.WriteAllText(cssFile, @".languageDisplayCssTest{}");
-
 			cssFile = Path.Combine(bookPath, "ForUnitTest-XMatter.css");
 			RobustFile.WriteAllText(cssFile, @"This is the one in the book");
 
@@ -292,23 +288,6 @@ namespace BloomTests.web
 			// miscStyles.css - a file name not distributed with or created by Bloom
 			cssFile = Path.Combine(bookPath, "miscStyles.css");
 			RobustFile.WriteAllText(cssFile, @".miscStylesCssTest{}");
-		}
-
-		[Test]
-		public void GetCorrect_LanguageDisplayCss()
-		{
-			using (var server = CreateImageServer())
-			{
-				SetupCssTests();
-				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "languageDisplay.css");
-
-				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url);
-
-				server.MakeReply(transaction);
-
-				Assert.That(transaction.ReplyContents, Is.EqualTo(".languageDisplayCssTest{}"));
-			}
 		}
 
 		[Test]

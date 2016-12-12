@@ -793,6 +793,7 @@ namespace Bloom.Book
 				Update("basePage.css");
 				Update("previewMode.css");
 				Update("origami.css");
+				Update("languageDisplay.css");
 
 				foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 				{
@@ -1033,6 +1034,7 @@ namespace Bloom.Book
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
 			dom.AddStyleSheet("origami.css");
+			dom.AddStyleSheet("languageDisplay.css");
 			EnsureHasLinksToStylesheets(dom);
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();
