@@ -5,7 +5,7 @@
     - In "Change Layout", you can now set the language of the text box. This will allow people making translations and glossaries in the back of the book to create a box, for example, which only holds the national language.
     - In the "Add Page box", Bloom now lets you add pages from the "Basic Book" template, even if your book was created from other templates, like Arithmetic.
     - Bloom now offers a button for superscripting selected text.
-- In the Publish tab, Bloom now display the user ID you are logged into  bloomlibrary.org with.
+- In the Publish tab, Bloom now displays the user ID you are logged into bloomlibrary.org with.
 - Windows installer is less likely to trigger over-eager anti-malware programs.
 - Many other fixes and tiny improvements.
 
