@@ -24,7 +24,7 @@ describe("SourceBubbles", function () {
         var testHtml = $([
             "<div id='testTarget' class='bloom-translationGroup'>",
             "   <div class='bloom-editable' lang='es'>Spanish text</div>",
-            "   <div class='bloom-editable bloom-content1' lang='en'>English text</div>",
+            "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
             "   <div class='bloom-editable' lang='fr'>French text</div>",
             "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
             "</div>"
@@ -54,40 +54,7 @@ describe("SourceBubbles", function () {
         expect(result.find('div').length).toBe(3);
     });
 
-    it("Run MakeSourceTextDivForGroup on bookTitle-deletes N1", function () {
-        // defaultSourceLanguage ('en' in tests; also marked vernacular)
-        // currentCollectionLanguage2 ('tpi' in tests)
-        // currentCollectionLanguage3 ('fr' in tests)
 
-        var testHtml = $([
-            "<div id='testTarget' class='bloom-translationGroup'>",
-            "   <div class='bloom-editable' data-book='bookTitle' lang='es'>Spanish text</div>",
-            "   <div class='bloom-editable bloom-content1' data-book='bookTitle' lang='en'>English text</div>",
-            "   <div class='bloom-editable bloom-contentNational1' data-book='bookTitle' lang='fr'>French text</div>",
-            "   <div class='bloom-editable' data-book='bookTitle' lang='tpi'>Tok Pisin text</div>",
-            "</div>"
-        ].join("\n"));
-        $('body').append(testHtml);
-        var result = BloomSourceBubbles.MakeSourceTextDivForGroup($('body').find('#testTarget')[0]);
-        // English in test is vernacular, so no tab for it
-        // Tok Pisin tab gets moved to first place, since it is currentCollectionLanguage2
-        // French is marked as N1, so it gets deleted, since this is the bookTitle
-        // So result should contain:
-        // <nav>
-        //   <ul>
-        //     <li id='tpi'><a class="sourceTextTab" href="#tpi">Tok Pisin</a></li>
-        //     <li id='es'><a class=\"sourceTextTab\" href=\"#es\">español</a></li>
-        //   </ul>
-        // </nav>
-        // <div class='bloom-editable' lang='es'>Spanish text</div> (order not important here)
-        // <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>
-        var listItems = result.find('nav ul li');
-        expect(listItems.length).toBe(2);
-        expect(listItems.first().html()).toBe("<a class=\"sourceTextTab\" href=\"#tpi\">Tok Pisin</a>");
-        expect(listItems.last().html()).toBe("<a class=\"sourceTextTab\" href=\"#es\">español</a>");
-        expect(result.find('li#fr').length).toBe(0);
-        expect(result.find('div').length).toBe(2);
-    });
 
     it("Run CreateDropdownIfNecessary with pre-defined settings", function () {
         var testHtml = $([
