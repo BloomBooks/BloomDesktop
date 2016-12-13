@@ -67,7 +67,9 @@ mixin field-bottom-left-branding
 mixin field-title-page-branding
 	+optional-branding-image('title-page').branding
 
-mixin field-cover-branding
+mixin field-back-cover-branding
+	//- only one of these should succeed. That is, the pack should only supply one or the other
+	+optional-branding-image('back-cover-outside-wide').branding.branding-wide
 	+optional-branding-image('back-cover-outside').branding
 
 mixin block-licenseAndCopyright
@@ -195,7 +197,7 @@ mixin factoryStandard-outsideBackCover
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
-		+field-cover-branding
+		+field-back-cover-branding
 
 mixin standard-ISOLanguageCode
 	.iso693Code
