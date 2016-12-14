@@ -1,3 +1,10 @@
+bloom-desktop (3.7.1) stable; urgency=medium
+
+  * Add pso-keys to the build and runtime dependencies.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Wed, 14 Dec 2016 12:25:29 -0600
+
 bloom-desktop (3.7.0) stable; urgency=medium
 
   * Rename the package to bloom-desktop for the Version 3.7 release
