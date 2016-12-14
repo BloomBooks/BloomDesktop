@@ -16,16 +16,13 @@ export default class TextBoxProperties {
     }
 
     // This method is called when the origami panel gets focus.
-    // targetBox is actually an '.origami-ui' div that overlaps with the '.bloom-translationGroup' we want.
+    // targetBox is actually the '.textBox-identifier' div that overlaps with the '.bloom-translationGroup' we want.
     AttachToBox(targetBox: HTMLElement) {
         var propDlg = this;
         this._previousBox = targetBox;
 
         // Put the format button in the text box itself, so that it's always in the right place.
-        // The z-index puts the formatButton above the origami-ui stuff so a click will find it.
-        $(targetBox).append('<div id="formatButton" style="z-index: 60000;" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + propDlg._supportFilesRoot + '/img/cogGrey.svg"></div>');
-
-        var formatButton = $('#formatButton');
+        $(targetBox).append(propDlg.getDialogActivationButton());
 
         // BL-2476: Readers made from BloomPacks should have formatting dialogs disabled
         var suppress = $(document).find('meta[name="lockFormatting"]');
@@ -33,7 +30,7 @@ export default class TextBoxProperties {
 
         // Why do we use .off and .on? See comment in a nearly identical location in StyleEditor.ts
         $(targetBox).off('click.formatButton');
-        $(targetBox).on('click.formatButton', '#formatButton', function () {
+        $(targetBox).on('click.formatButton', '.formatButton', function () {
             propDlg.boxBeingEdited = targetBox;
 
             // If this text box has had properties set already, get them so we can setup the dialog contents
@@ -100,7 +97,7 @@ export default class TextBoxProperties {
             // It just needs to delay one 'cycle'.
             // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
             setTimeout(function () {
-                var offset = $('#formatButton').offset();
+                var offset = $(propDlg.boxBeingEdited).find('.formatButton').offset(); // make sure we get the right button!
                 dialogElement.offset({ left: offset.left + 30, top: offset.top - 30 });
                 EditableDivUtils.positionInViewport(dialogElement);
                 dialogElement.draggable("enable");
@@ -151,5 +148,11 @@ export default class TextBoxProperties {
 
     getCheckedValue(value: string, compareTo: string): string {
         return (value == compareTo) ? ' checked="true"' : '';
+    }
+
+    // The z-index puts the formatButton above the origami-ui stuff so a click will find it.
+    getDialogActivationButton(): string {
+        return '<div style="z-index: 60000; position: absolute; left:0; bottom: 0;" contenteditable="false" class="bloom-ui formatButton">'
+            + '<img  contenteditable="false" src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>';
     }
 }

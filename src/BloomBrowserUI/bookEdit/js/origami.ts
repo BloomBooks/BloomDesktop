@@ -65,8 +65,8 @@ function setupLayoutMode() {
 
         $this.append(getButtons());
         var contents = $this.find('.bloom-translationGroup:not(.box-header-off) > .bloom-editable');
-        if (!contents.length || (contents.length && !isEmpty(contents)))
-            return true;
+        if ($this.find('.bloom-imageContainer').length)
+            return true; // don't put text box identifier in image container!
         $this.append(getTextBoxIdentifier());
     });
     // Text should not be editable in layout mode
@@ -95,19 +95,10 @@ function layoutToggleClickHandler() {
         marginBox.find('#formatButton').remove();
         // Hook up TextBoxProperties dialog to each text box (via its origami overlay)
         var dialog = GetTextBoxPropertiesDialog();
-        var overlays = marginBox.find('.origami-ui');
+        var overlays = marginBox.find('.textBox-identifier');
         overlays.each(function () {
-            $(this).on('mousedown', function (event) {
-                if ($(this).find('#formatButton').length == 0) {
-                    $('#formatButton').remove(); // in case there's one elsewhere
-                    dialog.AttachToBox(this);
-                    event.stopPropagation(); // to keep from repeating on multiple overlapping origami overlay elements
-                } else {
-                    return false; // handle mouse down as formatButton click
-                }
-            });
+            dialog.AttachToBox(this); // put the gear button in each text box identifier div
         });
-        overlays.first().mousedown(); // display formatButton for first textbox
     } else {
         marginBox.removeClass('origami-layout-mode');
         marginBox.find('.textBox-identifier').remove();
@@ -344,19 +335,10 @@ function makeTextFieldClickHandler(e) {
     $(this).closest('.selector-links').remove();
     // hook up TextBoxProperties dialog to this new Text Box (via its origami overlay)
     var dialog = GetTextBoxPropertiesDialog();
-    var overlays = container.find('.origami-ui');
+    var overlays = container.find('.textBox-identifier');
     overlays.each(function () {
-        $(this).on('mousedown', function (event) {
-            if ($(this).find('#formatButton').length == 0) {
-                $('#formatButton').remove(); // in case there's one elsewhere
-                dialog.AttachToBox(this);
-                event.stopPropagation(); // to keep from repeating on overlapping origami overlay elements
-            } else {
-                return false; // handle mouse down as formatButton click
-            }
-        });
+        dialog.AttachToBox(this);
     })
-    overlays.first().mousedown();
 }
 function makePictureFieldClickHandler(e) {
     e.preventDefault();
@@ -368,8 +350,6 @@ function makePictureFieldClickHandler(e) {
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(imageContainer);
     $(this).closest('.selector-links').remove();
-    // as our focus has changed, remove any pre-existing formatButtons
-    $('#formatButton').remove();
 }
 
 function setStyle(data, translationGroup) {
