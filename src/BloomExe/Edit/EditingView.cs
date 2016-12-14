@@ -963,7 +963,12 @@ namespace Bloom.Edit
 				return null;
 			// The following line looks like it should work, but it doesn't (at least not reliably in Geckofx45).
 			// return frame.ContentDocument.Body;
-			return frame.ContentWindow.Document.GetElementsByTagName("body").First();
+			// On a fast shutdown of Bloom, while it is redisplaying, we can get an empty enumeration.
+			// See http://issues.bloomlibrary.org/youtrack/issue/BL-3988.
+			var elements = frame.ContentWindow.Document.GetElementsByTagName("body");
+			if (elements.Length == 0)
+				return null;
+			return elements.First();
 		}
 
 		/// <summary>
