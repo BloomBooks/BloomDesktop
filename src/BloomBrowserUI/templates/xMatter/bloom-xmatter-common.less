@@ -29,6 +29,9 @@
             max-width: @PageWidth - (2 * @MarginOuter);
         }
     }
+    .A3Landscape& {
+        .SetMarginBoxCover(@A3Landscape-Height, @A3Landscape-Width);
+    }
     .A4Portrait& {
         .SetMarginBoxCover(@A4Portrait-Height, @A4Portrait-Width);
     }
