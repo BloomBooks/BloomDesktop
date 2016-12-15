@@ -61,7 +61,7 @@ namespace Bloom
 					updateUrl = Path.Combine(output, "installer");
 
 					// For testing we will force it to look in the standard local data folder, even though we are not running there.
-					// Tester should ensure that the version we want to pretent to upgrade is installed there (under Bloom)...the critical thing
+					// Tester should ensure that the version we want to pretend to upgrade is installed there (under Bloom)...the critical thing
 					// seems to be the version of Bloom/packages/RELEASES in this folder which indicates what is already installed.
 					rootDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 				}
@@ -340,6 +340,17 @@ namespace Bloom
 			}
 			catch (Exception ex)
 			{
+				if(Directory.Exists(newInstallDirectory))
+				{
+					try
+					{
+						SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(newInstallDirectory);
+					}
+					catch(Exception error)
+					{
+						SIL.Reporting.Logger.WriteError("The failed installation update directory "+newInstallDirectory+" could not be deleted, will interfere with running Bloom.", error);
+					}
+				}
 				if (ignoreDeltaUpdates == false)
 				{
 					// I think the idea here is that if something goes wrong applying deltas we
