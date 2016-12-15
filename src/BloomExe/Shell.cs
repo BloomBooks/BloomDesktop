@@ -149,18 +149,6 @@ namespace Bloom
 			Text = formattedText;
 		}
 
-		public static string GetBuiltOnDate()
-		{
-			var asm = Assembly.GetExecutingAssembly();
-			var ver = asm.GetName().Version;
-			var file = asm.CodeBase.Replace("file://", string.Empty);
-			if (SIL.PlatformUtilities.Platform.IsWindows)
-				file = file.TrimStart('/');
-			var fi = new FileInfo(file);
-
-			return string.Format("{0}",fi.CreationTimeUtc.ToString("dd-MMM-yyyy"));
-		}
-
 		public static string GetShortVersionInfo()
 		{
 			var asm = Assembly.GetExecutingAssembly();

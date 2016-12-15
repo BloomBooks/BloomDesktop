@@ -936,6 +936,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 ", issueTrackingUrl);
 			SIL.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
 			SIL.Reporting.ErrorReport.AddStandardProperties();
+			// with squirrel, the file's dates only reflect when they were installed, so we override this version thing which
+			// normally would include a bogus "Apparently Built On" date:
+			ErrorReport.Properties["Version"] = ErrorReport.VersionNumberString + " " + ApplicationUpdateSupport.ChannelName;
 			SIL.Reporting.ExceptionHandler.Init();
 
 			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));

@@ -36,7 +36,7 @@ namespace Bloom
 		{
 			InitializeComponent();
 			_shortVersionLabel.Text = Shell.GetShortVersionInfo();
-			_longVersionInfo.Text = Shell.GetBuiltOnDate();
+			_longVersionInfo.Text = "";
 			_feedbackStatusLabel.Visible = !DesktopAnalytics.Analytics.AllowTracking;
 		}
 
