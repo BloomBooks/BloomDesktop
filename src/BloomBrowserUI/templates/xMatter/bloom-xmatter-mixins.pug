@@ -122,11 +122,7 @@ mixin factoryStandard-outsideFrontCover
 				//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
 				// because it is never empty
 				.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
-				+field-prototypeDeclaredExplicity("V").bookTitle
-					+editable(kLanguageForPrototypeOnly)(data-book='smallCoverCredits')
-
-					//- 'V' means this field is only available in the vernacular
-					//- +field-mono-meta('V', "smallCoverCredits")
+					+field-xmatter("V", "smallCoverCredits")
 
 				.bottomRow
 					.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
