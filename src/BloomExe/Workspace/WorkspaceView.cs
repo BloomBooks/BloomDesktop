@@ -323,6 +323,9 @@ namespace Bloom.Workspace
 				SetupUILanguageMenu();
 				LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
 				_localizationChangedEvent.Raise(null);
+				// The following is needed for proper display on Linux, and doesn't hurt anything on Windows.
+				// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
+				AdjustButtonTextsForCurrentSize();
 			});
 		}
 
