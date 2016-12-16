@@ -197,6 +197,23 @@ mixin editable(language)
 	//- .bloom-content1.bloom-editable(lang=language, contenteditable="true")&attributes(attributes)
 		block
 
+//- Putting "+clickableLink('href', boolean) here" should result in a clickable link with correct spacing.
+//- Use the boolean argument 'periodAfter' to insert a period directly behind the link.
+//- Putting "+clickableLink('href')#someId here" should give "<a id=someId ..."
+mixin clickableLink(href, periodAfter)
+	- requireTwoArguments('clickableLink', arguments)
+	= ' '
+	if(attributes.id)
+		a(id!=attributes.id href=href)
+			block
+	else
+		a(href=href)
+			block
+	if(periodAfter === true)
+		= '. '
+	else
+		= ' '
+
 
 //----- utility functions------------------------------
 
