@@ -58,15 +58,16 @@ function setupLayoutMode() {
             // split-panes represent an area that has already been split. A reasonable repair is
             // to remove the split-pane-component-inner, leaving its contents.
             $this.find('.split-pane').unwrap();
-            return true; // continue
+            return true; // continue .each()
         }
         if (!$this.find('.bloom-imageContainer, .bloom-translationGroup:not(.box-header-off)').length)
             $this.append(getTypeSelectors());
 
         $this.append(getButtons());
         var contents = $this.find('.bloom-translationGroup:not(.box-header-off) > .bloom-editable');
-        if ($this.find('.bloom-imageContainer').length)
-            return true; // don't put text box identifier in image container!
+        // don't put text box identifier in image container or where we just put the "Picture or Text"" selector links
+        if ($this.find('.bloom-imageContainer, .selector-links').length)
+            return true; // continue .each()
         $this.append(getTextBoxIdentifier());
     });
     // Text should not be editable in layout mode
@@ -83,7 +84,8 @@ function setupLayoutMode() {
         }
     });
 
-    (<any>window).ElementQueries.init();//have  css-element-queries notice the new elements and track them, adding classes that let rules trigger depending on size
+    //have  css-element-queries notice the new elements and track them, adding classes that let rules trigger depending on size
+    (<any>window).ElementQueries.init();
 }
 
 function layoutToggleClickHandler() {

@@ -93,20 +93,6 @@ export class EditableDivUtils {
         return false;
     }
 
-    static WaitForCKEditorReady(window: Window, targetBox: any, callback: (target: any) => any) {
-        var editorInstances = (<any>window).CKEDITOR.instances;
-        for (var i = 1; ; i++) {
-            var instance = editorInstances['editor' + i];
-            if (instance == null) {
-                break; // if we get here all instances are ready
-            }
-            if (!instance.instanceReady) {
-                instance.on('instanceReady', e => callback(targetBox));
-                return;
-            }
-        }
-    }
-
     // Positions the dialog box so that it is completely visible, so that it does not extend below the
     // current viewport.
     // @param dialogBox

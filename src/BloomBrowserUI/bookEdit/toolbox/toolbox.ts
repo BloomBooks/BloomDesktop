@@ -177,7 +177,28 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
 
 function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
     if ((<any>getPageFrame().contentWindow).CKEDITOR) {
-        EditableDivUtils.WaitForCKEditorReady(<any>getPageFrame().contentWindow, settings, restoreToolboxSettingsWhenCkEditorReady);
+        var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR.instances;
+        // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
+        // This wipes out (at least) our page initialization.
+        // To prevent this we hold our initialization until CKEditor has done initializing.
+        // If any instance on the page (e.g., one per div) is not ready, wait until all are.
+        // (The instances property leads to an object in which a field editorN is defined for each
+        // editor, so we just loop until some value of N which doesn't yield an editor instance.)
+        for (var i = 1; ; i++) {
+            var instance = editorInstances['editor' + i];
+            if (instance == null) {
+                if (i === 0) {
+                    // no instance at all...if one is later created, get us invoked.
+                    (<any>this.getPageFrame().contentWindow).CKEDITOR.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+                    return;
+                }
+                break; // if we get here all instances are ready
+            }
+            if (!instance.instanceReady) {
+                instance.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+                return;
+            }
+        }
     }
     // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
     var opts = settings;
