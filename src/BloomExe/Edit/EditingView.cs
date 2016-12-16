@@ -85,6 +85,25 @@ namespace Bloom.Edit
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
 			SetupBrowserContextMenu();
+#if __MonoCS__
+			// The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
+			// Reduce the red component of the colors for these images to make the inactive images dull blueish
+			// instead of bright pinkish.  (The active form looks okay with or without this fix.)
+			// See http://issues.bloomlibrary.org/youtrack/issue/BL-3714.
+			float[][] colorMatrixElements = {
+				new float[] {.5F,0,  0,  0,  0},		// red scaling factor of 0.5
+				new float[] {0,  1,  0,  0,  0},		// green scaling factor of 1
+				new float[] {0,  0,  1,  0,  0},		// blue scaling factor of 1
+				new float[] {0,  0,  0,  1,  0},		// alpha scaling factor of 1
+				new float[] {0,  0,  0,  0,  1}};		// three translations of 0.0
+			var colorMatrix = new ColorMatrix(colorMatrixElements);
+			_duplicatePageButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+			_deletePageButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+			_undoButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+			_cutButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+			_pasteButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+			_copyButton.ImageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+#endif
 		}
 
 		private void SetupBrowserContextMenu()
