@@ -61,8 +61,14 @@ namespace Bloom.Book
 			}
 			else // there is a licenseUrl, which means it is a CC license
 			{
-				metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
-
+				try
+				{
+					metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
+				}
+				catch (Exception e)
+				{
+					throw new ApplicationException("Bloom had trouble parsing this license url: '" + licenseUrl + "'. (ref BL-4108)", e);
+				}
 				//are there notes that go along with that?
 				var licenseNotes = dom.GetBookSetting("licenseNotes");
 				if(!licenseNotes.Empty)

@@ -49,9 +49,18 @@ namespace Bloom.Publish
 				// Check whether we have a default printer set (or for that matter, any printers).
 				// Gecko on Windows requires a default printer for any print operation, even one
 				// to a file.  See https://jira.sil.org/browse/BL-1237.
-				var printServer = new System.Printing.LocalPrintServer();
 				string errorMessage = null;
-				if (!printServer.GetPrintQueues().Any())
+				System.Printing.LocalPrintServer printServer = null;
+				try
+				{
+					printServer = new System.Printing.LocalPrintServer();
+				}
+				catch (Exception) // System.Printing.PrintQueueException isn't in our System.Printing assembly, so... using Exception
+				{
+					// http://issues.bloomlibrary.org/youtrack/issue/BL-4060
+					Logger.WriteEvent("reproduced BL-4060 when trying to create LocalPrinterServer");
+				}
+				if (printServer == null || !printServer.GetPrintQueues().Any())
 				{
 					errorMessage = GetNoDefaultPrinterErrorMessage();
 				}
