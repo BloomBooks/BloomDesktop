@@ -192,7 +192,7 @@ mixin dataDiv
 //- REVIEW: should attributes be on translation Group?
 mixin editable(language)
 	- requireOneArgument('editable', arguments)
-	.bloom-editable(lang=kLanguageForPrototypeOnly, contenteditable="true")&attributes(attributes)
+	.bloom-editable(lang=language, contenteditable="true")&attributes(attributes)
 		block
 	//- .bloom-content1.bloom-editable(lang=language, contenteditable="true")&attributes(attributes)
 		block
