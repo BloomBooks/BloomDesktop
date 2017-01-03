@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
    <header srclang="bn"
            adminlang="en"
@@ -12,11 +12,20 @@
    </header>
    <body>
       <tu tuid="AboutDialog.AboutDialogWindowTitle">
+         <prop type="x-nolongerused">true</prop>
          <tuv xml:lang="en">
             <seg>About</seg>
          </tuv>
          <tuv xml:lang="bn">
             <seg>সম্পর্কে</seg>
+         </tuv>
+      </tu>
+      <tu tuid="AboutDialog.BuiltOnDate">
+         <tuv xml:lang="en">
+            <seg>Built on {0}</seg>
+         </tuv>
+         <tuv xml:lang="bn">
+            <seg> {0} নির্মিত</seg>
          </tuv>
       </tu>
       <tu tuid="AboutDialog.NoUpdates">
@@ -25,6 +34,14 @@
          </tuv>
          <tuv xml:lang="bn">
             <seg>কোন আপডেট নেই</seg>
+         </tuv>
+      </tu>
+      <tu tuid="AboutDialog.WindowTitle">
+         <tuv xml:lang="en">
+            <seg>About {0}</seg>
+         </tuv>
+         <tuv xml:lang="bn">
+            <seg>সম্পর্কে {0}</seg>
          </tuv>
       </tu>
       <tu tuid="AboutDialog._checkForUpdates">
@@ -127,7 +144,7 @@
          </tuv>
       </tu>
       <tu tuid="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
-         <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files"</note>
+         <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files")</note>
          <tuv xml:lang="en">
             <seg>{0} will be moved to the Recycle Bin.</seg>
          </tuv>
@@ -293,7 +310,7 @@
       </tu>
       <tu tuid="ImageToolbox.NewMultilingual">
          <tuv xml:lang="en">
-            <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</seg>
+            <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</seg>
          </tuv>
          <tuv xml:lang="bn">
             <seg>আপনি জানেন কি এই সংগ্রহের একটি নতুন সংস্করন এসেছে যা আপনাকে আরবী, বাংলা, চীনা, ইংরেজি, ফ্রেঞ্চ, ইন্দোনেশীয়, হিন্দি, পর্তুগীজ, স্প্যানিশ, থাই, অথবা সোয়াহিলি ভাষায় খুঁজতে সাহায্য করবে? এটি ফ্রী এবং ডাউনলোডের জন্য পাওয়া যাচ্ছে।</seg>
@@ -365,6 +382,7 @@
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.SearchLanguage">
+         <note>The {0} will be replaced by the name of the language used in the searches.</note>
          <tuv xml:lang="en">
             <seg>The search box is currently set to {0}</seg>
          </tuv>
@@ -534,7 +552,7 @@
             <seg>Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</seg>
          </tuv>
          <tuv xml:lang="bn">
-            <seg>অপ্রত্যাশিত, {0} শুরু হতে মেমরি স্বল্পতা দেখা দিয়েছে, এবং খুব শীঘ্র ধীর গতির হতে পারে অথবা অন্যান্য সমস্যার সম্মুখীন হতে পারেন। আমরা পরামর্শ দেই যে যখন আপনার সুবিধা হবে আপনি এটি বন্ধ করুন এবং রিস্টার্ট দিন।</seg>
+            <seg>অপ্রত্যাশিত, {0} শুরু হতে মেমরি স্বল্পতা দেখা দিয়েছে, এবং খুব শীঘ্র ধীর গতির হতে পারে অথবা অন্যান্য সমস্যার সম্মুখীন হতে পারেন।  আমরা পরামর্শ দেই যে যখন আপনার সুবিধা হবে আপনি এটি বন্ধ করুন এবং রিস্টার্ট দিন।</seg>
          </tuv>
       </tu>
       <tu tuid="MetadataDisplay.Creator">
@@ -680,6 +698,14 @@
             <seg>ক্রিয়েটিভ কমন্স</seg>
          </tuv>
       </tu>
+      <tu tuid="MetadataEditor.CreativeCommons.Intergovernmental">
+         <tuv xml:lang="en">
+            <seg>Intergovernmental Version</seg>
+         </tuv>
+         <tuv xml:lang="bn">
+            <seg>আন্তঃসরকারী সংস্করণ</seg>
+         </tuv>
+      </tu>
       <tu tuid="MetadataEditor.CreatorLabel">
          <tuv xml:lang="en">
             <seg>Creator</seg>
@@ -747,7 +773,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.betterLinkLabel1">
-         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
+         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
          <tuv xml:lang="en">
             <seg>more info</seg>
          </tuv>
@@ -851,6 +877,14 @@
          </tuv>
          <tuv xml:lang="bn">
             <seg>সেটিংস সুরক্ষা</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ShowReleaseNotesDialog.WindowTitle">
+         <tuv xml:lang="en">
+            <seg>Release Notes</seg>
+         </tuv>
+         <tuv xml:lang="bn">
+            <seg>অব্যাহতি পত্র</seg>
          </tuv>
       </tu>
       <tu tuid="Use {0}">
@@ -987,7 +1021,7 @@
             <seg>The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</seg>
          </tuv>
          <tuv xml:lang="bn">
-            <seg>এই ভাষা সম্পর্কে সাম্প্রতিক তথ্য পুনরুদ্ধার করতে অ্যাপ্লিকেশনটি এসআইএল লোকাল ডাটা রিপোজিটরির সাথে সংযুক্ত হতে পারছে না। যদি আপনি এই লেখার প্রক্রিয়াটি তৈরি করেন, ডিফল্ট সেটিংসটি ভুল হতে পারে অথবা মেয়াদ উত্তীর্ণ হতে পারে। আপনি কি নিশ্চিত যে আপনি একটি লেখার নতুন প্রক্রিয়া তৈরি করতে চান?</seg>
+            <seg>এই ভাষা সম্পর্কে সাম্প্রতিক তথ্য পুনরুদ্ধার করতে অ্যাপ্লিকেশনটি এসআইএল লোকাল ডাটা রিপোজিটরির সাথে সংযুক্ত হতে পারছে না।  যদি আপনি এই লেখার প্রক্রিয়াটি তৈরি করেন, ডিফল্ট সেটিংসটি ভুল হতে পারে অথবা মেয়াদ উত্তীর্ণ হতে পারে। আপনি কি নিশ্চিত যে আপনি একটি লেখার নতুন প্রক্রিয়া তৈরি করতে চান?</seg>
          </tuv>
       </tu>
    </body>
