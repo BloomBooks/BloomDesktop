@@ -2475,6 +2475,24 @@
         <seg>抱歉，Bloom桌面版本与BloomLibrary.org不兼容。请提升版本。</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Upload.Partial">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>(partial)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>（部分）</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.IncompleteTranslation">
+      <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
+      <tuv xml:lang="en">
+        <seg>(incomplete translation)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>（部分）</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Upload.PleaseLogIn">
       <tuv xml:lang="en">
         <seg>Please log in to BloomLibrary.org (or sign up) before uploading</seg>
