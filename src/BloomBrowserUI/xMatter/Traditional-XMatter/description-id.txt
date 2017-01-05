@@ -1,1 +1,1 @@
- Pengakuan ada di bagian belakang halaman judul.
+[V1]* Pengakuan ada di bagian belakang halaman judul.

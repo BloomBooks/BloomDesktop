@@ -1,0 +1,41 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    link(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')
+    link(rel='stylesheet', href='/bloom/lib/jquery-ui.css')
+    script(src='/bloom/node_modules/jquery/dist/jquery.js')
+    script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+    script.
+      $(function () { $('#device').resizable({ minHeight: 300, minWidth: 200, handles: { 'se': '#BottomRightHandle' } }); });
+  //_AudioSituationClass_ is replaced at runtime
+  body._AudioSituationClass_
+    #sideColumn(dir='rtl')
+      p هذا إصدار #[a(href='https://en.wikipedia.org/wiki/ePUB') ePUB] (كتاب إلكتروني) من كتابك.&nbsp;
+        span.showForTalkingBooks يحتوي الكتاب على ملف صوتي، حتى يتمكن القراء الجدد من الاستماع أثناء القراءة.
+      p.showWhenHaveAudioButNotMakingTalkingBook يحتوي هذا الكتاب على بعض التسجيلات، إلا أنه لا يتم تضمين ملف صوتي في ePUB.
+
+      h3 المعاينة
+      p يمكنك تغيير حجم المعاينة من خلال سحب الزاوية أسفل يمين جهاز المحاكاة هذا. انظر كيف سيظهر كتابك على شاشات ذات أحجام مختلفة.
+      :marked
+        تستخدم هذه الصفحة كتاب ePUB على [Readium](http://readium.org/). من المرجَّح أن الكتب ستظهر على نحو مختلف في أجهزة القراءة المختلفة.
+      p.showForTalkingBooks
+        | لا يمكن للمعاينة تشغيل الكتب الناطقة في الوقت الحالي. يمكنك الاستماع إليها باستخدام #[a(href='http://www.adobe.com/solutions/ebook/digital-editions.html')  الإصدارات الرقمية] من قارئ الكتب الإلكترونية المجاني Adobe 
+        | قارئ الكتب الإلكترونية
+      h3 وضع هذا الكتاب على جهازك
+      p هناك وسيلة سهلة لوضع الكتب على هاتفك، وهي إعداد Dropbox أو خدمة شبيهة لها على جهاز الكمبيوتر والهاتف/الجهاز اللوحي. لن يلزمك سوى النقر على "حفظ ePUB" واختيار مجلد Dropbox بعد ذلك. على الهاتف، افتح تطبيق Dropbox واختر كتابك. إذا كنت تستخدم جهاز كمبيوتر محمولاً، فيمكنك أيضًا تجربة برنامج #[a(href='http://shareit.lenovo.com/') ShareIt] المجاني لإرسال الملفات من الكمبيوتر المحمول إلى هاتف أو جهاز لوحي.
+      h3 القارئ الموصى به
+      :marked
+        أثبتت التجارب التي أجريناها أن [Gitden Reader](/bloom/api/help/Concepts/Gitden_Reader.htm)
+        خياراً جيداً على أجهزة Android وiOS (سواء iPhone أو iPad).
+      p.showForTalkingBooks
+        | للاستماع إلى هذا الكتاب الناطق باستخدام Gitden على هاتف أو جهاز لوحي، يلزمك تعطيل ميزة "تحويل النص إلى كلام" في Gitden. بعد ذلك سيعرض لك عناصر التحكم في الصوت.
+      h3.showWhenNoAudio إنشاء كتاب ناطق
+      p.showWhenNoAudio
+        | إذا كنت تريد إعداد "كتاب ناطق" يمكن للقراء الجدد القراءة معه، فيمكنك استخدام #[a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') أداة الكتاب الناطق] من Bloom 
+        |  لإضافة تسجيلات صوتية.
+      h3 راسلنا
+      p هل لديك اهتمام بنشر كتب Bloom لاستخدامها على الهواتف الذكية وأجهزة القراءة الإلكترونية الأخرى؟ هل تحتاج منا القيام بشيء لتحقيق استفادة لديك؟ يمكنك استخدام أمر "مساعدة: الإبلاغ عن مشكلة" لإرسال ملاحظاتك إلينا. شكراً لك
+    #device.ui-resizable
+      iframe(src='readium-cloudreader.htm?epub={EPUBFOLDER}')
+      #BottomRightHandle.ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-grip-diagonal-se

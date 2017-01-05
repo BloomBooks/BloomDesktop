@@ -509,7 +509,10 @@ namespace Bloom.Collection
 		{
 			var s = GetValue(library, id, defaultValue.ToString(CultureInfo.InvariantCulture));
 			decimal d;
-			decimal.TryParse(s, out d);
+			// REVIEW: if we localize the display of decimal values in the line-height combo box, then this
+			// needs to handle the localized version of the number.  (This happens automatically by removing
+			// the middle two arguments.)
+			decimal.TryParse(s, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out d);
 			return d;
 		}
 

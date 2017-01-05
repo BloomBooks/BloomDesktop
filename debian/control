@@ -1,4 +1,4 @@
-Source: bloom-desktop-beta
+Source: bloom-desktop
 Section: x11
 Priority: extra
 Maintainer: Stephen McConnel <stephen_mcconnel@sil.org>
@@ -12,24 +12,24 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  wget, unzip, desktop-file-utils,
  optipng, libsndfile1,
  nodejs (>= 5.0),
- mono-sil, libgdiplus-sil, geckofx29,
+ mono-sil, libgdiplus-sil, geckofx29, pso-keys,
  libenchant-dev, libxklavier-dev, libdconf-dev,
  libfreetype6,
  libicu-dev,
  icu-devtools | libicu-dev (<< 52)
 
-Package: bloom-desktop-beta
+Package: bloom-desktop
 Architecture: all
 Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
- mono-sil, libgdiplus-sil, geckofx29, gtklp,
+ mono-sil, libgdiplus-sil, geckofx29, gtklp, pso-keys,
  chmsee, libtidy5,
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
  libfreetype6,
  wmctrl
 Suggests: art-of-reading
-Replaces: bloom-desktop, bloom-desktop-unstable
-Conflicts: bloom-desktop, bloom-desktop-unstable
+Replaces: bloom-desktop-beta, bloom-desktop-unstable
+Conflicts: bloom-desktop-beta, bloom-desktop-unstable
 Description: Literacy materials development for language communities
  Bloom Desktop is an application that dramatically "lowers the bar" for
  language communities who want books in their own languages. Bloom delivers

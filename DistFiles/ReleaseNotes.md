@@ -6,6 +6,8 @@
 
     To unlock the book, go into the toolbox (which lives to the right of the page in the Edit Tab). Click on the icon of gear, and tick the checkbox there. The book will remain unlocked only during the current editing session; the next time you come back to this book, it will be locked again.
 
+- New or improved interfaces for Bengali, French, Hausa, Indonesia, Nepali, and Russian.
+
 - A new "Branding" collection setting allows organizations to specify logos, copyright, and license.
 
 - The Copyright & License box now allows you to select the "Intergovernmental" version of the Creative Commons License.
@@ -24,7 +26,12 @@
 
 - A new "Super Paper Saver" Front/Back Matter pack puts the title page on the inside of the front cover, and the credits on the inside of the back cover.
 
-- If no topic is set, the language name on the front cover is now centered._
+- If no topic is set, the language name on the front cover is now centered.
+
+- Wall Calendar now comes out right when made into a booklet, even when the selected Front Matter has an odd number of pages.
+
+- Formatting changes are now saved, even if you delete the page before Bloom has a chance to save it.
+
 
 - Over 170 fixes and small improvements.
 
@@ -113,7 +120,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 
 ## Important Notices
 
-### Andika Replaced By "Andika New Basic" 
+### Andika Replaced By "Andika New Basic"
 - Many Bloom collections use SIL's free "Andika" literacy font as their default typeface. When you create a PDF using Andika, styles such as bold, italic etc. are lost. This will happen with any font that doesn't include a real bold/italic/etc face. This problem is outside of our control at this time (we've reported it to Mozilla). Happily, SIL has released a subset of Andika named [Andika New Basic](http://scripts.sil.org/cms/scripts/page.php?item_id=Andika_New_Basic). Bloom now installs this font for you and uses it by default. If your language is not fully supported by Andika New Basic, please choose another font, ideally one which includes built-in bold and italic. You can test your font by using CTRL+B to make some text bold, then going to publish and looking to see if bold makes it through to the PDF.
 - Note, Bloom will automatically change the default font from Andika to Andika New Basic, if you have Andika set. It will only do this once, so if you choose to change it back to Andika, it won't keep changing it. Note also that Bloom will not attempt to change any custom styles you may have created. If you need bold/italics to show up in a custom style, you'll have to change away from Andika by hand.
 
@@ -303,7 +310,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 - Fix: BigBook National Language title was missinga parenthesis
 - Fix: Was hard to insert an uppercase character using the long-press special character feature
 - Fix: "Update Book" messed up custom pages
-- Several Linux-only fixes 
+- Several Linux-only fixes
 
 ## 3.0.74 BETA
 
@@ -343,7 +350,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 
 - The Help menu now has has a "Report Problem" command.
 - Now installs the newly updated Andika version 5.
-- Fixed problem with "Booklet Insides" publishing option. 
+- Fixed problem with "Booklet Insides" publishing option.
 - Fixed several issues in the Format dialog.
 - Modifier keys no longer trigger the Special Characters popup.
 - Several other minor fixes.

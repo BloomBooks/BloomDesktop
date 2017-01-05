@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
    <header srclang="id"
            adminlang="en"
@@ -12,11 +12,20 @@
    </header>
    <body>
       <tu tuid="AboutDialog.AboutDialogWindowTitle">
+         <prop type="x-nolongerused">true</prop>
          <tuv xml:lang="en">
             <seg>About</seg>
          </tuv>
          <tuv xml:lang="id">
-            <seg>Tentang</seg>
+            <seg/>
+         </tuv>
+      </tu>
+      <tu tuid="AboutDialog.BuiltOnDate">
+         <tuv xml:lang="en">
+            <seg>Built on {0}</seg>
+         </tuv>
+         <tuv xml:lang="id">
+            <seg>Dibangun pada {0}</seg>
          </tuv>
       </tu>
       <tu tuid="AboutDialog.NoUpdates">
@@ -25,6 +34,14 @@
          </tuv>
          <tuv xml:lang="id">
             <seg>Tidak Ada Pembaruan</seg>
+         </tuv>
+      </tu>
+      <tu tuid="AboutDialog.WindowTitle">
+         <tuv xml:lang="en">
+            <seg>About {0}</seg>
+         </tuv>
+         <tuv xml:lang="id">
+            <seg>Tentang {0}</seg>
          </tuv>
       </tu>
       <tu tuid="AboutDialog._checkForUpdates">
@@ -293,7 +310,7 @@
       </tu>
       <tu tuid="ImageToolbox.NewMultilingual">
          <tuv xml:lang="en">
-            <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</seg>
+            <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</seg>
          </tuv>
          <tuv xml:lang="id">
             <seg>Tahukah Anda bahwa ada versi terbaru untuk koleksi ini yang memungkinkan Anda mencari dalam bahasa Arab, Bengal, Mandarin, Inggris, Prancis, Indonesia, Hindi, Portugis, Spanyol, Thailand, atau Swahili? Koleksi ini gratis dan tersedia untuk diunduh.</seg>
@@ -365,6 +382,7 @@
          </tuv>
       </tu>
       <tu tuid="ImageToolbox.SearchLanguage">
+         <note>The {0} will be replaced by the name of the language used in the searches.</note>
          <tuv xml:lang="en">
             <seg>The search box is currently set to {0}</seg>
          </tuv>
@@ -680,6 +698,14 @@
             <seg>Kesepakatan Umum dalam Pembuatan</seg>
          </tuv>
       </tu>
+      <tu tuid="MetadataEditor.CreativeCommons.Intergovernmental">
+         <tuv xml:lang="en">
+            <seg>Intergovernmental Version</seg>
+         </tuv>
+         <tuv xml:lang="id">
+            <seg>Intergovernmental Versi</seg>
+         </tuv>
+      </tu>
       <tu tuid="MetadataEditor.CreatorLabel">
          <tuv xml:lang="en">
             <seg>Creator</seg>
@@ -747,7 +773,7 @@
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.betterLinkLabel1">
-         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
+         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
          <tuv xml:lang="en">
             <seg>more info</seg>
          </tuv>
@@ -851,6 +877,14 @@
          </tuv>
          <tuv xml:lang="id">
             <seg>Perlindungan Pengaturan</seg>
+         </tuv>
+      </tu>
+      <tu tuid="ShowReleaseNotesDialog.WindowTitle">
+         <tuv xml:lang="en">
+            <seg>Release Notes</seg>
+         </tuv>
+         <tuv xml:lang="id">
+            <seg>Catatan rilis</seg>
          </tuv>
       </tu>
       <tu tuid="Use {0}">

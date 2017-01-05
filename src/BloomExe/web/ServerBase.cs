@@ -236,7 +236,15 @@ namespace Bloom.Api
 
 				if(!zoneAlarm)
 				{
-					zoneAlarm = Process.GetProcesses().Any(p => p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName.Contains("ZoneAlarm")));
+					try
+					{
+						zoneAlarm =
+							Process.GetProcesses().Any(p => p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName.Contains("ZoneAlarm")));
+					}
+					catch(Exception error)
+					{
+						Logger.WriteError("GetServerStartFailureMessage() was unable to check for a running ZoneAlarm Process (BL-4055, Bl-4032, etc.)", error);
+					}
 				}
 			}
 			if(zoneAlarm)
