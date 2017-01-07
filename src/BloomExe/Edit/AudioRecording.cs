@@ -10,6 +10,7 @@ using Bloom.Api;
 using L10NSharp;
 using SIL.IO;
 #if __MonoCS__
+using Bloom.ToPalaso;
 #else
 using SIL.Media.Naudio;
 #endif
@@ -34,9 +35,7 @@ namespace Bloom.Edit
 	public class AudioRecording :IDisposable
 	{
 		private readonly BookSelection _bookSelection;
-#if !__MonoCS__
 		private AudioRecorder _recorder;
-#endif
 		BloomWebSocketServer _webSocketServer;
 
 		/// <summary>
@@ -117,9 +116,6 @@ namespace Bloom.Edit
 		/// </summary>
 		public void HandleAudioDevices(ApiRequest request)
 		{
-#if __MonoCS__
-			request.Failed("Not supported on Linux");
-#else
 			var sb = new StringBuilder("{\"devices\":[");
 			sb.Append(string.Join(",", RecordingDevice.Devices.Select(d => "\""+d.ProductName+"\"")));
 			sb.Append("],\"productName\":");
@@ -136,8 +132,6 @@ namespace Bloom.Edit
 
 			sb.Append("}");
 			request.ReplyWithJson(sb.ToString());
-#endif
-
 		}
 
 		/// <summary>
@@ -149,8 +143,6 @@ namespace Bloom.Edit
 		/// </summary>
 		public void BeginMonitoring()
 		{
-#if __MonoCS__
-#else
 			if (!RecordingDevice.Devices.Contains(RecordingDevice))
 			{
 				RecordingDevice = RecordingDevice.Devices.FirstOrDefault();
@@ -159,11 +151,8 @@ namespace Bloom.Edit
 			{
 				Recorder.BeginMonitoring();
 			}
-#endif
 		}
 
-#if __MonoCS__
-#else
 		private void SetPeakLevel(PeakLevelEventArgs args)
 		{
 			var level = Math.Round(args.Level, 3);
@@ -173,12 +162,9 @@ namespace Bloom.Edit
 				_webSocketServer.Send("peakAudioLevel", level.ToString(CultureInfo.InvariantCulture));
 			}
 		}
-#endif
 
 		private void HandleEndRecord(ApiRequest request)
 		{
-#if __MonoCS__
-#else
 			if (Recorder.RecordingState != RecordingState.Recording)
 			{
 				//usually, this is a result of us getting the "end" before we actually started, because it was too quick
@@ -209,10 +195,8 @@ namespace Bloom.Edit
 			}
 
 			TestForTooShortAndSendFailIfSo(request);
-#endif
 		}
 
-#if !__MonoCS__
 		private void Recorder_Stopped(IAudioRecorder arg1, ErrorEventArgs arg2)
 		{
 			Recorder.Stopped -= Recorder_Stopped;
@@ -222,6 +206,7 @@ namespace Bloom.Edit
 			{
 				var minimum = TimeSpan.FromMilliseconds(300); // this is arbitrary
 				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToCurrentAudioSegment, new TimeSpan(), TimeSpan.FromMilliseconds(millisecondsToTrimFromEndForMouseClick), minimum);
+				File.Delete(PathToTemporaryWav);	// Otherwise, these continue to clutter up the temp directory.
 			}
 			catch (Exception error)
 			{
@@ -241,7 +226,6 @@ namespace Bloom.Edit
 				// it is used for playback.
 			}
 		}
-#endif
 
 		private bool TestForTooShortAndSendFailIfSo(ApiRequest request)
 		{
@@ -260,10 +244,6 @@ namespace Bloom.Edit
 		/// <returns>true if the recording started successfully</returns>
 		public void HandleStartRecording(ApiRequest request)
 		{
-#if __MonoCS__
-						MessageBox.Show("Recording does not yet work on Linux", "Cannot record");
-						return;
-#else
 			if(Recording)
 			{
 				request.Failed("Already recording");
@@ -343,7 +323,6 @@ namespace Bloom.Edit
 			_startRecordingTimer.Start();
 			request.ReplyWithText("starting record soon");
 			return;
-#endif
 		}
 
 
@@ -357,23 +336,16 @@ namespace Bloom.Edit
 		{
 			get
 			{
-#if __MonoCS__
-				return false;
-#else
 				return Recorder.RecordingState == RecordingState.Recording ||
 					   Recorder.RecordingState == RecordingState.RequestedStop;
-#endif
 			}
 		}
 
 		private void OnStartRecordingTimer_Elapsed(object sender, EventArgs e)
 		{
-#if __MonoCS__
-#else
 			_startRecordingTimer.Stop();
 			Debug.WriteLine("Start actual recording");
 			Recorder.BeginRecording(PathToTemporaryWav);
-#endif
 		}
 
 		private void CleanUpAfterPressTooShort()
@@ -385,10 +357,7 @@ namespace Bloom.Edit
 			{
 				try
 				{
-#if __MonoCS__
-#else
 					Recorder.Stop();
-#endif
 					Application.DoEvents();
 				}
 				catch (Exception)
@@ -423,15 +392,11 @@ namespace Bloom.Edit
 			}
 		}
 
-#if __MonoCS__
-#else
 		public RecordingDevice RecordingDevice
 		{
 			get { return Recorder.SelectedDevice; }
 			set { Recorder.SelectedDevice = value; }
 		}
-
-#endif
 
 		internal void ReportNoMicrophone()
 		{
@@ -442,8 +407,6 @@ namespace Bloom.Edit
 
 		public void HandleCurrentRecordingDevice(ApiRequest request)
 		{
-#if __MonoCS__
-#else
 			if(request.HttpMethod == HttpMethods.Post)
 			{
 				var name = request.RequiredPostString();
@@ -459,7 +422,6 @@ namespace Bloom.Edit
 				request.Failed("Could not find the device named " + name);
 			}
 			else request.Failed("Only Post is currently supported");
-#endif
 		}
 
 		private void HandleCheckForSegment(ApiRequest request)
@@ -498,8 +460,6 @@ namespace Bloom.Edit
 		}
 
 
-#if __MonoCS__
-#else
 		// Palaso component to do the actual recording.
 		private AudioRecorder Recorder
 		{
@@ -553,7 +513,6 @@ namespace Bloom.Edit
 				}
 			};
 		}
-#endif
 
 		public virtual void Dispose()
 		{
@@ -568,14 +527,11 @@ namespace Bloom.Edit
 				if (disposing)
 				{
 					// dispose-only, i.e. non-finalizable logic
-#if __MonoCS__
-#else
 					if (_recorder != null)
 					{
 						_recorder.Dispose();
 						_recorder = null;
 					}
-#endif
 				}
 
 				// shared (dispose and finalizable) cleanup logic

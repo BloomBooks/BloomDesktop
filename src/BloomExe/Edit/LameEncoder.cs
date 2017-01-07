@@ -64,7 +64,10 @@ namespace Bloom.Edit
 		/// <returns>the path, if found, else null</returns>
 		static private string LocateLAME()
 		{
-#if !MONO
+#if __MonoCS__
+			if (File.Exists("/usr/bin/lame"))
+				return "/usr/bin/lame";
+#else
 			//nb: this is sensitive to whether we are compiled against win32 or not,
 			//not just the host OS, as you might guess.
 			var pf = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
@@ -83,8 +86,8 @@ namespace Bloom.Edit
 				if (RobustFile.Exists(exePath))
 					return exePath;
 			}
-			return string.Empty;
 #endif
+			return string.Empty;
 		}
 	}
 }
