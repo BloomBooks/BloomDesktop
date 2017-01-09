@@ -8,6 +8,6 @@
 এই টেমপ্লেটটি শুরু করার জন্য Bruce Cox (SIL Cameroon) কে ধন্যবাদ।
 
 # প্রতিক্রিয়া
-দয়া করে ভোট করুন  [পরামর্শ ](http://bloom.palaso.org/suggestions/)
+দয়া করে ভোট করুন  [পরামর্শ ](http://bloomlibrary.org/suggestions)
 
-সমস্যা রিপোর্ট করুন [issues@bloomlibrary.org](mailto:issues@bloomlibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem) 
+সমস্যা রিপোর্ট করুন [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem) 
