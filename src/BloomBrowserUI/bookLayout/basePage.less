@@ -546,6 +546,7 @@ h2 {
 //Each of these is assumed to be unwanted:
 .bloom-editable	{
     display: none;
+    order: 99; //if somehow we don't have an order for this, show it last (default is 0, which would be first)
 }
 .bloom-translationGroup {
     display: flex;
@@ -559,13 +560,13 @@ h2 {
 // Note, we could still use a data-* attribute and do this instead: [data-language-order='1']
 // But for now, we're sticking with the older .bloom-content* classes.
 .bloom-content1 {
-    order: 1;
+    order: 0;
 }
 .bloom-content2 {
-    order: 2;
+    order: 1;
 }
 .bloom-content3 {
-    order: 3;
+    order: 2;
 }
 
 //... to be continued. We sandwich most other sheets between this one and the languageDisplay.css, which comes last-ish
