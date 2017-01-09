@@ -1,0 +1,2 @@
+[V1]* Sifa kwenye upande wa nyuma wa ukurasa wa mada
+* Inajumuisha alama ya ISO 639 kwenye ukurasa wa sifa.
