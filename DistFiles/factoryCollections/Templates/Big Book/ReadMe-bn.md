@@ -14,6 +14,6 @@
 আপনি যদি আমাদের লেখাটি পাঠান তাহলে আমরা সেটিকে টেমপ্লেটের ভবিষ্যৎ সংস্করণের অন্তর্ভুক্ত করতে পারি। 
 
 # প্রতিক্রিয়া
-দয়া করে ভোট করুন [পরামর্শ](http://bloom.palaso.org/suggestions/) 
+দয়া করে ভোট করুন [পরামর্শ](http://bloomlibrary.org/suggestions) 
 
 সমস্যা হলে রিপোর্ট করুন- [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Big&nbsp;Book&nbsp;Problem) 

@@ -6,6 +6,6 @@
 حالياً يُعتَبَر هذا الكتاب "تجريبياً" نظراً لإدراكنا بوجود مشكلات في التخطيط والتصميم المريح.
 
 #تغذية راجعة
-يُرجى المشاركة [باقتراحات](http://bloom.palaso.org/suggestions/) والتصويت عليها.
+يُرجى المشاركة [باقتراحات](http://bloomlibrary.org/suggestions) والتصويت عليها.
 
-يُرجى الإبلاغ عن المشكلات لدى [issues@bloomlibrary.org](mailto:issues@bloomlibrary.org?subject=Picture&nbsp;Dictionary&nbsp;Problem).
+يُرجى الإبلاغ عن المشكلات لدى [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Picture&nbsp;Dictionary&nbsp;Problem).

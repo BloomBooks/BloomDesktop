@@ -17,4 +17,4 @@
 #تغذية راجعة
 يُرجى المشاركة باقتراحات والتصويت عليها.
 
-يُرجى الإبلاغ عن المشكلات لدى  [issues@bloomlibrary.org](mailto:issues@bloomlibrary.org?subject=Big&nbsp;Book&nbsp;Problem).
+يُرجى الإبلاغ عن المشكلات لدى  [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Big&nbsp;Book&nbsp;Problem).

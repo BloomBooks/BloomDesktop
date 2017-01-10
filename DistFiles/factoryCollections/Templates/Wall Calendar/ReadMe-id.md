@@ -8,6 +8,6 @@ Saat ini, Anda tidak dapat membuat "kerangka" untuk bahasa lain untuk digunakan.
 Ucapan terima kasih untuk Bruce Cox (SIL Kamerun) yang telah membuat template ini dapat dimulai.
 
 # Umpan balik
-Silakan berikan dan masukan saran Anda pada [saran](http://bloom.palaso.org/suggestions/).
+Silakan berikan dan masukan saran Anda pada [saran](http://bloomlibrary.org/suggestions).
 
-Silakan laporkan masalah ke [issues@bloomlibrary.org](mailto:issues@bloomlibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem).
+Silakan laporkan masalah ke [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem).
