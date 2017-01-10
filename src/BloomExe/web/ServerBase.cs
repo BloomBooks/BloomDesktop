@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.web;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
@@ -100,7 +101,7 @@ namespace Bloom.Api
 		/// Notifies threads in the _workers pool that there is a request in the _queue
 		/// </summary>
 		private readonly ManualResetEvent _ready;
-		
+
 
 		protected ServerBase()
 		{
@@ -149,7 +150,7 @@ namespace Bloom.Api
 
 			if(!success)
 			{
-				
+
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
 				Logger.WriteEvent("Error: Could not start up internal HTTP Server");
 				Analytics.ReportException(new ApplicationException("Could not start server."));
@@ -365,7 +366,7 @@ namespace Bloom.Api
 					if (rawurl.Contains("thumbnail=1"))
 						Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
-					MakeReply(new RequestInfo(context));
+					MakeReply(new RequestInfo(new BloomHttpListenerContext(context)));
 				}
 				catch (HttpListenerException e)
 				{
