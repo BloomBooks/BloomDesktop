@@ -14,6 +14,6 @@ Jika Anda ingin memiliki petunjuk dalam bahasa lain, Anda dapat menghapus teks d
 Jika Anda mengirimkan teks itu, kami bisa memasukkannya dalam versi masa depan template tersebut.
 
 # umpan balik
-Silakan berikan dan masukan pendapat Anda pada [saran](http://dev.bloomlibrary.org/#/suggestions).
+Silakan berikan dan masukan pendapat Anda pada [saran](http://bloomlibrary.org/suggestions).
 
-Silakan laporkan masalah ke [issues@bloomlibrary.org](mailto:issues@bloomlibrary.org?subject=Big&nbsp;Book&nbsp;Problem).
+Silakan laporkan masalah ke [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Big&nbsp;Book&nbsp;Problem).

@@ -14,6 +14,6 @@ Si vous souhaitez avoir des instructions dans une autre langue, vous pouvez supp
 Si vous nous envoyez ce texte, nous pouvons l'inclure dans une future version du modèle.
 
 # Vos commentaires
-Veuillez donner vos commentaires et voter sur [suggestions](http://dev.bloomlibrary.org/suggestions/).
+Veuillez donner vos commentaires et voter sur [suggestions](http://bloomlibrary.org/suggestions).
 
-Veuillez signaler des problèmes à : [issues@bloomlibrary.org](mailto:issues@bloomlibrary.org?subject=Big&nbsp;Book&nbsp;Problem).
+Veuillez signaler des problèmes à : [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Big&nbsp;Book&nbsp;Problem).

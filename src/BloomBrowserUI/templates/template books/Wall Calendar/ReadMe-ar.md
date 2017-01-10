@@ -9,6 +9,6 @@
 نتوجه بالشكر إلى بروس كوكس (SIL كاميرون) الذي قام باتخاذ الخطوات الأولى لإنشاء هذا النموذج.
 
 #تغذية راجعة
-يُرجى المشاركة [باقتراحات](http://bloom.palaso.org/suggestions/) والتصويت عليها.
+يُرجى المشاركة [باقتراحات](http://bloomlibrary.org/suggestions) والتصويت عليها.
 
-يُرجى الإبلاغ عن المشكلات لدى [issues@bloomlibrary.org](mailto:issues@bloomlibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem).
+يُرجى الإبلاغ عن المشكلات لدى [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem).

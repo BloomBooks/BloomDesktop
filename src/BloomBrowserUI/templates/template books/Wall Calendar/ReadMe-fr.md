@@ -8,6 +8,6 @@ Actuellement, vous ne pouvez pas créer un  calendrier canevas pour les autres l
 Merci à Bruce Cox (SIL Cameroun) d'avoir mis en place ce modèle.
 
 # Vos commentaires
-Veuillez donner vos commentaires et voter sur [suggestions](http://bloom.palaso.org/suggestions/).
+Veuillez donner vos commentaires et voter sur [suggestions](http://bloomlibrary.org/suggestions).
 
-Veuillez signaler des problèmes à : [issues@bloomlibrary.org](mailto:issues@bloomlibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem).
+Veuillez signaler des problèmes à : [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Wall&nbsp;Calendar&nbsp;Problem).
