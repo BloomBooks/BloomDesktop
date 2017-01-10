@@ -1,8 +1,7 @@
 ﻿using System.IO;
-using System.Net;
 using System.Text;
-using System.Threading;
 using Bloom.Api;
+using Bloom.web;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -65,33 +64,12 @@ namespace BloomTests.web
 		[RequiresSTA]
 		public void LocalPathWithoutQuery_SpecialCharactersDecodedCorrectly(string urlEnd, string expectedResult)
 		{
-			var listener = new HttpListener();
-			// Nothing special about 33579. It is a simply a random number we hope is unused.
-			// Note: if you get errors indicating the port is in use,
-			// it is likely the listener.Stop() line below wasn't called somehow.
-			var urlPrefix = "http://localhost:33579/";
-			listener.Prefixes.Add(urlPrefix);
-
-			var reqThread = new Thread(() =>
-			{
-				Thread.Sleep(100);
-				WebRequest req = WebRequest.Create(urlPrefix + urlEnd);
-				req.GetResponse();
-			});
-			reqThread.Start();
-
-			try
-			{
-				listener.Start();
-				var context = listener.GetContext(); // This waits for a request.
-				var requestInfo = new RequestInfo(context);
-				Assert.AreEqual(expectedResult, requestInfo.LocalPathWithoutQuery);
-			}
-			finally
-			{
-				listener.Stop();
-				reqThread.Join();
-			}
+			var context = new TestHttpListenerContext();
+			var request = new TestHttpListenerRequest();
+			request.SetRawUrl("/" + urlEnd);
+			context.SetRequest(request);
+			var requestInfo = new RequestInfo(context);
+			Assert.AreEqual(expectedResult, requestInfo.LocalPathWithoutQuery);
 		}
 
 		private TempFile MakeTempFile(byte[] contents)
@@ -100,6 +78,35 @@ namespace BloomTests.web
 			File.Delete(file.Path);
 			File.WriteAllBytes(file.Path, contents);
 			return file;
+		}
+
+		private class TestHttpListenerContext : HttpListenerContextBase
+		{
+			private HttpListenerRequestBase _request;
+
+			public override HttpListenerRequestBase Request
+			{
+				get { return _request; }
+			}
+
+			public void SetRequest(HttpListenerRequestBase request)
+			{
+				_request = request;
+			}
+		}
+
+		private class TestHttpListenerRequest : HttpListenerRequestBase
+		{
+			private string _rawUrl;
+			public override string RawUrl
+			{
+				get { return _rawUrl; }
+			}
+
+			public void SetRawUrl(string rawUrl)
+			{
+				_rawUrl = rawUrl;
+			}
 		}
 	}
 }
