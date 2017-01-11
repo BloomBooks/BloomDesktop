@@ -1,12 +1,12 @@
-##Bloom cannot find some of its own files, and cannot continue
+## Bloom cannot find some of its own files, and cannot continue
 
-###Possible Causes
+### Possible Causes
 
 1) Your antivirus may have "quarantined" one or more Bloom files.
 
-2) Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong. 
+2) Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong.
 
-###What To Do
+### What To Do
 
 After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas:
 
@@ -23,4 +23,4 @@ After you submit this report, we will contact you and help you work this out. In
 
 * You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see [this image](https://i.imgur.com/dlRrsSN.png).
 
-###Missing Files
+### Missing Files

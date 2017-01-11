@@ -10,7 +10,7 @@ To learn about using Leveled Readers in Bloom, you can:
 - Go to the Help menu, choose 'Help', and look in the index under "Leveled Readers".
 - Go to the Help menu and choose: "Building Reader Templates".
 
-###Relationship to Decodable Readers
+### Relationship to Decodable Readers
 
 So how do leveled reader *levels* fit in decodable reader *stages*? The two concepts are complementary, and Bloom allows you to set both a *decodable stage* and a *leveled reader level* for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with *decodability stages* in mind. Books at the first level or two will also need to be careful about being *decodable* (i.e. using letters the reader has learned). So a sequence of books might look like this:
 
@@ -20,15 +20,13 @@ So how do leveled reader *levels* fit in decodable reader *stages*? The two conc
     <td>Decodable Stage</td>
   </tr>
   <tr>    <td>1</td>    <td>1</td>  </tr>
-    <tr>    <td>1</td>    <td>2</td>  </tr>
-    <tr>    <td>1</td>    <td>3</td>  </tr>
-    <tr>    <td>1</td>    <td>4</td>  </tr>
-    <tr>    <td>1</td>    <td>5</td>  </tr>
-    <tr>    <td>1</td>    <td>6</td>  </tr>
-    <tr>    <td>2</td>    <td>n/a</td>  </tr>
-    <tr>    <td>3</td>    <td>n/a</td>  </tr>
-    <tr>    <td>4</td>    <td>n/a</td>  </tr>
-    <tr>    <td>5</td>    <td>n/a</td>  </tr>
+  <tr>    <td>1</td>    <td>2</td>  </tr>
+  <tr>    <td>1</td>    <td>3</td>  </tr>
+  <tr>    <td>1</td>    <td>4</td>  </tr>
+  <tr>    <td>1</td>    <td>5</td>  </tr>
+  <tr>    <td>1</td>    <td>6</td>  </tr>
+  <tr>    <td>2</td>    <td>n/a</td>  </tr>
+  <tr>    <td>3</td>    <td>n/a</td>  </tr>
+  <tr>    <td>4</td>    <td>n/a</td>  </tr>
+  <tr>    <td>5</td>    <td>n/a</td>  </tr>
 </table>
-
-
