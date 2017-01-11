@@ -77,7 +77,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"connections.dll"=>"DistFiles", "*.chm"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
+#     paths: {"connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
 # [1] build: BloomPlayer-Master-Continuous (BPContinuous)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
@@ -90,7 +90,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Squirrel
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"Squirrel.dll"=>"lib/dotnet", "ICSharpCode.SharpZipLib.*"=>"lib/dotnet"}
+#     paths: {"ICSharpCode.SharpZipLib.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/Squirrel.Windows.git [refs/heads/master]
 # [3] build: YouTrackSharp (Bloom_YouTrackSharp)
 #     project: Bloom
@@ -98,34 +98,33 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"bin/YouTrackSharp.dll"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
-#     VCS: https://github.com/phillip-hopper/YouTrackSharp.git [LinuxCompatible]
-# [4] build: pdf.js (bt401)
+#     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
+# [4] build: Bloom Help 3.8 (Bloom_Help_BloomHelp38)
+#     project: Help
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp38
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"*.chm"=>"DistFiles"}
+# [5] build: pdf.js (bt401)
 #     project: BuildTasks
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt401
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
 #     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [5] build: GeckofxHtmlToPdf-trusty64-continuous (GeckofxHtmlToPdfTrusty64)
+# [6] build: GeckofxHtmlToPdf-trusty64-continuous (GeckofxHtmlToPdfTrusty64)
 #     project: GeckofxHtmlToPdf
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdfTrusty64
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [refs/heads/master]
-# [6] build: icucil-precise64-Continuous (bt281)
+# [7] build: icucil-precise64-Continuous (bt281)
 #     project: Libraries
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt281
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"icu.net.*"=>"lib/dotnet/icu48"}
-#     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [7] build: icucil-precise64-icu52 Continuous (bt413)
-#     project: Libraries
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt413
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"icu.net.*"=>"lib/dotnet/icu52"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
 # [8] build: icucil-precise64-icu55 Continuous (Icu55)
 #     project: Libraries
@@ -134,21 +133,28 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"icu.net.*"=>"lib/dotnet/icu55"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [9] build: PdfDroplet-Linux-Dev-Continuous (bt344)
+# [9] build: icucil-precise64-icu52 Continuous (bt413)
+#     project: Archived
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt413
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"icu.net.*"=>"lib/dotnet/icu52"}
+#     VCS: https://github.com/sillsdev/icu-dotnet [master]
+# [10] build: PdfDroplet-Linux-Dev-Continuous (bt344)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt344
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [10] build: TidyManaged-master-precise64-continuous (bt351)
+# [11] build: TidyManaged-master-precise64-continuous (bt351)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt351
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"TidyManaged.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [11] build: palaso-precise64-master Continuous (bt322)
+# [12] build: palaso-precise64-master Continuous (bt322)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt322
 #     clean: false
@@ -169,28 +175,29 @@ mkdir -p ../lib/dotnet/icu55
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
 copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/latest.lastSuccessful/bloomPlayer.js ../DistFiles/bloomPlayer.js
-copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Squirrel.dll ../lib/dotnet/Squirrel.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/ICSharpCode.SharpZipLib.dll ../lib/dotnet/ICSharpCode.SharpZipLib.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/ICSharpCode.SharpZipLib.xml ../lib/dotnet/ICSharpCode.SharpZipLib.xml
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.dll ../lib/dotnet/YouTrackSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp38/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/latest.lastSuccessful/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.0.0.0.0.nupkg ../lib/dotnet/icu48/icu.net.0.0.0.0.nupkg
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu48/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu48/icu.net.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll.mdb ../lib/dotnet/icu48/icu.net.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu52/icu.net.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu52/icu.net.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/latest.lastSuccessful/icu.net.dll.mdb ../lib/dotnet/icu52/icu.net.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/latest.lastSuccessful/icu.net.0.0.0.0.nupkg ../lib/dotnet/icu55/icu.net.0.0.0.0.nupkg
 copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu55/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu55/icu.net.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/latest.lastSuccessful/icu.net.dll.mdb ../lib/dotnet/icu55/icu.net.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu52/icu.net.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu52/icu.net.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/latest.lastSuccessful/icu.net.dll.mdb ../lib/dotnet/icu52/icu.net.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt344/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt344/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
