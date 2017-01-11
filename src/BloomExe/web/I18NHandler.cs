@@ -186,7 +186,8 @@ namespace Bloom.Api
 
 				var longMsg =
 					String.Format(
-						"Dear Developer: Please add this dynamic string to the english.tmx file: Id=\"{0}\" English =\"{1}\". " +
+						"Dear Developer: Ignore this if you are looking at a 3rd-party book that we don't ship with Bloom."+
+						" Please add this dynamic string to the english.tmx file: Id=\"{0}\" English =\"{1}\". " +
 						"The code at this time cannot add this for you, but we have created an element in your local TMX which you can copy over." +
 						" Search for CopyToDistributionTmx_, and remember to remove that from the ID. It needs to be " +
 						"added to the en.tmx, so that it can show up in the list of things to be localized even " +
