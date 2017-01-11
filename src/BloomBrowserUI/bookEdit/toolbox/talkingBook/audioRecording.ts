@@ -327,7 +327,7 @@ export default class AudioRecording {
                         if (data.devices.length == 2) {
                                 // Just toggle between them
                                 var device = (data.devices[0] == data.productName) ? data.devices[1] : data.devices[0];
-                                axios.post("/bloom/api/audio/currentRecordingDevice", device)
+                                axios.post("/bloom/api/audio/currentRecordingDevice", device, {headers:{'Content-Type':'text/plain'}})
                                         .then(result=>{
                                                  this.updateInputDeviceDisplay();
                                         })
@@ -343,7 +343,7 @@ export default class AudioRecording {
                         }
                         (<any>devList).one("click", function(event) {
                                         devList.hide();
-                                        axios.post("/bloom/api/audio/currentRecordingDevice", $(event.target).text())
+                                        axios.post("/bloom/api/audio/currentRecordingDevice", $(event.target).text(), {headers:{'Content-Type':'text/plain'}})
                                          .then(result=>{
                                                  this.updateInputDeviceDisplay();
                                         }).catch(error=>{
@@ -370,10 +370,10 @@ export default class AudioRecording {
 
                         // This seems a reasonable default to suggest what needs to be connected
                         // if nothing is. It's also the default if we don't recognize anything significant in the name.
-                        var imageName = 'Microphone.svg';
+                        var imageName = 'microphone.svg';
                         if (genericName !== null) {
                                 if (genericName.indexOf('Internal') >= 0 || genericName.indexOf('Array') >= 0) imageName = 'Computer.png';
-                                else if (genericName.indexOf('USB Audio Device') >= 0 || genericName.indexOf('Headse') >= 0) imageName = 'HeadSet.png';
+                                else if (genericName.indexOf('USB Audio') >= 0 || genericName.indexOf('Headse') >= 0) imageName = 'HeadSet.png';
 
                                 if (deviceName.indexOf('ZOOM') >= 0) imageName = 'Recorder.png';
                                 else if (deviceName.indexOf('Plantronics') >= 0 || deviceName.indexOf('Andrea') >= 0 || deviceName.indexOf('Microphone (VXi X200') >= 0) imageName = 'HeadSet.png';
