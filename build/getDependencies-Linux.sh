@@ -77,7 +77,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
 #     revision: bloom-3.8.tcbuildtag
-#     paths: {"connections.dll"=>"DistFiles", "*.chm"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
+#     paths: {"connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
 # [1] build: BloomPlayer-Master-Continuous (BPContinuous)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=BPContinuous
@@ -99,56 +99,62 @@ cd -
 #     revision: bloom-3.8.tcbuildtag
 #     paths: {"bin/YouTrackSharp.dll"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
-# [4] build: pdf.js (bt401)
+# [4] build: Bloom Help 3.8 (Bloom_Help_BloomHelp38)
+#     project: Help
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Help_BloomHelp38
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"*.chm"=>"DistFiles"}
+# [5] build: pdf.js (bt401)
 #     project: BuildTasks
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt401
 #     clean: false
 #     revision: bloom-3.8.tcbuildtag
 #     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
 #     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [5] build: GeckofxHtmlToPdf-trusty64-continuous (GeckofxHtmlToPdfTrusty64)
+# [6] build: GeckofxHtmlToPdf-trusty64-continuous (GeckofxHtmlToPdfTrusty64)
 #     project: GeckofxHtmlToPdf
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdfTrusty64
 #     clean: false
 #     revision: bloom-3.8.tcbuildtag
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [refs/heads/master]
-# [6] build: icucil-precise64-Continuous (bt281)
+# [7] build: icucil-precise64-Continuous (bt281)
 #     project: Libraries
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt281
 #     clean: false
 #     revision: bloom-3.8.tcbuildtag
 #     paths: {"icu.net.*"=>"lib/dotnet/icu48"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [7] build: icucil-precise64-icu55 Continuous (Icu55)
+# [8] build: icucil-precise64-icu55 Continuous (Icu55)
 #     project: Libraries
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Icu55
 #     clean: false
 #     revision: bloom-3.8.tcbuildtag
 #     paths: {"icu.net.*"=>"lib/dotnet/icu55"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [8] build: icucil-precise64-icu52 Continuous (bt413)
+# [9] build: icucil-precise64-icu52 Continuous (bt413)
 #     project: Archived
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt413
 #     clean: false
 #     revision: bloom-3.8.tcbuildtag
 #     paths: {"icu.net.*"=>"lib/dotnet/icu52"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [9] build: PdfDroplet-Linux-Dev-Continuous (bt344)
+# [10] build: PdfDroplet-Linux-Dev-Continuous (bt344)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt344
 #     clean: false
 #     revision: bloom-3.8.tcbuildtag
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [10] build: TidyManaged-master-precise64-continuous (bt351)
+# [11] build: TidyManaged-master-precise64-continuous (bt351)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt351
 #     clean: false
 #     revision: bloom-3.8.tcbuildtag
 #     paths: {"TidyManaged.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [11] build: palaso-precise64-master Continuous (bt322)
+# [12] build: palaso-precise64-master Continuous (bt322)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt322
 #     clean: false
@@ -169,7 +175,6 @@ mkdir -p ../lib/dotnet/icu55
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.8.tcbuildtag/connections.dll ../DistFiles/connections.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.8.tcbuildtag/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.8.tcbuildtag/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.8.tcbuildtag/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
 copy_auto http://build.palaso.org/guestAuth/repository/download/BPContinuous/bloom-3.8.tcbuildtag/bloomPlayer.js ../DistFiles/bloomPlayer.js
@@ -177,6 +182,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/b
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/bloom-3.8.tcbuildtag/ICSharpCode.SharpZipLib.xml ../lib/dotnet/ICSharpCode.SharpZipLib.xml
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/bloom-3.8.tcbuildtag/bin/YouTrackSharp.dll ../lib/dotnet/YouTrackSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/bloom-3.8.tcbuildtag/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp38/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/bloom-3.8.tcbuildtag/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/bloom-3.8.tcbuildtag/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/bloom-3.8.tcbuildtag/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
