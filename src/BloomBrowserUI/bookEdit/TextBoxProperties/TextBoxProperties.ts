@@ -152,7 +152,7 @@ export default class TextBoxProperties {
 
     // The z-index puts the formatButton above the origami-ui stuff so a click will find it.
     getDialogActivationButton(): string {
-        return '<div style="z-index: 60000; position: absolute; left:0; bottom: 0;" contenteditable="false" class="bloom-ui formatButton">'
+        return '<div contenteditable="false" class="bloom-ui formatButton">'
             + '<img  contenteditable="false" src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>';
     }
 }

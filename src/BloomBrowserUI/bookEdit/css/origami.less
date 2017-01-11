@@ -224,7 +224,7 @@
 .origami-layout-mode .split-pane-component-inner .textBox-identifier {
     /*content: "Text Box";*/
     color: @inactiveColor;
-    white-space: nowrap;
+    white-space: normal;
     transition-property: font-size;
     transition-duration: 0.5s;
     text-align: center;
@@ -232,6 +232,11 @@
     position: absolute;
     top: 45%;
     z-index: 50000;
+    .formatButton {
+        z-index: 60000;
+        padding-left: 10px;
+        display: inline-flex;
+    }
 }
 .container-selector-links {
 	display: none;
