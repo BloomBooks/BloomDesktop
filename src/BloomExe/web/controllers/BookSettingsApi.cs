@@ -44,7 +44,10 @@ namespace Bloom.Api
 					settings = DynamicJson.Parse(request.RequiredPostJson());
 					_bookSelection.CurrentSelection.TemporarilyUnlocked = settings["unlockShellBook"];
 					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
-					UpdateBookTemplateMode(settings.isTemplateBook);
+					if(((DynamicJson)settings).IsDefined("isTemplateBook"))
+					{
+						UpdateBookTemplateMode(settings.isTemplateBook);
+					}
 					request.Succeeded();
 					break;
 				default:
