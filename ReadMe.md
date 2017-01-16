@@ -226,3 +226,5 @@ Please see [Tips for Testing Palaso Software](https://docs.google.com/document/d
 # License
 
 Bloom is open source, using the [MIT License](http://sil.mit-license.org). It is Copyright SIL International.
+
+Some text that is not supposed to get merged
