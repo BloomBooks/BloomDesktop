@@ -103,7 +103,9 @@ namespace Bloom.Publish
 					checkBox.Checked = true;
 				else
 				{
-					checkBox.Text += @" " + LocalizationManager.GetString("PublishTab.Upload.Partial", "(partial)");
+					checkBox.Text += @" " + LocalizationManager.GetString("PublishTab.Upload.IncompleteTranslation",
+						"(incomplete translation)",
+						"This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.");
 				}
 				checkBox.Size = new Size(TextRenderer.MeasureText(checkBox.Text, checkBox.Font).Width + 50, checkBox.Height);
 				checkBox.Tag = lang;
