@@ -3289,8 +3289,15 @@
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.Partial">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>(partial)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.IncompleteTranslation">
+      <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
+      <tuv xml:lang="en">
+        <seg>(incomplete translation)</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.PleaseLogIn">

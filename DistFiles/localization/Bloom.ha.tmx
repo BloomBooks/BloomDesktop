@@ -442,7 +442,7 @@
          <tuv xml:lang="en">
             <seg>
           Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\n
-        
+
           Current size is {2}pt.
         </seg>
          </tuv>
@@ -2092,7 +2092,7 @@
          <tuv xml:lang="en">
             <seg>
           Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\n
-        
+
           Current size is {2}pt.
         </seg>
          </tuv>
@@ -2483,18 +2483,18 @@
          <tuv xml:lang="en">
             <seg>
           The file you’ve chosen is a “JPEG” file.
-        
+
           JPEGfiles are perfect for photographs and color artwork.
-        
+
           However, JPEG files are a big problem for black and white line art.
-        
+
           Problems include:\n
         • Fuzziness and grey dots.\n
         • Large file sizes, making the book hard to share.\n
         • If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\n
-        
+
           Note: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse.
-        
+
           If this is black and white line art, you want to get an original scan in one of those formats.\n\n
         Please select from one of the following, then click “OK”:</seg>
          </tuv>
@@ -3520,7 +3520,7 @@
          <tuv xml:lang="en">
             <seg>
           This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer.
-        
+
           You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.
         </seg>
          </tuv>
@@ -4611,7 +4611,7 @@
          <tuv xml:lang="en">
             <seg>
           Has someone else used Send/Receive to share a collection with you?\n
-        
+
           Use one of these red buttons to copy their collection to your computer.\n
         Later, use Send/Receive to share your work back with them.</seg>
          </tuv>
@@ -4695,7 +4695,7 @@
       </tu>
       <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
          <tuv xml:lang="en">
-            <seg>Please install Adobe Reader so that Bloom can show your completed book. 
+            <seg>Please install Adobe Reader so that Bloom can show your completed book.
           Until then, you can still save the PDF Book and open it in some other program.
         </seg>
          </tuv>
@@ -4705,9 +4705,9 @@
       </tu>
       <tu tuid="PublishTab.AdobeReaderControl.ProblemShowingPDF">
          <tuv xml:lang="en">
-            <seg>That's strange... 
+            <seg>That's strange...
           Adobe Reader gave an error when trying to show that PDF.
-        
+
           You can still try saving the PDF Book.
         </seg>
          </tuv>
@@ -4717,11 +4717,11 @@
       </tu>
       <tu tuid="PublishTab.AdobeReaderControl.UnknownError">
          <tuv xml:lang="en">
-            <seg>Sad News. 
+            <seg>Sad News.
           Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\n
-        
+
           Please uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\n
-        
+
           Until you get that fixed, you can still save the PDF Book and open it in some other program.
         </seg>
          </tuv>
@@ -5215,6 +5215,7 @@
          </tuv>
       </tu>
       <tu tuid="PublishTab.Upload.Partial">
+         <prop type="x-nolongerused">true</prop>
          <tuv xml:lang="en">
             <seg>(partial)</seg>
          </tuv>
@@ -5222,7 +5223,16 @@
             <seg>(rabi da rabi)</seg>
          </tuv>
       </tu>
-      <tu tuid="PublishTab.Upload.PleaseLogIn">
+     <tu tuid="PublishTab.Upload.IncompleteTranslation">
+       <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
+       <tuv xml:lang="en">
+         <seg>(incomplete translation)</seg>
+       </tuv>
+       <tuv xml:lang="ha">
+         <seg>(rabi da rabi)</seg>
+       </tuv>
+     </tu>
+     <tu tuid="PublishTab.Upload.PleaseLogIn">
          <tuv xml:lang="en">
             <seg>Please log in to BloomLibrary.org (or sign up) before uploading</seg>
          </tuv>
@@ -6026,7 +6036,7 @@
          <tuv xml:lang="en">
             <seg>
           In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language.
-        
+
           Anyone opening this Bloom Pack , who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack.
         They will also get the current set of words for use in decodable readers.</seg>
          </tuv>
@@ -6150,7 +6160,7 @@
       </tu>
       <tu tuid="ReportProblemDialog.CouldNotSendToServer">
          <tuv xml:lang="en">
-            <seg>Bloom was not able to submit your report directly to our server. 
+            <seg>Bloom was not able to submit your report directly to our server.
           Please retry or email {0} to {1}.
         </seg>
          </tuv>

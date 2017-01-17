@@ -2424,7 +2424,7 @@
          <tuv xml:lang="en">
             <seg>The file you’ve chosen is a “JPEG” file.JPEG files are perfect for photographs and color artwork.
           However, JPEG files are a big problem for black and white line art.
-        Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\n        
+        Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\n
           Note: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse.
         If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</seg>
          </tuv>
@@ -5083,6 +5083,7 @@
          </tuv>
       </tu>
       <tu tuid="PublishTab.Upload.Partial">
+         <prop type="x-nolongerused">true</prop>
          <tuv xml:lang="en">
             <seg>(partial)</seg>
          </tuv>
@@ -5090,7 +5091,16 @@
             <seg>(आंशिक)</seg>
          </tuv>
       </tu>
-      <tu tuid="PublishTab.Upload.PleaseLogIn">
+     <tu tuid="PublishTab.Upload.IncompleteTranslation">
+       <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
+       <tuv xml:lang="en">
+         <seg>(incomplete translation)</seg>
+       </tuv>
+       <tuv xml:lang="ne">
+         <seg>(आंशिक)</seg>
+       </tuv>
+     </tu>
+     <tu tuid="PublishTab.Upload.PleaseLogIn">
          <tuv xml:lang="en">
             <seg>Please log in to BloomLibrary.org (or sign up) before uploading</seg>
          </tuv>
