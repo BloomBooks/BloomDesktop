@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -128,14 +128,14 @@
     <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'">
       <HintPath>..\..\output\$(Configuration)\Geckofx-Core.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Core, Version=45.0.28.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
+    <Reference Include="Geckofx-Core, Version=45.0.28.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\Geckofx45.45.0.28\lib\net45\Geckofx-Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Geckofx-Winforms" Condition="'$(OS)'!='Windows_NT'">
       <HintPath>..\..\output\$(Configuration)\Geckofx-Winforms.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Winforms, Version=45.0.28.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86">
+    <Reference Include="Geckofx-Winforms, Version=45.0.28.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\packages\Geckofx45.45.0.28\lib\net45\Geckofx-Winforms.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -1274,7 +1274,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; npm install &amp;&amp; ./fixNodejsForLinux.sh &amp;&amp; npm run build" />
     <!-- copy the appropriate Geckofx45 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
-    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.28.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.28.0 -name Firefox -type d -exec cp -pRvn '{}' $(OutDir) ';'; else find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.28.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.28.0 -name Firefox -type d -exec cp -pRvn '{}' $(OutDir) ';'; fi" />
+    <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.23.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.23.0 -name Firefox -type d -exec cp -pRvn '{}' $(OutDir) ';'; else find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.23.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.23.0 -name Firefox -type d -exec cp -pRvn '{}' $(OutDir) ';'; fi" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
@@ -1360,8 +1360,9 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
     <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
   </Target>
-  <Import Project="..\..\packages\Geckofx45.45.0.28\build\Geckofx45.targets" Condition="Exists('..\..\packages\Geckofx45.45.0.28\build\Geckofx45.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+  <!-- do we really need this Import and Target? or did they get added automatically for no good reason? -->
+  <Import Project="..\..\packages\Geckofx45.45.0.28\build\Geckofx45.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\Geckofx45.45.0.28\build\Geckofx45.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition="'$(OS)'=='Windows_NT'">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
