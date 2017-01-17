@@ -22,7 +22,7 @@ $(document).ready(() => {
 export function handleBookSettingCheckboxClick(clickedButton: any) {
     // read our controls and send the model back to c#
     // enhance: this is just dirt-poor serialization of checkboxes for now
-    var inputs = $(".bookSettings :input");
+    var inputs = $("#bookSettings :input");
     var o = {};
     var settings = $.map(inputs, (input, i) => {
         o[input.name] = $(input).prop("checked");

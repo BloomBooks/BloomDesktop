@@ -184,7 +184,8 @@ namespace Bloom.Api
 
 		public string GetPostJson()
 		{
-			 Debug.Assert(_actualContext.Request.ContentType.ToLowerInvariant().Contains("application/json"),"The backend expected this post to have content-type application/json. With Axios.Post, this happens if you just give an object as the data. Or you can add the parameter {header: {'Content-Type': 'application/json'}} to the post call.");
+			Debug.Assert(_actualContext.Request.ContentType !=null, "The backend expected this post to have content-type of application/json but it ContentType is null. One cause of this is that the parameter given to axios.post() is undefined.");
+			Debug.Assert(_actualContext.Request.ContentType.ToLowerInvariant().Contains("application/json"),"The backend expected this post to have content-type application/json. With Axios.Post, this happens if you just give an object as the data. Or you can add the parameter {header: {'Content-Type': 'application/json'}} to the post call.");
 			return GetPostStringInner();
 		}
 
