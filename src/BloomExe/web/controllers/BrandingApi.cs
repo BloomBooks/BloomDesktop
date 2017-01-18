@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Bloom.Collection;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -24,8 +25,18 @@ namespace Bloom.Api
 			{
 				var fileName = request.RequiredFileNameOrPath("id");
 
+				// Note: in Bloom 3.7, our Firefox, when making PDFs, would render svg's as blurry. This was fixed in Bloom 3.8 with
+				// a new Firefox. So SVGs are requested by the html...
 				var path = BloomFileLocator.GetOptionalBrandingFile(_collectionSettings.BrandingProjectName, fileName.NotEncoded);
+
+				// ... but if there is no SVG, we can actually send back a PNG instead, and that works fine:
 				if(string.IsNullOrEmpty(path))
+				{
+					path = BloomFileLocator.GetOptionalBrandingFile(_collectionSettings.BrandingProjectName, Path.ChangeExtension(fileName.NotEncoded, "png"));
+				}
+
+				// And this is perfectly normal, to not have a branding image at all, for a particular page:
+				if (string.IsNullOrEmpty(path))
 				{
 					request.Failed("");
 					// the HTML will need to be able to handle this invisibly... see http://stackoverflow.com/questions/22051573/how-to-hide-image-broken-icon-using-only-css-html-without-js
