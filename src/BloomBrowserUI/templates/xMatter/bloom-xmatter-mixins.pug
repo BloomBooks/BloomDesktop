@@ -60,9 +60,8 @@ mixin optional-branding-image(key)
 mixin field-bottom-left-branding
 	+optional-branding-image('cover-bottom-left').branding
 
-// not yet: needs styling work
-//- mixin field-credits-branding
-//- 	+optional-branding-image('credits-page').branding
+mixin field-credits-branding
+	+optional-branding-image('credits-page').branding
 
 mixin field-title-page-branding
 	+optional-branding-image('title-page').branding
@@ -142,7 +141,7 @@ mixin credits-contents
 		+field-ISBN
 		+field-acknowledgments-originalVersion
 		+field-acknowledgments-localizedVersion
-		// not yet +field-credits-branding
+		+field-credits-branding
 
 mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
