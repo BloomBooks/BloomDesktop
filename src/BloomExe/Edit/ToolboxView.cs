@@ -102,10 +102,6 @@ namespace Bloom.Edit
 			toolsToDisplay.AddRange(
 				idsOfToolsThisVersionKnowsAbout.Except(
 					toolsThatHaveDataInBookInfo.Select(t => t.ToolId)).Select(ToolboxTool.CreateFromToolId));
-#if __MonoCS__
-			// Until we get sound working on Linux, there's no point in showing a nonfunctional tool!
-			toolsToDisplay = toolsToDisplay.Where(t => t.ToolId != TalkingBookTool.StaticToolId).ToList();
-#endif
 			return toolsToDisplay.Where(t => t.Enabled || t.AlwaysEnabled).ToList();
 		}
 
