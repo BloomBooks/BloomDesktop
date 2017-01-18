@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
+using System.Windows.Forms;
 using Fleck;
 using SIL.Reporting;
 
@@ -59,8 +60,9 @@ namespace Bloom.Api
 					"What caused this?{0}" +
 					"Possibly another version of Bloom is running, perhaps not very obviously.{0}{0}" +
 					"What can you do?{0}" +
-					"Click OK, then exit Bloom and restart your computer.{0}" +
+					"When you click OK, Bloom will exit. Then, restart your computer.{0}" +
 					"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine);
+				Application.Exit();
 			}
 		}
 
