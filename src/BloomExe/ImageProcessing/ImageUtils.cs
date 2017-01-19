@@ -83,7 +83,7 @@ namespace Bloom.ImageProcessing
 				{
 					SaveAsTopQualityJpeg(imageInfo.Image, destinationPath);
 				}
-				RobustIO.SavePalasoImage(imageInfo, destinationPath);
+				PalasoImage.SaveImageRobustly(imageInfo, destinationPath);
 
 				return imageFileName;
 
@@ -203,20 +203,21 @@ namespace Bloom.ImageProcessing
 				{
 					if (!AppearsToBeJpeg(pi))
 					{
-						RemoveTransparency(pi.Image, path, progress);
+						RemoveTransparency(pi, path, progress);
 					}
 				}
 				completed++;
 			}
 		}
 
-		private static void RemoveTransparency(Image original, string path, IProgress progress)
+		private static void RemoveTransparency(PalasoImage original, string path, IProgress progress)
 		{
 			progress.WriteStatus("RemovingTransparency from image: " + Path.GetFileName(path));
-			using (var b = new Bitmap(original.Width, original.Height))
+			using (var b = new Bitmap(original.Image.Width, original.Image.Height))
 			{
-				DrawImageWithWhiteBackground(original, b);
-				SIL.IO.RobustIO.SaveImage(b, path, ImageFormat.Png);
+				DrawImageWithWhiteBackground(original.Image, b);
+				original.Image = b;
+				PalasoImage.SaveImageRobustly(original, path); // BL-4148: this method preserves existing metadata
 			}
 		}
 
