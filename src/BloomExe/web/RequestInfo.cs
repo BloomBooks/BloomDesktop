@@ -78,8 +78,19 @@ namespace Bloom.Api
 		{
 			response.ContentLength64 += buffer.Length;
 			Stream output = response.OutputStream;
-			output.Write(buffer, 0, buffer.Length);
-			output.Close();
+			try
+			{
+				output.Write(buffer, 0, buffer.Length);
+				output.Close();
+			}
+			catch (HttpListenerException e)
+			{
+				// We may well be unable to write if, while we were gathering the data, the user switched
+				// pages or something similar so that the page that requested the data is gone. This seems
+				// to produce this particular exception type.
+				Logger.WriteEvent("Could not write requested data to JavaScript: " + e.Message + e.StackTrace);
+				Debug.WriteLine(e.Message);
+			}
 			HaveOutput = true;
 		}
 
