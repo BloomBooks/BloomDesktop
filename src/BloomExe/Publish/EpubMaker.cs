@@ -571,7 +571,7 @@ namespace Bloom.Publish
 		/// </summary>
 		private void EmbedFonts()
 		{
-			var fontsWanted = GetFontsUsed(Book.FolderPath, true); // Need to include fallback fonts in case one of the preferred fonts isn't on this machine
+			var fontsWanted = GetFontsUsed(Book.FolderPath, false);
 			var fontFileFinder = new FontFileFinder();
 			var filesToEmbed = fontsWanted.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
 			foreach (var file in filesToEmbed)
@@ -615,7 +615,8 @@ namespace Bloom.Publish
 		public static IEnumerable<string> GetFontsUsed(string bookPath, bool includeFallbackFonts)
 		{
 			var result = new HashSet<string>();
-			foreach (var ss in Directory.GetFiles(bookPath, "*.css"))
+			// Css for styles are contained in the actual html
+			foreach (var ss in Directory.EnumerateFiles(bookPath, "*.*").Where(f => f.EndsWith(".css") || f.EndsWith(".htm") || f.EndsWith(".html")))
 			{
 				var root = RobustFile.ReadAllText(ss, Encoding.UTF8);
 				HtmlDom.FindFontsUsedInCss(root, result, includeFallbackFonts);

@@ -54,7 +54,6 @@ namespace Bloom.CLI
 
 			var fonts = EpubMaker.GetFontsUsed(options.BookPath, false).ToList();
 			fonts.Sort();
-			fonts.Remove("inherit"); // not a real font!
 
 			Directory.CreateDirectory(Path.GetDirectoryName(options.ReportPath));
 

@@ -634,6 +634,45 @@ namespace BloomTests.Publish
 			Assert.That(results.Contains("Font3"));
 		}
 
+		[TestCase("Arial !important")]
+		[TestCase("Arial ! important")]
+		[TestCase("Arial ! important ")]
+		[TestCase("Arial  ! important , Times New Roman")]
+		public void FindFontsUsedInCss_RemovesBangImportant(string fontFamily)
+		{
+			var results = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss("body {font-family:" + fontFamily + "}", results, false);
+			Assert.That(results, Has.Count.EqualTo(1));
+			Assert.That(results.Contains("Arial"));
+		}
+
+		[Test]
+		public void FindFontsUsedInCss_IgnoresInherit()
+		{
+			var results = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss("body {font-family:inherit}", results, false);
+			Assert.That(results, Has.Count.EqualTo(0));
+		}
+
+		[TestCase("Segoe UI", true)]
+		[TestCase("Segoe UI", false)]
+		[TestCase("segoe ui,Arial", false)]
+		public void FindFontsUsedInCss_IgnoresSegoeUi(string fontFamily, bool includeFallbackFonts)
+		{
+			var results = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss("body {font-family:" + fontFamily + "}", results, includeFallbackFonts);
+			Assert.That(results, Has.Count.EqualTo(0));
+		}
+
+		[TestCase("segoe ui,Arial")]
+		public void FindFontsUsedInCss_IgnoresSegoeUi(string fontFamily)
+		{
+			var results = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss("body {font-family:" + fontFamily + "}", results, true);
+			Assert.That(results, Has.Count.EqualTo(1));
+			Assert.That(results.Contains("Arial"));
+		}
+
 		[TestCase("A5Portrait", 297.0 / 2.0)]
 		[TestCase("HalfLetterLandscape", 8.5 * 25.4)]
 		[Test]
