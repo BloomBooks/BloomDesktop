@@ -24,6 +24,7 @@ namespace Bloom.Book
 	public class HtmlDom
 	{
 		public const string RelativePathAttrName = "data-base";
+		private static readonly Regex s_regexBangImportant = new Regex("\\s*!\\s*important\\s*", RegexOptions.Compiled);
 		private XmlDocument _dom;
 
 		public HtmlDom()
@@ -904,7 +905,13 @@ namespace Bloom.Book
 			return attr.Value;
 		}
 
-		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
+		/// <summary>
+		/// Finds a list of fonts used in the given css
+		/// </summary>
+		/// <param name="cssContent"></param>
+		/// <param name="result"></param>
+		/// <param name="includeFallbackFonts">true to include fallback fonts, false to include only the first font in each font family</param>
+		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result, bool includeFallbackFonts)
 		{
 			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
 			foreach (Match match in findFF.Matches(cssContent))
@@ -915,7 +922,11 @@ namespace Bloom.Book
 					// Strip matched quotes
 					if (name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
 						name = name.Substring(1, name.Length - 2);
-					result.Add(name);
+					name = s_regexBangImportant.Replace(name, "");
+					if (name.ToLowerInvariant() != "inherit" && name.ToLowerInvariant() != "segoe ui")
+						result.Add(name);
+					if (!includeFallbackFonts)
+						break;
 				}
 			}
 		}
