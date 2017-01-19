@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Newtonsoft.Json;
@@ -118,7 +119,7 @@ namespace Bloom.Api
 					var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
 					if (endpointRegistration.HandleOnUIThread && formForSynchronizing.InvokeRequired)
 					{
-						formForSynchronizing.Invoke(endpointRegistration.Handler, request);
+						InvokeWithErrorHandling(endpointRegistration, formForSynchronizing, request, info.RawUrl);
 					}
 					else
 					{
@@ -134,6 +135,32 @@ namespace Bloom.Api
 			{
 				SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(e, info.RawUrl);
 				return false;
+			}
+			return true;
+		}
+
+		// If you just Invoke(), the stack trace of any generated exception gets lost.
+		// The stacktrace instead just ends with the invoke(), which isn't useful. So here we wrap
+		// the call to the handler in a delegate that catches the exception and saves it
+		// in our local scope, where we can then use it for error reporting.
+		private static bool InvokeWithErrorHandling(EndpointRegistration endpointRegistration,
+			Form formForSynchronizing, ApiRequest request, string extraErrorInfo)
+		{
+			Exception handlerException = null;
+			formForSynchronizing.Invoke(new Action<ApiRequest>((req) =>
+			{
+				try
+				{
+					endpointRegistration.Handler(req);
+				}
+				catch (Exception error)
+				{
+					handlerException = error;
+				}
+			}), request);
+			if (handlerException != null)
+			{
+				ExceptionDispatchInfo.Capture(handlerException).Throw();
 			}
 			return true;
 		}
