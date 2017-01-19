@@ -203,20 +203,22 @@ namespace Bloom.ImageProcessing
 				{
 					if (!AppearsToBeJpeg(pi))
 					{
-						RemoveTransparency(pi.Image, path, progress);
+						RemoveTransparency(pi, path, progress);
 					}
 				}
 				completed++;
 			}
 		}
 
-		private static void RemoveTransparency(Image original, string path, IProgress progress)
+		private static void RemoveTransparency(PalasoImage original, string path, IProgress progress)
 		{
 			progress.WriteStatus("RemovingTransparency from image: " + Path.GetFileName(path));
-			using (var b = new Bitmap(original.Width, original.Height))
+			var image = original.Image;
+			using (var b = new Bitmap(image.Width, image.Height))
 			{
-				DrawImageWithWhiteBackground(original, b);
-				SIL.IO.RobustIO.SaveImage(b, path, ImageFormat.Png);
+				DrawImageWithWhiteBackground(image, b);
+				original.Image = b;
+				original.Save(path);
 			}
 		}
 
