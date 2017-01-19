@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Newtonsoft.Json;
@@ -92,16 +92,17 @@ namespace Bloom.Api
 			_requestInfo.ContentType = "application/json";
 			_requestInfo.WriteCompleteOutput(JsonConvert.SerializeObject(objectToMakeJson));
 		}
-		public void ReplyWithImage(string localPath)
+		public void ReplyWithImage(string imagePath)
 		{
-			_requestInfo.ReplyWithImage(localPath);
+			_requestInfo.ReplyWithImage(imagePath);
 		}
+
 
 		public void Failed(string text)
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery+": "+text);
 			_requestInfo.ContentType = "text/plain";
-			_requestInfo.WriteError(503,text);
+			_requestInfo.WriteError(503, text);
 		}
 
 		public static bool Handle(EndpointRegistration endpointRegistration, IRequestInfo info, CollectionSettings collectionSettings, Book.Book currentBook)
@@ -109,7 +110,7 @@ namespace Bloom.Api
 			var request = new ApiRequest(info, collectionSettings, currentBook);
 			try
 			{
-				if(Program.RunningUnitTests)
+				if (Program.RunningUnitTests)
 				{
 					endpointRegistration.Handler(request);
 				}
@@ -118,14 +119,14 @@ namespace Bloom.Api
 					var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
 					if (endpointRegistration.HandleOnUIThread && formForSynchronizing.InvokeRequired)
 					{
-						formForSynchronizing.Invoke(endpointRegistration.Handler, request);
+						InvokeWithErrorHandling(endpointRegistration, formForSynchronizing, request);
 					}
 					else
 					{
 						endpointRegistration.Handler(request);
 					}
 				}
-				if(!info.HaveOutput)
+				if (!info.HaveOutput)
 				{
 					throw new ApplicationException(string.Format("The EndpointHandler for {0} never called a Succeeded(), Failed(), or ReplyWith() Function.", info.RawUrl.ToString()));
 				}
@@ -134,6 +135,32 @@ namespace Bloom.Api
 			{
 				SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(e, info.RawUrl);
 				return false;
+			}
+			return true;
+		}
+
+		// If you just Invoke(), the stack trace of any generated exception gets lost.
+		// The stacktrace instead just ends with the invoke(), which isn't useful. So here we wrap
+		// the call to the handler in a delegate that catches the exception and saves it
+		// in our local scope, where we can then use it for error reporting.
+		private static bool InvokeWithErrorHandling(EndpointRegistration endpointRegistration,
+			Form formForSynchronizing, ApiRequest request)
+		{
+			Exception handlerException = null;
+			formForSynchronizing.Invoke(new Action<ApiRequest>((req) =>
+			{
+				try
+				{
+					endpointRegistration.Handler(req);
+				}
+				catch (Exception error)
+				{
+					handlerException = error;
+				}
+			}), request);
+			if (handlerException != null)
+			{
+				ExceptionDispatchInfo.Capture(handlerException).Throw();
 			}
 			return true;
 		}
@@ -153,7 +180,7 @@ namespace Bloom.Api
 		}
 		public string RequiredPostJson()
 		{
-			Debug.Assert(_requestInfo.HttpMethod==HttpMethods.Post);
+			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
 			var json = _requestInfo.GetPostJson();
 			if (!string.IsNullOrWhiteSpace(json))
 			{
@@ -165,7 +192,7 @@ namespace Bloom.Api
 		{
 			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
 			var s = _requestInfo.GetPostString();
-			if(!string.IsNullOrWhiteSpace(s))
+			if (!string.IsNullOrWhiteSpace(s))
 			{
 				return s;
 			}
@@ -176,8 +203,8 @@ namespace Bloom.Api
 		{
 			Debug.Assert(_requestInfo.HttpMethod == HttpMethods.Post);
 			var values = _requestInfo.GetPostDataWhenFormEncoded().GetValues(key);
-			if(values == null || values.Length != 1)
-				throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have 1 value for "+key);
+			if (values == null || values.Length != 1)
+				throw new ApplicationException("The query " + _requestInfo.RawUrl + " should have 1 value for " + key);
 			return values[0];
 		}
 	}
