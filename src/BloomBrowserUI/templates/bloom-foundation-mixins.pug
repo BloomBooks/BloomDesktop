@@ -197,6 +197,37 @@ mixin editable(language)
 	//- .bloom-content1.bloom-editable(lang=language, contenteditable="true")&attributes(attributes)
 		block
 
+mixin space
+	- requireZeroArguments('space', arguments);
+	= ' '
+
+//- Coding "+link-followed-by-space('href') here" should result in a hyperlink with correct spacing.
+//- Putting "+link-followed-by-space('href')#someId here" gives "<a id=someId ..."
+//- Use instead "+link('href')" if the link will be followed immediately by punctuation.
+mixin link-followed-by-space(href)
+	- requireOneArgument('link', arguments)
+	+space
+	if(attributes.id)
+		a(id!=attributes.id href=href)
+			block
+	else
+		a(href=href)
+			block
+	+space
+
+//- Coding "+link('href') here" will allow following punctuation to butt up against a hyperlink.
+//- Use instead "+link-followed-by-space('href')" if a space after the link is desired.
+//- NB: I (gjm) tried to factor out the common code in these two mixins, but pug didn't like the nesting somehow.
+mixin link(href)
+	- requireOneArgument('link', arguments)
+	+space
+	if(attributes.id)
+		a(id!=attributes.id href=href)
+			block
+	else
+		a(href=href)
+			block
+
 
 //----- utility functions------------------------------
 

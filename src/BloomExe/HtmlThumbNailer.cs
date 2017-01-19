@@ -360,6 +360,19 @@ namespace Bloom
 					Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width,
 						(uint) browserSize.Height,
 						Thread.CurrentThread.ManagedThreadId);
+					// This short sleep was added to fix BL-4170, a problem where thumbnails were often generated without
+					// images. We're not sure what changed or why it became necessary. Possibly there was a change in GeckoFx 45
+					// which caused it report document-complete before background images are sufficiently loaded to show up
+					// in a captured image. Testing indicated that our image server did finish returning the background
+					// images before the document-complete notification, but that doesn't prove they were fully rendered.
+					// Also casting doubt on this hypothesis, we tried delays (some much longer) in several seemingly
+					// more logical places where they didn't help, at least not without being unreasonably long.
+					// The length of the delay is of course problematic. Experiments on my fast desktop indicate that 10ms
+					// does not help; 20ms is enough for AOR images; 40ms for a 6mp/4M jpg photo; but somewhere between
+					// 100 and 200ms can be needed by a really large (24mp/14M) image. 200ms is based on hoping that
+					// most computers are no worse than five times slower than mine and accepting that the slower ones
+					// might have problems with huge images.
+					Thread.Sleep(200);
 					//BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
 					//the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
 					//the placeholder thumbnail.

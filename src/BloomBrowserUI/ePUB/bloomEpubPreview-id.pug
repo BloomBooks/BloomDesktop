@@ -1,5 +1,6 @@
 doctype html
 html
+	include ../templates/bloom-foundation-mixins.pug
 	head
 		meta(charset="UTF-8")
 		link(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')
@@ -11,29 +12,41 @@ html
 	//_AudioSituationClass_ is replaced at runtime
 	body._AudioSituationClass_
 		#sideColumn
-			p Ini adalah #[a(href='https://en.wikipedia.org/wiki/ePUB') ePUB] versi buku Anda.&nbsp;
+			p
+				| Ini adalah
+				+link-followed-by-space('https://en.wikipedia.org/wiki/ePUB') ePUB
+				| versi buku Anda.
+				+space
 				span.showForTalkingBooks Ini berisi audio, sehingga pembaca baru dapat mendengarkan ketika mereka membaca.
 			p.showWhenHaveAudioButNotMakingTalkingBook Buku ini memiliki beberapa rekaman, tapi audio ini tidak termasuk dalam ePUB.
 
 			h3 Pratinjau
 			p Anda dapat mengubah ukuran pratinjau dengan menyeret sudut kanan bawah dari perangkat simulasi ini. Lihat bagaimana buku Anda akan terlihat pada layar dengan berbagai ukuran.
-			:marked
-				Halaman ini menggunakan [Readium] (http://readium.org/ ePUB buku baca. Buku kemungkinan akan terlihat berbeda pada buku bacaan yang berbeda.
+			p
+				| Halaman ini menggunakan
+				+link-followed-by-space('http://readium.org/') Readium
+				| ePUB buku baca. Buku kemungkinan akan terlihat berbeda pada buku bacaan yang berbeda.
 			p.showForTalkingBooks
-				| Pratinjau di sini belum bisa mengoperasikan Buku Berbicara. Anda dapat mendengarkannya dengan menggunakan Adobe Gratis #[a(href='http://www.adobe.com/solutions/ebook/digital-editions.html') Edisi Digital]
-				|  buku bacaan buku elektronik.
+				| Pratinjau di sini belum bisa mengoperasikan Buku Berbicara. Anda dapat mendengarkannya dengan menggunakan Adobe Gratis
+				+link-followed-by-space('http://www.adobe.com/solutions/ebook/digital-editions.html') Edisi Digital
+				| buku bacaan buku elektronik.
 			h3 Mendapatkan Buku Ini Ke Perangkat Anda
-			p Sebuah cara praktis untuk mendapatkan buku-buku ke ponsel Anda adalah memasang Dropbox atau layanan serupa pada baik komputer dan ponsel/tablet Anda. Cukup klik Simpan EPUB dan kemudian pilih folder Dropbox Anda. Di ponsel Anda, buka aplikasi Dropbox dan pilih buku Anda. Jika Anda menggunakan laptop, Anda juga dapat mencoba program gratis #[a(href='http://shareit.lenovo.com/') ShareIt] untuk mengirim file dari laptop Anda ke ponsel atau tablet.
+			p
+				| Sebuah cara praktis untuk mendapatkan buku-buku ke ponsel Anda adalah memasang Dropbox atau layanan serupa pada baik komputer dan ponsel/tablet Anda. Cukup klik Simpan EPUB dan kemudian pilih folder Dropbox Anda. Di ponsel Anda, buka aplikasi Dropbox dan pilih buku Anda. Jika Anda menggunakan laptop, Anda juga dapat mencoba program gratis
+				+link-followed-by-space('http://www.ushareit.com/') ShareIt
+				| untuk mengirim file dari laptop Anda ke ponsel atau tablet.
 			h3 Buku baca yang direkomendasikan
-			:marked
-				Pengujian kami menunjukkan [Buku Baca Gitden](/bloom/api/help/Concepts/Gitden_Reader.htm)
-				menjadi pilihan yang baik untuk perangkat Android dan iOS (iPhone &amp; amp; amp; IPad).
+			p
+				| Pengujian kami menunjukkan
+				+link-followed-by-space('/bloom/api/help/Concepts/Gitden_Reader.htm') Buku Baca Gitden
+				| menjadi pilihan yang baik untuk perangkat Android dan iOS (iPhone &amp; IPad).
 			p.showForTalkingBooks
 				| Untuk mendengarkan Buku Berbicara ini yang menggunakan Gitden pada ponsel atau tablet, Anda perlu untuk menonaktifkan fitur "Text To Speech" Gitden. Maka ia akan menampilkan kontrol audio.
 			h3.showWhenNoAudio Buatlah Berbicara
 			p.showWhenNoAudio
-				| Jika Anda ingin membuat "Buku Berbicara" di mana pembaca baru bisa membaca sambil mendengarkan, gunakan Bloom #[a(href='/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') Talking Book Tool]
-				|  untuk menambahkan rekaman suara.
+				| Jika Anda ingin membuat "Buku Berbicara" di mana pembaca baru bisa membaca sambil mendengarkan, gunakan Bloom
+				+link-followed-by-space('/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') Talking Book Tool
+				| untuk menambahkan rekaman suara.
 			h3 Tulislah kepada kami!
 			p Apakah Anda tertarik untuk mendistribusikan buku Bloom untuk digunakan pada ponsel dan buku bacaan ebook lainnya? Apakah ada sesuatu yang menurut Anda perlu kami lakukan supaya hal ini berguna untuk Anda? Silakan gunakan petunjuk Bantuan:Laporkan Suatu Masalah untuk mengirimkan kami masukan. Terima kasih!
 		#device.ui-resizable
