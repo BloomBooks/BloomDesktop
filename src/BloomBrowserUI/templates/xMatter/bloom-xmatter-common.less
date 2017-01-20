@@ -110,6 +110,11 @@
             //a bit confusingly (for me), text-align:center stops working because of the flex layout, so we need this:
             justify-content: center;
 
+            &.bloom-contentNational1 {
+                //NB: we show the national language even if this is a monolingual book
+                order: 1;
+            }
+
             // //NB: THe order here is important. bloom-content1 should be last so that if a box is *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections), we want the  bloom-content1 rule to win.
             // &.bloom-contentNational1 {
             //     //NB: we show the national language even if this is a monolingual book
