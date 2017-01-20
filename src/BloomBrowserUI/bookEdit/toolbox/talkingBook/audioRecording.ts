@@ -338,11 +338,11 @@ export default class AudioRecording {
             if (data.devices.length == 2) {
                 // Just toggle between them
                 var device = (data.devices[0] == data.productName) ? data.devices[1] : data.devices[0];
-                axios.post("/bloom/api/audio/currentRecordingDevice", device)
-                    .then(result=>{
-                         this.updateInputDeviceDisplay();
+                axios.post("/bloom/api/audio/currentRecordingDevice", device, { headers: { 'Content-Type': 'text/plain' } })
+                    .then(result => {
+                        this.updateInputDeviceDisplay();
                     })
-                    .catch(error=>{
+                    .catch(error => {
                         toastr.error(error.statusText);
                     });
                 return;
@@ -352,15 +352,15 @@ export default class AudioRecording {
             for (var i = 0; i < data.devices.length; i++) {
                 devList.append('<li>' + data.devices[i] + '</li>');
             }
-            (<any>devList).one("click", function(event) {
-                    devList.hide();
-                    axios.post("/bloom/api/audio/currentRecordingDevice", $(event.target).text())
-                     .then(result=>{
-                         this.updateInputDeviceDisplay();
-                    }).catch(error=>{
+            (<any>devList).one("click", function (event) {
+                devList.hide();
+                axios.post("/bloom/api/audio/currentRecordingDevice", $(event.target).text(), { headers: { 'Content-Type': 'text/plain' } })
+                    .then(result => {
+                        this.updateInputDeviceDisplay();
+                    }).catch(error => {
                         toastr.error(error.statusText);
                     });
-                })
+            })
                 .show().position({
                     my: "right bottom",
                     at: "right top",
