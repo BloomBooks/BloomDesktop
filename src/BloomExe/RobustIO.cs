@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-#if !__MonoCS__
+﻿#if !__MonoCS__
 using NAudio.Wave;
 #endif
 using SIL.Code;
@@ -36,11 +34,6 @@ namespace Bloom
 		public static Metadata MetadataFromFile(string path)
 		{
 			return RetryUtility.Retry(() => Metadata.FromFile(path));
-		}
-
-		public static void SavePalasoImage(PalasoImage image, string path)
-		{
-			RetryUtility.Retry(() => image.Save(path));
 		}
 	}
 }
