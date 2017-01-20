@@ -177,10 +177,10 @@ class PageChooser {
         } else {
             axios.post("/bloom/api/addPage", { templateBookPath: templateBookPath, pageId: id })
         }
-        // End the disabling of other panes for the modal dialog. The final true is because in this
-        // method the current document is the dialog, and it's the parent document that is being
+        // End the disabling of other panes for the modal dialog. The final argument is because in this
+        // method the current window is the dialog, and it's the parent window's document that is being
         // monitored for this event.
-        fireCSharpEvent("setModalStateEvent", "false", true);
+        fireCSharpEvent("setModalStateEvent", "false", parent.window);
     }
 
     continueCheckBoxChanged(): void {
@@ -452,13 +452,13 @@ function initializeAddPageDialog(templatesJSON) {
  * Fires an event for C# to handle
  * @param {String} eventName
  * @param {String} eventData
- * @param {boolean} parentWindow dispatch through document of parent window?
+ * @param {boolean} window if not null, use this window's document
  */
 // Enhance: JT notes that this method pops up from time to time; can we consolidate?
-function fireCSharpEvent(eventName, eventData, parentWindow?: boolean) {
-  var event = new MessageEvent(eventName, {/*'view' : window,*/ 'bubbles': true, 'cancelable': true, 'data': eventData });
-    if (parentWindow) {
-      parent.window.document.dispatchEvent(event);
+function fireCSharpEvent(eventName, eventData, window?: Window) {
+    var event = new MessageEvent(eventName, {/*'view' : window,*/ 'bubbles': true, 'cancelable': true, 'data': eventData });
+    if (window) {
+      window.document.dispatchEvent(event);
     } else {
       document.dispatchEvent(event);
     }
