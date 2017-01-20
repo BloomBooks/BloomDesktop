@@ -1191,14 +1191,14 @@ export class ReaderToolsModel {
     // remember how many we are loading so we know when we're finished
     this.allowedWordFilesRemaining = stages.length;
 
-    stages.forEach(function(stage, index) {
-      if (stage.allowedWordsFile) {
-          //axios.get<string>('/bloom/api/readers/allowedWordsList?fileName=' + encodeURIComponent(stage.allowedWordsFile))
-          axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
-              .then(result => this.setAllowedWordsListList(result.data, index));
-      }
-    // During Linux testing of BL-3498, the this (_this in the TS converted to JS), in the axios.get callback was
-    // undefined without this bind().  This .bind() is also the fix for BL-3496.
+    stages.forEach(function (stage, index) {
+      // BL-4184: It doesn't hurt anything in this axios call if the allowedWords file is empty string,
+      // and pushing the check for fileContents down into setAllowedWordsListList() ensures that execution
+      // runs through the "if all loaded" section of that method.
+      axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
+        .then(result => this.setAllowedWordsListList(result.data, index));
+      // During Linux testing of BL-3498, the this (_this in the TS converted to JS), in the axios.get callback was
+      // undefined without this bind().  This .bind() is also the fix for BL-3496.
     }.bind(this));
   }
 
@@ -1207,7 +1207,8 @@ export class ReaderToolsModel {
     // remove this one from the count of files remaining
     this.allowedWordFilesRemaining--;
 
-    this.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
+    if (fileContents)
+      this.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
 
     // if all loaded...
     if (this.allowedWordFilesRemaining < 1) {
