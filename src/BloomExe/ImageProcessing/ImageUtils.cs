@@ -83,7 +83,7 @@ namespace Bloom.ImageProcessing
 				{
 					SaveAsTopQualityJpeg(imageInfo.Image, destinationPath);
 				}
-				RobustIO.SavePalasoImage(imageInfo, destinationPath);
+				PalasoImage.SaveImageRobustly(imageInfo, destinationPath);
 
 				return imageFileName;
 
@@ -217,7 +217,7 @@ namespace Bloom.ImageProcessing
 			{
 				DrawImageWithWhiteBackground(original.Image, b);
 				original.Image = b;
-				RobustIO.SavePalasoImage(original, path); // BL-4148: this method preserves existing metadata
+				PalasoImage.SaveImageRobustly(original, path); // BL-4148: this method preserves existing metadata
 			}
 		}
 
