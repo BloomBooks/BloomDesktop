@@ -119,7 +119,7 @@ namespace Bloom.Api
 					var formForSynchronizing = Application.OpenForms.Cast<Form>().Last();
 					if (endpointRegistration.HandleOnUIThread && formForSynchronizing.InvokeRequired)
 					{
-						InvokeWithErrorHandling(endpointRegistration, formForSynchronizing, request, info.RawUrl);
+						InvokeWithErrorHandling(endpointRegistration, formForSynchronizing, request);
 					}
 					else
 					{
@@ -144,7 +144,7 @@ namespace Bloom.Api
 		// the call to the handler in a delegate that catches the exception and saves it
 		// in our local scope, where we can then use it for error reporting.
 		private static bool InvokeWithErrorHandling(EndpointRegistration endpointRegistration,
-			Form formForSynchronizing, ApiRequest request, string extraErrorInfo)
+			Form formForSynchronizing, ApiRequest request)
 		{
 			Exception handlerException = null;
 			formForSynchronizing.Invoke(new Action<ApiRequest>((req) =>
