@@ -18,7 +18,7 @@ import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 import * as _ from 'underscore';
 import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
 import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
-import {DataWord,TextFragment} from './libSynphony/bloomSynphonyExtensions';
+import {DataWord, TextFragment} from './libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
 import {EditableDivUtils} from '../../js/editableDivUtils';
 
@@ -46,8 +46,8 @@ export class DRTState {
 
 export class ReaderToolsModel {
 
-  previousHeight : number = 0;
-  previousWidth : number = 0;
+  previousHeight: number = 0;
+  previousWidth: number = 0;
 
   stageNumber: number = 1;
   levelNumber: number = 1;
@@ -100,11 +100,11 @@ export class ReaderToolsModel {
     this.wordListChangedListeners = {};
   }
   public getReadableFileExtensions() {
-      return ['txt', 'js', 'json'];
+    return ['txt', 'js', 'json'];
   }
 
   readyToDoMarkup(): boolean { return this.wordListLoaded && this.ckEditorLoaded; }
-  setCkEditorLoaded() : void { this.ckEditorLoaded = true; }
+  setCkEditorLoaded(): void { this.ckEditorLoaded = true; }
 
   incrementStage(): void {
     this.setStageNumber(this.stageNumber + 1);
@@ -116,7 +116,7 @@ export class ReaderToolsModel {
 
   setStageNumber(stage: number): void {
 
-    theOneLocalizationManager.asyncGetText("Common.Loading", "Loading...").then( (loadingMessage)=> {
+    theOneLocalizationManager.asyncGetText("Common.Loading", "Loading...").then((loadingMessage) => {
       // this may result in a need to resize the word list
       this.previousHeight = 0;
       $("#letterList").html(loadingMessage);
@@ -132,8 +132,8 @@ export class ReaderToolsModel {
 
       // OK, now let that changed number and the "loading" messages
       // make it to the user's screen, then start doing the work.
-      window.setTimeout(()=> {
-        if(this.stageNumber === stage) {
+      window.setTimeout(() => {
+        if (this.stageNumber === stage) {
           this.stageGraphemes = this.getKnownGraphemes(stage);
         }
 
@@ -141,27 +141,29 @@ export class ReaderToolsModel {
         // but they can be done independently of each other.
         // By separating them, we allow the letters to update while
         // the words are still being generated.
-        window.setTimeout(()=> {
+        window.setTimeout(() => {
           // make sure this is still the stage they want
           // (it won't be if they are rapidly clicking the next/previous stage buttons)
-          if(this.stageNumber === stage) {
-            this.updateLetterList();}
+          if (this.stageNumber === stage) {
+            this.updateLetterList();
+          }
         }, 0);
 
-        window.setTimeout(()=> {
+        window.setTimeout(() => {
           // make sure this is still the stage they want
           // (it won't be if they are rapidly clicking the next/previous stage buttons)
-          if(this.stageNumber === stage) {
+          if (this.stageNumber === stage) {
             this.updateWordList();
-          }}, 0);
-
-          this.saveState();
-
-          if (this.readyToDoMarkup()) {
-            this.doMarkup();
           }
-          // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
-          // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
+        }, 0);
+
+        this.saveState();
+
+        if (this.readyToDoMarkup()) {
+          this.doMarkup();
+        }
+        // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
+        // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
       }, 500);
     });
   }
@@ -173,7 +175,7 @@ export class ReaderToolsModel {
       return;
     }
     if (this.stageNumber > stages.length) {
-       this.stageNumber = stages.length;
+      this.stageNumber = stages.length;
     }
     this.updateElementContent("stageNumber", stages[this.stageNumber - 1].getName());
   }
@@ -646,7 +648,7 @@ export class ReaderToolsModel {
   }
 
   getPageWindow(): Window {
-      return (<HTMLIFrameElement>top.document.getElementById('page')).contentWindow;
+    return (<HTMLIFrameElement>top.document.getElementById('page')).contentWindow;
   }
 
   /**
@@ -781,23 +783,23 @@ export class ReaderToolsModel {
     return levels[this.levelNumber - 1].getMaxWordsPerPage();
   }
 
-// Though I'm not using this now, it was hard-won, and instructive. So I'm leaving it here
-// as an example for now in case we need to do this transformResponse thing.
-//   getTextOfWholeBook(): void {
-//       //review: on the server, this is actually a json string
-//     axios.get<string>('/bloom/api/readers/textOfContentPages',
-//     {
-//       //when there are no content pages in the book, the server returns, properly, "{}"
-//       //However the default transformResponse of axios eagerly does a JSON.Parse on everything,
-//       //even if we say we only want text/plain and the server says it gave text/plain.  Sheesh.
-//       //So we specify our own identity transformResponse
-//         transformResponse:  (data: string) => <string>data }
-//     ).then(result => {
-//       //The return looks like {'12547c' : 'hello there', '898af87' : 'words of this page', etc.}
-//       this.pageIDToText = JSON.parse(result.data);
-//       this.doMarkup();
-//     });
-//   }
+  // Though I'm not using this now, it was hard-won, and instructive. So I'm leaving it here
+  // as an example for now in case we need to do this transformResponse thing.
+  //   getTextOfWholeBook(): void {
+  //       //review: on the server, this is actually a json string
+  //     axios.get<string>('/bloom/api/readers/textOfContentPages',
+  //     {
+  //       //when there are no content pages in the book, the server returns, properly, "{}"
+  //       //However the default transformResponse of axios eagerly does a JSON.Parse on everything,
+  //       //even if we say we only want text/plain and the server says it gave text/plain.  Sheesh.
+  //       //So we specify our own identity transformResponse
+  //         transformResponse:  (data: string) => <string>data }
+  //     ).then(result => {
+  //       //The return looks like {'12547c' : 'hello there', '898af87' : 'words of this page', etc.}
+  //       this.pageIDToText = JSON.parse(result.data);
+  //       this.doMarkup();
+  //     });
+  //   }
 
   getTextOfWholeBook(): void {
     axios.get<any[]>('/bloom/api/readers/io/textOfContentPages').then(result => {
@@ -885,27 +887,27 @@ export class ReaderToolsModel {
     return maxWords;
   }
 
- averageWordsInSentence(pageStrings: string[]): number {
-   var sentenceCount = 0;
-   var wordCount = 0;
-   for (var i = 0; i < pageStrings.length; i++) {
-     var page = pageStrings[i];
-     var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
+  averageWordsInSentence(pageStrings: string[]): number {
+    var sentenceCount = 0;
+    var wordCount = 0;
+    for (var i = 0; i < pageStrings.length; i++) {
+      var page = pageStrings[i];
+      var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
 
-     // remove inter-sentence space
-     fragments = fragments.filter(function (frag) {
-       return frag.isSentence;
-     });
+      // remove inter-sentence space
+      fragments = fragments.filter(function (frag) {
+        return frag.isSentence;
+      });
 
-     for (var j = 0; j < fragments.length; j++) {
-       wordCount += fragments[j].words.length;
-       sentenceCount++;
-     }
-   }
-   if (sentenceCount == 0) {
-     return 0;
-   }
-   return Math.round(wordCount / sentenceCount);
+      for (var j = 0; j < fragments.length; j++) {
+        wordCount += fragments[j].words.length;
+        sentenceCount++;
+      }
+    }
+    if (sentenceCount == 0) {
+      return 0;
+    }
+    return Math.round(wordCount / sentenceCount);
     //return Math.round(10 * wordCount / sentenceCount) / 10; // for one decimal place
   }
 
@@ -932,9 +934,9 @@ export class ReaderToolsModel {
     this.synphony = val;
   }
 
-//   getSynphony(): ReadersSynphonyWrapper {
-//     return this.synphony;
-//   }
+  //   getSynphony(): ReadersSynphonyWrapper {
+  //     return this.synphony;
+  //   }
 
   /**
    * This group of functions uses jquery (if loaded) to update the real model.
@@ -958,15 +960,15 @@ export class ReaderToolsModel {
    */
   addWordsFromFile(fileContents: string): void {
 
-//reviewslog: at the moment, thes first two clauses just do the same things
+    //reviewslog: at the moment, thes first two clauses just do the same things
 
     // is this a Synphony data file?
     if (fileContents.substr(0, 12) === '{"LangName":' ||
-        //TODO remove this is bizarre artifact of the original synphony, where the data file was actually some javascript. Still used in a unit test.
-        fileContents.substr(0, 12) === 'setLangData(') {
+      //TODO remove this is bizarre artifact of the original synphony, where the data file was actually some javascript. Still used in a unit test.
+      fileContents.substr(0, 12) === 'setLangData(') {
       theOneLibSynphony.langDataFromString(fileContents);
       this.synphony.loadFromLangData(theOneLanguageDataInstance);
-   }
+    }
     // handle sample texts files that are just a set of space-delimeted words
     else {
       var words = theOneLibSynphony.getWordsFromHtmlString(fileContents);
@@ -982,7 +984,7 @@ export class ReaderToolsModel {
     }
   }
 
-  beginSetTextsList(textsArg: string[] ): Promise<void> {
+  beginSetTextsList(textsArg: string[]): Promise<void> {
     // only save the file types we can read
     this.texts = textsArg.filter(t => {
       var ext = t.split('.').pop();
@@ -1072,8 +1074,8 @@ export class ReaderToolsModel {
    * @returns An array of strings or DataWord objects
    */
   selectWordsFromSynphony(justWordName: boolean, desiredGPCs: string[], knownGPCs: string[],
-                          restrictToKnownGPCs: boolean, allowUpperCase?: boolean, syllableLengths?: number[],
-                          selectedGroups?: string[], partsOfSpeech?: string[]): any[] {
+    restrictToKnownGPCs: boolean, allowUpperCase?: boolean, syllableLengths?: number[],
+    selectedGroups?: string[], partsOfSpeech?: string[]): any[] {
 
     if (!selectedGroups) {
       selectedGroups = [];
@@ -1102,7 +1104,7 @@ export class ReaderToolsModel {
     var stages: ReaderStage[] = this.synphony.getStages(stageNumber);
 
     var words: string[] = [];
-    for (var i=0; i < stages.length; i++) {
+    for (var i = 0; i < stages.length; i++) {
       if (stages[i].allowedWords)
         words = words.concat(stages[i].allowedWords);
     }
@@ -1116,7 +1118,7 @@ export class ReaderToolsModel {
   }
 
   getToolboxWindow(): Window {
-      return (<HTMLIFrameElement>document.getElementById('toolbox')).contentWindow;
+    return (<HTMLIFrameElement>document.getElementById('toolbox')).contentWindow;
   }
 
   /**
@@ -1135,7 +1137,7 @@ export class ReaderToolsModel {
 
     // inform the user if the list was truncated
     //var toolbox: Document = this.getToolboxWindow().document;
-     var toolbox = $('#toolbox');
+    var toolbox = $('#toolbox');
     var msgDiv: JQuery = $(toolbox).find('#allowed-word-list-truncated');
 
     // if the list was truncated, show the message
@@ -1189,14 +1191,17 @@ export class ReaderToolsModel {
     // remember how many we are loading so we know when we're finished
     this.allowedWordFilesRemaining = stages.length;
 
-    stages.forEach(function(stage, index) {
-      if (stage.allowedWordsFile) {
-          //axios.get<string>('/bloom/api/readers/allowedWordsList?fileName=' + encodeURIComponent(stage.allowedWordsFile))
-          axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
-              .then(result => this.setAllowedWordsListList(result.data, index));
-      }
-    // During Linux testing of BL-3498, the this (_this in the TS converted to JS), in the axios.get callback was
-    // undefined without this bind().  This .bind() is also the fix for BL-3496.
+    stages.forEach(function (stage, index) {
+      // BL-4184: Even if the decodable reader setup doesn't have a filename for each stage,
+      // we need to ensure that execution still passes through the "if all loaded" section of
+      // the setAllowedWordsListList() method.
+      if (stage.allowedWordsFile)
+        axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
+          .then(result => this.setAllowedWordsListList(result.data, index));
+      else
+        this.setAllowedWordsListList(null, index);
+      // During Linux testing of BL-3498, the this (_this in the TS converted to JS), in the axios.get callback was
+      // undefined without this bind().  This .bind() is also the fix for BL-3496.
     }.bind(this));
   }
 
@@ -1205,7 +1210,8 @@ export class ReaderToolsModel {
     // remove this one from the count of files remaining
     this.allowedWordFilesRemaining--;
 
-    this.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
+    if (fileContents)
+      this.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
 
     // if all loaded...
     if (this.allowedWordFilesRemaining < 1) {
@@ -1222,4 +1228,4 @@ if (!(<any>top).theOneReaderToolsModel) {
   (<any>top).theOneReaderToolsModel = new ReaderToolsModel();
 }
 
-export function getTheOneReaderToolsModel()  {return (<any>top).theOneReaderToolsModel;}
+export function getTheOneReaderToolsModel() { return (<any>top).theOneReaderToolsModel; }
