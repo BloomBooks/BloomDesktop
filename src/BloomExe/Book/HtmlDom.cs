@@ -24,6 +24,7 @@ namespace Bloom.Book
 	public class HtmlDom
 	{
 		public const string RelativePathAttrName = "data-base";
+		private static readonly Regex s_regexBangImportant = new Regex("\\s*!\\s*important\\s*", RegexOptions.Compiled);
 		private XmlDocument _dom;
 
 		public HtmlDom()
@@ -934,7 +935,9 @@ namespace Bloom.Book
 					// Strip matched quotes
 					if(name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
 						name = name.Substring(1, name.Length - 2);
-					result.Add(name);
+					name = s_regexBangImportant.Replace(name, "");
+					if (name.ToLowerInvariant() != "inherit" && name.ToLowerInvariant() != "segoe ui")
+						result.Add(name);
 					if(!includeFallbackFonts)
 						break;
 				}
