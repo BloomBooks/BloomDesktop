@@ -430,7 +430,7 @@ namespace Bloom.Book
 				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
 					continue;
 				var ext = Path.GetExtension(filePath).ToLowerInvariant();
-				if (new String[] {".jade", ".less"}.Any(ex => ex == ext))
+				if (new String[] {".jade", ".less", ".md"}.Any(ex => ex == ext))
 					continue;
 				RobustFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}
