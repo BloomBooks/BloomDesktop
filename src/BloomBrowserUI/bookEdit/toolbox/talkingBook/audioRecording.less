@@ -130,9 +130,19 @@ span.ui-audioCurrent {
     #audio-devlist {
         display:none;
         position:absolute;
-        background-color:white; 
-        width:200px;
-        li {min-height:20px; font-size:12px;
+        background-color:white;
+        width:180px;
+        padding-left:0;
+        list-style:none;
+        cursor:pointer;
+        z-index:1000;
+        overflow-x:hidden;
+        li {
+            min-height:20px;
+            font-size:12px;
+            color:black;
+            padding-left:5px;
+            white-space:nowrap;
             &:hover {background-color:lightgray}
         }
         #audio-input-dev  {margin-top: 2px; width:15px;}
