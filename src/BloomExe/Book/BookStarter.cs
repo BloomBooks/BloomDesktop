@@ -79,7 +79,9 @@ namespace Bloom.Book
 
 		private string GetPathToHtmlFile(string folder)
 		{
-			var candidates = from x in Directory.GetFiles(folder, "*.htm*")
+			// BL-4160 don't put an asterisk after the .htm. It is unnecessary as this search pattern
+			// already returns both .htm and .html, but NOT .htm.xyz
+			var candidates = from x in Directory.GetFiles(folder, "*.htm")
 							 where !(x.ToLowerInvariant().EndsWith("configuration.html"))
 							 select x;
 			if (candidates.Count() == 1)
