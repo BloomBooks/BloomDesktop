@@ -360,10 +360,10 @@ export default class AudioRecording {
                     }).catch(error => {
                         toastr.error(error.statusText);
                     });
-            })
+            }.bind(this))
                 .show().position({
-                    my: "right bottom",
-                    at: "right top",
+                    my: "left top",
+                    at: "left bottom",
                     of: $('#audio-input-dev')
                 });
         });
