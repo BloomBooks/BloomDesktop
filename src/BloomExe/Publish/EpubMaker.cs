@@ -119,7 +119,9 @@ namespace Bloom.Publish
 			Debug.Assert(_stagingFolder == null, "EpubMaker should only be used once");
 			
 			//I (JH) kept having trouble making epubs because this kept getting locked.
-			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
+			// Ideally, this would be SIL.IO.DirectoryUtilities.DeleteDirectoryRobust or RobustIO.DeleteDirectory.
+			// See comment on Bloom.ToPalaso.DirectoryUtilities.DeleteDirectoryRobust.
+			Bloom.ToPalaso.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
 
 			_stagingFolder = new TemporaryFolder(kEPUBExportFolder);
 			// The readium control remembers the current page for each book.
