@@ -246,7 +246,9 @@ namespace BloomTemp
 			{
 				try
 				{
-					RobustIO.DeleteDirectory(folder, true);
+					// Ideally, would be RobustIO.DeleteDirectory(folder, true);
+					// See comment on Bloom.ToPalaso.DirectoryUtilities.DeleteDirectoryRobust
+					Bloom.ToPalaso.DirectoryUtilities.DeleteDirectoryRobust(folder);
 				}
 				catch (Exception e)
 				{
@@ -267,7 +269,9 @@ namespace BloomTemp
 						}
 						//sleep and try again (in case some other thread will  let go of them)
 						Thread.Sleep(1000);
-						RobustIO.DeleteDirectory(folder, true);
+						// Ideally, whould be RobustIO.DeleteDirectory(folder, true);
+						// See comment on Bloom.ToPalaso.DirectoryUtilities.DeleteDirectoryRobust
+						Bloom.ToPalaso.DirectoryUtilities.DeleteDirectoryRobust(folder);
 					}
 					catch (Exception)
 					{
