@@ -362,29 +362,38 @@ export default class AudioRecording {
                 axios.get<any>("/bloom/api/audio/devices").then(result => {
                         var data = result.data;
                         // See selectInputDevice for what is retrieved.
-                        var genericName = data.genericName;
-                        var deviceName = data.productName;
-                        // The following logic is adapted from Palaso.Media.RecordingDeviceIndicator.UpdateDisplay()
-                        // Mods: checking for "Headse" is motivated by JohnT's Logitech Headset, which comes up as "Microphone (Logitech USB Headse".
-                        // checking for "Array" is motivated by JohnT's dell laptop, where the internal microphone comes up as "Microphone Array (2 RealTek Hi".
-
-                        // This seems a reasonable default to suggest what needs to be connected
-                        // if nothing is. It's also the default if we don't recognize anything significant in the name.
-                        var imageName = 'microphone.svg';
-                        if (genericName !== null) {
-                                if (genericName.indexOf('Internal') >= 0 || genericName.indexOf('Array') >= 0) imageName = 'Computer.png';
-                                else if (genericName.indexOf('USB Audio') >= 0 || genericName.indexOf('Headse') >= 0) imageName = 'HeadSet.png';
-
-                                if (deviceName.indexOf('ZOOM') >= 0) imageName = 'Recorder.png';
-                                else if (deviceName.indexOf('Plantronics') >= 0 || deviceName.indexOf('Andrea') >= 0 || deviceName.indexOf('Microphone (VXi X200') >= 0) imageName = 'HeadSet.png';
-                                else if (deviceName.indexOf('Line') >= 0) imageName = 'ExternalAudioDevice.png';
+            var genericName = data.genericName || "";
+            var productName = data.productName || "";
+            var nameToImage = [
+                ['internal', 'computer.svg'],
+                // checking for "Array" is motivated by JohnT's dell laptop, where the internal microphone
+                // comes up as "Microphone Array (2 RealTek Hi".
+                ['array', 'computer.svg'],
+                ['webcam', 'webcam.svg'],
+                // checking for "Headse" is motivated by JohnT's Logitech Headset, which comes up as "Microphone (Logitech USB Headse".
+                ['headse', 'headset.svg'],
+                ['usb audio', 'headset.svg'], // we don't really know... should we just show a USB icon?
+                ['plantronics', 'headset.svg'],
+                ['andrea', 'headset.svg'],  //usb-to-line
+                ['vxi', 'headset.svg'], // headsets and usb-to-line
+                ['line', 'lineaudio.svg'],
+                ['high def', 'lineaudio.svg'],
+                ['zoom', 'recorder.svg']
+            ];
+            var imageName = 'microphone.svg'; // Default if we don't recognize anything significant in the name of the current device.
+            for (var i = 0; i < nameToImage.length; i++) {
+                var match = nameToImage[i][0];
+                if (genericName.toLowerCase().indexOf(match) > -1 || productName.toLowerCase().indexOf(match) > -1) {
+                    imageName = nameToImage[i][1];
+                    break;
+                }
                         }
                         var devButton = $('#audio-input-dev');
                         var src = devButton.attr('src');
                         var lastSlash = src.lastIndexOf('/');
                         var newSrc = src.substring(0, lastSlash + 1) + imageName;
                         devButton.attr('src', newSrc);
-                        devButton.attr('title', deviceName);
+                        devButton.attr('title', productName);
                 });
         }
 
