@@ -199,7 +199,8 @@ namespace Bloom.Api
 			else
 			{
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Missing l10n: " + englishText,
-					"Please report that " + id + " needs to be " +
+					"Ignore this if you are looking at a 3rd-party book that does not ship with Bloom directly. " +
+					"Otherwise, please report that " + id + " needs to be " +
 					"added to the en.tmx, so that it can show up in the list of things to be localized even " +
 					"when the user has not encountered this part of the interface yet.");
 			}
