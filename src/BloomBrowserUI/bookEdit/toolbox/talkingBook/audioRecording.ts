@@ -350,11 +350,19 @@ export default class AudioRecording {
             var devList = $('#audio-devlist');
             devList.empty();
             for (var i = 0; i < data.devices.length; i++) {
-                devList.append('<li>' + data.devices[i] + '</li>');
+                // convert "Microphone (xxxx)" --> xxxx, where the final ')' is often missing (cut off somewhere upstream)
+                var label = data.devices[i].replace(/Microphone \(([^\)]*)\)?/, "$1");
+                //make what's left safe for html
+                label = $('<div>').text(label).html();
+                // preserve the product name, which is the id we will send back if they choose it
+                var menuItem = devList.append('<li data-choice="' + i + '">' + label + '</li>');
             }
             (<any>devList).one("click", function (event) {
                 devList.hide();
-                axios.post("/bloom/api/audio/currentRecordingDevice", $(event.target).text(), { headers: { 'Content-Type': 'text/plain' } })
+                var choice = $(event.target).data('choice');
+                axios.post("/bloom/api/audio/currentRecordingDevice",
+                    data.devices[choice],
+                    { headers: { 'Content-Type': 'text/plain' } })
                     .then(result => {
                         this.updateInputDeviceDisplay();
                     }).catch(error => {
