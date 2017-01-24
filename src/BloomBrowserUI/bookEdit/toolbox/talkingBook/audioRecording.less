@@ -63,7 +63,6 @@ span.ui-audioCurrent {
                 &.expected {background-image: url(audio/record_expected.svg)}
                 &.active {background-image: url(audio/record_active.svg)}
         }
-
         #audio-play {
                 background-image: url(audio/play_enabled.svg);
                 height:45px;
@@ -72,6 +71,50 @@ span.ui-audioCurrent {
                 &.expected {background-image: url(audio/play_expected.svg)}
                 &.active {background-image: url(audio/play_active.svg)}
         }
+
+    .audio-about {margin-top:@sectionVerticalGap;}
+    #audio-look-at, #audio-check{max-width:none;}
+
+    #audio-listen-label {
+        position:relative;
+        top:12px;
+        width:80px;
+    }
+
+
+    a {
+        display: block; //start on a new line
+        margin-top:10px;
+        text-decoration:underline;
+        cursor:pointer
+    }
+
+    .ui-audioFooter {margin-top: 30px; margin-bottom: 5px}
+    .ui-audioInput, div.ui-audioMeter {display:inline-block;}
+
+    .ui-audioInputGroup {margin-top:5px;margin-bottom:12px;}
+    img#audio-input-dev {height:30px;width:30px;}
+
+    // hidden unless we need to choose between three or more input devices.
+    #audio-devlist {
+        display:none;
+        position:absolute;
+        background-color:white;
+        width:180px;
+        padding-left:0;
+        list-style:none;
+        cursor:pointer;
+        z-index:1000;
+        overflow-x:hidden;
+        li {
+            min-height:20px;
+            font-size:12px;
+            color:black;
+            padding-left:5px;
+            white-space:nowrap;
+            &:hover {background-color:lightgray}
+        }
+    }
 
 
         #audio-next {
