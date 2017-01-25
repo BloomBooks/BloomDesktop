@@ -124,6 +124,7 @@ namespace Bloom.Book
 		public static void SetMetadata(Metadata metadata, HtmlDom dom, string bookFolderPath, CollectionSettings collectionSettings)
 		{
 			dom.SetBookSetting("copyright","*",metadata.CopyrightNotice);
+			FixLicenseUrl(dom, metadata);
 			dom.SetBookSetting("licenseUrl","*",metadata.License.Url);
 			// This is for backwards compatibility. The book may have  licenseUrl in 'en' created by an earlier version of Bloom.
 			// For backwards compatibiilty, GetMetaData will read that if it doesn't find a '*' license first. So now that we're
@@ -157,6 +158,30 @@ namespace Bloom.Book
 			}
 
 			UpdateDomFromDataDiv(dom, bookFolderPath, collectionSettings);
+		}
+
+		/// <summary>
+		/// In the case where we currently have an igo Creative Commons(CC) license and we're switching to a non-igo CC license,
+		/// make sure Bloom uses the CC4.0 version (igo is only CC3.0).
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <param name="metadata"></param>
+		private static void FixLicenseUrl(HtmlDom dom, Metadata metadata)
+		{
+			var url = metadata.License.Url;
+			if (!url.EndsWith("3.0/"))
+				return;
+
+			// At this point, we are either legitimately using a CC 3.0 license from an older shell,
+			// or we used to use an igo CC license and we need to switch to version 4.0.
+			// Check the url that is currently in the book's DOM.
+			var licenseUrlDivNode = dom.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='licenseUrl']");
+			if (licenseUrlDivNode == null)
+				return; // shouldn't be null, but just in case...
+
+			// if the old license was 'igo' fix the new url to be CC4.0
+			if (licenseUrlDivNode.InnerText.EndsWith("igo/"))
+				metadata.License.Url = url.Replace("3.0/", "4.0/");
 		}
 
 		private static string ConvertNewLinesToHtmlBreaks(string s)
