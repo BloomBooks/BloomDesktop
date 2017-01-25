@@ -142,12 +142,18 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private static void _bookContextMenu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
+		private void _bookContextMenu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
 		{
 			// Not sure which ones are visible at this point
 			// So make them all visible so they are available in the right-click menu
 			foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
-				menuItem.Visible = true;
+			{
+				// Except that we do know that this one's visibility has already been set correctly;
+				// Don't change it! (BL-4176)
+				if (menuItem == _exportToXMLForInDesignToolStripMenuItem)
+					menuItem.Visible = _exportToXMLForInDesignToolStripMenuItem.Visible;
+				else menuItem.Visible = true;
+			}
 		}
 
 		private static BookInfo GetBookInfoFromButton(Button bookButton)
