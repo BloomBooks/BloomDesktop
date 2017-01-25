@@ -109,6 +109,25 @@ namespace BloomTests.Book
 			Assert.AreEqual("Copyright © 2012, test", GetMetadata(dataDivContent).CopyrightNotice);
 		}
 
+		[TestCase("http://creativecommons.org/licenses/by-nc-sa/", "http://creativecommons.org/licenses/by-nc-sa/4.0/")]
+		[TestCase("http://creativecommons.org/licenses/by-nc-sa", "http://creativecommons.org/licenses/by-nc-sa/4.0/")]
+		[TestCase("http://creativecommons.org/licenses/by/", "http://creativecommons.org/licenses/by/4.0/")]
+		[TestCase("http://creativecommons.org/licenses/by", "http://creativecommons.org/licenses/by/4.0/")]
+		[TestCase("http://creativecommons.org/licenses/by-nc-sa/4.0/", "http://creativecommons.org/licenses/by-nc-sa/4.0/")]
+		[TestCase("http://creativecommons.org/licenses/by-nc-sa/4.0", "http://creativecommons.org/licenses/by-nc-sa/4.0/")]
+		//Regression tests:
+		[TestCase("http://creativecommons.org/licenses/by/4.0/", "http://creativecommons.org/licenses/by/4.0/")]
+		[TestCase("http://creativecommons.org/licenses/by/4.0", "http://creativecommons.org/licenses/by/4.0/")]
+		[TestCase("http://creativecommons.org/licenses/by-nc-sa/3.0/", "http://creativecommons.org/licenses/by-nc-sa/3.0/")]
+		[TestCase("http://creativecommons.org/licenses/by-nc-sa/3.0", "http://creativecommons.org/licenses/by-nc-sa/3.0/")]
+		[TestCase("http://creativecommons.org/licenses/by/3.0/", "http://creativecommons.org/licenses/by/3.0/")]
+		[TestCase("http://creativecommons.org/licenses/by/3.0", "http://creativecommons.org/licenses/by/3.0/")]
+		public void GetMetadataLicenseUrl_MissingCCVersion_CorrectsToDefaultVersion(string input, string result)
+		{
+			string dataDivContent = @"<div lang='*' data-book='licenseUrl'>" + input + "</div>";
+			Assert.AreEqual(result, GetMetadata(dataDivContent).License.Url);
+		}
+
 		[Test]
 		public void SetLicenseMetadata_ToNoLicenseUrl_OriginalHasLicenseUrlInEn_ClearsEn()
 		{
