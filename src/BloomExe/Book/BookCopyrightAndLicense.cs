@@ -64,6 +64,15 @@ namespace Bloom.Book
 				{
 					metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
 				}
+				catch (IndexOutOfRangeException)
+				{
+					// Need to handle urls which do not end with the version number.
+					// Simply set it to the default version.
+					if (!licenseUrl.EndsWith("/"))
+						licenseUrl += "/";
+					licenseUrl += CreativeCommonsLicense.kDefaultVersion;
+					metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
+				}
 				catch (Exception e)
 				{
 					throw new ApplicationException("Bloom had trouble parsing this license url: '" + licenseUrl + "'. (ref BL-4108)", e);
