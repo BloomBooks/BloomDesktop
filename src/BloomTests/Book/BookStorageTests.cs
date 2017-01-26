@@ -406,6 +406,34 @@ namespace BloomTests.Book
 			Assert.That(storage.MetaData.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersion));
 		}
 
+		[Test]
+		[TestCase("foo", "foo.html")] //normal case
+		[TestCase("foobar", "foo.html")] //changed folder name
+		[TestCase("foo", "foo.html", "bar.html")] //use folder name to decide (not sure this is good idea, but it's in existing code)
+		[TestCase("foobar", "foo.html", "foo.htm.bak")]
+		[TestCase("foobar", "foo.html", "foo_conflict.htm")] //own cloud
+		[TestCase("foobar", "foo.html", "foo_conflict.htm", "foo_conflict2.htm")] //two conflict files
+		[TestCase("foobar", "foo.html", "foo (Scott's conflicted copy 2009-10-15).htm")] //dropbox
+		[TestCase("foobar", "foo.html", "foo[conflict].htm")] // google
+		[TestCase("foobar", "avoid conflict.html")] // only this one file with conflict in the name
+		public void FindBookHtmlInFolder_MayHaveOtherFiles_ChoosesCorrectOne(string folderName, string expected, string decoy1 = null, string decoy2 = null)
+		{
+			using(var outerFolder = new TemporaryFolder()) // intentionally using different name each time to avoid conflicts when tests run in parallel
+			{
+				using(var folder =  new TemporaryFolder(outerFolder, folderName))
+				{
+					File.CreateText(folder.Combine(expected));
+					if(decoy1 != null)
+						File.CreateText(folder.Combine(decoy1));
+					if(decoy2 != null)
+						File.CreateText(folder.Combine(decoy2));
+
+					var path = BookStorage.FindBookHtmlInFolder(folder.Path);
+					Assert.AreEqual(expected, Path.GetFileName(path));
+				}
+			}
+		}
+
 		private void ChangeNameAndCheck(TemporaryFolder newFolder, BookStorage storage)
 		{
 			var newBookName = Path.GetFileName(newFolder.Path);
