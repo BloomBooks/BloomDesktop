@@ -67,7 +67,7 @@ cd -
 
 
 # *** Results ***
-# build: Bloom-3.7-linux64-Auto (Bloom_Bloom37linux64Auto)
+# build: Bloom-3.7-Linux64-Continuous (Bloom_Bloom37linux64Auto)
 # project: Bloom
 # URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Bloom37linux64Auto
 # VCS: git://github.com/BloomBooks/BloomDesktop.git [Version3.7]
@@ -91,7 +91,7 @@ cd -
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"bin/YouTrackSharp.dll"=>"lib/dotnet", "bin/YouTrackSharp.pdb"=>"lib/dotnet"}
-#     VCS: https://github.com/phillip-hopper/YouTrackSharp.git [LinuxCompatible]
+#     VCS: https://github.com/BloomBooks/YouTrackSharp.git [LinuxCompatible]
 # [3] build: pdf.js (bt401)
 #     project: BuildTasks
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt401
@@ -112,49 +112,49 @@ cd -
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
-#     VCS: https://github.com/hatton/geckofxHtmlToPdf [refs/heads/master]
-# [6] build: palaso-precise64-master Continuous (bt322)
-#     project: libpalaso
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt322
-#     clean: false
-#     revision: bloom-3.7.tcbuildtag
-#     paths: {"Palaso.BuildTasks.dll"=>"build/", "*.dll*"=>"lib/dotnet"}
-#     VCS: https://github.com/sillsdev/libpalaso.git [master]
-# [7] build: icucil-precise64-Continuous (bt281)
+#     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [refs/heads/master]
+# [6] build: icucil-precise64-Continuous (bt281)
 #     project: Libraries
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt281
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"icu.net.*"=>"lib/dotnet/icu48"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [8] build: icucil-precise64-icu52 Continuous (bt413)
-#     project: Libraries
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt413
-#     clean: false
-#     revision: bloom-3.7.tcbuildtag
-#     paths: {"icu.net.*"=>"lib/dotnet/icu52"}
-#     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [9] build: icucil-precise64-icu55 Continuous (Icu55)
+# [7] build: icucil-precise64-icu55 Continuous (Icu55)
 #     project: Libraries
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Icu55
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"icu.net.*"=>"lib/dotnet/icu55"}
 #     VCS: https://github.com/sillsdev/icu-dotnet [master]
-# [10] build: PdfDroplet-Win-Dev-Continuous (bt54)
+# [8] build: icucil-precise64-icu52 Continuous (bt413)
+#     project: Archived
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt413
+#     clean: false
+#     revision: bloom-3.7.tcbuildtag
+#     paths: {"icu.net.*"=>"lib/dotnet/icu52"}
+#     VCS: https://github.com/sillsdev/icu-dotnet [master]
+# [9] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt54
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [11] build: TidyManaged-master-precise64-continuous (bt351)
+# [10] build: TidyManaged-master-precise64-continuous (bt351)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt351
 #     clean: false
 #     revision: bloom-3.7.tcbuildtag
 #     paths: {"TidyManaged.dll*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
+# [11] build: palaso-precise64-Bloom3.7 Continuous (Libpalaso_PalasoPrecise64Bloom37Continuous)
+#     project: libpalaso
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=Libpalaso_PalasoPrecise64Bloom37Continuous
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"Palaso.BuildTasks.dll"=>"build/", "*.dll*"=>"lib/dotnet"}
+#     VCS: https://github.com/sillsdev/libpalaso.git [Bloom3.7]
 
 # make sure output directories exist
 mkdir -p ../DistFiles
@@ -233,71 +233,71 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/bloom-3.7.
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt464/bloom-3.7.tcbuildtag/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt464/bloom-3.7.tcbuildtag/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt464/bloom-3.7.tcbuildtag/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/Palaso.BuildTasks.dll ../build/Palaso.BuildTasks.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/Commons.Xml.Relaxng.dll ../lib/dotnet/Commons.Xml.Relaxng.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/Enchant.Net.dll ../lib/dotnet/Enchant.Net.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/Enchant.Net.dll.config ../lib/dotnet/Enchant.Net.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/Ionic.Zip.dll ../lib/dotnet/Ionic.Zip.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/NDesk.DBus.dll ../lib/dotnet/NDesk.DBus.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/NDesk.DBus.dll.config ../lib/dotnet/NDesk.DBus.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/Newtonsoft.Json.dll ../lib/dotnet/Newtonsoft.Json.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/Palaso.BuildTasks.dll ../lib/dotnet/Palaso.BuildTasks.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Archiving.dll ../lib/dotnet/SIL.Archiving.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Archiving.dll.config ../lib/dotnet/SIL.Archiving.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Archiving.dll.mdb ../lib/dotnet/SIL.Archiving.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Core.Tests.dll ../lib/dotnet/SIL.Core.Tests.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Core.Tests.dll.mdb ../lib/dotnet/SIL.Core.Tests.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Core.dll ../lib/dotnet/SIL.Core.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Core.dll.config ../lib/dotnet/SIL.Core.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Core.dll.mdb ../lib/dotnet/SIL.Core.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.DictionaryServices.dll ../lib/dotnet/SIL.DictionaryServices.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.DictionaryServices.dll.mdb ../lib/dotnet/SIL.DictionaryServices.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Lexicon.dll ../lib/dotnet/SIL.Lexicon.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Lexicon.dll.mdb ../lib/dotnet/SIL.Lexicon.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Lift.dll ../lib/dotnet/SIL.Lift.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Lift.dll.mdb ../lib/dotnet/SIL.Lift.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Media.dll ../lib/dotnet/SIL.Media.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Media.dll.config ../lib/dotnet/SIL.Media.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Media.dll.mdb ../lib/dotnet/SIL.Media.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Scripture.dll ../lib/dotnet/SIL.Scripture.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Scripture.dll.mdb ../lib/dotnet/SIL.Scripture.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.TestUtilities.dll ../lib/dotnet/SIL.TestUtilities.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.TestUtilities.dll.mdb ../lib/dotnet/SIL.TestUtilities.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.GeckoBrowserAdapter.dll ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.GeckoBrowserAdapter.dll.mdb ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.Keyboarding.dll ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.Keyboarding.dll.config ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.Keyboarding.dll.mdb ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.Scripture.dll ../lib/dotnet/SIL.Windows.Forms.Scripture.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.Scripture.dll.mdb ../lib/dotnet/SIL.Windows.Forms.Scripture.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.WritingSystems.dll ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.WritingSystems.dll.mdb ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.dll ../lib/dotnet/SIL.Windows.Forms.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.dll.config ../lib/dotnet/SIL.Windows.Forms.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.Windows.Forms.dll.mdb ../lib/dotnet/SIL.Windows.Forms.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.WritingSystems.Tests.dll ../lib/dotnet/SIL.WritingSystems.Tests.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.WritingSystems.Tests.dll.mdb ../lib/dotnet/SIL.WritingSystems.Tests.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.WritingSystems.dll ../lib/dotnet/SIL.WritingSystems.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/SIL.WritingSystems.dll.mdb ../lib/dotnet/SIL.WritingSystems.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/Spart.dll ../lib/dotnet/Spart.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/ibusdotnet.dll ../lib/dotnet/ibusdotnet.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/icu.net.dll ../lib/dotnet/icu.net.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/icu.net.dll.config ../lib/dotnet/icu.net.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/bloom-3.7.tcbuildtag/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/bloom-3.7.tcbuildtag/icu.net.dll ../lib/dotnet/icu48/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/bloom-3.7.tcbuildtag/icu.net.dll.config ../lib/dotnet/icu48/icu.net.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/bloom-3.7.tcbuildtag/icu.net.dll.mdb ../lib/dotnet/icu48/icu.net.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/bloom-3.7.tcbuildtag/icu.net.dll ../lib/dotnet/icu52/icu.net.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/bloom-3.7.tcbuildtag/icu.net.dll.config ../lib/dotnet/icu52/icu.net.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/bloom-3.7.tcbuildtag/icu.net.dll.mdb ../lib/dotnet/icu52/icu.net.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/bloom-3.7.tcbuildtag/icu.net.dll ../lib/dotnet/icu55/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/bloom-3.7.tcbuildtag/icu.net.dll.config ../lib/dotnet/icu55/icu.net.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/Icu55/bloom-3.7.tcbuildtag/icu.net.dll.mdb ../lib/dotnet/icu55/icu.net.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/bloom-3.7.tcbuildtag/icu.net.dll ../lib/dotnet/icu52/icu.net.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/bloom-3.7.tcbuildtag/icu.net.dll.config ../lib/dotnet/icu52/icu.net.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt413/bloom-3.7.tcbuildtag/icu.net.dll.mdb ../lib/dotnet/icu52/icu.net.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/bloom-3.7.tcbuildtag/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/bloom-3.7.tcbuildtag/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/bloom-3.7.tcbuildtag/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/bloom-3.7.tcbuildtag/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/Palaso.BuildTasks.dll ../build/Palaso.BuildTasks.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/Commons.Xml.Relaxng.dll ../lib/dotnet/Commons.Xml.Relaxng.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/Enchant.Net.dll ../lib/dotnet/Enchant.Net.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/Enchant.Net.dll.config ../lib/dotnet/Enchant.Net.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/Ionic.Zip.dll ../lib/dotnet/Ionic.Zip.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/NDesk.DBus.dll ../lib/dotnet/NDesk.DBus.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/NDesk.DBus.dll.config ../lib/dotnet/NDesk.DBus.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/Newtonsoft.Json.dll ../lib/dotnet/Newtonsoft.Json.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/Palaso.BuildTasks.dll ../lib/dotnet/Palaso.BuildTasks.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Archiving.dll ../lib/dotnet/SIL.Archiving.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Archiving.dll.config ../lib/dotnet/SIL.Archiving.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Archiving.dll.mdb ../lib/dotnet/SIL.Archiving.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Core.Tests.dll ../lib/dotnet/SIL.Core.Tests.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Core.Tests.dll.mdb ../lib/dotnet/SIL.Core.Tests.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Core.dll ../lib/dotnet/SIL.Core.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Core.dll.config ../lib/dotnet/SIL.Core.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Core.dll.mdb ../lib/dotnet/SIL.Core.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.DictionaryServices.dll ../lib/dotnet/SIL.DictionaryServices.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.DictionaryServices.dll.mdb ../lib/dotnet/SIL.DictionaryServices.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Lexicon.dll ../lib/dotnet/SIL.Lexicon.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Lexicon.dll.mdb ../lib/dotnet/SIL.Lexicon.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Lift.dll ../lib/dotnet/SIL.Lift.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Lift.dll.mdb ../lib/dotnet/SIL.Lift.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Media.dll ../lib/dotnet/SIL.Media.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Media.dll.config ../lib/dotnet/SIL.Media.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Media.dll.mdb ../lib/dotnet/SIL.Media.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Scripture.dll ../lib/dotnet/SIL.Scripture.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Scripture.dll.mdb ../lib/dotnet/SIL.Scripture.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.TestUtilities.dll ../lib/dotnet/SIL.TestUtilities.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.TestUtilities.dll.mdb ../lib/dotnet/SIL.TestUtilities.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.GeckoBrowserAdapter.dll ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.GeckoBrowserAdapter.dll.mdb ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.dll ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.dll.config ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.dll.mdb ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.Scripture.dll ../lib/dotnet/SIL.Windows.Forms.Scripture.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.Scripture.dll.mdb ../lib/dotnet/SIL.Windows.Forms.Scripture.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.WritingSystems.dll ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.WritingSystems.dll.mdb ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.dll ../lib/dotnet/SIL.Windows.Forms.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.dll.config ../lib/dotnet/SIL.Windows.Forms.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.Windows.Forms.dll.mdb ../lib/dotnet/SIL.Windows.Forms.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.WritingSystems.Tests.dll ../lib/dotnet/SIL.WritingSystems.Tests.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.WritingSystems.Tests.dll.mdb ../lib/dotnet/SIL.WritingSystems.Tests.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.WritingSystems.dll ../lib/dotnet/SIL.WritingSystems.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/SIL.WritingSystems.dll.mdb ../lib/dotnet/SIL.WritingSystems.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/Spart.dll ../lib/dotnet/Spart.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/ibusdotnet.dll ../lib/dotnet/ibusdotnet.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu.net.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu.net.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoPrecise64Bloom37Continuous/latest.lastSuccessful/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
 unzip -uqo ../Downloads/Mercurial-x86_64.zip -d ../Mercurial-x86_64
