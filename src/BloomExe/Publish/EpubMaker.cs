@@ -566,7 +566,11 @@ namespace Bloom.Publish
 		/// </summary>
 		private void EmbedFonts()
 		{
-			var fontsWanted = GetFontsUsed();
+			// The 'false' here says to ignore all but the first font face in CSS's ordered lists of desired font faces.
+			// If someone is publishing an Epub, they should have that font showing. For one thing, this makes it easier
+			// for us to not embed fonts we don't want/ need.For another, it makes it less likely that an epub will look
+			// different or have glyph errors when shown on a machine that does have that primary font.
+			var fontsWanted = GetFontsUsed(Book.FolderPath, false);
 			var fontFileFinder = new FontFileFinder();
 			var filesToEmbed = fontsWanted.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
 			foreach (var file in filesToEmbed)
@@ -604,14 +608,17 @@ namespace Bloom.Publish
 		/// bit of text what actual font and face it is using.
 		/// For now we examine the stylesheets and collect the font families they mention.
 		/// </summary>
+		/// <param name="bookPath"></param>
+		/// <param name="includeFallbackFonts"></param>
 		/// <returns></returns>
-		private IEnumerable<string> GetFontsUsed()
+		private IEnumerable<string> GetFontsUsed(string bookPath, bool includeFallbackFonts)
 		{
 			var result = new HashSet<string>();
-			foreach (var ss in Directory.GetFiles(Book.FolderPath, "*.css"))
+			// Css for styles are contained in the actual html
+			foreach (var ss in Directory.EnumerateFiles(bookPath, "*.*").Where(f => f.EndsWith(".css") || f.EndsWith(".htm") || f.EndsWith(".html")))
 			{
 				var root = RobustFile.ReadAllText(ss, Encoding.UTF8);
-				HtmlDom.FindFontsUsedInCss(root, result);
+				HtmlDom.FindFontsUsedInCss(root, result, includeFallbackFonts);
 			}
 			return result;
 		}
