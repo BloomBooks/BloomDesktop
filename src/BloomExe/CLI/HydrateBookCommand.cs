@@ -45,7 +45,7 @@ namespace Bloom.CLI
 
 			var collectionSettings = new CollectionSettings
 			{
-				XMatterPackName = "Video",
+				XMatterPackName = options.XMatter,
 				Language1Iso639Code = options.VernacularIsoCode,
 				Language2Iso639Code = options.NationalLanguage1IsoCode,
 				Language3Iso639Code = options.NationalLanguage2IsoCode
@@ -59,15 +59,18 @@ namespace Bloom.CLI
 			var book = new Book.Book(bookInfo, new BookStorage(options.Path, locator, new BookRenamedEvent(), collectionSettings),
 				null, collectionSettings, null, null, new BookRefreshEvent());
 
-			if (null == book.OurHtmlDom.SelectSingleNodeHonoringDefaultNS("//script[contains(text(),'bloomPlayer.js')]"))
+			if (collectionSettings.XMatterPackName == "Video")
 			{
-				var element = book.OurHtmlDom.Head.AppendChild(book.OurHtmlDom.RawDom.CreateElement("script")) as XmlElement;
-				element.IsEmpty = false;
-				element.SetAttribute("type", "text/javascript");
-				element.SetAttribute("src", "bloomPlayer.js");
-			}
+				if (null == book.OurHtmlDom.SelectSingleNodeHonoringDefaultNS("//script[contains(text(),'bloomPlayer.js')]"))
+				{
+					var element = book.OurHtmlDom.Head.AppendChild(book.OurHtmlDom.RawDom.CreateElement("script")) as XmlElement;
+					element.IsEmpty = false;
+					element.SetAttribute("type", "text/javascript");
+					element.SetAttribute("src", "bloomPlayer.js");
+				}
 
-			AddRequisiteJsFiles(options.Path);
+				AddRequisiteJsFiles(options.Path);
+			}
 
 			//we might change this later, or make it optional, but for now, this will prevent surprises to processes
 			//running this CLI... the folder name won't change out from under it.
@@ -95,7 +98,15 @@ namespace Bloom.CLI
 [Verb("hydrate", HelpText = "Apply XMatter, Page Size/Orientation, and Languages. Used by automated converters and app makers.")]
 public class HydrateParameters
 {
+	public enum PresetOption
+	{
+		App,
+		Shellbook
+	}
+
+	private PresetOption _preset;
 	private string _sizeAndOrientation;
+	private string _xMatter;
 	private string _nationalLanguage1IsoCode;
 	private string _nationalLanguage2IsoCode;
 
@@ -129,9 +140,28 @@ public class HydrateParameters
 		set { _nationalLanguage2IsoCode = value; }
 	}
 
-	[Option("preset", HelpText = "alternative to specifying layout and xmatter. Currently only supported value is 'app'", Required = true /*will be false when we implement the indivdual options below*/)]
-	public string Preset { get; set; }
-
+	[Option("preset", HelpText = "alternative to specifying layout and xmatter. Supported values are 'app' and 'shellbook'", Required = false)]
+	public string Preset {
+		get { return _preset.ToString().ToLowerInvariant(); }
+		set
+		{
+			switch (value.ToLowerInvariant())
+			{
+				case "app":
+					_preset = PresetOption.App;
+					SizeAndOrientation = "Device16x9Landscape";
+					XMatter = "Video";
+					break;
+				case "shellbook":
+					_preset = PresetOption.Shellbook;
+					SizeAndOrientation = "A5Portrait";
+					XMatter = "Traditional";
+					break;
+				default:
+					throw new ArgumentException("{0} is not a valid preset. Valid values are 'app' and 'shellbook'.", value);
+			}
+		}
+	}
 
 	[Option("sizeandorientation", HelpText = "desired size & orientation", Required = false)]
 	public string SizeAndOrientation
@@ -148,9 +178,20 @@ public class HydrateParameters
 		set { _sizeAndOrientation = value; }
 	}
 
-//
-//	[Option("xmatter", HelpText = "front/back matter pack to apply. E.g. 'Video', 'Factory'", Required = true)]
-//	public string XMatter { get; set; }
+	[Option("xmatter", HelpText = "front/back matter pack to apply. E.g. 'Video', 'Factory'", Required = false)]
+	public string XMatter
+	{
+		get
+		{
+			if (string.IsNullOrEmpty(_xMatter))
+			{
+				return "Video";
+			}
+
+			return _xMatter;
+		}
+		set { _xMatter = value; }
+	}
 
 	/*
 	[Option("multilinguallevel", HelpText = "value of either 1, 2, or 3 (monolingual, bilingual, trilingual)", Required = false)]
