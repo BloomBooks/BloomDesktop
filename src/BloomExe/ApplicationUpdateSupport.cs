@@ -48,9 +48,9 @@ namespace Bloom
 		internal static async void CheckForASquirrelUpdate(BloomUpdateMessageVerbosity verbosity, Action<string> restartBloom, bool autoUpdate)
 		{
 #if !__MonoCS__
-			// Warning: Environment.OSVERsion.Version is potentially flaky. It won't return a higher version than 6.2 (Win8) unless
-			// Bloom's manifest says it knows about that version. Currently that gives good values up to 10.0 for Windows 10 (or above).
-			if (Environment.OSVersion.Version < Version.Parse("6.2"))
+			// Not actually relevant here: "Warning: Environment.OSVERsion.Version is potentially flaky. It won't return a higher version than 6.2 (Win8) unless
+			//                        Bloom's manifest says it knows about that version. Currently that gives good values up to 10.0 for Windows 10 (or above)."
+			if (Environment.OSVersion.Version < Version.Parse("6.1"))
 			{
 				// Running Vista or before. Can't update to 3.8+. This logic is only in the last 3.7, which is the last ever
 				// version for Vista, so we just don't update.
