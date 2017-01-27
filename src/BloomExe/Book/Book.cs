@@ -1781,6 +1781,7 @@ namespace Bloom.Book
 
 				_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
+				// Review GJM 27 Jan 2017: What's to keep the user from editing several new styles? We only copy over the first one?!
 				var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
 				if (userModifiedStyles != null)
 				{
@@ -1821,12 +1822,17 @@ namespace Bloom.Book
 		/// <summary>
 		/// The <style title='userModifiedStyles'/> element is where we keep our user-modifiable style information
 		/// </summary>
-		private XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
+		internal XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
 		{
 			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@title='userModifiedStyles']");
 			if (matches.Count > 0)
 				return (XmlElement) matches[0];
 
+			return CreateEmptyUserModifiedStyleElement();
+		}
+
+		internal XmlElement CreateEmptyUserModifiedStyleElement()
+		{
 			var emptyUserModifiedStylesElement = OurHtmlDom.RawDom.CreateElement("style");
 			emptyUserModifiedStylesElement.SetAttribute("title", "userModifiedStyles");
 			emptyUserModifiedStylesElement.SetAttribute("type", "text/css");

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
+using System.Linq;
+using System.Xml;
 using Bloom.Book;
 
 namespace Bloom
@@ -151,17 +152,30 @@ namespace Bloom
 
 	public class TemplateInsertionCommand
 	{
-		public event EventHandler InsertPage;
+		public event EventHandler<PageInsertEventArgs> InsertPage;
 		public Page MostRecentInsertedTemplatePage;
 
-		public void Insert(Page page)
+		public void Insert(Page page, IEnumerable<XmlNode> userStylesOnPage)
 		{
 			if (InsertPage != null)
 			{
 				MostRecentInsertedTemplatePage = page;
-				InsertPage.Invoke(page, null);
+				InsertPage.Invoke(page, new PageInsertEventArgs(userStylesOnPage));
 			}
 		}
 	}
 
+	public class PageInsertEventArgs : EventArgs
+	{
+		private IEnumerable<XmlNode> _userStyles;
+
+		public PageInsertEventArgs(IEnumerable<XmlNode> userStyles)
+		{
+			_userStyles = userStyles;
+		}
+
+		public bool HasStyles { get { return _userStyles != null && _userStyles.Any(); } }
+
+		public IEnumerable<XmlNode> UserStyles { get { return _userStyles; } }
+	}
 }

@@ -92,10 +92,10 @@ namespace Bloom.Edit
 			_webSocketServer = webSocketServer;
 			_templatePagesDict = null;
 
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
+			bookSelection.SelectionChanged += OnBookSelectionChanged;
+			pageSelection.SelectionChanged += OnPageSelectionChanged;
 			pageSelection.SelectionChanging += OnPageSelectionChanging;
-			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
+			templateInsertionCommand.InsertPage += OnInsertTemplatePage;
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
 			pageRefreshEvent.Subscribe((PageRefreshEvent.SaveBehavior behavior) =>
@@ -284,9 +284,17 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void OnInsertTemplatePage(object sender, EventArgs e)
+		private void OnInsertTemplatePage(object sender, PageInsertEventArgs e)
 		{
 			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
+			if (e.HasStyles)
+			{
+				foreach (var newStyle in e.UserStyles)
+				{
+					CurrentBook.CreateEmptyUserModifiedStyleElement().InnerXml = newStyle.InnerXml;
+				}
+				CurrentBook.Save();
+			}
 			//_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
 			//_pageSelection.SelectPage(newPage);
 			try

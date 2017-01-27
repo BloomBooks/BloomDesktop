@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Web;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -36,10 +38,12 @@ namespace Bloom.web.controllers
 
 		private void HandleAddPage(ApiRequest request)
 		{
-			var page = GetPageTemplate(request);
+			IEnumerable<XmlNode> userStylesOnPage;
+			var page = GetPageTemplateAndUserStyles(request, out userStylesOnPage);
 			if (page != null)
 			{
-				_templateInsertionCommand.Insert(page as Page);
+				_templateInsertionCommand.Insert(page as Page, userStylesOnPage);
+				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
 				request.Succeeded();
 				return;
 			}
@@ -47,12 +51,21 @@ namespace Bloom.web.controllers
 
 		private void HandleChangeLayout(ApiRequest request)
 		{
-			var templatePage = GetPageTemplate(request);
+			IEnumerable<XmlNode> userStylesOnPage;
+			var templatePage = GetPageTemplateAndUserStyles(request, out userStylesOnPage);
 			if (templatePage != null)
 			{
 				var pageToChange = /*PageChangingLayout ??*/ _pageSelection.CurrentSelection;
 				var book = _pageSelection.CurrentSelection.Book;
 				book.UpdatePageToTemplate(book.OurHtmlDom, templatePage.GetDivNodeForThisPage(), pageToChange.Id);
+				if (userStylesOnPage != null && userStylesOnPage.Any())
+				{
+					foreach (var newStyle in userStylesOnPage)
+					{
+						book.CreateEmptyUserModifiedStyleElement().InnerXml = newStyle.InnerXml;
+					}
+					book.Save();
+				}
 				// The Page objects are cached in the page list and may be used if we issue another
 				// change layout command. We must update their lineage so the right "current layout"
 				// will be shown if the user changes the layout of the same page again.
@@ -65,8 +78,9 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private IPage GetPageTemplate(ApiRequest request)
+		private IPage GetPageTemplateAndUserStyles(ApiRequest request, out IEnumerable<XmlNode> userStylesOnPage)
 		{
+			userStylesOnPage = null;
 			var requestData = DynamicJson.Parse(request.RequiredPostJson());
 			//var templateBookUrl = request.RequiredParam("templateBookUrl");
 			var templateBookPath = HttpUtility.HtmlDecode(requestData.templateBookPath);
@@ -79,15 +93,30 @@ namespace Bloom.web.controllers
 
 			var pageDictionary = templateBook.GetTemplatePagesIdDictionary();
 			IPage page = null;
-			if(pageDictionary.TryGetValue(requestData.pageId, out page))
-			{
-				return page;
-			}
-			else
+			if(!pageDictionary.TryGetValue(requestData.pageId, out page))
 			{
 				request.Failed("Could not find the page " + requestData.pageId + " in the template book " + requestData.templateBookUrl);
 				return null;
 			}
+			userStylesOnPage = GetUserModifiableStylesUsedOnPage(templateBook, page);
+			return page;
+		}
+
+		private IEnumerable<XmlNode> GetUserModifiableStylesUsedOnPage(Book.Book templateBook, IPage page)
+		{
+			var pageDom = templateBook.GetEditableHtmlDomForPage(page);
+			var nodeList = pageDom.SafeSelectNodes("//style[@title='userModifiedStyles']");
+			var trimmedList = from XmlNode node in nodeList
+							  where pageDom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '), ' " + GetClassKeyFromStyleNode(node) + " ')]").Count > 0
+							  select node;
+			return trimmedList;
+		}
+
+		private string GetClassKeyFromStyleNode(XmlNode node)
+		{
+			// Takes a string like "\r\n.StyleName-style {css stuff}" and returns "StyleName-style"
+			var afterDot = node.InnerText.Substring(node.InnerText.IndexOf('.') + 1);
+			return afterDot.Remove(afterDot.IndexOf("-style") + 6);
 		}
 	}
 }
