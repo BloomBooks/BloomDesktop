@@ -28,8 +28,8 @@ Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  libfreetype6,
  wmctrl
 Suggests: art-of-reading
-Replaces: bloom-desktop-beta, bloom-desktop-unstable
-Conflicts: bloom-desktop-beta, bloom-desktop-unstable
+Replaces: bloom-desktop-beta, bloom-desktop-alpha
+Conflicts: bloom-desktop-unstable
 Description: Literacy materials development for language communities
  Bloom Desktop is an application that dramatically "lowers the bar" for
  language communities who want books in their own languages. Bloom delivers
