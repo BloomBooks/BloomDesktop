@@ -2,7 +2,9 @@ include ../bloom-foundation-mixins
 
 mixin standardStyles
   style(type="text/css" title="userModifiedStyles")
+    = '\n'
     | .BigWords-style { font-size: 45pt !important; text-align: center !important; }
+    block
 
 mixin imagex
    +image.bloom-leadingElement&attributes(attributes)

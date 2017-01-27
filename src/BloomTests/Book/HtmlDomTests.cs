@@ -511,5 +511,109 @@ namespace BloomTests.Book
 			Assert.AreEqual("1" + NL + "2", HtmlDom.ConvertHtmlBreaksToNewLines("1<br>2"));
 			Assert.AreEqual("1" + NL + "2", HtmlDom.ConvertHtmlBreaksToNewLines("1<br/>2"));
 		}
+
+		[Test]
+		public void MergeUserModifiedStyles_EmptyExisting_Works()
+		{
+			var bookDom = new HtmlDom(
+				@"<html><head></head><body></body></html>");
+			var pageDom = new XmlDocument();
+			pageDom.LoadXml(@"<html><head><style type='text/css' title='userModifiedStyles'>
+.MyTest-style { font-size: ginormous; }</style></head><body></body></html>");
+
+			var pageStyleNode = pageDom.SelectSingleNode("//style");
+			var bookStyleNode = HtmlDom.GetUserModifiableStylesUsedOnPage(bookDom);
+			// SUT
+			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
+
+			var xpath = "//style[@title=\"userModifiedStyles\" and starts-with(text(),'.MyTest-style { font-size: ginormous; }')]";
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+		}
+
+		[Test]
+		public void MergeUserModifiedStyles_EmptyMergingPage_Works()
+		{
+			var bookDom = new HtmlDom(
+				@"<html><head><style type='text/css' title='userModifiedStyles'>
+.MyTest-style { font-size: ginormous; }</style></head><body><div class='bogus MyTest-style'></div></body></html>");
+			var pageDom = new XmlDocument();
+			pageDom.LoadXml(@"<html><head></head><body></body></html>");
+
+			var pageStyleNode = pageDom.SelectSingleNode("//style");
+			var bookStyleNode = HtmlDom.GetUserModifiableStylesUsedOnPage(bookDom);
+			// SUT
+			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
+
+			var xpath = "//style[@title=\"userModifiedStyles\" and starts-with(text(),'.MyTest-style { font-size: ginormous; }')]";
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+		}
+
+		[Test]
+		public void MergeUserModifiedStyles_ExistingStyle_NotOverwritten()
+		{
+			var bookDom = new HtmlDom(
+				@"<html>
+					<head>
+						<style type='text/css' title='userModifiedStyles'>
+							.MyTest-style { font-size: ginormous; }</style>
+					</head>
+					<body>
+						<div class='MyTest-style bogus'></div>
+					</body>
+				</html>");
+			var pageDom = new XmlDocument();
+			pageDom.LoadXml(@"<html>
+				<head>
+					<style type='text/css' title='userModifiedStyles'>
+						.MyTest-style { font-size: smaller; }</style>
+				</head>
+				<body>
+					<div class='MyTest-style bogus'></div>
+				</body>
+			</html>");
+
+			var pageStyleNode = pageDom.SelectSingleNode("//style");
+			var bookStyleNode = HtmlDom.GetUserModifiableStylesUsedOnPage(bookDom);
+			// SUT
+			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
+
+			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: ginormous;')]";
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+		}
+
+		[Test]
+		public void MergeUserModifiedStyles_NewStyleHasLangAttr_BothKept()
+		{
+			var bookDom = new HtmlDom(
+				@"<html>
+					<head>
+						<style type='text/css' title='userModifiedStyles'>
+							.MyTest-style { font-size: ginormous; }</style>
+					</head>
+					<body>
+						<div class='MyTest-style bogus'></div>
+					</body>
+				</html>");
+			var pageDom = new XmlDocument();
+			pageDom.LoadXml(@"<html>
+				<head>
+					<style type='text/css' title='userModifiedStyles'>
+						.MyTest-style[lang='en'] { font-size: smaller; }</style>
+				</head>
+				<body>
+					<div class='MyTest-style bogus'></div>
+				</body>
+			</html>");
+
+			var pageStyleNode = pageDom.SelectSingleNode("//style");
+			var bookStyleNode = HtmlDom.GetUserModifiableStylesUsedOnPage(bookDom);
+			// SUT
+			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
+
+			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: ginormous;')]";
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+			xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),\".MyTest-style[lang='en'] { font-size: smaller;\")]";
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+		}
 	}
 }

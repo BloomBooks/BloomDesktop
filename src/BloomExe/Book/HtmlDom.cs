@@ -698,17 +698,11 @@ namespace Bloom.Book
 					continue; // I don't think there should be more than one -style item, but just in case...
 				// Todo: conditions...
 				var headElt = child.OwnerDocument.DocumentElement.ChildNodes.Cast<XmlNode>().First(x => x.Name == "head");
-				var userStyles =
-					headElt.SafeSelectNodes("./style[@type='text/css' and @title='userModifiedStyles']")
-						.Cast<XmlElement>()
-						.FirstOrDefault();
+				var userStyles = GetUserModifiedStyleElement(headElt);
 				if(userStyles == null)
 				{
-					userStyles = child.OwnerDocument.CreateElement("style");
-					userStyles.SetAttribute("type", "text/css");
-					userStyles.SetAttribute("title", "userModifiedStyles");
+					userStyles = AddEmptyUserModifiedStylesNode(headElt);
 					userStyles.InnerText = defaultDefn;
-					headElt.AppendChild(userStyles);
 					continue;
 				}
 				var content = userStyles.InnerText;
@@ -717,6 +711,127 @@ namespace Bloom.Book
 					continue; // style already defined
 				userStyles.InnerText = content + " " + defaultDefn;
 			}
+		}
+
+		private static XmlElement GetUserModifiedStyleElement(XmlNode headElement)
+		{
+			return headElement.SafeSelectNodes("./style[@type='text/css' and @title='userModifiedStyles']")
+				.Cast<XmlElement>()
+				.FirstOrDefault();
+		}
+
+		internal static XmlElement AddEmptyUserModifiedStylesNode(XmlNode headElement)
+		{
+			var styleNode = headElement.OwnerDocument.CreateElement("style");
+			styleNode.SetAttribute("type", "text/css");
+			styleNode.SetAttribute("title", "userModifiedStyles");
+			headElement.AppendChild(styleNode);
+			return styleNode;
+		}
+
+		internal static XmlNode GetUserModifiableStylesUsedOnPage(HtmlDom pageDom)
+		{
+			// there should only be one userModifiedStyles node, so this will only grab the first one
+			var userStyleElementFromTemplate = GetUserModifiedStyleElement(pageDom.Head);
+			if (userStyleElementFromTemplate == null)
+				return AddEmptyUserModifiedStylesNode(pageDom.Head);
+
+			var keyDict = GetUserStyleKeyDict(userStyleElementFromTemplate, false);
+			var keysUsedOnPage = new Dictionary<string, string>();
+			foreach (var keyPair in keyDict)
+			{
+				// Key.Substring(1) strips off initial period from class name
+				var searchResult = pageDom.SafeSelectNodes(
+					"//div[contains(concat(' ', @class, ' '), ' " + keyPair.Key.Substring(1) + " ')]");
+
+				// At this point we are only worrying about the class name. The style may well specify a lang attribute too,
+				// but we'll deal with that later when we merge the new styles into the previous element, if necessary.
+				if (searchResult.Count > 0)
+					keysUsedOnPage.Add(keyPair.Key, keyPair.Value);
+			}
+			userStyleElementFromTemplate.InnerText =
+				GetCompleteFilteredUserStylesInnerText(keysUsedOnPage);
+			return userStyleElementFromTemplate;
+		}
+
+		/// <summary>
+		/// Merges the user modified styles from an existing book with the ones used on a page inserted from a different template.
+		/// This method will not overwrite a style already defined with the same name in the "receptor" book.
+		/// It might, however, add a style where a pre-existing style differed only in language attribute.
+		/// </summary>
+		/// <param name="existingUserStyleNode">From current book's storage</param>
+		/// <param name="insertedPageUserStyleNode"></param>
+		/// <returns>The InnerXml to which the user modified styles element should be set.</returns>
+		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode, XmlNode insertedPageUserStyleNode)
+		{
+			if (insertedPageUserStyleNode == null)
+				return existingUserStyleNode.InnerText;
+
+			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode, true);
+			var insertedPageStyleKeyDict = GetUserStyleKeyDict(insertedPageUserStyleNode, true); // could be empty
+			foreach (var keyPair in insertedPageStyleKeyDict)
+			{
+				if (existingStyleKeyDict.ContainsKey(keyPair.Key))
+					continue;
+
+				existingStyleKeyDict.Add(keyPair);
+			}
+			return GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict);
+		}
+
+		private static string GetCompleteFilteredUserStylesInnerText(IDictionary<string, string> desiredKeys )
+		{
+			var sb = new StringBuilder();
+			foreach (var keyPair in desiredKeys)
+			{
+				sb.AppendLine(keyPair.Value);
+			}
+			return sb.ToString();
+		}
+
+		private const int minStyleLength = 6; // "-style".Length
+
+		private static IDictionary<string, string> GetUserStyleKeyDict(XmlNode userStyleNode, bool includeLangAttr)
+		{
+			var keyDict = new Dictionary<string, string>();
+			var styleStrings = GetStyles(userStyleNode.InnerText); // skips empty lines
+			foreach (var styleString in styleStrings)
+			{
+				if (styleString.Length < minStyleLength)
+					continue; // not sure how we'd get this... but just in case.
+				keyDict.Add(GetClassKeyFromStyleString(styleString, includeLangAttr), styleString);
+			}
+			return keyDict;
+		}
+
+		// Please tell me we already have something that does this somewhere???!!!
+		private static IEnumerable<string> GetStyles(string innerTextOfStyleElement)
+		{
+			using (var sr = new StringReader(innerTextOfStyleElement))
+			{
+				string line;
+				while ((line = sr.ReadLine()) != null)
+				{
+					if (string.IsNullOrWhiteSpace(line))
+					{
+						continue;
+					}
+					yield return line.Trim(); // e.g. could have leading tabs
+				}
+			}
+		}
+
+		private static string GetClassKeyFromStyleString(string style, bool includeLangAttr)
+		{
+			// Takes strings like ".StyleName-style {css stuff}\r\n" or ".StyleName-style[lang="zzz"] {css stuff}\r\n"
+			// and returns ".StyleName-style" or ".StyleName-style[lang="zzz"]", depending on whether the string includes
+			// a 'lang' attribute and whether the 'includeLangAttr' param is true or not.
+			var endOfLangAttr = style.IndexOf("]");
+			if (!includeLangAttr || endOfLangAttr < 0)
+			{
+				return style.Remove(style.IndexOf("-style") + 6);
+			}
+			return style.Remove(endOfLangAttr + 1);
 		}
 
 		/* The following, to use normal url query parameters to say if we wanted transparency,
