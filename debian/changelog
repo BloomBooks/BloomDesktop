@@ -1,3 +1,11 @@
+bloom-desktop-alpha (3.9.0) stable; urgency=medium
+
+  * Up the version number on the master (unstable/alpha) branch to 3.9.
+  * Rename the package to bloom-desktop-alpha.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Wed, 18 Jan 2017 11:38:31 -0600
+
 bloom-desktop-unstable (3.8.0) stable; urgency=medium
 
   * Up the version number on the master (unstable) branch to 3.8.
