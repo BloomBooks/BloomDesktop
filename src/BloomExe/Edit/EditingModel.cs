@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Dynamic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,7 +17,6 @@ using Bloom.Api;
 using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
-using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -92,10 +89,10 @@ namespace Bloom.Edit
 			_webSocketServer = webSocketServer;
 			_templatePagesDict = null;
 
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
+			bookSelection.SelectionChanged += OnBookSelectionChanged;
+			pageSelection.SelectionChanged += OnPageSelectionChanged;
 			pageSelection.SelectionChanging += OnPageSelectionChanging;
-			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
+			templateInsertionCommand.InsertPage += OnInsertTemplatePage;
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
 			pageRefreshEvent.Subscribe((PageRefreshEvent.SaveBehavior behavior) =>
@@ -284,9 +281,15 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void OnInsertTemplatePage(object sender, EventArgs e)
+		private void OnInsertTemplatePage(object sender, PageInsertEventArgs e)
 		{
 			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
+			if (e.HasStyles)
+			{
+				var existingUserStyles = CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage();
+				var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existingUserStyles, e.InsertedPageUserStylesNode);
+				existingUserStyles.InnerXml = newMergedUserStyleXml;
+			}
 			//_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
 			//_pageSelection.SelectPage(newPage);
 			try
@@ -302,7 +305,6 @@ namespace Bloom.Edit
 			}
 			Logger.WriteEvent("InsertTemplatePage");
 		}
-
 
 		public bool HaveCurrentEditableBook
 		{
