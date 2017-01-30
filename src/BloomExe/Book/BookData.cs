@@ -895,11 +895,6 @@ namespace Bloom.Book
 		private string PossiblyCopyFromAnotherLanguage(XmlElement element, string languageCodeOfTargetField, DataSet data, string key)
 		{
 			string classes = element.GetAttribute("class");
-			if (!string.IsNullOrEmpty(classes))
-			{
-				// if this field is normally read-only, make it readable so they can do any translation that might be needed
-				element.SetAttribute("class", classes.Replace("bloom-readOnlyInTranslationMode", ""));
-			}
 
 			if (!classes.Contains("bloom-copyFromOtherLanguageIfNecessary"))
 			{

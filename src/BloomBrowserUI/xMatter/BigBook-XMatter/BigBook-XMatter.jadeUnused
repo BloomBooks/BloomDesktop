@@ -57,7 +57,7 @@ html
 
 			+field-prototypeDeclaredExplicity
 				label.bubble When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.
-				+editable("N1").bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
+				+editable("N1").bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
 			+field-prototypeDeclaredExplicity
 				label.bubble When you make a book from a shell, use this box to tell who did the translation.
 				+editable("N1").versionAcknowledgments.bloom-readOnlyInEditMode(data-book="versionAcknowledgments")
