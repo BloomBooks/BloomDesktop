@@ -1273,6 +1273,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; npm install &amp;&amp; ./fixNodejsForLinux.sh &amp;&amp; npm run build" />
     <!-- copy the appropriate Geckofx45 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
+    <Exec Command="rm -rf $(OutDir)Firefox" />
     <Exec Command="if [ &quot;`arch`&quot; = &quot;x86_64&quot; ]; then find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.23.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.64.Linux.45.0.23.0 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; else find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.23.0 -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find $(SolutionDir)packages/Geckofx45.32.Linux.45.0.23.0 -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';'; fi" />
   </Target>
   <ItemGroup>
