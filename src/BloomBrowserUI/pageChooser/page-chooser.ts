@@ -177,7 +177,12 @@ class PageChooser {
         } else {
             axios.post("/bloom/api/addPage", { templateBookPath: templateBookPath, pageId: id })
         }
-        fireCSharpEvent("setModalStateEvent", "false");
+        // document at this point is the dialog's HTML (page-chooser-main.html).  It has no connection
+        // to the C# code, so there is no way to fire an event that will be picked up by C#.  The state
+        // change will have to be handled in C# code in response to the API calls above.  (For the other
+        // places in this file which fire events, document is the edited page html in the geckofx hosted
+        // browser, so the events do get fired properly.)
+        // fireCSharpEvent("setModalStateEvent", "false");  - doesn't work (BL-4071)
     }
 
     continueCheckBoxChanged(): void {

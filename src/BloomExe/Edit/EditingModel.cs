@@ -108,6 +108,17 @@ namespace Bloom.Edit
 
 					case PageRefreshEvent.SaveBehavior.JustRedisplay:
 						RefreshDisplayOfCurrentPage();
+						// A call to SetModalState("false") from the addPageClickHandler() function in page-chooser.ts will never get
+						// through to C# code because that javascript code is executed in the context of the document being the dialog
+						// (page-chooser-main.html).  This document has no connection to the C# code since it is created by javascript.
+						// The "Modal State" is left stuck on true after executing the "Choose Different Layout" context menu command.
+						// See http://issues.bloomlibrary.org/youtrack/issue/BL-4071 for details.
+						// The calls to SetModalState elsewhere in page-chooser.ts are working properly, getting through to the C# code
+						// since the document at those points is the current page being edited.
+						// This bug is not a problem for "Add Page" because the implementation of that function (RethinkPageAndReloadIt)
+						// first disables then enables the page chooser browser pane (by setting and clearing the _view.ChangingPages
+						// property), which is the only effect of _view.SetModalState.
+						_view.SetModalState("false");
 						break;
 				}
 			});
