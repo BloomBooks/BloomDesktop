@@ -452,13 +452,13 @@ function initializeAddPageDialog(templatesJSON) {
  * Fires an event for C# to handle
  * @param {String} eventName
  * @param {String} eventData
- * @param {boolean} window if not null, use this window's document
+ * @param {boolean} dispatchWindow if not null, use this window's document to dispatch the event
  */
 // Enhance: JT notes that this method pops up from time to time; can we consolidate?
-function fireCSharpEvent(eventName, eventData, window?: Window) {
+function fireCSharpEvent(eventName, eventData, dispatchWindow?: Window) {
     var event = new MessageEvent(eventName, {/*'view' : window,*/ 'bubbles': true, 'cancelable': true, 'data': eventData });
-    if (window) {
-      window.document.dispatchEvent(event);
+    if (dispatchWindow) {
+      dispatchWindow.document.dispatchEvent(event);
     } else {
       document.dispatchEvent(event);
     }
