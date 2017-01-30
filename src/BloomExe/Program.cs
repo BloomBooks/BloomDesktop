@@ -218,6 +218,9 @@ namespace Bloom
 									return 1;
 							}
 						}
+						// Continue with normal startup now we unpacked the bloompack.
+						// Various other things will misinterpret the .bloompack argument if we leave it in args.
+						args = new string[] {};
 					}
 					if (IsBloomBookOrder(args))
 					{
