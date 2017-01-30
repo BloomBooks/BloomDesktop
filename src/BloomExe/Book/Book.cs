@@ -603,6 +603,9 @@ namespace Bloom.Book
 				{
 					if (templateKey.ToLowerInvariant() == "basicbook")//catch this pre-beta spelling with no space
 						templateKey = "Basic Book";
+					// Template was renamed for 3.8 (and needs to end in Template, see PageTemplatesApi.GetBookTemplatePaths)
+					if (templateKey.ToLowerInvariant() == "arithmetic")
+						templateKey = "Arithmetic Template";
 					// We can assume that a book's "TemplateBook" does not change over time.  To be even safer,
 					// we'll add a check for the same "TemplateKey" to allow reusing a cached "TemplateBook".
 					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
