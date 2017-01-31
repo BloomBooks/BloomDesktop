@@ -1136,6 +1136,13 @@
         <seg>Converting to this layout will cause some content to be lost.</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.AddPageDialog.NoTemplate">
+      <note>Seen when the book's main template page file is missing.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>(no template file found)</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.AddPageDialog.Title">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">

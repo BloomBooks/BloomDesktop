@@ -593,40 +593,34 @@ namespace Bloom.Book
 
 		public Book FindTemplateBook()
 		{
-				Guard.AgainstNull(_templateFinder, "_templateFinder");
-				if(Type!=BookType.Publication)
-					return null;
-				string templateKey = OurHtmlDom.GetMetaValue("pageTemplateSource", "");
+			Guard.AgainstNull(_templateFinder, "_templateFinder");
+			if(Type!=BookType.Publication)
+				return null;
+			string templateKey = GetTemplateBookKey();
 
-				Book book=null;
-				if (!String.IsNullOrEmpty(templateKey))
-				{
-					if (templateKey.ToLowerInvariant() == "basicbook")//catch this pre-beta spelling with no space
-						templateKey = "Basic Book";
-					// Template was renamed for 3.8 (and needs to end in Template, see PageTemplatesApi.GetBookTemplatePaths)
-					if (templateKey.ToLowerInvariant() == "arithmetic")
-						templateKey = "Arithmetic Template";
-					// We can assume that a book's "TemplateBook" does not change over time.  To be even safer,
-					// we'll add a check for the same "TemplateKey" to allow reusing a cached "TemplateBook".
-					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
-					if (templateKey == _cachedTemplateKey && _cachedTemplateBook != null)
-						return _cachedTemplateBook;
-					book = _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
-					_cachedTemplateBook = book;
-					_cachedTemplateKey = templateKey;
-					if(book==null)
-					{
-						ErrorReport.NotifyUserOfProblem("Bloom could not find the source of template pages named {0} (as in {0}.htm).\r\nThis comes from the <meta name='pageTemplateSource' content='{0}'/>.\r\nCheck that name matches the html exactly.",templateKey);
-					}
-				}
-				if(book==null)
-				{
-					//re-use the pages in the document itself. This is useful when building
-					//a new, complicated shell, which often have repeating pages but
-					//don't make sense as a new kind of template.
-					return this;
-				}
-				return book;
+			Book book=null;
+			if (!String.IsNullOrEmpty(templateKey))
+			{
+				if (templateKey.ToLowerInvariant() == "basicbook") //catch this pre-beta spelling with no space
+					templateKey = "Basic Book";
+				// Template was renamed for 3.8 (and needs to end in Template, see PageTemplatesApi.GetBookTemplatePaths)
+				if (templateKey.ToLowerInvariant() == "arithmetic")
+					templateKey = "Arithmetic Template";
+				// We can assume that a book's "TemplateBook" does not change over time.  To be even safer,
+				// we'll add a check for the same "TemplateKey" to allow reusing a cached "TemplateBook".
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
+				if (templateKey == _cachedTemplateKey && _cachedTemplateBook != null)
+					return _cachedTemplateBook;
+				book = _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
+				_cachedTemplateBook = book;
+				_cachedTemplateKey = templateKey;
+			}
+			return book;
+		}
+
+		public string GetTemplateBookKey()
+		{
+			return OurHtmlDom.GetMetaValue("pageTemplateSource", "");
 		}
 
 		public BookType TypeOverrideForUnitTests;

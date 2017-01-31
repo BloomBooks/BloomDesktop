@@ -205,7 +205,21 @@ namespace Bloom.web.controllers
 		private string GetPathToCurrentTemplateHtml()
 		{
 			var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
-			return templateBook == null ? null : templateBook.GetPathHtmlFile();
+			if (templateBook != null)
+				return templateBook.GetPathHtmlFile();
+			// Returning null here won't work. For one thing, we're going to pass this path through
+			// various filters that will fail with nulls. For another, we want to be able to
+			// eventually extract a folder name from the path to report the missing template
+			// from within the dialog.
+			// So, manufacture a 'path' something like where we might find the missing template.
+			var templateKey = _bookSelection.CurrentSelection.GetTemplateBookKey();
+			if (string.IsNullOrEmpty(templateKey))
+			{
+				templateKey = "MissingTemplate";  // avoid crashing
+			}
+			// Don't get smart and change these to Path.Combine() etc. Page-chooser.ts really wants
+			// the separators to be slashes, and we aren't going to find this file anyway, on either OS.
+			return "missingPageTemplate/" + templateKey + "/" +templateKey + ".html";
 		}
 
 		private static string MassageUrlForJavascript(string url)
