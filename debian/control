@@ -25,7 +25,7 @@ Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  chmsee, libtidy5,
  fonts-sil-andika-new-basic | fonts-sil-andikanewbasic,
  optipng, libsndfile1,
- wmctrl
+ wmctrl, lame
 Suggests: art-of-reading
 Replaces: bloom-desktop, bloom-desktop-beta
 Conflicts: bloom-desktop-unstable
