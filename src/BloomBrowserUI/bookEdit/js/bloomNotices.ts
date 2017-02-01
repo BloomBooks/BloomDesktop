@@ -17,10 +17,12 @@ export default class BloomNotices {
                 content: "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>" + experimental + "<div/>"
                 , show: { ready: true }
                 , hide: false
-                , position: { at: 'right top',
+                , position: {
+                    at: 'right top',
                     my: 'left top'
                 },
-                style: { classes: 'ui-tooltip-red',
+                style: {
+                    classes: 'ui-tooltip-red',
                     tip: { corner: false }
                 }
             });
@@ -43,7 +45,8 @@ export default class BloomNotices {
 
                 whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSay, $(this)) + " <br/>" + whyDisabled;
                 var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
-                var pos = { at: 'right center',
+                var pos = {
+                    at: 'right center',
                     my: 'left center'
                 };
                 $(this).qtip({

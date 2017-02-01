@@ -2,7 +2,7 @@
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
 import BloomField from './BloomField';
 
-function WireUp()  {
+function WireUp() {
     $(".bloom-editable").each(function () {
         BloomField.ManageField(this);
     });

@@ -1,9 +1,9 @@
-import {getTheOneReaderToolsModel} from "./readerToolsModel";
-import {theOneLanguageDataInstance,   ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
+import { getTheOneReaderToolsModel } from "./readerToolsModel";
+import { theOneLanguageDataInstance, ResetLanguageDataInstance } from './libSynphony/synphony_lib';
 import * as _ from 'underscore'
 import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
 
-describe("readerTools-libSynphony tests", function() {
+describe("readerTools-libSynphony tests", function () {
 
         function generateTestData() {
 
@@ -18,9 +18,9 @@ describe("readerTools-libSynphony tests", function() {
                 settings.moreWords = 'one two three';
                 settings.stages = [];
 
-                settings.stages.push({"letters":"a c m r t","sightWords":"canine feline"});
-                settings.stages.push({"letters":"d g o e s","sightWords":"carnivore omnivore"});
-                settings.stages.push({"letters":"i l n th","sightWords":"rodent"});
+                settings.stages.push({ "letters": "a c m r t", "sightWords": "canine feline" });
+                settings.stages.push({ "letters": "d g o e s", "sightWords": "carnivore omnivore" });
+                settings.stages.push({ "letters": "i l n th", "sightWords": "rodent" });
 
                 var sampleFileContents = 'The cat sat on the mat. The rat sat on the cat.';
 
@@ -35,8 +35,8 @@ describe("readerTools-libSynphony tests", function() {
 
         function generateSightWordsOnlyTestData() {
 
-             //reviewslog this wasn't allowed  theOneLanguageDataInstance = null;
-             ResetLanguageDataInstance();
+                //reviewslog this wasn't allowed  theOneLanguageDataInstance = null;
+                ResetLanguageDataInstance();
 
                 //so we need another way to clear out this global, for testing purposes
                 getTheOneReaderToolsModel().clearForTest();
@@ -44,9 +44,9 @@ describe("readerTools-libSynphony tests", function() {
                 var settings: any = {};
                 settings.stages = [];
 
-                settings.stages.push({"letters":"","sightWords":"canine feline"});
-                settings.stages.push({"letters":"","sightWords":"carnivore omnivore"});
-                settings.stages.push({"letters":"","sightWords":"rodent"});
+                settings.stages.push({ "letters": "", "sightWords": "canine feline" });
+                settings.stages.push({ "letters": "", "sightWords": "carnivore omnivore" });
+                settings.stages.push({ "letters": "", "sightWords": "rodent" });
 
                 var synphony = new ReadersSynphonyWrapper();
                 getTheOneReaderToolsModel().synphony = synphony;
@@ -67,25 +67,25 @@ describe("readerTools-libSynphony tests", function() {
         var divTextEntry2;
         var divTextEntry3;
 
-        beforeEach(function() {
+        beforeEach(function () {
                 divTextEntry1 = addDiv('text_entry1');
                 divTextEntry2 = addDiv('text_entry2');
                 divTextEntry3 = addDiv('text_entry3');
         });
 
-        afterEach(function() {
+        afterEach(function () {
                 document.body.removeChild(divTextEntry1);
                 document.body.removeChild(divTextEntry2);
                 document.body.removeChild(divTextEntry3);
         });
 
-        it("addWordsFromFile", function() {
+        it("addWordsFromFile", function () {
 
                 getTheOneReaderToolsModel().clearForTest();
                 var fileContents = 'The cat sat on the mat. The rat sat on the cat.';
 
                 getTheOneReaderToolsModel().addWordsFromFile(fileContents);
-                expect(getTheOneReaderToolsModel().allWords).toEqual({the: 4, cat: 2, sat: 2, on: 2, mat: 1, rat: 1});
+                expect(getTheOneReaderToolsModel().allWords).toEqual({ the: 4, cat: 2, sat: 2, on: 2, mat: 1, rat: 1 });
         });
 
         it("addWordsFromFile properly handles paragraphs", function () {
@@ -120,30 +120,30 @@ describe("readerTools-libSynphony tests", function() {
         /**
          * Test for BL-223, div displaying markup if there is no text
          */
-        it("markupEndsWithBreakTag", function() {
+        it("markupEndsWithBreakTag", function () {
 
                 generateTestData();
 
-                var knownGraphemes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+                var knownGraphemes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
                 var text1 = $('#text_entry1');
 
                 // test empty div (just a <br>)
-                text1.html('<br>').checkDecodableReader({knownGraphemes: knownGraphemes});
+                text1.html('<br>').checkDecodableReader({ knownGraphemes: knownGraphemes });
                 expect(text1.html()).toEqual('<br>');
 
                 // test end of text followed by <br>
-                text1.html('Cat dog.<br>').checkDecodableReader({knownGraphemes: knownGraphemes});
+                text1.html('Cat dog.<br>').checkDecodableReader({ knownGraphemes: knownGraphemes });
                 expect(text1.html()).toEqual('<span class="possible-word" data-segment="word">Cat</span> <span class="possible-word" data-segment="word">dog</span>.<br>');
 
                 // test <br> in middle of text
-                text1.html('Cat.<br>Dog.').checkDecodableReader({knownGraphemes: knownGraphemes});
+                text1.html('Cat.<br>Dog.').checkDecodableReader({ knownGraphemes: knownGraphemes });
                 expect(text1.html()).toEqual('<span class="possible-word" data-segment="word">Cat</span>.<br><span class="possible-word" data-segment="word">Dog</span>.');
 
-                text1.html('Cat<br>Dog.').checkDecodableReader({knownGraphemes: knownGraphemes});
+                text1.html('Cat<br>Dog.').checkDecodableReader({ knownGraphemes: knownGraphemes });
                 expect(text1.html()).toEqual('<span class="possible-word" data-segment="word">Cat</span><br><span class="possible-word" data-segment="word">Dog</span>.');
         });
 
-        it("sightWordOnlyStages", function() {
+        it("sightWordOnlyStages", function () {
 
                 generateSightWordsOnlyTestData();
 
@@ -151,18 +151,18 @@ describe("readerTools-libSynphony tests", function() {
                 var text1 = $('#text_entry1');
 
                 // test empty div (just a <br>)
-                text1.html('<br>').checkDecodableReader({sightWords:["canine", "feline"]});
+                text1.html('<br>').checkDecodableReader({ sightWords: ["canine", "feline"] });
                 expect(text1.html()).toEqual('<br>');
 
                 // no sight words
-                text1.html('Cat dog.').checkDecodableReader({sightWords:["canine", "feline"]});
+                text1.html('Cat dog.').checkDecodableReader({ sightWords: ["canine", "feline"] });
                 expect(text1.html()).toEqual('<span class="word-not-found" data-segment="word">Cat</span> <span class="word-not-found" data-segment="word">dog</span>.');
 
                 // test one sight word
-                text1.html('Canine Dog.').checkDecodableReader({sightWords:["canine", "feline"]});
+                text1.html('Canine Dog.').checkDecodableReader({ sightWords: ["canine", "feline"] });
                 expect(text1.html()).toEqual('<span class="sight-word" data-segment="word">Canine</span> <span class="word-not-found" data-segment="word">Dog</span>.');
 
-                text1.html('Canine feline').checkDecodableReader({sightWords:["canine", "feline"]});
+                text1.html('Canine feline').checkDecodableReader({ sightWords: ["canine", "feline"] });
                 expect(text1.html()).toEqual('<span class="sight-word" data-segment="word">Canine</span> <span class="sight-word" data-segment="word">feline</span>');
         });
 });

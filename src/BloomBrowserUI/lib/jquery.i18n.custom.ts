@@ -4,8 +4,8 @@ import * as jQuery from 'jquery';
 import theOneLocalizationManager from './localizationManager/localizationManager';
 
 
- interface JQuery {
-        localize(callbackDone?: Function): void;
+interface JQuery {
+    localize(callbackDone?: Function): void;
 }
 /**
  * jquery.i18n.custom.js
@@ -18,17 +18,17 @@ import theOneLocalizationManager from './localizationManager/localizationManager
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $
  */
-(function($) {
+(function ($) {
 
     /**
      *
      * @param [callbackDone] Optional function to call when done.
      */
-    $.fn.localize = function(callbackDone?: any) {
+    $.fn.localize = function (callbackDone?: any) {
 
         // get all the localization keys not already in the dictionary
         var d = {};
-        this.each(function() {
+        this.each(function () {
             var key = this.dataset['i18n'];
             if (!theOneLocalizationManager.dictionary[key])
                 d[key] = $(this).text();
@@ -40,7 +40,7 @@ import theOneLocalizationManager from './localizationManager/localizationManager
         }
         else {
             // just localize
-            this.each(function() {
+            this.each(function () {
                 theOneLocalizationManager.setElementText(this);
             });
 

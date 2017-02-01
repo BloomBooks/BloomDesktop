@@ -1,23 +1,23 @@
 /// <reference path="bloomSynphonyExtensions.d.ts" />
-import {TextFragment} from './bloomSynphonyExtensions';
+import { TextFragment } from './bloomSynphonyExtensions';
 
 export class LanguageData {
 
-        LangName: string;
-        LangID: string;
-        LanguageSortOrder: string[];
-        ProductivityGPCSequence: string[];
-        Numbers: number[];
-        GPCS: any[];
-        VocabularyGroupsDescriptions: any[];
-        VocabularyGroups: number;
-        group1: any[];
-        UseFullGPCNotation: boolean;
+    LangName: string;
+    LangID: string;
+    LanguageSortOrder: string[];
+    ProductivityGPCSequence: string[];
+    Numbers: number[];
+    GPCS: any[];
+    VocabularyGroupsDescriptions: any[];
+    VocabularyGroups: number;
+    group1: any[];
+    UseFullGPCNotation: boolean;
 
-        addGrapheme(grapheme: string): void;
-        addGrapheme(grapheme: string[]): void;
-        addWord(word: string, freq?: number): void;
-        addWord(word: string[], freq?: number): void;
+    addGrapheme(grapheme: string): void;
+    addGrapheme(grapheme: string[]): void;
+    addWord(word: string, freq?: number): void;
+    addWord(word: string[], freq?: number): void;
 }
 
 export class LibSynphony {
@@ -31,15 +31,15 @@ export class LibSynphony {
     chooseVocabGroups(aSelectedGroups: string[]): any;
 
     selectGPCWordNamesWithArrayCompare(aDesiredGPCs: string[], aKnownGPCs: string[], restrictToKnownGPCs: boolean,
-                                                                         allowUpperCase: boolean, aSyllableLengths: number[], aSelectedGroups: string[],
-                                                                         aPartsOfSpeech: string[]): string[];
+        allowUpperCase: boolean, aSyllableLengths: number[], aSelectedGroups: string[],
+        aPartsOfSpeech: string[]): string[];
 
     selectGPCWordsFromCache(aDesiredGPCs: string[], aKnownGPCs: string[], restrictToKnownGPCs: boolean,
-                                                    allowUpperCase: boolean, aSyllableLengths: number[], aSelectedGroups: string[],
-                                                    aPartsOfSpeech: string[]): string[];
+        allowUpperCase: boolean, aSyllableLengths: number[], aSelectedGroups: string[],
+        aPartsOfSpeech: string[]): string[];
 
-    wrap_words_extra(storyHTML:string, aWords:any, cssClass:string, extra:string);
-    checkStory(aFocusWordList:any, aWordCumulativeList:any, aGPCsKnown:any, storyHTML:any, sightWords:any);
+    wrap_words_extra(storyHTML: string, aWords: any, cssClass: string, extra: string);
+    checkStory(aFocusWordList: any, aWordCumulativeList: any, aGPCsKnown: any, storyHTML: any, sightWords: any);
 }
 
 export var theOneLanguageDataInstance: LanguageData;

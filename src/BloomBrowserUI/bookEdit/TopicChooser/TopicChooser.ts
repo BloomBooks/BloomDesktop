@@ -16,7 +16,7 @@ export default class TopicChooser {
         var currentTopicKey = $("div[data-book='topic']").parent().find("[lang='en']").text();
 
         TopicChooser.createTopicDialogDiv(currentTopicKey);
-        var dlg = <any> $("#topicChooser").dialog({
+        var dlg = <any>$("#topicChooser").dialog({
             autoOpen: true,
             modal: true,
             position: {

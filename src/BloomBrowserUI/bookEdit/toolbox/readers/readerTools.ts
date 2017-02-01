@@ -2,14 +2,14 @@
 /// <reference path="directoryWatcher.ts" />
 /// <reference path="../../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
-import {DirectoryWatcher} from "./directoryWatcher";
-import {getTheOneReaderToolsModel} from "./readerToolsModel";
+import { DirectoryWatcher } from "./directoryWatcher";
+import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
-import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
+import { theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLanguageDataInstance } from './libSynphony/synphony_lib';
 import './libSynphony/synphony_lib.js';
 import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
-import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
-import {DataWord, clearWordCache} from './libSynphony/bloomSynphonyExtensions';
+import { ReaderStage, ReaderLevel, ReaderSettings } from './ReaderSettings';
+import { DataWord, clearWordCache } from './libSynphony/bloomSynphonyExtensions';
 import "../../../lib/jquery.onSafe";
 import axios = require('axios');
 import * as _ from 'underscore';
@@ -38,7 +38,7 @@ function processDLRMessage(event: MessageEvent): void {
 
     var params = event.data.split("\n");
 
-    switch(params[0]) {
+    switch (params[0]) {
         case 'Texts': // request from setup dialog for the list of sample texts
             if (getTheOneReaderToolsModel().texts)
                 getSetupDialogWindow().postMessage('Files\n' + getTheOneReaderToolsModel().texts.join("\r"), '*');
@@ -82,100 +82,100 @@ function markDecodableStatus(): void {
     var sightWord = theOneLocalizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord', 'Sight Word');
     var notDecodable = theOneLocalizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
     var editableElements = $(".bloom-content1");
-    editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function() {
+    editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function () {
         this.qtip({ content: sightWord });
     });
 
-    editableElements.find('span.' + (<textMarkup>$).cssWordNotFound()).each(function() {
+    editableElements.find('span.' + (<textMarkup>$).cssWordNotFound()).each(function () {
         this.qtip({ content: notDecodable });
     });
 
-// we're considering dropping this entirely
-// We are disabling the "Possible Word" feature at this time.
-//editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-//    $(this.qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
-//});
+    // we're considering dropping this entirely
+    // We are disabling the "Possible Word" feature at this time.
+    //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
+    //    $(this.qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
+    //});
 }
 
 function markLeveledStatus(): void {
     // q-tips; mark sentences that are too long
     var tooLong = theOneLocalizationManager.getText('EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong',
-            'This sentence is too long for this level.');
+        'This sentence is too long for this level.');
     var editableElements = $(".bloom-content1");
-    editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
+    editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function () {
         $(this).qtip({ content: tooLong });
     });
 }
 
 export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
-        // load synphony settings and then finish init
-        return beginLoadSynphonySettings().then(() => {
+    // load synphony settings and then finish init
+    return beginLoadSynphonySettings().then(() => {
 
-    // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
-    $('#incStage').onSafe('click.readerTools', function() {
-        getTheOneReaderToolsModel().incrementStage();
-    });
-
-    $('#decStage').onSafe('click.readerTools', function() {
-        getTheOneReaderToolsModel().decrementStage();
-    });
-
-    $('#sortAlphabetic').onSafe('click.readerTools', function() {
-        getTheOneReaderToolsModel().sortAlphabetically();
-    });
-
-    $('#sortLength').onSafe('click.readerTools', function() {
-        getTheOneReaderToolsModel().sortByLength();
-    });
-
-    $('#sortFrequency').onSafe('click.readerTools', function() {
-        getTheOneReaderToolsModel().sortByFrequency();
-    });
-
-    getTheOneReaderToolsModel().updateControlContents();
-    $("#toolbox").accordion("refresh");
-
-    $(window).resize(function() {
-        resizeWordList(false);
-    });
-
-    setTimeout(function() { resizeWordList(); }, 200);
-                setTimeout(function () { $.divsToColumns('letter'); }, 100);
+        // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
+        $('#incStage').onSafe('click.readerTools', function () {
+            getTheOneReaderToolsModel().incrementStage();
         });
+
+        $('#decStage').onSafe('click.readerTools', function () {
+            getTheOneReaderToolsModel().decrementStage();
+        });
+
+        $('#sortAlphabetic').onSafe('click.readerTools', function () {
+            getTheOneReaderToolsModel().sortAlphabetically();
+        });
+
+        $('#sortLength').onSafe('click.readerTools', function () {
+            getTheOneReaderToolsModel().sortByLength();
+        });
+
+        $('#sortFrequency').onSafe('click.readerTools', function () {
+            getTheOneReaderToolsModel().sortByFrequency();
+        });
+
+        getTheOneReaderToolsModel().updateControlContents();
+        $("#toolbox").accordion("refresh");
+
+        $(window).resize(function () {
+            resizeWordList(false);
+        });
+
+        setTimeout(function () { resizeWordList(); }, 200);
+        setTimeout(function () { $.divsToColumns('letter'); }, 100);
+    });
 }
 
-export function beginInitializeLeveledReaderTool(): JQueryPromise <void> {
+export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     // load synphony settings
-        return beginLoadSynphonySettings().then(() => {
+    return beginLoadSynphonySettings().then(() => {
 
-    $('#incLevel').onSafe('click.readerTools', function() {
-        getTheOneReaderToolsModel().incrementLevel();
-    });
-
-    $('#decLevel').onSafe('click.readerTools', function() {
-        getTheOneReaderToolsModel().decrementLevel();
-    });
-
-    getTheOneReaderToolsModel().updateControlContents();
-    $("#toolbox").accordion("refresh");
+        $('#incLevel').onSafe('click.readerTools', function () {
+            getTheOneReaderToolsModel().incrementLevel();
         });
+
+        $('#decLevel').onSafe('click.readerTools', function () {
+            getTheOneReaderToolsModel().decrementLevel();
+        });
+
+        getTheOneReaderToolsModel().updateControlContents();
+        $("#toolbox").accordion("refresh");
+    });
 }
 
 function beginLoadSynphonySettings(): JQueryPromise<void> {
     // make sure synphony is initialized
-        var result = $.Deferred<void>();
-        if (readerToolsInitialized) {
-                result.resolve();
-                return result;
-        }
-        readerToolsInitialized = true;
-
-        axios.get<string>('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data));
-        axios.get<string>('/bloom/api/readers/io/readerToolSettings').then(settingsFileContent => {
-                initializeSynphony(settingsFileContent.data);
-                result.resolve();
-        });
+    var result = $.Deferred<void>();
+    if (readerToolsInitialized) {
+        result.resolve();
         return result;
+    }
+    readerToolsInitialized = true;
+
+    axios.get<string>('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data));
+    axios.get<string>('/bloom/api/readers/io/readerToolSettings').then(settingsFileContent => {
+        initializeSynphony(settingsFileContent.data);
+        result.resolve();
+    });
+    return result;
 }
 
 /**
@@ -204,7 +204,7 @@ function initializeSynphony(settingsFileContent: string): void {
     }
     else {
         // get the list of sample texts
-        axios.get<string>('/bloom/api/readers/ui/sampleTextsList').then(result =>beginSetTextsList(result.data));
+        axios.get<string>('/bloom/api/readers/ui/sampleTextsList').then(result => beginSetTextsList(result.data));
     }
 }
 
@@ -213,7 +213,7 @@ function initializeSynphony(settingsFileContent: string): void {
  * @param textsList List of file names delimited by \r
  */
 function beginSetTextsList(textsList: string): Promise<void> {
-    return getTheOneReaderToolsModel().beginSetTextsList(textsList.split(/\r/).filter(function(e){return e ? true : false;}));
+    return getTheOneReaderToolsModel().beginSetTextsList(textsList.split(/\r/).filter(function (e) { return e ? true : false; }));
 }
 
 function setDefaultFont(fontName: string): void {
@@ -224,21 +224,21 @@ function setDefaultFont(fontName: string): void {
  * This method is called whenever a change is detected in the Sample Files directory
  */
 export function readerSampleFilesChanged(): void {
-        // We have to basically start over; no other way to get things in a consistent state
-        // between the changed sample files and the sample words in the dialog itself.
-        // We can however keep the current version of the settings saved in the model.
+    // We have to basically start over; no other way to get things in a consistent state
+    // between the changed sample files and the sample words in the dialog itself.
+    // We can however keep the current version of the settings saved in the model.
     beginRefreshEverything(getTheOneReaderToolsModel().synphony.source);
 }
 
 function refreshSettingsExceptSampleWords(newSettings) {
-        var synphony = getTheOneReaderToolsModel().synphony;
-        synphony.loadSettings(newSettings);
-        if (synphony.source.useAllowedWords) {
-                getTheOneReaderToolsModel().getAllowedWordsLists();
-        } else {
-                getTheOneReaderToolsModel().updateControlContents();
-                getTheOneReaderToolsModel().doMarkup();
-        }
+    var synphony = getTheOneReaderToolsModel().synphony;
+    synphony.loadSettings(newSettings);
+    if (synphony.source.useAllowedWords) {
+        getTheOneReaderToolsModel().getAllowedWordsLists();
+    } else {
+        getTheOneReaderToolsModel().updateControlContents();
+        getTheOneReaderToolsModel().doMarkup();
+    }
 }
 
 /**
@@ -248,7 +248,7 @@ function refreshSettingsExceptSampleWords(newSettings) {
  * a consistent state after changes to the sample words files or the panel in the settings dialog.
  * Returns a promise which is resolved when all the sample words files are loaded and the model is ready to use.
  */
-function beginRefreshEverything(settings: ReaderSettings) : Promise<void> {
+function beginRefreshEverything(settings: ReaderSettings): Promise<void> {
     // reset the file and word list
     ResetLanguageDataInstance();
     getTheOneReaderToolsModel().allWords = {};
@@ -328,7 +328,7 @@ export function makeLetterWordList(): void {
     allWords = _.compact(_.pluck(allWords, 'Name'));
 
     // export the word list
-    var ajaxSettings = {type: 'POST', url: '/bloom/api/readers/ui/makeLetterAndWordList'};
+    var ajaxSettings = { type: 'POST', url: '/bloom/api/readers/ui/makeLetterAndWordList' };
     ajaxSettings['data'] = {
         settings: JSON.stringify(settings),
         allWords: allWords.join('\t')
@@ -378,5 +378,5 @@ export function resizeWordList(startTimeout: boolean = true): void {
         }
     }
 
-    if (startTimeout) setTimeout(function() { resizeWordList(); }, 500);
+    if (startTimeout) setTimeout(function () { resizeWordList(); }, 500);
 }

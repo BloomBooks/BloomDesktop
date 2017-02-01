@@ -8,11 +8,11 @@ import theOneLocalizationManager from '../../lib/localizationManager/localizatio
 import * as toastr from 'toastr';
 import * as $ from 'jquery';
 import '../../modified_libraries/gridly/jquery.gridly.js';
-import {SetImageElementUrl} from '../js/bloomImages';
+import { SetImageElementUrl } from '../js/bloomImages';
 
 var thumbnailTimerInterval = 200;
 
-$(window).ready(function(){
+$(window).ready(function () {
     $('.gridly').gridly({
         base: 35, // px
         gutter: 10, // px
@@ -21,7 +21,7 @@ $(window).ready(function(){
             reordered: reorder
         }
     });
-    jQuery('.gridItem').click(function() {
+    jQuery('.gridItem').click(function () {
         fireCSharpEvent("gridClick", $(this).attr('id'));
     });
 
@@ -34,7 +34,7 @@ $(window).ready(function(){
     // thumbnailTimerInterval * 2 for the first interval to give the UI more time to catch up.
     setTimeout(loadNextThumbnail, thumbnailTimerInterval * 2);
 
-    jQuery('#menu').click(function(event) {
+    jQuery('#menu').click(function (event) {
         event.stopPropagation();
         fireCSharpEvent("menuClicked", $(this).parent().parent().attr('id'));
     });
@@ -42,28 +42,28 @@ $(window).ready(function(){
     const websocketPort = parseInt(window.location.port) + 1;
 
     //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-    window["webSocket"] = new WebSocket("ws://127.0.0.1:"+websocketPort.toString());
+    window["webSocket"] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
 
-theOneLocalizationManager.asyncGetText("EditTab.SavingNotification","Saving...").done(savingNotification =>
-    window["webSocket"] .onmessage = event => {
-        var e = JSON.parse(event.data);
-        if(e.id == "saving"){
-            toastr.info(savingNotification,"",{
-                positionClass: "toast-top-left",
-                preventDuplicates: true,
-                showDuration: 300,
-                hideDuration: 300,
-                timeOut: 1000,
-                extendedTimeOut: 1000,
-                showEasing: "swing",
-                showMethod: "fadeIn",
-                hideEasing: "linear",
-                hideMethod: "fadeOut",
-                messageClass:"toast-for-saved-message",
-                iconClass:""
-            });
-        }
-    })
+    theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...").done(savingNotification =>
+        window["webSocket"].onmessage = event => {
+            var e = JSON.parse(event.data);
+            if (e.id == "saving") {
+                toastr.info(savingNotification, "", {
+                    positionClass: "toast-top-left",
+                    preventDuplicates: true,
+                    showDuration: 300,
+                    hideDuration: 300,
+                    timeOut: 1000,
+                    extendedTimeOut: 1000,
+                    showEasing: "swing",
+                    showMethod: "fadeIn",
+                    hideEasing: "linear",
+                    hideMethod: "fadeOut",
+                    messageClass: "toast-for-saved-message",
+                    iconClass: ""
+                });
+            }
+        })
 });
 
 function fireCSharpEvent(eventName, eventData) {
@@ -100,7 +100,7 @@ function loadNextThumbnail() {
 
 function reorder(elements) {
     var ids = "";
-    elements.each(function() {
+    elements.each(function () {
         var id = $(this).attr('id');
         if (id)
             ids += "," + id;

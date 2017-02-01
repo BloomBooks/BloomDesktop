@@ -210,8 +210,8 @@ declare module Axios {
                 /**
                  * equivalent to `Promise.all`
                  */
-                all<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(values: [T1 | IPromise<AxiosXHR<T1>>, T2 | IPromise<AxiosXHR<T2>>, T3 | IPromise<AxiosXHR<T3>>, T4 | IPromise<AxiosXHR<T4>>, T5 | IPromise<AxiosXHR<T5>>, T6 | IPromise<AxiosXHR<T6>>, T7 | IPromise<AxiosXHR<T7>>, T8 | IPromise<AxiosXHR<T8>>, T9 |  IPromise<AxiosXHR<T9>>, T10 |  IPromise<AxiosXHR<T10>>]): IPromise<[AxiosXHR<T1>, AxiosXHR<T2>, AxiosXHR<T3>, AxiosXHR<T4>, AxiosXHR<T5>, AxiosXHR<T6>, AxiosXHR<T7>, AxiosXHR<T8>, AxiosXHR<T9>, AxiosXHR<T10>]>;
-                all<T1, T2, T3, T4, T5, T6, T7, T8, T9>(values: [T1 | IPromise<AxiosXHR<T1>>, T2 | IPromise<AxiosXHR<T2>>, T3 | IPromise<AxiosXHR<T3>>, T4 | IPromise<AxiosXHR<T4>>, T5 | IPromise<AxiosXHR<T5>>, T6 | IPromise<AxiosXHR<T6>>, T7 | IPromise<AxiosXHR<T7>>, T8 | IPromise<AxiosXHR<T8>>, T9 |  IPromise<AxiosXHR<T9>>]): IPromise<[AxiosXHR<T1>, AxiosXHR<T2>, AxiosXHR<T3>, AxiosXHR<T4>, AxiosXHR<T5>, AxiosXHR<T6>, AxiosXHR<T7>, AxiosXHR<T8>, AxiosXHR<T9>]>;
+                all<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(values: [T1 | IPromise<AxiosXHR<T1>>, T2 | IPromise<AxiosXHR<T2>>, T3 | IPromise<AxiosXHR<T3>>, T4 | IPromise<AxiosXHR<T4>>, T5 | IPromise<AxiosXHR<T5>>, T6 | IPromise<AxiosXHR<T6>>, T7 | IPromise<AxiosXHR<T7>>, T8 | IPromise<AxiosXHR<T8>>, T9 | IPromise<AxiosXHR<T9>>, T10 | IPromise<AxiosXHR<T10>>]): IPromise<[AxiosXHR<T1>, AxiosXHR<T2>, AxiosXHR<T3>, AxiosXHR<T4>, AxiosXHR<T5>, AxiosXHR<T6>, AxiosXHR<T7>, AxiosXHR<T8>, AxiosXHR<T9>, AxiosXHR<T10>]>;
+                all<T1, T2, T3, T4, T5, T6, T7, T8, T9>(values: [T1 | IPromise<AxiosXHR<T1>>, T2 | IPromise<AxiosXHR<T2>>, T3 | IPromise<AxiosXHR<T3>>, T4 | IPromise<AxiosXHR<T4>>, T5 | IPromise<AxiosXHR<T5>>, T6 | IPromise<AxiosXHR<T6>>, T7 | IPromise<AxiosXHR<T7>>, T8 | IPromise<AxiosXHR<T8>>, T9 | IPromise<AxiosXHR<T9>>]): IPromise<[AxiosXHR<T1>, AxiosXHR<T2>, AxiosXHR<T3>, AxiosXHR<T4>, AxiosXHR<T5>, AxiosXHR<T6>, AxiosXHR<T7>, AxiosXHR<T8>, AxiosXHR<T9>]>;
                 all<T1, T2, T3, T4, T5, T6, T7, T8>(values: [T1 | IPromise<AxiosXHR<T1>>, T2 | IPromise<AxiosXHR<T2>>, T3 | IPromise<AxiosXHR<T3>>, T4 | IPromise<AxiosXHR<T4>>, T5 | IPromise<AxiosXHR<T5>>, T6 | IPromise<AxiosXHR<T6>>, T7 | IPromise<AxiosXHR<T7>>, T8 | IPromise<AxiosXHR<T8>>]): IPromise<[AxiosXHR<T1>, AxiosXHR<T2>, AxiosXHR<T3>, AxiosXHR<T4>, AxiosXHR<T5>, AxiosXHR<T6>, AxiosXHR<T7>, AxiosXHR<T8>]>;
                 all<T1, T2, T3, T4, T5, T6, T7>(values: [T1 | IPromise<AxiosXHR<T1>>, T2 | IPromise<AxiosXHR<T2>>, T3 | IPromise<AxiosXHR<T3>>, T4 | IPromise<AxiosXHR<T4>>, T5 | IPromise<AxiosXHR<T5>>, T6 | IPromise<AxiosXHR<T6>>, T7 | IPromise<AxiosXHR<T7>>]): IPromise<[AxiosXHR<T1>, AxiosXHR<T2>, AxiosXHR<T3>, AxiosXHR<T4>, AxiosXHR<T5>, AxiosXHR<T6>, AxiosXHR<T7>]>;
                 all<T1, T2, T3, T4, T5, T6>(values: [T1 | IPromise<AxiosXHR<T1>>, T2 | IPromise<AxiosXHR<T2>>, T3 | IPromise<AxiosXHR<T3>>, T4 | IPromise<AxiosXHR<T4>>, T5 | IPromise<AxiosXHR<T5>>, T6 | IPromise<AxiosXHR<T6>>]): IPromise<[AxiosXHR<T1>, AxiosXHR<T2>, AxiosXHR<T3>, AxiosXHR<T4>, AxiosXHR<T5>, AxiosXHR<T6>]>;
@@ -224,7 +224,7 @@ declare module Axios {
                  * spread array parameter to `fn`.
                  * note: alternative to `spread`, destructuring assignment.
                  */
-                spread<T1, T2, U>(fn: (t1: T1, t2: T2) => U): (arr: ([T1, T2])) =>  U;
+                spread<T1, T2, U>(fn: (t1: T1, t2: T2) => U): (arr: ([T1, T2])) => U;
 
                 /**
                  * convenience alias, method = GET

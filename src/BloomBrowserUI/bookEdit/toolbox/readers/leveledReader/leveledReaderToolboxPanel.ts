@@ -1,8 +1,8 @@
 ﻿/// <reference path="../../toolbox.ts" />
 import { getTheOneReaderToolsModel, DRTState, } from "../readerToolsModel";
-import { beginInitializeLeveledReaderTool} from "../readerTools";
-import {ITabModel} from "../../toolbox";
-import {ToolBox} from "../../toolbox";
+import { beginInitializeLeveledReaderTool } from "../readerTools";
+import { ITabModel } from "../../toolbox";
+import { ToolBox } from "../../toolbox";
 
 export default class LeveledReaderToolboxPanel implements ITabModel {
     beginRestoreSettings(opts: string): JQueryPromise<void> {

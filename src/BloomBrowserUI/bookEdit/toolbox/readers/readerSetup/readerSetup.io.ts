@@ -1,7 +1,7 @@
 /// <reference path="../readerSettings.ts" />
 /// <reference path="readerSetup.ui.ts" />
-import {enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue} from './readerSetup.ui';
-import {ReaderStage, ReaderLevel, ReaderSettings} from '../ReaderSettings';
+import { enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue } from './readerSetup.ui';
+import { ReaderStage, ReaderLevel, ReaderSettings } from '../ReaderSettings';
 import "../../../../lib/jquery.onSafe.js";
 import axios = require('axios');
 import * as _ from 'underscore';
@@ -10,8 +10,8 @@ var previousMoreWords: string;
 
 window.addEventListener('message', process_IO_Message, false);
 
-export interface ToolboxWindow extends Window{
-        FrameExports:any;
+export interface ToolboxWindow extends Window {
+    FrameExports: any;
 }
 export function toolboxWindow(): ToolboxWindow {
     if (window.parent)
@@ -22,7 +22,7 @@ function process_IO_Message(event: MessageEvent): void {
 
     var params = event.data.split("\n");
 
-    switch(params[0]) {
+    switch (params[0]) {
         case 'OK':
             saveClicked();
             return;
@@ -35,10 +35,10 @@ function process_IO_Message(event: MessageEvent): void {
         default:
     }
 }
-export function setPreviousMoreWords(words: string){
+export function setPreviousMoreWords(words: string) {
     previousMoreWords = words;
 }
-export function getPreviousMoreWords():string{
+export function getPreviousMoreWords(): string {
     return previousMoreWords;
 }
 
@@ -81,7 +81,7 @@ function loadReaderSetupData(jsonData: string): void {
     }
 
     // click event for stage rows
-    tbody.find('tr').onSafe('click', function() {
+    tbody.find('tr').onSafe('click', function () {
         selectStage(this);
         displayLetters();
         selectLetters(this);
@@ -97,7 +97,7 @@ function loadReaderSetupData(jsonData: string): void {
     }
 
     // click event for level rows
-    tbodyLevels.find('tr').onSafe('click', function() {
+    tbodyLevels.find('tr').onSafe('click', function () {
         selectLevel(this);
     });
 }
@@ -128,7 +128,7 @@ function getChangedSettings(): ReaderSettings {
     var moreWords: string[] = _.uniq(((<HTMLInputElement>document.getElementById('dls_more_words')).value).split("\n"));
 
     // remove empty lines from the more words list
-    moreWords = _.filter(moreWords, function(a: string) { return a.trim() !== ''; });
+    moreWords = _.filter(moreWords, function (a: string) { return a.trim() !== ''; });
     settings.moreWords = moreWords.join(' ');
 
     settings.useAllowedWords = parseInt($('input[name="words-or-letters"]:checked').val());

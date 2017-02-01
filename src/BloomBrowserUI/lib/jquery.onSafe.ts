@@ -13,9 +13,9 @@ interface JQuery {
  * @param [handler]
  * @returns {Object}
  */
-$.fn.onSafe = function(eventName, data, handler) {
+$.fn.onSafe = function (eventName, data, handler) {
 
-        this.each(function() {
+        this.each(function () {
                 if (data)
                         $(this).off(eventName).on(eventName, data, handler);
                 else

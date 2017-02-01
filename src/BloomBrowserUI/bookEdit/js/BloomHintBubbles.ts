@@ -7,7 +7,7 @@
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import bloomQtipUtils from './bloomQtipUtils';
 
-declare function GetSettings() : any; //c# injects this
+declare function GetSettings(): any; //c# injects this
 
 export default class BloomHintBubbles {
 
