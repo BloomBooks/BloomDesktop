@@ -8,14 +8,14 @@
  */
 
 import * as _ from 'underscore';
-import {theOneLibSynphony, LibSynphony}  from './synphony_lib';
+import { theOneLibSynphony, LibSynphony } from './synphony_lib';
 import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
 
 /**
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $
  */
-(function($) {
+(function ($) {
 
         var cssSentenceTooLong = 'sentence-too-long';
         var cssSightWord = 'sight-word';
@@ -29,11 +29,11 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
          * @param {Object} options
          * @returns {Object}
          */
-        $.fn.checkLeveledReader = function(options) {
+        $.fn.checkLeveledReader = function (options) {
 
                 var allWords = '';
 
-                var opts = $.extend({maxWordsPerSentence: 999, maxWordsPerPage: 9999}, options);
+                var opts = $.extend({ maxWordsPerSentence: 999, maxWordsPerPage: 9999 }, options);
 
                 // remove previous synphony markup
                 this.removeSynphonyMarkup();
@@ -41,7 +41,7 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
                 // initialize words per page
                 var totalWordCount = 0;
 
-                var checkLeaf = function(leaf) {
+                var checkLeaf = function (leaf) {
                         stashNonTextUIElementsInEditBox(leaf);
                         // split into sentences
                         var fragments = theOneLibSynphony.stringToSentences($(leaf).html());
@@ -87,7 +87,7 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
                         restoreNonTextUIElementsInEditBox(leaf);
                 };
 
-                var checkRoot = function(root) {
+                var checkRoot = function (root) {
                         var children = root.children();
                         var processedChild = false; // Did we find a significant child?
                         for (var i = 0; i < children.length; i++) {
@@ -104,7 +104,7 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
                         // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
                 };
 
-                this.each(function() {checkRoot($(this));});
+                this.each(function () { checkRoot($(this)); });
 
                 // check words per page
                 if (totalWordCount > opts.maxWordsPerPage) {
@@ -125,16 +125,16 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
          * @param {Object} options
          * @returns {Object}
          */
-        $.fn.checkDecodableReader = function(options) {
+        $.fn.checkDecodableReader = function (options) {
 
-                var opts = $.extend({focusWords: [], previousWords: [], sightWords: [], knownGraphemes: []}, options);
+                var opts = $.extend({ focusWords: [], previousWords: [], sightWords: [], knownGraphemes: [] }, options);
                 var text = '';
 
                 // remove previous synphony markup
                 this.removeSynphonyMarkup();
 
                 // get all text
-                this.each(function() {
+                this.each(function () {
                         text += ' ' + removeAllMarkup($(this).html());
                 });
 
@@ -144,7 +144,7 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
                 var results = theOneLibSynphony.checkStory(opts.focusWords, opts.previousWords, opts.knownGraphemes, text, opts.sightWords.join(' '));
 
                 // markup
-                this.each(function() {
+                this.each(function () {
                         stashNonTextUIElementsInEditBox(this);
                         var html = $(this).html();
 
@@ -169,11 +169,11 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
          * Finds the maximum word count in the selected sentences.
          * @returns {int}
          */
-        $.fn.getMaxSentenceLength = function() {
+        $.fn.getMaxSentenceLength = function () {
 
                 var maxWords = 0;
 
-                this.each(function() {
+                this.each(function () {
 
                         // split into sentences
                         var fragments = theOneLibSynphony.stringToSentences(removeAllMarkup($(this).html()));
@@ -181,11 +181,11 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
                         if ((!fragments) || (fragments.length === 0)) return;
 
                         // remove inter-sentence space
-                        fragments = fragments.filter(function(frag) {
+                        fragments = fragments.filter(function (frag) {
                                 return frag.isSentence;
                         });
 
-                        var subMax = Math.max.apply(Math, fragments.map(function(frag) {
+                        var subMax = Math.max.apply(Math, fragments.map(function (frag) {
                                 return frag.wordCount();
                         }));
 
@@ -199,17 +199,17 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
          * Returns the count of all words in the selected elements.
          * @returns {int}
          */
-        $.fn.getTotalWordCount = function() {
+        $.fn.getTotalWordCount = function () {
 
                 var wordCount = 0;
 
-                this.each(function() {
+                this.each(function () {
 
                         // split into sentences
                         var fragments = theOneLibSynphony.stringToSentences(removeAllMarkup($(this).html()));
 
                         // remove inter-sentence space
-                        fragments = fragments.filter(function(frag) {
+                        fragments = fragments.filter(function (frag) {
                                 return frag.isSentence;
                         });
 
@@ -224,9 +224,9 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
         /**
          * Removes all the markup that was inserted by this addin
          */
-        $.fn.removeSynphonyMarkup = function() {
+        $.fn.removeSynphonyMarkup = function () {
 
-                this.each(function() {
+                this.each(function () {
 
                         // remove markup for deleted text
                         $(this).find('span[data-segment=sentence]:empty').remove();
@@ -256,7 +256,7 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
                  * @param {String[]} desiredGPCs
                  * @returns {String}
                  */
-                markupGraphemes: function(word, gpcForm, desiredGPCs) {
+                markupGraphemes: function (word, gpcForm, desiredGPCs) {
 
                         // for backward compatibility
                         if (Array.isArray(word))
@@ -282,10 +282,10 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
                 }
         });
 
-        $.extend({ cssSentenceTooLong: function() { return cssSentenceTooLong; } });
-        $.extend({ cssSightWord: function() { return cssSightWord; } });
-        $.extend({ cssWordNotFound: function() { return cssWordNotFound; } });
-        $.extend({ cssPossibleWord: function() { return cssPossibleWord; } });
+        $.extend({ cssSentenceTooLong: function () { return cssSentenceTooLong; } });
+        $.extend({ cssSightWord: function () { return cssSightWord; } });
+        $.extend({ cssWordNotFound: function () { return cssWordNotFound; } });
+        $.extend({ cssPossibleWord: function () { return cssPossibleWord; } });
 
         /**
          * Strips all html from the input string
@@ -318,10 +318,10 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
 
         }
 
-/**
- * The formatButton is a div at the end of the editable text that needs to be ignored as we scan and markup the text box.
- * It should be restored witha a call to restoreFormatButton();
- **/
+        /**
+         * The formatButton is a div at the end of the editable text that needs to be ignored as we scan and markup the text box.
+         * It should be restored witha a call to restoreFormatButton();
+         **/
 
         var stashedFormatButton;
 

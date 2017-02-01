@@ -1,7 +1,7 @@
-﻿import {ITabModel} from "../toolbox";
-import {ToolBox} from "../toolbox";
+﻿import { ITabModel } from "../toolbox";
+import { ToolBox } from "../toolbox";
 import * as AudioRecorder from './audioRecording';
-import {theOneAudioRecorder} from './audioRecording';
+import { theOneAudioRecorder } from './audioRecording';
 
 export default class TalkingBookModel implements ITabModel {
     beginRestoreSettings(settings: string): JQueryPromise<void> {

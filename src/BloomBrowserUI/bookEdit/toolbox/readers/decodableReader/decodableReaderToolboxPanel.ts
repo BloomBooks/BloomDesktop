@@ -1,11 +1,11 @@
 ﻿/// <reference path="../../toolbox.ts" />
 /// <reference path="../readerToolsModel.ts" />
 
-import {DRTState, getTheOneReaderToolsModel, MarkupType} from "../readerToolsModel";
-import {beginInitializeDecodableReaderTool} from "../readerTools";
-import {ITabModel} from "../../toolbox";
-import {ToolBox} from "../../toolbox";
-import {theOneLibSynphony}  from './../libSynphony/synphony_lib';
+import { DRTState, getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
+import { beginInitializeDecodableReaderTool } from "../readerTools";
+import { ITabModel } from "../../toolbox";
+import { ToolBox } from "../../toolbox";
+import { theOneLibSynphony } from './../libSynphony/synphony_lib';
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 
 

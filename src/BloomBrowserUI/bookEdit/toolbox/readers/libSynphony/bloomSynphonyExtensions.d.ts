@@ -32,14 +32,14 @@ export declare class DataWord {
 
 export declare class TextFragment {
 
-    text: string;
-    isSentence: boolean;
-    isSpace: boolean;
-    words: string[];
+        text: string;
+        isSentence: boolean;
+        isSpace: boolean;
+        words: string[];
 
-    constructor(str, isSpace);
+        constructor(str, isSpace);
 
-    wordCount(): number;
+        wordCount(): number;
 }
 
 export declare function clearWordCache();
