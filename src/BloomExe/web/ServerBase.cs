@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.web;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
@@ -365,7 +366,7 @@ namespace Bloom.Api
 					if (rawurl.Contains("thumbnail=1"))
 						Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
-					MakeReply(new RequestInfo(context));
+					MakeReply(new RequestInfo(new BloomHttpListenerContext(context)));
 				}
 				catch (HttpListenerException e)
 				{
