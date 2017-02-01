@@ -286,8 +286,22 @@ class PageChooser {
             this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect);
 
         }).catch(e => {
-            //we don't really want to let one bad template keep us from showing others
-            alert("There was a problem reading: " + order.templateBookPath + ". " + e);
+            //we don't really want to let one bad template keep us from showing others.
+            // Insert a message into the dialog
+            var path = order.templateBookPath;
+            var index = path.lastIndexOf("/");
+            var templateName = path.substring(index + 1, path.length);
+            var templateTitle = templateName.replace(".html", "");
+            var groupToAdd = $(groupHTML).clone();
+            this.setLocalizedText($(groupToAdd).find(".groupCaption"), 'TemplateBooks.BookName.', templateTitle);
+            var innerGroup = groupToAdd.find(".innerGroupContainer");
+            innerGroup.remove();
+            groupToAdd.append("<div id='missingMsg'/>")
+            theOneLocalizationManager.asyncGetText('EditPage.AddPageDialog.NoTemplate', "Could not find {0}")
+              .done(translation => {
+                groupToAdd.find("#missingMsg").text(translation.replace("{0}", templateName));
+              });
+            $(".outerGroupContainer", document).append(groupToAdd);
 
             this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect)
         });

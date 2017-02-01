@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
 using Bloom.web;
+using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -159,7 +160,19 @@ namespace Bloom.WebLibraryIntegration
 			request.AddParameter("password", password);
 			var response = Client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
-			_sessionToken = dy.sessionToken;//there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
+			try
+			{
+				_sessionToken = dy.sessionToken;//there's also an "error" in there if it fails, but a null sessionToken tells us all we need to know
+			}
+			catch (RuntimeBinderException)
+			{
+				// We are seeing this sometimes while running unit tests.
+				// This is simply an attempt to diagnose what is happening.
+				Console.WriteLine("Attempt to deserialize response content session token failed while attempting log in to parse (BL-4099).");
+				Console.WriteLine("response.Content: {0}", response.Content);
+				Console.WriteLine("deserialized: {0}", dy);
+				throw;
+			}
 			_userId = dy.objectId;
 			Account = account;
 			return LoggedIn;
