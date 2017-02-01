@@ -63,8 +63,6 @@ namespace BloomTests.web
 		[TestCase("bl%F4%80%80%8Aah", "/bl􀀊ah")] // private use character
 		[TestCase("one + one", "/one + one")] // BL-3814. See http://stackoverflow.com/a/1006074/723299
 		[TestCase("//networkUrl", "///networkUrl")] // BL-3808 Error using Bloom through network share
-		[RequiresSTA]
-		[Category("SkipOnTeamCity")]
 		public void LocalPathWithoutQuery_SpecialCharactersDecodedCorrectly(string urlEnd, string expectedResult)
 		{
 			var context = new TestHttpListenerContext();
