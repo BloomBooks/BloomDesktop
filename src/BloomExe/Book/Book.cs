@@ -1818,17 +1818,13 @@ namespace Bloom.Book
 		/// <summary>
 		/// The <style title='userModifiedStyles'/> element is where we keep our user-modifiable style information
 		/// </summary>
-		private XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
+		internal XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
 		{
 			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@title='userModifiedStyles']");
 			if (matches.Count > 0)
 				return (XmlElement) matches[0];
 
-			var emptyUserModifiedStylesElement = OurHtmlDom.RawDom.CreateElement("style");
-			emptyUserModifiedStylesElement.SetAttribute("title", "userModifiedStyles");
-			emptyUserModifiedStylesElement.SetAttribute("type", "text/css");
-			OurHtmlDom.Head.AppendChild(emptyUserModifiedStylesElement);
-			return emptyUserModifiedStylesElement;
+			return HtmlDom.AddEmptyUserModifiedStylesNode(OurHtmlDom.Head);
 		}
 
 		/// <summary>

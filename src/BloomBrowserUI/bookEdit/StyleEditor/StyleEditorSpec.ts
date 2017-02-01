@@ -23,25 +23,25 @@ function MakeBigger() {
     editor.MakeBigger(<HTMLElement>target[0]);
 }
 
-function MakeBigger2(target:string) {
+function MakeBigger2(target: string) {
     var jQueryTarget = $(document).find(target);
     var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
     editor.MakeBigger(<HTMLElement>jQueryTarget[0]);
 }
 
-function MakeSmaller(target:string) {
+function MakeSmaller(target: string) {
     var jQueryTarget = $(document).find(target);
     var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
     editor.MakeSmaller(<HTMLElement>jQueryTarget[0]);
 }
 
-function GetFontSize(target:string): number {
+function GetFontSize(target: string): number {
     var jQueryTarget = $(document).find(target);
     var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
     return editor.GetCalculatedFontSizeInPoints(<HTMLElement>jQueryTarget[0]);
 }
 
-function ChangeSizeAbsolute(target:string, newSize:number) {
+function ChangeSizeAbsolute(target: string, newSize: number) {
     var jQueryTarget = $(document).find(target);
     var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
     editor.ChangeSizeAbsolute(<HTMLElement>jQueryTarget[0], newSize);
@@ -50,7 +50,7 @@ function ChangeSizeAbsolute(target:string, newSize:number) {
 function GetUserModifiedStyleSheet(): any {
     for (var i = 0; i < document.styleSheets.length; i++) {
         if (document.styleSheets[i].title == "userModifiedStyles")
-             return <CSSStyleSheet>(document.styleSheets[i]);
+            return <CSSStyleSheet>(document.styleSheets[i]);
     }
     // this is not a valid constructor
     //return new CSSStyleSheet();
@@ -59,11 +59,11 @@ function GetUserModifiedStyleSheet(): any {
 
 function GetFooStyleRuleFontSize(): number {
     var sizeString = $('.foo-style').css("font-size");
-     return parseInt(sizeString.substr(0, sizeString.length - 2));
+    return parseInt(sizeString.substr(0, sizeString.length - 2));
 }
 
 function GetFontSizeRuleByLang(lang: string): number {
-    var rule = GetRuleMatchingSelector('.foo-style[lang="'+lang+'"]');
+    var rule = GetRuleMatchingSelector('.foo-style[lang="' + lang + '"]');
     return ParseRuleForFontSize(rule.cssText);
 }
 
@@ -79,10 +79,10 @@ function ParseRuleForFontSize(ruleText: string): number {
 }
 
 function GetRuleForFooStyle(): CSSRule {
-    var x:CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
     for (var i = 0; i < x.length; i++) {
-        if (x[i].cssText.indexOf('foo-style') > -1){
+        if (x[i].cssText.indexOf('foo-style') > -1) {
             return x[i];
         }
     }
@@ -90,7 +90,7 @@ function GetRuleForFooStyle(): CSSRule {
 }
 
 function GetRuleForNormalStyle(): CSSRule {
-    var x:CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
     if (!x) return null;
 
     for (var i = 0; i < x.length; i++) {
@@ -102,7 +102,7 @@ function GetRuleForNormalStyle(): CSSRule {
 }
 
 function GetRuleForCoverTitleStyle(): CSSRule {
-    var x:CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
     if (!x) return null;
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('Title-On-Cover-style') > -1) {
@@ -175,7 +175,7 @@ describe("StyleEditor", function () {
         $('body').append("<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>");
         var originalSize = GetCalculatedFontSize('#testTarget');
         MakeBigger();
-        expect(GetCalculatedFontSize('#testTarget')).toBe(originalSize+2);
+        expect(GetCalculatedFontSize('#testTarget')).toBe(originalSize + 2);
         MakeBigger();
         expect(GetCalculatedFontSize('#testTarget')).toBe(originalSize + 4);
     });
@@ -220,7 +220,7 @@ describe("StyleEditor", function () {
     });
 
     it("When the element has an @lang, MakeBigger adds rules that only affect the given language", function () {
-         $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
+        $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
         MakeBigger2('#testTarget');
         var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 

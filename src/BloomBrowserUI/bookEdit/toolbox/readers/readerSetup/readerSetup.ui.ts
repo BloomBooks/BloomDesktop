@@ -2,8 +2,8 @@
 /// <reference path="../../../../lib/jquery.onSafe.d.ts" />
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 import '../../../../lib/jquery.onSafe.ts';
-import {beginSaveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
-import {DataWord} from '../libSynphony/bloomSynphonyExtensions';
+import { beginSaveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords } from './readerSetup.io';
+import { DataWord } from '../libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
 import * as _ from 'underscore';
 
@@ -18,24 +18,24 @@ function process_UI_Message(event: MessageEvent): void {
 
     var params: string[] = event.data.split("\n");
 
-    switch(params[0]) {
+    switch (params[0]) {
 
         case 'Files':
             var s: string = params[1];
             if (s.length > 0) {
 
                 var files: string[] = s.split('\r');
-                    var extensions: string[] = ['txt', 'js', 'json']; // reviewSlog ReaderToolsModel.getReadableFileExtensions(); but do NOT want to import that here; it should only be in toolbox iframe
+                var extensions: string[] = ['txt', 'js', 'json']; // reviewSlog ReaderToolsModel.getReadableFileExtensions(); but do NOT want to import that here; it should only be in toolbox iframe
                 var needsTxtExtension: string = document.getElementById('needs_txt_extension').innerHTML;
                 var notSupported: string = document.getElementById('format_not_supported').innerHTML;
                 var foundNotSupported: boolean = false;
-                files.forEach(function(element, index, array) {
+                files.forEach(function (element, index, array) {
                     var filenameComponents: string[] = element.split('.');
                     if (filenameComponents.length < 2) {
                         array[index] = element + ' ' + '<span class="format-not-supported">' + needsTxtExtension + '</span>';
                         foundNotSupported = true;
                     } else {
-                        var ext:string = filenameComponents.pop();
+                        var ext: string = filenameComponents.pop();
                         if (extensions.indexOf(ext) === -1) {
                             array[index] = element + ' ' + '<span class="format-not-supported">' + notSupported + '</span>';
                             foundNotSupported = true;
@@ -86,7 +86,7 @@ function process_UI_Message(event: MessageEvent): void {
             }
 
             // handle the beforeActivate event
-            tabs.on('tabsbeforeactivate', function(event, ui) { tabBeforeActivate(ui); });
+            tabs.on('tabsbeforeactivate', function (event, ui) { tabBeforeActivate(ui); });
 
             return;
 
@@ -100,7 +100,7 @@ function process_UI_Message(event: MessageEvent): void {
         case 'Help':
             var helpFile: string;
             //noinspection JSJQueryEfficiency
-            switch($('#dlstabs').tabs('option', 'active')) {
+            switch ($('#dlstabs').tabs('option', 'active')) {
                 case 0:
                     helpFile = 'Tasks/Edit_tasks/Decodable_Reader_Tool/Letters_tab.htm';
                     break;
@@ -129,7 +129,7 @@ function process_UI_Message(event: MessageEvent): void {
 export function displayLetters(): void {
 
     var letters: string[] = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value.trim()).split(' ');
-    letters = letters.filter(function(n){ return n !== ''; });
+    letters = letters.filter(function (n) { return n !== ''; });
 
     // If there are no letters, skip updating the contents of #setup-selected-letters. This leaves it showing the
     // message in the original file, which encourages users to set up an alphabet.
@@ -158,7 +158,7 @@ export function displayLetters(): void {
         div.append($('<div class="book-font unselected-letter rs-letters rs-letters-' + suffix + '">' + letters[i] + '</div>'));
     }
 
-    $('div.rs-letters').onSafe('click', function() {
+    $('div.rs-letters').onSafe('click', function () {
         selectLetter(this);
     });
 }
@@ -198,18 +198,18 @@ export function selectStage(tr: HTMLTableRowElement): void {
     requestWordsForSelectedStage();
 }
 
-function requestWordsForSelectedStage():void {
+function requestWordsForSelectedStage(): void {
 
-        var tr = <HTMLTableRowElement>$('#stages-table').find('tbody tr.selected').get(0);
+    var tr = <HTMLTableRowElement>$('#stages-table').find('tbody tr.selected').get(0);
 
     desiredGPCs = ((<HTMLTableCellElement>tr.cells[1]).innerHTML).split(' ');
-    previousGPCs = $.makeArray($(tr).prevAll().map(function() {
+    previousGPCs = $.makeArray($(tr).prevAll().map(function () {
         return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
     }));
 
     var knownGPCS = previousGPCs.join(' ') + ' ' + desiredGPCs.join(' ');
     currentSightWords = ((<HTMLTableCellElement>tr.cells[2]).innerHTML).split(' ');
-    sightWords = $.makeArray($(tr).prevAll().map(function() {
+    sightWords = $.makeArray($(tr).prevAll().map(function () {
         return (<HTMLTableCellElement>this.cells[2]).innerHTML.split(' ');
     }));
 
@@ -245,7 +245,7 @@ function selectLetter(div: HTMLDivElement): void {
         return;
 
     // update the stages table
-    var letters = $('.current-letter').map(function() {
+    var letters = $('.current-letter').map(function () {
         return this.innerHTML;
     });
     tr.find('td:nth-child(2)').html($.makeArray(letters).join(' '));
@@ -264,16 +264,16 @@ export function selectLetters(tr: HTMLTableRowElement) {
 
     // letters in the current stage
     var stage_letters: string[] = (<HTMLTableCellElement>tr.cells[1]).innerHTML.split(' ');
-    var current: JQuery = letters.filter(function(index, element) {
+    var current: JQuery = letters.filter(function (index, element) {
         return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
     });
 
     // letters in previous stages
-    stage_letters = $.makeArray($(tr).prevAll().map(function() {
+    stage_letters = $.makeArray($(tr).prevAll().map(function () {
         return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
     }));
-    var previous = letters.filter(function(index, element) {
-            return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
+    var previous = letters.filter(function (index, element) {
+        return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
     });
 
     // show current and previous letters
@@ -335,7 +335,7 @@ function displayAllowedWordsForSelectedStage(wordsStr: string): void {
     var longestWord: string = '';
     var longestWordLength: number = 0;
 
-    _.each(words, function(w: string) {
+    _.each(words, function (w: string) {
 
         result += '<div class="book-font word">' + w + '</div>';
 
@@ -364,9 +364,9 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     var words: DataWord[] = <DataWord[]>_.toArray(wordsObj);
 
     // add sight words
-    _.each(sightWords, function(sw: string) {
+    _.each(sightWords, function (sw: string) {
 
-        var word: DataWord = _.find(words, function(w: DataWord) {
+        var word: DataWord = _.find(words, function (w: DataWord) {
             return w.Name === sw;
         });
 
@@ -384,13 +384,13 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     });
 
     // sort the list
-    words = _.sortBy(words, function(w) { return w.Name; });
+    words = _.sortBy(words, function (w) { return w.Name; });
 
     var result: string = '';
     var longestWord: string = '';
     var longestWordLength: number = 0;
 
-    _.each(words, function(w: DataWord) {
+    _.each(words, function (w: DataWord) {
 
         if (!w.html)
             w.html = $.markupGraphemes(w.Name, w.GPCForm, desiredGPCs);
@@ -418,7 +418,7 @@ function addNewStage(): void {
     tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="book-font"></td><td class="book-font"></td><td class="book-font"></td></tr>');
 
     // click event for stage rows
-    tbody.find('tr:last').onSafe('click', function() {
+    tbody.find('tr:last').onSafe('click', function () {
         selectStage(this);
         displayLetters();
         selectLetters(this);
@@ -434,7 +434,7 @@ function addNewLevel(): void {
     tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="words-per-sentence">-</td><td class="words-per-page">-</td><td class="words-per-book">-</td><td class="unique-words-per-book">-</td><td class="average-words-per-sentence">-</td><td style="display: none"></td></tr>');
 
     // click event for stage rows
-    tbody.find('tr:last').onSafe('click', function() {
+    tbody.find('tr:last').onSafe('click', function () {
         selectLevel(this);
     });
 
@@ -456,7 +456,7 @@ function tabBeforeActivate(ui): void {
 
         // update letters in stages
         var rows: JQuery = tbody.find('tr');
-        rows.each(function() {
+        rows.each(function () {
 
             // get the letters for this stage
             var letters = (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
@@ -497,7 +497,7 @@ function tabBeforeActivate(ui): void {
  */
 function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
 
-    switch(jqueryEvent.which) {
+    switch (jqueryEvent.which) {
         case 13: // add new li
             var x = $('<li contenteditable="true"></li>').insertAfter(jqueryEvent.target);
             jqueryEvent.preventDefault();
@@ -591,7 +591,7 @@ function renumberRows(rows: JQuery): void {
 
     var rowNum = 1;
 
-    $.each(rows, function() {
+    $.each(rows, function () {
         (<HTMLTableCellElement>this.cells[0]).innerHTML = (rowNum++).toString();
     });
 }
@@ -646,7 +646,7 @@ function storeThingsToRemember(): void {
     var vals: string[] = val.replace(/<li contenteditable="true">/g, '').replace(/<br>/g, '').split('</li>');
 
     // remove blank lines
-    vals = vals.filter(function(e){ var x = e.trim(); return (x.length > 0 && x !== '&nbsp;'); });
+    vals = vals.filter(function (e) { var x = e.trim(); return (x.length > 0 && x !== '&nbsp;'); });
 
     // store
     $('#levels-table').find('tbody tr.selected td:nth-child(7)').html(vals.join('\n'));
@@ -700,37 +700,37 @@ function attachEventHandlers(): void {
 
     if (typeof ($) === "function") {
 
-        $("#open-text-folder").onSafe('click', function() {
+        $("#open-text-folder").onSafe('click', function () {
             axios.post('/bloom/api/readers/ui/openTextsFolder');
             return false;
         });
 
-        $("#setup-add-stage").onSafe('click', function() {
+        $("#setup-add-stage").onSafe('click', function () {
             addNewStage();
             return false;
         });
 
-        $("#define-sight-words").onSafe('click', function() {
+        $("#define-sight-words").onSafe('click', function () {
             alert('What are sight words?');
             return false;
         });
 
-        $("#setup-stage-sight-words").onSafe('keyup', function() {
+        $("#setup-stage-sight-words").onSafe('keyup', function () {
             updateSightWords(this);
             requestWordsForSelectedStage();
         });
 
-        $('#setup-remove-stage').onSafe('click', function() {
+        $('#setup-remove-stage').onSafe('click', function () {
             removeStage();
             return false;
         });
 
-        $('#setup-add-level').onSafe('click', function() {
+        $('#setup-add-level').onSafe('click', function () {
             addNewLevel();
             return false;
         });
 
-        $('#setup-remove-level').onSafe('click', function() {
+        $('#setup-remove-level').onSafe('click', function () {
             removeLevel();
             return false;
         });
@@ -740,23 +740,23 @@ function attachEventHandlers(): void {
         toRemember.onSafe('keyup', storeThingsToRemember);
 
         var levelDetail = $('#level-detail');
-        levelDetail.find('.level-checkbox').onSafe('change', function() {
+        levelDetail.find('.level-checkbox').onSafe('change', function () {
             var id = this.id.replace(/^use-/, '');
             var txtBox: HTMLInputElement = <HTMLInputElement>document.getElementById('max-' + id);
             txtBox.disabled = !this.checked;
             $('#levels-table').find('tbody tr.selected td.' + id).html(this.checked ? txtBox.value : '-');
         });
 
-        levelDetail.find('.level-textbox').onSafe('keyup', function() {
+        levelDetail.find('.level-textbox').onSafe('keyup', function () {
             var id = this.id.replace(/^max-/, '');
             $('#levels-table').find('tbody tr.selected td.' + id).html(this.value);
         });
 
-        $('input[name="words-or-letters"]').onSafe('change', function() {
+        $('input[name="words-or-letters"]').onSafe('change', function () {
             enableSampleWords();
         });
 
-        $('#setup-choose-allowed-words-file').onSafe('click', function() {
+        $('#setup-choose-allowed-words-file').onSafe('click', function () {
             axios.get<string>('/bloom/api/readers/ui/chooseAllowedWordsListFile').then(result => {
                 var fileName = result.data;
                 if (fileName) setAllowedWordsFile(fileName);
@@ -767,7 +767,7 @@ function attachEventHandlers(): void {
             return false;
         });
 
-        $('#remove-allowed-word-file').onSafe('click', function() {
+        $('#remove-allowed-word-file').onSafe('click', function () {
             setAllowedWordsFile('');
 
             // hide stale controls
@@ -777,14 +777,14 @@ function attachEventHandlers(): void {
         });
 
         var allowedDiv = $('#allowed-words-file-div');
-        allowedDiv.onSafe('mouseenter', function() {
+        allowedDiv.onSafe('mouseenter', function () {
             var title = document.getElementById('remove_word_list').innerHTML;
             var anchor = $(this).find('a');
             anchor.attr('title', title);
             anchor.show();
         });
 
-        allowedDiv.onSafe('mouseleave', function() { $(this).find('a').hide(); });
+        allowedDiv.onSafe('mouseleave', function () { $(this).find('a').hide(); });
     }
 }
 
@@ -898,16 +898,16 @@ function wordListChangedCallback() {
     requestWordsForSelectedStage();
 }
 
-import {getToolboxFrameExports} from '../../../js/bloomFrames.ts';
+import { getToolboxFrameExports } from '../../../js/bloomFrames.ts';
 
 $(document).ready(function () {
     attachEventHandlers();
     $('body').find('*[data-i18n]').localize(finishInitializing);
- toolboxWindow().FrameExports.addWordListChangedListener('wordListChanged.ReaderSetup', wordListChangedCallback);
+    toolboxWindow().FrameExports.addWordListChangedListener('wordListChanged.ReaderSetup', wordListChangedCallback);
     // found solution to longpress access here:
     // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do
     var container = $('body');
-//   var pageIframe = parent.frames['page'];
-//   pageIframe.FrameExports.loadLongpressInstructions(container.find('textarea'));
+    //   var pageIframe = parent.frames['page'];
+    //   pageIframe.FrameExports.loadLongpressInstructions(container.find('textarea'));
     getToolboxFrameExports().loadLongpressInstructions(container.find('textarea'));
 });

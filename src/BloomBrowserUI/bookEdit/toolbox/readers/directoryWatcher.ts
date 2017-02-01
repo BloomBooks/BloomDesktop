@@ -69,7 +69,7 @@ export class DirectoryWatcher {
 
         if (self.run === true) {
             if (self.refreshInterval > 0) {
-                setTimeout(function() { self.checkNow(self); }, self.refreshInterval * 1000);
+                setTimeout(function () { self.checkNow(self); }, self.refreshInterval * 1000);
             }
         }
     }
@@ -82,7 +82,7 @@ export class DirectoryWatcher {
      */
     watcherAjaxPost(url, self, postKeyValueDataObject): void {
 
-        var ajaxSettings = {type: 'POST', url: url};
+        var ajaxSettings = { type: 'POST', url: url };
         if (postKeyValueDataObject) ajaxSettings['data'] = postKeyValueDataObject;
 
         // we are expecting the value returned in 'data' to be either 'yes' or 'no'

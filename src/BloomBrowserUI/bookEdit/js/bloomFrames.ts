@@ -17,23 +17,23 @@
 interface WindowWithExports extends Window {
         FrameExports: any;
 }
-export function getToolboxFrameExports(){
+export function getToolboxFrameExports() {
         return getFrameExports('toolbox');
 }
-export function getPageFrameExports(){
+export function getPageFrameExports() {
         return getFrameExports('page');
 }
-export function getEditViewFrameExports(){
-    return (<any>getRootWindow()).FrameExports;
+export function getEditViewFrameExports() {
+        return (<any>getRootWindow()).FrameExports;
 }
 
-function getRootWindow(): Window{
+function getRootWindow(): Window {
         //if parent is null, we're the root
         return window.parent || window;
 }
-function getFrame(id: string): WindowWithExports{
+function getFrame(id: string): WindowWithExports {
         return (<HTMLIFrameElement>getRootWindow().document.getElementById(id)).contentWindow as WindowWithExports;
 }
-function getFrameExports(id: string): any{
+function getFrameExports(id: string): any {
         return getFrame(id).FrameExports;
 }

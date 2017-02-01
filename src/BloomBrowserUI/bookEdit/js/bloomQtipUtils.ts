@@ -10,15 +10,15 @@ export default class bloomQtipUtils {
 
     public static cleanupBubbles(): void {
         // remove the div's which qtip makes for the tips themselves
-        $("div.qtip").each(function() {
+        $("div.qtip").each(function () {
             $(this).remove();
         });
 
         // remove the attributes qtips adds to the things being annotated
-        $("*[aria-describedby]").each(function() {
+        $("*[aria-describedby]").each(function () {
             $(this).removeAttr("aria-describedby");
         });
-        $("*[ariasecondary-describedby]").each(function() {
+        $("*[ariasecondary-describedby]").each(function () {
             $(this).removeAttr("ariasecondary-describedby");
         });
     }
@@ -28,7 +28,7 @@ export default class bloomQtipUtils {
         //we can be very conservative and say that if the text
         //box isn't taking up the whole width, it *might* cause
         //an overlap
-        if($(element).hasClass('bloom-alwaysShowBubble')) {
+        if ($(element).hasClass('bloom-alwaysShowBubble')) {
             return false;
         }
         var availableWidth = $(element).closest(".marginBox").width();
@@ -37,7 +37,7 @@ export default class bloomQtipUtils {
     }
 
     public static setQtipZindex(): void {
-        if($.fn.qtip)
+        if ($.fn.qtip)
             $.fn.qtip.zindex = 15000;
         //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
     }
@@ -45,7 +45,8 @@ export default class bloomQtipUtils {
     public static repositionPictureDictionaryTooltips(container: HTMLElement): void {
         // add drag and resize ability where elements call for it
         //   $(".bloom-draggable").draggable({containment: "parent"});
-        $(container).find(".bloom-draggable").draggable({ containment: "parent",
+        $(container).find(".bloom-draggable").draggable({
+            containment: "parent",
             handle: '.bloom-imageContainer',
             stop: function (event, ui) {
                 $(this).find('.wordsDiv').find('div').each(function () {

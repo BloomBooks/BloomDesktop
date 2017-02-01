@@ -10,9 +10,9 @@
 
 /// <reference path="../readerToolsModel.ts" />
 
-import {getTheOneReaderToolsModel} from "../readerToolsModel";
+import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
-import {getEditViewFrameExports} from '../../../js/bloomFrames';
+import { getEditViewFrameExports } from '../../../js/bloomFrames';
 
 
 function getDialogHtml(title) {
@@ -58,7 +58,7 @@ export function showSetupDialog(showWhat) {
                 // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
                 // where it is displayed. The main dialog() function doesn't work quite right (can't drag or resize it), and other functions
                 // like dialog("close") don't do anything, if the wrapper is created in the toolbox frame.
-                setupDialogElement = getEditViewFrameExports().showDialog( getDialogHtml(title), {
+                setupDialogElement = getEditViewFrameExports().showDialog(getDialogHtml(title), {
                         autoOpen: true,
                         modal: true,
                         buttons: (<any>{
@@ -83,7 +83,7 @@ export function showSetupDialog(showWhat) {
                                                 //nb: the element pointed to here by setupDialogElement is the same as "this"
                                                 //however, the jquery that you'd get by saying $(this) is *not* the same one as
                                                 //that stored in setupDialogElement. Ref BL-3331.
-                                            setupDialogElement.dialog("close");
+                                                setupDialogElement.dialog("close");
                                         }
                                 }
                         }),
@@ -141,17 +141,17 @@ function getSettingsDialogLocalizedStrings() {
  * Used by the settings_frame to initialize the setup dialog
  */
 export function initializeReaderSetupDialog() {
-    if (typeof getTheOneReaderToolsModel().synphony.source == 'undefined' || getTheOneReaderToolsModel().synphony.source === null) {
-        throw new Error("ReaderToolsModel was not loaded with settings");
-    }
-    var sourceMsg = 'Data\n' + JSON.stringify(getTheOneReaderToolsModel().synphony.source);
-    var fontMsg = 'Font\n' + getTheOneReaderToolsModel().fontName;
-    settingsFrameWindow().postMessage(sourceMsg, '*');
-    settingsFrameWindow().postMessage(fontMsg, '*');
+        if (typeof getTheOneReaderToolsModel().synphony.source == 'undefined' || getTheOneReaderToolsModel().synphony.source === null) {
+                throw new Error("ReaderToolsModel was not loaded with settings");
+        }
+        var sourceMsg = 'Data\n' + JSON.stringify(getTheOneReaderToolsModel().synphony.source);
+        var fontMsg = 'Font\n' + getTheOneReaderToolsModel().fontName;
+        settingsFrameWindow().postMessage(sourceMsg, '*');
+        settingsFrameWindow().postMessage(fontMsg, '*');
 }
 
 export function closeSetupDialog() {
-    setupDialogElement.dialog("close");
+        setupDialogElement.dialog("close");
 }
 
 /**
@@ -162,7 +162,7 @@ export function closeSetupDialog() {
 // Enhance: JT notes that this method pops up from time to time; can we consolidate?
 function fireCSharpEvent(eventName, eventData) {
 
-        var event = new MessageEvent(eventName, {'bubbles': true, 'cancelable': true, 'data': eventData });
+        var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
         top.document.dispatchEvent(event);
         // For when we someday change this file to TypeScript... since the above ctor is not declared anywhere.
         // Solution III (works)

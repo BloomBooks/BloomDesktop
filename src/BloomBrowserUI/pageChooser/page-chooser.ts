@@ -298,9 +298,9 @@ class PageChooser {
             innerGroup.remove();
             groupToAdd.append("<div id='missingMsg'/>")
             theOneLocalizationManager.asyncGetText('EditPage.AddPageDialog.NoTemplate', "Could not find {0}")
-              .done(translation => {
-                groupToAdd.find("#missingMsg").text(translation.replace("{0}", templateName));
-              });
+                .done(translation => {
+                    groupToAdd.find("#missingMsg").text(translation.replace("{0}", templateName));
+                });
             $(".outerGroupContainer", document).append(groupToAdd);
 
             this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect)
@@ -472,9 +472,9 @@ function initializeAddPageDialog(templatesJSON) {
 function fireCSharpEvent(eventName, eventData, dispatchWindow?: Window) {
     var event = new MessageEvent(eventName, {/*'view' : window,*/ 'bubbles': true, 'cancelable': true, 'data': eventData });
     if (dispatchWindow) {
-      dispatchWindow.document.dispatchEvent(event);
+        dispatchWindow.document.dispatchEvent(event);
     } else {
-      document.dispatchEvent(event);
+        document.dispatchEvent(event);
     }
     // For when we someday change this file to TypeScript... since the above ctor is not declared anywhere.
     // Solution III (works)

@@ -97,4 +97,4 @@ interface JQueryStatic {
         _lastSpan.remove();
         return width;
     }
-} (jQuery));
+}(jQuery));

@@ -46,7 +46,7 @@ export class ReaderLevel {
     maxWordsPerSentence: number = 0;
     maxWordsPerBook: number = 0;
     maxUniqueWordsPerBook: number = 0;
-    maxAverageWordsPerSentence : number = 0;
+    maxAverageWordsPerSentence: number = 0;
 
     constructor(name: string) {
         this.name = name;

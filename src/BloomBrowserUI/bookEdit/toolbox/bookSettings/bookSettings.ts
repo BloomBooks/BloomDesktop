@@ -7,12 +7,12 @@ $(document).ready(() => {
         var settings = result.data;
 
         // Only show this if we are editing a shell book. Otherwise, it's already not locked.
-        if(!settings.isRecordedAsLockedDown){
-            $(".showOnlyWhenBookWouldNormallyBeLocked").css("display","none");
+        if (!settings.isRecordedAsLockedDown) {
+            $(".showOnlyWhenBookWouldNormallyBeLocked").css("display", "none");
             $("input[name='isTemplateBook']").prop("checked", settings.isTemplateBook);
         }
-        else{
-            $(".showOnlyIfBookIsNeverLocked").css("display","none");
+        else {
+            $(".showOnlyIfBookIsNeverLocked").css("display", "none");
             // enhance: this is just dirt-poor binding of 1 checkbox for now
             $("input[name='unlockShellBook']").prop("checked", settings.unlockShellBook);
         }
