@@ -474,12 +474,16 @@ namespace Bloom.Api
 				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
 				// template page, look for that thumbnail in the book that is the template source,
 				// rather than in the folder that stores the page choose dialog HTML and code.
-				var templatePath = Path.Combine(_bookSelection.CurrentSelection.FindTemplateBook().FolderPath,
-					localPath.Substring("pageChooser/".Length));
-				if (RobustFile.Exists(templatePath))
+				var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
+				if (templateBook != null)
 				{
-					info.ReplyWithImage(templatePath);
-					return true;
+					var templatePath = Path.Combine(templateBook.FolderPath,
+						localPath.Substring("pageChooser/".Length));
+					if (RobustFile.Exists(templatePath))
+					{
+						info.ReplyWithImage(templatePath);
+						return true;
+					}
 				}
 			}
 			// Use '%25' to detect that the % in a Url encoded character (for example space encoded as %20) was encoded as %25.
@@ -540,6 +544,9 @@ namespace Bloom.Api
 					// Audio files may well be missing because we look for them as soon
 					// as we define an audio ID, but they wont' exist until we record something.
 					"/audio/",
+					// PageTemplatesApi creates a path containing this for a missing template.
+					// it gets reported inside the page chooser dialog.
+					"missingpagetemplate",
 					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
 					// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
 					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
