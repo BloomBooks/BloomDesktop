@@ -8,6 +8,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
+using Bloom.web;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -19,7 +20,7 @@ namespace Bloom.Api
 	/// </summary>
 	public class RequestInfo : IRequestInfo
 	{
-		private readonly HttpListenerContext _actualContext;
+		private readonly IHttpListenerContext _actualContext;
 		private NameValueCollection _queryStringList;
 		private NameValueCollection _postData;
 
@@ -34,7 +35,7 @@ namespace Bloom.Api
 				// plus signs do have a special meaning. So if this is correct, UrlDecode appears to be WRONG in its
 				// handling of + signs. They should be treated literally, not turned into spaces.
 				//no:	return HttpUtility.UrlDecode(urlToDecode);
-				
+
 				// So let's workaround that problem with UrlDecode and still do decoding on the path component:
 				var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+","%2B");
 				return HttpUtility.UrlDecode(pathWithoutLiteralPlusSigns);
@@ -56,9 +57,9 @@ namespace Bloom.Api
 			get { return _actualContext.Request.HttpMethod; }
 		}
 
-		public RequestInfo(HttpListenerContext actualContext)
+		public RequestInfo(IHttpListenerContext context)
 		{
-			_actualContext = actualContext;
+			_actualContext = context;
 		}
 
 		//used when an anchor has given us info, but we don't actually want the browser to navigate
