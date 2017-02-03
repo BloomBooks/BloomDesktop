@@ -73,6 +73,7 @@ namespace Bloom
 				var folder = Path.GetDirectoryName(file);
 				xulRunnerPath = Path.Combine(folder, "Firefox");
 			}
+			Xpcom.EnableProfileMonitoring = false;
 			Xpcom.Initialize(xulRunnerPath);
 
 			var errorsToHide = new List<string>
