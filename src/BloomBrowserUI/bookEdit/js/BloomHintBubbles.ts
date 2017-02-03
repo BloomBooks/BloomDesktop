@@ -138,7 +138,15 @@ export default class BloomHintBubbles {
             whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
             hideEvents = false; // Don't specify a hide event...
         }
-
+        // Handle a second line in the bubble which links to something like a javascript function
+        var linkText = source.attr('data-link-text');
+        var linkTarget = source.attr('data-link-target');
+        if (linkText && linkTarget) {
+            linkText = theOneLocalizationManager.getLocalizedHint(linkText, target);
+            if (linkTarget.indexOf('(') > 0)
+                linkTarget = 'javascript:' + linkTarget + ';';
+            whatToSay = whatToSay + "<br><a href='" + linkTarget + "'>" + linkText + "</a>";
+        }
         if (onFocusOnly) {
             shouldShowAlways = false;
             hideEvents = 'focusout mouseleave';

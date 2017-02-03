@@ -1,4 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
+import axios = require('axios');
 
 export class EditableDivUtils {
 
@@ -117,5 +118,48 @@ export class EditableDivUtils {
             // the extra 30 pixels is for padding
             dialogBox.offset({ left: offset.left, top: offset.top - diff - 30 });
         }
+    }
+
+    static pasteImageCredits() {
+        axios.get<any>('/bloom/api/image/imageCreditsForWholeBook').then(result => {
+            var data = result.data;
+            if (!data)
+                return;     // nothing to insert: no images apparently...
+
+            // This is a global method, called from an href attribute of an <a> element.
+            // So we don't have any idea of where we came from.  The outer div has an id,
+            // but it contains multiple div elements.  Only one of these is supposed to
+            // receive the credits (as far as I can tell).  The desired child div is an
+            // editable textbox that has a tooltip (which is where we're actually coming from).
+            // There seems to be only one of these applicable div elements.
+            // Note that the focus isn't necessarily in the right div when we click on the
+            // link in the tooltip bubble.
+            var contribs = document.getElementById('originalContributions');
+            var divs = contribs.getElementsByTagName('div');
+            var artists;
+            for (var i = 0; i < divs.length; ++i) {
+                var d = divs[i];
+                if (d.getAttribute('contenteditable') === 'true' &&
+                    d.getAttribute('data-hasqtip') === 'true' &&
+                    d.getAttribute('role') === 'textbox') {
+                    artists = d;
+                    break;
+                }
+            }
+            if (artists)
+            {
+                // We found where to insert the credits.  If there's a better way to add this
+                // information, I'd be happy to learn what it is.  data is a string consisting
+                // of one or more <p> elements properly terminated by </p> and separated by
+                // newlines.
+                var d2 = document.createElement('div');
+                d2.innerHTML = data;
+                var paras = d2.getElementsByTagName('p');
+                // Note that when the p element is appended to the div element, it gets removed from the list.
+                while (paras.length > 0) {
+                    artists.appendChild(paras[0]);
+               }
+            }
+        });
     }
 }
