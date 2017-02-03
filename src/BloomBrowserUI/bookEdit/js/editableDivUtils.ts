@@ -1,4 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
+import axios = require('axios');
 
 export class EditableDivUtils {
 
@@ -117,5 +118,33 @@ export class EditableDivUtils {
             // the extra 30 pixels is for padding
             dialogBox.offset({ left: offset.left, top: offset.top - diff - 30 });
         }
+    }
+
+    static pasteImageCredits() {
+        axios.get<any>('/bloom/api/image/imageCreditsForWholeBook').then(result => {
+            var data = result.data;
+            var contribs = document.getElementById('originalContributions');
+            var divs = contribs.getElementsByTagName('div');
+            var artists;
+            for (var i = 0; i < divs.length; ++i) {
+                var d = divs[i];
+                if (d.getAttribute('contenteditable') === 'true' &&
+                    d.getAttribute('data-hasqtip') === 'true' &&
+                    d.getAttribute('role') === 'textbox') {
+                    artists = d;
+                    break;
+                }
+            }
+            if (data && artists)
+            {
+                var d2 = document.createElement('div');
+                d2.innerHTML = data;
+                var paras = d2.firstElementChild.getElementsByTagName('p');
+                // Note that when the p element is appended to the div element, it gets removed from the list.
+                while (paras.length > 0) {
+                    artists.appendChild(paras[0]);
+               }
+            }
+        });
     }
 }

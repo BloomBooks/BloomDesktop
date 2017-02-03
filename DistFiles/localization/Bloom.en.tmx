@@ -1600,6 +1600,12 @@
         <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FrontMatter.PasteImageCreditsLink">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Paste Image Credits</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FrontMatter.TopicPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
