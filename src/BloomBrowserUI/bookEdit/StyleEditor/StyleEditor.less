@@ -24,6 +24,9 @@
     .leftBlock {
         width: 150px;
     }
+    .indentBlock {
+        width: 100px;
+    }
     .spacing-fudge {
         margin: 0px 0px -2px 0px;
     }
@@ -74,6 +77,16 @@
     .state-already-exists #please-use-alpha, .state-already-exists #dont-see {
         display: none;
     }
+    .iconIndent {
+        width: 39px;
+        height: 19px;
+        padding: 2px;
+        margin-bottom: 5px;
+        .IMG {
+            margin-top: 1px;
+            margin-left: 1px;
+        }
+    }
 }
 
 //the select2 dropdown gets appended to the body, not to our dialog, so it needs a really high z-index to show above the dialog.
@@ -111,6 +124,9 @@
     width: 100px  !important;
 }
 #size-select + .select2-container{
+    width: 60px !important;
+}
+#para-spacing-select + .select2-container{
     width: 60px !important;
 }
 // #font-select + .select2-container{

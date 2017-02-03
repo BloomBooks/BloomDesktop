@@ -278,7 +278,9 @@ export default class StyleEditor {
     // always used for the More tab, and for everything except font name when authoring.
     // Otherwise, it will specify language: .myStyle[lang="code"], or if langAttrValue is null, .myStyle:not([lang]).
     // This is used for all of character tab when localizing, and always for font name.
-    GetOrCreateRuleForStyle(styleName: string, langAttrValue: string, ignoreLanguage: boolean): CSSStyleRule {
+    // if forChildParas is true, the rule sought will have a selector like ".mystyle-style p" to select paragraphs
+    // inside the block that has the style.
+    GetOrCreateRuleForStyle(styleName: string, langAttrValue: string, ignoreLanguage: boolean, forChildParas?: boolean): CSSStyleRule {
         var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         if (styleSheet == null) {
             alert('styleSheet == null');
@@ -301,16 +303,17 @@ export default class StyleEditor {
                 styleAndLang = styleName + ":not([lang])";
         }
 
+        if (forChildParas) {
+          styleAndLang += " p";
+        }
+
         for (var i = 0; i < ruleList.length; i++) {
             var index = ruleList[i].cssText.indexOf('{');
             if (index == -1) continue;
-            var match = ruleList[i].cssText;
-            // if we're not ignoring language, we simply need a match for styleAndLang, which includes a lang component.
-            // if we're ignoring language, we must find a rule that doesn't specify language at all, even if we
-            // have one that does.
-            // It's probably pathological to worry about the style name occurring in the body of some other rule,
-            // especially with the -style suffix, but it seems safer not to risk it.
-            if (match.toLowerCase().indexOf(styleAndLang.toLowerCase()) > -1 && (!ignoreLanguage || match.indexOf('[lang') == -1)) {
+            // The rule we want is one whose selector is the string we want.
+            // The substring strips off the initial period and the rule body, leaving the selector.
+            var match = ruleList[i].cssText.trim().substring(1, index).toLowerCase().trim();
+            if (match == styleAndLang) {
                 return <CSSStyleRule>ruleList[i];
             }
         }
@@ -428,6 +431,10 @@ export default class StyleEditor {
         theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
     }
 
+    getParagraphSpaceOptions() {
+       return ['0 pt', '6 pt', '12 pt', '18 pt'];
+    }
+
     // Returns an object giving the current selection for each format control.
     getFormatValues() {
         var box = $(this.boxBeingEdited);
@@ -468,44 +475,38 @@ export default class StyleEditor {
                 wordSpacing = wordSpaceOptions[1];
             }
         }
-        var borderStyle: string = box.css('border-bottom-style');
-        var borderColor = box.css('border-bottom-color');
-        var borderRadius: string = box.css('border-top-left-radius');
-
-        var borderChoice = "";
-        // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
-        // Currently we use plain rgb for our official borders, and the inherited one uses rgba(0, 0, 0, 0.2).
-        // We have a problem in that the edit mode UI also uses borders. Its borders, however, are all partially
-        // transparent (up to 0.6 at the moment). So we can detect that there isn't an actual style border by looking at the 4th, opacity member of the rgba.
-        // REVIEW (JH) @JT: Why do we look at the actual style, instead of the style rule we are editing?
-        if (!borderStyle || borderStyle === 'none' || !borderColor || (borderColor.toLowerCase().startsWith("rgba(") && parseFloat(borderColor.split(',')[3]) < 1.0)) {
-            borderChoice = 'none';
-        }
-        else if (borderColor.toLowerCase() == 'rgb(128, 128, 128)') {
-            if (parseInt(borderRadius) == 0) {
-                borderChoice = 'gray';
-            } else {
-                borderChoice = 'gray-round';
-            }
-        }
-        else if (parseInt(borderRadius) > 0) {
-            borderChoice = 'black-round';
-        } else {
-            borderChoice = 'black';
-        }
-        var backColor = 'none';
-        if (box.css('background-color').toLowerCase() != 'transparent') {
-            backColor = 'gray';
-        }
-        var weight = box.css('font-weight');
-        var bold = (parseInt(weight) > 600);
-
-        var italic = box.css('font-style') == 'italic';
-        var underline = box.css('text-decoration') == 'underline';
         var center = box.css('text-align') == 'center';
 
+        // If we're going to base the initial values on current actual values, we have to get the
+        // margin-below and text-indent values from one of the paragraphs they actually affect.
+        // I don't recall why we wanted to get the values from the box rather than from the
+        // existing style rule. Trying to do so will be a problem if there are no paragraph
+        // boxes in the div from which to read the value. I don't think this should happen.
+        var paraBox = box.find("p");
+
+        var marginBelowString = paraBox.css('margin-bottom');
+        var paraSpacePx = parseInt(marginBelowString);
+        var paraSpacePt = this.ConvertPxToPt(paraSpacePx, false);
+        var paraSpaceOptions = this.getParagraphSpaceOptions();
+        var paraSpacing = StyleEditor.GetClosestValueInList(paraSpaceOptions, paraSpacePt);
+
+        var indentString = paraBox.css('text-indent');
+        var indentNumber = parseInt(indentString);
+        var paraIndent = 'none';
+        if (indentNumber > 1) {
+          paraIndent = 'indented';
+        } else if (indentNumber < 0) {
+          paraIndent = 'hanging';
+        }
+
         return {
-            ptSize: ptSize, fontName: fontName, lineHeight: lineHeight, wordSpacing: wordSpacing, borderChoice: borderChoice, backColor: backColor, bold: bold, italic: italic, underline: underline, center: center
+          ptSize: ptSize,
+          fontName: fontName,
+          lineHeight: lineHeight,
+          wordSpacing: wordSpacing,
+          center: center,
+          paraSpacing: paraSpacing,
+          paraIndent: paraIndent
         };
     }
 
@@ -663,32 +664,22 @@ export default class StyleEditor {
                     html += '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>'
                         + editor.makeCharactersContent(fonts, current)
                         + '</div>' // end of tab-page div for format
-                        + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.MoreTab">More</h2>'
+                        + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.ParagraphTab">Paragraph</h2>'
                         + editor.makeDiv(null, null, null, null,
-                            editor.makeDiv(null, 'mainBlock leftBlock', null, null,
-                                editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null,
-                                    editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B')
-                                    + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I')
-                                    + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U')))
+                            editor.makeDiv(null, 'mainBlock indentBlock', null, null,
+                                editor.makeDiv(null, null, null, 'EditTab.Indent', 'Indent') + editor.makeDiv(null, null, null, null,
+                                  editor.makeDiv('indent-none', 'iconIndent', null, null, editor.makeImage('indent_none.png'))
+                                  + editor.makeDiv('indent-indented', 'iconIndent', null, null, editor.makeImage('indent_indented.png'))
+                                  + editor.makeDiv('indent-hanging', 'iconIndent', null, null, editor.makeImage('indent_hanging.png'))))
                             + editor.makeDiv(null, 'mainBlock', null, null,
-                                editor.makeDiv(null, null, null, 'EditTab.Position', 'Position') + editor.makeDiv(null, null, null, null,
+                                editor.makeDiv(null, null, null, 'EditTab.Alignment', 'Alignment') + editor.makeDiv(null, null, null, null,
                                     editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png'))
-                                    + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png')))))
-                        + editor.makeDiv(null, null, 'margin-top:10px', null,
-                            editor.makeDiv(null, 'mainBlock leftBlock', null, null,
-                                editor.makeDiv(null, null, null, 'EditTab.Borders', 'Borders')
-                                + editor.makeDiv(null, null, 'margin-top:-11px', null,
-                                    editor.makeDiv('border-none', 'icon16x16', null, null, editor.makeImage('grayX.png'))
-                                    + editor.makeDiv('border-black', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: black', null, ''))
-                                    + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: black', null, '')))
-                                + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', null,
-                                    editor.makeDiv('border-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: gray', null, ''))
-                                    + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: gray', null, ''))))
-                            + editor.makeDiv(null, 'mainBlock', null, null,
-                                editor.makeDiv(null, null, null, 'EditTab.Background', 'Background')
-                                + editor.makeDiv(null, null, 'margin-top:-11px', null,
-                                    editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png'))
-                                    + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, '')))))
+                                    + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png')))
+                            + editor.makeDiv(null, null, 'margin-top:10px', null,
+                                editor.makeDiv(null, 'mainBlock', null, null,
+                                    editor.makeDiv(null, null, null, 'EditTab.ParagraphSpacing', 'Space Between Paragraphs')
+                                    + editor.makeDiv(null, null, null, null,
+                                      editor.makeSelect(editor.getParagraphSpaceOptions(), current.paraSpacing, 'para-spacing-select'))))))
                         + '<div class="format-toolbar-description" id="formatMoreDesc"></div>'
                         + '</div>' // end of tab-page div for 'more' tab
                         + '</div>'; // end of tab-pane div
@@ -749,6 +740,7 @@ export default class StyleEditor {
                             button.click(function () { editor.buttonClick(this); });
                             button.addClass('propButton');
                         }
+                        $('#para-spacing-select').change(function () { editor.changeParaSpacing(); });
                         editor.selectButtons(current);
                         new WebFXTabPane($('#tabRoot').get(0), false, null);
                     }
@@ -779,7 +771,7 @@ export default class StyleEditor {
     }
 
     getButtonIds() {
-        return ['bold', 'italic', 'underline', 'position-leading', 'position-center', 'border-none', 'border-black', 'border-black-round', 'border-gray', 'border-gray-round', 'background-none', 'background-gray'];
+        return ['bold', 'italic', 'underline', 'position-leading', 'position-center', 'indent-none', 'indent-indented', 'indent-hanging'];
     }
     selectButtons(current) {
         this.selectButton('bold', current.bold);
@@ -787,8 +779,7 @@ export default class StyleEditor {
         this.selectButton('underline', current.underline);
         this.selectButton('position-center', current.center);
         this.selectButton('position-leading', !current.center);
-        this.selectButton('border-' + current.borderChoice, true);
-        this.selectButton('background-' + current.backColor, true);
+        this.selectButton('indent-' + current.paraIndent, true);
     }
 
     makeCharactersContent(fonts, current): string {
@@ -874,8 +865,7 @@ export default class StyleEditor {
         if (id == 'bold') this.changeBold();
         else if (id == 'italic') this.changeItalic();
         else if (id == 'underline') this.changeUnderline();
-        else if (id.startsWith('background')) this.changeBackground();
-        else if (id.startsWith('border')) this.changeBorderSelect();
+        else if (id.startsWith('indent')) this.changeIndent();
         else if (id.startsWith('position')) this.changePosition();
     }
 
@@ -977,11 +967,11 @@ export default class StyleEditor {
         this.changeSize();
         this.changeLineheight();
         this.changeWordSpace();
-        this.changeBorderSelect();
+        this.changeIndent();
         this.changeBold();
         this.changeItalic();
         this.changeUnderline();
-        this.changeBackground();
+        this.changeParaSpacing();
         this.changePosition();
         this.styleStateChange('initial'); // go back to initial state so user knows it worked
     }
@@ -1113,14 +1103,12 @@ export default class StyleEditor {
         }
         this.cleanupAfterStyleChange();
     }
-
-    changeBackground() {
-        if (this.ignoreControlChanges) return;
-        var backColor = 'transparent';
-        if ($('#background-gray').hasClass('selectedIcon')) backColor = this.preferredGray();
-        var rule = this.getStyleRule(true);
-        rule.style.setProperty("background-color", backColor, "important");
-        this.cleanupAfterStyleChange();
+    changeParaSpacing() {
+      if (this.ignoreControlChanges) return;
+      var paraSpacing = $("#para-spacing-select").val().replace(" ", "");
+      var rule = this.getStyleRule(true, true);
+      rule.style.setProperty("margin-bottom", paraSpacing, "important");
+      this.cleanupAfterStyleChange();
     }
 
     changePosition() {
@@ -1135,37 +1123,19 @@ export default class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
-    changeBorderSelect() {
+    changeIndent() {
         if (this.ignoreControlChanges) return;
-        var rule = this.getStyleRule(true);
-        if ($('#border-none').hasClass('selectedIcon')) {
+        var rule = this.getStyleRule(true, true); // rule that is language-independent for child paras
+        if ($('#indent-none').hasClass('selectedIcon')) {
             //rule.style.setProperty("border-style", "none");
-            rule.style.removeProperty("border-style");
-            rule.style.removeProperty("border");
-            rule.style.removeProperty("border-color");
-            rule.style.removeProperty("border-radius");
-            rule.style.removeProperty("padding");
-            rule.style.removeProperty("box-sizing");
-        } else if ($('#border-black').hasClass('selectedIcon')) {
-            rule.style.setProperty("border", "1pt solid black", "important");
-            rule.style.setProperty("border-radius", "0px", "important");
-            //rule.style.setProperty("padding", "10px", "important");
-            rule.style.setProperty("box-sizing", "border-box", "important");
-        } else if ($('#border-black-round').hasClass('selectedIcon')) {
-            rule.style.setProperty("border", "1pt solid black", "important");
-            rule.style.setProperty("border-radius", "10px", "important");
-            //rule.style.setProperty("padding", "10px", "important");
-            rule.style.setProperty("box-sizing", "border-box", "important");
-        } else if ($('#border-gray').hasClass('selectedIcon')) {
-            rule.style.setProperty("border", "1pt solid Grey", "important");
-            rule.style.setProperty("border-radius", "0px", "important");
-            //rule.style.setProperty("padding", "10px", "important");
-            rule.style.setProperty("box-sizing", "border-box", "important");
-        } else if ($('#border-gray-round').hasClass('selectedIcon')) {
-            rule.style.setProperty("border", "1pt solid Grey", "important");
-            rule.style.setProperty("border-radius", "10px", "important");
-            //rule.style.setProperty("padding", "10px", "important");
-            rule.style.setProperty("box-sizing", "border-box", "important");
+            rule.style.removeProperty("text-indent");
+            rule.style.removeProperty("margin-left");
+        } else if ($('#indent-indented').hasClass('selectedIcon')) {
+            rule.style.setProperty("text-indent", "20pt", "important");
+            rule.style.removeProperty("margin-left");
+        } else if ($('#indent-hanging').hasClass('selectedIcon')) {
+            rule.style.setProperty("text-indent", "-20pt", "important");
+            rule.style.setProperty("margin-left", "20pt", "important");
         }
 
         this.cleanupAfterStyleChange();
@@ -1241,13 +1211,13 @@ export default class StyleEditor {
         $('#' + id).val(value).trigger('change');
     }
 
-    getStyleRule(ignoreLanguage: boolean) {
+    getStyleRule(ignoreLanguage: boolean, forChildPara? : boolean) {
         var target = this.boxBeingEdited;
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
             return; // bizarre, since we put up the dialog
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        return this.GetOrCreateRuleForStyle(styleName, langAttrValue, ignoreLanguage);
+        return this.GetOrCreateRuleForStyle(styleName, langAttrValue, ignoreLanguage, forChildPara);
     }
 
     cleanupAfterStyleChange() {
