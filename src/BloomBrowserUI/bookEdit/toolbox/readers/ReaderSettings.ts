@@ -7,6 +7,7 @@ export class ReaderSettings {
   levels: ReaderLevel[] = [];
   stages: ReaderStage[] = [];
   letters: string = '';
+  sentencePunct: string = '';
   moreWords: string = '';
   useAllowedWords: number = 0;
 }

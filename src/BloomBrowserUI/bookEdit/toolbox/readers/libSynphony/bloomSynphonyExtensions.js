@@ -82,6 +82,20 @@ function WordCache() {
     this.selectedWords;
 }
 
+LibSynphony.prototype.setExtraSentencePunctuation = function(extra) {
+    // Replace characters that are magic in regexp. As a special case, period is simply removed, since it's already
+    // sentence-terminating. If they want to use backslash, they will just have to double it; we can't fix it
+    // because we want to allow \u0020 etc. I don't know why <> need to be replaced but they don't work otherwise.
+    var extraRe = extra.replace('^', '\\u005E').replace('$', '\\u0024').replace('.', '')
+      .replace('*', '\\u002A').replace('~', '\\u007E').replace('[', '\\u005B').replace(']', '\\u005D')
+      .replace('<', '\\u003C').replace('>', '\\u003E');
+    LibSynphony.prototype.extraSentencePunct = extraRe;
+    // Although the method name says "add", it actually resets the meaning of "SEP" in regular expressions to whatever we give it here.
+    // The literal string is taken from bloom-xregexp_categories.js, copied because I can't figure out how a literal string there
+    // can be accessed here.
+    XRegExp.addUnicodeData([{name: "SEP", alias: "Sentence_Ending_Punctuation", bmp: extraRe + "\u0021\u002e\u003f\u055c\u055e\u0589\u061f\u06d4\u0700\u0701\u0702\u0964\u0965\u104a\u104b\u1362\u1367\u1368\u166e\u1803\u1809\u1944\u1945\u203c\u203d\u2047\u2048\u2049\u3002\ufe52\ufe56\ufe57\uff01\uff0e\uff1f\uff61\u00a7"}]);
+}
+
 /**
  * Takes an HTML string and returns an array of fragments containing sentences and inter-sentence spaces
  * @param {String} textHTML The HTML text to split
@@ -137,12 +151,18 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
     // break the text into paragraphs
     var paragraphs = XRegExp.match(textHTML, regex);
 
+    // We require at least one space between sentences, unless things have been configured so that
+    // space IS a sentence-ending punctuation. In that case, zero or more.
+    var intersentenceSpace = '([\\s\\p{PEP}\\u0006\\u0007\\u0008]' +
+        (LibSynphony.prototype.extraSentencePunct.indexOf('\\u0020') >= 0 ? '*' : '+') +
+        ')';
+
     // regex to find sentence ending sequences and inter-sentence space
     regex = XRegExp(
         '([\\p{SEP}]+'                      // sentence ending punctuation (SEP)
         + '[\'"\\p{Pf}\\p{Pe}\\u0005]*)'    // characters that can follow the SEP
         + '([\\u0004]*)'                    // opening tag between sentences
-        + '([\\s\\p{PEP}\\u0006\\u0007\\u0008]+)'  // inter-sentence space
+        + intersentenceSpace
         + '([\\u0005]*)'                    // closing tag between sentences
         + '(?![^\\p{L}]*'                   // may be followed by non-letter chars
         + '[\\p{Ll}\\p{SCP}]+)',            // first letter following is not lower case
