@@ -1,13 +1,16 @@
 ## 3.8
 
-- Upgraded to a new Firefox engine which reduces memory use, particularly when making PDFs.
-- Added A3 Landscape & A5 Landscape choices.
-- Edit tab
+- Installation
+    - We've made the windows installer is less likely to trigger over-eager anti-malware programs. If you still have problems, check out the [installation troubleshooting guide](https://community.software.sil.org/t/how-to-fix-installation-problems/17/3).
+- Edit Tab
+    - We have added A3 Landscape & A5 Landscape choices.
     - In "Change Layout", you can now set the language of the text box. This will allow people making translations and glossaries in the back of the book to create a box, for example, which only holds the national language.
-    - In the "Add Page box", Bloom now lets you add pages from the "Basic Book" and "Arithmetic" templates, regardless of the template your book started with.
-    - Bloom now offers a button for superscripting selected text.
-- In the Publish tab, Bloom now displays the user ID you are logged into bloomlibrary.org with.
-- Windows installer is less likely to trigger over-eager anti-malware programs.
+    - In the "Add Page box", you can now add pages from the "Basic Book" and "Arithmetic" templates, regardless of the template your book started with. This feature will grow in subsequent releases so that it gets easier to combine pages from multiple temlpate page collections.
+    - We've added a button for superscripting selected text.
+- Publish Tab
+    - We have upgraded Bloom to a new Firefox engine which reduces memory use, particularly when making PDFs.
+    - PDFs that Firefox makes for Bloom can be huge. If this is a problem for you, please see our [guide to shrinking your pdfs](https://community.software.sil.org/t/how-to-compress-a-bloom-pdf/24).
+    - In the Upload section, you can now see the user ID you are logged into bloomlibrary.org with.
 - Many other fixes and tiny improvements.
 
 ## 3.7
