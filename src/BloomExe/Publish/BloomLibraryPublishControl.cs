@@ -326,31 +326,40 @@ namespace Bloom.Publish
 					return;
 			}
 
-			_progressBox.WriteMessage("Checking bloom version eligibility...");
-			if (!_bookTransferrer.IsThisVersionAllowedToUpload())
+			try
 			{
-				MessageBox.Show(this,
-					LocalizationManager.GetString("PublishTab.Upload.OldVersion",
-						"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."),
-					LocalizationManager.GetString("PublishTab.Upload.UploadNotAllowed", "Upload Not Allowed"),
-					MessageBoxButtons.OK, MessageBoxIcon.Stop);
-				_progressBox.WriteMessage("Canceled.");
-				return;
-			}
-
-			// Todo: try to make sure it has a thumbnail.
-
-			_progressBox.WriteMessage("Checking for existing copy on server...");
-			if (_bookTransferrer.IsBookOnServer(_book.FolderPath))
-			{
-				using (var dlg = new OverwriteWarningDialog())
+				_progressBox.WriteMessage("Checking bloom version eligibility...");
+				if (!_bookTransferrer.IsThisVersionAllowedToUpload())
 				{
-					if (dlg.ShowDialog() == DialogResult.Cancel)
+					MessageBox.Show(this,
+						LocalizationManager.GetString("PublishTab.Upload.OldVersion",
+							"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."),
+						LocalizationManager.GetString("PublishTab.Upload.UploadNotAllowed", "Upload Not Allowed"),
+						MessageBoxButtons.OK, MessageBoxIcon.Stop);
+					_progressBox.WriteMessage("Canceled.");
+					return;
+				}
+
+				// Todo: try to make sure it has a thumbnail.
+
+				_progressBox.WriteMessage("Checking for existing copy on server...");
+				if (_bookTransferrer.IsBookOnServer(_book.FolderPath))
+				{
+					using (var dlg = new OverwriteWarningDialog())
 					{
-						_progressBox.WriteMessage("Canceled.");
-						return;
+						if (dlg.ShowDialog() == DialogResult.Cancel)
+						{
+							_progressBox.WriteMessage("Canceled.");
+							return;
+						}
 					}
 				}
+			}
+			catch (Exception)
+			{
+				ReportTryAgainDuringUpload();
+				_uploadButton.Enabled = true;
+				return;
 			}
 			_progressBox.WriteMessage("Starting...");
 			_uploadWorker = new BackgroundWorker();
@@ -378,9 +387,7 @@ namespace Bloom.Publish
 					else if (string.IsNullOrEmpty((string) completedEvent.Result))
 					{
 						// Something went wrong, typically already reported.
-						string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice",
-							"Sorry, \"{0}\" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.");
-						_progressBox.WriteError(sorryMessage, _book.Title);
+						ReportTryAgainDuringUpload();
 					}
 					else
 					{
@@ -395,6 +402,13 @@ namespace Bloom.Publish
 			SetStateOfNonUploadControls(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
 			_uploadWorker.RunWorkerAsync(_book);
 			//_bookTransferrer.UploadBook(_book.FolderPath, AddNotification);
+		}
+
+		private void ReportTryAgainDuringUpload()
+		{
+			string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice",
+				"Sorry, \"{0}\" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.");
+			_progressBox.WriteError(sorryMessage, _book.Title);
 		}
 
 		public static string BloomLibraryUrlPrefix
