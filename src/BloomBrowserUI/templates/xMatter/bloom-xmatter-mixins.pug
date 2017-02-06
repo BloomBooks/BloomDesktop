@@ -162,7 +162,7 @@ mixin title-page-contents
 		label.bubble Book title in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
 	+field-prototypeDeclaredExplicity("N1")#originalContributions
-		label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
+		label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()') The contributions made by writers, illustrators, editors, etc., in {lang}
 		+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
 	+field-prototypeDeclaredExplicity("N1")#funding
 		label.bubble Use this to acknowledge any funding agencies.
