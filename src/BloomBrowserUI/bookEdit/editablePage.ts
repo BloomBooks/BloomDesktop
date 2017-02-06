@@ -5,6 +5,7 @@
 import * as $ from 'jquery';
 import * as jQuery from 'jquery';
 import { bootstrap } from './js/bloomEditing';
+import { EditableDivUtils } from './js/editableDivUtils';
 import '../lib/jquery.i18n.custom.ts'; //localize()
 import '../lib/jquery.myimgscale.js'; //scaleImage()
 
@@ -74,6 +75,11 @@ import TopicChooser from './TopicChooser/TopicChooser';
 //ShowTopicChooser() is called by a script tag on a <a> element in a tooltip
 window['ShowTopicChooser'] = () => {
     TopicChooser.showTopicChooser();
+}
+
+//PasteImageCredits() is called by a script tag on a <a> element in a tooltip
+window['PasteImageCredits'] = () => {
+    EditableDivUtils.pasteImageCredits();
 }
 
 $(document).ready(function () {
