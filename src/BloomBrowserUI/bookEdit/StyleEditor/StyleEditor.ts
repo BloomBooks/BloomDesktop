@@ -475,6 +475,11 @@ export default class StyleEditor {
                 wordSpacing = wordSpaceOptions[1];
             }
         }
+        var weight = box.css('font-weight');
+        var bold = (parseInt(weight) > 600);
+
+        var italic = box.css('font-style') == 'italic';
+        var underline = box.css('text-decoration') == 'underline';
         var center = box.css('text-align') == 'center';
 
         // If we're going to base the initial values on current actual values, we have to get the
@@ -506,7 +511,10 @@ export default class StyleEditor {
           wordSpacing: wordSpacing,
           center: center,
           paraSpacing: paraSpacing,
-          paraIndent: paraIndent
+          paraIndent: paraIndent,
+          bold: bold,
+          italic: italic,
+          underline: underline
         };
     }
 
@@ -798,6 +806,12 @@ export default class StyleEditor {
                 + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.svg">'
                 + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
                 + '</span>'))
+            + this.makeDiv(null, 'mainBlock leftBlock', "margin-top:15px", null,
+                this.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis')
+                + this.makeDiv(null, null, null, null,
+                  this.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B')
+                  + this.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I')
+                  + this.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U')))
             + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, null);
     }
 
@@ -1004,25 +1018,37 @@ export default class StyleEditor {
 
     changeBold() {
         if (this.ignoreControlChanges) return;
-        var rule = this.getStyleRule(true);
+        var rule = this.getStyleRule(false);
         var val = $('#bold').hasClass('selectedIcon');
         rule.style.setProperty("font-weight", (val ? 'bold' : 'normal'), "important");
+        if (this.shouldSetDefaultRule()) {
+          rule = this.getStyleRule(true);
+          rule.style.setProperty("font-weight", (val ? 'bold' : 'normal'), "important");
+        }
         this.cleanupAfterStyleChange();
     }
 
     changeItalic() {
         if (this.ignoreControlChanges) return;
-        var rule = this.getStyleRule(true);
+        var rule = this.getStyleRule(false);
         var val = $('#italic').hasClass('selectedIcon');
         rule.style.setProperty("font-style", (val ? 'italic' : 'normal'), "important");
+        if (this.shouldSetDefaultRule()) {
+          rule = this.getStyleRule(true);
+          rule.style.setProperty("font-style", (val ? 'italic' : 'normal'), "important");
+        }
         this.cleanupAfterStyleChange();
     }
 
     changeUnderline() {
         if (this.ignoreControlChanges) return;
-        var rule = this.getStyleRule(true);
+        var rule = this.getStyleRule(false);
         var val = $('#underline').hasClass('selectedIcon');
         rule.style.setProperty("text-decoration", (val ? 'underline' : 'none'), "important");
+        if (this.shouldSetDefaultRule()) {
+          rule = this.getStyleRule(true);
+          rule.style.setProperty("text-decoration", (val ? 'underline' : 'none'), "important");
+        }
         this.cleanupAfterStyleChange();
     }
 
