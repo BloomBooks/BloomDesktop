@@ -283,16 +283,19 @@ namespace Bloom.Publish
 		{
 			get
 			{
+				// Large page sizes can't make booklets.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4155.
+				var size = PageLayout.SizeAndOrientation.PageSizeName;
 				return AllowPdf && BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
-				       BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.PageSizeName != "Letter";
+					(size != "A4" && size != "A3" && size != "B5" && size != "Letter");
 			}
 		}
 
 		public bool AllowPdfCover
 		{
-			//currently the only cover option we have is a booklet one
-			get { return AllowPdf &&
-					BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate;
+			// currently the only cover option we have is a booklet one
+			get
+			{
+				return AllowPdfBooklet;
 			}
 		}
 
