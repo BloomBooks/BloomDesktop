@@ -946,11 +946,13 @@ namespace Bloom.Book
 
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation));
 
-			string autocssFilePath = ".."+Path.DirectorySeparatorChar+"settingsCollectionStyles.css";
+			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
+			// where it should definitely be forward slash. And it works fine in a Windows path too.
+			string autocssFilePath = "../"+"settingsCollectionStyles.css";
 			if (RobustFile.Exists(Path.Combine(_folderPath,autocssFilePath)))
 				EnsureHasLinkToStyleSheet(dom, autocssFilePath);
 
-			var customCssFilePath = ".." + Path.DirectorySeparatorChar + "customCollectionStyles.css";
+			var customCssFilePath = "../" + "customCollectionStyles.css";
 			if (RobustFile.Exists(Path.Combine(_folderPath, customCssFilePath)))
 				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
 
@@ -996,6 +998,13 @@ namespace Bloom.Book
 				var fileName = link.GetStringAttribute("href");
 				if (fileName == path)
 					return;
+				// We may also have an obsolete link with a Windows-specific path.
+				if (fileName.Replace('\\', '/') == path)
+				{
+					// We want a link that will work on both platforms, so correct it.
+					link.SetAttribute("href", path);
+					return;
+				}
 			}
 			dom.AddStyleSheet(path);
 		}
