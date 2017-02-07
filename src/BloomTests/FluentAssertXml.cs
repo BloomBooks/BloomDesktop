@@ -168,6 +168,11 @@ namespace BloomTests
 			}
 		}
 
+		public int CountOfMatchesForXPath(string xpath)
+		{
+			return NodeOrDom.SafeSelectNodes(xpath).Count;
+		}
+
 		public static void PrintNodeToConsole(XmlNode node)
 		{
 			XmlWriterSettings settings = new XmlWriterSettings();
