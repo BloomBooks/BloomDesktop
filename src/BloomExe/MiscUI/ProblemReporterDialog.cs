@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
@@ -35,6 +36,7 @@ namespace Bloom.MiscUI
 		protected enum State { WaitingForSubmission, UploadingBook, Submitting, CouldNotAutomaticallySubmit, Success }
 
 		public Book.Book Book;
+		private string _projectName;
 		private Bitmap _screenshot;
 		protected State _state;
 		private string _emailableReportFilePath;
@@ -82,6 +84,10 @@ namespace Bloom.MiscUI
 				GetScreenshot(targetOfScreenshot);
 				_includeScreenshot.Checked = _screenshot != null; // if for some reason we couldn't get a screenshot, this will be null
 				_includeScreenshot.Visible = _screenshot != null;
+				if (targetOfScreenshot is WorkspaceView)
+				{
+					_projectName = ((WorkspaceView) targetOfScreenshot).Text;
+				}
 			}
 			else
 			{
@@ -348,6 +354,8 @@ namespace Bloom.MiscUI
 						{
 							var zip = new BloomZipFile(bookZip.Path);
 							zip.AddDirectory(Book.FolderPath);
+							if (WantReaderInfo())
+								AddReaderInfo(zip);
 							zip.Save();
 						}
 						catch (Exception error)
@@ -386,6 +394,39 @@ namespace Bloom.MiscUI
 				Debug.Fail(error.Message);
 				return false;
 			}
+		}
+
+		/// <summary>
+		/// When the Book is a Decodable or Leveled Reader, bundle up more information to recreate its state.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4240.
+		/// </remarks>
+		private void AddReaderInfo(BloomZipFile zip)
+		{
+			// When Book being sent is a Decodable or Leveled Reader, include these as well:
+			// ReaderToolsSettings-*.json
+			// ReaderToolsWords-*.json
+			// And the following Collection folders:
+			// Allowed Words
+			// Sample Texts
+			var collectionFolder = System.IO.Path.GetDirectoryName(Book.FolderPath);
+			foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
+				zip.AddTopLevelFile(file);
+			zip.AddDirectory(Path.Combine(collectionFolder, "Allowed Words"));
+			zip.AddDirectory(Path.Combine(collectionFolder, "Sample Texts"));
+		}
+
+		private bool WantReaderInfo()
+		{
+			if (!_includeBook.Visible || !_includeBook.Checked) // Visible only if Book is not null
+				return false;
+			foreach (var tool in Book.BookInfo.Tools)
+			{
+				if (tool is Bloom.Edit.DecodableReaderTool || tool is Bloom.Edit.LeveledReaderTool)
+					return true;
+			}
+			return false;
 		}
 
 		/// <summary>
@@ -470,8 +511,67 @@ namespace Bloom.MiscUI
 			bldr.AppendLine("=Problem Description=");
 			bldr.AppendLine(_description.Text);
 			bldr.AppendLine();
+			GetAdditionalEnvironmentInfo(bldr);
+			if (WantReaderInfo())
+				GetAdditionalFileInfo(bldr);
 			GetStandardErrorReportingProperties(bldr, appendLog);
 			return bldr.ToString();
+		}
+
+		private void GetAdditionalEnvironmentInfo(StringBuilder bldr)
+		{
+			bldr.AppendLine("=Additional User Environment Information=");
+			if (Book == null)
+			{
+				if (!string.IsNullOrEmpty(_projectName))
+					bldr.AppendLine("Collection name: " + _projectName);
+				bldr.AppendLine("No Book was selected.");
+				return;
+			}
+			try
+			{
+				var sizeOrient = Book.GetLayout().SizeAndOrientation;
+				bldr.AppendLine("Page Size/Orientation: " + sizeOrient);
+			}
+			catch (Exception)
+			{
+				bldr.AppendLine("GetLayout() or SizeAndOrientation threw an exception.");
+			}
+			var settings = Book.CollectionSettings;
+			if (settings == null)
+			{
+				// paranoia, shouldn't happen
+				bldr.AppendLine("Book's CollectionSettings was null.");
+				return;
+			}
+			bldr.AppendLine("Collection name: " + settings.CollectionName);
+			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
+			bldr.AppendLine("Language1 iso: " + settings.Language1Iso639Code + " font: " +
+			                settings.DefaultLanguage1FontName + (settings.IsLanguage1Rtl ? " RTL" : string.Empty));
+			bldr.AppendLine("Language2 iso: " + settings.Language2Iso639Code + " font: " +
+			                settings.DefaultLanguage2FontName + (settings.IsLanguage2Rtl ? " RTL" : string.Empty));
+			bldr.AppendLine("Language3 iso: " + settings.Language3Iso639Code + " font: " +
+			                settings.DefaultLanguage3FontName + (settings.IsLanguage3Rtl ? " RTL" : string.Empty));
+		}
+
+		private void GetAdditionalFileInfo(StringBuilder bldr)
+		{
+			bldr.AppendLine();
+			bldr.AppendLine("=Additional Files Bundled With Book=");
+			var collectionFolder = Path.GetDirectoryName(Book.FolderPath);
+			foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
+				bldr.AppendLine(file);
+			ListFolderContents(Path.Combine(collectionFolder, "Allowed Words"), bldr);
+			ListFolderContents(Path.Combine(collectionFolder, "Sample Texts"), bldr);
+		}
+
+		private void ListFolderContents(string folder, StringBuilder bldr)
+		{
+			foreach (var file in Directory.GetFiles(folder))
+				bldr.AppendLine(file);
+			// Probably overkill, but if there are subfolders, they will be zipped up with the book.
+			foreach (var sub in Directory.GetDirectories(folder))
+				ListFolderContents(sub, bldr);
 		}
 
 		//enhance: this is just copied from LibPalaso. When we move this whole class over there, we can get rid of it.
