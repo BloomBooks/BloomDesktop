@@ -73,7 +73,12 @@ namespace Bloom
 				var folder = Path.GetDirectoryName(file);
 				xulRunnerPath = Path.Combine(folder, "Firefox");
 			}
+#if !__MonoCS__
+			// This function seems to be newer than our Linux version of GeckoFx (as of Feb 2017, GeckFx45 rev 23 on Linux).
+			// It somehow prevents a spurious complaint by the debugger that an exception inside XpCom.initialize() is not handled
+			// (although it is).
 			Xpcom.EnableProfileMonitoring = false;
+#endif
 			Xpcom.Initialize(xulRunnerPath);
 
 			var errorsToHide = new List<string>
