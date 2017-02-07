@@ -952,10 +952,13 @@ namespace Bloom.Book
 			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
 			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
 			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
-			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);
+			// Per BL-3571, if it's using a layout we don't know (e.g., from a newer Bloom) we switch to A5Portrait.
+			// Various things, especially publication, don't work with unknown page sizes.
+			Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, _storage.GetFileLocator());
 			XMatterHelper.RemoveExistingXMatter(bookDOM);
-			layout = Layout.FromDom(bookDOM, layout);
-				//this says, if you can't figure out the page size, use the one we got before we removed the xmatter
+			// this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
+			// still requiring it to be a valid layout.
+			layout = Layout.FromDomAndChoices(bookDOM, layout, _storage.GetFileLocator());
 			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
