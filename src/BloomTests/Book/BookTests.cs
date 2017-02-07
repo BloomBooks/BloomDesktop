@@ -720,10 +720,13 @@ namespace BloomTests.Book
 		[Test]
 		public void BringBookUpToDate_A4LandscapeWithNoContentPages_RemainsA4Landscape()
 		{
+			// We need the reference to basic book.css because that's where the list of valid page layouts lives,
+			// and Bloom will force the book to A5Portrait if it can't verify that A4Landscape is valid.
 			_bookDom = new HtmlDom(@"
 				<html>
 					<head>
 						<meta name='xmatter' content='Traditional'/>
+						<link rel='stylesheet' href='Basic Book.css' type='text / css'></link>
 					</head>
 					<body>
 						<div class='bloom-page cover coverColor bloom-frontMatter A4Landscape' data-page='required'>

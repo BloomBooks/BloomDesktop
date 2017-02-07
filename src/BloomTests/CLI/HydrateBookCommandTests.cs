@@ -22,9 +22,11 @@ namespace BloomTests.CLI
 			_testFolder = new TemporaryFolder("hydration test");
 			_bookFolder = new TemporaryFolder(_testFolder,"original name");
 			_originalHtmlPath = _bookFolder.Combine("original name.html");
+			// We need the reference to basic book.css because that's where the list of valid page layouts lives,
+			// and Bloom will force the book to A5Portrait if it can't verify that A5Landscape, Device16x9Landscape etc. are valid.
 			File.WriteAllText(_originalHtmlPath,
-				@"<html><head></head><body>
-					<div id='bloomDataDiv'>
+				@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text / css'></link></head><body>
+					< div id='bloomDataDiv'>
 						<div data-book='bookTitle' lang='en'>
 								mudmen
 						</div>
