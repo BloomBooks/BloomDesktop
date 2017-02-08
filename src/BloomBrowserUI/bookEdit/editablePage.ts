@@ -29,6 +29,7 @@ var styleSheets = [
     'bookEdit/css/origami.css',
     'bookEdit/css/tab.winclassic.css',
     'StyleEditor/StyleEditor.css',
+    'bookEdit/TextBoxProperties/TextBoxProperties.css',
     'bookEdit/css/bloomDialog.css',
     'lib/long-press/longpress.css',
     'bookEdit/toolbox/talkingBook/audioRecording.css'
