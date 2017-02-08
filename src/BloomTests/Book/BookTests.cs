@@ -104,6 +104,39 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable') and @lang='en']/p", 2);
 		}
 
+		[Test]
+		public void BookWithUnknownLayout_GetsUpdatedToA5Portrait()
+		{
+			SetDom(@"<div class='bloom-page bloom-frontMatter QX9Landscape'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs'>
+								<div class='bloom-editable' lang='en'>
+									a<br/>c
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class='bloom-page QX9Landscape'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs'>
+								<div class='bloom-editable' lang='en'>
+									a<br/>c
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var assertThat = AssertThatXmlIn.Dom(dom);
+			// All bloom-page divs should now have class A5Portrait. Can't predict the exact number, it depends exactly
+			// what is in the currently inserted Xmatter.
+			assertThat.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'A5Portrait') and contains(@class,'bloom-page')]",
+				assertThat.CountOfMatchesForXPath("//div[contains(@class,'A5Portrait')]"));
+			// And there should be none left with the unknown class.
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[contains(@class,'QX9Landscape')]");
+		}
+
 		//Removing extra lines is of interest in case the user was entering blank lines by hand to separate the paragraphs, which now will
 		//be separated by the styling of the new paragraphs
 		[Test]
@@ -687,10 +720,13 @@ namespace BloomTests.Book
 		[Test]
 		public void BringBookUpToDate_A4LandscapeWithNoContentPages_RemainsA4Landscape()
 		{
+			// We need the reference to basic book.css because that's where the list of valid page layouts lives,
+			// and Bloom will force the book to A5Portrait if it can't verify that A4Landscape is valid.
 			_bookDom = new HtmlDom(@"
 				<html>
 					<head>
 						<meta name='xmatter' content='Traditional'/>
+						<link rel='stylesheet' href='Basic Book.css' type='text / css'></link>
 					</head>
 					<body>
 						<div class='bloom-page cover coverColor bloom-frontMatter A4Landscape' data-page='required'>
