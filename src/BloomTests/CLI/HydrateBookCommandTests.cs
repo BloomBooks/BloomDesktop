@@ -26,7 +26,7 @@ namespace BloomTests.CLI
 			// and Bloom will force the book to A5Portrait if it can't verify that A5Landscape, Device16x9Landscape etc. are valid.
 			File.WriteAllText(_originalHtmlPath,
 				@"<html><head><link rel='stylesheet' href='Basic Book.css' type='text / css'></link></head><body>
-					< div id='bloomDataDiv'>
+					<div id='bloomDataDiv'>
 						<div data-book='bookTitle' lang='en'>
 								mudmen
 						</div>
