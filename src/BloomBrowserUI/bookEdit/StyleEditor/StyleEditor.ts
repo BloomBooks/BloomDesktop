@@ -641,7 +641,13 @@ export default class StyleEditor {
         // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '#formatButton', function () {
-            axios.get('/bloom/availableFontNames').then(result => {
+            axios.all([
+                axios.get('/bloom/availableFontNames'),
+                axios.get<string>('/bloom/bookedit/StyleEditor/StyleEditor.html')
+            ]).then(results => {
+                var fonts = results[0].data['fonts'];
+                var html = results[1].data;
+
                 editor.boxBeingEdited = targetBox;
                 // This line is needed inside the click function to keep from using a stale version of 'styleName'
                 // and chopping off 6 characters each time!
@@ -652,7 +658,6 @@ export default class StyleEditor {
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
 
-                var fonts = result.data['fonts'];
                 editor.styles = editor.getFormattingStyles();
                 if (editor.styles.indexOf(styleName) === -1) {
                     editor.styles.push(styleName);
@@ -661,62 +666,27 @@ export default class StyleEditor {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
 
-                var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">'
-                    + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
-                if (noFormatChange) {
-                    var translation = theOneLocalizationManager.getText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.');
-                    html += '<div class="bloomDialogMainPage"><p>' + translation + '</p></div>';
-                } else if (editor.authorMode) {
-                    html += '<div class="tab-pane" id="tabRoot">';
-                    if (!editor.xmatterMode) {
-                        html += '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>'
-                            + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style')
-                            + editor.makeDiv('style-group', 'state-initial', null, null,
-                                editor.makeSelect(editor.styles, styleName, 'styleSelect')
-                                + editor.makeDiv('dont-see', null, null, null,
-                                    '<span data-i18n="EditTab.FormatDialog.DontSeeNeed">' + 'Don\'t see what you need?' + '</span>'
-                                    + ' <a id="show-createStyle" href="" data-i18n="EditTab.FormatDialog.CreateStyle">Create a new style</a>')
-                                + editor.makeDiv('createStyle', null, null, null,
-                                    editor.makeDiv(null, null, null, 'EditTab.FormatDialog.NewStyle', 'New style')
-                                    + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.FormatDialog.Create" disabled>Create</button>')
-                                    + editor.makeDiv('please-use-alpha', null, 'color: red;',
-                                        'EditTab.FormatDialog.PleaseUseAlpha',
-                                        'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".')
-                                    + editor.makeDiv('already-exists', null, 'color: red;', 'EditTab.FormatDialog.AlreadyExists',
-                                        'That style already exists. Please choose another name.')))
-                            + '</div>'; // end of Style Name tab-page div
-                    }
-                    html += '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>'
-                        + editor.makeCharactersContent(fonts, current)
-                        + '</div>' // end of tab-page div for format
-                        + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.ParagraphTab">Paragraph</h2>'
-                        + editor.makeDiv(null, null, null, null,
-                            editor.makeDiv(null, 'mainBlock indentBlock', null, null,
-                                editor.makeDiv(null, null, null, 'EditTab.Indent', 'Indent') + editor.makeDiv(null, null, null, null,
-                                    editor.makeDiv('indent-none', 'iconIndent', null, null, editor.makeImage('indent_none.png'))
-                                    + editor.makeDiv('indent-indented', 'iconIndent', null, null, editor.makeImage('indent_indented.png'))
-                                    + editor.makeDiv('indent-hanging', 'iconIndent', null, null, editor.makeImage('indent_hanging.png'))))
-                            + editor.makeDiv(null, 'mainBlock', null, null,
-                                editor.makeDiv(null, null, null, 'EditTab.Alignment', 'Alignment') + editor.makeDiv(null, null, null, null,
-                                    editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png'))
-                                    + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png')))
-                                + editor.makeDiv(null, null, 'margin-top:10px', null,
-                                    editor.makeDiv(null, 'mainBlock', null, null,
-                                        editor.makeDiv(null, null, null, 'EditTab.ParagraphSpacing', 'Space Between Paragraphs')
-                                        + editor.makeDiv(null, null, null, null,
-                                            editor.makeSelect(editor.getParagraphSpaceOptions(), current.paraSpacing, 'para-spacing-select'))))))
-                        + '<div class="format-toolbar-description" id="formatMoreDesc"></div>'
-                        + '</div>' // end of tab-page div for 'more' tab
-                        + '</div>'; // end of tab-pane div
-                } else {
-                    // not in authorMode...much simpler dialog, no tabs, just the body of the characters tab.
-                    html += '<div class="bloomDialogMainPage">'
-                        + editor.makeCharactersContent(fonts, current)
-                        + '</div>';
-                }
-                html += '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $('body').append(html);
+
+                if (noFormatChange) {
+                    $('#format-toolbar').addClass('formattingDisabled');
+                } else {
+                    // Not sufficient to hide because they have duplicate ids
+                    if (editor.authorMode) {
+                        $('#format-toolbar .hideForAuthorMode').remove();
+                    } else {
+                        $('#format-toolbar .hideForTranslationMode').remove();
+                    }
+                    if (editor.xmatterMode) {
+                        // The tab library doesn't allow us to put other class names on the tab-page,
+                        // so we are doing it this way rather than the approach of using css to hide
+                        // based on class names.
+                        $('#style-page').remove();
+                    }
+                }
+
+                editor.setupSelectControls(fonts, current, styleName);
 
                 //make some select boxes permit custom values
                 $('.allowCustom').select2({
@@ -795,6 +765,15 @@ export default class StyleEditor {
         });
     }
 
+    setupSelectControls(fonts, current, styleName) {
+        this.populateSelect(fonts, current.fontName, 'font-select', 25);
+        this.populateSelect(this.getPointSizes(), current.ptSize, 'size-select', 99);
+        this.populateSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select');
+        this.populateSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select');
+        this.populateSelect(this.styles, styleName, 'styleSelect');
+        this.populateSelect(this.getParagraphSpaceOptions(), current.paraSpacing, 'para-spacing-select');
+    }
+
     getButtonIds() {
         return ['bold', 'italic', 'underline', 'position-leading', 'position-center', 'indent-none', 'indent-indented', 'indent-hanging'];
     }
@@ -805,31 +784,6 @@ export default class StyleEditor {
         this.selectButton('position-center', current.center);
         this.selectButton('position-leading', !current.center);
         this.selectButton('indent-' + current.paraIndent, true);
-    }
-
-    makeCharactersContent(fonts, current): string {
-        return this.makeDiv(null, null, null, null,
-            this.makeDiv(null, null, null, 'EditTab.Font', 'Font')
-            + this.makeDiv(null, 'control-section', null, null,
-                this.makeSelect(fonts, current.fontName, 'font-select', 25) + ' '
-                + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select', 99, 'allowCustom'))
-            + this.makeDiv(null, 'spacing-fudge', null, 'EditTab.Spacing', 'Spacing')
-            + this.makeDiv('spacingRow', null, null, null,
-                '<span  id="lineSpacing" style="white-space: nowrap">'
-                + '<img src="' + this._supportFilesRoot + '/img/linespacing.png">'
-                + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' '
-                + '</span>' + ' '
-                + '<span id="wordSpacing" style="white-space: nowrap">'
-                + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png">'
-                + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
-                + '</span>'))
-            + this.makeDiv(null, 'mainBlock leftBlock', 'margin-top:15px', null,
-                this.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis')
-                + this.makeDiv(null, null, null, null,
-                    this.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B')
-                    + this.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I')
-                    + this.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U')))
-            + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, null);
     }
 
     // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
@@ -909,21 +863,6 @@ export default class StyleEditor {
 
     preferredGray(): string {
         return 'hsl(0,0%,86%)';
-    }
-
-    makeImage(fileName: string): string {
-        return '<img src="' + this._supportFilesRoot + '/img/' + fileName + '">';
-    }
-
-    makeDiv(id: string, className: string, style: string, i18nAttr: string, content: string): string {
-        var result = '<div';
-        if (id) result += ' id="' + id + '"';
-        if (className) result += ' class="' + className + '"';
-        if (i18nAttr) result += ' data-i18n="' + i18nAttr + '"';
-        if (style) result += ' style="' + style + '"';
-        result += '>';
-        if (content) result += content;
-        return result + '</div>';
     }
 
     // The Char tab description is language-dependent when localizing, not when authoring.
@@ -1011,9 +950,11 @@ export default class StyleEditor {
         this.styleStateChange('initial'); // go back to initial state so user knows it worked
     }
 
-    makeSelect(items: string[], current, id, maxlength?, classes?: string) {
-        classes = classes || '';
-        var result = '<select id="' + id + '" class="' + classes + '">';
+    populateSelect(items: string[], current, id, maxlength?) {
+        if (!$('#' + id)) {
+            return;
+        }
+        var options = '';
         if (current && items.indexOf(current.toString()) === -1) {
             //we have a custom point size, so make that an option in addition to the standard ones
             items.push(current.toString());
@@ -1034,9 +975,9 @@ export default class StyleEditor {
             if (maxlength && text.length > maxlength) {
                 text = text.substring(0, maxlength) + '...';
             }
-            result += '<option value="' + items[i] + '"' + selected + '>' + text + '</option>';
+            options += '<option value="' + items[i] + '"' + selected + '>' + text + '</option>';
         }
-        return result + '</select>';
+        $('#' + id).html(options);
     }
 
     changeBold() {

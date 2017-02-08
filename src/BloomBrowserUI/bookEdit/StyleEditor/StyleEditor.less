@@ -139,3 +139,10 @@
 .select2-container--open .select2-selection__rendered{
     background-color: lightblue;
 }
+
+#format-toolbar.formattingDisabled .hideWhenFormattingDisabled {
+    display: none;
+}
+#format-toolbar:not(.formattingDisabled) .hideWhenFormattingEnabled {
+    display: none;
+}
