@@ -1,0 +1,31 @@
+#text-properties-dialog.bloom-ui.bloomDialogContainer
+	.bloomDialogTitleBar(data-i18n="EditTab.TextBoxProperties.Title") Text Box Properties
+	.formattingDisabled.bloomDialogMainPage
+		p(data-i18n="BookEditor.FormattingDisabled") Sorry, Reader Templates do not allow changes to formatting.
+	#tabRoot.formattingEnabled.tab-pane
+		.tab-page
+			h2.tab(data-i18n="EditTab.TextBoxProperties.LanguageTab") Language
+			div(style="width: 420px; font-size: 8pt; margin-top: 10px;" data-i18n="EditTab.TextBoxProperties.NormalLabel")
+				| "Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.
+			#language-group
+				input#tbprop-normal(type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="Auto")
+				label(for="tbprop-normal" data-i18n="EditTab.TextBoxProperties.Normal" style="margin-left: 7px;") Normal
+				br
+				div(style="width: 420px; font-size: 8pt; margin-top: 10px;" data-i18n="EditTab.TextBoxProperties.OtherLanguagesLabel")
+					| Use one of these for simple text boxes that are always in only one language.
+				input#tbprop-vernacular(type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="V")
+				label(for="tbprop-vernacular" data-i18n="EditTab.TextBoxProperties.LocalLanguage" style="margin-left: 7px;") Local Language
+				br
+				input#tbprop-national(type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="N1")
+				label(for="tbprop-national" data-i18n="EditTab.TextBoxProperties.NationalLanguage" style="margin-left: 7px;") National Language
+				br
+				input#tbprop-regional(type="radio" style="margin-left: 5px;" name="languageRadioGroup" value="N2")
+				label(for="tbprop-regional" data-i18n="EditTab.TextBoxProperties.RegionalLanguage" style="margin-left: 7px;") Regional Language
+		//- Here follows a skeleton implementation of tabs 2 and 3
+		//- (Don't forget to add the appropriate bits to the .tmx files when activated.)
+		//- div#bordersPage.tab-page
+		//- 	h2.tab(data-i18n="EditTab.TextBoxProperties.BordersTab") Borders
+		//-		  // + propDlg.makeBordersContent(currentBorder)
+		//- div#bubblesPage.tab-page
+		//- 	h2.tab(data-i18n="EditTab.TextBoxProperties.BubblesTab") Hint Bubbles
+		//-		  // + propDlg.makeBubblesContent(currentBubbles)

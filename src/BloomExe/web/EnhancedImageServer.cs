@@ -377,6 +377,10 @@ namespace Bloom.Api
 					return true;
 				case "topics":
 					return GetTopicList(info);
+				case "textBoxPropertiesContent":
+					info.ContentType = "text/html";
+					info.WriteCompleteOutput(RobustFile.ReadAllText(BloomFileLocator.GetBrowserFile("bookEdit/TextBoxProperties", "TextBoxProperties.html")));
+					return true;
 			}
 			return ProcessAnyFileContent(info, localPath);
 		}
