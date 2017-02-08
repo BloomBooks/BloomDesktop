@@ -109,14 +109,7 @@ namespace Bloom
 					var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
 					var newDirectoryPath = Path.Combine(parentDirectory, _nameToChangeCollectionUponClosing);
 
-					Process.Start(Application.ExecutablePath,
-						string.Format("--rename \"{0}\" \"{1}\" ", existingDirectoryPath, newDirectoryPath));
-
-					//give some time for that process.start to finish staring the new instance, which will see
-					//we have a mutex and wait for us to die, then see the --rename, and do its work.
-
-					Thread.Sleep(2000);
-					Environment.Exit(-1); //Force termination of the current process.
+					Program.RestartBloom(string.Format("--rename \"{0}\" \"{1}\" ", existingDirectoryPath, newDirectoryPath));
 				}
 				catch (Exception error)
 				{
