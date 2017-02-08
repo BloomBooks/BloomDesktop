@@ -15,7 +15,6 @@ using Bloom.Collection;
 using Bloom.Api;
 using DesktopAnalytics;
 using SIL.IO;
-using PdfDroplet.LayoutMethods;
 using SIL.Progress;
 
 namespace Bloom.Publish
@@ -29,7 +28,7 @@ namespace Bloom.Publish
 
 		public string PdfFilePath { get; private set; }
 
-		private EpubMaker _epubMaker;
+		public EpubMaker EpubMaker { get; set; }
 
 		public enum DisplayModes
 		{
@@ -103,17 +102,24 @@ namespace Bloom.Publish
 			}
 		}
 
+		public Book.Book LoadBookIfNeeded()
+		{
+			if(_currentlyLoadedBook != BookSelection.CurrentSelection)
+			{
+				_currentlyLoadedBook = BookSelection.CurrentSelection;
+				// In case we have any new settings since the last time we were in the Edit tab (BL-3881)
+				_currentlyLoadedBook.BringBookUpToDate(new NullProgress());
+			}
+			return _currentlyLoadedBook;
+		}
 
 		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
-			_currentlyLoadedBook = BookSelection.CurrentSelection;
-
 			try
 			{
-				// In case we have any new settings since the last time we were in the Edit tab (BL-3881)
-				_currentlyLoadedBook.BringBookUpToDate(new NullProgress());
+				LoadBookIfNeeded();
 
-				using(var tempHtml = MakeFinalHtmlForPdfMaker())
+				using (var tempHtml = MakeFinalHtmlForPdfMaker())
 				{
 					if (doWorkEventArgs.Cancel)
 						return;
@@ -127,7 +133,7 @@ namespace Bloom.Publish
 					// Check memory for the benefit of developers.  The user won't see anything.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
-						PageLayout.SizeAndOrientation.IsLandScape, _currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
+						PageLayout.SizeAndOrientation.IsLandScape, LoadBookIfNeeded().UserPrefs.ReducePdfMemoryUse,
 						LayoutPagesForRightToLeft, layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
@@ -247,10 +253,10 @@ namespace Bloom.Publish
 
 				}
 			}
-			if (_epubMaker != null)
+			if (EpubMaker != null)
 			{
-				_epubMaker.Dispose();
-				_epubMaker = null;
+				EpubMaker.Dispose();
+				EpubMaker = null;
 			}
 
 			GC.SuppressFinalize(this);
@@ -500,38 +506,34 @@ namespace Bloom.Publish
 			}
 		}
 
-		// PrepareToStageEpub must be called first
 		internal bool BookHasAudio
 		{
- 			get { return _epubMaker.BookHasAudio; }
-		}
-
-		// PrepareToStageEpub must be called first
-		internal void StageEpub(bool publishWithoutAudio)
-		{
-			_epubMaker.StageEpub(publishWithoutAudio);
+			get
+			{
+				Debug.Assert(EpubMaker !=null, "PrepareToStageEpub must be called first.");
+				return EpubMaker.GetBookHasAudio();
+			}
 		}
 
 		internal void PrepareToStageEpub()
 		{
-			if (_epubMaker != null)
+			if (EpubMaker != null)
 			{
 				//it has state that we don't want to reuse, so make a new one
-				_epubMaker.Dispose();
-				_epubMaker = null;
+				EpubMaker.Dispose();
+				EpubMaker = null;
 			}
-			_epubMaker = new EpubMaker(_thumbNailer, _isoloator);
-			_epubMaker.Book = BookSelection.CurrentSelection;
-			_epubMaker.Unpaginated = true; // Enhance: UI?
+			EpubMaker = new EpubMaker(_thumbNailer, _isoloator);
+			EpubMaker.Book = BookSelection.CurrentSelection;
+			EpubMaker.Unpaginated = true; // Enhance: UI?
 		}
 
-		// PrepareToStageEpub must be called first
-		internal bool IsCompressedAudioMissing
+		internal bool DoAnyNeededAudioCompression()
 		{
-			get { return _epubMaker.IsCompressedAudioMissing; }
+			return AudioProcessor.TryCompressingAudioAsNeeded(BookSelection.CurrentSelection.FolderPath, LoadBookIfNeeded().RawDom); 
 		}
 
-		internal string StagingDirectory { get { return _epubMaker.StagingDirectory; } }
+		internal string StagingDirectory { get { return EpubMaker.BookInStagingFolder; } }
 
 		internal void SaveAsEpub()
 		{
@@ -547,7 +549,7 @@ namespace Bloom.Publish
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
 					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-					_epubMaker.FinishEpub(dlg.FileName);
+					EpubMaker.FinishEpub(dlg.FileName);
 					ReportAnalytics("Save ePUB");
 				}
 			}

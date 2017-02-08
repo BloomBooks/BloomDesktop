@@ -958,6 +958,7 @@ namespace BloomTests.Publish
 		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer) : base(thumbNailer, new NavigationIsolator())
 		{
 			this.Book = book;
+			AudioProcessor._compressorMethod = EpubMakerAdjusted.PretendMakeCompressedAudio;
 		}
 
 		internal override void CopyFile(string srcPath, string dstPath)
@@ -972,7 +973,7 @@ namespace BloomTests.Publish
 
 		// We can't test real compression because (a) the wave file is fake to begin with
 		// and (b) we can't assume the machine running the tests has LAME installed.
-		internal override string MakeCompressedAudio(string wavPath)
+		internal static string PretendMakeCompressedAudio(string wavPath)
 		{
 			var output = Path.ChangeExtension(wavPath, "mp3");
 			File.Copy(wavPath, output);

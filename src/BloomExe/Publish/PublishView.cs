@@ -22,7 +22,7 @@ namespace Bloom.Publish
 {
 	public partial class PublishView : UserControl, IBloomTabArea
 	{
-		private readonly PublishModel _model;
+		public readonly PublishModel _model;
 		private readonly ComposablePartCatalog _extensionCatalog;
 		private bool _activated;
 		private BloomLibraryPublishControl _publishControl;
@@ -30,9 +30,7 @@ namespace Bloom.Publish
 		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
 		private EpubView _epubPreviewControl;
-		private Browser _epubPreviewBrowser;
 		private NavigationIsolator _isolator;
-		private bool _publishWithoutAudio = false; // True if the user has said to go ahead without audio
 
 		public delegate PublishView Factory();//autofac uses this
 
@@ -103,6 +101,7 @@ namespace Bloom.Publish
 			_previewBox.Visible = false;
 			Controls.Add(_previewBox);
 			_previewBox.BringToFront();
+			_electronicPublishView = new ElectronicPublishView(_model);
 		}
 
 		public void SetStateOfNonUploadRadios(bool enable)
@@ -149,6 +148,7 @@ namespace Bloom.Publish
 
 		// Used by LocalizeSuperToolTip to remember original English keys
 		Dictionary<Control, string> _originalSuperToolTips = new Dictionary<Control, string>();
+		private readonly ElectronicPublishView _electronicPublishView;
 
 		private void LocalizeSuperToolTip(Control controlThatHasSuperTooltipAttached, string l10nIdOfControl)
 		{
@@ -436,13 +436,22 @@ namespace Bloom.Publish
 					// We may reuse this for the process of generating the ePUB staging files. For now, skip it.
 					_workingIndicator.Visible = false;
 					_printButton.Enabled = false; // don't know how to print an ePUB
-					_saveButton.Enabled = true; // lets us save it to an actual ePUB
 					_pdfViewer.Visible = false;
-					Cursor = Cursors.Default;
+					Cursor = Cursors.WaitCursor;
+					_epubPreviewControl = ElectronicPublishView.SetupEpubControl(_epubPreviewControl, _isolator, () => _saveButton.Enabled = _model.EpubMaker.ReadyToSave());
+					_saveButton.Enabled = _model.EpubMaker.ReadyToSave();
+					_epubPreviewControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
+							_pdfViewer.Width, _pdfViewer.Height);
+					_epubPreviewControl.Dock = _pdfViewer.Dock;
+					_epubPreviewControl.Anchor = _pdfViewer.Anchor;
+					var saveBackGround = _epubPreviewControl.BackColor; // changed to match parent during next statement
+					Controls.Add(_epubPreviewControl);
+					_epubPreviewControl.BackColor = saveBackGround; // keep own color.
+														// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
+					_epubPreviewControl.BringToFront();
+						Cursor = Cursors.Default;
 
-					SetupEpubControl();
-
-					break;
+						break;
 				}
 			}
 			UpdateSaveButton();
@@ -477,94 +486,7 @@ namespace Bloom.Publish
 			_publishControl.BringToFront();
 		}
 
-		private void SetupEpubControl()
-		{
-			Cursor =Cursors.WaitCursor;
-			if (_epubPreviewControl == null)
-			{
-				_epubPreviewControl = new EpubView();
-				_epubPreviewBrowser = new Browser();
-				_epubPreviewBrowser.Isolator = _isolator;
-				_epubPreviewBrowser.Dock = DockStyle.Fill;
-				_epubPreviewControl.Controls.Add(_epubPreviewBrowser);
-				// Has to be in front of the panel docked top for Fill to work.
-				_epubPreviewBrowser.BringToFront();
-			}
-			_epubPreviewControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
-				_pdfViewer.Width, _pdfViewer.Height);
-			_epubPreviewControl.Dock = _pdfViewer.Dock;
-			_epubPreviewControl.Anchor = _pdfViewer.Anchor;
-			var saveBackGround = _epubPreviewControl.BackColor; // changed to match parent during next statement
-			Controls.Add(_epubPreviewControl);
-			_epubPreviewControl.BackColor = saveBackGround; // keep own color.
-			// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
-			_epubPreviewControl.BringToFront();
 
-			_model.PrepareToStageEpub();
-			if (!_publishWithoutAudio && !LameEncoder.IsAvailable() && _model.IsCompressedAudioMissing)
-			{
-				var fileLocator = _model.BookSelection.CurrentSelection.GetFileLocator();
-				var englishMissingLameModulePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "MissingLameModule-en.html");
-				// I hesitate to change the definition of BloomFileLocator.BrowserRoot to return absolute paths.  But apparently we need to feed
-				// _epubPreviewBrowser an absolute path or it mysteriously tries to open the relative path in an actual browser window, not itself.
-				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-3906 if you don't believe this, which I don't except I see it happening.)
-				// So ensure that our file path is an absolute filepath.
-				var baseFolder = FileLocator.DirectoryOfApplicationOrSolution;
-				if (!englishMissingLameModulePath.StartsWith(baseFolder))
-					englishMissingLameModulePath = Path.Combine(baseFolder, englishMissingLameModulePath);
-				var localizedMissingLameModulePath = BloomFileLocator.GetBestLocalizedFile(englishMissingLameModulePath);
-				_epubPreviewBrowser.Navigate(localizedMissingLameModulePath, false);
-				_epubPreviewBrowser.OnBrowserClick += (sender, e) =>
-				{
-					var element = (GeckoHtmlElement)(e as DomEventArgs).Target.CastToGeckoElement();
-					if (element.GetAttribute("id") == "proceedWithoutAudio")
-					{
-						_publishWithoutAudio = true;
-						SetupEpubControlContent();
-					}
-				};
-			}
-			else
-			{
-				SetupEpubControlContent();
-			}
-			Cursor = Cursors.Default;
-		}
-
-		private void SetupEpubControlContent()
-		{
-			_model.StageEpub(_publishWithoutAudio);
-
-			var fileLocator = _model.BookSelection.CurrentSelection.GetFileLocator();
-			var root = fileLocator.LocateDirectoryWithThrow("Readium");
-			var tempFolder = Path.GetDirectoryName(_model.StagingDirectory);
-			// This is kludge. I hope it can be improved. To make a preview we currently need all the Readium
-			// files in a folder that is a parent of the staging folder containing the book content.
-			// This allows us to tell Readium about the book by passing the name of the folder using the ?ePUB=
-			// URL parameter. It doesn't work to use the original Readium file and make the parameter a full path.
-			// It's possible that there is some variation that would work, e.g., make the param a full file:/// url
-			// to the book folder. It's also possible we could get away with only copying the HTML file itself,
-			// if we modified it to have localhost: links to the JS and CSS. Haven't tried this yet. The current
-			// approach at least works.
-			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
-
-			var englishTemplatePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "bloomEpubPreview-en.html");
-			var localizedTemplatePath = BloomFileLocator.GetBestLocalizedFile(englishTemplatePath);
-
-			var audioSituationClass = "noAudioAvailable";
-			if(_publishWithoutAudio)
-				audioSituationClass = "haveAudioButNotMakingTalkingBook";
-			else if(_model.BookHasAudio)
-				audioSituationClass = "isTalkingBook";
-
-			var htmlContents = RobustFile.ReadAllText(localizedTemplatePath)
-				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory))
-				.Replace("_AudioSituationClass_", audioSituationClass);
-
-			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
-			RobustFile.WriteAllText(previewHtmlInstancePath, htmlContents);
-			_epubPreviewBrowser.Navigate(previewHtmlInstancePath.ToLocalhost(), false);
-		}
 
 		private void OnBookletRadioChanged(object sender, EventArgs e)
 		{
@@ -807,6 +729,11 @@ namespace Bloom.Publish
 			get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
 		}
 
+		public ElectronicPublishView ElectronicPublishView
+		{
+			get { return _electronicPublishView; }
+		}
+
 		private void _openinBrowserMenuItem_Click(object sender, EventArgs e)
 		{
 			_model.DebugCurrentPDFLayout();
@@ -843,11 +770,6 @@ namespace Bloom.Publish
 				Thread.Sleep(100);
 				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
 			}
-		}
-
-		private void _epubButton_Click(object sender, EventArgs e)
-		{
-			_model.SaveAsEpub();
 		}
 	}
 }
