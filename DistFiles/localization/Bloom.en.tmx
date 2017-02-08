@@ -1491,6 +1491,12 @@
         <seg>Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.ResetStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reset this style to default settings</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.Style">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
