@@ -31,7 +31,7 @@ export default class TextBoxProperties {
 
         // Why do we use .off and .on? See comment in a nearly identical location in StyleEditor.ts
         $(targetBox).off('click.formatButton');
-        $(targetBox).on('click.formatButton', '.formatButton', function () {
+        $(targetBox).on('click.formatButton', '.formatButton', () => {
             axios.get<string>('/bloom/bookEdit/TextBoxProperties/TextBoxProperties.html').then(result => {
                 var html = result.data;
                 propDlg.boxBeingEdited = targetBox;
@@ -62,7 +62,7 @@ export default class TextBoxProperties {
                 // Give the browser time to get the dialog into the DOM first, before doing this stuff
                 // It just needs to delay one 'cycle'.
                 // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
-                setTimeout(function () {
+                setTimeout(() => {
                     var offset = $(propDlg.boxBeingEdited).find('.formatButton').offset(); // make sure we get the right button!
                     dialogElement.offset({ left: offset.left + 30, top: offset.top - 30 });
                     EditableDivUtils.positionInViewport(dialogElement);
@@ -84,9 +84,61 @@ export default class TextBoxProperties {
                         // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                         event.stopPropagation();
                     });
+                    this.removeButtonSelection();
+                    this.initializeAlignment();
+                    this.setButtonClickActions();
                 }, 0); // just push this to the end of the event queue
             });
         });
+    }
+
+    getButtonIds() {
+        return ['align-top', 'align-center', 'align-bottom'];
+    }
+
+    removeButtonSelection() {
+        var buttonIds = this.getButtonIds();
+        for (var i = 0; i < buttonIds.length; i++) {
+            $('#' + buttonIds[i]).removeClass('selectedIcon');
+        }
+    }
+
+    setButtonClickActions() {
+        var buttonIds = this.getButtonIds();
+        for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
+            var button = $('#' + buttonIds[idIndex]);
+            button.click((event)=> {
+                this.buttonClick(event.target.parentElement);
+            });
+        }
+    }
+    buttonClick(buttonDiv) {
+        var button = $(buttonDiv);
+        var id = button.attr('id');
+        var index = id.indexOf('-');
+        if (index >= 0) {
+            // buttons in a group are given ids starting with group-
+            button.addClass('selectedIcon');
+            var group = id.substring(0, index);
+            $('.propButton').each((index, b) => {
+                var item = $(b);
+                if (b !== button.get(0) && item.attr('id').startsWith(group)) {
+                    item.removeClass('selectedIcon');
+                }
+            });
+        } else {
+            // button is not part of a group, so must toggle
+            // (not used yet)
+            // if (button.hasClass('selectedIcon')) {
+            //     button.removeClass('selectedIcon');
+            // } else {
+            //     button.addClass('selectedIcon');
+            // }
+        }
+        // Now make it so
+        if (id.startsWith('align')) {
+            this.changeAlignment();
+        }
     }
 
     changeLanguageGroup() {
@@ -96,6 +148,36 @@ export default class TextBoxProperties {
         // currently 'radioValue' should be one of: 'Auto', 'N1', 'N2', or 'V'
         if (targetGroup) {
             targetGroup.attr('data-default-languages', radioValue);
+        }
+    }
+
+    initializeAlignment() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        if (targetGroup) {
+            var style = targetGroup.attr('style') || '';
+            if (style.indexOf('justify-content:center') >= 0) {
+                $('#align-center').addClass('selectedIcon');
+            } else if (style.indexOf('justify-content:flex-end') >= 0) {
+                $('#align-bottom').addClass('selectedIcon');
+            } else {
+                $('#align-top').addClass('selectedIcon');
+            }
+        }
+    }
+
+    changeAlignment() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        if (targetGroup) {
+            var style = (targetGroup.attr('style') || '')
+                .replace('justify-content:flex-end', '')
+                .replace('justify-content:center', '');
+
+            if ($('#align-center').hasClass('selectedIcon')) {
+                style = style + 'justify-content:center';
+            } else if ($('#align-bottom').hasClass('selectedIcon')) {
+                    style= style + 'justify-content:flex-end';
+            } // else leave it missing.
+            targetGroup.attr('style', style);
         }
     }
 
