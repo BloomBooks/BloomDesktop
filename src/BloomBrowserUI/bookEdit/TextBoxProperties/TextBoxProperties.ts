@@ -32,7 +32,7 @@ export default class TextBoxProperties {
         // Why do we use .off and .on? See comment in a nearly identical location in StyleEditor.ts
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '.formatButton', function () {
-            axios.get<string>('/bloom/textBoxPropertiesContent').then(result => {
+            axios.get<string>('/bloom/bookEdit/TextBoxProperties/TextBoxProperties.html').then(result => {
                 var html = result.data;
                 propDlg.boxBeingEdited = targetBox;
 
@@ -44,9 +44,8 @@ export default class TextBoxProperties {
                 $('body').append(html);
 
                 if (noFormatChange) {
-                    $('.formattingEnabled').hide();
+                    $('#text-properties-dialog').addClass('formattingDisabled');
                 } else {
-                    $('.formattingDisabled').hide();
                     $(':radio[name=languageRadioGroup][value=' + languageGroup + ']').prop('checked', true);
                 }
 
