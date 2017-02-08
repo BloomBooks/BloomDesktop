@@ -203,6 +203,11 @@ function closeClickHandler() {
     var toReplace = myComponent.parent().parent();                             // the div/cell containing the pane that contains the siblings above
     var positionClass = toReplace.attr('class');
     var positionStyle = toReplace.attr('style');
+    if (!positionStyle) {
+        // If positionStyle is undefined, the assignment below doesn't actually change the style attribute.
+        // See http://issues.bloomlibrary.org/youtrack/issue/BL-4168 for what could happen.
+        positionStyle = "";
+    }
     addUndoPoint();
 
     toReplace.replaceWith(sibling);
