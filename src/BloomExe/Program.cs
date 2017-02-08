@@ -380,17 +380,20 @@ namespace Bloom
 			}
 		}
 
-		public static void RestartBloom()
+		public static void RestartBloom(string args = null)
 		{
 			try
 			{
-				Process.Start(Application.ExecutablePath);
+				if (args == null)
+					Process.Start(Application.ExecutablePath);
+				else
+					Process.Start(Application.ExecutablePath, args);
 
 				//give some time for that process.start to finish staring the new instance, which will see
 				//we have a mutex and wait for us to die.
 
 				Thread.Sleep(2000);
-				Environment.Exit(-1); //Force termination of the current process.
+				Application.Exit(); // Shut this instance down cleanly
 			}
 			catch (Exception e)
 			{
