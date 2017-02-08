@@ -1,6 +1,6 @@
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import axios = require('axios');
-import { EditableDivUtils } from "../js/editableDivUtils";
+import { EditableDivUtils } from '../js/editableDivUtils';
 
 declare function WebFxTabPane(element: HTMLElement, useCookie: boolean, callback: any): any; // from tabpane, from a <script> tag
 
@@ -47,13 +47,13 @@ export default class TextBoxProperties {
                     $('.formattingEnabled').hide();
                 } else {
                     $('.formattingDisabled').hide();
-                    $(':radio[name=languageRadioGroup][value=' + languageGroup + ']').prop("checked", true);
+                    $(':radio[name=languageRadioGroup][value=' + languageGroup + ']').prop('checked', true);
                 }
 
                 var dialogElement = $('#text-properties-dialog');
                 dialogElement.find('*[data-i18n]').localize();
                 dialogElement.draggable({ distance: 10, scroll: false, containment: $('html') });
-                dialogElement.draggable("disable"); // until after we make sure it's in the Viewport
+                dialogElement.draggable('disable'); // until after we make sure it's in the Viewport
                 dialogElement.css('opacity', 1.0);
                 if (!noFormatChange) {
                     // Hook up change event handlers
@@ -67,21 +67,21 @@ export default class TextBoxProperties {
                     var offset = $(propDlg.boxBeingEdited).find('.formatButton').offset(); // make sure we get the right button!
                     dialogElement.offset({ left: offset.left + 30, top: offset.top - 30 });
                     EditableDivUtils.positionInViewport(dialogElement);
-                    dialogElement.draggable("enable");
+                    dialogElement.draggable('enable');
 
                     $('html').off('click.dialogElement');
-                    $('html').on("click.dialogElement", function (event) {
+                    $('html').on('click.dialogElement', function (event) {
                         if (event.target !== dialogElement.get(0) &&
                             dialogElement.has(event.target).length === 0 &&
                             $(event.target).parent() !== dialogElement &&
                             dialogElement.has(event.target).length === 0 &&
-                            dialogElement.is(":visible")) {
+                            dialogElement.is(':visible')) {
                             dialogElement.remove();
                             event.stopPropagation();
                             event.preventDefault();
                         }
                     });
-                    dialogElement.on("click.dialogElement", function (event) {
+                    dialogElement.on('click.dialogElement', function (event) {
                         // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                         event.stopPropagation();
                     });
@@ -95,13 +95,16 @@ export default class TextBoxProperties {
         var radioValue = $('input[name="languageRadioGroup"]:checked').val();
         var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
         // currently 'radioValue' should be one of: 'Auto', 'N1', 'N2', or 'V'
-        if (targetGroup)
+        if (targetGroup) {
             targetGroup.attr('data-default-languages', radioValue);
+        }
     }
 
     getTextBoxLanguage(targetBox: HTMLElement): string {
         var targetGroup = $(this.getAffectedTranslationGroup(targetBox));
-        if (!targetGroup || !targetGroup.hasAttr('data-default-languages')) return "Auto";
+        if (!targetGroup || !targetGroup.hasAttr('data-default-languages')) {
+            return 'Auto';
+        }
         var result = targetGroup.attr('data-default-languages');
         const acceptable = ['Auto', 'N1', 'N2', 'V'];
         return acceptable.indexOf(result) > -1 ? result : 'Auto';
