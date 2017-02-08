@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,7 +19,6 @@ using Gecko.Events;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
-using Bloom.Workspace;
 using L10NSharp;
 
 namespace Bloom
@@ -883,9 +881,10 @@ namespace Bloom
 
 				var userModifiedStyleSheet = contentDocument.StyleSheets.FirstOrDefault(s =>
 					{
-						// workaround for bug #40 (https://bitbucket.org/geckofx/geckofx-29.0/issue/40/xpath-error-hresult-0x805b0034)
-						// var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
-						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
+						// We used to have a workaround here for a bug in geckofx-29, but since newer geckos work fine
+						// I'd (gjm) like to go with what's clearer now.
+						//var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
+						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
 						if (titleNode == null)
 							return false;
 						return titleNode.NodeValue == "userModifiedStyles";

@@ -1443,6 +1443,12 @@
         <seg>Create a new style</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.ResetStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reset this style to default settings</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.DontSeeNeed">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">

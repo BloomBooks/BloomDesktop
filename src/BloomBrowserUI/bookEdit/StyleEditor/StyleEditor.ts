@@ -335,6 +335,37 @@ export default class StyleEditor {
         return <CSSStyleRule>ruleList[ruleList.length - 1]; //new guy is last
     }
 
+    // Remove all evidence of 'styleName' from the userModifiedStyles stylesheet,
+    // including "styleName-style[lang='xx']" and "styleName-style p" rules.
+    DeleteAllRulesForStyle(styleName: string) {
+        var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
+        if (styleSheet == null) {
+            alert('styleSheet == null');
+        }
+
+        var ruleList: CSSRuleList = (<any>styleSheet).cssRules;
+        if (ruleList == null) {
+            ruleList = <any>[];
+        }
+
+        // we'll go backwards through the list of rules to avoid messing up our loop
+        // when we delete rules
+        for (var i = ruleList.length - 1; i > -1; i--) {
+            var trimmedCss = ruleList[i].cssText.trim();
+            var index = trimmedCss.indexOf('-style');
+            if (index == -1) {
+                (<CSSStyleSheet>styleSheet).deleteRule(i); // in case we've discovered a book that had BL-4266
+                continue;
+            }
+            // We want any rule whose base style name matches our incoming parameter.
+            // The substring strips off the initial period and everything after (and including) '-style' leaving the base style name.
+            var match = trimmedCss.substring(1, index).toLowerCase();
+            if (match == styleName.toLowerCase()) {
+                (<CSSStyleSheet>styleSheet).deleteRule(i);
+            }
+        }
+    }
+
     // Replaces a style in 'sheet' at the specified 'index' with a (presumably) modified style.
     ReplaceExistingStyle(sheet: CSSStyleSheet, index: number, newStyle: string): void {
         sheet.deleteRule(index);
@@ -673,6 +704,8 @@ export default class StyleEditor {
                             + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style')
                             + editor.makeDiv('style-group', 'state-initial', null, null,
                                 editor.makeSelect(editor.styles, styleName, 'styleSelect')
+                                + editor.makeDiv('style-reset', null, null, null,
+                                    '<a id="reset-style" href="" data-i18n="EditTab.FormatDialog.ResetStyle">Reset this style to default settings</a>')
                                 + editor.makeDiv('dont-see', null, null, null,
                                     '<span data-i18n="EditTab.FormatDialog.DontSeeNeed">' + 'Don\'t see what you need?' + '</span>'
                                     + ' <a id="show-createStyle" href="" data-i18n="EditTab.FormatDialog.CreateStyle">Create a new style</a>')
@@ -752,6 +785,12 @@ export default class StyleEditor {
                             // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
                             // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
                             (<any>$('#style-select-input').get(0)).trimNotification = function () { editor.styleStateChange('invalid-characters'); }
+                            $('#reset-style').click(function (event) {
+                                event.preventDefault();
+                                editor.resetStyle();
+                                // $('#format-toolbar').remove(); // optional line to close dialog after resetting style
+                                return false;
+                            });
                             $('#show-createStyle').click(function (event) {
                                 event.preventDefault();
                                 editor.showCreateStyle();
@@ -868,8 +907,17 @@ export default class StyleEditor {
     }
 
     showCreateStyle() {
-        this.styleStateChange('enteringStyle')
+        this.styleStateChange('enteringStyle');
         return false; // prevent default click
+    }
+
+    resetStyle() {
+        var currentStyle = $('#styleSelect').val(); // the selected styleName w/o "-style"
+
+        this.DeleteAllRulesForStyle(currentStyle);
+
+        this.styleStateChange('initial');
+        this.cleanupAfterStyleChange();
     }
 
     buttonClick(buttonDiv) {
