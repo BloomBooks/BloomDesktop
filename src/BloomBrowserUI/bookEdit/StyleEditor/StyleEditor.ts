@@ -676,18 +676,18 @@ export default class StyleEditor {
                         + editor.makeDiv(null, null, null, null,
                             editor.makeDiv(null, 'mainBlock indentBlock', null, null,
                                 editor.makeDiv(null, null, null, 'EditTab.Indent', 'Indent') + editor.makeDiv(null, null, null, null,
-                                  editor.makeDiv('indent-none', 'iconIndent', null, null, editor.makeImage('indent_none.png'))
-                                  + editor.makeDiv('indent-indented', 'iconIndent', null, null, editor.makeImage('indent_indented.png'))
-                                  + editor.makeDiv('indent-hanging', 'iconIndent', null, null, editor.makeImage('indent_hanging.png'))))
+                                    editor.makeDiv('indent-none', 'iconIndent', null, null, editor.makeImage('indent_none.png'))
+                                    + editor.makeDiv('indent-indented', 'iconIndent', null, null, editor.makeImage('indent_indented.png'))
+                                    + editor.makeDiv('indent-hanging', 'iconIndent', null, null, editor.makeImage('indent_hanging.png'))))
                             + editor.makeDiv(null, 'mainBlock', null, null,
                                 editor.makeDiv(null, null, null, 'EditTab.Alignment', 'Alignment') + editor.makeDiv(null, null, null, null,
                                     editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png'))
                                     + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png')))
-                            + editor.makeDiv(null, null, 'margin-top:10px', null,
-                                editor.makeDiv(null, 'mainBlock', null, null,
-                                    editor.makeDiv(null, null, null, 'EditTab.ParagraphSpacing', 'Space Between Paragraphs')
-                                    + editor.makeDiv(null, null, null, null,
-                                      editor.makeSelect(editor.getParagraphSpaceOptions(), current.paraSpacing, 'para-spacing-select'))))))
+                                + editor.makeDiv(null, null, 'margin-top:10px', null,
+                                    editor.makeDiv(null, 'mainBlock', null, null,
+                                        editor.makeDiv(null, null, null, 'EditTab.ParagraphSpacing', 'Space Between Paragraphs')
+                                        + editor.makeDiv(null, null, null, null,
+                                            editor.makeSelect(editor.getParagraphSpaceOptions(), current.paraSpacing, 'para-spacing-select'))))))
                         + '<div class="format-toolbar-description" id="formatMoreDesc"></div>'
                         + '</div>' // end of tab-page div for 'more' tab
                         + '</div>'; // end of tab-pane div
@@ -799,11 +799,11 @@ export default class StyleEditor {
             + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing')
             + this.makeDiv("spacingRow", null, null, null,
                 '<span  id="lineSpacing" style="white-space: nowrap">'
-                + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.svg">'
+                + '<img src="' + this._supportFilesRoot + '/img/linespacing.png">'
                 + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' '
                 + '</span>' + ' '
                 + '<span id="wordSpacing" style="white-space: nowrap">'
-                + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.svg">'
+                + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png">'
                 + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
                 + '</span>'))
             + this.makeDiv(null, 'mainBlock leftBlock', "margin-top:15px", null,
