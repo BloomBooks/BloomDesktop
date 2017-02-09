@@ -354,6 +354,7 @@ namespace Bloom.MiscUI
 							zip.AddDirectory(Book.FolderPath);
 							if (WantReaderInfo())
 								AddReaderInfo(zip);
+							AddCollectionSettings(zip);
 							zip.Save();
 						}
 						catch (Exception error)
@@ -427,6 +428,16 @@ namespace Bloom.MiscUI
 			return false;
 		}
 
+		private void AddCollectionSettings(BloomZipFile zip)
+		{
+			// When sending Book, add the project settings files as well.
+			var collectionFolder = System.IO.Path.GetDirectoryName(Book.FolderPath);
+			foreach (var file in Directory.GetFiles(collectionFolder, "*CollectionStyles.css"))
+				zip.AddTopLevelFile(file);
+			foreach (var file in Directory.GetFiles(collectionFolder, "*.bloomCollection"))
+				zip.AddTopLevelFile(file);
+		}
+
 		/// <summary>
 		/// Will become the summary of the issue. Include {0} for the user name
 		/// </summary>
@@ -464,6 +475,9 @@ namespace Bloom.MiscUI
 				if (_includeBook.Visible && _includeBook.Checked) // only Visible if Book is not null
 				{
 					zip.AddDirectory(Book.FolderPath);
+					if (WantReaderInfo())
+						AddReaderInfo(zip);
+					AddCollectionSettings(zip);
 				}
 			}
 			if (_includeScreenshot.Checked)
@@ -510,8 +524,7 @@ namespace Bloom.MiscUI
 			bldr.AppendLine(_description.Text);
 			bldr.AppendLine();
 			GetAdditionalEnvironmentInfo(bldr);
-			if (WantReaderInfo())
-				GetAdditionalFileInfo(bldr);
+			GetAdditionalFileInfo(bldr);
 			GetStandardErrorReportingProperties(bldr, appendLog);
 			return bldr.ToString();
 		}
@@ -557,10 +570,17 @@ namespace Bloom.MiscUI
 			bldr.AppendLine();
 			bldr.AppendLine("=Additional Files Bundled With Book=");
 			var collectionFolder = Path.GetDirectoryName(Book.FolderPath);
-			foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
+			if (WantReaderInfo())
+			{
+				foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
+					bldr.AppendLine(file);
+				ListFolderContents(Path.Combine(collectionFolder, "Allowed Words"), bldr);
+				ListFolderContents(Path.Combine(collectionFolder, "Sample Texts"), bldr);
+			}
+			foreach (var file in Directory.GetFiles(collectionFolder, "*CollectionStyles.css"))
 				bldr.AppendLine(file);
-			ListFolderContents(Path.Combine(collectionFolder, "Allowed Words"), bldr);
-			ListFolderContents(Path.Combine(collectionFolder, "Sample Texts"), bldr);
+			foreach (var file in Directory.GetFiles(collectionFolder, "*.bloomCollection"))
+				bldr.AppendLine(file);
 		}
 
 		private void ListFolderContents(string folder, StringBuilder bldr)
