@@ -1579,7 +1579,7 @@
             <seg>Jika Anda perlu menempatkan informasi lebih lanjut mengenai buku tersebut, Anda bisa menggunakan halaman ini, yaitu di bagian luar dari sampul belakang.</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Background">
+      <tu tuid="EditTab.TextBoxProperties.Background">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Background</seg>
@@ -1603,15 +1603,6 @@
          </tuv>
          <tuv xml:lang="id">
             <seg>Buka HTML yang digunakan untuk membuat PDF ini, dalam Firefox (harus berada di jalurnya) </seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Borders">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Borders</seg>
-         </tuv>
-         <tuv xml:lang="id">
-            <seg>Bingkai</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.CannotChangeCopyright">
