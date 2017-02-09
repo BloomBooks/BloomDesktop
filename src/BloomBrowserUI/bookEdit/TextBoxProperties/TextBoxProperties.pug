@@ -5,13 +5,13 @@
 	#tabRoot.hideWhenFormattingDisabled.tab-pane
 		.tab-page
 			h2.tab(data-i18n="EditTab.TextBoxProperties.LanguageTab") Language
-			div(data-i18n="EditTab.TextBoxProperties.NormalLabel")
+			.main-label(data-i18n="EditTab.TextBoxProperties.NormalLabel")
 				| "Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.
 			#language-group
 				input#tbprop-normal(type="radio" name="languageRadioGroup" value="Auto")
 				label(for="tbprop-normal" data-i18n="EditTab.TextBoxProperties.Normal") Normal
 				br
-				div(data-i18n="EditTab.TextBoxProperties.OtherLanguagesLabel")
+				.main-label(data-i18n="EditTab.TextBoxProperties.OtherLanguagesLabel")
 					| Use one of these for simple text boxes that are always in only one language.
 				input#tbprop-vernacular(type="radio" name="languageRadioGroup" value="V")
 				label(for="tbprop-vernacular" data-i18n="EditTab.TextBoxProperties.LocalLanguage") Local Language
@@ -21,6 +21,17 @@
 				br
 				input#tbprop-regional(type="radio" name="languageRadioGroup" value="N2")
 				label(for="tbprop-regional" data-i18n="EditTab.TextBoxProperties.RegionalLanguage") Regional Language
+		.tab-page
+			h2.tab(data-i18n="EditTab.TextBoxProperties.Alignment") Alignment
+			#alignment-group
+				.main-label(data-i18n="EditTab.TextBoxProperties.VerticalAlignment") Vertical Alignment
+				div
+					#align-top.icon16x16.propButton
+						img(src="align-top.png")
+					#align-center.icon16x16.propButton
+						img(src="align-center.png")
+					#align-bottom.icon16x16.propButton
+						img(src="align-bottom.png")
 		//- Here follows a skeleton implementation of tabs 2 and 3
 		//- (Don't forget to add the appropriate bits to the .tmx files when activated.)
 		//- div#bordersPage.tab-page
