@@ -35,20 +35,18 @@ namespace Bloom.Publish
 
 		public Book.Book Book
 		{
-			get
-			{
-				return _book;
-			}
-			internal set
-			{
-				_book = value;
-			}
+			get { return _book; }
+			internal set { _book = value; }
 		}
 
 		private Book.Book _book;
 		// This is a shorthand for _book.Storage. Since that is something of an implementation secret of Book,
 		// it also provides a safe place for us to make changes if we ever need to get the Storage some other way.
-		private IBookStorage Storage {get { return _book.Storage; } }
+		private IBookStorage Storage
+		{
+			get { return _book.Storage; }
+		}
+
 		// Keeps track of IDs that have been used in the manifest. These are generated to roughly match file
 		// names, but the algorithm could pathologically produce duplicates, so we guard against this.
 		private HashSet<string> _idsUsed = new HashSet<string>();
@@ -56,7 +54,7 @@ namespace Bloom.Publish
 		// but in case of duplicates the ID for an item might not be what the algorithm predicts.
 		private Dictionary<string, string> _mapItemToId = new Dictionary<string, string>();
 		// Keep track of the files we already copied to the ePUB, so we don't copy them again to a new name.
-		private Dictionary<string, string>  _mapSrcPathToDestFileName = new Dictionary<string, string>();
+		private Dictionary<string, string> _mapSrcPathToDestFileName = new Dictionary<string, string>();
 		// Some file names are not allowed in epubs, in which case, we have to rename the file and change the
 		// link in the HTML. This keeps track of files that needed to be renamed when copied into the ePUB.
 		Dictionary<string, string> _mapChangedFileNames = new Dictionary<string, string>();
@@ -75,11 +73,10 @@ namespace Bloom.Publish
 		// holds a copy of the Readium code, since I haven't been able to figure out how to get that
 		// code to redirect to display a folder which isn't a child of the folder containing the
 		// readium HTML.
-		private TemporaryFolder _stagingFolder;
-		public string StagingDirectory { get; private set; }
+		private TemporaryFolder _outerStagingFolder;
+		public string BookInStagingFolder { get; private set; }
 		private BookThumbNailer _thumbNailer;
-		private bool _publishWithoutAudio;
-		LameEncoder _mp3Encoder;
+		public bool PublishWithoutAudio { get; set; }
 		Browser _browser = new Browser();
 
 		/// <summary>
@@ -97,17 +94,6 @@ namespace Bloom.Publish
 			_browser.Isolator = _isolator;
 		}
 
-		public bool IsCompressedAudioMissing
-		{
-			get
-			{
-				return
-					Book.RawDom.SafeSelectNodes("//span[@id]")
-						.Cast<XmlElement>()
-						.Any(span => IsCompressedAudioForIdMissing(span.Attributes["id"].Value));
-			}
-		}
-
 		/// <summary>
 		/// Generate all the files we will zip into the ePUB for the current book into the StagingFolder.
 		/// It is required that the parent of the StagingFolder is a temporary folder into which we can
@@ -115,34 +101,35 @@ namespace Bloom.Publish
 		/// </summary>
 		public void StageEpub(bool publishWithoutAudio = false)
 		{
-			_publishWithoutAudio = publishWithoutAudio;
-			Debug.Assert(_stagingFolder == null, "EpubMaker should only be used once");
+			PublishWithoutAudio = publishWithoutAudio;
+			if(!string.IsNullOrEmpty(BookInStagingFolder))
+				return; //already staged
 
 			//I (JH) kept having trouble making epubs because this kept getting locked.
 			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), kEPUBExportFolder));
 
-			_stagingFolder = new TemporaryFolder(kEPUBExportFolder);
+			_outerStagingFolder = new TemporaryFolder(kEPUBExportFolder);
 			// The readium control remembers the current page for each book.
 			// So it is useful to have a unique name for each one.
 			// However, it needs to be something we can put in a URL without complications,
 			// so a guid is better than say the book's own folder name.
-			StagingDirectory = Path.Combine(_stagingFolder.FolderPath, _book.ID);
+			BookInStagingFolder = Path.Combine(_outerStagingFolder.FolderPath, _book.ID);
 			// in case of previous versions // Enhance: delete when done? Generate new name if conflict?
 			var contentFolderName = "content";
-			_contentFolder = Path.Combine(StagingDirectory, contentFolderName);
+			_contentFolder = Path.Combine(BookInStagingFolder, contentFolderName);
 			Directory.CreateDirectory(_contentFolder); // also creates parent staging directory
 			var pageIndex = 0;
 			_manifestItems = new List<string>();
 			_spineItems = new List<string>();
 			int firstContentPageIndex = Book.GetIndexLastFrontkMatterPage() + 2; // pageIndex starts at 1
 			_firstContentPageItem = null;
-			foreach (XmlElement pageElement in Book.GetPageElements())
+			foreach(XmlElement pageElement in Book.GetPageElements())
 			{
 				++pageIndex;
 				var pageDom = MakePageFile(pageElement, pageIndex, firstContentPageIndex);
 				// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
 				//to look at those stylesheets on the first page
-				if (pageIndex == 1)
+				if(pageIndex == 1)
 					CopyStyleSheets(pageDom);
 			}
 
@@ -154,20 +141,21 @@ namespace Bloom.Publish
 			{
 				_thumbNailer.MakeThumbnailOfCover(Book, 256, Form.ActiveForm);
 			}
-			catch (ApplicationException e)
+			catch(ApplicationException e)
 			{
 				thumbNailException = e;
 			}
 			var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-			if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
+			if(thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
 			{
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom failed to make a high-quality cover page for your book (BL-3209)",
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
+					"Bloom failed to make a high-quality cover page for your book (BL-3209)",
 					"We will try to make the book anyway, but you may want to try again.",
 					thumbNailException);
 
 				coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
 				coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-				if (!RobustFile.Exists(coverPageImagePath))
+				if(!RobustFile.Exists(coverPageImagePath))
 				{
 					// I don't think we can make an epub without a cover page so at this point we've had it.
 					// I suppose we could recover without actually crashing but it doesn't seem worth it unless this
@@ -183,9 +171,9 @@ namespace Bloom.Publish
 			//supporting files
 
 			// Fixed requirement for all epubs
-			RobustFile.WriteAllText(Path.Combine(StagingDirectory, "mimetype"), @"application/epub+zip");
+			RobustFile.WriteAllText(Path.Combine(BookInStagingFolder, "mimetype"), @"application/epub+zip");
 
-			var metaInfFolder = Path.Combine(StagingDirectory, "META-INF");
+			var metaInfFolder = Path.Combine(BookInStagingFolder, "META-INF");
 			Directory.CreateDirectory(metaInfFolder);
 			var containerXmlPath = Path.Combine(metaInfFolder, "container.xml");
 			RobustFile.WriteAllText(containerXmlPath, @"<?xml version='1.0' encoding='utf-8'?>
@@ -224,7 +212,7 @@ namespace Bloom.Publish
 			var manifestElt = new XElement(opf + "manifest");
 			rootElt.Add(manifestElt);
 			TimeSpan bookDuration = new TimeSpan();
-			foreach (var item in _manifestItems)
+			foreach(var item in _manifestItems)
 			{
 				var mediaType = GetMediaType(item);
 				var idOfFile = GetIdOfFile(item);
@@ -234,18 +222,18 @@ namespace Bloom.Publish
 					new XAttribute("media-type", mediaType));
 				// This isn't very useful but satisfies a validator requirement until we think of
 				// something better.
-				if (item == _navFileName)
+				if(item == _navFileName)
 					itemElt.SetAttributeValue("properties", "nav");
-				if (item == coverPageImageFile)
+				if(item == coverPageImageFile)
 					itemElt.SetAttributeValue("properties", "cover-image");
-				if (Path.GetExtension(item).ToLowerInvariant() == ".xhtml")
+				if(Path.GetExtension(item).ToLowerInvariant() == ".xhtml")
 				{
 					var overlay = GetOverlayName(item);
-					if (_manifestItems.Contains(overlay))
+					if(_manifestItems.Contains(overlay))
 						itemElt.SetAttributeValue("media-overlay", GetIdOfFile(overlay));
 				}
 				manifestElt.Add(itemElt);
-				if (mediaType== "application/smil+xml")
+				if(mediaType == "application/smil+xml")
 				{
 					// need a metadata item giving duration (possibly only to satisfy Pagina validation,
 					// but that IS an objective).
@@ -253,35 +241,19 @@ namespace Bloom.Publish
 					bookDuration += itemDuration;
 					metadataElt.Add(new XElement(opf + "meta",
 						new XAttribute("property", "media:duration"),
-						new XAttribute("refines", "#"+idOfFile),
+						new XAttribute("refines", "#" + idOfFile),
 						new XText(itemDuration.ToString())));
 				}
 			}
-			if (bookDuration.TotalMilliseconds > 0)
+			if(bookDuration.TotalMilliseconds > 0)
 			{
 				metadataElt.Add(new XElement(opf + "meta",
-					new XAttribute("property","media:duration"),
+					new XAttribute("property", "media:duration"),
 					new XText(bookDuration.ToString())));
 			}
 			MakeSpine(opf, rootElt, manifestPath);
 		}
 
-		private string GetOrCreateCompressedAudioIfWavExists(string id)
-		{
-			var root = AudioFolderPath;
-			var extensions = new [] {"mp3", "mp4"}; // .ogg,, .wav, ...?
-
-			foreach (var ext in extensions)
-			{
-				var path = Path.Combine(root, Path.ChangeExtension(id, ext));
-				if (RobustFile.Exists(path))
-					return path;
-			}
-			var wavPath = Path.Combine(root, Path.ChangeExtension(id, "wav"));
-			if (!RobustFile.Exists(wavPath))
-				return null;
-			return MakeCompressedAudio(wavPath);
-		}
 
 		/// <summary>
 		/// Make a compressed audio file for the specified .wav file.
@@ -290,46 +262,15 @@ namespace Bloom.Publish
 		/// <param name="id"></param>
 		/// <returns></returns>
 		// internal and virtual for testing.
-		internal virtual string MakeCompressedAudio(string wavPath)
+		public bool GetBookHasAudio()
 		{
-			// We have a recording, but not compressed. Possibly the LAME package was installed after
-			// the recordings were made. Compress it now.
-			if (_mp3Encoder == null)
-			{
-				if (!LameEncoder.IsAvailable())
-				{
-					return null;
-				}
-				_mp3Encoder = new LameEncoder();
-			}
-			_mp3Encoder.Encode(wavPath, wavPath.Substring(0, wavPath.Length - 4), new NullProgress());
-			return Path.ChangeExtension(wavPath, "mp3");
+			return
+				Book.RawDom.SafeSelectNodes("//span[@id]")
+					.Cast<XmlElement>()
+					.Any(
+						span => AudioProcessor.GetWavOrMp3Exists(Storage.FolderPath, span.Attributes["id"].Value) != null);
 		}
 
-		private string AudioFolderPath
-		{
-			get { return Path.Combine(Storage.FolderPath, "audio"); }
-		}
-
-		public bool BookHasAudio
- 		{
- 			get
- 			{
- 				return
- 					Book.RawDom.SafeSelectNodes("//span[@id]")
- 						.Cast<XmlElement>()
- 						.Any(span => GetOrCreateCompressedAudioIfWavExists(span.Attributes["id"].Value) != null);
- 			}
- 		}
-
-		private bool IsCompressedAudioForIdMissing(string id)
-		{
-			if (GetOrCreateCompressedAudioIfWavExists(id) != null)
-				return false; // not missing, we got it.
-			// We consider ourselves to have a missing compressed audio if we have a wav recording
-			// but no corresponding compressed waveform.
-			return RobustFile.Exists(Path.Combine(AudioFolderPath, Path.ChangeExtension(id, "wav")));
-		}
 
 		/// <summary>
 		/// Create an audio overlay for the page if appropriate.
@@ -345,8 +286,9 @@ namespace Bloom.Publish
 		{
 			var spansWithIds = pageDom.RawDom.SafeSelectNodes(".//span[@id]").Cast<XmlElement>();
 			var spansWithAudio =
-				spansWithIds.Where(x =>GetOrCreateCompressedAudioIfWavExists(x.Attributes["id"].Value) != null);
-			if (!spansWithAudio.Any())
+				spansWithIds.Where(
+					x => AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, x.Attributes["id"].Value) != null);
+			if(!spansWithAudio.Any())
 				return;
 			var overlayName = GetOverlayName(pageDocName);
 			_manifestItems.Add(overlayName);
@@ -354,25 +296,25 @@ namespace Bloom.Publish
 			XNamespace smil = smilNamespace;
 			string epubNamespace = "http://www.idpf.org/2007/ops";
 			XNamespace epub = epubNamespace;
-			var seq = new XElement(smil+"seq",
+			var seq = new XElement(smil + "seq",
 				new XAttribute("id", "id1"), // all <seq> I've seen have this, not sure whether necessary
 				new XAttribute(epub + "textref", pageDocName),
 				new XAttribute(epub + "type", "bodymatter chapter") // only type I've encountered
-				);
+			);
 			var root = new XElement(smil + "smil",
-				new XAttribute( "xmlns", smilNamespace),
+				new XAttribute("xmlns", smilNamespace),
 				new XAttribute(XNamespace.Xmlns + "epub", epubNamespace),
 				new XAttribute("version", "3.0"),
 				new XElement(smil + "body",
 					seq));
 			int index = 1;
 			TimeSpan pageDuration = new TimeSpan();
-			foreach (var span in spansWithAudio)
+			foreach(var span in spansWithAudio)
 			{
 				var spanId = span.Attributes["id"].Value;
-				var path = GetOrCreateCompressedAudioIfWavExists(spanId);
+				var path = AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, spanId);
 				var dataDurationAttr = span.Attributes["data-duration"];
-				if (dataDurationAttr != null)
+				if(dataDurationAttr != null)
 				{
 					pageDuration += TimeSpan.FromSeconds(Double.Parse(dataDurationAttr.Value));
 				}
@@ -384,12 +326,12 @@ namespace Bloom.Publish
 					// libraries. So for now we'll figure it from the wav if we have it. If not we do a very
 					// crude estimate from file size. Hopefully good enough for BSV animation.
 					var wavPath = Path.ChangeExtension(path, "wav");
-					if (RobustFile.Exists(wavPath))
+					if(RobustFile.Exists(wavPath))
 					{
 #if __MonoCS__
 						pageDuration += new TimeSpan(new FileInfo(path).Length);	// TODO: this needs to be fixed for Linux/Mono
 #else
-						using (WaveFileReader wf = RobustIO.CreateWaveFileReader(wavPath))
+						using(WaveFileReader wf = RobustIO.CreateWaveFileReader(wavPath))
 							pageDuration += wf.TotalTime;
 #endif
 					}
@@ -405,19 +347,19 @@ namespace Bloom.Publish
 					}
 				}
 				var epubPath = CopyFileToEpub(path);
-				seq.Add(new XElement(smil+"par",
+				seq.Add(new XElement(smil + "par",
 					new XAttribute("id", "s" + index++),
 					new XElement(smil + "text",
 						new XAttribute("src", pageDocName + "#" + spanId)),
-						new XElement(smil + "audio",
-							// Note that we don't need to preserve any audio/ in the path.
-							// We now mangle file names so as to replace any / (with _2f) so all files
-							// are at the top level in the ePUB. Makes one less complication for readers.
-							new XAttribute("src", Path.GetFileName(epubPath)))));
+					new XElement(smil + "audio",
+						// Note that we don't need to preserve any audio/ in the path.
+						// We now mangle file names so as to replace any / (with _2f) so all files
+						// are at the top level in the ePUB. Makes one less complication for readers.
+						new XAttribute("src", Path.GetFileName(epubPath)))));
 			}
 			_pageDurations[GetIdOfFile(overlayName)] = pageDuration;
 			var overlayPath = Path.Combine(_contentFolder, overlayName);
-			using (var writer = XmlWriter.Create(overlayPath))
+			using(var writer = XmlWriter.Create(overlayPath))
 				root.WriteTo(writer);
 
 		}
@@ -434,23 +376,23 @@ namespace Bloom.Publish
 			// doesn't indicate where to actually find the content.
 			var spineElt = new XElement(opf + "spine");
 			rootElt.Add(spineElt);
-			foreach (var item in _spineItems)
+			foreach(var item in _spineItems)
 			{
 				var itemElt = new XElement(opf + "itemref",
 					new XAttribute("idref", GetIdOfFile(item)));
 				spineElt.Add(itemElt);
 			}
-			using (var writer = XmlWriter.Create(manifestPath))
+			using(var writer = XmlWriter.Create(manifestPath))
 				rootElt.WriteTo(writer);
 		}
 
 		private void CopyStyleSheets(HtmlDom pageDom)
 		{
-			foreach (XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			foreach(XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
 				var href = Path.Combine(Book.FolderPath, link.GetAttribute("href"));
 				var name = Path.GetFileName(href);
-				if (name == "fonts.css")
+				if(name == "fonts.css")
 					continue; // generated file for this book, already copied to output.
 
 				var fl = Storage.GetFileLocator();
@@ -470,7 +412,7 @@ namespace Bloom.Publish
 			// in unit tests, is backed by a simple mocked BookStorage which doesn't have the stylesheet smarts. Sigh.
 
 			pageDom.RemoveModeStyleSheets();
-			if (Unpaginated)
+			if(Unpaginated)
 			{
 				RemoveRegularStylesheets(pageDom);
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEPUB.css").ToLocalhost());
@@ -500,17 +442,17 @@ namespace Bloom.Publish
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
 			var pageDocName = pageIndex + ".xhtml";
-			if (pageIndex == 1)
+			if(pageIndex == 1)
 				_coverPage = pageDocName;
 
 			CopyImages(pageDom);
 
 			_manifestItems.Add(pageDocName);
 			_spineItems.Add(pageDocName);
-			if (!_publishWithoutAudio)
+			if(!PublishWithoutAudio)
 				AddAudioOverlay(pageDom, pageDocName);
 
-			if (pageIndex == firstContentPageIndex)
+			if(pageIndex == firstContentPageIndex)
 				_firstContentPageItem = pageDocName;
 
 			FixChangedFileNames(pageDom);
@@ -525,20 +467,20 @@ namespace Bloom.Publish
 		private void CopyImages(HtmlDom pageDom)
 		{
 			// Manifest has to include all referenced files
-			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
+			foreach(XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
 			{
 				var url = HtmlDom.GetImageElementUrl(img);
-				if (url == null || url.NotEncoded=="")
+				if(url == null || url.NotEncoded == "")
 					continue; // very weird, but all we can do is ignore it.
 				// Notice that we use only the path part of the url. For some unknown reason, some bloom books
 				// (e.g., El Nino in the library) have a query in some image sources, and at least some ePUB readers
 				// can't cope with it.
 				var filename = url.PathOnly.NotEncoded;
-				if (string.IsNullOrEmpty(filename))
+				if(string.IsNullOrEmpty(filename))
 					continue;
 				// Images are always directly in the folder
 				var srcPath = Path.Combine(Book.FolderPath, filename);
-				if (RobustFile.Exists(srcPath))
+				if(RobustFile.Exists(srcPath))
 					CopyFileToEpub(srcPath);
 				else
 					img.ParentNode.RemoveChild(img);
@@ -548,7 +490,10 @@ namespace Bloom.Publish
 		// Combines staging and finishing (currently just used in tests).
 		public void SaveEpub(string destinationEpubPath)
 		{
-			StageEpub();
+			if(string.IsNullOrEmpty(BookInStagingFolder))
+			{
+				StageEpub();
+			}
 			FinishEpub(destinationEpubPath);
 		}
 
@@ -559,9 +504,9 @@ namespace Bloom.Publish
 		public void FinishEpub(string destinationEpubPath)
 		{
 			var zip = new BloomZipFile(destinationEpubPath);
-			foreach (var file in Directory.GetFiles(StagingDirectory))
+			foreach(var file in Directory.GetFiles(BookInStagingFolder))
 				zip.AddTopLevelFile(file);
-			foreach (var dir in Directory.GetDirectories(StagingDirectory))
+			foreach(var dir in Directory.GetDirectories(BookInStagingFolder))
 				zip.AddDirectory(dir);
 			zip.Save();
 		}
@@ -578,15 +523,15 @@ namespace Bloom.Publish
 			var fontsWanted = GetFontsUsed(Book.FolderPath, false);
 			var fontFileFinder = new FontFileFinder();
 			var filesToEmbed = fontsWanted.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
-			foreach (var file in filesToEmbed)
+			foreach(var file in filesToEmbed)
 			{
 				CopyFileToEpub(file);
 			}
 			var sb = new StringBuilder();
-			foreach (var font in fontsWanted)
+			foreach(var font in fontsWanted)
 			{
 				var group = fontFileFinder.GetGroupForFont(font);
-				if (group != null)
+				if(group != null)
 				{
 					AddFontFace(sb, font, "normal", "normal", group.Normal);
 					AddFontFace(sb, font, "bold", "normal", group.Bold);
@@ -600,7 +545,7 @@ namespace Bloom.Publish
 
 		internal static void AddFontFace(StringBuilder sb, string name, string weight, string style, string path)
 		{
-			if (path == null)
+			if(path == null)
 				return;
 			sb.AppendLineFormat("@font-face {{font-family:'{0}'; font-weight:{1}; font-style:{2}; src:url({3}) format('{4}');}}",
 				name, weight, style, Path.GetFileName(path),
@@ -645,26 +590,26 @@ namespace Bloom.Publish
 		{
 			bool firstTime = true;
 			double pageWidthMm = 210; // assume A5 Portrait if not specified
-			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
+			foreach(XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
 			{
 				var parent = img.ParentNode.ParentNode as XmlElement;
 				var mulitplier = 1.0;
 				// For now we only attempt to adjust pictures contained in the marginBox.
 				// To do better than this we will probably need to actually load the HTML into
 				// a browser; even then it will be complex.
-				while (parent != null && !HasClass(parent, "marginBox"))
+				while(parent != null && !HasClass(parent, "marginBox"))
 				{
 					// 'marginBox' is not yet the margin box...it is some parent div.
 					// If it has an explicit percent width style, adjust for this.
 					var styleAttr = parent.Attributes["style"];
-					if (styleAttr != null)
+					if(styleAttr != null)
 					{
 						var style = styleAttr.Value;
 						var match = new Regex("width:\\s*(\\d+(\\.\\d+)?)%").Match(style);
-						if (match.Success)
+						if(match.Success)
 						{
 							double percent;
-							if (Double.TryParse(match.Groups[1].Value, out percent))
+							if(Double.TryParse(match.Groups[1].Value, out percent))
 							{
 								mulitplier *= percent/100;
 							}
@@ -672,22 +617,25 @@ namespace Bloom.Publish
 					}
 					parent = parent.ParentNode as XmlElement;
 				}
-				if (parent == null)
+				if(parent == null)
 					continue;
 				var page = parent.ParentNode as XmlElement;
-				if (!HasClass(page, "bloom-page"))
+				if(!HasClass(page, "bloom-page"))
 					continue; // or return? marginBox should be child of page!
-				if (firstTime)
+				if(firstTime)
 				{
-					var pageClass = HtmlDom.GetAttributeValue(page, "class").Split().FirstOrDefault(c => c.Contains("Portrait") || c.Contains("Landscape"));
+					var pageClass =
+						HtmlDom.GetAttributeValue(page, "class")
+							.Split()
+							.FirstOrDefault(c => c.Contains("Portrait") || c.Contains("Landscape"));
 					// This calculation unfortunately duplicates information from basePage.less.
 					const int A4Width = 210;
 					const int A4Height = 297;
-					const double letterPortraitHeight = 11.0 * mmPerInch;
-					const double letterPortraitWidth = 8.5 * mmPerInch;
-					const double legalPortraitHeight = 14.0 * mmPerInch;
-					const double legalPortraitWidth = 8.5 * mmPerInch;
-					switch (pageClass)
+					const double letterPortraitHeight = 11.0*mmPerInch;
+					const double letterPortraitWidth = 8.5*mmPerInch;
+					const double legalPortraitHeight = 14.0*mmPerInch;
+					const double legalPortraitWidth = 8.5*mmPerInch;
+					switch(pageClass)
 					{
 						case "A3Landscape":
 							pageWidthMm = A4Width*2.0;
@@ -699,17 +647,17 @@ namespace Bloom.Publish
 							pageWidthMm = A4Width;
 							break;
 						case "A5Landscape":
-							pageWidthMm = A4Width / 2.0;
+							pageWidthMm = A4Width/2.0;
 							break;
 						case "A3Portrait":
 						case "A4Landscape":
 							pageWidthMm = A4Height;
 							break;
 						case "A6Portrait":
-							pageWidthMm = A4Width / 2.0;
+							pageWidthMm = A4Width/2.0;
 							break;
 						case "A6Landscape":
-							pageWidthMm = A4Height / 2.0;
+							pageWidthMm = A4Height/2.0;
 							break;
 						case "B5Portrait":
 							pageWidthMm = 176;
@@ -719,7 +667,7 @@ namespace Bloom.Publish
 							break;
 						case "QuarterLetterLandscape":
 						case "HalfLetterPortrait":
-							pageWidthMm = letterPortraitHeight / 2.0;
+							pageWidthMm = letterPortraitHeight/2.0;
 							break;
 						case "HalfLetterLandscape":
 						case "LetterPortrait":
@@ -729,7 +677,7 @@ namespace Bloom.Publish
 							pageWidthMm = letterPortraitHeight;
 							break;
 						case "HalfLegalPortrait":
-							pageWidthMm = legalPortraitHeight / 2.0;
+							pageWidthMm = legalPortraitHeight/2.0;
 							break;
 						case "HalfLegalLandscape":
 						case "LegalPortrait":
@@ -745,11 +693,11 @@ namespace Bloom.Publish
 				// We want to take something like 'width:334px; height:220px; margin-left: 34px; margin-top: 0px;'
 				// and change it to something like 'width:75%; height:auto; margin-left: 10%; margin-top: 0px;'
 				// This first pass deals with width.
-				if (ConvertStyleFromPxToPercent("width", pageWidthMm, mulitplier, ref imgStyle)) continue;
+				if(ConvertStyleFromPxToPercent("width", pageWidthMm, mulitplier, ref imgStyle)) continue;
 
 				// Now change height to auto, to preserve aspect ratio
 				imgStyle = new Regex("height:\\s*\\d+px").Replace(imgStyle, "height:auto");
-				if (!imgStyle.Contains("height"))
+				if(!imgStyle.Contains("height"))
 					imgStyle = "height:auto; " + imgStyle;
 
 				// Similarly fix indent
@@ -760,19 +708,21 @@ namespace Bloom.Publish
 		}
 
 		// Returns true if we don't find the expected style
-		private static bool ConvertStyleFromPxToPercent(string stylename, double pageWidthMm, double multiplier, ref string imgStyle)
+		private static bool ConvertStyleFromPxToPercent(string stylename, double pageWidthMm, double multiplier,
+			ref string imgStyle)
 		{
 			var match = new Regex("(.*" + stylename + ":\\s*)(\\d+)px(.*)").Match(imgStyle);
-			if (!match.Success)
+			if(!match.Success)
 				return true;
 			var widthPx = int.Parse(match.Groups[2].Value);
 			var widthInch = widthPx/96.0; // in print a CSS px is exactly 1/96 inch
 			const int marginBoxMarginMm = 40; // see basePage.less SetMarginBox.
 			var marginBoxWidthInch = (pageWidthMm - marginBoxMarginMm)/mmPerInch;
-			var parentBoxWidthInch = marginBoxWidthInch*multiplier; // parent box is smaller by net effect of parents with %width styles
+			var parentBoxWidthInch = marginBoxWidthInch*multiplier;
+				// parent box is smaller by net effect of parents with %width styles
 			// 1/10 percent is close enough and more readable/testable than arbitrary precision; make a string with one decimal
 			var newWidth = (Math.Round(widthInch/parentBoxWidthInch*1000)/10).ToString("F1");
-			imgStyle = match.Groups[1] + newWidth  + "%" + match.Groups[3];
+			imgStyle = match.Groups[1] + newWidth + "%" + match.Groups[3];
 			return false;
 		}
 
@@ -784,7 +734,7 @@ namespace Bloom.Publish
 		{
 			var pageElt = (XmlElement) pageDom.Body.FirstChild;
 			var isXMatter = HasClass(pageElt, "bloom-frontMatter") || HasClass(pageElt, "bloom-backMatter");
-			if (isXMatter)
+			if(isXMatter)
 			{
 				// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
 				// browser figure out what is visible. So we can easily match elements in the browser DOM
@@ -797,56 +747,56 @@ namespace Bloom.Publish
 				// just in case something goes wrong, keep program from deadlocking a few lines below.
 				_browser.WebBrowser.NavigationError += (object sender, Gecko.Events.GeckoNavigationErrorEventArgs e) => done = true;
 				_browser.Navigate(normalDom);
-				while (!done)
+				while(!done)
 				{
 					Application.DoEvents();
-					Application.RaiseIdle(new EventArgs());		// needed on Linux to avoid deadlock starving browser navigation
+					Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
 				}
 			}
 			// Remove bloom-editable material not in one of the interesting languages
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes(".//div").Cast<XmlElement>().ToArray())
+			foreach(XmlElement elt in pageDom.RawDom.SafeSelectNodes(".//div").Cast<XmlElement>().ToArray())
 			{
-				if (!HasClass(elt, "bloom-editable"))
+				if(!HasClass(elt, "bloom-editable"))
 					continue;
 				var langAttr = elt.Attributes["lang"];
 				var lang = langAttr == null ? null : langAttr.Value;
-				if (isXMatter)
+				if(isXMatter)
 				{
 					var id = elt.Attributes["id"].Value;
 					var display = _browser.RunJavaScript("getComputedStyle(document.getElementById('" + id + "'), null).display");
-					if (display != "none")
+					if(display != "none")
 						continue; // keep it if not hidden.
 				}
 				else
 				{
 					// normal content page. What will be displayed here is predictable enough without
 					// the overhead of navigating a real browser to a real page.
-					if (lang == Book.MultilingualContentLanguage2 || lang == Book.MultilingualContentLanguage3 ||
-					lang == Book.CollectionSettings.Language1Iso639Code)
-					continue; // keep these
+					if(lang == Book.MultilingualContentLanguage2 || lang == Book.MultilingualContentLanguage3 ||
+					   lang == Book.CollectionSettings.Language1Iso639Code)
+						continue; // keep these
 				}
 				elt.ParentNode.RemoveChild(elt);
 			}
 			// Remove any left-over bubbles
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//label").Cast<XmlElement>().ToArray())
+			foreach(XmlElement elt in pageDom.RawDom.SafeSelectNodes("//label").Cast<XmlElement>().ToArray())
 			{
-				if (HasClass(elt, "bubble"))
+				if(HasClass(elt, "bubble"))
 					elt.ParentNode.RemoveChild(elt);
 			}
 			// Remove page labels and descriptions
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div").Cast<XmlElement>().ToArray())
+			foreach(XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div").Cast<XmlElement>().ToArray())
 			{
-				if (HasClass(elt, "pageLabel"))
+				if(HasClass(elt, "pageLabel"))
 					elt.ParentNode.RemoveChild(elt);
-				if (HasClass(elt, "pageDescription"))
+				if(HasClass(elt, "pageDescription"))
 					elt.ParentNode.RemoveChild(elt);
 			}
 			// Our recordingmd5 attribute is not allowed
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//span[@recordingmd5]").Cast<XmlElement>())
+			foreach(XmlElement elt in pageDom.RawDom.SafeSelectNodes("//span[@recordingmd5]").Cast<XmlElement>())
 			{
 				elt.RemoveAttribute("recordingmd5");
 			}
-			if (isXMatter)
+			if(isXMatter)
 				RemoveTempIds(pageElt); // don't need temporary IDs any more.
 		}
 
@@ -855,11 +805,11 @@ namespace Bloom.Publish
 		void EnsureEditableDivsHaveIds(XmlElement pageElt)
 		{
 			int count = 1;
-			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
+			foreach(XmlElement elt in pageElt.SafeSelectNodes(".//div"))
 			{
-				if (!HasClass(elt, "bloom-editable"))
+				if(!HasClass(elt, "bloom-editable"))
 					continue;
-				if (elt.Attributes["id"] != null)
+				if(elt.Attributes["id"] != null)
 					continue;
 				elt.SetAttribute("id", tempIdMarker + count++);
 			}
@@ -868,11 +818,11 @@ namespace Bloom.Publish
 		void RemoveTempIds(XmlElement pageElt)
 		{
 			int count = 1;
-			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
+			foreach(XmlElement elt in pageElt.SafeSelectNodes(".//div"))
 			{
-				if (!HasClass(elt, "bloom-editable"))
+				if(!HasClass(elt, "bloom-editable"))
 					continue;
-				if (!elt.Attributes["id"].Value.StartsWith(tempIdMarker))
+				if(!elt.Attributes["id"].Value.StartsWith(tempIdMarker))
 					continue;
 				elt.RemoveAttribute("id");
 			}
@@ -880,22 +830,22 @@ namespace Bloom.Publish
 
 		bool HasClass(XmlElement elt, string className)
 		{
-			if (elt == null)
+			if(elt == null)
 				return false;
 			var classAttr = elt.Attributes["class"];
-			if (classAttr == null)
+			if(classAttr == null)
 				return false;
 			return ((" " + classAttr.Value + " ").Contains(" " + className + " "));
 		}
 
 		private void RemoveRegularStylesheets(HtmlDom pageDom)
 		{
-			foreach (XmlElement link in pageDom.RawDom.SafeSelectNodes("//head/link").Cast<XmlElement>().ToArray())
+			foreach(XmlElement link in pageDom.RawDom.SafeSelectNodes("//head/link").Cast<XmlElement>().ToArray())
 			{
 				var href = link.Attributes["href"];
-				if (href != null && Path.GetFileName(href.Value).StartsWith("custom"))
+				if(href != null && Path.GetFileName(href.Value).StartsWith("custom"))
 					continue;
-				if (href != null && Path.GetFileName(href.Value) == "settingsCollectionStyles.css")
+				if(href != null && Path.GetFileName(href.Value) == "settingsCollectionStyles.css")
 					continue;
 				link.ParentNode.RemoveChild(link);
 			}
@@ -906,7 +856,7 @@ namespace Bloom.Publish
 			//NB: the original version of this was also concerned with hrefs. Since Bloom doesn't support making
 			//links and there were no unit tests covering it, I decided to drop that support for now.
 
-			foreach (XmlElement element in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
+			foreach(XmlElement element in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
 			{
 				// Notice that we use only the path part of the url. For some unknown reason, some bloom books
 				// (e.g., El Nino in the library) have a query in some image sources, and at least some ePUB readers
@@ -914,7 +864,7 @@ namespace Bloom.Publish
 				var path = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
 
 				string modifiedPath;
-				if (_mapChangedFileNames.TryGetValue(path, out modifiedPath))
+				if(_mapChangedFileNames.TryGetValue(path, out modifiedPath))
 				{
 					path = modifiedPath;
 				}
@@ -931,11 +881,12 @@ namespace Bloom.Publish
 		private string CopyFileToEpub(string srcPath)
 		{
 			string existingFile;
-			if (_mapSrcPathToDestFileName.TryGetValue(srcPath, out existingFile))
+			if(_mapSrcPathToDestFileName.TryGetValue(srcPath, out existingFile))
 				return existingFile; // File already present, must be used more than once.
 			string originalFileName;
-			if (srcPath.StartsWith(Storage.FolderPath))
-				originalFileName = srcPath.Substring(Storage.FolderPath.Length + 1).Replace("\\", "/"); // allows keeping folder structure
+			if(srcPath.StartsWith(Storage.FolderPath))
+				originalFileName = srcPath.Substring(Storage.FolderPath.Length + 1).Replace("\\", "/");
+					// allows keeping folder structure
 			else
 				originalFileName = Path.GetFileName(srcPath); // probably can't happen, but in case, put at root.
 			// Validator warns against spaces in filenames. + and % and &<> are problematic because to get the real
@@ -951,14 +902,14 @@ namespace Bloom.Publish
 			// We deleted the root directory at the start, so if the file is already
 			// there it is a clash, either multiple sources for files with the same name,
 			// or produced by replacing spaces, or something. Come up with a similar unique name.
-			for (int fix = 1; RobustFile.Exists(dstPath); fix++)
+			for(int fix = 1; RobustFile.Exists(dstPath); fix++)
 			{
 				var fileNameWithoutExtension = Path.Combine(Path.GetDirectoryName(fileName),
 					Path.GetFileNameWithoutExtension(fileName));
 				fileName = Path.ChangeExtension(fileNameWithoutExtension + fix, Path.GetExtension(fileName));
 				dstPath = Path.Combine(_contentFolder, fileName);
 			}
-			if (originalFileName != fileName)
+			if(originalFileName != fileName)
 				_mapChangedFileNames[originalFileName] = fileName;
 			Directory.CreateDirectory(Path.GetDirectoryName(dstPath));
 			CopyFile(srcPath, dstPath);
@@ -983,11 +934,11 @@ namespace Bloom.Publish
 		{
 			// Xpath results are things that have an id attribute, so MUST be XmlElements (though the signature
 			// of SafeSelectNodes allows other XmlNode types).
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@id]"))
+			foreach(XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@id]"))
 			{
 				var id = elt.Attributes["id"].Value;
 				var first = id[0];
-				if (first >= '0' && first <= '9')
+				if(first >= '0' && first <= '9')
 					elt.SetAttribute("id", "i" + id);
 			}
 		}
@@ -1014,18 +965,18 @@ namespace Bloom.Publish
 			var items = ol.Elements(xhtml + "li").ToArray();
 			var coverItem = items[0];
 			var contentItem = items[1];
-			if (_firstContentPageItem == null)
+			if(_firstContentPageItem == null)
 				contentItem.Remove();
 			else
 				contentItem.Element(xhtml + "a").SetAttributeValue("href", _firstContentPageItem);
-			if (_coverPage == _firstContentPageItem)
+			if(_coverPage == _firstContentPageItem)
 				coverItem.Remove();
 			else
 				coverItem.Element(xhtml + "a").SetAttributeValue("href", _coverPage);
 			_navFileName = "nav.xhtml";
 			var navPath = Path.Combine(_contentFolder, _navFileName);
 
-			using (var writer = XmlWriter.Create(navPath))
+			using(var writer = XmlWriter.Create(navPath))
 				content.WriteTo(writer);
 			_manifestItems.Add(_navFileName);
 		}
@@ -1038,7 +989,7 @@ namespace Bloom.Publish
 		/// <param name="pageDom"></param>
 		private void RemoveScripts(HtmlDom pageDom)
 		{
-			foreach (var elt in pageDom.RawDom.SafeSelectNodes("//script").Cast<XmlElement>().ToArray())
+			foreach(var elt in pageDom.RawDom.SafeSelectNodes("//script").Cast<XmlElement>().ToArray())
 			{
 				elt.ParentNode.RemoveChild(elt);
 			}
@@ -1052,18 +1003,18 @@ namespace Bloom.Publish
 		{
 			// The validator has complained about area-describedby where the id is not found.
 			// I don't think we will do qtips at all in books so let's just remove these altogether for now.
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@aria-describedby]"))
+			foreach(XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@aria-describedby]"))
 			{
 				elt.RemoveAttribute("aria-describedby");
 			}
 
 			// Validator doesn't like empty lang attributes, and they don't convey anything useful, so remove.
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='']"))
+			foreach(XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='']"))
 			{
 				elt.RemoveAttribute("lang");
 			}
 			// Validator doesn't like '*' as value of lang attributes, and they don't convey anything useful, so remove.
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
+			foreach(XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
 			{
 				elt.RemoveAttribute("lang");
 			}
@@ -1075,7 +1026,7 @@ namespace Bloom.Publish
 		/// <param name="pageDom"></param>
 		private void RemoveBloomUiElements(HtmlDom pageDom)
 		{
-			foreach (var elt in pageDom.RawDom.SafeSelectNodes("//*[contains(@class,'bloom-ui')]").Cast<XmlElement>().ToList())
+			foreach(var elt in pageDom.RawDom.SafeSelectNodes("//*[contains(@class,'bloom-ui')]").Cast<XmlElement>().ToList())
 			{
 				elt.ParentNode.RemoveChild(elt);
 			}
@@ -1090,11 +1041,11 @@ namespace Bloom.Publish
 		private string GetIdOfFile(string item)
 		{
 			string id;
-			if (_mapItemToId.TryGetValue(item, out id))
+			if(_mapItemToId.TryGetValue(item, out id))
 				return id;
 			id = ToValidXmlId(Path.GetFileNameWithoutExtension(item));
 			var idOriginal = id;
-			for (int i = 1; _idsUsed.Contains(id.ToLowerInvariant()); i++)
+			for(int i = 1; _idsUsed.Contains(id.ToLowerInvariant()); i++)
 			{
 				// Somehow we made a clash
 				id = idOriginal + i;
@@ -1124,14 +1075,14 @@ namespace Bloom.Publish
 				":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD";
 			string validChars = validStartRanges + "\\-.0-9\u00b7\u0300-\u036F\u203F-\u2040";
 			output = Regex.Replace(output, "[^" + validChars + "]", "_");
-			if (!new Regex("^[" + validStartRanges + "]").IsMatch(output))
-				return "f" +output;
+			if(!new Regex("^[" + validStartRanges + "]").IsMatch(output))
+				return "f" + output;
 			return output;
 		}
 
 		private string GetMediaType(string item)
 		{
-			switch (Path.GetExtension(item).Substring(1))
+			switch(Path.GetExtension(item).Substring(1))
 			{
 				case "xml": // Review
 				case "xhtml":
@@ -1185,8 +1136,13 @@ namespace Bloom.Publish
 
 		public void Dispose()
 		{
-			if (_stagingFolder != null)
-				_stagingFolder.Dispose();
+			if(_outerStagingFolder != null)
+				_outerStagingFolder.Dispose();
+		}
+
+		public bool ReadyToSave()
+		{
+			return PublishWithoutAudio || !AudioProcessor.IsAnyCompressedAudioMissing(Storage.FolderPath, Book.RawDom);
 		}
 	}
 }
