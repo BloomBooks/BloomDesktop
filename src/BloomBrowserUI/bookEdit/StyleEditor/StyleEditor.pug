@@ -1,25 +1,3 @@
-mixin characters-tab
-	div
-		div(data-i18n="EditTab.Font") Font
-		.control-section
-			select#font-select
-			select#size-select.allowCustom
-		.spacing-fudge(data-i18n="EditTab.Spacing") Spacing
-		#spacingRow
-			span#lineSpacing(style="white-space: nowrap")
-				+img('linespacing.png')
-				select#line-height-select
-			span#wordSpacing(style="white-space: nowrap")
-				+img('WordSpacing.png')
-				select#word-space-select
-		.mainBlock.leftBlock(style="margin-top:15px")
-			div(data-i18n="EditTab.Emphasis") Emphasis
-			div
-				#bold.iconLetter(style="font-weight:bold") B
-				#italic.iconLetter(style="font-weight:italic") I
-				#underline.iconLetter(style="text-decoration: underline") U
-		#formatCharDesc.format-toolbar-description
-
 mixin img(filename)
 	img(src='/bloom/bookEdit/img/' + filename)
 
@@ -27,10 +5,10 @@ mixin img(filename)
 	.bloomDialogTitleBar(data-i18n="EditTab.FormatDialog.Format") Format
 	.hideWhenFormattingEnabled.bloomDialogMainPage
 		p(data-i18n="BookEditor.FormattingDisabled") Sorry, Reader Templates do not allow changes to formatting.
-	#tabRoot.hideWhenFormattingDisabled.hideForTranslationMode.tab-pane
+	#tabRoot.hideWhenFormattingDisabled.tab-pane
 		#style-page.tab-page
 			h2.tab(data-i18n="EditTab.FormatDialog.StyleNameTab") Style Name
-			div(data-i18n="EditTab.FormatDialog.Style") Style
+			.bloomDialogMainPage(data-i18n="EditTab.FormatDialog.Style") Style
 			#style-group.state-initial
 				select#styleSelect
 				#dont-see
@@ -46,10 +24,30 @@ mixin img(filename)
 					#already-exists(style="color: red;" data-i18n="EditTab.FormatDialog.AlreadyExists") That style already exists. Please choose another name.
 		#formatPage.tab-page
 			h2.tab(data-i18n="EditTab.FormatDialog.CharactersTab") Characters
-			+characters-tab
-		.tab-page
+			.bloomDialogMainPage
+				div
+					div(data-i18n="EditTab.Font") Font
+					.control-section
+						select#font-select
+						select#size-select.allowCustom
+					.spacing-fudge(data-i18n="EditTab.Spacing") Spacing
+					#spacingRow
+						span#lineSpacing(style="white-space: nowrap")
+							+img('linespacing.png')
+							select#line-height-select
+						span#wordSpacing(style="white-space: nowrap")
+							+img('WordSpacing.png')
+							select#word-space-select
+					.mainBlock.leftBlock(style="margin-top:15px")
+						div(data-i18n="EditTab.Emphasis") Emphasis
+						div
+							#bold.iconLetter(style="font-weight:bold") B
+							#italic.iconLetter(style="font-weight:italic") I
+							#underline.iconLetter(style="text-decoration: underline") U
+					#formatCharDesc.format-toolbar-description
+		#paragraph-page.tab-page
 			h2.tab(data-i18n="EditTab.FormatDialog.ParagraphTab") Paragraph
-			div
+			.bloomDialogMainPage
 				.mainBlock.indentBlock
 					div(data-i18n="EditTab.Indent") Indent
 					div
@@ -72,6 +70,3 @@ mixin img(filename)
 							div
 								select#para-spacing-select
 			#formatMoreDesc.format-toolbar-description
-	#tabRoot.hideWhenFormattingDisabled.hideForAuthorMode.tab-pane
-		.bloomDialogMainPage
-			+characters-tab

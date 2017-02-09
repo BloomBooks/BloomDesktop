@@ -672,21 +672,25 @@ export default class StyleEditor {
                 if (noFormatChange) {
                     $('#format-toolbar').addClass('formattingDisabled');
                 } else {
-                    // Not sufficient to hide because they have duplicate ids
-                    if (editor.authorMode) {
-                        $('#format-toolbar .hideForAuthorMode').remove();
-                    } else {
-                        $('#format-toolbar .hideForTranslationMode').remove();
+                    // The tab library doesn't allow us to put other class names on the tab-page,
+                    // so we are doing it this way rather than the approach of using css to hide
+                    // based on class names.
+                    if (!editor.authorMode) {
+                        $('#style-page').remove();
+                        $('#paragraph-page').remove();
                     }
                     if (editor.xmatterMode) {
-                        // The tab library doesn't allow us to put other class names on the tab-page,
-                        // so we are doing it this way rather than the approach of using css to hide
-                        // based on class names.
                         $('#style-page').remove();
                     }
-                }
 
-                editor.setupSelectControls(fonts, current, styleName);
+                    var visibleTabs = $('.tab-page:visible');
+                    if (visibleTabs.length === 1) {
+                        // When there is only one tab, we want to hide the tab itself.
+                        $(visibleTabs[0]).find('h2.tab').remove();
+                    }
+
+                    editor.setupSelectControls(fonts, current, styleName);
+                }
 
                 //make some select boxes permit custom values
                 $('.allowCustom').select2({
@@ -951,9 +955,13 @@ export default class StyleEditor {
     }
 
     populateSelect(items: string[], current, id, maxlength?) {
+        // Rather than selectively call this method for only those select elements which need
+        // to be initialized, we call it for all of them. That makes the calling code a little simpler.
+        // So if the element doesn't exist, exit quickly.
         if (!$('#' + id)) {
             return;
         }
+
         var options = '';
         if (current && items.indexOf(current.toString()) === -1) {
             //we have a custom point size, so make that an option in addition to the standard ones
