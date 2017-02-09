@@ -1579,7 +1579,7 @@
             <seg>إذا كنت تريد مكاناً لوضع معلومات إضافية حول الكتاب، فيمكنك استخدام هذه الصفحة، وهي التي تظهر داخل الغلاف الخلفي للكتاب.</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Background">
+      <tu tuid="EditTab.TextBoxProperties.Background">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Background</seg>
@@ -1603,15 +1603,6 @@
          </tuv>
          <tuv xml:lang="ar">
             <seg>افتح HTML المستخدم لإعداد PDF، في Firefox (يجب أن يكون على المسار)</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Borders">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Borders</seg>
-         </tuv>
-         <tuv xml:lang="ar">
-            <seg>الحدود</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.CannotChangeCopyright">

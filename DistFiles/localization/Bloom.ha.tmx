@@ -1804,7 +1804,7 @@
             <seg>Idan kana son ka sa ƙarin bayani game da littafin a wani wuri, kana iya amfani da wannan shafin, wanda yake a cikin marfin baya.</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Background">
+      <tu tuid="EditTab.TextBoxProperties.Background">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Background</seg>
@@ -1821,15 +1821,6 @@
          </tuv>
          <tuv xml:lang="ha">
             <seg>Bude HTML ɗin da aka yi amfani da shi wurin wannan PDF, a cikin manhajar Firefox (dole ya kasance kan turba) </seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Borders">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Borders</seg>
-         </tuv>
-         <tuv xml:lang="ha">
-            <seg>Iyakoki</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.CannotChangeCopyright">
