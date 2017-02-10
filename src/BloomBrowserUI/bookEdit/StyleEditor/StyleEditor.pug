@@ -1,0 +1,72 @@
+mixin img(filename)
+	img(src='/bloom/bookEdit/img/' + filename)
+
+#format-toolbar.bloom-ui.bloomDialogContainer
+	.bloomDialogTitleBar(data-i18n="EditTab.FormatDialog.Format") Format
+	.hideWhenFormattingEnabled.bloomDialogMainPage
+		p(data-i18n="BookEditor.FormattingDisabled") Sorry, Reader Templates do not allow changes to formatting.
+	#tabRoot.hideWhenFormattingDisabled.tab-pane
+		#style-page.tab-page
+			h2.tab(data-i18n="EditTab.FormatDialog.StyleNameTab") Style Name
+			.bloomDialogMainPage(data-i18n="EditTab.FormatDialog.Style") Style
+			#style-group.state-initial
+				select#styleSelect
+				#dont-see
+					span(data-i18n="EditTab.FormatDialog.DontSeeNeed") Don't see what you need?
+					= ' '
+					a#show-createStyle(href="" data-i18n="EditTab.FormatDialog.CreateStyle") Create a new style
+				#createStyle
+					div(data-i18n="EditTab.FormatDialog.NewStyle") New style
+					div
+						input#style-select-input(type="text")
+						button#create-button(data-i18n="EditTab.FormatDialog.Create" disabled) Create
+					#please-use-alpha(style="color: red;" data-i18n="EditTab.FormatDialog.PleaseUseAlpha") Please use only alphabetical characters. Numbers at the end are ok, as in "part2".
+					#already-exists(style="color: red;" data-i18n="EditTab.FormatDialog.AlreadyExists") That style already exists. Please choose another name.
+		#formatPage.tab-page
+			h2.tab(data-i18n="EditTab.FormatDialog.CharactersTab") Characters
+			.bloomDialogMainPage
+				div
+					div(data-i18n="EditTab.Font") Font
+					.control-section
+						select#font-select
+						select#size-select.allowCustom
+					.spacing-fudge(data-i18n="EditTab.Spacing") Spacing
+					#spacingRow
+						span#lineSpacing(style="white-space: nowrap")
+							+img('linespacing.png')
+							select#line-height-select
+						span#wordSpacing(style="white-space: nowrap")
+							+img('WordSpacing.png')
+							select#word-space-select
+					.mainBlock.leftBlock(style="margin-top:15px")
+						div(data-i18n="EditTab.Emphasis") Emphasis
+						div
+							#bold.iconLetter(style="font-weight:bold") B
+							#italic.iconLetter(style="font-weight:italic") I
+							#underline.iconLetter(style="text-decoration: underline") U
+					#formatCharDesc.format-toolbar-description
+		#paragraph-page.tab-page
+			h2.tab(data-i18n="EditTab.FormatDialog.ParagraphTab") Paragraph
+			.bloomDialogMainPage
+				.mainBlock.indentBlock
+					div(data-i18n="EditTab.Indent") Indent
+					div
+						#indent-none.iconIndent
+							+img('indent_none.png')
+						#indent-indented.iconIndent
+							+img('indent_indented.png')
+						#indent-hanging.iconIndent
+							+img('indent_hanging.png')
+				.mainBlock
+					div(data-i18n="EditTab.Alignment") Alignment
+					div
+						#position-leading.icon16x16
+							+img('text_align_left.png')
+						#position-center.icon16x16
+							+img('text_align_center.png')
+					div(style="margin-top:10px")
+						.mainBlock
+							div(data-i18n="EditTab.ParagraphSpacing") Space Between Paragraphs
+							div
+								select#para-spacing-select
+			#formatMoreDesc.format-toolbar-description
