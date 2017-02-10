@@ -1,3 +1,5 @@
+/// <reference path="../../typings/select2/select2.d.ts" />
+import '../../node_modules/select2/dist/js/select2.js';
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import axios = require('axios');
 import { EditableDivUtils } from '../js/editableDivUtils';
@@ -43,6 +45,21 @@ export default class TextBoxProperties {
                 $('#text-properties-dialog').remove(); // in case there's still one somewhere else
                 $('body').append(html);
 
+                // Use select2 in place of regular selects. One reason to do this is that, for
+                // reasons I can't fathom, clicking in a regular select doesn't work within this
+                // dialog...a problem that seems to occur only in Bloom, not when we open the page
+                // in Firefox. This makes it very hard to debug.
+                // Another advantage is that the lists can scroll...we are starting to have a lot
+                // of UI languages.
+                // The commented out block is needed if we add ones that allow custom items.
+                // $('.allowCustom').select2({
+                //     tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
+                // });
+                $('select:not(.allowCustom)').select2({
+                    tags: false,
+                    minimumResultsForSearch: -1 // result is that no search box is shown
+                });
+
                 if (noFormatChange) {
                     $('#text-properties-dialog').addClass('formattingDisabled');
                 } else {
@@ -87,6 +104,8 @@ export default class TextBoxProperties {
                     this.removeButtonSelection();
                     this.initializeAlignment();
                     this.setButtonClickActions();
+                    this.makeLanguageSelect();
+                    this.initializeHintText();
                 }, 0); // just push this to the end of the event queue
             });
         });
@@ -202,5 +221,90 @@ export default class TextBoxProperties {
     getDialogActivationButton(): string {
         return '<div contenteditable="false" class="bloom-ui formatButton">'
             + '<img  contenteditable="false" src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>';
+    }
+
+    makeLanguageSelect() {
+        // items comes back as something like languages: [{label: 'English', tag: 'en'},{label: 'French', tag: 'fr'} ]
+        axios.get('/bloom/uiLanguages').then(result=> {
+            var items:Array<any> = (<any>result.data).languages;
+            this.makeSelectItems(items, 'en', 'lang-select');
+        });
+        $('#lang-select').change(e => {
+            this.setHintTextForLang($('#lang-select').val());
+        });
+    }
+
+    // Assumes a <select> with the specified id already exists. Makes the child elements and selects the current one.
+    // This version assumes items is an array of objects with label and tag (see example in makeLanguageSelect).
+    makeSelectItems(items: any[], current, id, maxlength?) {
+        var result = '';
+        // May need this someday to handle missing items.
+        // if (current && items.indexOf(current.toString()) === -1) {
+        //     //we have a custom point size, so make that an option in addition to the standard ones
+        //     items.push(current.toString());
+        // }
+
+        items.sort(function (a, b) {
+            return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
+        });
+
+        for (var i = 0; i < items.length; i++) {
+            var selected: string = '';
+            if (current === items[i].tag) {
+                selected = ' selected';
+            }
+            var text = items[i].label;
+            text = text.replace(/-/g, ' '); //show users a space instead of dashes
+            if (maxlength && text.length > maxlength) {
+                text = text.substring(0, maxlength) + '...';
+            }
+            result += '<option value="' + items[i].tag + '"' + selected + '>' + text + '</option>';
+        }
+        var parent = $('#'+id);
+        parent.html(result);
+    }
+
+    preventDragStealingClicksOnHintText() {
+        // By default, ui-draggable makes any click in the whole dialog an attempt to drag
+        // the dialog around. We need to suppress this so the user can click in the hint
+        // box and type.
+        $('#hint-content').click((e:Event)=> e.stopPropagation());
+        $('#hint-content').mousedown((e:Event)=> e.stopPropagation());
+        $('#hint-content').mouseup((e:Event)=> e.stopPropagation());
+        $('#hint-content').mousemove((e:Event)=> e.stopPropagation());
+    }
+
+    initializeHintText() {
+        this.preventDragStealingClicksOnHintText();
+        // it's tempting to go for the current UI language as default, but we REALLY
+        // want them to include at least an English hint, as that seems to be the
+        // common interchange language among Bloom users.
+        this.setHintTextForLang('en');
+        $('#hint-content').on('input', e => {
+            let lang = $('#lang-select').val();
+            let text = $('#hint-content').text();
+            let targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+            var langLabel = targetGroup.find('label[lang=' + lang+ ']');
+            if (!text) {
+                langLabel.remove(); // don't let empty ones hang around
+            } else {
+                if (langLabel.length === 0) {
+                    targetGroup.prepend('<label class="bubble" lang="' + lang + '"></label>');
+                    langLabel = targetGroup.find('label[lang=' + lang+ ']');
+                }
+                langLabel.text(text);
+            }
+        });
+    }
+
+    setHintTextForLang(lang: string) {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        var langLabel = targetGroup.find('label[lang=' + lang+ ']');
+        if (langLabel.length > 0) {
+            $('#hint-content').text(langLabel.text());
+        }
+        else {
+            $('#hint-content').text('');
+        }
     }
 }

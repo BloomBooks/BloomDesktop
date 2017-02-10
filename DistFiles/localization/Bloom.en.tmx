@@ -1861,6 +1861,12 @@
         <seg>Template Pages</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.TextBoxProperties.HintBubbles">
+      <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
+      <tuv xml:lang="en">
+        <seg>Hint Bubbles</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.TextBoxProperties.Title">
       <tuv xml:lang="en">
         <seg>Text Box Properties</seg>
@@ -1899,6 +1905,11 @@
     <tu tuid="EditTab.TextBoxProperties.RegionalLanguage">
       <tuv xml:lang="en">
         <seg>Regional Language</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.WhatToPut">
+      <tuv xml:lang="en">
+        <seg>What should authors put in this box?</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
