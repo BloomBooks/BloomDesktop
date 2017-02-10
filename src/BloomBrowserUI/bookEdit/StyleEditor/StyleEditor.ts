@@ -158,7 +158,7 @@ export default class StyleEditor {
         var rule: CSSStyleRule = this.GetOrCreateRuleForStyle(styleName, langAttrValue, this.authorMode);
         var units = 'pt';
         var sizeString = (fontSize + change).toString();
-        if (parseInt(sizeString) < this.MIN_FONT_SIZE) {
+        if (parseInt(sizeString, 10) < this.MIN_FONT_SIZE) {
             return; // too small, quietly don't do it!
         }
         rule.style.setProperty('font-size', sizeString + units, 'important');
@@ -172,7 +172,7 @@ export default class StyleEditor {
 
     GetCalculatedFontSizeInPoints(target: HTMLElement): number {
         var sizeInPx = $(target).css('font-size');
-        return this.ConvertPxToPt(parseInt(sizeInPx));
+        return this.ConvertPxToPt(parseInt(sizeInPx, 10));
     }
 
     ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
@@ -265,18 +265,20 @@ export default class StyleEditor {
         return result;
     }
 
-    private FindExistingUserModifiedStyleSheet(): StyleSheet {
+    private FindExistingUserModifiedStyleSheet(): CSSStyleSheet {
         for (var i = 0; i < document.styleSheets.length; i++) {
-            if ((<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title === 'userModifiedStyles') {
-                // alert("Found userModifiedStyles sheet: i= " + i + ", title= " + (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
-                return <StyleSheet><any>document.styleSheets[i];
+            if ((<HTMLElement>document.styleSheets[i].ownerNode).title === 'userModifiedStyles') {
+                // alert("Found userModifiedStyles sheet: i= " + i + ", title= " +
+                //  (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " +
+                //  document.styleSheets[i].ownerNode.textContent);
+                return <CSSStyleSheet>document.styleSheets[i];
             }
         }
         return null;
     }
 
     //note, this currently just makes an element in the document, not a separate file
-    GetOrCreateUserModifiedStyleSheet(): StyleSheet {
+    GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet {
         var styleSheet = this.FindExistingUserModifiedStyleSheet();
         if (styleSheet == null) {
             var newSheet = document.createElement('style');
@@ -302,12 +304,12 @@ export default class StyleEditor {
     GetOrCreateRuleForStyle(styleName: string, langAttrValue: string, ignoreLanguage: boolean, forChildParas?: boolean): CSSStyleRule {
         var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         if (styleSheet == null) {
-            alert('styleSheet == null');
+            return;
         }
 
-        var ruleList: CSSRuleList = (<any>styleSheet).cssRules;
+        var ruleList: CSSRuleList = styleSheet.cssRules;
         if (ruleList == null) {
-            ruleList = <any>[];
+            ruleList = new CSSRuleList();
         }
 
         var styleAndLang = styleName;
@@ -341,7 +343,7 @@ export default class StyleEditor {
                 return <CSSStyleRule>ruleList[i];
             }
         }
-        (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + ' { }', ruleList.length);
+        styleSheet.insertRule('.' + styleAndLang + ' { }', ruleList.length);
 
         return <CSSStyleRule>ruleList[ruleList.length - 1]; //new guy is last
     }
@@ -354,7 +356,7 @@ export default class StyleEditor {
             return; // safety net; shouldn't happen
         }
 
-        var ruleList: CSSRuleList = (<any>styleSheet).cssRules;
+        var ruleList: CSSRuleList = styleSheet.cssRules;
         if (ruleList == null) {
             return; // nothing to do
         }
@@ -364,15 +366,15 @@ export default class StyleEditor {
         for (var i = ruleList.length - 1; i > -1; i--) {
             var trimmedCss = ruleList[i].cssText.trim();
             var index = trimmedCss.indexOf('-style');
-            if (index == -1) {
-                (<CSSStyleSheet>styleSheet).deleteRule(i); // in case we've discovered a book that had BL-4266
+            if (index === -1) {
+                styleSheet.deleteRule(i); // in case we've discovered a book that had BL-4266
                 continue;
             }
             // We want any rule whose base style name matches our incoming parameter.
             // The substring strips off the initial period and everything after (and including) '-style' leaving the base style name.
             var match = trimmedCss.substring(1, index).toLowerCase();
-            if (match == styleName.toLowerCase()) {
-                (<CSSStyleSheet>styleSheet).deleteRule(i);
+            if (match === styleName.toLowerCase()) {
+                styleSheet.deleteRule(i);
             }
         }
     }
@@ -410,7 +412,7 @@ export default class StyleEditor {
         styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
         var box = $(targetBox);
         var sizeString = box.css('font-size'); // always returns computed size in pixels
-        var pxSize = parseInt(sizeString); // strip off units and parse
+        var pxSize = parseInt(sizeString, 10); // strip off units and parse
         var ptSize = this.ConvertPxToPt(pxSize);
         var lang = box.attr('lang');
 
@@ -497,16 +499,9 @@ export default class StyleEditor {
     getFormatValues() {
         var box = $(this.boxBeingEdited);
         var sizeString = box.css('font-size');
-        var pxSize = parseInt(sizeString);
+        var pxSize = parseInt(sizeString, 10);
         var ptSize = this.ConvertPxToPt(pxSize, false);
         var sizes = this.getPointSizes();
-
-        // This was a good idea but we need custom values now
-        //ptSize = StyleEditor.GetClosestValueInList(sizes, ptSize);
-
-        // if(ptSize != StyleEditor.GetClosestValueInList(sizes, ptSize)){
-        //     //TODO: we probably need to do rounding
-        // }
 
         ptSize = Math.round(ptSize);
         var fontName = box.css('font-family');
@@ -515,7 +510,7 @@ export default class StyleEditor {
         }
 
         var lineHeightString = box.css('line-height');
-        var lineHeightPx = parseInt(lineHeightString);
+        var lineHeightPx = parseInt(lineHeightString, 10);
         var lineHeightNumber = Math.round(lineHeightPx / pxSize * 10) / 10.0;
         var lineSpaceOptions = this.getLineSpaceOptions();
         var lineHeight = StyleEditor.GetClosestValueInList(lineSpaceOptions, lineHeightNumber);
@@ -525,7 +520,7 @@ export default class StyleEditor {
         var wordSpaceString = box.css('word-spacing');
         var wordSpacing = wordSpaceOptions[0];
         if (wordSpaceString !== '0px') {
-            var pxSpace = parseInt(wordSpaceString);
+            var pxSpace = parseInt(wordSpaceString, 10);
             var ptSpace = this.ConvertPxToPt(pxSpace);
             if (ptSpace > 7.5) {
                 wordSpacing = wordSpaceOptions[2];
@@ -534,7 +529,7 @@ export default class StyleEditor {
             }
         }
         var weight = box.css('font-weight');
-        var bold = (parseInt(weight) > 600);
+        var bold = (parseInt(weight, 10) > 600);
 
         var italic = box.css('font-style') === 'italic';
         var underline = box.css('text-decoration') === 'underline';
@@ -548,13 +543,13 @@ export default class StyleEditor {
         var paraBox = box.find('p');
 
         var marginBelowString = paraBox.css('margin-bottom');
-        var paraSpacePx = parseInt(marginBelowString);
+        var paraSpacePx = parseInt(marginBelowString, 10);
         var paraSpaceEm = paraSpacePx / pxSize;
         var paraSpaceOptions = this.getParagraphSpaceOptions();
         var paraSpacing = StyleEditor.GetClosestValueInList(paraSpaceOptions, paraSpaceEm);
 
         var indentString = paraBox.css('text-indent');
-        var indentNumber = parseInt(indentString);
+        var indentNumber = parseInt(indentString, 10);
         var paraIndent = 'none';
         if (indentNumber > 1) {
             paraIndent = 'indented';
@@ -644,11 +639,12 @@ export default class StyleEditor {
         // put the format button in the editable text box itself, so that it's always in the right place.
         // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
         // the user won't see resize and drag controls when they click on it
-        $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
+        $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' +
+            editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
 
         //make the button stay at the bottom if we overflow and thus scroll
         //review: It's not clear to me that this is actually working (JH 3/19/2016)
-        $(targetBox).on('scroll', e => { this.AdjustFormatButton(e.target) });
+        $(targetBox).on('scroll', e => { this.AdjustFormatButton(e.target); });
 
 
         // And in case we are starting out on a centerVertically page we might need to adjust it now
@@ -750,21 +746,30 @@ export default class StyleEditor {
                     editor.getMoreTabDescription();
 
                     $('#font-select').change(function () { editor.changeFont(); });
-                    editor.AddQtipToElement($('#font-select'), theOneLocalizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
+                    editor.AddQtipToElement($('#font-select'),
+                        theOneLocalizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
                     $('#size-select').change(function () { editor.changeSize(); });
-                    editor.AddQtipToElement($('#size-select'), theOneLocalizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
+                    editor.AddQtipToElement($('#size-select'),
+                        theOneLocalizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
                     $('#line-height-select').change(function () { editor.changeLineheight(); });
-                    editor.AddQtipToElement($('#line-height-select').parent(), theOneLocalizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
+                    editor.AddQtipToElement($('#line-height-select').parent(),
+                        theOneLocalizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip',
+                            'Change the spacing between lines of text'), 1500);
                     $('#word-space-select').change(function () { editor.changeWordSpace(); });
-                    editor.AddQtipToElement($('#word-space-select').parent(), theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
+                    editor.AddQtipToElement($('#word-space-select').parent(),
+                        theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip',
+                            'Change the spacing between words'), 1500);
                     if (editor.authorMode) {
                         if (!editor.xmatterMode) {
                             $('#styleSelect').change(function () { editor.selectStyle(); });
                             (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
-                            $('#style-select-input').on('input', function () { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
+                            // don't use .change() here, as it only fires on loss of focus
+                            $('#style-select-input').on('input', function () { editor.styleInputChanged(); });
                             // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
                             // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
-                            (<any>$('#style-select-input').get(0)).trimNotification = function () { editor.styleStateChange('invalid-characters'); }
+                            (<any>$('#style-select-input').get(0)).trimNotification = function () {
+                                editor.styleStateChange('invalid-characters');
+                            };
                             $('#reset-style').click(function (event) {
                                 event.preventDefault();
                                 editor.resetStyle();
@@ -908,11 +913,17 @@ export default class StyleEditor {
             }
         }
         // Now make it so
-        if (id === 'bold') this.changeBold();
-        else if (id === 'italic') this.changeItalic();
-        else if (id === 'underline') this.changeUnderline();
-        else if (id.startsWith('indent')) this.changeIndent();
-        else if (id.startsWith('position')) this.changePosition();
+        if (id === 'bold') {
+            this.changeBold();
+        } else if (id === 'italic') {
+            this.changeItalic();
+        } else if (id === 'underline') {
+            this.changeUnderline();
+        } else if (id.startsWith('indent')) {
+            this.changeIndent();
+        } else if (id.startsWith('position')) {
+            this.changePosition();
+        }
     }
 
     selectButton(id: string, val: boolean) {
@@ -930,8 +941,8 @@ export default class StyleEditor {
         var styleName = StyleEditor.GetBaseStyleNameForElement(this.boxBeingEdited);
         // BL-2386 This one should NOT be language-dependent; only style dependent
         if (this.shouldSetDefaultRule()) {
-            theOneLocalizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style.', styleName)
-                .done(translation => {
+            theOneLocalizationManager.asyncGetText('BookEditor.DefaultForText',
+                'This formatting is the default for all text boxes with \'{0}\' style.', styleName).done(translation => {
                     $('#formatCharDesc').html(translation);
                 });
             return;
@@ -942,8 +953,8 @@ export default class StyleEditor {
         if (!lang) {
             lang = iso;
         }
-        theOneLocalizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style.', lang, styleName)
-            .done(translation => {
+        theOneLocalizationManager.asyncGetText('BookEditor.ForTextInLang',
+            'This formatting is for all {0} text boxes with \'{1}\' style.', lang, styleName).done(translation => {
                 $('#formatCharDesc').html(translation);
             });
     }
@@ -1113,7 +1124,7 @@ export default class StyleEditor {
         var fontSize = $('#size-select').val();
         var units = 'pt';
         var sizeString = fontSize.toString();
-        if (parseInt(sizeString) < this.MIN_FONT_SIZE) {
+        if (parseInt(sizeString, 10) < this.MIN_FONT_SIZE) {
             return; // should not be possible?
         }
         // Always set the value in the language-specific rule
