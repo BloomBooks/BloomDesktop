@@ -30,6 +30,7 @@ namespace Bloom
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
 		private string _url;
+		private string _replacedUrl;
 		private XmlDocument _rootDom; // root DOM we navigate the browser to; typically a shell with other doms in iframes
 		private XmlDocument _pageEditDom; // DOM, dypically in an iframe of _rootDom, which we are editing.
 		// A temporary object needed just as long as it is the content of this browser.
@@ -673,6 +674,13 @@ namespace Bloom
 				Process.Start(e.Uri.OriginalString); //open in the system browser instead
 				Debug.WriteLine("Navigating " + e.Uri);
 			}
+			// Check for a simulated file that has been replaced before being displayed.
+			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4268.
+			if (_replacedUrl != null && _replacedUrl.ToLowerInvariant() == url)
+			{
+				e.Cancel = true;
+				Debug.WriteLine("Navigating to expired " + e.Uri.OriginalString + " cancelled");
+			}
 		}
 
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
@@ -769,6 +777,10 @@ namespace Bloom
 
 		private void SetNewDependent(IDisposable dependent)
 		{
+			// Save information needed to prevent http://issues.bloomlibrary.org/youtrack/issue/BL-4268.
+			var simulated = _dependentContent as SimulatedPageFile;
+			_replacedUrl = (simulated != null) ? simulated.Key : null;
+
 			if(_dependentContent!=null)
 			{
 				try
