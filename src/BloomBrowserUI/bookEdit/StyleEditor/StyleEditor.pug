@@ -11,6 +11,8 @@ mixin img(filename)
 			.bloomDialogMainPage(data-i18n="EditTab.FormatDialog.Style") Style
 			#style-group.state-initial
 				select#styleSelect
+				#style-reset
+					a#reset-style(href="" data-i18n="EditTab.FormatDialog.ResetStyle") Reset this style to default settings
 				#dont-see
 					span(data-i18n="EditTab.FormatDialog.DontSeeNeed") Don't see what you need?
 					= ' '
