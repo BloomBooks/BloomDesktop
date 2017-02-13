@@ -414,8 +414,12 @@ namespace Bloom.MiscUI
 			var collectionFolder = System.IO.Path.GetDirectoryName(Book.FolderPath);
 			foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
 				zip.AddTopLevelFile(file);
-			zip.AddDirectory(Path.Combine(collectionFolder, "Allowed Words"));
-			zip.AddDirectory(Path.Combine(collectionFolder, "Sample Texts"));
+			var allowedWords = Path.Combine(collectionFolder, "Allowed Words");
+			if (Directory.Exists(allowedWords))
+				zip.AddDirectory(allowedWords);
+			var sampleTexts = Path.Combine(collectionFolder, "Sample Texts");
+			if (Directory.Exists(sampleTexts))
+				zip.AddDirectory(sampleTexts);
 		}
 
 		private bool WantReaderInfo()
@@ -569,6 +573,8 @@ namespace Bloom.MiscUI
 
 		private void GetAdditionalFileInfo(StringBuilder bldr)
 		{
+			if (this.Book == null || String.IsNullOrEmpty(this.Book.FolderPath))
+				return;
 			bldr.AppendLine();
 			bldr.AppendLine("=Additional Files Bundled With Book=");
 			var collectionFolder = Path.GetDirectoryName(Book.FolderPath);
@@ -587,6 +593,8 @@ namespace Bloom.MiscUI
 
 		private void ListFolderContents(string folder, StringBuilder bldr)
 		{
+			if (!Directory.Exists(folder))
+				return;
 			foreach (var file in Directory.GetFiles(folder))
 				bldr.AppendLine(file);
 			// Probably overkill, but if there are subfolders, they will be zipped up with the book.
