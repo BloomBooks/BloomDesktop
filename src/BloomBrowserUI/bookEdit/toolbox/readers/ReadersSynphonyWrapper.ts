@@ -47,6 +47,7 @@ export default class ReadersSynphonyWrapper {
         this.addLevel(<ReaderLevel>jQuery.extend(true, new ReaderLevel((i+1).toString()), lvls[i]));
       }
     }
+    theOneLibSynphony.setExtraSentencePunctuation(this.source.sentencePunct);
   }
 
   loadFromLangData(langData: LanguageData): void {

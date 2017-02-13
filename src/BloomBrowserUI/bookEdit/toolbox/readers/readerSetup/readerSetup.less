@@ -46,7 +46,8 @@ textarea { resize: none; }
 .format-not-supported { color: #EF0808; }
 
 div.sub-float { position: relative; }
-#powered-by { position: relative; float: right; padding: 2px 6px; white-space: nowrap; text-align: right; -moz-user-select: none; }
+// be careful of changes here, they can produce unexpected layout problems for long translations of the powered-by string. BL-4241.
+#powered-by { position: relative; float: right; padding: 2px 6px; text-align: right; -moz-user-select: none; max-width: 300px }
 #setup-stage-letters-and-words, #setup-stage-words-file { float: left; margin-left: 10px; }
 #click-letters { padding-bottom: 10px; }
 
@@ -202,6 +203,8 @@ table.hide-fourth-column {
 
 #allowed-words-file { line-height: 28px; }
 #remove-allowed-word-file { display: none; }
+
+.levelMode .stagesOnly {display: none; }
 
 @media (max-width: 539px) {
   .tab-detail div.sub-float { width: ~'calc(100% - 20px)'; }
