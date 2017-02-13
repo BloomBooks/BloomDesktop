@@ -258,20 +258,20 @@ function activateTool(newTool: ITabModel) {
             newTool.hasRestoredSettings = true;
             var name = newTool.name();
             newTool.beginRestoreSettings(savedSettings).then(() => {
-                newTool.finishTabPaneLocalization(getCurrentPanel());
+                newTool.finishTabPaneLocalization(getPanel(newTool));
                 newTool.showTool();
             })
         } else {
-            newTool.finishTabPaneLocalization(getCurrentPanel());
+            newTool.finishTabPaneLocalization(getPanel(newTool));
             newTool.showTool();
         }
     }
 }
 
-function getCurrentPanel(): HTMLElement {
+function getPanel(tool): HTMLElement {
     var panel = null;
-    if (currentTool) {
-        var panelName = currentTool.name() + 'Tool';
+    if (tool) {
+        var panelName = tool.name() + 'Tool';
         $('#toolbox').find('> h3').each(function () {
             if ($(this).attr('data-panelId') === panelName) {
                 panel = this;
