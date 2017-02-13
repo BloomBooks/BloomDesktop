@@ -76,8 +76,12 @@ function process_UI_Message(event: MessageEvent): void {
                     firstStage.click(); // select the first stage
             }
             else {
-                tabs.tabs('option', 'disabled', [0, 1, 2]);
+                tabs.tabs('option', 'disabled', [1, 2]);
                 tabs.tabs('option', 'active', 3);
+        // In Level mode, we hide part of the content, and change the label.
+        $('#dlstabs-0').addClass("levelMode");
+        theOneLocalizationManager.asyncGetText('ReaderSetup.Punctuation', "Punctuation").then(result => 
+          $('#dlstab0Label a').text(result));
                 var firstLevel = $('#levels-table').find('tbody tr:first');
                 if (firstLevel && (firstLevel.length === 0))
                     addNewLevel();
