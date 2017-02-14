@@ -714,14 +714,30 @@ namespace Bloom.Book
 			}
 		}
 
+		// Both of these are relative to the DOM's Head element
+		private const string CoverColorStyleXPath = "./style[@type='text/css' and contains(.,'coverColor')]";
+		private const string UserModifiedStyleXPath = "./style[@type='text/css' and @title='userModifiedStyles']";
+
 		/// <summary>
-		/// 'internal' for testing
+		/// Finds the style element that contains css rules for 'userModifiedStyles',
+		/// or null if it doesn't exist.
 		/// </summary>
 		/// <param name="headElement"></param>
-		/// <returns></returns>
 		internal static XmlElement GetUserModifiedStyleElement(XmlNode headElement)
 		{
-			return headElement.SafeSelectNodes("./style[@type='text/css' and @title='userModifiedStyles']")
+			return headElement.SafeSelectNodes(UserModifiedStyleXPath)
+				.Cast<XmlElement>()
+				.FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Finds the style element that contains css rules for 'coverColor',
+		/// or null if it doesn't exist.
+		/// </summary>
+		/// <param name="headElement"></param>
+		internal static XmlElement GetCoverColorStyleElement(XmlNode headElement)
+		{
+			return headElement.SafeSelectNodes(CoverColorStyleXPath)
 				.Cast<XmlElement>()
 				.FirstOrDefault();
 		}
@@ -731,7 +747,14 @@ namespace Bloom.Book
 			var styleNode = headElement.OwnerDocument.CreateElement("style");
 			styleNode.SetAttribute("type", "text/css");
 			styleNode.SetAttribute("title", "userModifiedStyles");
-			headElement.AppendChild(styleNode);
+
+			// apparently to make sure that the user's css rules get back to the dom
+			// we need to ensure that the 'userModifiedStyles' element comes BEFORE the 'coverColor' element in the Head.
+			var existingCoverColorNode = GetCoverColorStyleElement(headElement);
+			if (existingCoverColorNode == null)
+				headElement.AppendChild(styleNode);
+			else
+				headElement.InsertBefore(styleNode, existingCoverColorNode);
 			return styleNode;
 		}
 
