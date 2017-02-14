@@ -24,6 +24,7 @@ export class LibSynphony {
 
     dbGet(key: string): any;
     dbSet(key: string, value: any): void;
+  setExtraSentencePunctuation(extra: string): void;
     stringToSentences(textHTML: string): TextFragment[];
     langDataFromString(langDataString: string): boolean;
     getWordsFromHtmlString(textHTML: string): string[];

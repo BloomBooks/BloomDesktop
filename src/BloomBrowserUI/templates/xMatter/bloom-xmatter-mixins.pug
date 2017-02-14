@@ -49,7 +49,7 @@ mixin field-acknowledgments-localizedVersion
 mixin field-acknowledgments-originalVersion
 	+field-prototypeDeclaredExplicity("N1").originalAcknowledgments
 		label.bubble Original (or Shell) Acknowledgments in {lang}
-		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')
+		+editable(kLanguageForPrototypeOnly).bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')
 			| {Original Acknowledgments}
 
 
@@ -163,7 +163,7 @@ mixin title-page-contents
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
 	+field-prototypeDeclaredExplicity("N1")#originalContributions
 		label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()') The contributions made by writers, illustrators, editors, etc., in {lang}
-		+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
+		+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
 	+field-prototypeDeclaredExplicity("N1")#funding
 		label.bubble Use this to acknowledge any funding agencies.
 		+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')

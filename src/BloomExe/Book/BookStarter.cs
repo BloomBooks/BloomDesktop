@@ -80,11 +80,14 @@ namespace Bloom.Book
 		private string GetPathToHtmlFile(string folder)
 		{
 			// BL-4160 don't put an asterisk after the .htm. It is unnecessary as this search pattern
-			// already returns both .htm and .html, but NOT .htm.xyz [true only for Windows]
-			// A single ? wildcard character is needed for Linux to match both *.htm and *.html.
-			// This works on both platforms without being greedy enough to cause problems
-			var candidates = from x in Directory.GetFiles(folder, "*.htm?")
-							 where !(x.ToLowerInvariant().EndsWith("configuration.html"))
+			// already returns both *.htm and *.html, but NOT *.htm.xyz [returns *.html only for Windows]
+			// For both, "*.htm?" should work, but it doesn't return *.htm on Linux [Mono4 bug?].
+			var candidates = from x in Directory.GetFiles(folder, "*.htm")
+							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.htm"))
+							 select x;
+			if (!candidates.Any())
+				candidates = from x in Directory.GetFiles(folder, "*.html")
+							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.html"))
 							 select x;
 			if (candidates.Count() == 1)
 				return candidates.First();

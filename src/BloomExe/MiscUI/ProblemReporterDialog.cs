@@ -354,6 +354,7 @@ namespace Bloom.MiscUI
 							zip.AddDirectory(Book.FolderPath);
 							if (WantReaderInfo())
 								AddReaderInfo(zip);
+							AddCollectionSettings(zip);
 							zip.Save();
 						}
 						catch (Exception error)
@@ -411,8 +412,12 @@ namespace Bloom.MiscUI
 			var collectionFolder = System.IO.Path.GetDirectoryName(Book.FolderPath);
 			foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
 				zip.AddTopLevelFile(file);
-			zip.AddDirectory(Path.Combine(collectionFolder, "Allowed Words"));
-			zip.AddDirectory(Path.Combine(collectionFolder, "Sample Texts"));
+			var allowedWords = Path.Combine(collectionFolder, "Allowed Words");
+			if (Directory.Exists(allowedWords))
+				zip.AddDirectory(allowedWords);
+			var sampleTexts = Path.Combine(collectionFolder, "Sample Texts");
+			if (Directory.Exists(sampleTexts))
+				zip.AddDirectory(sampleTexts);
 		}
 
 		private bool WantReaderInfo()
@@ -425,6 +430,16 @@ namespace Bloom.MiscUI
 					return true;
 			}
 			return false;
+		}
+
+		private void AddCollectionSettings(BloomZipFile zip)
+		{
+			// When sending Book, add the project settings files as well.
+			var collectionFolder = System.IO.Path.GetDirectoryName(Book.FolderPath);
+			foreach (var file in Directory.GetFiles(collectionFolder, "*CollectionStyles.css"))
+				zip.AddTopLevelFile(file);
+			foreach (var file in Directory.GetFiles(collectionFolder, "*.bloomCollection"))
+				zip.AddTopLevelFile(file);
 		}
 
 		/// <summary>
@@ -464,6 +479,9 @@ namespace Bloom.MiscUI
 				if (_includeBook.Visible && _includeBook.Checked) // only Visible if Book is not null
 				{
 					zip.AddDirectory(Book.FolderPath);
+					if (WantReaderInfo())
+						AddReaderInfo(zip);
+					AddCollectionSettings(zip);
 				}
 			}
 			if (_includeScreenshot.Checked)
@@ -510,8 +528,7 @@ namespace Bloom.MiscUI
 			bldr.AppendLine(_description.Text);
 			bldr.AppendLine();
 			GetAdditionalEnvironmentInfo(bldr);
-			if (WantReaderInfo())
-				GetAdditionalFileInfo(bldr);
+			GetAdditionalFileInfo(bldr);
 			GetStandardErrorReportingProperties(bldr, appendLog);
 			return bldr.ToString();
 		}
@@ -554,17 +571,28 @@ namespace Bloom.MiscUI
 
 		private void GetAdditionalFileInfo(StringBuilder bldr)
 		{
+			if (this.Book == null || String.IsNullOrEmpty(this.Book.FolderPath))
+				return;
 			bldr.AppendLine();
 			bldr.AppendLine("=Additional Files Bundled With Book=");
 			var collectionFolder = Path.GetDirectoryName(Book.FolderPath);
-			foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
+			if (WantReaderInfo())
+			{
+				foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
+					bldr.AppendLine(file);
+				ListFolderContents(Path.Combine(collectionFolder, "Allowed Words"), bldr);
+				ListFolderContents(Path.Combine(collectionFolder, "Sample Texts"), bldr);
+			}
+			foreach (var file in Directory.GetFiles(collectionFolder, "*CollectionStyles.css"))
 				bldr.AppendLine(file);
-			ListFolderContents(Path.Combine(collectionFolder, "Allowed Words"), bldr);
-			ListFolderContents(Path.Combine(collectionFolder, "Sample Texts"), bldr);
+			foreach (var file in Directory.GetFiles(collectionFolder, "*.bloomCollection"))
+				bldr.AppendLine(file);
 		}
 
 		private void ListFolderContents(string folder, StringBuilder bldr)
 		{
+			if (!Directory.Exists(folder))
+				return;
 			foreach (var file in Directory.GetFiles(folder))
 				bldr.AppendLine(file);
 			// Probably overkill, but if there are subfolders, they will be zipped up with the book.
