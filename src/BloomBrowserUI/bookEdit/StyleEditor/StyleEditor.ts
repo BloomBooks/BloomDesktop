@@ -124,6 +124,15 @@ export default class StyleEditor {
         return styleName;
     }
 
+    static GetBaseStyleNameForElement(target: HTMLElement): string {
+        var styleName = StyleEditor.GetStyleNameForElement(target); // with '-style'
+        var suffixIndex = styleName.indexOf('-style');
+        if (suffixIndex < 0) {
+            return styleName;
+        }
+        return styleName.substr(0, suffixIndex);
+    }
+
     static SetStyleNameForElement(target: HTMLElement, newStyle: string) {
         var oldStyle: string = this.GetStyleClassFromElement(target);
         $(target).removeClass(oldStyle);
@@ -680,10 +689,7 @@ export default class StyleEditor {
                 var html = results[1].data;
 
                 editor.boxBeingEdited = targetBox;
-                // This line is needed inside the click function to keep from using a stale version of 'styleName'
-                // and chopping off 6 characters each time!
-                styleName = StyleEditor.GetStyleNameForElement(targetBox);
-                styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
+                styleName = StyleEditor.GetBaseStyleNameForElement(targetBox);
                 var current = editor.getFormatValues();
 
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
@@ -760,7 +766,6 @@ export default class StyleEditor {
                             $('#reset-style').click(function (event) {
                                 event.preventDefault();
                                 editor.resetStyle();
-                                // $('#format-toolbar').remove(); // optional line to close dialog after resetting style
                                 return false;
                             });
                             $('#show-createStyle').click(function (event) {
@@ -818,6 +823,7 @@ export default class StyleEditor {
     getButtonIds() {
         return ['bold', 'italic', 'underline', 'position-leading', 'position-center', 'indent-none', 'indent-indented', 'indent-hanging'];
     }
+
     selectButtons(current) {
         this.selectButton('bold', current.bold);
         this.selectButton('italic', current.italic);
@@ -873,7 +879,9 @@ export default class StyleEditor {
         this.DeleteAllRulesForStyle(currentStyle);
 
         this.styleStateChange('initial');
-        this.cleanupAfterStyleChange();
+
+        // Now update all the controls to reflect the effect of resetting this style.
+        this.UpdateControlsToReflectAppliedStyle();
     }
 
     buttonClick(buttonDiv) {
@@ -917,11 +925,7 @@ export default class StyleEditor {
 
     // The Char tab description is language-dependent when localizing, not when authoring.
     getCharTabDescription() {
-        var styleName = StyleEditor.GetStyleNameForElement(this.boxBeingEdited);
-        if (styleName) {
-            var index = styleName.indexOf('-style');
-            if (index > 0) styleName = styleName.substring(0, index);
-        }
+        var styleName = StyleEditor.GetBaseStyleNameForElement(this.boxBeingEdited);
         // BL-2386 This one should NOT be language-dependent; only style dependent
         if (this.shouldSetDefaultRule()) {
             theOneLocalizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style.', styleName)
@@ -944,13 +948,7 @@ export default class StyleEditor {
 
     // The More tab settings are never language-dependent
     getMoreTabDescription() {
-        var styleName = StyleEditor.GetStyleNameForElement(this.boxBeingEdited);
-        if (styleName) {
-            var index = styleName.indexOf('-style');
-            if (index > 0) {
-                styleName = styleName.substring(0, index);
-            }
-        }
+        var styleName = StyleEditor.GetBaseStyleNameForElement(this.boxBeingEdited);
         // BL-2386 This one should NOT be language-dependent; only style dependent
         theOneLocalizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style.', styleName)
             .done(translation => {
@@ -1018,7 +1016,7 @@ export default class StyleEditor {
 
         for (var i = 0; i < items.length; i++) {
             var selected: string = '';
-            if (current === items[i]) {
+            if (current.toString() === items[i]) { // toString() is necessary to match point size string
                 selected = ' selected';
             }
             var text = items[i];
@@ -1254,6 +1252,10 @@ export default class StyleEditor {
             }
         }
         // Now update all the controls to reflect the effect of applying this style.
+        this.UpdateControlsToReflectAppliedStyle();
+    }
+
+    UpdateControlsToReflectAppliedStyle() {
         var current = this.getFormatValues();
         this.ignoreControlChanges = true;
 
@@ -1261,6 +1263,7 @@ export default class StyleEditor {
         this.setValueAndUpdateSelect2Control('size-select', current.ptSize.toString());
         this.setValueAndUpdateSelect2Control('line-height-select', current.lineHeight);
         this.setValueAndUpdateSelect2Control('word-space-select', current.wordSpacing);
+        this.setValueAndUpdateSelect2Control('para-spacing-select', current.paraSpacing);
         var buttonIds = this.getButtonIds();
         for (var i = 0; i < buttonIds.length; i++) {
             $('#' + buttonIds[i]).removeClass('selectedIcon');
