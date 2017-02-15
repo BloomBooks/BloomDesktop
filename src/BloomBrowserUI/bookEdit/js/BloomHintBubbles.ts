@@ -40,20 +40,20 @@ export default class BloomHintBubbles {
         // Using <label> instead of the attribute makes the html much easier to read, write, and add additional
         // behaviors through classes
         axios.get('/bloom/bubbleLanguages').then(result => {
-          let preferredLangs:Array<string> = (<any>result.data).langs;
-          $(container).find('.bloom-translationGroup').each(function() {
-            var groupElement = $(this);
-            var labelElement = groupElement.find('label.bubble'); // may be more than one
-            var whatToSay = labelElement.text();
-            if (!whatToSay) {
-              return;
-            }
+            let preferredLangs: Array<string> = (<any>result.data).langs;
+            $(container).find('.bloom-translationGroup').each(function () {
+                var groupElement = $(this);
+                var labelElement = groupElement.find('label.bubble'); // may be more than one
+                var whatToSay = labelElement.text();
+                if (!whatToSay) {
+                    return;
+                }
 
-            //attach the bubble, separately, to every visible field inside the group
-            groupElement.find("div.bloom-editable:visible").each(function() {
-              BloomHintBubbles.MakeHelpBubble($(this), labelElement, preferredLangs);
+                //attach the bubble, separately, to every visible field inside the group
+                groupElement.find("div.bloom-editable:visible").each(function () {
+                    BloomHintBubbles.MakeHelpBubble($(this), labelElement, preferredLangs);
+                });
             });
-          });
         });
 
         $(container).find("*.bloom-imageContainer > label.bubble").each(function () {
@@ -117,36 +117,36 @@ export default class BloomHintBubbles {
         var hideEvents = shouldShowAlways ? false : 'focusout mouseleave';
 
         // get the default text/stringId
-        var doNotLocalize = false
+        var doNotLocalize = false;
         var whatToSay = target.attr('data-hint');
         if (!whatToSay) whatToSay = source.attr('data-hint');
         if (!whatToSay) { // look in the content of one or more sources
-          if (!preferredLangs) {
-            preferredLangs = ['en', 'fr']; // just for safety; any caller that cares should supply a list.
-          }
-          var bestSourceIndex = 0; // use first source if no langs match or there is only one
-          var bestLangIndex = preferredLangs.length; // pretend the best lang we found is beyond end
-          if (source.length > 1) {
-            for (var i = 0; i < source.length; i++) {
-              var item = source.eq(i);
-              var lang = item.attr('lang');
-              if (!lang) {
-                continue;
-              }
-              // Found at least one source with a lang attr. Assume any localization of this
-              // bubble is embedded in the document, and don't look in Bloom resources.
-              doNotLocalize = true;
-              var index = preferredLangs.indexOf(lang);
-              if (index === -1) {
-                index = preferredLangs.length;
-              }
-              if (index < bestLangIndex) { // best yet
-                bestSourceIndex = i;
-                bestLangIndex = index;
-              }
+            if (!preferredLangs) {
+                preferredLangs = ['en', 'fr']; // just for safety; any caller that cares should supply a list.
             }
-          }
-          whatToSay = source.eq(bestSourceIndex).text();
+            var bestSourceIndex = 0; // use first source if no langs match or there is only one
+            var bestLangIndex = preferredLangs.length; // pretend the best lang we found is beyond end
+            if (source.length > 1) {
+                for (var i = 0; i < source.length; i++) {
+                    var item = source.eq(i);
+                    var lang = item.attr('lang');
+                    if (!lang) {
+                        continue;
+                    }
+                    // Found at least one source with a lang attr. Assume any localization of this
+                    // bubble is embedded in the document, and don't look in Bloom resources.
+                    doNotLocalize = true;
+                    var index = preferredLangs.indexOf(lang);
+                    if (index === -1) {
+                        index = preferredLangs.length;
+                    }
+                    if (index < bestLangIndex) { // best yet
+                        bestSourceIndex = i;
+                        bestLangIndex = index;
+                    }
+                }
+            }
+            whatToSay = source.eq(bestSourceIndex).text();
         }
 
         // no empty bubbles
@@ -158,8 +158,8 @@ export default class BloomHintBubbles {
 
         // get the localized string
         if (!doNotLocalize) {
-          if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
-          whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSay, target);
+            if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
+            whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSay, target);
         }
 
         var functionCall = source.data("functiononhintclick");
