@@ -495,18 +495,86 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page')]", expectedCount);
 		}
 
-		//
-		//        [Test]
-		//        public void DeletePage_RaisesDeletedEvent()
-		//        {
-		//            var book = CreateBook();
-		//            bool gotEvent=false;
-		//            book.PageDeleted+=new EventHandler((x,y)=>gotEvent=true);
-		//            var original = book.GetPages().Count();
-		//            Page existingPage = book.GetPages().Last();
-		//            book.DeletePage(existingPage);
-		//            Assert.IsTrue(gotEvent);
-		//        }
+		[Test]
+		public void CreateBook_AlreadyHasCoverColor_GetsEmptyUserStyles()
+		{
+			var coverStyle = @"<style type='text/css'>
+    DIV.coverColor  TEXTAREA  { background-color: #98D0B9 !important; }
+    DIV.bloom-page.coverColor { background-color: #98D0B9 !important; }
+			</style>";
+			SetDom("<div class='bloom-page' id='1'></div>", coverStyle);
+
+			// SUT
+			var book = CreateBook();
+
+			var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
+			Assert.AreEqual(2, styleNodes.Count);
+			Assert.AreEqual("userModifiedStyles", styleNodes[0].Attributes["title"].Value);
+			Assert.AreEqual(string.Empty, styleNodes[0].InnerText);
+			// verify that the 'coverColor' rules are still there
+			Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+		}
+
+		[Test]
+		public void CreateBook_AlreadyHasCoverColorAndUserStyles_KeepsExistingStyles()
+		{
+			var userStyle = @"<style type='text/css' title='userModifiedStyles'>
+	.normal-style[lang='fr'] { font-size: 9pt ! important; }
+	.normal-style { font-size: 9pt !important; }
+			</style>";
+			var coverStyle = @"<style type='text/css'>
+    DIV.coverColor  TEXTAREA  { background-color: #98D0B9 !important; }
+    DIV.bloom-page.coverColor { background-color: #98D0B9 !important; }
+			</style>";
+			SetDom("<div class='bloom-page' id='1'></div>", userStyle + coverStyle);
+
+			// SUT
+			var book = CreateBook();
+
+			var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
+			Assert.AreEqual(2, styleNodes.Count);
+			Assert.AreEqual("userModifiedStyles", styleNodes[0].Attributes["title"].Value);
+			Assert.IsTrue(styleNodes[0].InnerText.Contains(".normal-style[lang='fr'] { font-size: 9pt ! important; }"));
+			Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+		}
+
+		[Test]
+		public void CreateBook_HasNeitherStyle_GetsEmptyUserStyles()
+		{
+			SetDom("<div class='bloom-page' id='1'></div>");
+
+			// SUT
+			var book = CreateBook();
+
+			var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
+			Assert.AreEqual(2, styleNodes.Count); // also gets a new 'coverColor' style element
+			Assert.AreEqual("userModifiedStyles", styleNodes[0].Attributes["title"].Value);
+			Assert.AreEqual(string.Empty, styleNodes[0].InnerText);
+			Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+		}
+
+		[Test]
+		public void CreateBook_AlreadyHasCoverColorAndUserStyles_InWrongOrder_GetsStyleElementsReversed()
+		{
+			var coverStyle = @"<style type='text/css'>
+    DIV.coverColor  TEXTAREA  { background-color: #98D0B9 !important; }
+    DIV.bloom-page.coverColor { background-color: #98D0B9 !important; }
+			</style>";
+			var userStyle = @"<style type='text/css' title='userModifiedStyles'>
+	.normal-style[lang='fr'] { font-size: 9pt ! important; }
+	.normal-style { font-size: 9pt !important; }
+			</style>";
+			SetDom("<div class='bloom-page' id='1'></div>", coverStyle + userStyle);
+
+			// SUT
+			var book = CreateBook();
+
+			var styleNodes = book.OurHtmlDom.Head.SafeSelectNodes("./style");
+			Assert.AreEqual(2, styleNodes.Count);
+			Assert.AreEqual("userModifiedStyles", styleNodes[0].Attributes["title"].Value);
+			Assert.IsTrue(styleNodes[0].InnerText.Contains(".normal-style[lang='fr'] { font-size: 9pt ! important; }"));
+			Assert.IsTrue(styleNodes[1].InnerText.Contains("coverColor"));
+		}
 
 		[Test]
 		public void DuplicatePage()
