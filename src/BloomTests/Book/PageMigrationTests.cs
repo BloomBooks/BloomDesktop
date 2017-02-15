@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Bloom.Book;
 using NUnit.Framework;
 using SIL.Xml;
 
@@ -216,8 +217,9 @@ namespace BloomTests.Book
 		[Test]
 		public void AddBigWordsStyleIfUsedAndNoUserStylesElement()
 		{
-			var dom = CreateAndMigrateBigWordsPage(headElt => { });
-			AssertThatXmlIn.Dom(dom).HasAtLeastOneMatchForXpath("html/head/style[@type='text/css' and @title='userModifiedStyles' and text()='.BigWords-style { font-size: 45pt !important; text-align: center !important; }']");
+			var dom = CreateAndMigrateBigWordsPage(null); // will produce the default empty userModifiedStyles element (and coverColor element)
+			AssertThatXmlIn.Dom(dom).HasAtLeastOneMatchForXpath(
+				"html/head/style[@type='text/css' and @title='userModifiedStyles' and text()='.BigWords-style { font-size: 45pt !important; text-align: center !important; }']");
 		}
 
 		[Test]
@@ -225,11 +227,8 @@ namespace BloomTests.Book
 		{
 			var dom = CreateAndMigrateBigWordsPage(headElt =>
 			{
-				var userStyles = headElt.OwnerDocument.CreateElement("style");
-				userStyles.SetAttribute("type", "text/css");
-				userStyles.SetAttribute("title", "userModifiedStyles");
+				var userStyles = HtmlDom.GetUserModifiedStyleElement(headElt); // there will be an empty element
 				userStyles.InnerText = ".BigWords-style { font-size: 50pt !important; text-align: center !important; }";
-				headElt.AppendChild(userStyles);
 			});
 
 			AssertThatXmlIn.Dom(dom).HasAtLeastOneMatchForXpath("html/head/style[@type='text/css' and @title='userModifiedStyles' and text()='.BigWords-style { font-size: 50pt !important; text-align: center !important; }']");
@@ -241,12 +240,8 @@ namespace BloomTests.Book
 		{
 			var dom = CreateAndMigrateBigWordsPage(headElt =>
 			{
-				var userStyles = headElt.OwnerDocument.CreateElement("style");
-				userStyles.SetAttribute("type", "text/css");
-				userStyles.SetAttribute("title", "userModifiedStyles");
+				var userStyles = HtmlDom.GetUserModifiedStyleElement(headElt); // there will be an empty element
 				userStyles.InnerText = ".OtherWords-style { font-size: 50pt}";
-				headElt.AppendChild(userStyles);
-
 			});
 
 			AssertThatXmlIn.Dom(dom).HasAtLeastOneMatchForXpath("html/head/style[@type='text/css' and @title='userModifiedStyles' and text()='.OtherWords-style { font-size: 50pt} .BigWords-style { font-size: 45pt !important; text-align: center !important; }']");
@@ -390,7 +385,10 @@ namespace BloomTests.Book
 			");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			modifyHead((XmlElement)dom.DocumentElement.ChildNodes[0]);
+			if (modifyHead != null)
+			{
+				modifyHead((XmlElement)dom.DocumentElement.ChildNodes[0]);
+			}
 			var page = (XmlElement) dom.SafeSelectNodes("//div[@id='thePage']")[0];
 			book.BringPageUpToDate(page);
 
