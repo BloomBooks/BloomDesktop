@@ -35,16 +35,40 @@ describe("Splitting text into sentences", function() {
 
     it("Split into sentences, get word count (space is sentence-separating)", function() {
 
+        var extraPunctuationToTest = ['\\u0020', '\\U0020'];
         var inputText = "One Two Three";
-        theOneLibSynphony.setExtraSentencePunctuation('\\u0020');
-        var fragments = theOneLibSynphony.stringToSentences(inputText);
-        var sentences = _.filter(fragments, function(frag) {
-            return frag.isSentence;
-        });
-        expect(sentences.length).toBe(3);
-        expect(sentences[0].wordCount()).toBe(1);
-        expect(sentences[1].wordCount()).toBe(1);
-        expect(sentences[2].wordCount()).toBe(1);
+
+        for (var i = 0; i < extraPunctuationToTest.length; i++) {
+            theOneLibSynphony.setExtraSentencePunctuation(extraPunctuationToTest[i]);
+            var fragments = theOneLibSynphony.stringToSentences(inputText);
+            var sentences = _.filter(fragments, function(frag) {
+                return frag.isSentence;
+            });
+            expect(sentences.length).toBe(3);
+            expect(sentences[0].wordCount()).toBe(1);
+            expect(sentences[1].wordCount()).toBe(1);
+            expect(sentences[2].wordCount()).toBe(1);
+        }
+
+        // Reset it for the next test
+        theOneLibSynphony.setExtraSentencePunctuation('');
+    });
+
+    it("Split into sentences, get word count (space is sentence-separating) - Thai", function() {
+
+        var extraPunctuationToTest = ['\\u0020', '\\U0020'];
+        var inputText = "ฉัน​มี​ยุง​ใน​บ้าน ฉัน​มี​ยุง​ใน​บ้าน";
+
+        for (var i = 0; i < extraPunctuationToTest.length; i++) {
+            theOneLibSynphony.setExtraSentencePunctuation(extraPunctuationToTest[i]);
+            var fragments = theOneLibSynphony.stringToSentences(inputText);
+            var sentences = _.filter(fragments, function(frag) {
+                return frag.isSentence;
+            });
+            expect(sentences.length).toBe(2);
+            expect(sentences[0].wordCount()).toBe(5);
+            expect(sentences[1].wordCount()).toBe(5);
+        }
 
         // Reset it for the next test
         theOneLibSynphony.setExtraSentencePunctuation('');
