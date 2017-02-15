@@ -67,7 +67,7 @@ function process_UI_Message(event: MessageEvent): void {
       //noinspection JSJQueryEfficiency
       var tabs: JQuery = $('#dlstabs');
       if (params[1] === 'stages') {
-        tabs.tabs('option', 'disabled', [3]);
+        tabs.tabs('option', 'disabled', [3, 4]);
         tabs.tabs('option', 'active', 2);
         var firstStage = $('#stages-table').find('tbody tr:first');
         if (firstStage && (firstStage.length === 0))
@@ -76,12 +76,8 @@ function process_UI_Message(event: MessageEvent): void {
           firstStage.click(); // select the first stage
       }
       else {
-        tabs.tabs('option', 'disabled', [1, 2]);
-        tabs.tabs('option', 'active', 3);
-        // In Level mode, we hide part of the content, and change the label.
-        $('#dlstabs-0').addClass("levelMode");
-        theOneLocalizationManager.asyncGetText('ReaderSetup.Punctuation', "Punctuation").then(result => 
-          $('#dlstab0Label a').text(result));
+        tabs.tabs('option', 'disabled', [0, 1, 2]);
+        tabs.tabs('option', 'active', 4);
         var firstLevel = $('#levels-table').find('tbody tr:first');
         if (firstLevel && (firstLevel.length === 0))
           addNewLevel();
@@ -115,6 +111,9 @@ function process_UI_Message(event: MessageEvent): void {
           helpFile = 'Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm';
           break;
         case 3:
+          helpFile = 'Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm';
+          break;
+        case 4:
           helpFile = 'Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm';
           break;
         default:
