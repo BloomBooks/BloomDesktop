@@ -318,6 +318,8 @@ export default class StyleEditor {
             styleAndLang += ' p';
         }
 
+        styleAndLang = styleAndLang.toLowerCase();
+
         for (var i = 0; i < ruleList.length; i++) {
             var index = ruleList[i].cssText.indexOf('{');
             if (index === -1) {
@@ -479,7 +481,7 @@ export default class StyleEditor {
     }
 
     getParagraphSpaceOptions() {
-        return ['0 pt', '6 pt', '12 pt', '18 pt'];
+        return ['0', '0.5', '0.75', '1', '1.25'];
     }
 
     // Returns an object giving the current selection for each format control.
@@ -538,9 +540,9 @@ export default class StyleEditor {
 
         var marginBelowString = paraBox.css('margin-bottom');
         var paraSpacePx = parseInt(marginBelowString);
-        var paraSpacePt = this.ConvertPxToPt(paraSpacePx, false);
+        var paraSpaceEm = paraSpacePx / pxSize;
         var paraSpaceOptions = this.getParagraphSpaceOptions();
-        var paraSpacing = StyleEditor.GetClosestValueInList(paraSpaceOptions, paraSpacePt);
+        var paraSpacing = StyleEditor.GetClosestValueInList(paraSpaceOptions, paraSpaceEm);
 
         var indentString = paraBox.css('text-indent');
         var indentNumber = parseInt(indentString);
@@ -1168,7 +1170,7 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        var paraSpacing = $('#para-spacing-select').val().replace(' ', '');
+        var paraSpacing = $('#para-spacing-select').val() + "em";
         var rule = this.getStyleRule(true, true);
         rule.style.setProperty('margin-bottom', paraSpacing, 'important');
         this.cleanupAfterStyleChange();
@@ -1194,12 +1196,15 @@ export default class StyleEditor {
         }
         var rule = this.getStyleRule(true, true); // rule that is language-independent for child paras
         if ($('#indent-none').hasClass('selectedIcon')) {
-            //rule.style.setProperty("border-style", "none");
-            rule.style.removeProperty('text-indent');
-            rule.style.removeProperty('margin-left');
+            // It's tempting to remove the property. However, we apply normal-style as a class to
+            // parent bloom-translationGroup elements so everything inherits from it by default.
+            // If we just remove these properties from a rule for some other style, no other
+            // style will be able to override a 'normal-style' indent.
+            rule.style.setProperty('text-indent', '0', 'important');
+            rule.style.setProperty('margin-left', '0', 'important');
         } else if ($('#indent-indented').hasClass('selectedIcon')) {
             rule.style.setProperty('text-indent', '20pt', 'important');
-            rule.style.removeProperty('margin-left');
+            rule.style.setProperty('margin-left', '0', 'important');
         } else if ($('#indent-hanging').hasClass('selectedIcon')) {
             rule.style.setProperty('text-indent', '-20pt', 'important');
             rule.style.setProperty('margin-left', '20pt', 'important');
