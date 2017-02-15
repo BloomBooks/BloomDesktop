@@ -33,6 +33,23 @@ describe("Splitting text into sentences", function() {
                 expect(sentences[1].wordCount()).toBe(4);
         });
 
+    it("Split into sentences, get word count (space is sentence-separating)", function() {
+
+        var inputText = "One Two Three";
+        theOneLibSynphony.setExtraSentencePunctuation('\\u0020');
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
+        var sentences = _.filter(fragments, function(frag) {
+            return frag.isSentence;
+        });
+        expect(sentences.length).toBe(3);
+        expect(sentences[0].wordCount()).toBe(1);
+        expect(sentences[1].wordCount()).toBe(1);
+        expect(sentences[2].wordCount()).toBe(1);
+
+        // Reset it for the next test
+        theOneLibSynphony.setExtraSentencePunctuation('');
+    });
+
         it("Get total word count", function() {
 
                 var inputText = "This is sentence 1. \"This is 'sentence 2.'\" this is sentence.3. This is the 4th sentence! Is this the 5th sentence? Is \"this\" \"sentence 6?\"";
