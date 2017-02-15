@@ -86,7 +86,7 @@ override_dh_clideps:
 	PATH=$(MONO_PREFIX)/bin:$(PATH) \
 	dh_clideps internal-mono -l$(MONO_PREFIX)/lib \
 		--exclude-moduleref=Crypt32.dll --exclude-moduleref=libdconf.dll \
-		--exclude-moduleref=connections.dll \
+		--exclude-moduleref=connections.dll --exclude-moduleref=libdl.so \
 		--exclude-moduleref=icuuc55.dll --exclude-moduleref=icuin55.dll \
 		--exclude-moduleref=icuuc52.dll --exclude-moduleref=icuin52.dll \
 		--exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll \
