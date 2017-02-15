@@ -111,7 +111,7 @@ function process_UI_Message(event: MessageEvent): void {
           helpFile = 'Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm';
           break;
         case 3:
-          helpFile = 'Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm';
+          helpFile = 'Tasks/Edit_tasks/Leveled_Reader_Tool/Punctuation_tab.htm';
           break;
         case 4:
           helpFile = 'Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm';
