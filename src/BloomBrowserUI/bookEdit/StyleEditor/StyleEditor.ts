@@ -315,10 +315,10 @@ export default class StyleEditor {
         }
 
         if (forChildParas) {
-            styleAndLang += ' p';
+            styleAndLang += ' > p';
         }
 
-        styleAndLang = styleAndLang.toLowerCase();
+        let lookFor = styleAndLang.toLowerCase();
 
         for (var i = 0; i < ruleList.length; i++) {
             var index = ruleList[i].cssText.indexOf('{');
@@ -328,7 +328,7 @@ export default class StyleEditor {
             // The rule we want is one whose selector is the string we want.
             // The substring strips off the initial period and the rule body, leaving the selector.
             var match = ruleList[i].cssText.trim().substring(1, index).toLowerCase().trim();
-            if (match === styleAndLang) {
+            if (match === lookFor) {
                 return <CSSStyleRule>ruleList[i];
             }
         }
@@ -554,7 +554,7 @@ export default class StyleEditor {
         }
 
         return {
-            ptSize: ptSize,
+            ptSize: ptSize.toString(),
             fontName: fontName,
             lineHeight: lineHeight,
             wordSpacing: wordSpacing,
