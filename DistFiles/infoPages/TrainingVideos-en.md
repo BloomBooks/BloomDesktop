@@ -1,4 +1,4 @@
-#Bloom Training Videos 
+# Bloom Training Videos
 
 If you are connected to the internet now, you can watch videos in your web browser:
 
@@ -6,7 +6,7 @@ If you are connected to the internet now, you can watch videos in your web brows
 
 ### Introductory Videos
 
-- [Bloom: Who is it for](https://vimeo.com/114043219)
+- [Bloom: Who it is for](https://vimeo.com/114043219)
 - [Understanding Templates and Shell Books](https://vimeo.com/114024308)
 - [Using the Basic Book template](https://vimeo.com/112825489)
 - [Using Decodable and Leveled Reader Templates (several videos)](http://tiny.cc/usingBloomReaderTemplates)
@@ -20,7 +20,7 @@ If you are connected to the internet now, you can watch videos in your web brows
 
 ### Offline Viewing
 
-If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: 
+If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:
 
 - [High Resolution](http://tiny.cc/bloomHDVideos) (Large files)
 - [Low Resolution](http://tiny.cc/bloomSDVideos) (Smaller files)
