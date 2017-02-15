@@ -31,32 +31,25 @@ html
 				a(href='http://call.canil.ca/', data-i18n='ReaderSetup.Synphony') SynPhony
 				span(data-i18n='ReaderSetup.SearchEngine') , the Search Engine for Literacy.
 			ul
-				li#dlstab0Label: a(href='#dlstabs-0', data-i18n='ReaderSetup.Letters') Letters
+				li: a(href='#dlstabs-0', data-i18n='ReaderSetup.Letters') Letters
 				li: a(href='#dlstabs-1', data-i18n='ReaderSetup.SampleWords') Sample Words
 				li: a(href='#dlstabs-2', data-i18n='ReaderSetup.DecodableStages') Decodable Stages
-				li: a(href='#dlstabs-3', data-i18n='ReaderSetup.ReaderLevels') Reader Levels
+				li: a(href='#dlstabs-3', data-i18n='ReaderSetup.Punctuation') Punctuation
+				li: a(href='#dlstabs-4', data-i18n='ReaderSetup.ReaderLevels') Reader Levels
 			#dlstabs-0.reader-setup-tab
 				.floating
-					.stagesOnly
-						p(data-i18n='ReaderSetup.Letters.Intro') To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.
-						br
-						label(data-i18n='ReaderSetup.Letters.Header') Letters and Letter Combinations
-						br
-						textarea#dls_letters.book-font(style='height: 55px; width: 325px')
-						p(data-i18n='ReaderSetup.Letters.LetterHelp1') Separate each letter or letter combination with a space. For example, here is what we might use for the English language:
-						p a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z ' -
-						p
-							span(data-i18n='ReaderSetup.Letters.LetterHelp2') Notice that the English list includes symbols that are used to make words, like ' in&nbsp;
-							i(data-i18n='ReaderSetup.Letters.LetterHelp3') it's
-							span(data-i18n='ReaderSetup.Letters.LetterHelp4')
-								= '.'
-					label(data-i18n='ReaderSetup.SentencePunctuation.Header') Special Sentence ending punctuation
+					p(data-i18n='ReaderSetup.Letters.Intro') To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.
 					br
-					textarea#dls_sentence_punct.book-font(style='height: 55px; width: 325px')
-					p(data-i18n='ReaderSetup.SentencePunctuation.Help') Bloom already knows which characters in the world's languages always mark the end of sentences.
-						| To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that
-						| normal spaces are used to break sentences.
-
+					label(data-i18n='ReaderSetup.Letters.Header') Letters and Letter Combinations
+					br
+					textarea#dls_letters.book-font(style='height: 55px; width: 325px')
+					p(data-i18n='ReaderSetup.Letters.LetterHelp1') Separate each letter or letter combination with a space. For example, here is what we might use for the English language:
+					p a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z ' -
+					p
+						span(data-i18n='ReaderSetup.Letters.LetterHelp2') Notice that the English list includes symbols that are used to make words, like ' in&nbsp;
+						i(data-i18n='ReaderSetup.Letters.LetterHelp3') it's
+						span(data-i18n='ReaderSetup.Letters.LetterHelp4')
+							= '.'
 			#dlstabs-1.reader-setup-tab
 				.flex-column
 					.flex-column-fixed-row
@@ -142,6 +135,12 @@ html
 							.rs-word-container
 								#rs-matching-words.book-font(style='margin-left: 8px')
 			#dlstabs-3.reader-setup-tab
+				.floating
+					label(data-i18n='ReaderSetup.SentencePunctuation.Header') Special Sentence-Ending Punctuation
+					br
+					textarea#dls_sentence_punct.book-font(style='height: 55px; width: 325px')
+					p(data-i18n='ReaderSetup.SentencePunctuation.Help') Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.
+			#dlstabs-4.reader-setup-tab
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
 						tr

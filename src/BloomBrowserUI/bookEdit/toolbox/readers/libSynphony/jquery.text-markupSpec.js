@@ -6,6 +6,7 @@
  * Created Apr 24, 2014 by Phil Hopper
  *
  */
+import {theOneLibSynphony} from './synphony_lib';
 
 describe("jquery.text-markup", function() {
 
@@ -93,6 +94,24 @@ describe("jquery.text-markup", function() {
                 // check 2 word sentences
                 var result = $('div').getMaxSentenceLength();
                 expect(result).toBe(6);
+    });
+
+    it("getMaxSentenceLength - Thai", function() {
+
+        // This is the same five-word sentence repeated with a space between.
+        $('#text_entry1').html("ฉัน​มี​ยุง​ใน​บ้าน ฉัน​มี​ยุง​ใน​บ้าน");
+
+        var extraPunctuationToTest = ['\\u0020', '\\U0020'];
+
+        for (var i = 0; i < extraPunctuationToTest.length; i++) {
+            theOneLibSynphony.setExtraSentencePunctuation(extraPunctuationToTest[i]);
+
+            var result = $('div').getMaxSentenceLength();
+            expect(result).toBe(5);
+        }
+
+        // Reset it for the next test
+        theOneLibSynphony.setExtraSentencePunctuation('');
         });
 
         it("getTotalWordCount", function() {
