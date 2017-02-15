@@ -3468,6 +3468,12 @@
         <seg>Powered by </seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.Punctuation">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Punctuation</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.ReaderLevels">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -3538,6 +3544,18 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Maximum Words in each Sentence</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentencePunctuation.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Special Sentence-Ending Punctuation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentencePunctuation.Help">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SetUpDecodableReaderTool">
