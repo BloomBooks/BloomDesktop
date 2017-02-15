@@ -21,7 +21,7 @@ html
 		// script(src='/bloom/bookEdit/toolbox/decodableReader/readerSetup/readerSetup.io.js')
 		// script(src='/bloom/bookEdit/toolbox/decodableReader/readerSetup/readerSetup.ui.js')
 		// script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
-		
+
 		script(src='/bloom/commonBundle.js')
 		script(src='/bloom/readerSetupBundle.js')
 	body
@@ -50,12 +50,10 @@ html
 							i(data-i18n='ReaderSetup.Letters.LetterHelp3') it's
 							span(data-i18n='ReaderSetup.Letters.LetterHelp4')
 								= '.'
-					label(data-i18n='ReaderSetup.SentencePunctuation.Header') Special Sentence ending punctuation
+					label(data-i18n='ReaderSetup.SentencePunctuation.Header') Special Sentence-Ending Punctuation
 					br
 					textarea#dls_sentence_punct.book-font(style='height: 55px; width: 325px')
-					p(data-i18n='ReaderSetup.SentencePunctuation.Help') Bloom already knows which characters in the world's languages always mark the end of sentences.
-						| To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that
-						| normal spaces are used to break sentences.
+					p(data-i18n='ReaderSetup.SentencePunctuation.Help') Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.
 
 			#dlstabs-1.reader-setup-tab
 				.flex-column
