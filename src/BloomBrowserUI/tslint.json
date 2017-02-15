@@ -1,7 +1,7 @@
 {
     "rules": {
         "class-name": true,
-        "curly": true,
+        "curly": false,
         "eofline": false,
         "forin": true,
         "indent": [

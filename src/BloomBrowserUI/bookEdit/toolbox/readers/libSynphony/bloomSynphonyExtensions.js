@@ -86,7 +86,7 @@ LibSynphony.prototype.setExtraSentencePunctuation = function(extra) {
     // Replace characters that are magic in regexp. As a special case, period is simply removed, since it's already
     // sentence-terminating. If they want to use backslash, they will just have to double it; we can't fix it
     // because we want to allow \u0020 etc. I don't know why <> need to be replaced but they don't work otherwise.
-    var extraRe = extra.replace('^', '\\u005E').replace('$', '\\u0024').replace('.', '')
+    var extraRe = extra.replace('\\U', '\\u').replace('^', '\\u005E').replace('$', '\\u0024').replace('.', '')
       .replace('*', '\\u002A').replace('~', '\\u007E').replace('[', '\\u005B').replace(']', '\\u005D')
       .replace('<', '\\u003C').replace('>', '\\u003E');
     LibSynphony.prototype.extraSentencePunct = extraRe;
