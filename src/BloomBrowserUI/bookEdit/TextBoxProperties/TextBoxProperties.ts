@@ -154,10 +154,9 @@ export default class TextBoxProperties {
     initializeAlignment() {
         var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
         if (targetGroup) {
-            var style = targetGroup.attr('style') || '';
-            if (style.indexOf('justify-content:center') >= 0) {
+            if (targetGroup.hasClass('bloom-vertical-align-center')) {
                 $('#align-center').addClass('selectedIcon');
-            } else if (style.indexOf('justify-content:flex-end') >= 0) {
+            } else if (targetGroup.hasClass('bloom-vertical-align-bottom')) {
                 $('#align-bottom').addClass('selectedIcon');
             } else {
                 $('#align-top').addClass('selectedIcon');
@@ -167,17 +166,14 @@ export default class TextBoxProperties {
 
     changeAlignment() {
         var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        targetGroup.removeClass('bloom-vertical-align-center');
+        targetGroup.removeClass('bloom-vertical-align-bottom')
         if (targetGroup) {
-            var style = (targetGroup.attr('style') || '')
-                .replace('justify-content:flex-end', '')
-                .replace('justify-content:center', '');
-
             if ($('#align-center').hasClass('selectedIcon')) {
-                style = style + 'justify-content:center';
+                targetGroup.addClass('bloom-vertical-align-center');;
             } else if ($('#align-bottom').hasClass('selectedIcon')) {
-                    style= style + 'justify-content:flex-end';
+                 targetGroup.addClass('bloom-vertical-align-bottom');;
             } // else leave it missing.
-            targetGroup.attr('style', style);
         }
     }
 
