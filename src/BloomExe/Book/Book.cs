@@ -101,6 +101,12 @@ namespace Bloom.Book
 				_bookData.SynchronizeDataItemsThroughoutDOM();
 			}
 
+			// If it doesn't already have a userModifiedStyles element, give it one.
+			// BL-4266 Somehow it is important for there to be a userModifiedStyles element BEFORE (in order!)
+			// the coverColor style element in the Head of the DOM in order for the new Css Rules
+			// to get inserted properly. So we make sure there is one.
+			GetOrCreateUserModifiedStyleElementFromStorage();
+
 			//if we're showing the user a shell/template book, pick a color for it
 			//If it is editable, then we don't want to change to the next color, we
 			//want to use the color that we used for the sample shell/template we
@@ -111,8 +117,8 @@ namespace Bloom.Book
 				InitCoverColor();
 			}
 
-			// If it doesn't already have a cover color give it one.
-			if (OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]").Count == 0)
+			// If it doesn't already have a cover color, give it one.
+			if (HtmlDom.GetCoverColorStyleElement(OurHtmlDom.Head) == null)
 			{
 				InitCoverColor(); // should use the same color as what they saw in the preview of the template/shell
 			}
@@ -1780,8 +1786,10 @@ namespace Bloom.Book
 				HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
 
 				_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
-				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
-				var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
+
+				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles".
+				// Here we copy that over to the book DOM.
+				var userModifiedStyles = HtmlDom.GetUserModifiedStyleElement(editedPageDom.Head);
 				if (userModifiedStyles != null)
 				{
 					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
@@ -1823,11 +1831,20 @@ namespace Bloom.Book
 		/// </summary>
 		internal XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
 		{
-			var matches = OurHtmlDom.SafeSelectNodes("html/head/style[@title='userModifiedStyles']");
-			if (matches.Count > 0)
-				return (XmlElement) matches[0];
+			var headElement = OurHtmlDom.Head;
+			var userStyleElement = HtmlDom.GetUserModifiedStyleElement(headElement);
+			if (userStyleElement == null)
+				return HtmlDom.AddEmptyUserModifiedStylesNode(headElement);
 
-			return HtmlDom.AddEmptyUserModifiedStylesNode(OurHtmlDom.Head);
+			var coverColorElement = HtmlDom.GetCoverColorStyleElement(headElement);
+			if (coverColorElement == null)
+				return userStyleElement;
+
+			// We have both style elements. Make sure they're in the right order.
+			// BL -4266 was a problem if the 'coverColor' was listed first.
+			headElement.RemoveChild(coverColorElement);
+			headElement.InsertAfter(coverColorElement, userStyleElement);
+			return userStyleElement;
 		}
 
 		/// <summary>
