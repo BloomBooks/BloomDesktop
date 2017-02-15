@@ -172,7 +172,7 @@ export default class TextBoxProperties {
             if ($('#align-center').hasClass('selectedIcon')) {
                 targetGroup.addClass('bloom-vertical-align-center');;
             } else if ($('#align-bottom').hasClass('selectedIcon')) {
-                 targetGroup.addClass('bloom-vertical-align-bottom');;
+                targetGroup.addClass('bloom-vertical-align-bottom');;
             } // else leave it missing.
         }
     }
