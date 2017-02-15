@@ -548,17 +548,17 @@ h2 {
 // We don't make the bloom-editable div display:flex here because that
 // would conflict with the rules that determine which of them are
 // visible. The rules that make them something other than display:none
-// must use display:flex. I think all of those are in language.less.
+// must use display:flex. I think all of those are in languageDisplay.less.
 .bloom-vertical-align-center {
     justify-content:center;
-    &:not(.bloom-bilingual) .bloom-editable {
+    &:not(.bloom-bilingual):not(.bloom-trilingual) .bloom-editable {
         justify-content: center;
     }
 }
 
 .bloom-vertical-align-bottom {
     justify-content:flex-end;
-    &:not(.bloom-bilingual) .bloom-editable {
+    &:not(.bloom-bilingual):not(.bloom-trilingual) .bloom-editable {
         justify-content: flex-end;
     }
 }
