@@ -1,3 +1,26 @@
+//putting (less) here makes it actually start this file off with the contents of the select2.css,
+//which we're doing for convenience so that we don't have to get it in the installer and then import it explictly
+@import (less) '../../node_modules/select2/dist/css/select2.css';
+
+@hint-tab-indent: 20px;
+
+//the select2 dropdown gets appended to the body, not to our dialog, so it needs a really high z-index to show above the dialog.
+.select2-container{
+    z-index: 30000;
+}
+
+// select2 select controls are way too narrow if we don't force a width.
+// Need a considerable one for some of the longer language names.
+#lang-select + .select2-container{
+    width: 250px !important;
+    margin-top: 10px;
+    margin-left: @hint-tab-indent;
+}
+
+.select2-container--open .select2-selection__rendered{
+    background-color: lightblue;
+}
+
 #text-properties-dialog {
     .tab-page {
         .main-label {
@@ -21,4 +44,15 @@
 }
 #text-properties-dialog:not(.formattingDisabled) .hideWhenFormattingEnabled {
     display: none;
+}
+#hint-content {
+    border: 1px solid darkgray;
+    width: 360px;
+    height: 100px;
+    margin-top: 10px;
+    margin-left: @hint-tab-indent;
+}
+
+#hint-bubble-group .main-label {
+    margin-left: @hint-tab-indent;
 }

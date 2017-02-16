@@ -32,11 +32,14 @@
 						img(src="align-center.png")
 					#align-bottom.icon16x16.propButton
 						img(src="align-bottom.png")
-		//- Here follows a skeleton implementation of tabs 2 and 3
+		.tab-page
+			h2.tab(data-i18n="EditTab.TextBoxProperties.HintBubbles") Hint Bubbles
+			#hint-bubble-group
+				.main-label(data-i18n="EditTab.TextBoxProperties.WhatToPut") What should authors put in this box?
+				select#lang-select
+				#hint-content(contenteditable="true")
+		//- Here follows a skeleton implementation of tab 2
 		//- (Don't forget to add the appropriate bits to the .tmx files when activated.)
 		//- div#bordersPage.tab-page
 		//- 	h2.tab(data-i18n="EditTab.TextBoxProperties.BordersTab") Borders
 		//-		  // + propDlg.makeBordersContent(currentBorder)
-		//- div#bubblesPage.tab-page
-		//- 	h2.tab(data-i18n="EditTab.TextBoxProperties.BubblesTab") Hint Bubbles
-		//-		  // + propDlg.makeBubblesContent(currentBubbles)

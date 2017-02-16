@@ -17,6 +17,7 @@ using Microsoft.Win32;
 using SIL.IO;
 using Bloom.Collection;
 using Bloom.Publish;
+using Bloom.Workspace;
 using Newtonsoft.Json;
 using SIL.Reporting;
 using SIL.Extensions;
@@ -370,6 +371,32 @@ namespace Bloom.Api
 					var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());
 					list.Sort();
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
+					return true;
+				case "uiLanguages":
+					// Returns json with property languages, an array of objects (one for each UI language Bloom knows about)
+					// each having label (what to show in a menu) and tag (the language code).
+					// Used in language select control in hint bubbles tab of text box properties dialog
+					// brought up from cog control in origami mode.
+					var langs = new List<object>();
+					foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
+					{
+						langs.Add(new {label=WorkspaceView.MenuItemName(lang), tag=lang.IetfLanguageTag});
+					}
+					info.WriteCompleteOutput(JsonConvert.SerializeObject(new {languages=langs}));
+					return true;
+				case "bubbleLanguages":
+					// Returns a list of lang codes such that if a block has hints in multiple languages,
+					// we prefer the one that comes first in the list.
+					// Used to select the best label to show in a hint bubble when a bloom-translationGroup has multiple
+					// labels with different languages.
+					var bubbleLangs = new List<string>();
+					bubbleLangs.Add(_bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code);
+					bubbleLangs.Add(LocalizationManager.UILanguageId);
+					bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage2);
+					bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage3);
+					bubbleLangs.AddRange(new [] { "en", "fr", "sp", "ko", "zh-Hans"});
+					// if it isn't available in any of those we'll arbitrarily take the first one.
+					info.WriteCompleteOutput(JsonConvert.SerializeObject(new { langs = bubbleLangs }));
 					return true;
 				case "authorMode":
 					info.ContentType = "text/plain";

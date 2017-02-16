@@ -289,13 +289,7 @@ namespace Bloom.Workspace
 			_uiLanguageMenu.DropDownItems.Clear();
 			foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
 			{
-				string englishName="";
-				var langaugeNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en","fr","es","it","tpi"};
-				if((lang.EnglishName != lang.NativeName) && !(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
-				{
-					englishName = " (" + lang.EnglishName + ")";
-				}
-				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName + englishName);
+				var item = _uiLanguageMenu.DropDownItems.Add(MenuItemName(lang));
 				item.Tag = lang;
 				item.Click += new EventHandler((a, b) =>
 												{
@@ -327,6 +321,18 @@ namespace Bloom.Workspace
 				// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
 				AdjustButtonTextsForCurrentSize();
 			});
+		}
+
+		public static string MenuItemName(CultureInfo lang)
+		{
+			string englishName = "";
+			var langaugeNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en", "fr", "es", "it", "tpi"};
+			if ((lang.EnglishName != lang.NativeName) && !(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
+			{
+				englishName = " (" + lang.EnglishName + ")";
+			}
+			var menuItemName = lang.NativeName + englishName;
+			return menuItemName;
 		}
 
 
