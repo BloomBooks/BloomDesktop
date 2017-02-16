@@ -584,7 +584,7 @@ namespace Bloom.Edit
 						var answer =
 							MessageBox.Show(
 								LocalizationManager.GetString("EditTab.CopyImageIPMetadataQuestion",
-									"Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"),
+									"Copy this information to all other pictures in this book?", "Get this after you edit the metadata of an image"),
 								LocalizationManager.GetString("EditTab.TitleOfCopyIPToWholeBooksDialog",
 									"Picture Intellectual Property Information"), MessageBoxButtons.YesNo, MessageBoxIcon.Question,
 								MessageBoxDefaultButton.Button2);
