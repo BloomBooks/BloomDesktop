@@ -934,10 +934,6 @@ export default class StyleEditor {
         }
     }
 
-    preferredGray(): string {
-        return 'hsl(0,0%,86%)';
-    }
-
     // The Char tab description is language-dependent when localizing, not when authoring.
     getCharTabDescription() {
         var styleName = StyleEditor.GetBaseStyleNameForElement(this.boxBeingEdited);
