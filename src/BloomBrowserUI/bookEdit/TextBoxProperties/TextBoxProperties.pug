@@ -24,7 +24,7 @@
 		.tab-page
 			h2.tab(data-i18n="EditTab.TextBoxProperties.Alignment") Alignment
 			#alignment-group
-				.main-label(data-i18n="EditTab.TextBoxProperties.VerticalAlignment") Vertical Alignment
+				.group-label(data-i18n="EditTab.TextBoxProperties.VerticalAlignment") Vertical Alignment
 				div
 					#align-top.icon16x16.propButton
 						img(src="align-top.png")
@@ -33,13 +33,49 @@
 					#align-bottom.icon16x16.propButton
 						img(src="align-bottom.png")
 		.tab-page
+			h2.tab(data-i18n="EditTab.TextBoxProperties.BordersAndBackground") Borders & Background
+			.mainBlock.leftBlock
+				#borders-group
+					.group-label(data-i18n="EditTab.TextBoxProperties.BorderStyle") Border Style
+					div
+						#border-none.icon16x16.propButton
+							img(src="grayX.png")
+						#border-black.iconHtml.propButton
+							.iconBox(style="border-color: black")
+						#border-black-round.iconHtml.propButton
+							.iconBox.bdRounded(style="border-color: black")
+					div(style="margin-left:29px")
+						#border-gray.iconHtml.propButton
+							.iconBox(style="border-color: gray")
+						#border-gray-round.iconHtml.propButton
+							.iconBox.bdRounded(style="border-color: gray")
+				#background-group(style="margin-top:10px")
+					.group-label(data-i18n="EditTab.TextBoxProperties.Background") Background
+					div
+						#background-none.icon16x16.propButton
+							img(src="grayX.png")
+						#background-gray.iconHtml.propButton
+							.iconBack.grayBackground
+			.mainBlock
+				#border-side-group
+					.group-label(data-i18n="EditTab.TextBoxProperties.BorderSides") Border Sides
+					div
+						.iconHtml
+						#bordertop.iconHtml.wide.propButton
+							.iconHorizontalLine
+					div
+						#borderleft.iconHtml.tall.propButton
+							.iconVerticalLine
+						.iconHtml.wide
+						#borderright.iconHtml.tall.propButton
+							.iconVerticalLine
+					div
+						.iconHtml
+						#borderbottom.iconHtml.wide.propButton
+							.iconHorizontalLine
+		.tab-page
 			h2.tab(data-i18n="EditTab.TextBoxProperties.HintBubbles") Hint Bubbles
 			#hint-bubble-group
 				.main-label(data-i18n="EditTab.TextBoxProperties.WhatToPut") What should authors put in this box?
 				select#lang-select
 				#hint-content(contenteditable="true")
-		//- Here follows a skeleton implementation of tab 2
-		//- (Don't forget to add the appropriate bits to the .tmx files when activated.)
-		//- div#bordersPage.tab-page
-		//- 	h2.tab(data-i18n="EditTab.TextBoxProperties.BordersTab") Borders
-		//-		  // + propDlg.makeBordersContent(currentBorder)

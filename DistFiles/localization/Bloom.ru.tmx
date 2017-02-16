@@ -1133,7 +1133,7 @@
         <seg>Если вам нужно добавить больше информации о книге, вы можете использовать внутреннюю сторону задней обложки</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Background">
+    <tu tuid="EditTab.TextBoxProperties.Background">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Background</seg>
@@ -1157,15 +1157,6 @@
       </tuv>
       <tuv xml:lang="ru">
         <seg>Открыть HTML, который был использован для создания этого PDF, в программе Firefox (должен быть указан в путях)</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Borders">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Borders</seg>
-      </tuv>
-      <tuv xml:lang="ru">
-        <seg>Границы</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CannotChangeCopyright">

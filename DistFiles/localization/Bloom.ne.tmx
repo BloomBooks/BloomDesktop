@@ -1763,7 +1763,7 @@
             <seg>यदि तपाईंलाई यस पुस्तकको बारेमा जानकारी राख्न अरू ठाउँ चाहिएमा, तपाईंले यो पृष्ठ प्रयोग गर्न सक्नुहुन्छ, जुन पछाडिको आवरण पृष्ठको बाहिरपट्टी छ।</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Background">
+      <tu tuid="EditTab.TextBoxProperties.Background">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Background</seg>
@@ -1780,15 +1780,6 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>यो PDF बनाउन प्रयोग गरिएको HTML लाई Firefox मा खोल्नुहोस् (निर्धारित पथमा हुनुपर्छ)</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Borders">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Borders</seg>
-         </tuv>
-         <tuv xml:lang="ne">
-            <seg>सीमाहरू</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.CannotChangeCopyright">
