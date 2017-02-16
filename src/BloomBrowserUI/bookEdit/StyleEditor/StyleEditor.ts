@@ -579,7 +579,7 @@ export default class StyleEditor {
 
         //make the button stay at the bottom if we overflow and thus scroll
         //review: It's not clear to me that this is actually working (JH 3/19/2016)
-        $(targetBox).on("scroll", e => { this.AdjustFormatButton(e.target) });
+        $(targetBox).on("scroll", e => { this.AdjustFormatButton(e.target); });
 
 
         // And in case we are starting out on a centerVertically page we might need to adjust it now
@@ -713,7 +713,9 @@ export default class StyleEditor {
 
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
-                toolbar.draggable({ distance: 10, scroll: false, containment: $('html') });
+                toolbar.draggable({
+                    distance: 10, scroll: false, containment: $('html')
+                });
                 toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                 toolbar.css('opacity', 1.0);
                 if (!noFormatChange) {
