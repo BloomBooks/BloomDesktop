@@ -681,7 +681,7 @@ export default class StyleEditor {
         $(targetBox).on('click.formatButton', '#formatButton', function () {
             axios.all([
                 axios.get('/bloom/availableFontNames'),
-                axios.get<string>('/bloom/bookedit/StyleEditor/StyleEditor.html')
+                axios.get<string>('/bloom/bookEdit/StyleEditor/StyleEditor.html')
             ]).then(results => {
                 var fonts = results[0].data['fonts'];
                 var html = results[1].data;
