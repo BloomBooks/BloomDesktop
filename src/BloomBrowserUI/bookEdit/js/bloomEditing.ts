@@ -765,6 +765,10 @@ function localizeCkeditorTooltips(bar: JQuery) {
         .done(function (result) {
             $(toolGroup).find(".cke_button__underline").attr("title", result);
         });
+    theOneLocalizationManager.asyncGetText('EditTab.DirectFormatting.Superscript', 'Superscript')
+        .done(function (result) {
+            $(toolGroup).find('.cke_button__superscript').attr('title', result);
+        });
 }
 
 // This is invoked from C# when we are about to change pages. It is mainly for origami,
