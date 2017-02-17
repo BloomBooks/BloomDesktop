@@ -154,7 +154,7 @@ LibSynphony.prototype.stringToSentences = function(textHTML) {
     // We require at least one space between sentences, unless things have been configured so that
     // space IS a sentence-ending punctuation. In that case, zero or more.
     var intersentenceSpace = '([\\s\\p{PEP}\\u0006\\u0007\\u0008]' +
-        (LibSynphony.prototype.extraSentencePunct.indexOf('\\u0020') >= 0 ? '*' : '+') +
+        (LibSynphony.prototype.extraSentencePunct && LibSynphony.prototype.extraSentencePunct.indexOf('\\u0020') >= 0 ? '*' : '+') +
         ')';
 
     // regex to find sentence ending sequences and inter-sentence space
