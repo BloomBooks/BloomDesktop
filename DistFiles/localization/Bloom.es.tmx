@@ -1303,7 +1303,7 @@
         <seg>Si usted necesita un lugar para poner más información sobre el libro, puede utilizar esta página, que es la parte exterior de la cubierta posterior.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Background">
+    <tu tuid="EditTab.TextBoxProperties.Background">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Background</seg>
@@ -1318,15 +1318,6 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino).</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Borders">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Borders</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Bordes</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CannotChangeCopyright">

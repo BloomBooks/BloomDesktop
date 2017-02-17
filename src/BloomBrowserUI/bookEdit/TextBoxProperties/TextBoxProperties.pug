@@ -33,13 +33,31 @@
 					#align-bottom.icon16x16.propButton
 						img(src="align-bottom.png")
 		.tab-page
+			h2.tab(data-i18n="EditTab.TextBoxProperties.BordersAndBackground") Borders & Background
+			#borders-group
+				.main-label(data-i18n="EditTab.TextBoxProperties.BorderStyle") Border Style
+				div
+					#border-none.icon16x16.propButton
+						img(src="grayX.png")
+					#border-black.iconHtml.propButton
+						.iconBox(style="border-color: black")
+					#border-black-round.iconHtml.propButton
+						.iconBox.bdRounded(style="border-color: black")
+				div(style="margin-left:29px;margin-top:-13px")
+					#border-gray.iconHtml.propButton
+						.iconBox(style="border-color: gray")
+					#border-gray-round.iconHtml.propButton
+						.iconBox.bdRounded(style="border-color: gray")
+			#background-group
+				.main-label(data-i18n="EditTab.TextBoxProperties.Background") Background
+				div
+					#background-none.icon16x16.propButton
+						img(src="grayX.png")
+					#background-gray.iconHtml.propButton
+						.iconBack(style="background-color:hsl(0,0%,86%)")
+		.tab-page
 			h2.tab(data-i18n="EditTab.TextBoxProperties.HintBubbles") Hint Bubbles
 			#hint-bubble-group
 				.main-label(data-i18n="EditTab.TextBoxProperties.WhatToPut") What should authors put in this box?
 				select#lang-select
 				#hint-content(contenteditable="true")
-		//- Here follows a skeleton implementation of tab 2
-		//- (Don't forget to add the appropriate bits to the .tmx files when activated.)
-		//- div#bordersPage.tab-page
-		//- 	h2.tab(data-i18n="EditTab.TextBoxProperties.BordersTab") Borders
-		//-		  // + propDlg.makeBordersContent(currentBorder)

@@ -103,6 +103,8 @@ export default class TextBoxProperties {
                     });
                     this.removeButtonSelection();
                     this.initializeAlignment();
+                    this.initializeBorderStyle();
+                    this.initializeBackground();
                     this.setButtonClickActions();
                     this.makeLanguageSelect();
                     this.initializeHintText();
@@ -112,7 +114,9 @@ export default class TextBoxProperties {
     }
 
     getButtonIds() {
-        return ['align-top', 'align-center', 'align-bottom'];
+        return ['align-top', 'align-center', 'align-bottom',
+            'border-none', 'border-black', 'border-black-round', 'border-gray', 'border-gray-round',
+            'background-none', 'background-light-gray', 'background-gray', 'background-black'];
     }
 
     removeButtonSelection() {
@@ -126,7 +130,7 @@ export default class TextBoxProperties {
         var buttonIds = this.getButtonIds();
         for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
             var button = $('#' + buttonIds[idIndex]);
-            button.click((event)=> {
+            button.click((event) => {
                 this.buttonClick(event.target.parentElement);
             });
         }
@@ -157,6 +161,12 @@ export default class TextBoxProperties {
         // Now make it so
         if (id.startsWith('align')) {
             this.changeAlignment();
+        }
+        if (id.startsWith('border')) {
+            this.changeBorderStyle();
+        }
+        if (id.startsWith('background')) {
+            this.changeBackground();
         }
     }
 
@@ -194,6 +204,83 @@ export default class TextBoxProperties {
                 targetGroup.addClass('bloom-vertical-align-bottom');;
             } // else leave it missing.
         }
+    }
+
+    initializeBorderStyle() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        if (targetGroup) {
+            var style = targetGroup.attr('style') || '';
+            if (style.indexOf('border:1pt solid black;border-radius:0px;box-sizing:border-box;') >= 0) {
+                $('#border-black').addClass('selectedIcon');
+            } else if (style.indexOf('border:1pt solid black;border-radius:10px;box-sizing:border-box;') >= 0) {
+                $('#border-black-round').addClass('selectedIcon');
+            } else if (style.indexOf('border:1pt solid gray;border-radius:0px;box-sizing:border-box;') >= 0) {
+                $('#border-gray').addClass('selectedIcon');
+            } else if (style.indexOf('border:1pt solid gray;border-radius:10px;box-sizing:border-box;') >= 0) {
+                $('#border-gray-round').addClass('selectedIcon');
+            } else {
+                $('#border-none').addClass('selectedIcon');
+            }
+        }
+    }
+
+    changeBorderStyle() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        if (!targetGroup) {
+            return;
+        }
+        var style = (targetGroup.attr('style') || '')
+            .replace(/border:.+?;/gi, '')
+            // REVIEW: need to clear all the options? top, bottom, left, right?
+            .replace(/border-style:.+?;/gi, '')
+            .replace(/border-color:.+?;/gi, '')
+            .replace(/border-radius:.+?;/gi, '')
+            .replace(/box-sizing:.+?;/gi, '');
+
+        if ($('#border-black').hasClass('selectedIcon')) {
+            style = style + 'border:1pt solid black;';
+            style = style + 'border-radius:0px;';
+            style = style + 'box-sizing:border-box;';
+        } else if ($('#border-black-round').hasClass('selectedIcon')) {
+            style = style + 'border:1pt solid black;';
+            style = style + 'border-radius:10px;';
+            style = style + 'box-sizing:border-box;';
+        } else if ($('#border-gray').hasClass('selectedIcon')) {
+            style = style + 'border:1pt solid gray;';
+            style = style + 'border-radius:0px;';
+            style = style + 'box-sizing:border-box;';
+        } else if ($('#border-gray-round').hasClass('selectedIcon')) {
+            style = style + 'border:1pt solid gray;';
+            style = style + 'border-radius:10px;';
+            style = style + 'box-sizing:border-box;';
+        }
+        targetGroup.attr('style', style);
+    }
+
+    initializeBackground() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        if (targetGroup) {
+            var style = targetGroup.attr('style') || '';
+            if (style.indexOf('background-color:hsl(0,0%,86%);') >= 0) {
+                $('#background-gray').addClass('selectedIcon');
+            } else {
+                $('#background-none').addClass('selectedIcon');
+            }
+        }
+    }
+
+    changeBackground() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        if (!targetGroup) {
+            return;
+        }
+        var style = (targetGroup.attr('style') || '')
+            .replace(/background-color:.+?;/gi, '');
+
+        if ($('#background-gray').hasClass('selectedIcon')) {
+            style = style + 'background-color:hsl(0,0%,86%);';
+        }
+        targetGroup.attr('style', style);
     }
 
     getTextBoxLanguage(targetBox: HTMLElement): string {

@@ -1167,12 +1167,6 @@
         <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Background">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Background</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
@@ -1182,12 +1176,6 @@
     <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
       <tuv xml:lang="en">
         <seg>Open the HTML used to make this PDF, in Firefox (must be on path)</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Borders">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Borders</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CannotChangeCopyright">
@@ -1881,6 +1869,24 @@
     <tu tuid="EditTab.TextBoxProperties.LanguageTab">
       <tuv xml:lang="en">
         <seg>Language</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Background">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Background</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.BordersAndBackground">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Borders &amp; Background</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.BorderStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Border Style</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TextBoxProperties.NormalLabel">
