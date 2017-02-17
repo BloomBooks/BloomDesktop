@@ -534,9 +534,15 @@ namespace Bloom.Publish
 				if(group != null)
 				{
 					AddFontFace(sb, font, "normal", "normal", group.Normal);
-					AddFontFace(sb, font, "bold", "normal", group.Bold);
-					AddFontFace(sb, font, "normal", "italic", group.Italic);
-					AddFontFace(sb, font, "bold", "italic", group.BoldItalic);
+					// We are currently not including the other faces (nor their files...see FontFileFinder.GetFilesForFont().
+					// BL-4202 contains a discussion of this. Basically,
+					// - embedding them takes a good deal of extra space
+					// - usually they do no good at all; it's nontrivial to figure out whether the book actually has any bold or italic
+					// - even if the book has bold or italic, nearly all readers that display it at all do a reasonable
+					//   job of synthesizing it from the normal face.
+					//AddFontFace(sb, font, "bold", "normal", group.Bold);
+					//AddFontFace(sb, font, "normal", "italic", group.Italic);
+					//AddFontFace(sb, font, "bold", "italic", group.BoldItalic);
 				}
 			}
 			RobustFile.WriteAllText(Path.Combine(_contentFolder, "fonts.css"), sb.ToString());

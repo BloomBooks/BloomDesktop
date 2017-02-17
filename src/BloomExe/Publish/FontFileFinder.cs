@@ -37,13 +37,13 @@ namespace Bloom.Publish
 		/// </summary>
 		/// <param name="fontName"></param>
 		/// <returns>enumeration of file paths (possibly none) that contain data for the specified font name, and which
-		/// (as far as we can tell) we are allowed to embed.</returns>
+		/// (as far as we can tell) we are allowed to embed.
+		/// Currently we only embed the normal face...see BL-4202 and comments in EpubMaker.EmbedFonts()</returns>
 		public IEnumerable<string> GetFilesForFont(string fontName)
 		{
 			var group = GetGroupForFont(fontName);
-			if (group == null)
-				return new string[0];
-			return group;
+			if (group != null && !string.IsNullOrEmpty(group.Normal))
+				yield return group.Normal;
 		}
 
 		public FontGroup GetGroupForFont(string fontName)
