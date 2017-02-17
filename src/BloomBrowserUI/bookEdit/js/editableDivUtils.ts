@@ -117,5 +117,19 @@ export class EditableDivUtils {
             // the extra 30 pixels is for padding
             dialogBox.offset({ left: offset.left, top: offset.top - diff - 30 });
         }
+        if (dialogBox.is('.ui-draggable')) {
+            dialogBox.draggable({
+                // BL-4293 the 'start' and 'drag' functions here work around a known bug in jqueryui.
+                // fix adapted from majcherek2048's about 2/3 down this page https://bugs.jqueryui.com/ticket/3740.
+                // If we upgrade our jqueryui to a version that doesn't have this bug (1.10.3 or later?),
+                // we'll need to back out this change.
+                start: function () {
+                    $(this).data('startingScrollTop', $('html').scrollTop());
+                },
+                drag: function (event, ui) {
+                    ui.position.top -= $(this).data('startingScrollTop');
+                }
+            });
+        }
     }
 }
