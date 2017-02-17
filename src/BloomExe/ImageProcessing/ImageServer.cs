@@ -74,7 +74,10 @@ namespace Bloom.ImageProcessing
 			{
 				var fileName = Path.GetFileName(imageFile);
 				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
-				imageFile = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
+				
+				// Without filtering out the templates directory, we were picking up the license.png from template and shell books.
+				// This resulted in the wrong cc license icon when publishing to PDF. (BL-4290)
+				imageFile = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault(f => !f.Contains("templates"));
 
 				// image file not found
 				if (string.IsNullOrEmpty(imageFile)) return false;
