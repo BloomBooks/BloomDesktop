@@ -1318,19 +1318,29 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.DirectFormatting.Bold">
-      <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Bold</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.DirectFormatting.Italic">
-      <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Italic</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.DirectFormatting.Superscript">
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Superscript</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.DirectFormatting.Underline">
-      <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Underline</seg>
       </tuv>
