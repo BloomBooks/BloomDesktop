@@ -320,6 +320,11 @@
         <seg>Book Making</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Branding">
+      <tuv xml:lang="en">
+        <seg>Branding</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
       <note>{0} is a language name.</note>
       <tuv xml:lang="en">
@@ -1149,12 +1154,6 @@
         <seg>Add Page...</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.AddPageDialog.Title">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Add Page...</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1319,19 +1318,29 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.DirectFormatting.Bold">
-      <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Bold</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.DirectFormatting.Italic">
-      <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Italic</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.DirectFormatting.Superscript">
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Superscript</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.DirectFormatting.Underline">
-      <note>This is for the 3 button panel that pops up when the user selects more than one character in a textbox.</note>
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Underline</seg>
       </tuv>
@@ -1873,29 +1882,9 @@
         <seg>Hint Bubbles</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.TextBoxProperties.Title">
-      <tuv xml:lang="en">
-        <seg>Text Box Properties</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.TextBoxProperties.LanguageTab">
       <tuv xml:lang="en">
         <seg>Language</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.TextBoxProperties.NormalLabel">
-      <tuv xml:lang="en">
-        <seg>"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.TextBoxProperties.OtherLanguagesLabel">
-      <tuv xml:lang="en">
-        <seg>Use one of these for simple text boxes that are always in only one language.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.TextBoxProperties.Normal">
-      <tuv xml:lang="en">
-        <seg>Normal</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TextBoxProperties.LocalLanguage">
@@ -1908,6 +1897,21 @@
         <seg>National Language</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.TextBoxProperties.Normal">
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.NormalLabel">
+      <tuv xml:lang="en">
+        <seg>"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.OtherLanguagesLabel">
+      <tuv xml:lang="en">
+        <seg>Use one of these for simple text boxes that are always in only one language.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.TextBoxProperties.RegionalLanguage">
       <tuv xml:lang="en">
         <seg>Regional Language</seg>
@@ -1916,6 +1920,11 @@
     <tu tuid="EditTab.TextBoxProperties.WhatToPut">
       <tuv xml:lang="en">
         <seg>What should authors put in this box?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Title">
+      <tuv xml:lang="en">
+        <seg>Text Box Properties</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
@@ -2011,6 +2020,21 @@
         <seg>Set up Stages</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically">
+      <tuv xml:lang="en">
+        <seg>Sort alphabetically</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByFrequency">
+      <tuv xml:lang="en">
+        <seg>Sort by frequency</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByWordLength">
+      <tuv xml:lang="en">
+        <seg>Sort by word length</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.Toolbox.DecodableReaderTool.Stage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2034,21 +2058,6 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically">
-      <tuv xml:lang="en">
-        <seg>Sort alphabetically</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByWordLength">
-      <tuv xml:lang="en">
-        <seg>Sort by word length</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByFrequency">
-      <tuv xml:lang="en">
-        <seg>Sort by frequency</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Toolbox.LeveledReaderTool">
@@ -3194,6 +3203,12 @@
         <seg>There was a problem uploading your book.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Upload.IncompleteTranslation">
+      <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
+      <tuv xml:lang="en">
+        <seg>(incomplete translation)</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Upload.Languages">
       <tuv xml:lang="en">
         <seg>Languages</seg>
@@ -3328,12 +3343,6 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>(partial)</seg>
-      </tuv>
-    </tu>
-    <tu tuid="PublishTab.Upload.IncompleteTranslation">
-      <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
-      <tuv xml:lang="en">
-        <seg>(incomplete translation)</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.PleaseLogIn">
@@ -4082,6 +4091,11 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Sample Print Settings</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ScriptSettingsDialog.DefaultLineSpacing">
+      <tuv xml:lang="en">
+        <seg>Default line spacing</seg>
       </tuv>
     </tu>
     <tu tuid="ScriptSettingsDialog.RightToLeftScriptCheckBox">

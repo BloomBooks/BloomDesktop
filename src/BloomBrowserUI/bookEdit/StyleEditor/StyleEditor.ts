@@ -738,7 +738,9 @@ export default class StyleEditor {
 
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
-                toolbar.draggable({ distance: 10, scroll: false, containment: $('html') });
+                toolbar.draggable({
+                    distance: 10, scroll: false, containment: $('html')
+                });
                 toolbar.draggable('disable'); // until after we make sure it's in the Viewport
                 toolbar.css('opacity', 1.0);
                 if (!noFormatChange) {
