@@ -99,8 +99,12 @@ namespace Bloom
 			_libraryClosingEvent.Raise(null);
 
 			if (!string.IsNullOrEmpty(_nameToChangeCollectionUponClosing) &&
-				_nameToChangeCollectionUponClosing != _collectionSettings.CollectionName)
+				_nameToChangeCollectionUponClosing != _collectionSettings.CollectionName &&
+				UserWantsToOpeReopenProject)
 			{
+				// Without checking and resetting this flag, Linux endlessly spawns new instances. Apparently the Mono runtime
+				// calls OnClosing again as a result of calling Program.RestartBloom() which calls Application.Exit().
+				UserWantsToOpeReopenProject = false;
 				//Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
 				//when this run isn't holding onto anything.
 				try
