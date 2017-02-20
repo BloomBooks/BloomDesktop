@@ -151,15 +151,16 @@ namespace BloomTests.Publish
 			Assert.That(fontCssData,
 				Is.StringContaining(
 					"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:normal; src:url(AndikaNewBasic-R.ttf) format('opentype');}"));
-			Assert.That(fontCssData,
-				Is.StringContaining(
-					"@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:normal; src:url(AndikaNewBasic-B.ttf) format('opentype');}"));
-			Assert.That(fontCssData,
-				Is.StringContaining(
-					"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:italic; src:url(AndikaNewBasic-I.ttf) format('opentype');}"));
-			Assert.That(fontCssData,
-				Is.StringContaining(
-					"@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:italic; src:url(AndikaNewBasic-BI.ttf) format('opentype');}"));
+			// Currently we're not embedding bold and italic fonts (BL-4202)
+			//Assert.That(fontCssData,
+			//	Is.StringContaining(
+			//		"@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:normal; src:url(AndikaNewBasic-B.ttf) format('opentype');}"));
+			//Assert.That(fontCssData,
+			//	Is.StringContaining(
+			//		"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:italic; src:url(AndikaNewBasic-I.ttf) format('opentype');}"));
+			//Assert.That(fontCssData,
+			//	Is.StringContaining(
+			//		"@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:italic; src:url(AndikaNewBasic-BI.ttf) format('opentype');}"));
 		}
 
 		private void CheckBasicsInManifest(params string[] imageFiles)
@@ -186,8 +187,9 @@ namespace BloomTests.Publish
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='customBookStyles.css']");
 
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-R' and @href='AndikaNewBasic-R.ttf' and @media-type='application^slash^vnd.ms-opentype']");
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf' and @media-type='application^slash^vnd.ms-opentype']");
-			// It should include italic and BI too...though eventually it may get smarter and figure they are not used...but I think this is enough to test
+			// This used to be a test that it DOES include the bold (along with italic and BI) variants. But we decided not to...see BL-4202 and comments in EpubMaker.EmbedFonts().
+			// So this is now a negative to check that they don't creep back in (unless we change our minds).
+			assertThatManifest.HasNoMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf' and @media-type='application^slash^vnd.ms-opentype']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fonts' and @href='fonts.css']");
 
 			foreach (var image in imageFiles)
