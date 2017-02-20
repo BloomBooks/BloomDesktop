@@ -26,13 +26,14 @@ export default class BloomSourceBubbles {
     // for translation.
     // param 'group' is a .bloom-translationGroup DIV
     // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
-    public static ProduceSourceBubbles(group: HTMLElement, newIso?: string): void {
+    // Returns true if it actually made a source bubble.
+    public static ProduceSourceBubbles(group: HTMLElement, newIso?: string): boolean {
         var divForBubble = BloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
-        if(divForBubble == null) return;
+        if(divForBubble == null) return false;
 
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
         divForBubble = BloomSourceBubbles.CreateTabsFromDiv(divForBubble);
-        if (divForBubble == null) return;
+        if (divForBubble == null) return false;
 
         // If divForBubble contains more than two languages, create a dropdown menu to contain the
         // extra possibilities. The menu will show (x), where x is the number of items in the dropdown.
@@ -41,8 +42,7 @@ export default class BloomSourceBubbles {
         // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
         // Also makes sure the tooltips are setup correctly.
         BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(group, divForBubble);
-
-        BloomSourceBubbles.HideLabelsThatWouldBeUnderfoot(group);
+        return true;
     }
 
     // Cleans up a clone of the original translationGroup
@@ -57,6 +57,10 @@ export default class BloomSourceBubbles {
         divForBubble.removeAttr('style');
         divForBubble.removeClass(); //remove them all
         divForBubble.addClass("ui-sourceTextsForBubble");
+        // For now, we don't want labels (hints) in the source bubbles. BL-4295 discusses possibly changing this.
+        divForBubble.find("label.bubble").each( (index, element) => {
+            $(element).remove();
+        });
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
         divForBubble.find("textarea, div").each(function() {
@@ -383,12 +387,6 @@ export default class BloomSourceBubbles {
             if (maxHeight) {
                 $tip.css('max-height', '');
             }
-        });
-    }
-
-    private static HideLabelsThatWouldBeUnderfoot(groupElement: HTMLElement) {
-        $(groupElement).find("label.bubble").each( (index, element) => {
-            $(element).remove();
         });
     }
 }

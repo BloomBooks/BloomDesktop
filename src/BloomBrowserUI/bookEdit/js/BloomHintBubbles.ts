@@ -13,7 +13,7 @@ declare function GetSettings(): any; //c# injects this
 export default class BloomHintBubbles {
 
     // Add (yellow) hint bubbles from (usually) label.bubble elements
-    public static addHintBubbles(container: HTMLElement): void {
+    public static addHintBubbles(container: HTMLElement, sourceBubbleDivs: Array<Element>): void {
         //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
         //bloom-translationGroup (those should have a single <label> for the whole group).
         //Notice that the <label> inside an editable div is in a precarious position, it could get
@@ -41,18 +41,38 @@ export default class BloomHintBubbles {
         // behaviors through classes
         axios.get('/bloom/bubbleLanguages').then(result => {
             let preferredLangs: Array<string> = (<any>result.data).langs;
-            $(container).find('.bloom-translationGroup').each(function () {
-                var groupElement = $(this);
+            $(container).find('.bloom-translationGroup').each((i,group) => {
+                var groupElement = $(group);
+                // if the group was given a source bubble, don't add another.
+                // It's tempting here to try to detect directly whether it already has some kind of bubble.
+                // This is difficult for a couple of reasons. First, we unfortunately save in the file the
+                // qtip attributes that get added like aria-describedby='qtip-0' and has-qtip='true'.
+                // Because of that, I tried checking to see whether the document really has a div whose ID
+                // matches the aria-described by. But that failed, except when debugging; I infer that
+                // there's some delay between the call that starts the process of adding the qtip and when
+                // it actually comes into existence. Even apart from this, I'm not sure that a saved
+                // aria-described by couldn't accidentally match a qtip created for another div. So
+                // it's more reliable to have the source bubbles code figure out exactly what divs
+                // it puts bubbles on.
+                if (sourceBubbleDivs.indexOf(group) >= 0) {
+                    return;
+                }
                 var labelElement = groupElement.find('label.bubble'); // may be more than one
                 var whatToSay = labelElement.text();
                 if (!whatToSay) {
                     return;
                 }
 
-                //attach the bubble, separately, to every visible field inside the group
-                groupElement.find("div.bloom-editable:visible").each(function () {
-                    BloomHintBubbles.MakeHelpBubble($(this), labelElement, preferredLangs);
-                });
+                if (groupElement.attr('data-default-languages').toLowerCase() === 'auto') {
+                    // attach the bubble to the whole group...otherwise it would be oddly
+                    // duplicated on all of them
+                    BloomHintBubbles.MakeHelpBubble(groupElement, labelElement, preferredLangs);
+                } else {
+                    //attach the bubble, separately, to every visible field inside the group
+                    groupElement.find("div.bloom-editable:visible").each(function () {
+                        BloomHintBubbles.MakeHelpBubble($(this), labelElement, preferredLangs);
+                    });
+                }
             });
         });
 
