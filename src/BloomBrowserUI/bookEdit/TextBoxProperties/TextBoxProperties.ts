@@ -37,8 +37,11 @@ export default class TextBoxProperties {
             // if not already set, this will return 'Auto'
             var languageGroup = propDlg.getTextBoxLanguage(targetBox);
 
-            var html = '<div id="text-properties-dialog" class="bloom-ui bloomDialogContainer">'
+            var html = '<div id="text-properties-dialog" class="bloom-ui bloomDialogContainer" style="visibility: hidden;">'
                 + '<div data-i18n="EditTab.TextBoxProperties.Title" class="bloomDialogTitleBar">Text Box Properties</div>';
+            // For debugging: uncomment the 2 lines below and comment the 2 lines above
+            // var html = '<div id="text-properties-dialog" class="bloom-ui bloomDialogContainer">' // visible for debugging
+            //     + '<div data-i18n="EditTab.TextBoxProperties.Title" class="bloomDialogTitleBar">Text Box Properties</div>';
             if (noFormatChange) {
                 // Review gjm: Is this true for this dialog?
                 var translation = theOneLocalizationManager.getText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.');
@@ -97,9 +100,9 @@ export default class TextBoxProperties {
             // It just needs to delay one 'cycle'.
             // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
             setTimeout(function () {
-                var offset = $(propDlg.boxBeingEdited).find('.formatButton').offset(); // make sure we get the right button!
-                dialogElement.offset({ left: offset.left + 30, top: offset.top - 30 });
-                EditableDivUtils.positionInViewport(dialogElement);
+                var offset = EditableDivUtils.getTotalOffsetOfHtmlElement($(propDlg.boxBeingEdited).find('.formatButton')[0]);
+
+                EditableDivUtils.positionDialogAndSetDraggable(dialogElement, offset);
                 dialogElement.draggable("enable");
 
                 $('html').off('click.dialogElement');
