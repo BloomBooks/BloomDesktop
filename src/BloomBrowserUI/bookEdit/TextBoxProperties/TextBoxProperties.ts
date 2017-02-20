@@ -37,7 +37,7 @@ export default class TextBoxProperties {
             // if not already set, this will return 'Auto'
             var languageGroup = propDlg.getTextBoxLanguage(targetBox);
 
-            var html = '<div id="text-properties-dialog" class="bloom-ui bloomDialogContainer">'
+            var html = '<div id="text-properties-dialog" class="bloom-ui bloomDialogContainer" style="visibility: hidden;">'
                 + '<div data-i18n="EditTab.TextBoxProperties.Title" class="bloomDialogTitleBar">Text Box Properties</div>';
             if (noFormatChange) {
                 // Review gjm: Is this true for this dialog?
@@ -97,9 +97,9 @@ export default class TextBoxProperties {
             // It just needs to delay one 'cycle'.
             // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
             setTimeout(function () {
-                var offset = $(propDlg.boxBeingEdited).find('.formatButton').offset(); // make sure we get the right button!
-                dialogElement.offset({ left: offset.left + 30, top: offset.top - 30 });
-                EditableDivUtils.positionInViewport(dialogElement);
+                // Make sure we get the right button!
+                var orientOnButton = $(propDlg.boxBeingEdited).find('.formatButton');
+                EditableDivUtils.positionDialogAndSetDraggable(dialogElement, orientOnButton);
                 dialogElement.draggable("enable");
 
                 $('html').off('click.dialogElement');
