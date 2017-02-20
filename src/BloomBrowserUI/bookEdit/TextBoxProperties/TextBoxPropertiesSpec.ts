@@ -13,30 +13,40 @@ describe('TextBoxProperties', function () {
     });
 
     it('changeBackground, to none, css set properly', function () {
+        // this div represents the button used to select the 'none' background option
         $('body').append('<div id="background-none" class="selectedIcon"></div>');
-        dialog.AttachToBox($('#testTarget')[0]);
         dialog.changeBackground($('#testTarget'));
 
         expect($('#testTarget').hasClass('bloom-background-none')).toBeTruthy();
     });
 
     it('changeBackground, to gray, css set properly', function () {
+        // this div represents the button used to select the 'gray' background option
         $('body').append('<div id="background-gray" class="selectedIcon"></div>');
-        dialog.AttachToBox($('#testTarget')[0]);
         dialog.changeBackground($('#testTarget'));
 
         expect($('#testTarget').hasClass('bloom-background-gray')).toBeTruthy();
     });
 
     it('changeBorder, nothing to something, no sides selected, css classes set properly and border side buttons selected', function () {
-        $('body').append('<div id="border-black" class="selectedIcon"></div>');
+        $('#testTarget').addClass('bloom-borderstyle-black');
+        $('#testTarget').addClass('bloom-top-border-off');
+        $('#testTarget').addClass('bloom-right-border-off');
+        $('#testTarget').addClass('bloom-bottom-border-off');
+        $('#testTarget').addClass('bloom-left-border-off');
+
+        // this div represents the button used to select the 'black' border style
+        $('body').append('<div id="borderstyle-black" class="selectedIcon"></div>');
+        // these four divs represent the buttons used to select border sides
         $('body').append('<div id="bordertop"></div>');
         $('body').append('<div id="borderright"></div>');
         $('body').append('<div id="borderbottom"></div>');
         $('body').append('<div id="borderleft"></div>');
+
+        // SUT
         dialog.changeBorder($('#testTarget'), true);
 
-        expect($('#testTarget').hasClass('bloom-border-black')).toBeTruthy();
+        expect($('#testTarget').hasClass('bloom-borderstyle-black')).toBeTruthy();
         expect($('#testTarget').hasClass('bloom-top-border-off')).toBeFalsy();
         expect($('#testTarget').hasClass('bloom-right-border-off')).toBeFalsy();
         expect($('#testTarget').hasClass('bloom-bottom-border-off')).toBeFalsy();
@@ -73,17 +83,20 @@ describe('TextBoxProperties', function () {
     });
 
     it('changeBorder, something to nothing, css classes set properly and border side buttons deselected', function () {
-        $('body').append('<div id="border-none" class="selectedIcon"></div>');
+        $('#testTarget').addClass('bloom-borderstyle-black');
+
+        // this div represents the buttons used to select border styles
+        $('body').append('<div id="borderstyle-none" class="selectedIcon"></div>');
+        // these four divs represent the buttons used to select border sides
         $('body').append('<div id="bordertop" class="selectedIcon"></div>');
         $('body').append('<div id="borderright" class="selectedIcon"></div>');
         $('body').append('<div id="borderbottom" class="selectedIcon"></div>');
         $('body').append('<div id="borderleft" class="selectedIcon"></div>');
+
+        // SUT
         dialog.changeBorder($('#testTarget'), true);
 
-        expect($('#testTarget').hasClass('bloom-border-black')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-black-round')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-gray')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-gray-round')).toBeFalsy();
+        expect($('#testTarget').hasClass('bloom-borderstyle-black')).toBeFalsy();
         expect($('#testTarget').hasClass('bloom-top-border-off')).toBeTruthy();
         expect($('#testTarget').hasClass('bloom-right-border-off')).toBeTruthy();
         expect($('#testTarget').hasClass('bloom-bottom-border-off')).toBeTruthy();
@@ -95,19 +108,25 @@ describe('TextBoxProperties', function () {
         expect($('#borderleft').hasClass('selectedIcon')).toBeFalsy();
     });
 
-    it('changeBorder, to gray rounded, css classes set properly and border side buttons unchanged', function () {
-        $('body').append('<div id="border-none"></div>');
-        $('body').append('<div id="border-gray-round" class="selectedIcon"></div>');
+    it('changeBorder, change border style with only some sides, css classes set properly and border side buttons unchanged', function () {
+        $('#testTarget').addClass('bloom-borderstyle-black');
+        $('#testTarget').addClass('bloom-right-border-off');
+        $('#testTarget').addClass('bloom-left-border-off');
+
+        // these divs represent the buttons used to select border styles
+        $('body').append('<div id="borderstyle-none"></div>');
+        $('body').append('<div id="borderstyle-gray-round" class="selectedIcon"></div>');
+        // these four divs represent the buttons used to select border sides
         $('body').append('<div id="bordertop"></div>');
         $('body').append('<div id="borderright" class="selectedIcon"></div>');
         $('body').append('<div id="borderbottom"></div>');
         $('body').append('<div id="borderleft" class="selectedIcon"></div>');
+
+        // SUT
         dialog.changeBorder($('#testTarget'), true);
 
-        expect($('#testTarget').hasClass('bloom-border-black')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-black-round')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-gray')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-gray-round')).toBeTruthy();
+        expect($('#testTarget').hasClass('bloom-borderstyle-black')).toBeFalsy();
+        expect($('#testTarget').hasClass('bloom-borderstyle-gray-round')).toBeTruthy();
 
         expect($('#testTarget').hasClass('bloom-top-border-off')).toBeTruthy();
         expect($('#testTarget').hasClass('bloom-right-border-off')).toBeFalsy();
@@ -121,18 +140,21 @@ describe('TextBoxProperties', function () {
     });
 
     it('changeBorder, deselect side, css classes set properly', function () {
-        $('body').append('<div id="border-none"></div>');
-        $('body').append('<div id="border-black-round" class="selectedIcon"></div>');
+        $('#testTarget').addClass('bloom-borderstyle-black-round');
+
+        // these divs represent the buttons used to select border styles
+        $('body').append('<div id="borderstyle-none"></div>');
+        $('body').append('<div id="borderstyle-black-round" class="selectedIcon"></div>');
+        // these four divs represent the buttons used to select border sides
         $('body').append('<div id="bordertop" class="selectedIcon"></div>');
         $('body').append('<div id="borderright" class="selectedIcon"></div>');
         $('body').append('<div id="borderbottom"></div>');
         $('body').append('<div id="borderleft" class="selectedIcon"></div>');
+
+        // SUT
         dialog.changeBorder($('#testTarget'), false);
 
-        expect($('#testTarget').hasClass('bloom-border-black')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-black-round')).toBeTruthy();
-        expect($('#testTarget').hasClass('bloom-border-gray')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-gray-round')).toBeFalsy();
+        expect($('#testTarget').hasClass('bloom-borderstyle-black-round')).toBeTruthy();
 
         expect($('#testTarget').hasClass('bloom-top-border-off')).toBeFalsy();
         expect($('#testTarget').hasClass('bloom-right-border-off')).toBeFalsy();
@@ -146,26 +168,34 @@ describe('TextBoxProperties', function () {
     });
 
     it('changeBorder, deselect last side, css classes set properly and border set to none', function () {
-        $('body').append('<div id="border-none"></div>');
-        $('body').append('<div id="border-black-round" class="selectedIcon"></div>');
-        $('body').append('<div id="bordertop"></div>');
-        $('body').append('<div id="borderright"></div>');
-        $('body').append('<div id="borderbottom"></div>');
-        $('body').append('<div id="borderleft"></div>');
+        $('#testTarget').addClass('bloom-borderstyle-black-round');
+        $('#testTarget').addClass('bloom-top-border-off');
+        $('#testTarget').addClass('bloom-right-border-off');
+        $('#testTarget').addClass('bloom-left-border-off');
+
+        // this group is used by the code to know which buttons must only have one in their group selected
+        $('body').append('<div id="borderstyle-group">');
+        // these divs represent the buttons used to select border styles
+        $('#borderstyle-group').append('<div id="borderstyle-none" class="propButton"></div>');
+        $('#borderstyle-group').append('<div id="borderstyle-black-round" class="selectedIcon propButton"></div>');
+        // these four divs represent the buttons used to select border sides
+        $('body').append('<div id="bordertop" class="propButton"></div>');
+        $('body').append('<div id="borderright" class="propButton"></div>');
+        $('body').append('<div id="borderbottom" class="propButton"></div>');
+        $('body').append('<div id="borderleft" class="propButton"></div>');
+
+        // SUT
         dialog.changeBorder($('#testTarget'), false);
 
-        expect($('#testTarget').hasClass('bloom-border-black')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-black-round')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-gray')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-border-gray-round')).toBeFalsy();
+        expect($('#testTarget').hasClass('bloom-borderstyle-black-round')).toBeFalsy();
 
         expect($('#testTarget').hasClass('bloom-top-border-off')).toBeTruthy();
         expect($('#testTarget').hasClass('bloom-right-border-off')).toBeTruthy();
         expect($('#testTarget').hasClass('bloom-bottom-border-off')).toBeTruthy();
         expect($('#testTarget').hasClass('bloom-left-border-off')).toBeTruthy();
 
-        expect($('#border-black-round').hasClass('selectedIcon')).toBeFalsy();
-        expect($('#border-none').hasClass('selectedIcon')).toBeTruthy();
+        expect($('#borderstyle-black-round').hasClass('selectedIcon')).toBeFalsy();
+        expect($('#borderstyle-none').hasClass('selectedIcon')).toBeTruthy();
         expect($('#bordertop').hasClass('selectedIcon')).toBeFalsy();
         expect($('#borderright').hasClass('selectedIcon')).toBeFalsy();
         expect($('#borderbottom').hasClass('selectedIcon')).toBeFalsy();

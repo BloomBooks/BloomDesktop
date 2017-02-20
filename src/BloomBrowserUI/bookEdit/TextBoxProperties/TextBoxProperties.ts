@@ -115,7 +115,7 @@ export default class TextBoxProperties {
 
     getButtonIds() {
         return ['align-top', 'align-center', 'align-bottom',
-            'border-none', 'border-black', 'border-black-round', 'border-gray', 'border-gray-round',
+            'borderstyle-none', 'borderstyle-black', 'borderstyle-black-round', 'borderstyle-gray', 'borderstyle-gray-round',
             'background-none', 'background-light-gray', 'background-gray', 'background-black',
             'bordertop', 'borderleft', 'borderright', 'borderbottom'];
     }
@@ -129,13 +129,14 @@ export default class TextBoxProperties {
 
     setButtonClickActions() {
         var buttonIds = this.getButtonIds();
-        var dialog = this;
         for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
             var button = $('#' + buttonIds[idIndex]);
-            button.click(function () { dialog.buttonClick(this); });
+            button.click(e => this.buttonClick(e.currentTarget));
         }
     }
-    buttonClick(buttonDiv) {
+
+    // set uiChangeOnly to true to change only the appearance of buttons
+    buttonClick(buttonDiv, uiChangeOnly = false) {
         var button = $(buttonDiv);
         var id = button.attr('id');
         var index = id.indexOf('-');
@@ -157,10 +158,13 @@ export default class TextBoxProperties {
                 button.addClass('selectedIcon');
             }
         }
+        if (uiChangeOnly)
+            return;
+
         // Now make it so
         if (id.startsWith('align')) {
             this.changeAlignment();
-        } else if (id.startsWith('border-')) {
+        } else if (id.startsWith('borderstyle-')) {
             this.changeBorder($(this.getAffectedTranslationGroup(this.boxBeingEdited)), true);
         } else if (id.startsWith('border')) {
             this.changeBorder($(this.getAffectedTranslationGroup(this.boxBeingEdited)), false);
@@ -208,16 +212,16 @@ export default class TextBoxProperties {
     initializeBorderStyle() {
         var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
         if (targetGroup) {
-            if (targetGroup.hasClass('bloom-border-black')) {
-                $('#border-black').addClass('selectedIcon');
-            } else if (targetGroup.hasClass('bloom-border-black-round')) {
-                $('#border-black-round').addClass('selectedIcon');
-            } else if (targetGroup.hasClass('bloom-border-gray')) {
-                $('#border-gray').addClass('selectedIcon');
-            } else if (targetGroup.hasClass('bloom-border-gray-round')) {
-                $('#border-gray-round').addClass('selectedIcon');
+            if (targetGroup.hasClass('bloom-borderstyle-black')) {
+                $('#borderstyle-black').addClass('selectedIcon');
+            } else if (targetGroup.hasClass('bloom-borderstyle-black-round')) {
+                $('#borderstyle-black-round').addClass('selectedIcon');
+            } else if (targetGroup.hasClass('bloom-borderstyle-gray')) {
+                $('#borderstyle-gray').addClass('selectedIcon');
+            } else if (targetGroup.hasClass('bloom-borderstyle-gray-round')) {
+                $('#borderstyle-gray-round').addClass('selectedIcon');
             } else {
-                $('#border-none').addClass('selectedIcon');
+                $('#borderstyle-none').addClass('selectedIcon');
             }
 
             if (!targetGroup.hasClass('bloom-top-border-off')) {
@@ -235,37 +239,38 @@ export default class TextBoxProperties {
         }
     }
 
+    // styleChanged is true if the change was to the style of border, false if it involved one of the border side controls
     changeBorder(targetGroup, styleChanged: boolean) {
         if (!targetGroup) {
             return;
         }
-        targetGroup.removeClass('bloom-border-black');
-        targetGroup.removeClass('bloom-border-black-round');
-        targetGroup.removeClass('bloom-border-gray');
-        targetGroup.removeClass('bloom-border-gray-round');
+        targetGroup.removeClass('bloom-borderstyle-black');
+        targetGroup.removeClass('bloom-borderstyle-black-round');
+        targetGroup.removeClass('bloom-borderstyle-gray');
+        targetGroup.removeClass('bloom-borderstyle-gray-round');
         targetGroup.removeClass('bloom-top-border-off');
         targetGroup.removeClass('bloom-right-border-off');
         targetGroup.removeClass('bloom-bottom-border-off');
         targetGroup.removeClass('bloom-left-border-off');
 
-        if (this.anyBorderStyleButtonSelected() && !this.anyBorderSideButtonsSelected()) {
+        if (this.borderStyleIsNotNone() && !this.anyBorderSideSelected()) {
             if (styleChanged) {
                 // The user selected a border style and no sides are selected; select all sides.
                 this.selectAllBorderSideButtons();
             } else {
                 // The user deselected the last border side; select no border.
-                this.selectBorderNoneButton();
+                this.buttonClick($('#borderstyle-none'), true);
             }
         }
 
-        if ($('#border-black').hasClass('selectedIcon')) {
-            targetGroup.addClass('bloom-border-black');
-        } else if ($('#border-black-round').hasClass('selectedIcon')) {
-            targetGroup.addClass('bloom-border-black-round');
-        } else if ($('#border-gray').hasClass('selectedIcon')) {
-            targetGroup.addClass('bloom-border-gray');
-        } else if ($('#border-gray-round').hasClass('selectedIcon')) {
-            targetGroup.addClass('bloom-border-gray-round');
+        if ($('#borderstyle-black').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-borderstyle-black');
+        } else if ($('#borderstyle-black-round').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-borderstyle-black-round');
+        } else if ($('#borderstyle-gray').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-borderstyle-gray');
+        } else if ($('#borderstyle-gray-round').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-borderstyle-gray-round');
         } else if (styleChanged) {
             // The user selected no border; deselect all border sides.
             this.deselectAllBorderSideButtons();
@@ -285,14 +290,14 @@ export default class TextBoxProperties {
         }
     }
 
-    anyBorderStyleButtonSelected(): boolean {
-        return $('#border-black').hasClass('selectedIcon') ||
-            $('#border-black-round').hasClass('selectedIcon') ||
-            $('#border-gray').hasClass('selectedIcon') ||
-            $('#border-gray-round').hasClass('selectedIcon');
+    borderStyleIsNotNone(): boolean {
+        return $('#borderstyle-black').hasClass('selectedIcon') ||
+            $('#borderstyle-black-round').hasClass('selectedIcon') ||
+            $('#borderstyle-gray').hasClass('selectedIcon') ||
+            $('#borderstyle-gray-round').hasClass('selectedIcon');
     }
 
-    anyBorderSideButtonsSelected(): boolean {
+    anyBorderSideSelected(): boolean {
         return $('#bordertop').hasClass('selectedIcon') ||
             $('#borderbottom').hasClass('selectedIcon') ||
             $('#borderleft').hasClass('selectedIcon') ||
@@ -311,14 +316,6 @@ export default class TextBoxProperties {
         $('#borderbottom').removeClass('selectedIcon');
         $('#borderleft').removeClass('selectedIcon');
         $('#borderright').removeClass('selectedIcon');
-    }
-
-    selectBorderNoneButton() {
-        $('#border-none').addClass('selectedIcon');
-        $('#border-black').removeClass('selectedIcon');
-        $('#border-black-round').removeClass('selectedIcon');
-        $('#border-gray').removeClass('selectedIcon');
-        $('#border-gray-round').removeClass('selectedIcon');
     }
 
     initializeBackground() {
