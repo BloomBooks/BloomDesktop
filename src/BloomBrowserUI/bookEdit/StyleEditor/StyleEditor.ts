@@ -634,7 +634,7 @@ export default class StyleEditor {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
 
-                var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">'
+                var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer" style="visibility: hidden;">'
                     + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
                 if (noFormatChange) {
                     var translation = theOneLocalizationManager.getText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.');
@@ -755,9 +755,8 @@ export default class StyleEditor {
                         new WebFXTabPane($('#tabRoot').get(0), false, null);
                     }
                 }
-                var offset = $('#formatButton').offset();
-                toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
-                EditableDivUtils.positionInViewport(toolbar);
+                var orientOnButton = $('#formatButton');
+                EditableDivUtils.positionDialogAndSetDraggable(toolbar, orientOnButton);
                 toolbar.draggable("enable");
 
                 $('html').off('click.toolbar');
