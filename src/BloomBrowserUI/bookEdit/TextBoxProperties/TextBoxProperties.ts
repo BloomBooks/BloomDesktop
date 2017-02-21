@@ -103,6 +103,8 @@ export default class TextBoxProperties {
                     });
                     this.removeButtonSelection();
                     this.initializeAlignment();
+                    this.initializeBorderStyle();
+                    this.initializeBackground();
                     this.setButtonClickActions();
                     this.makeLanguageSelect();
                     this.initializeHintText();
@@ -112,7 +114,10 @@ export default class TextBoxProperties {
     }
 
     getButtonIds() {
-        return ['align-top', 'align-center', 'align-bottom'];
+        return ['align-top', 'align-center', 'align-bottom',
+            'borderstyle-none', 'borderstyle-black', 'borderstyle-black-round', 'borderstyle-gray', 'borderstyle-gray-round',
+            'background-none', 'background-light-gray', 'background-gray', 'background-black',
+            'bordertop', 'borderleft', 'borderright', 'borderbottom'];
     }
 
     removeButtonSelection() {
@@ -126,12 +131,12 @@ export default class TextBoxProperties {
         var buttonIds = this.getButtonIds();
         for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
             var button = $('#' + buttonIds[idIndex]);
-            button.click((event)=> {
-                this.buttonClick(event.target.parentElement);
-            });
+            button.click(e => this.buttonClick(e.currentTarget));
         }
     }
-    buttonClick(buttonDiv) {
+
+    // set uiChangeOnly to true to change only the appearance of buttons
+    buttonClick(buttonDiv, uiChangeOnly = false) {
         var button = $(buttonDiv);
         var id = button.attr('id');
         var index = id.indexOf('-');
@@ -141,22 +146,30 @@ export default class TextBoxProperties {
             var group = id.substring(0, index);
             $('.propButton').each((index, b) => {
                 var item = $(b);
-                if (b !== button.get(0) && item.attr('id').startsWith(group)) {
+                if (b !== button.get(0) && item.attr('id').startsWith(group + '-')) {
                     item.removeClass('selectedIcon');
                 }
             });
         } else {
             // button is not part of a group, so must toggle
-            // (not used yet)
-            // if (button.hasClass('selectedIcon')) {
-            //     button.removeClass('selectedIcon');
-            // } else {
-            //     button.addClass('selectedIcon');
-            // }
+            if (button.hasClass('selectedIcon')) {
+                button.removeClass('selectedIcon');
+            } else {
+                button.addClass('selectedIcon');
+            }
         }
+        if (uiChangeOnly)
+            return;
+
         // Now make it so
         if (id.startsWith('align')) {
             this.changeAlignment();
+        } else if (id.startsWith('borderstyle-')) {
+            this.changeBorder($(this.getAffectedTranslationGroup(this.boxBeingEdited)), true);
+        } else if (id.startsWith('border')) {
+            this.changeBorder($(this.getAffectedTranslationGroup(this.boxBeingEdited)), false);
+        } else if (id.startsWith('background')) {
+            this.changeBackground($(this.getAffectedTranslationGroup(this.boxBeingEdited)));
         }
     }
 
@@ -186,13 +199,146 @@ export default class TextBoxProperties {
     changeAlignment() {
         var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
         targetGroup.removeClass('bloom-vertical-align-center');
-        targetGroup.removeClass('bloom-vertical-align-bottom')
+        targetGroup.removeClass('bloom-vertical-align-bottom');
         if (targetGroup) {
             if ($('#align-center').hasClass('selectedIcon')) {
-                targetGroup.addClass('bloom-vertical-align-center');;
+                targetGroup.addClass('bloom-vertical-align-center');
             } else if ($('#align-bottom').hasClass('selectedIcon')) {
-                targetGroup.addClass('bloom-vertical-align-bottom');;
+                targetGroup.addClass('bloom-vertical-align-bottom');
             } // else leave it missing.
+        }
+    }
+
+    initializeBorderStyle() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        if (targetGroup) {
+            if (targetGroup.hasClass('bloom-borderstyle-black')) {
+                $('#borderstyle-black').addClass('selectedIcon');
+            } else if (targetGroup.hasClass('bloom-borderstyle-black-round')) {
+                $('#borderstyle-black-round').addClass('selectedIcon');
+            } else if (targetGroup.hasClass('bloom-borderstyle-gray')) {
+                $('#borderstyle-gray').addClass('selectedIcon');
+            } else if (targetGroup.hasClass('bloom-borderstyle-gray-round')) {
+                $('#borderstyle-gray-round').addClass('selectedIcon');
+            } else {
+                $('#borderstyle-none').addClass('selectedIcon');
+            }
+
+            if (!targetGroup.hasClass('bloom-top-border-off')) {
+                $('#bordertop').addClass('selectedIcon');
+            }
+            if (!targetGroup.hasClass('bloom-right-border-off')) {
+                $('#borderright').addClass('selectedIcon');
+            }
+            if (!targetGroup.hasClass('bloom-bottom-border-off')) {
+                $('#borderbottom').addClass('selectedIcon');
+            }
+            if (!targetGroup.hasClass('bloom-left-border-off')) {
+                $('#borderleft').addClass('selectedIcon');
+            }
+        }
+    }
+
+    // styleChanged is true if the change was to the style of border, false if it involved one of the border side controls
+    changeBorder(targetGroup, styleChanged: boolean) {
+        if (!targetGroup) {
+            return;
+        }
+        targetGroup.removeClass('bloom-borderstyle-black');
+        targetGroup.removeClass('bloom-borderstyle-black-round');
+        targetGroup.removeClass('bloom-borderstyle-gray');
+        targetGroup.removeClass('bloom-borderstyle-gray-round');
+        targetGroup.removeClass('bloom-top-border-off');
+        targetGroup.removeClass('bloom-right-border-off');
+        targetGroup.removeClass('bloom-bottom-border-off');
+        targetGroup.removeClass('bloom-left-border-off');
+
+        if (this.borderStyleIsNotNone() && !this.anyBorderSideSelected()) {
+            if (styleChanged) {
+                // The user selected a border style and no sides are selected; select all sides.
+                this.selectAllBorderSideButtons();
+            } else {
+                // The user deselected the last border side; select no border.
+                this.buttonClick($('#borderstyle-none'), true);
+            }
+        }
+
+        if ($('#borderstyle-black').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-borderstyle-black');
+        } else if ($('#borderstyle-black-round').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-borderstyle-black-round');
+        } else if ($('#borderstyle-gray').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-borderstyle-gray');
+        } else if ($('#borderstyle-gray-round').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-borderstyle-gray-round');
+        } else if (styleChanged) {
+            // The user selected no border; deselect all border sides.
+            this.deselectAllBorderSideButtons();
+        }
+
+        if (!$('#bordertop').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-top-border-off');
+        }
+        if (!$('#borderright').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-right-border-off');
+        }
+        if (!$('#borderbottom').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-bottom-border-off');
+        }
+        if (!$('#borderleft').hasClass('selectedIcon')) {
+            targetGroup.addClass('bloom-left-border-off');
+        }
+    }
+
+    borderStyleIsNotNone(): boolean {
+        return $('#borderstyle-black').hasClass('selectedIcon') ||
+            $('#borderstyle-black-round').hasClass('selectedIcon') ||
+            $('#borderstyle-gray').hasClass('selectedIcon') ||
+            $('#borderstyle-gray-round').hasClass('selectedIcon');
+    }
+
+    anyBorderSideSelected(): boolean {
+        return $('#bordertop').hasClass('selectedIcon') ||
+            $('#borderbottom').hasClass('selectedIcon') ||
+            $('#borderleft').hasClass('selectedIcon') ||
+            $('#borderright').hasClass('selectedIcon');
+    }
+
+    selectAllBorderSideButtons() {
+        $('#bordertop').addClass('selectedIcon');
+        $('#borderbottom').addClass('selectedIcon');
+        $('#borderleft').addClass('selectedIcon');
+        $('#borderright').addClass('selectedIcon');
+    }
+
+    deselectAllBorderSideButtons() {
+        $('#bordertop').removeClass('selectedIcon');
+        $('#borderbottom').removeClass('selectedIcon');
+        $('#borderleft').removeClass('selectedIcon');
+        $('#borderright').removeClass('selectedIcon');
+    }
+
+    initializeBackground() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        if (targetGroup) {
+            if (targetGroup.hasClass('bloom-background-gray')) {
+                $('#background-gray').addClass('selectedIcon');
+            } else {
+                $('#background-none').addClass('selectedIcon');
+            }
+        }
+    }
+
+    changeBackground(targetGroup) {
+        if (targetGroup) {
+            targetGroup.removeClass('bloom-background-none');
+            targetGroup.removeClass('bloom-background-gray');
+
+            if ($('#background-gray').hasClass('selectedIcon')) {
+                targetGroup.addClass('bloom-background-gray');
+            } else {
+                targetGroup.addClass('bloom-background-none');
+            }
         }
     }
 
@@ -221,8 +367,8 @@ export default class TextBoxProperties {
 
     makeLanguageSelect() {
         // items comes back as something like languages: [{label: 'English', tag: 'en'},{label: 'French', tag: 'fr'} ]
-        axios.get('/bloom/uiLanguages').then(result=> {
-            var items:Array<any> = (<any>result.data).languages;
+        axios.get('/bloom/uiLanguages').then(result => {
+            var items: Array<any> = (<any>result.data).languages;
             this.makeSelectItems(items, 'en', 'lang-select');
         });
         $('#lang-select').change(e => {
@@ -256,7 +402,7 @@ export default class TextBoxProperties {
             }
             result += '<option value="' + items[i].tag + '"' + selected + '>' + text + '</option>';
         }
-        var parent = $('#'+id);
+        var parent = $('#' + id);
         parent.html(result);
     }
 
@@ -264,10 +410,10 @@ export default class TextBoxProperties {
         // By default, ui-draggable makes any click in the whole dialog an attempt to drag
         // the dialog around. We need to suppress this so the user can click in the hint
         // box and type.
-        $('#hint-content').click((e:Event)=> e.stopPropagation());
-        $('#hint-content').mousedown((e:Event)=> e.stopPropagation());
-        $('#hint-content').mouseup((e:Event)=> e.stopPropagation());
-        $('#hint-content').mousemove((e:Event)=> e.stopPropagation());
+        $('#hint-content').click((e: Event) => e.stopPropagation());
+        $('#hint-content').mousedown((e: Event) => e.stopPropagation());
+        $('#hint-content').mouseup((e: Event) => e.stopPropagation());
+        $('#hint-content').mousemove((e: Event) => e.stopPropagation());
     }
 
     initializeHintText() {
@@ -280,13 +426,13 @@ export default class TextBoxProperties {
             let lang = $('#lang-select').val();
             let text = $('#hint-content').text();
             let targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
-            var langLabel = targetGroup.find('label[lang=' + lang+ ']');
+            var langLabel = targetGroup.find('label[lang=' + lang + ']');
             if (!text) {
                 langLabel.remove(); // don't let empty ones hang around
             } else {
                 if (langLabel.length === 0) {
                     targetGroup.prepend('<label class="bubble" lang="' + lang + '"></label>');
-                    langLabel = targetGroup.find('label[lang=' + lang+ ']');
+                    langLabel = targetGroup.find('label[lang=' + lang + ']');
                 }
                 langLabel.text(text);
             }
@@ -295,11 +441,10 @@ export default class TextBoxProperties {
 
     setHintTextForLang(lang: string) {
         var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
-        var langLabel = targetGroup.find('label[lang=' + lang+ ']');
+        var langLabel = targetGroup.find('label[lang=' + lang + ']');
         if (langLabel.length > 0) {
             $('#hint-content').text(langLabel.text());
-        }
-        else {
+        } else {
             $('#hint-content').text('');
         }
     }

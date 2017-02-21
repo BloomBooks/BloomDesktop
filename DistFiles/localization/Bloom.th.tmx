@@ -921,7 +921,7 @@
         <seg>ถ้าคุณต้องการที่ใดที่หนึ่งที่จะนำข้อมูลเพิ่มเติมเกี่ยวกับหนังสือเล่มนี้ คุณสามารถใช้หน้านี้ซึ่งเป็นด้านนอกของฝาหลัง</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Background">
+    <tu tuid="EditTab.TextBoxProperties.Background">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Background</seg>
@@ -936,15 +936,6 @@
       </tuv>
       <tuv xml:lang="th">
         <seg>เปิด Html ใช้ในการสร้างรูปแบบไฟล์ PDF นี้ใน Chrome (ต้องอยู่บนเส้นทาง)</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Borders">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Borders</seg>
-      </tuv>
-      <tuv xml:lang="th">
-        <seg>เส้นขอบ</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CannotChangeCopyright">

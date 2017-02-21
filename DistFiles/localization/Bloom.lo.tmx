@@ -921,7 +921,7 @@
         <seg>ຖ້າຫາກວ່າທ່ານຕ້ອງການເພື່ອເຮັດໃຫ້ຂໍ້ມູນຂ່າວສານເພີ່ມເຕີມກ່ຽວກັບປື້ມຫົວນີ້. ທ່ານສາມາດໃຊ້ຫນ້ານີ້, ຊຶ່ງເປັນນອກຂອງການປົກຫຸ້ມຂອງກັບຄືນໄປບ່ອນ.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Background">
+    <tu tuid="EditTab.TextBoxProperties.Background">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Background</seg>
@@ -936,15 +936,6 @@
       </tuv>
       <tuv xml:lang="lo">
         <seg>ເປີດ Html ທີ່ນໍາໃຊ້ເພື່ອເຮັດໃຫ້ PDF ນີ້, ໃນ Chrome (ຕ້ອງເປັນໄປຕາມເສັ້ນທາງ)</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Borders">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Borders</seg>
-      </tuv>
-      <tuv xml:lang="lo">
-        <seg>ຊາຍແດນ</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CannotChangeCopyright">
