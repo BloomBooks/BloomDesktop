@@ -139,7 +139,7 @@ describe('TextBoxProperties', function () {
         expect($('#borderleft').hasClass('selectedIcon')).toBeTruthy();
     });
 
-    it('changeBorder, deselect side, css classes set properly', function () {
+    it('changeBorder, deselect bottom side, border style unchanged and bottom border turned off', function () {
         $('#testTarget').addClass('bloom-borderstyle-black-round');
 
         // these divs represent the buttons used to select border styles
@@ -148,23 +148,25 @@ describe('TextBoxProperties', function () {
         // these four divs represent the buttons used to select border sides
         $('body').append('<div id="bordertop" class="selectedIcon"></div>');
         $('body').append('<div id="borderright" class="selectedIcon"></div>');
+        // here we mock that the user clicked the borderbottom button, thereby removing the selectedIcon class
         $('body').append('<div id="borderbottom"></div>');
         $('body').append('<div id="borderleft" class="selectedIcon"></div>');
 
         // SUT
         dialog.changeBorder($('#testTarget'), false);
 
+        // these all remain the same as expected
         expect($('#testTarget').hasClass('bloom-borderstyle-black-round')).toBeTruthy();
-
         expect($('#testTarget').hasClass('bloom-top-border-off')).toBeFalsy();
         expect($('#testTarget').hasClass('bloom-right-border-off')).toBeFalsy();
-        expect($('#testTarget').hasClass('bloom-bottom-border-off')).toBeTruthy();
         expect($('#testTarget').hasClass('bloom-left-border-off')).toBeFalsy();
-
         expect($('#bordertop').hasClass('selectedIcon')).toBeTruthy();
         expect($('#borderright').hasClass('selectedIcon')).toBeTruthy();
         expect($('#borderbottom').hasClass('selectedIcon')).toBeFalsy();
         expect($('#borderleft').hasClass('selectedIcon')).toBeTruthy();
+
+        // this is added by changeBorder
+        expect($('#testTarget').hasClass('bloom-bottom-border-off')).toBeTruthy();
     });
 
     it('changeBorder, deselect last side, css classes set properly and border set to none', function () {
