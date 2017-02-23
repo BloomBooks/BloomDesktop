@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Globalization;
-using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
@@ -16,7 +13,6 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
-using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using Messir.Windows.Forms;
@@ -290,33 +286,25 @@ namespace Bloom.Workspace
 		private void SetupUILanguageMenu()
 		{
 			_uiLanguageMenu.DropDownItems.Clear();
-			foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
+			UiMenuRenderer.SetupUiMenu(_uiLanguageMenu, (sender, args) =>
 			{
-				string englishName="";
-				var langaugeNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en","fr","es","it","tpi"};
-				if((lang.EnglishName != lang.NativeName) && !(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
+				var item = sender as ToolStripItem;
+				if (item == null)
 				{
-					englishName = " (" + lang.EnglishName + ")";
+					return; // shouldn't happen
 				}
-				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName + englishName);
-				item.Tag = lang;
-				item.Click += new EventHandler((a, b) =>
-												{
-													L10NSharp.LocalizationManager.SetUILanguage(((CultureInfo)item.Tag).IetfLanguageTag, true);
-													Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
-													item.Select();
-													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
-													SaveOriginalButtonTexts();
-													_localizationChangedEvent.Raise(null);
-													AdjustButtonTextsForCurrentSize();
-												});
-				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
-				{
-					//doesn't do anything item.Select();
+				var tag = item.Tag as CultureInfo;
+				if (tag == null)
+					return; // shouldn't happen
 
-					_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
-				}
-			}
+				LocalizationManager.SetUILanguage(tag.IetfLanguageTag, true);
+				Settings.Default.UserInterfaceLanguage = tag.IetfLanguageTag;
+				item.Select();
+				_uiLanguageMenu.Text = ((CultureInfo)item.Tag).NativeName;
+				SaveOriginalButtonTexts();
+				_localizationChangedEvent.Raise(null);
+				AdjustButtonTextsForCurrentSize();
+			});
 
 			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
 			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.MoreLanguagesMenuItem", "More..."));
