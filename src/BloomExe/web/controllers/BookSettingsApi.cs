@@ -64,9 +64,7 @@ namespace Bloom.Api
 
 		private void UpdateBookTemplateMode(bool isTemplateBook)
 		{
-			_bookSelection.CurrentSelection.SetType(isTemplateBook
-				? Book.Book.BookType.Template
-				: Book.Book.BookType.Publication);
+			_bookSelection.CurrentSelection.SwitchSuitableForMakingShells(isTemplateBook);
 
 			/* TODO (non-exhaustive)
 			 * For each page, data-page="extra"; but that should be an option on each page.

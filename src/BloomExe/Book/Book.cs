@@ -152,8 +152,6 @@ namespace Bloom.Book
 			if (handler != null) handler(this, e);
 		}
 
-		public enum BookType { Unknown, Template, Shell, Publication }
-
 		/// <summary>
 		/// If we have to just show title in one language, which should it be?
 		/// Note, this isn't going to be the best for choosing a filename, which we are more likely to want in a national language
@@ -1307,17 +1305,19 @@ namespace Bloom.Book
 
 		//discontinuing this for now becuase we need to know whether to show the book when all we have is a bookinfo, not access to the
 		//dom like this requires. We'll just hard code the names of the experimental things.
-//        public bool IsExperimental
-//        {
-//            get
-//            {
-//                string metaValue = OurHtmlDom.GetMetaValue("experimental", "false");
-//                return metaValue == "true" || metaValue == "yes";
-//            }
-//        }
+		//        public bool IsExperimental
+		//        {
+		//            get
+		//            {
+		//                string metaValue = OurHtmlDom.GetMetaValue("experimental", "false");
+		//                return metaValue == "true" || metaValue == "yes";
+		//            }
+		//        }
 
 		/// <summary>
-		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells
+		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells.
+		/// Note: the setter on this property just sets the flag to the appropriate state. To actually change
+		/// a book to or from a template, use SwitchSuitableForMakingShells()
 		/// </summary>
 		public bool IsSuitableForMakingShells
 		{
@@ -2204,7 +2204,7 @@ namespace Bloom.Book
 			{
 				// A template book is considered to be its own source, so update the source to match the
 				// current book location.
-				PageTemplateSource = System.IO.Path.GetFileNameWithoutExtension(GetPathHtmlFile());
+				PageTemplateSource = Path.GetFileName(FolderPath);
 			}
 			_storage.Save();
 		}
@@ -2246,9 +2246,9 @@ namespace Bloom.Book
 			_bookData.Set("topic",englishTopicAsKey,"en");
 		}
 
-		public void SetType(BookType bookType)
+		public void SwitchSuitableForMakingShells(bool isSuitable)
 		{
-			if (bookType == BookType.Template)
+			if (isSuitable)
 			{
 				IsSuitableForMakingShells = true;
 				RecordedAsLockedDown = false;

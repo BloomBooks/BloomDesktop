@@ -113,6 +113,8 @@ namespace Bloom.web.controllers
 				caption = caption.Substring(0, caption.Length - "-landscape".Length);
 
 			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
+			// The Trim is needed because template may now be created by users editing the pageLabel div, and those
+			// labels typically include a trailing newline.
 			IPage templatePage = templateBook.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+").Trim() == caption);
 			if (templatePage == null)
 				templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
