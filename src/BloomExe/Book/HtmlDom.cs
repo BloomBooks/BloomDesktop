@@ -840,7 +840,14 @@ namespace Bloom.Book
 			{
 				if (styleString.Length < minStyleLength)
 					continue; // not sure how we'd get this... but just in case.
-				keyDict.Add(GetClassKeyFromStyleString(styleString, includeLangAttr), styleString);
+				// At least when includeLangAttr is false, we may easily get the same key twice,
+				// e.g. .normal-style and .normal-style[lang='eng'] will reduce to the same key.
+				// This doesn't matter for the current caller with includeLangAttr false...it only
+				// wants the keys. In the other case, we might be losing something...but dropping
+				// part of a style definition is probably better than crashing, and since each
+				// definition typically includes everything, I think the last one would win
+				// in the HTML, anyway.
+				keyDict[GetClassKeyFromStyleString(styleString, includeLangAttr)] = styleString;
 			}
 			return keyDict;
 		}
