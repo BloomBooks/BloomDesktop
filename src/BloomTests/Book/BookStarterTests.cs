@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using Bloom;
@@ -595,12 +596,6 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi' and text()='Tambu Sut']", 1);
 		}
 
-
-
-
-
-
-
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
 		{
@@ -633,6 +628,35 @@ namespace BloomTests.Book
 			Assert.IsFalse(Directory.Exists(goodPath), "Should not have left the folder there, after a failed book creation");
 		}
 
+		// The work of moving the copyright and license to a spot reserved for an original
+		// is done by BookCopyrightAndLicense, and is thoroughly tested on that class. Here,
+		// we just want to have one test that operates on an actual shell that we ship.
+		// What we're testing: when we use a translation, it may have its own copyright. However that doesn't mean that we ever replace
+		// the "original" copyright and license. Those stick with the book through all adaptations.
+		[Test]
+		public void CreateBookOnDiskFromTemplate_SourceIsAlsoAnAdaptation_OriginalCopyrightAndLicensePreserved()
+		{
+			var firstAdaptation = GetFolderPathToCreatedBook("The Moon and the Cap");
+			var secondAdaptation = _starter.CreateBookOnDiskFromTemplate(firstAdaptation, _projectFolder.Path);
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(secondAdaptation)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']"+
+				"//div[@data-book='originalCopyrightAndLicense' and @lang='*' and "+
+				"contains(text(), '"+"Adapted from original, Copyright © 2007, Pratham Books"+"')]", 1);
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(secondAdaptation)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']" +
+				"//div[@data-book='originalCopyrightAndLicense' and @lang='*' and " +
+				"contains(text(), '" + ("Released under " + "CC-BY 4.0")+"')]", 1);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_SourceHasExraLicenseTerms_TermsPreservedInOriginal()
+		{
+			Assert.IsTrue(false, "todo");
+		}
+
+		private string GetFolderPathToCreatedBook(string sourceBookName)
+		{
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, sourceBookName);
+			return _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+		}
 
 		private string GetShellBookFolder()
 		{

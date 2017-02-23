@@ -177,8 +177,9 @@ namespace Bloom.Book
 			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:collectionSettings.LicenseDescriptionLanguagePriorities.ToArray());
 			CopyItemToFieldsInPages(dom, "licenseNotes");
 			CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute:"src");
+			CopyItemToFieldsInPages(dom, "originalCopyrightAndLicense");
 
-			if(!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
+			if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
 				UpdateBookLicenseIcon(GetMetadata(dom), bookFolderPath);
 		}
 
@@ -276,6 +277,46 @@ namespace Bloom.Book
 			Logger.WriteEvent("LicenseUrl: " + dom.GetBookSetting("licenseUrl"));
 			Logger.WriteEvent("LicenseNotes: " + dom.GetBookSetting("licenseNotes"));
 			Logger.WriteEvent("");
+		}
+
+		/// <summary>
+		/// Copy the copyright & license info to the originalCopyrightAndLicense,
+		/// then remove the copyright so the translator can put in their own if they
+		/// want. We retain the license, but the translator is allowed to change that.
+		/// </summary>
+		public static void SetOriginalCopyrightAndLicense(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings)
+		{
+			if (bookData.GetMultiTextVariableOrEmpty("originalCopyrightAndLicense").Count > 0)
+			{
+				return; //leave the original there.
+			}
+			var metadata = BookCopyrightAndLicense.GetMetadata(dom);
+			var licenseDescriptor = "unknown";
+			string idOfLanguageUsed;
+			var languagePriorityIds = collectionSettings.LicenseDescriptionLanguagePriorities;
+			if (metadata.License is CreativeCommonsLicense)
+			{
+				//todo l10n
+				licenseDescriptor = "Released under " + metadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
+			}
+			else
+			{
+				licenseDescriptor = "Released under " + metadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
+			}
+
+			Console.WriteLine(licenseDescriptor);
+			string copyrightNotice = "";
+			if (string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
+			{
+				copyrightNotice = "Adapted from original without a copyright notice. " + licenseDescriptor;
+			}
+			else
+			{
+				copyrightNotice = "Adapted from original, " + metadata.CopyrightNotice.Trim() + ". " + licenseDescriptor;
+			}
+			Console.WriteLine(copyrightNotice);
+			bookData.Set("originalCopyrightAndLicense", copyrightNotice, "*");
+			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
 		}
 	}
 }

@@ -1029,10 +1029,10 @@ namespace Bloom.Book
 		public MultiTextBase GetBookSetting(string key)
 		{
 			var result = new MultiTextBase();
-			foreach(XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']"))
+			foreach(XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "' or @data-derived='" + key + "']"))
 			{
 				var lang = e.GetAttribute("lang");
-				result.SetAlternative(lang ?? "", e.InnerXml);
+				result.SetAlternative(lang ?? "", e.InnerXml.Trim());
 			}
 			return result;
 		}
@@ -1041,7 +1041,7 @@ namespace Bloom.Book
 		{
 			foreach(
 				XmlElement e in
-					RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']").Cast<XmlElement>().ToList())
+					RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "' or @data-derived='" + key + "']").Cast<XmlElement>().ToList())
 			{
 				e.ParentNode.RemoveChild(e);
 			}
