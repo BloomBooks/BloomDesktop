@@ -55,7 +55,9 @@ namespace Bloom
 		/// </summary>
 		public IEnumerable<string> GetSourceBookPaths()
 		{
-			return GetCollectionFolders()
+			// The distinct seems to be needed in case a shortcut points to a folder that's already
+			// in the list.
+			return GetCollectionFolders().Distinct()
 				.SelectMany(Directory.GetDirectories)
 					.Select(BookStorage.FindBookHtmlInFolder);
 		}

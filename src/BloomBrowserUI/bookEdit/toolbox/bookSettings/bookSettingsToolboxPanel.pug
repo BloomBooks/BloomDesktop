@@ -24,8 +24,8 @@ html
 				.showOnlyWhenBookWouldNormallyBeLocked
 					+text('EditTab.Toolbox.Settings.UnlockShellBookIntroductionText','Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.')
 					+checkbox('unlockShellBook', 'EditTab.Toolbox.Settings.Unlock', 'Allow changes to this shellbook')
-				//- .showOnlyIfBookIsNeverLocked
-				//- 	+text('EditTab.Toolbox.Settings.IsTemplateBookIntroductionText','When you click "Add Page", you can choose from pages contained in template books. To make this a template book, tick this checkbox.')
-				//- 	+checkbox('isTemplateBook', 'EditTab.Toolbox.Settings.IsTemplateBook', 'This is a template book.')
+				.showOnlyIfBookIsNeverLocked
+					+text('EditTab.Toolbox.Settings.IsTemplateBookIntroductionText','When you click "Add Page", you can choose from pages contained in template books. To make this a template book, tick this checkbox.')
+					+checkbox('isTemplateBook', 'EditTab.Toolbox.Settings.IsTemplateBook', 'This is a template book.')
 				a(data-i18n='EditTab.Toolbox.Zoom.Reset', href="javascript:window.FrameExports.handleResetZoom(this);") Reset Zoom
 

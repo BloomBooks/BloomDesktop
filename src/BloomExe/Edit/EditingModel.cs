@@ -1147,6 +1147,7 @@ namespace Bloom.Edit
 
 		public void ShowAddPageDialog()
 		{
+			SaveNow(); // At least in template mode, the current page shows in the Add Page dialog, and should be current.
 			_view.ShowAddPageDialog();
 		}
 

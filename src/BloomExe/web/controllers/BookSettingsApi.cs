@@ -43,11 +43,13 @@ namespace Bloom.Api
 					//an "edit settings", or a "book settings", or a combination of them.
 					settings = DynamicJson.Parse(request.RequiredPostJson());
 					_bookSelection.CurrentSelection.TemporarilyUnlocked = settings["unlockShellBook"];
+					// It's a bit wasteful to raise this twice...but we need to save any changes the user made to the page,
+					// and we have no access to put the editable DOM into the right template/non-template state.
+					// This first refresh saves any changes.
 					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
-					if(((DynamicJson)settings).IsDefined("isTemplateBook"))
-					{
-						UpdateBookTemplateMode(settings.isTemplateBook);
-					}
+					UpdateBookTemplateMode(settings.isTemplateBook);
+					// Now we need to update the active version of the page with possible new template settings
+					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
 					request.Succeeded();
 					break;
 				default:
@@ -57,20 +59,20 @@ namespace Bloom.Api
 
 		private bool GetIsBookATemplate()
 		{
-			return _bookSelection.CurrentSelection.BookInfo.Type == Book.Book.BookType.Template;
+			return _bookSelection.CurrentSelection.IsSuitableForMakingShells;
 		}
 
 		private void UpdateBookTemplateMode(bool isTemplateBook)
 		{
-			_bookSelection.CurrentSelection.BookInfo.Type = isTemplateBook ?
-			Book.Book.BookType.Template : Book.Book.BookType.Publication;
+			_bookSelection.CurrentSelection.SetType(isTemplateBook
+				? Book.Book.BookType.Template
+				: Book.Book.BookType.Publication);
 
 			/* TODO (non-exhaustive)
-			 * Actually make changes to the pages of the book.
-			 * Don't lose setting after reopening book.
+			 * For each page, data-page="extra"; but that should be an option on each page.
 			 * Add visual feedback that this is a template
 			 * Add UI pointer to more help on this topic.
-			 * 
+			 *
 			 * Other things to think about/test
 				User modified styles
 				filename endcoding tests

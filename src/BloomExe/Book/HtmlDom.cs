@@ -920,6 +920,15 @@ namespace Bloom.Book
 		}
 		*/
 
+		public static void MakeLabelEditable(HtmlDom dom)
+		{
+			var label = dom.SelectSingleNode("//div[contains(@class,'pageLabel')]");
+			if (label != null)
+			{
+				label.SetAttribute("contenteditable", "true");
+			}
+		}
+
 		public static void ProcessPageAfterEditing(XmlElement destinationPageDiv, XmlElement edittedPageDiv)
 		{
 			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
@@ -933,6 +942,12 @@ namespace Bloom.Book
 				var node in
 					edittedPageDiv.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
 				node.ParentNode.RemoveChild(node);
+			// If we tricked the label into being editable turn it off
+			var label = edittedPageDiv.SelectSingleNode("//div[contains(@class,'pageLabel')]") as XmlElement;
+			if (label != null)
+			{
+				label.RemoveAttribute("contenteditable");
+			}
 
 			destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
@@ -1239,5 +1254,42 @@ namespace Bloom.Book
 				.Replace("<br />", Environment.NewLine)
 				.Replace("<br>", Environment.NewLine);
 		}
+
+		private IEnumerable<XmlElement> GetContentPageElements()
+		{
+			return _dom.SafeSelectNodes(
+					"/html/body/div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]")
+				.OfType<XmlElement>();
+		}
+
+		/// <summary>
+		/// Can switch a page from being a template page or back to a normal page.
+		/// </summary>
+		/// <param name="areTemplatePages"></param>
+		public void MarkPagesWithTemplateStatus(bool areTemplatePages)
+		{
+			foreach(var page in GetContentPageElements())
+			{
+				MakePageWithTemplateStatus(areTemplatePages, page);
+			}
+		}
+
+		/// <summary>
+		/// Can switch a page from being a template page or back to a normal page.
+		/// </summary>
+		public static void MakePageWithTemplateStatus(bool isTemplatePage, XmlElement page)
+		{
+			page.SetAttribute("data-page", isTemplatePage ? "extra" : "");
+			var label = page.SelectSingleNode("div[contains(@class,'pageLabel')]") as XmlElement;
+			if(label != null)
+			{
+				if(isTemplatePage)
+				{
+					// Assume that they are going to change the name. Note as of 3.9 at least, we don't have a way of localizing these.
+					label.RemoveAttribute("data-i18n");
+				}
+			}
+		}
 	}
+
 }

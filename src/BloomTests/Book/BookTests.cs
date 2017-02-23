@@ -880,8 +880,6 @@ namespace BloomTests.Book
 
 			var book = CreateBook();
 
-			//only shells & templates get updated (xmatter injected)
-			book.TypeOverrideForUnitTests = Bloom.Book.Book.BookType.Shell;
 			var imagePath = book.FolderPath.CombineForPath("theCover.png");
 			MakeSamplePngImageWithMetadata(imagePath);
 
@@ -1477,5 +1475,45 @@ namespace BloomTests.Book
 
 			return templatePage;
 		}
+
+		[Test]
+		public void SetType_WasPublicationSetToTemplate_HasTemplateFeatures()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div id='bloomDataDiv'>
+					</div>
+					<div class='bloom-page bloom-frontMatter' id='1'>
+						<div class='pageLabel'></div>
+					</div>
+					<div class='bloom-page' id='2'>
+						<div class='pageLabel'></div>
+					</div>
+					<div class='bloom-page' id='3'>
+						<div class='pageLabel'></div>
+					</div>
+					<div class='bloom-page bloom-backMatter' id='4'> </div>
+				  </body></html>");
+
+			var book = CreateBook();
+			book.SetType(Bloom.Book.Book.BookType.Template);
+			Assert.IsTrue(book.BookInfo.IsSuitableForMakingShells);
+			Assert.IsFalse(book.LockedDown);
+
+			//don't change the number of pages
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 4);
+
+			//Set contenteditables of page labels of content pages only
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='1']//div[@contenteditable]", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@contenteditable='true']", 2);
+
+			//Mark content pages as extra (but not xmatter pages)
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-page='extra']", 2);
+
+			//Should point to itself as the pageTemplateSource
+			book.Save();
+			Assert.AreEqual(Path.GetFileName(book.FolderPath), book.OurHtmlDom.GetMetaValue("pageTemplateSource", ""));
+		}
+
 	}
 }

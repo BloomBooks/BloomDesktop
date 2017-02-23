@@ -82,6 +82,8 @@ namespace Bloom.Api
 		private object I18NLock = new object();
 		// used to synchronize access to various other methods
 		private object SyncObj = new object();
+		// Special lock for making thumbnails. See discussion at the one point of usage.
+		private object ThumbnailSyncObj = new object();
 		private static string _keyToCurrentPage;
 
 		public string CurrentPageContent { get; set; }
@@ -213,7 +215,17 @@ namespace Bloom.Api
 							pair.Key.ToLower()
 						).Success))
 				{
-					lock(SyncObj)
+					// A single synchronization object won't do, because when processing a request to create a thumbnail,
+					// we have to load the HTML page the thumbnail is based on. If the page content somehow includes
+					// an api request (api/branding/image is one example), that request will deadlock if the
+					// api/pageTemplateThumbnail request already has the main lock.
+					// To the best of my knowledge, there's no shared data between the thumbnailing process and any
+					// other api requests, so it seems safe to have one lock that prevents working on multiple
+					// thumbnails at the same time, and one that prevents working on other api requests at the same time.
+					var syncOn = SyncObj;
+					if (localPath.ToLowerInvariant().StartsWith("api/pagetemplatethumbnail"))
+						syncOn = ThumbnailSyncObj;
+					lock(syncOn)
 					{
 						return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
 					}
