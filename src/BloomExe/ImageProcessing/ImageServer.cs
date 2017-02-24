@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Bloom.Api;
 using SIL.IO;
-using SIL.Reporting;
 using Bloom.Properties;
 
 namespace Bloom.ImageProcessing
@@ -28,6 +26,7 @@ namespace Bloom.ImageProcessing
 	/// </summary>
 	public class ImageServer : ServerBase
 	{
+		protected const string OriginalImageMarker = "OriginalImages"; // Inserted into paths to suppress image processing (for simulated pages and PDF creation)
 		private RuntimeImageProcessor _cache;
 		private bool _useCache;
 
@@ -69,8 +68,21 @@ namespace Bloom.ImageProcessing
 
 			var processImage = !isSvg;
 
+			if (imageFile.StartsWith(OriginalImageMarker + "/"))
+			{
+				processImage = false;
+				imageFile = imageFile.Substring((OriginalImageMarker + "/").Length);
+
+				if (!RobustFile.Exists(imageFile))
+				{
+					// We didn't find the file here, and don't want to use the following else if or we could errantly 
+					// find it in the browser root. For example, this outer if (imageFile.StartsWith...) was added because 
+					// we were accidentally finding license.png in a template book. See BL-4290.
+					return false;
+				}
+			}
 			// This happens with the new way we are serving css files
-			if (!RobustFile.Exists(imageFile))
+			else if (!RobustFile.Exists(imageFile))
 			{
 				var fileName = Path.GetFileName(imageFile);
 				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
