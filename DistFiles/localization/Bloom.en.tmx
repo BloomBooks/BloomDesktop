@@ -1251,7 +1251,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.CopyImageIPMetadataQuestion">
-      <note>get this after you edit the metadata of an image</note>
+      <note>Get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
       </tuv>
@@ -3796,7 +3796,7 @@
     <tu tuid="ReaderSetup.SetupAlphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>set up the alphabet for this language.</seg>
+        <seg>Set up the alphabet for this language.</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SightWordHelp">
