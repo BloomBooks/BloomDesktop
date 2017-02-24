@@ -404,8 +404,10 @@ namespace Bloom.Api
 					var bubbleLangs = new List<string>();
 					bubbleLangs.Add(_bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code);
 					bubbleLangs.Add(LocalizationManager.UILanguageId);
-					bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage2);
-					bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage3);
+					if (_bookSelection.CurrentSelection.MultilingualContentLanguage2 != null)
+						bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage2);
+					if (_bookSelection.CurrentSelection.MultilingualContentLanguage3 != null)
+						bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage3);
 					bubbleLangs.AddRange(new [] { "en", "fr", "sp", "ko", "zh-Hans"});
 					// if it isn't available in any of those we'll arbitrarily take the first one.
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new { langs = bubbleLangs }));
