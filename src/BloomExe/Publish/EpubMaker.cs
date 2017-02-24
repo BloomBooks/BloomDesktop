@@ -125,6 +125,8 @@ namespace Bloom.Publish
 			_firstContentPageItem = null;
 			foreach(XmlElement pageElement in Book.GetPageElements())
 			{
+				if (IsBlankPage(pageElement))
+					continue;	// skip blank pages (BL-4288)
 				++pageIndex;
 				var pageDom = MakePageFile(pageElement, pageIndex, firstContentPageIndex);
 				// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
@@ -184,6 +186,55 @@ namespace Bloom.Publish
 					</container>");
 
 			MakeManifest(coverPageImageFile);
+		}
+
+		/// <summary>
+		/// Check whether this page will actually display anything.  Although paper books allow blank pages
+		/// without confusing readers, ePUB books should not have blank pages.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288.
+		/// </remarks>
+		private bool IsBlankPage(XmlElement pageElement)
+		{
+			// Any text in a <p> element will be displayed.
+			foreach (XmlElement para in pageElement.GetElementsByTagName("p"))
+			{
+				if (!String.IsNullOrWhiteSpace(para.InnerText))
+					return false;
+			}
+			// Any real image will be displayed.
+			foreach (XmlElement img in pageElement.GetElementsByTagName("img"))
+			{
+				if (RealImageFileExists(img))
+					return false;
+			}
+			// The copyright is not included in a <p> element but is displayed in the ePUB book.
+			foreach (XmlElement div in pageElement.GetElementsByTagName("div"))
+			{
+				var classes = pageElement.GetAttribute("class");
+				if (classes.Contains("copyright") && classes.Contains("Credits-Page-style"))
+					return false;
+			}
+			return true;
+		}
+
+		/// <summary>
+		/// Check that the image file exists, and is not the place holder image.
+		/// </summary>
+		private bool RealImageFileExists(XmlElement img)
+		{
+			var src = img.GetAttribute("src");
+			if (String.IsNullOrEmpty(src) || src == "placeHolder.png")
+				return false;
+			var url = UrlPathString.CreateFromUrlEncodedString(src);
+			if (url == null || url.PathOnly == null || String.IsNullOrEmpty(url.NotEncoded))
+				return false;
+			var filename = url.PathOnly.NotEncoded;
+			if (String.IsNullOrEmpty(filename))
+				return false;
+			var srcPath = Path.Combine(Book.FolderPath, filename);
+			return RobustFile.Exists(srcPath);
 		}
 
 		private void MakeManifest(string coverPageImageFile)
