@@ -4,13 +4,14 @@
     // The main point of this rule is to override a display:none
     // and make the div visible. Display:flex is needed for
     // possible vertical alignment.
-    display: flex;
+    // But display:flex causes multiple paragraphs to each show in its own column.  (BL-4320)
+    display: block;
 }
 //If not the user can still make it visible:
 .bloom-editable.bloom-visibility-user-on {
-    display: flex;
+    display: block;
 }
-//And the user can alwyas hide it
+//And the user can always hide it
 .bloom-editable.bloom-visibility-user-off {
     display: none !important;
 }
