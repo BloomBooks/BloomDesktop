@@ -31,7 +31,6 @@ namespace Bloom.Api
 	/// thread-safe.</remarks>
 	public class EnhancedImageServer: ImageServer
 	{
-		private const string OriginalImageMarker = "OriginalImages"; // Inserted into simulated page urls to suppress image processing
 		private FileSystemWatcher _sampleTextsWatcher;
 		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
@@ -435,7 +434,7 @@ namespace Bloom.Api
 				var possibleFullImagePath = localPath;
 				// "OriginalImages/" at the beginning means we're generating a pdf and want full images,
 				// but it has nothing to do with the actual file location.
-				if (localPath.StartsWith("OriginalImages/"))
+				if (localPath.StartsWith(OriginalImageMarker + "/"))
 					possibleFullImagePath = localPath.Substring(15);
 				if(RobustFile.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
@@ -609,7 +608,7 @@ namespace Bloom.Api
 		{
 			// BL-2219: "OriginalImages" means we're generating a pdf and want full images,
 			// but it has nothing to do with css files and defeats the following 'if'
-			localPath = localPath.Replace("OriginalImages/", "");
+			localPath = localPath.Replace(OriginalImageMarker + "/", "");
 			// is this request the full path to a real file?
 			if (RobustFile.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
