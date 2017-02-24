@@ -39,27 +39,26 @@ namespace Bloom
 		}
 		public Book.Book FindAndCreateTemplateBookByFullPath(string path)
 		{
-			return FindAndCreateTemplateBook(templateDirectory =>templateDirectory == Path.GetDirectoryName(path));
+			// Given a full path to the HTML file, there's no reason so search.
+			// And sometimes now the template path is to the book itself (when creating a template),
+			// which might be in a vernacular collection, and so not in ANY of the
+			// source collections we search. So just create it directly.
+			// This makes the method name somewhat deceptive. But I was trying not to
+			// disrupt things too badly. And there's still a consistency with the fileName version.
+			return CreateTemplateBookByFolderPath(Path.GetDirectoryName(path));
+		}
+
+		private Book.Book CreateTemplateBookByFolderPath(string folderPath)
+		{
+			return _bookFactory(new BookInfo(folderPath, false), _storageFactory(folderPath));
 		}
 
 		public Book.Book FindAndCreateTemplateBook(Func<string, bool> predicate)
 		{
 			return GetSourceBookFolders()
 				.Where(predicate)
-				.Select(dir => _bookFactory(new BookInfo(dir, false), _storageFactory(dir)))
+				.Select(CreateTemplateBookByFolderPath)
 				.FirstOrDefault();
-		}
-
-		/// <summary>
-		/// Gives paths to the html files for all source books
-		/// </summary>
-		public IEnumerable<string> GetSourceBookPaths()
-		{
-			// The distinct seems to be needed in case a shortcut points to a folder that's already
-			// in the list.
-			return GetCollectionFolders().Distinct()
-				.SelectMany(Directory.GetDirectories)
-					.Select(BookStorage.FindBookHtmlInFolder);
 		}
 
 		/// <summary>
@@ -82,7 +81,7 @@ namespace Bloom
 		/// Look in each of the roots and find the collection folders
 		/// </summary>
 		/// <returns></returns>
-		private IEnumerable<string> GetCollectionFolders()
+		public IEnumerable<string> GetCollectionFolders()
 		{
 			foreach(var root in _sourceRootFolders.Where(Directory.Exists))
 			{

@@ -309,7 +309,7 @@ namespace BloomTests.Book
 		[Test]
 		public void GetEditableHtmlDomForPage_TemplateBook_NonXMatterLabelMadeEditable()
 		{
-			SetDom(@"<div class='bloom-page bloom-frontMatter' id='guid2'>
+			SetDom(@"<div class='bloom-page bloom-frontMatter' id='guid1'>
 						<div class='pageLabel'></div>
 						<p>
 						</p>
@@ -319,7 +319,7 @@ namespace BloomTests.Book
 						<p>
 						</p>
 					</div>
-					<div class='bloom-page bloom-backMatter' id='guid2'>
+					<div class='bloom-page bloom-backMatter' id='guid3'>
 						<div class='pageLabel'></div>
 						<p>
 						</p>
@@ -328,16 +328,16 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			// Even a content page doesn't get this unless it's a template book
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
-			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@class='pageLabel' and @contentEditable='true']");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@class='pageLabel' and @contenteditable='true']");
 			book.IsSuitableForMakingShells = true;
 			// content page in template should get editable label
 			dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='pageLabel' and @contentEditable='true']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='pageLabel' and @contenteditable='true']", 1);
 			// but not in front or back matter.
 			dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
-			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@class='pageLabel' and @contentEditable='true']");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@class='pageLabel' and @contenteditable='true']");
 			dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
-			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@class='pageLabel' and @contentEditable='true']");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@class='pageLabel' and @contenteditable='true']");
 		}
 
 		[Test]
@@ -1520,7 +1520,7 @@ namespace BloomTests.Book
 
 			return templatePage;
 		}
-
+#if UserControlledTemplate
 		[Test]
 		public void SetType_WasPublicationSetToTemplate_HasTemplateFeatures()
 		{
@@ -1588,5 +1588,6 @@ namespace BloomTests.Book
 			//Mark content pages as extra (but not xmatter pages)
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@data-page='extra']");
 		}
+#endif
 	}
 }

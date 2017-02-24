@@ -250,7 +250,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private static void SetBookTitle(BookStorage storage, BookData bookData, bool usingTemplate)
+		private void SetBookTitle(BookStorage storage, BookData bookData, bool usingTemplate)
 		{
 			//This is what we were trying to do: there was a defaultNameForDerivedBooks meta tag in the html
 			//which had no language code. It worked fine for English, e.g., naming new English books
@@ -277,6 +277,18 @@ namespace Bloom.Book
 			if(usingTemplate)
 			{
 				bookData.RemoveAllForms("bookTitle");
+			}
+			// If we're making a Template, we really want its title to include Template
+			// (in hopes the user will keep it at the end so the pages can be used in Add Page)
+			if (storage.MetaData.IsSuitableForMakingShells)
+			{
+				storage.MetaData.Title = "Template";
+				storage.Dom.Title = "Template";
+				storage.Dom.SetBookSetting("bookTitle", "en", "Template");
+				// Yes, we want the English word Template in the vernacular Title. Ugly, but that's
+				// what determines the file name, and that's what determines whether Add Page will
+				// include it.
+				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1Iso639Code, "Template");
 			}
 		}
 

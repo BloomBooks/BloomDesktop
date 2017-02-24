@@ -293,7 +293,7 @@ namespace Bloom.Book
 				// middle of a method in HtmlDom and it's this class that knows about the book being a template
 				// and whether it should be added.
 				// (Note: we don't want this for xmatter pages because they don't function as actual template pages.)
-				HtmlDom.MakeLabelEditable(pageDom);
+				HtmlDom.MakeEditableDomShowAsTemplate(pageDom);
 			}
 			return pageDom;
 		}
@@ -626,7 +626,9 @@ namespace Bloom.Book
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
 				if (templateKey == _cachedTemplateKey && _cachedTemplateBook != null)
 					return _cachedTemplateBook;
-				book = _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
+				// a template book is its own primary template...and might not be found by templateFinder,
+				// since we might be in a vernacular collection that it won't look in.
+				book = IsSuitableForMakingShells ? this : _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
 				_cachedTemplateBook = book;
 				_cachedTemplateKey = templateKey;
 			}

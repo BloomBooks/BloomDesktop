@@ -89,7 +89,7 @@ namespace Bloom.web.controllers
 			var templateBook = _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(templateBookPath);
 			if(templateBook == null)
 			{
-				request.Failed("Could not find template book " + requestData.templateBookUrl);
+				request.Failed("Could not find template book " + templateBookPath);
 				return null;
 			}
 

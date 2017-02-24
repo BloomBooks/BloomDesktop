@@ -58,11 +58,23 @@ namespace Bloom.web.controllers
 			addPageSettings.defaultPageToSelect = _templateInsertionCommand.MostRecentInsertedTemplatePage == null ? "" : _templateInsertionCommand.MostRecentInsertedTemplatePage.Id;
 			addPageSettings.orientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
 
-			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), _sourceCollectionsList.GetSourceBookPaths())
+			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), GetCurrentAndSourceBookPaths())
 				.Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
 			addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor;
 
 			request.ReplyWithJson(JsonConvert.SerializeObject(addPageSettings));
+		}
+
+		/// <summary>
+		/// Gives paths to the html files for all source books and those in the current collection
+		/// </summary>
+		public IEnumerable<string> GetCurrentAndSourceBookPaths()
+		{
+			return new [] {_bookSelection.CurrentSelection.CollectionSettings.FolderPath} // Start with the current collection
+				.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections
+				.Distinct() //seems to be needed in case a shortcut points to a folder that's already in the list.
+				.SelectMany(Directory.GetDirectories) // get all the (book) folders in those collections
+					.Select(BookStorage.FindBookHtmlInFolder); // and get the book from each
 		}
 
 		/// <summary>
@@ -173,10 +185,10 @@ namespace Bloom.web.controllers
 		{
 			var bookTemplatePaths = new List<string>();
 
-			// 1) we start the list with the template that was used to start this book
+			// 1) we start the list with the template that was used to start this book (or the book itself if it IS a template)
 			bookTemplatePaths.Add(pathToCurrentTemplateHtml);
 
-			// 2) Future, add those in their current collection
+			// 2) Look in their current collection...this is the first one used to make sourceBookPaths
 
 			// 3) Next look through the books that came with bloom and other that this user has installed (e.g. via download or bloompack)
 			//    and add in all other template books that are designed for inclusion in other books. These should end in "template.htm{l}".

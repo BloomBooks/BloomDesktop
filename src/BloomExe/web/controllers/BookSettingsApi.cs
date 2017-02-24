@@ -35,7 +35,9 @@ namespace Bloom.Api
 					settings.isRecordedAsLockedDown = _bookSelection.CurrentSelection.RecordedAsLockedDown;
 					settings.unlockShellBook = _bookSelection.CurrentSelection.TemporarilyUnlocked;
 					settings.currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool;
+#if UserControlledTemplate
 					settings.isTemplateBook = GetIsBookATemplate();
+#endif
 					request.ReplyWithJson((object)settings);
 					break;
 				case HttpMethods.Post:
@@ -43,13 +45,15 @@ namespace Bloom.Api
 					//an "edit settings", or a "book settings", or a combination of them.
 					settings = DynamicJson.Parse(request.RequiredPostJson());
 					_bookSelection.CurrentSelection.TemporarilyUnlocked = settings["unlockShellBook"];
-					// It's a bit wasteful to raise this twice...but we need to save any changes the user made to the page,
-					// and we have no access to put the editable DOM into the right template/non-template state.
 					// This first refresh saves any changes.
 					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
+#if UserControlledTemplate
 					UpdateBookTemplateMode(settings.isTemplateBook);
 					// Now we need to update the active version of the page with possible new template settings
+					// It's a bit wasteful to raise this twice...but we need to save any changes the user made to the page,
+					// and we have no access to put the editable DOM into the right template/non-template state.
 					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
+#endif
 					request.Succeeded();
 					break;
 				default:
@@ -61,7 +65,7 @@ namespace Bloom.Api
 		{
 			return _bookSelection.CurrentSelection.IsSuitableForMakingShells;
 		}
-
+#if UserControlledTemplate
 		private void UpdateBookTemplateMode(bool isTemplateBook)
 		{
 			_bookSelection.CurrentSelection.SwitchSuitableForMakingShells(isTemplateBook);
@@ -81,5 +85,6 @@ namespace Bloom.Api
 				new pages as extra?
 			 */
 		}
+#endif
 	}
 }

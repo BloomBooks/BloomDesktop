@@ -927,13 +927,27 @@ namespace Bloom.Book
 		}
 		*/
 
-		public static void MakeLabelEditable(HtmlDom dom)
+		public static void MakeEditableDomShowAsTemplate(HtmlDom dom)
 		{
 			var label = dom.SelectSingleNode("//div[contains(@class,'pageLabel')]");
 			if (label != null)
 			{
 				label.SetAttribute("contenteditable", "true");
 			}
+			var page = dom.SelectSingleNode("//div[contains(@class, 'bloom-page')]");
+			page.SetAttribute("class", page.GetAttribute("class") + " bloom-templateMode");
+		}
+
+		// This should reverse what MakeEditableDomShowAsTemplate does.
+		public static void RemoveTemplateEditingMarkup(XmlElement editedPageDiv)
+		{
+			var label = editedPageDiv.SelectSingleNode("//div[contains(@class,'pageLabel')]") as XmlElement;
+			if (label != null)
+			{
+				label.RemoveAttribute("contenteditable");
+			}
+
+			editedPageDiv.SetAttribute("class", editedPageDiv.GetAttribute("class").Replace(" bloom-templateMode", ""));
 		}
 
 		public static void ProcessPageAfterEditing(XmlElement destinationPageDiv, XmlElement edittedPageDiv)
@@ -949,12 +963,7 @@ namespace Bloom.Book
 				var node in
 					edittedPageDiv.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
 				node.ParentNode.RemoveChild(node);
-			// If we tricked the label into being editable turn it off
-			var label = edittedPageDiv.SelectSingleNode("//div[contains(@class,'pageLabel')]") as XmlElement;
-			if (label != null)
-			{
-				label.RemoveAttribute("contenteditable");
-			}
+			RemoveTemplateEditingMarkup(edittedPageDiv);
 
 			destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
