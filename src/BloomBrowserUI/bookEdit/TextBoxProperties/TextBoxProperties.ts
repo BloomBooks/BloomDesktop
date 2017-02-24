@@ -80,9 +80,9 @@ export default class TextBoxProperties {
                 // It just needs to delay one 'cycle'.
                 // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
                 setTimeout(() => {
-                    var offset = $(propDlg.boxBeingEdited).find('.formatButton').offset(); // make sure we get the right button!
-                    dialogElement.offset({ left: offset.left + 30, top: offset.top - 30 });
-                    EditableDivUtils.positionInViewport(dialogElement);
+                    // Make sure we get the right button!
+                    var orientOnButton = $(propDlg.boxBeingEdited).find('.formatButton');
+                    EditableDivUtils.positionDialogAndSetDraggable(dialogElement, orientOnButton);
                     dialogElement.draggable('enable');
 
                     $('html').off('click.dialogElement');

@@ -95,43 +95,43 @@ export class EditableDivUtils {
     }
 
     // Positions the dialog box so that it is completely visible, so that it does not extend below the
-    // current viewport.
+    // current viewport. Method takes into consideration zoom factor. If the dialog is draggable,
+    // it also modifies the draggable options to account for a scrolling bug in jqueryui.
     // @param dialogBox
-    static positionInViewport(dialogBox: JQuery): void {
+    static positionDialogAndSetDraggable(dialogBox: JQuery, gearIcon: JQuery): void {
+        // A zoom on the body affects offset but not outerHeight, which messes things up if we don't account for it.
+        var scale = dialogBox[0].getBoundingClientRect().height / dialogBox[0].offsetHeight;
+        var adjustmentFactor = 30;
+        var pxAdjToScale = (adjustmentFactor / scale).toFixed(); // rounded to nearest integer
+        var myOptionValue = 'left+' + pxAdjToScale + ' top-' + pxAdjToScale;
 
-        // get the current size and position of the dialogBox
-        var elem: HTMLElement = dialogBox[0];
-        var top = elem.offsetTop;
-        var height = elem.offsetHeight;
+        // Set the dialog 30px (adjusted for 'scale') to the right and up from the gear icon.
+        // If it won't fit there for some reason, .position() will 'fit' it in by moving it away from the viewport edges.
+        dialogBox.position({ my: myOptionValue, at: 'right top', of: gearIcon, collision: 'fit' });
 
-        // get the top of the dialogBox in relation to the top of its containing elements
-        while (elem.offsetParent) {
-            elem = <HTMLElement>elem.offsetParent;
-            top += elem.offsetTop;
-        }
+        // unless we're debugging, the dialog html should be initially created with visibility set to 'hidden'
+        dialogBox.css('visibility', 'visible');
 
-        // diff is the portion of the dialogBox that is below the viewport
-        var diff = (top + height) - (window.pageYOffset + window.innerHeight);
-        if (diff > 0) {
-            var offset = dialogBox.offset();
-
-            // the extra 30 pixels is for padding
-            dialogBox.offset({ left: offset.left, top: offset.top - diff - 30 });
-        }
         if (dialogBox.is('.ui-draggable')) {
-            dialogBox.draggable({
-                // BL-4293 the 'start' and 'drag' functions here work around a known bug in jqueryui.
-                // fix adapted from majcherek2048's about 2/3 down this page https://bugs.jqueryui.com/ticket/3740.
-                // If we upgrade our jqueryui to a version that doesn't have this bug (1.10.3 or later?),
-                // we'll need to back out this change.
-                start: function () {
-                    $(this).data('startingScrollTop', $('html').scrollTop());
-                },
-                drag: function (event, ui) {
-                    ui.position.top -= $(this).data('startingScrollTop');
-                }
-            });
+            EditableDivUtils.adjustDraggableOptionsForScaleBug(dialogBox, scale);
         }
+    }
+
+    static adjustDraggableOptionsForScaleBug(dialogBox: JQuery, scale: number) {
+        dialogBox.draggable({
+            // BL-4293 the 'start' and 'drag' functions here work around a known bug in jqueryui.
+            // fix adapted from majcherek2048's about 2/3 down this page https://bugs.jqueryui.com/ticket/3740.
+            // If we upgrade our jqueryui to a version that doesn't have this bug (1.10.3 or later?),
+            // we'll need to back out this change.
+            start: function (event, ui) {
+                $(this).data('startingScrollTop', $('html').scrollTop());
+                $(this).data('startingScrollLeft', $('html').scrollLeft());
+            },
+            drag: function (event, ui) {
+                ui.position.top = (ui.position.top - $(this).data('startingScrollTop')) / scale;
+                ui.position.left = (ui.position.left - $(this).data('startingScrollLeft')) / scale;
+            }
+        });
     }
 
     static pasteImageCredits() {
@@ -148,8 +148,7 @@ export class EditableDivUtils {
             var bubble = document.activeElement.parentElement.parentElement;
             var query = '[aria-describedby="' + bubble.getAttribute('id') + '"]';
             var credits = document.querySelectorAll(query);
-            if (credits.length > 0)
-            {
+            if (credits.length > 0) {
                 var artists = credits[0];
                 // We found where to insert the credits.  If there's a better way to add this
                 // information, I'd be happy to learn what it is.  data is a string consisting
@@ -161,7 +160,7 @@ export class EditableDivUtils {
                 // Note that when the p element is appended to the div element, it gets removed from the list.
                 while (paras.length > 0) {
                     artists.appendChild(paras[0]);
-               }
+                }
             }
         });
     }

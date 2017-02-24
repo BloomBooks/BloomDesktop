@@ -795,9 +795,8 @@ export default class StyleEditor {
                         new WebFXTabPane($('#tabRoot').get(0), false, null);
                     }
                 }
-                var offset = $('#formatButton').offset();
-                toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
-                EditableDivUtils.positionInViewport(toolbar);
+                var orientOnButton = $('#formatButton');
+                EditableDivUtils.positionDialogAndSetDraggable(toolbar, orientOnButton);
                 toolbar.draggable('enable');
 
                 $('html').off('click.toolbar');

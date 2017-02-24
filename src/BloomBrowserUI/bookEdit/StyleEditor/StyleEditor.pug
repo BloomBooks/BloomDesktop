@@ -1,7 +1,7 @@
 mixin img(filename)
 	img(src='/bloom/bookEdit/img/' + filename)
 
-#format-toolbar.bloom-ui.bloomDialogContainer
+#format-toolbar.bloom-ui.bloomDialogContainer(style="visibility: hidden;")
 	.bloomDialogTitleBar(data-i18n="EditTab.FormatDialog.Format") Format
 	.hideWhenFormattingEnabled.bloomDialogMainPage
 		p(data-i18n="BookEditor.FormattingDisabled") Sorry, Reader Templates do not allow changes to formatting.
