@@ -840,7 +840,14 @@ namespace Bloom.Book
 			{
 				if (styleString.Length < minStyleLength)
 					continue; // not sure how we'd get this... but just in case.
-				keyDict.Add(GetClassKeyFromStyleString(styleString, includeLangAttr), styleString);
+				// At least when includeLangAttr is false, we may easily get the same key twice,
+				// e.g. .normal-style and .normal-style[lang='eng'] will reduce to the same key.
+				// This doesn't matter for the current caller with includeLangAttr false...it only
+				// wants the keys. In the other case, we might be losing something...but dropping
+				// part of a style definition is probably better than crashing, and since each
+				// definition typically includes everything, I think the last one would win
+				// in the HTML, anyway.
+				keyDict[GetClassKeyFromStyleString(styleString, includeLangAttr)] = styleString;
 			}
 			return keyDict;
 		}
@@ -920,6 +927,29 @@ namespace Bloom.Book
 		}
 		*/
 
+		public static void MakeEditableDomShowAsTemplate(HtmlDom dom)
+		{
+			var label = dom.SelectSingleNode("//div[contains(@class,'pageLabel')]");
+			if (label != null)
+			{
+				label.SetAttribute("contenteditable", "true");
+			}
+			var page = dom.SelectSingleNode("//div[contains(@class, 'bloom-page')]");
+			page.SetAttribute("class", page.GetAttribute("class") + " bloom-templateMode");
+		}
+
+		// This should reverse what MakeEditableDomShowAsTemplate does.
+		public static void RemoveTemplateEditingMarkup(XmlElement editedPageDiv)
+		{
+			var label = editedPageDiv.SelectSingleNode("//div[contains(@class,'pageLabel')]") as XmlElement;
+			if (label != null)
+			{
+				label.RemoveAttribute("contenteditable");
+			}
+
+			editedPageDiv.SetAttribute("class", editedPageDiv.GetAttribute("class").Replace(" bloom-templateMode", ""));
+		}
+
 		public static void ProcessPageAfterEditing(XmlElement destinationPageDiv, XmlElement edittedPageDiv)
 		{
 			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
@@ -933,6 +963,7 @@ namespace Bloom.Book
 				var node in
 					edittedPageDiv.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
 				node.ParentNode.RemoveChild(node);
+			RemoveTemplateEditingMarkup(edittedPageDiv);
 
 			destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
@@ -1238,6 +1269,41 @@ namespace Bloom.Book
 			return html.Replace("<br/>", Environment.NewLine)
 				.Replace("<br />", Environment.NewLine)
 				.Replace("<br>", Environment.NewLine);
+		}
+
+		private IEnumerable<XmlElement> GetContentPageElements()
+		{
+			return _dom.SafeSelectNodes(
+					"/html/body/div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]")
+				.OfType<XmlElement>();
+		}
+
+		/// <summary>
+		/// Can switch a page from being a template page or back to a normal page.
+		/// </summary>
+		/// <param name="areTemplatePages"></param>
+		public void MarkPagesWithTemplateStatus(bool areTemplatePages)
+		{
+			foreach(var page in GetContentPageElements())
+			{
+				MakePageWithTemplateStatus(areTemplatePages, page);
+			}
+		}
+
+		/// <summary>
+		/// Can switch a page from being a template page or back to a normal page.
+		/// </summary>
+		public static void MakePageWithTemplateStatus(bool isTemplatePage, XmlElement page)
+		{
+			page.SetAttribute("data-page", isTemplatePage ? "extra" : "");
+			if (!isTemplatePage)
+				return;
+			var label = page.SelectSingleNode("div[contains(@class,'pageLabel')]") as XmlElement;
+			if (label != null)
+			{
+				// Assume that they are going to change the name. Note as of 3.9 at least, we don't have a way of localizing these.
+				label.RemoveAttribute("data-i18n");
+			}
 		}
 	}
 }

@@ -56,6 +56,10 @@ DIV.pageLabel
     top: 19px;
     float: left;
     font-family: "Segoe UI", "Open Sans", Arial, sans-serif;
+    &[contenteditable="true"] {
+        color: black;
+        padding: 0 2px;
+    }
 }
 .evenPage DIV.pageLabel
 {
@@ -231,7 +235,7 @@ BUTTON.moveButton
     z-index: 1000;
     background-size: contain;
 }
-TEXTAREA, DIV.bloom-editable
+TEXTAREA, DIV.bloom-editable, DIV.pageLabel[contenteditable="true"]
 {
     border: thin solid #C0B9B9;
     /*[disabled]min-height:34px;*/
@@ -246,7 +250,7 @@ IMG.hoverUp
     background-color: #DFDFDF;
     border: 1px outset #000000;
 }
-TEXTAREA:focus, DIV.bloom-editable:focus
+TEXTAREA:focus, DIV.bloom-editable:focus, DIV.pageLabel[contenteditable="true"]:focus
 {
     border: 1px solid rgba(82, 168, 236, 0.6);
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
@@ -256,6 +260,11 @@ TEXTAREA.province
 {
     width: 151px;
     height: 33px;
+}
+
+/* somehow, this doesn't affect the layout of the page inside. */
+DIV.bloom-templateMode {
+    border: 3px dashed black;
 }
 
 @OverflowColor: red;

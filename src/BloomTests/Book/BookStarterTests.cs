@@ -184,6 +184,17 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CreateBookOnDiskFromTemplateStarter_IsTemplate_ButNotTemplateFactory()
+		{
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Template Starter");
+
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			var newMetaData = BookMetaData.FromFolder(path);
+			Assert.That(newMetaData.IsSuitableForMakingShells, Is.True);
+			Assert.That(newMetaData.IsSuitableForMakingTemplates, Is.False);
+		}
+
+		[Test]
 		public void CreateBookOnDiskFromTemplate_OriginalIsTemplate_CopyIsNotTemplate()
 		{
 			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
@@ -288,6 +299,33 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class,'bloom-translationGroup')]/div[@lang='xyz']", 1);
 			//the new text should also have been emptied of English
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class,'bloom-translationGroup')]/div[@lang='xyz' and not(text())]", 1);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_UnwantedFiles_AreNotCopied()
+		{
+			_starter.TestingSoSkipAddingXMatter = true;
+			var body = @"<div class='bloom-page'>
+						<div class='bloom-translationGroup'>
+						 <div lang='en'>This is some English</div>
+						</div>
+					</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body, null);
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "book.userPrefs"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "book.userPrefs.bak"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "ReadMe-en.md"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "something.jade"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "something.less"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "readme.txt"), @"some nonsense");
+			var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			var folderPath = Path.GetDirectoryName(bookPath);
+			Assert.That(File.Exists(Path.Combine(folderPath, "book.userPrefs")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "book.userPrefs.bak")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "ReadMe-en.md")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "something.jade")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "something.less")), Is.False);
+			// And just to be sure, we're not skipping EVERYTHING!
+			Assert.That(File.Exists(Path.Combine(folderPath, "readme.txt")), Is.True);
 		}
 
 		[Test]

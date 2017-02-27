@@ -1,0 +1,7 @@
+A **Template** is a 'book' that is a starting point, not for translating, but for authoring: something like Basic Book or Arithmetic Template. It provides a set of related page layouts that an author can choose from in writing an original book. These pages are also available to use in books created from another template. Usually the text and picture blocks on these pages will be empty, ready for an author to fill in, though sometimes there may be standard text or pictures that should be on every copy of the page.
+
+When you create a book from the Template Starter, you will typically add various pages derived from custom layout or made by modifying existing layouts. Notice that when you are editing a template book, the page label in the top left of the page is editable. You should give each of your layouts a useful label. Unfortunately, at this time we do not have any mechanism for template books made by end users to have localizable labels.
+
+#Notes:
+1. The Title of your book should end in Template. Bloom currently requires this to enable the pages in your book to be available for use in other books.
+2. You may wish to customize the icon that appears in Bloom's collection tab for your template. To prevent Bloom overwriting your custom icon, simply make it read-only. Often a good way to make a custom icon is to start with the one Bloom creates.

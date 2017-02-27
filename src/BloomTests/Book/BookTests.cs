@@ -307,6 +307,40 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void GetEditableHtmlDomForPage_TemplateBook_NonXMatterLabelMadeEditable()
+		{
+			SetDom(@"<div class='bloom-page bloom-frontMatter' id='guid1'>
+						<div class='pageLabel'></div>
+						<p>
+						</p>
+					</div>
+					<div class='bloom-page' id='guid2'>
+						<div class='pageLabel'></div>
+						<p>
+						</p>
+					</div>
+					<div class='bloom-page bloom-backMatter' id='guid3'>
+						<div class='pageLabel'></div>
+						<p>
+						</p>
+					</div>
+			");
+			var book = CreateBook();
+			// Even a content page doesn't get this unless it's a template book
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@class='pageLabel' and @contenteditable='true']");
+			book.IsSuitableForMakingShells = true;
+			// content page in template should get editable label
+			dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[1]);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='pageLabel' and @contenteditable='true']", 1);
+			// but not in front or back matter.
+			dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@class='pageLabel' and @contenteditable='true']");
+			dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@class='pageLabel' and @contenteditable='true']");
+		}
+
+		[Test]
 		public void InsertPageAfter_OnFirstPage_NewPageInsertedAsSecond()
 		{
 			var book = CreateBook();
@@ -335,6 +369,17 @@ namespace BloomTests.Book
 			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page'  data-page='extra' >hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
 			Assert.AreEqual("bloom-page A5Portrait", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
+		}
+
+		[Test]
+		public void InsertPageAfter_InTemplateBook_NewPageIsMarkedExtra()
+		{
+			var book = CreateBook();
+			var existingPage = book.GetPages().First();
+			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page'>hello</div>");
+			book.IsSuitableForMakingShells = true;
+			book.InsertPageAfter(existingPage, templatePage.Object);
+			Assert.That(GetPageFromBookDom(book, 1).GetStringAttribute("data-page"), Is.EqualTo("extra") );
 		}
 
 		[Test]
@@ -880,8 +925,6 @@ namespace BloomTests.Book
 
 			var book = CreateBook();
 
-			//only shells & templates get updated (xmatter injected)
-			book.TypeOverrideForUnitTests = Bloom.Book.Book.BookType.Shell;
 			var imagePath = book.FolderPath.CombineForPath("theCover.png");
 			MakeSamplePngImageWithMetadata(imagePath);
 
@@ -1477,5 +1520,74 @@ namespace BloomTests.Book
 
 			return templatePage;
 		}
+#if UserControlledTemplate
+		[Test]
+		public void SetType_WasPublicationSetToTemplate_HasTemplateFeatures()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div id='bloomDataDiv'>
+					</div>
+					<div class='bloom-page bloom-frontMatter' id='1'>
+						<div class='pageLabel'></div>
+					</div>
+					<div class='bloom-page' id='2'>
+						<div class='pageLabel'></div>
+					</div>
+					<div class='bloom-page' id='3'>
+						<div class='pageLabel'></div>
+					</div>
+					<div class='bloom-page bloom-backMatter' id='4'> </div>
+				  </body></html>");
+
+			var book = CreateBook();
+			book.SwitchSuitableForMakingShells(true);
+			Assert.IsTrue(book.BookInfo.IsSuitableForMakingShells);
+			Assert.IsFalse(book.LockedDown);
+
+			//don't change the number of pages
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 4);
+
+			//Mark content pages as extra (but not xmatter pages)
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-page='extra']", 2);
+
+			//Should point to itself as the pageTemplateSource
+			book.Save();
+			Assert.AreEqual(Path.GetFileName(book.FolderPath), book.OurHtmlDom.GetMetaValue("pageTemplateSource", ""));
+		}
+
+		[Test]
+		public void SetType_WasTemplateSetToPublication_RemovesTemplateFeatures()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div id='bloomDataDiv'>
+					</div>
+					<div class='bloom-page bloom-frontMatter' id='1'>
+						<div class='pageLabel'></div>
+					</div>
+					<div class='bloom-page' id='2'>
+						<div class='pageLabel'></div>
+					</div>
+					<div class='bloom-page' id='3'>
+						<div class='pageLabel'></div>
+					</div>
+					<div class='bloom-page bloom-backMatter' id='4'> </div>
+				  </body></html>");
+
+			var book = CreateBook();
+			book.CollectionSettings.IsSourceCollection = true;
+			book.SwitchSuitableForMakingShells(false);
+			Assert.IsFalse(book.BookInfo.IsSuitableForMakingShells);
+			Assert.IsFalse(book.LockedDown);
+			Assert.IsTrue(book.RecordedAsLockedDown);
+
+			//don't change the number of pages
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 4);
+
+			//Mark content pages as extra (but not xmatter pages)
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@data-page='extra']");
+		}
+#endif
 	}
 }

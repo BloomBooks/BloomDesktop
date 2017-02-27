@@ -76,5 +76,7 @@ namespace Bloom.Edit
 
 		public string IdOfFirstAncestor
 		{ get { return null; } }
+
+		public bool IsXMatter { get { return false; } }
 	}
 }

@@ -60,8 +60,6 @@ namespace Bloom.Book
 				}
 			}
 
-			//TODO
-			Type = Book.BookType.Publication;
 			IsEditable = isEditable;
 
 			FixDefaultsIfAppropriate();
@@ -106,6 +104,12 @@ namespace Bloom.Book
 		{
 			get { return MetaData.IsSuitableForMakingShells; }
 			set { MetaData.IsSuitableForMakingShells = value; }
+		}
+
+		public bool IsSuitableForMakingTemplates
+		{
+			get { return MetaData.IsSuitableForMakingTemplates; }
+			set { MetaData.IsSuitableForMakingTemplates = value; }
 		}
 
 		public bool IsSuitableForVernacularLibrary
@@ -206,8 +210,6 @@ namespace Bloom.Book
 		}
 
 		public bool IsEditable { get; private set; }
-
-		public Book.BookType Type { get; set; }
 
 		/// <summary>
 		/// This one knows nothing of what language the user speaks... currently using that requires actually reading in the html, which is beyond what this class can do
@@ -526,6 +528,10 @@ namespace Bloom.Book
 
 		[JsonProperty("suitableForMakingShells")]
 		public bool IsSuitableForMakingShells { get; set; }
+
+		// Special property for Template Starter template.
+		[JsonProperty("suitableForMakingTemplates")]
+		public bool IsSuitableForMakingTemplates { get; set; }
 
 		[JsonProperty("suitableForVernacularLibrary")]
 		public bool IsSuitableForVernacularLibrary { get; set; }

@@ -152,8 +152,6 @@ namespace Bloom.Book
 			if (handler != null) handler(this, e);
 		}
 
-		public enum BookType { Unknown, Template, Shell, Publication }
-
 		/// <summary>
 		/// If we have to just show title in one language, which should it be?
 		/// Note, this isn't going to be the best for choosing a filename, which we are more likely to want in a national language
@@ -237,7 +235,7 @@ namespace Bloom.Book
 			{
 				Debug.Assert(BookInfo.FolderPath == _storage.FolderPath);
 
-				if (Type == BookType.Publication)
+				if (IsEditable)
 				{
 					//REVIEW: evaluate and explain when we would choose the value in the html over the name of the folder.
 					//1 advantage of the folder is that if you have multiple copies, the folder tells you which one you are looking at
@@ -287,6 +285,16 @@ namespace Bloom.Book
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _collectionSettings, _storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
+			if (IsSuitableForMakingShells && !page.IsXMatter)
+			{
+				// We're editing a template page in a template book.
+				// Make the label editable. Note: HtmlDom.ProcessPageAfterEditing knows about removing this.
+				// I don't like the knowledge being in two places, but the place to remove the attribute is in the
+				// middle of a method in HtmlDom and it's this class that knows about the book being a template
+				// and whether it should be added.
+				// (Note: we don't want this for xmatter pages because they don't function as actual template pages.)
+				HtmlDom.MakeEditableDomShowAsTemplate(pageDom);
+			}
 			return pageDom;
 		}
 
@@ -561,6 +569,7 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// In the Bloom app, only one collection at a time is editable; that's the library they opened. All the other collections of templates, shells, etc., are not editable.
+		/// So, a book is editable if it's in that one collection (unless it's in an error state).
 		/// </summary>
 		public bool IsEditable {
 			get
@@ -600,9 +609,9 @@ namespace Bloom.Book
 		public Book FindTemplateBook()
 		{
 			Guard.AgainstNull(_templateFinder, "_templateFinder");
-			if(Type!=BookType.Publication)
-				return null;
-			string templateKey = GetTemplateBookKey();
+			if(!IsEditable)
+				return null; // won't be adding pages, don't need source of templates
+			string templateKey = PageTemplateSource;
 
 			Book book=null;
 			if (!String.IsNullOrEmpty(templateKey))
@@ -617,35 +626,26 @@ namespace Bloom.Book
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
 				if (templateKey == _cachedTemplateKey && _cachedTemplateBook != null)
 					return _cachedTemplateBook;
-				book = _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
+				// a template book is its own primary template...and might not be found by templateFinder,
+				// since we might be in a vernacular collection that it won't look in.
+				book = IsSuitableForMakingShells ? this : _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
 				_cachedTemplateBook = book;
 				_cachedTemplateKey = templateKey;
 			}
 			return book;
 		}
 
-		public string GetTemplateBookKey()
+		//This is the set of pages that we show first in the Add Page dialog.
+		public string PageTemplateSource
 		{
-			return OurHtmlDom.GetMetaValue("pageTemplateSource", "");
+			get { return OurHtmlDom.GetMetaValue("pageTemplateSource", ""); }
+			set { OurHtmlDom.UpdateMetaElement("pageTemplateSource", value);}
 		}
-
-		public BookType TypeOverrideForUnitTests;
 
 		/// <summary>
 		/// once in our lifetime, we want to do any migrations needed for this version of bloom
 		/// </summary>
 		private bool _haveDoneUpdate = false;
-
-		public BookType Type
-		{
-			get
-			{
-				if(TypeOverrideForUnitTests != BookType.Unknown)
-					return TypeOverrideForUnitTests;
-
-				return IsEditable ? BookType.Publication : BookType.Template; //TODO there are other types...should there be some way they can they happen?
-			}
-		}
 
 		public virtual HtmlDom OurHtmlDom
 		{
@@ -708,8 +708,9 @@ namespace Bloom.Book
 			if (RobustFile.Exists(BookInfo.MetaDataPath))
 				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			BringBookUpToDate(OurHtmlDom, progress);
-			if (Type == BookType.Publication)
+			if (IsEditable)
 			{
+				// If the user might be editing it we want it more thoroughly up-to-date
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
 				//ImageUpdater.CompressImages(FolderPath, progress);
@@ -1009,7 +1010,7 @@ namespace Bloom.Book
 			//so let's get further evidence by looking at the page source and then fix the lineage
 			// However, if we have json lineage, it is normal not to have it in HTML metadata.
 			if (string.IsNullOrEmpty(BookInfo.BookLineage) && bookDOM.GetMetaValue("bloomBookLineage", "") == "")
-				if (bookDOM.GetMetaValue("pageTemplateSource", "") == "Basic Book")
+				if (PageTemplateSource == "Basic Book")
 				{
 					bookDOM.UpdateMetaElement("bloomBookLineage", kIdOfBasicBook);
 				}
@@ -1306,17 +1307,19 @@ namespace Bloom.Book
 
 		//discontinuing this for now becuase we need to know whether to show the book when all we have is a bookinfo, not access to the
 		//dom like this requires. We'll just hard code the names of the experimental things.
-//        public bool IsExperimental
-//        {
-//            get
-//            {
-//                string metaValue = OurHtmlDom.GetMetaValue("experimental", "false");
-//                return metaValue == "true" || metaValue == "yes";
-//            }
-//        }
+		//        public bool IsExperimental
+		//        {
+		//            get
+		//            {
+		//                string metaValue = OurHtmlDom.GetMetaValue("experimental", "false");
+		//                return metaValue == "true" || metaValue == "yes";
+		//            }
+		//        }
 
 		/// <summary>
-		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells
+		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells.
+		/// Note: the setter on this property just sets the flag to the appropriate state. To actually change
+		/// a book to or from a template, use SwitchSuitableForMakingShells()
 		/// </summary>
 		public bool IsSuitableForMakingShells
 		{
@@ -1324,6 +1327,8 @@ namespace Bloom.Book
 			{
 				return BookInfo.IsSuitableForMakingShells;
 			}
+			set { BookInfo.IsSuitableForMakingShells = value; }
+
 		}
 
 		/// <summary>
@@ -1613,7 +1618,7 @@ namespace Bloom.Book
 
 		public void InsertPageAfter(IPage pageBefore, IPage templatePage)
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			ClearPagesCache();
 
@@ -1628,7 +1633,8 @@ namespace Bloom.Book
 			BookStarter.SetupPage(newPageDiv, _collectionSettings, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
-
+			// If we're a template, make the new page a template one.
+			HtmlDom.MakePageWithTemplateStatus(IsSuitableForMakingShells, newPageDiv);
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
 
@@ -1674,7 +1680,7 @@ namespace Bloom.Book
 
 		public void DuplicatePage(IPage page)
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			var pages = GetPageElements();
 			var pageDiv = FindPageDiv(page);
@@ -1733,7 +1739,7 @@ namespace Bloom.Book
 
 		public void DeletePage(IPage page)
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			if(GetPageCount() <2)
 				return;
@@ -1866,7 +1872,7 @@ namespace Bloom.Book
 		/// </summary>
 		public bool RelocatePage(IPage page, int indexOfItemAfterRelocation)
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			if(!CanRelocatePageAsRequested(indexOfItemAfterRelocation))
 			{
@@ -2190,11 +2196,17 @@ namespace Bloom.Book
 
 		public void Save()
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to save a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			if(!LockDownTheFileAndFolderName)
 			{
 				_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
+			}
+			if(IsSuitableForMakingShells)
+			{
+				// A template book is considered to be its own source, so update the source to match the
+				// current book location.
+				PageTemplateSource = Path.GetFileName(FolderPath);
 			}
 			_storage.Save();
 		}
@@ -2234,6 +2246,30 @@ namespace Bloom.Book
 		public void SetTopic(string englishTopicAsKey)
 		{
 			_bookData.Set("topic",englishTopicAsKey,"en");
+		}
+
+		public void SwitchSuitableForMakingShells(bool isSuitable)
+		{
+			if (isSuitable)
+			{
+				IsSuitableForMakingShells = true;
+				RecordedAsLockedDown = false;
+				// Note that in Book.Save(), we set the PageTemplateSource(). We do that
+				// there instead of here so that it stays up to date if the user changes
+				// the template name.
+
+				OurHtmlDom.MarkPagesWithTemplateStatus(true);
+			}
+			else
+			{
+				IsSuitableForMakingShells = false;
+				OurHtmlDom.MarkPagesWithTemplateStatus(false);
+				// The logic in BookStarter.UpdateEditabilityMetadata is that if we're in a source collection
+				// a book that is not a template should be recorded as locked down (though because we're in
+				// a source collection it won't actually BE locked down).
+				if (CollectionSettings.IsSourceCollection)
+					RecordedAsLockedDown = true;
+			}
 		}
 	}
 }

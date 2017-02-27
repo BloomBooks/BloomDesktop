@@ -58,11 +58,23 @@ namespace Bloom.web.controllers
 			addPageSettings.defaultPageToSelect = _templateInsertionCommand.MostRecentInsertedTemplatePage == null ? "" : _templateInsertionCommand.MostRecentInsertedTemplatePage.Id;
 			addPageSettings.orientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
 
-			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), _sourceCollectionsList.GetSourceBookPaths())
+			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), GetCurrentAndSourceBookPaths())
 				.Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
 			addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor;
 
 			request.ReplyWithJson(JsonConvert.SerializeObject(addPageSettings));
+		}
+
+		/// <summary>
+		/// Gives paths to the html files for all source books and those in the current collection
+		/// </summary>
+		public IEnumerable<string> GetCurrentAndSourceBookPaths()
+		{
+			return new [] {_bookSelection.CurrentSelection.CollectionSettings.FolderPath} // Start with the current collection
+				.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections
+				.Distinct() //seems to be needed in case a shortcut points to a folder that's already in the list.
+				.SelectMany(Directory.GetDirectories) // get all the (book) folders in those collections
+					.Select(BookStorage.FindBookHtmlInFolder); // and get the book from each
 		}
 
 		/// <summary>
@@ -113,7 +125,9 @@ namespace Bloom.web.controllers
 				caption = caption.Substring(0, caption.Length - "-landscape".Length);
 
 			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
-			IPage templatePage = templateBook.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
+			// The Trim is needed because template may now be created by users editing the pageLabel div, and those
+			// labels typically include a trailing newline.
+			IPage templatePage = templateBook.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+").Trim() == caption);
 			if (templatePage == null)
 				templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
@@ -171,17 +185,25 @@ namespace Bloom.web.controllers
 		{
 			var bookTemplatePaths = new List<string>();
 
-			// 1) we start the list with the template that was used to start this book
+			// 1) we start the list with the template that was used to start this book (or the book itself if it IS a template)
 			bookTemplatePaths.Add(pathToCurrentTemplateHtml);
 
-			// 2) Future, add those in their current collection
+			// 2) Look in their current collection...this is the first one used to make sourceBookPaths
 
 			// 3) Next look through the books that came with bloom and other that this user has installed (e.g. via download or bloompack)
-			//    and add in all other template books that are designed for inclusion in other books. These should end in "template.html".
+			//    and add in all other template books that are designed for inclusion in other books. These should end in "template.htm{l}".
 			//    Requiring the book to end in the word "template" is low budget, but fast. Maybe we'll do something better later.
+			//    (It's unfortunate that we have to check for .html as well as htm. Our own templates end in html, while user-created ones
+			//    end in .htm, Bloom's standard for created books.)
+			var pathToCurrentTemplateLC = pathToCurrentTemplateHtml.ToLowerInvariant();
 			bookTemplatePaths.AddRange(sourceBookPaths
-				.Where(path => ( (path.ToLower().EndsWith("template.html") || path.ToLower().EndsWith("basic book.html"))
-									&& !string.Equals(path, pathToCurrentTemplateHtml, StringComparison.InvariantCultureIgnoreCase)))
+				.Where(path =>
+					{
+						var pathLC = path.ToLowerInvariant();
+						if (pathLC.Equals(pathToCurrentTemplateLC))
+							return false;
+						return pathLC.EndsWith("template.html") || pathLC.EndsWith("basic book.html") || pathLC.EndsWith("template.htm");
+					})
 				.Select(path => path));
 
 			var indexOfBasicBook = bookTemplatePaths.FindIndex(p => p.ToLowerInvariant().Contains("basic book"));
@@ -212,7 +234,7 @@ namespace Bloom.web.controllers
 			// eventually extract a folder name from the path to report the missing template
 			// from within the dialog.
 			// So, manufacture a 'path' something like where we might find the missing template.
-			var templateKey = _bookSelection.CurrentSelection.GetTemplateBookKey();
+			var templateKey = _bookSelection.CurrentSelection.PageTemplateSource;
 			if (string.IsNullOrEmpty(templateKey))
 			{
 				templateKey = "MissingTemplate";  // avoid crashing

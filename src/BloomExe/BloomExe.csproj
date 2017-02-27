@@ -705,12 +705,6 @@
     <Compile Include="Edit\EditingView.Designer.cs">
       <DependentUpon>EditingView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Edit\ThumbNailList.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Edit\ThumbNailList.Designer.cs">
-      <DependentUpon>ThumbNailList.cs</DependentUpon>
-    </Compile>
     <Compile Include="Event.cs" />
     <Compile Include="Book\Book.cs" />
     <Compile Include="HtmlThumbNailer.cs" />
@@ -881,9 +875,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\SourceTextControl.resx">
       <DependentUpon>SourceTextControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\ThumbNailList.resx">
-      <DependentUpon>ThumbNailList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\LibraryListView.resx">
       <DependentUpon>LibraryListView.cs</DependentUpon>

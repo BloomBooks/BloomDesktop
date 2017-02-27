@@ -250,7 +250,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private static void SetBookTitle(BookStorage storage, BookData bookData, bool usingTemplate)
+		private void SetBookTitle(BookStorage storage, BookData bookData, bool usingTemplate)
 		{
 			//This is what we were trying to do: there was a defaultNameForDerivedBooks meta tag in the html
 			//which had no language code. It worked fine for English, e.g., naming new English books
@@ -277,6 +277,18 @@ namespace Bloom.Book
 			if(usingTemplate)
 			{
 				bookData.RemoveAllForms("bookTitle");
+			}
+			// If we're making a Template, we really want its title to include Template
+			// (in hopes the user will keep it at the end so the pages can be used in Add Page)
+			if (storage.MetaData.IsSuitableForMakingShells)
+			{
+				storage.MetaData.Title = "Template";
+				storage.Dom.Title = "Template";
+				storage.Dom.SetBookSetting("bookTitle", "en", "Template");
+				// Yes, we want the English word Template in the vernacular Title. Ugly, but that's
+				// what determines the file name, and that's what determines whether Add Page will
+				// include it.
+				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1Iso639Code, "Template");
 			}
 		}
 
@@ -329,19 +341,23 @@ namespace Bloom.Book
 			//be when the they create a book based on a source-with-content book. So the current approach
 			//below, of pre-locking it, would go away.
 
-			if(_isSourceCollection)
+			// JohnT: added the possibility that the source book is 'suitableForMakingTemplates', that is,
+			// a template factory like the Template Starter book. In this case we want the resulting book
+			// to be a template. Note that the initial state of storage is a copy of the template.
+			// (The only way suitableForMakingTemplates currently becomes true is when loaded that way
+			// from meta.json, which only happens if someone edited it by hand to be that way.)
+			// If we're making a template, the resulting book needs to be suitableForMakingShells
+			// and also needs to NOT be RecordedAsLockedDown, because that suppresses options
+			// we want in the options tab.
+			// If we change this see also Book.SwitchSuitableForMakingShells().
+			if (_isSourceCollection && !storage.MetaData.IsSuitableForMakingTemplates)
 			{
 				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
 			}
 
-#if maybe //hard to pin down when a story primer, dictionary, etc. also becomes a new "source for new shells"
-			//things like picture dictionaries could be used repeatedly
-			//but things from Basic Book are normally not.
-			var x = GetMetaValue(storage.Dom, "DerivativesAreSuitableForMakingShells", "false");
-#else
-			var x = false;
-#endif
-			storage.MetaData.IsSuitableForMakingShells = x;
+			storage.MetaData.IsSuitableForMakingShells = storage.MetaData.IsSuitableForMakingTemplates;
+			// a newly created book is never suitable for making templates, even if its source was.
+			storage.MetaData.IsSuitableForMakingTemplates = false;
 		}
 
 
@@ -437,7 +453,9 @@ namespace Bloom.Book
 				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
 					continue;
 				var ext = Path.GetExtension(filePath).ToLowerInvariant();
-				if (new String[] {".jade", ".less", ".md"}.Any(ex => ex == ext))
+				// We don't need to copy any backups, and we don't want userPrefs because they are likely
+				// to include a page number and we want the new book to open at the cover.
+				if (new String[] {".jade", ".less", ".md", ".bak", ".userprefs"}.Any(ex => ex == ext))
 					continue;
 				RobustFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}

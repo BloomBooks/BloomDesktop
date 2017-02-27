@@ -55,8 +55,6 @@ namespace Bloom.Book
 			// For now, we just add a few we know we need
 			AddSomeCommonNationalLanguages(d);
 
-			MakePageLabelLocalizable(pageDom, d);
-
 			// Hard-coded localizations for 2.0
 			AddHtmlUiStrings(d);
 
@@ -137,21 +135,6 @@ namespace Bloom.Book
 //
 //			pageDom.Head.InsertAfter(i18nScriptElement, pageDom.Head.LastChild);
 //		}
-
-		private static void MakePageLabelLocalizable(HtmlDom singlePageHtmlDom, Dictionary<string, string> d)
-		{
-			foreach (XmlElement element in singlePageHtmlDom.RawDom.SelectNodes("//*[contains(@class, 'pageLabel')]"))
-			{
-				if (!element.HasAttribute("data-i18n"))
-				{
-					var englishLabel = element.InnerText;
-					var key = "TemplateBooks.PageLabel." + englishLabel;
-					AddTranslationToDictionaryUsingEnglishAsKey(d, key, englishLabel);
-
-					element.SetAttribute("data-i18n", key);
-				}
-			}
-		}
 
 		private static void AddSomeCommonNationalLanguages(Dictionary<string, string> d)
 		{

@@ -190,9 +190,9 @@ namespace Bloom
 
 				_thumbnailProvider.RemoveFromCache(book.Storage.Key);
 
-				thumbnailOptions.BorderStyle = (book.Type == Book.Book.BookType.Publication)
-					? HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid
-					: HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
+				thumbnailOptions.BorderStyle = (book.IsSuitableForMakingShells)
+					? HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed // unique style for templates
+					: HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid;
 				GetThumbNailOfBookCover(book, thumbnailOptions, image => callback(book.BookInfo, image),
 					error =>
 					{

@@ -19,6 +19,7 @@ namespace Bloom.Book
 		bool CanRelocate { get;}
 		Book Book { get; set; }
 		bool IsBackMatter { get; }
+		bool IsXMatter { get; }
 		string GetCaptionOrPageNumber(ref int pageNumber, out string captionI18nId);
 		int GetIndex();
 		string IdOfFirstAncestor { get;}
@@ -118,6 +119,19 @@ namespace Bloom.Book
 			{
 				return XMatterHelper.IsBackMatterPage(_getDivNodeForThisPageMethod(this));
 			}
+		}
+
+		public bool IsFrontMatter
+		{
+			get
+			{
+				return XMatterHelper.IsFrontMatterPage(_getDivNodeForThisPageMethod(this));
+			}
+		}
+
+		public bool IsXMatter
+		{
+			get { return IsBackMatter || IsFrontMatter;}
 		}
 
 		public string GetCaptionOrPageNumber(ref int pageNumber, out string captionI18nId)

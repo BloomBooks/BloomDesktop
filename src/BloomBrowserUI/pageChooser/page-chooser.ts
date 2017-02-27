@@ -263,7 +263,10 @@ class PageChooser {
 
             if (pages.length == 0) {
                 console.log("Could not find any template pages in " + order.templateBookPath);
-                return; //don't add a group for books that don't have template pages
+                //don't add a group for books that don't have template pages; just move on.
+                // (This will always be true for a newly created template.)
+                this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect);
+                return; // suppress adding this group.
             }
 
             var dataBookArray = $("div[data-book='bookTitle']", pageNoImg);
