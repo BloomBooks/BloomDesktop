@@ -429,7 +429,6 @@ namespace Bloom.Publish
 
 			RemoveUnwantedContent(pageDom);
 
-			pageDom.AddStyleSheet("languageDisplay.css");
 			pageDom.SortStyleSheetLinks();
 			pageDom.AddPublishClassToBody();
 
@@ -789,12 +788,15 @@ namespace Bloom.Publish
 				if(HasClass(elt, "bubble"))
 					elt.ParentNode.RemoveChild(elt);
 			}
-			// Remove page labels and descriptions
+			// Remove page labels and descriptions.  Also remove pages that users have marked invisible.
+			// (The last mimics the behavior of bookLayout/languageDisplay.less.)
 			foreach(XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div").Cast<XmlElement>().ToArray())
 			{
 				if(HasClass(elt, "pageLabel"))
 					elt.ParentNode.RemoveChild(elt);
 				if(HasClass(elt, "pageDescription"))
+					elt.ParentNode.RemoveChild(elt);
+				if (HasClass(elt, "bloom-editable") && HasClass(elt, "bloom-visibility-user-off"))
 					elt.ParentNode.RemoveChild(elt);
 			}
 			// Our recordingmd5 attribute is not allowed
