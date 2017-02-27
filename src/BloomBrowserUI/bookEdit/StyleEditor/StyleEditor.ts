@@ -26,7 +26,7 @@ export default class StyleEditor {
     private _previousBox: Element;
     private _supportFilesRoot: string;
     private MIN_FONT_SIZE: number = 7;
-    private boxBeingEdited: HTMLElement;
+    public boxBeingEdited: HTMLElement; // public for testing
     private ignoreControlChanges: boolean;
     private styles: string[];
     private authorMode: boolean; // true if authoring (rather than translating)
@@ -1098,6 +1098,8 @@ export default class StyleEditor {
     // to the default rule as well as a language-specific rule.
     // Currently this requires that the element's language is the project's first language, which happens
     // to be available to us through the injected setting 'languageForNewTextBoxes'.
+    // As a special case, if we're not displaying the first-language version in this context,
+    // allow the first one we ARE displaying to control things.
     // (If that concept diverges from 'the language whose style settings are the default' we may need to
     // inject a distinct value.)
     shouldSetDefaultRule() {
@@ -1105,7 +1107,21 @@ export default class StyleEditor {
         // GetSettings is injected into the page by C#.
         var defLang = (<any>GetSettings()).languageForNewTextBoxes;
         if ($(target).attr('lang') !== defLang) {
-            return false;
+            var group = $(target).parent();
+            if (!group.hasClass("bloom-translationGroup")) {
+                return false; // weird case, play safe.
+            }
+            var firstVisibleChild = group.find("div:visible:first");
+            if (firstVisibleChild.get(0) !== target) {
+                return false;  // we'll let the first visible sibling be the way to edit the default.
+            }
+            var defLangChild = group.find("[lang='" + defLang + "']:visible");
+            if (defLangChild.length) {
+                return false; // we'll let the sibling in the default lang be the way to edit the default
+            }
+            // this IS the first visible child and the default language one isn't visible,
+            // so we WILL generally allow editing the default.
+            // Fall through to make the final test.
         }
         // We need to some way of detecting that we don't want to set
         // default rule for blocks like the main title, where factory rules do things like

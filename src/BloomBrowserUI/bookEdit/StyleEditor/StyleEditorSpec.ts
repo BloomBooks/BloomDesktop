@@ -57,6 +57,13 @@ function GetUserModifiedStyleSheet(): any {
     return {};
 }
 
+function TestShouldSetDefaultRule(target: string): Boolean {
+    var jQueryTarget = $(document).find(target);
+    var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
+    editor.boxBeingEdited = jQueryTarget.get(0);
+    return editor.shouldSetDefaultRule();
+}
+
 function GetFooStyleRuleFontSize(): number {
     var sizeString = $('.foo-style').css("font-size");
     return parseInt(sizeString.substr(0, sizeString.length - 2));
@@ -350,5 +357,44 @@ describe("StyleEditor", function () {
         }
         expect(count).toBe(1);
         expect(GetFontSizeRuleByLang('xyz')).toBe(before - 2); // 0.8em -> 10pt -> smaller is 8pt
+    });
+
+    // GetSettings is mocked to make languageForNewTextBoxes be en
+    // (and currentCollectionLanguage2 is tpi and currentCollectionLanguage3 is fr)
+    it("shouldSetDefaultRule returns true for the default language child", function () {
+        $('body').append("<div id='testParent' class='bloom-translationGroup foo-style'><div id='testTarget' class='bloom-editable foo-style' lang='en'></div></div>");
+        expect(TestShouldSetDefaultRule("#testTarget")).toBe(true);
+    });
+    it("shouldSetDefaultRule returns false for the default language child if marked bloom-nodefaultstylerule", function () {
+        $('body').append("<div id='testParent' class='bloom-translationGroup foo-style'><div id='testTarget' class='bloom-editable foo-style bloom-nodefaultstylerule' lang='en'></div></div>");
+        expect(TestShouldSetDefaultRule("#testTarget")).toBe(false);
+    });
+    it("shouldSetDefaultRule returns true for the only child even if not the default language", function () {
+        $('body').append("<div id='testParent' class='bloom-translationGroup foo-style'><div id='testTarget' class='bloom-editable foo-style' lang='tpi'></div></div>");
+        expect(TestShouldSetDefaultRule("#testTarget")).toBe(true);
+    });
+    it("shouldSetDefaultRule returns false for the only child if marked bloom-nodefaultstylerule even if not the default language", function () {
+        $('body').append("<div id='testParent' class='bloom-translationGroup foo-style'><div id='testTarget' class='bloom-editable foo-style bloom-nodefaultstylerule' lang='tpi'></div></div>");
+        expect(TestShouldSetDefaultRule("#testTarget")).toBe(false);
+    });
+
+    it("shouldSetDefaultRule returns true for the first child if the others are not the default language", function () {
+        $('body').append("<div id='testParent' class='bloom-translationGroup foo-style'><div id='testTarget' class='bloom-editable foo-style' lang='tpi'></div><div class='bloom-editable foo-style ' lang='fr'></div></div>");
+        expect(TestShouldSetDefaultRule("#testTarget")).toBe(true);
+    });
+
+    it("shouldSetDefaultRule returns false for the first child if a later child is in the default language", function () {
+        $('body').append("<div id='testParent' class='bloom-translationGroup foo-style'><div id='testTarget' class='bloom-editable foo-style' lang='tpi'></div><div class='bloom-editable foo-style ' lang='en'></div></div>");
+        expect(TestShouldSetDefaultRule("#testTarget")).toBe(false);
+    });
+
+    it("shouldSetDefaultRule returns false for the first child if a later child is in the default language", function () {
+        $('body').append("<div id='testParent' class='bloom-translationGroup foo-style'><div id='testTarget' class='bloom-editable foo-style' lang='tpi'></div><div class='bloom-editable foo-style ' lang='en'></div></div>");
+        expect(TestShouldSetDefaultRule("#testTarget")).toBe(false);
+    });
+
+    it("shouldSetDefaultRule returns false for a child with a previous visible child even if neither is the default language", function () {
+        $('body').append("<div id='testParent' class='bloom-translationGroup foo-style'></div><div class='bloom-editable foo-style ' lang='fr'></div><div id='testTarget' class='bloom-editable foo-style' lang='tpi'></div>");
+        expect(TestShouldSetDefaultRule("#testTarget")).toBe(false);
     });
 });
