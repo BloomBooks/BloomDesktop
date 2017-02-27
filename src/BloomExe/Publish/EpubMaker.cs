@@ -126,7 +126,9 @@ namespace Bloom.Publish
 			foreach(XmlElement pageElement in Book.GetPageElements())
 			{
 				++pageIndex;
-				var pageDom = MakePageFile(pageElement, pageIndex, firstContentPageIndex);
+				var pageDom = MakePageFile(pageElement, ref pageIndex, ref firstContentPageIndex);
+				if (pageDom == null)
+					continue;	// page was blank, so we're not adding it to the ePUB.
 				// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
 				//to look at those stylesheets on the first page
 				if(pageIndex == 1)
@@ -402,7 +404,15 @@ namespace Bloom.Publish
 			}
 		}
 
-		private HtmlDom MakePageFile(XmlElement pageElement, int pageIndex, int firstContentPageIndex)
+		/// <summary>
+		/// If the page is not blank, make the page file and return the HtmlDom of the page.
+		/// If the page is blank, decrement the index values and return null.
+		/// </summary>
+		/// <returns>the HtmlDom of the page if not blank, null if it was blank</returns>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288 for discussion of blank pages.
+		/// </remarks>
+		private HtmlDom MakePageFile(XmlElement pageElement, ref int pageIndex, ref int firstContentPageIndex)
 		{
 			var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
 
@@ -439,6 +449,16 @@ namespace Bloom.Publish
 			RemoveScripts(pageDom);
 			FixIllegalIds(pageDom);
 			FixPictureSizes(pageDom);
+
+			// Check for a blank page before storing any data from this page or copying any files on disk.
+			if (IsBlankPage(pageDom.RawDom.DocumentElement))
+			{
+				--pageIndex;
+				if (firstContentPageIndex > pageIndex)
+					--firstContentPageIndex;
+				return null;
+			}
+
 			// Since we only allow one htm file in a book folder, I don't think there is any
 			// way this name can clash with anything else.
 			var pageDocName = pageIndex + ".xhtml";
@@ -462,6 +482,53 @@ namespace Bloom.Publish
 			pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
 			RobustFile.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
 			return pageDom;
+		}
+
+		/// <summary>
+		/// Check whether this page will actually display anything.  Although paper books allow blank pages
+		/// without confusing readers, ePUB books should not have blank pages.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4288.
+		/// Note that this method is called after RemoveUnwantedContent(), RemoveBloomUiElements(),
+		/// RemoveSpuriousLinks(), and RemoveScripts() have all been called.
+		/// </remarks>
+		private bool IsBlankPage(XmlElement pageElement)
+		{
+			foreach (XmlElement body in pageElement.GetElementsByTagName("body"))
+			{
+				// This may not be fool proof, but it works okay on an empty basic book.  It also works on a test
+				// book with an empty page in the middle of the book, and on the two sample shell books shipped
+				// with Bloom.
+				if (!String.IsNullOrWhiteSpace(body.InnerText))
+					return false;
+				break;	// There should be only one body element.
+			}
+			// Any real image will be displayed.  Image only pages are allowed in Bloom.
+			foreach (XmlElement img in pageElement.GetElementsByTagName("img"))
+			{
+				if (RealImageFileExists(img))
+					return false;
+			}
+			return true;
+		}
+
+		/// <summary>
+		/// Check that the image file exists, and is not the place holder image.
+		/// </summary>
+		private bool RealImageFileExists(XmlElement img)
+		{
+			var src = img.GetAttribute("src");
+			if (String.IsNullOrEmpty(src) || src == "placeHolder.png")
+				return false;
+			var url = UrlPathString.CreateFromUrlEncodedString(src);
+			if (url == null || url.PathOnly == null || String.IsNullOrEmpty(url.NotEncoded))
+				return false;
+			var filename = url.PathOnly.NotEncoded;
+			if (String.IsNullOrEmpty(filename))
+				return false;
+			var srcPath = Path.Combine(Book.FolderPath, filename);
+			return RobustFile.Exists(srcPath);
 		}
 
 		private void CopyImages(HtmlDom pageDom)
