@@ -349,19 +349,12 @@ namespace Bloom.Book
 			// If we're making a template, the resulting book needs to be suitableForMakingShells
 			// and also needs to NOT be RecordedAsLockedDown, because that suppresses options
 			// we want in the options tab.
-			// If we change this see also Book.SetType().
+			// If we change this see also Book.SwitchSuitableForMakingShells().
 			if (_isSourceCollection && !storage.MetaData.IsSuitableForMakingTemplates)
 			{
 				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
 			}
 
-//#if maybe //hard to pin down when a story primer, dictionary, etc. also becomes a new "source for new shells"
-//			//things like picture dictionaries could be used repeatedly
-//			//but things from Basic Book are normally not.
-//			var x = GetMetaValue(storage.Dom, "DerivativesAreSuitableForMakingShells", "false");
-//#else
-//			var x = false;
-//#endif
 			storage.MetaData.IsSuitableForMakingShells = storage.MetaData.IsSuitableForMakingTemplates;
 			// a newly created book is never suitable for making templates, even if its source was.
 			storage.MetaData.IsSuitableForMakingTemplates = false;

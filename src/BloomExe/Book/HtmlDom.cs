@@ -1296,16 +1296,14 @@ namespace Bloom.Book
 		public static void MakePageWithTemplateStatus(bool isTemplatePage, XmlElement page)
 		{
 			page.SetAttribute("data-page", isTemplatePage ? "extra" : "");
+			if (!isTemplatePage)
+				return;
 			var label = page.SelectSingleNode("div[contains(@class,'pageLabel')]") as XmlElement;
-			if(label != null)
+			if (label != null)
 			{
-				if(isTemplatePage)
-				{
-					// Assume that they are going to change the name. Note as of 3.9 at least, we don't have a way of localizing these.
-					label.RemoveAttribute("data-i18n");
-				}
+				// Assume that they are going to change the name. Note as of 3.9 at least, we don't have a way of localizing these.
+				label.RemoveAttribute("data-i18n");
 			}
 		}
 	}
-
 }
