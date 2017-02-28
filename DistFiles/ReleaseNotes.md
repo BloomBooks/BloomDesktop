@@ -26,7 +26,7 @@
 
     To unlock the book, go into the toolbox (which lives to the right of the page in the Edit Tab). Click on the icon of gear, and tick the checkbox there. The book will remain unlocked only during the current editing session; the next time you come back to this book, it will be locked again.
 
-- New or improved interfaces for Bengali, French, Hausa, Indonesia, Nepali, and Russian.
+- New or improved interfaces for Arabic, Bengali, Chinese, French, Hausa, Kiswahili, Indonesia, Nepali, and Russian.
 
 - A new "Branding" collection setting allows organizations to specify logos, copyright, and license.
 
@@ -52,6 +52,7 @@
 
 - Formatting changes are now saved, even if you delete the page before Bloom has a chance to save it.
 
+- Languages that use a non-standard way of marking sentences (e.g. Thai uses a space) can now define that in the Leveled Reader setttings.
 
 - Over 170 fixes and small improvements.
 
