@@ -32,6 +32,7 @@ namespace Bloom.Publish
 	public class EpubMaker : IDisposable
 	{
 		public const string kEPUBExportFolder = "ePUB export";
+		public const string kApiBrandingImage = "/bloom/api/branding/image";
 
 		public Book.Book Book
 		{
@@ -526,6 +527,8 @@ namespace Bloom.Publish
 			if (String.IsNullOrEmpty(filename))
 				return false;
 			var srcPath = Path.Combine(Book.FolderPath, filename);
+			if (srcPath == kApiBrandingImage)
+				return FindBrandingImageIfPossible(url.NotEncoded) != null;
 			return RobustFile.Exists(srcPath);
 		}
 
@@ -547,7 +550,7 @@ namespace Bloom.Publish
 				var srcPath = Path.Combine(Book.FolderPath, filename);
 				if(RobustFile.Exists(srcPath))
 					CopyFileToEpub(srcPath);
-				else if (srcPath == "/bloom/api/branding/image")
+				else if (srcPath == kApiBrandingImage)
 					CopyBrandingImageIfPossible(img, url.NotEncoded);
 				else
 					img.ParentNode.RemoveChild(img);
@@ -560,8 +563,6 @@ namespace Bloom.Publish
 		/// </summary>
 		/// <remarks>
 		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4323.
-		/// The code for hiding blank pages (version 3.9?) will need to use FindBrandingImageIfPossible() to check
-		/// whether or not a branding image on an otherwise blank page exists.
 		/// </remarks>
 		private void CopyBrandingImageIfPossible(XmlElement img, string urlPath)
 		{
@@ -1216,6 +1217,8 @@ namespace Bloom.Publish
 					return "image/jpeg";
 				case "png":
 					return "image/png";
+				case "svg":
+					return "image/svg+xml";		// https://www.w3.org/TR/SVG/intro.html
 				case "css":
 					return "text/css";
 				case "woff":
