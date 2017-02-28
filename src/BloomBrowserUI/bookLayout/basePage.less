@@ -1,8 +1,6 @@
 @import "../templates/common-mixins.less";
 @import "basePage-sharedRules.less";
 
-@preferredBackgroundGray: hsl(0,0%,86%);
-
 .Browser-Reset() {
     /*+init {*/
     * {
@@ -539,46 +537,6 @@ h2 {
     //	height: 99%;
     //	width: 99%;
     //}
-}
-
-.bloom-borderstyle-black {
-    border: 1px solid black;
-    border-radius: 0px;
-    box-sizing: border-box;
-}
-.bloom-borderstyle-black-round {
-    border: 1px solid black;
-    border-radius: 10px;
-    box-sizing: border-box;
-}
-.bloom-borderstyle-gray {
-    border: 1px solid gray;
-    border-radius: 0px;
-    box-sizing: border-box;
-}
-.bloom-borderstyle-gray-round {
-    border: 1px solid gray;
-    border-radius: 10px;
-    box-sizing: border-box;
-}
-.bloom-top-border-off {
-    border-top: none;
-}
-.bloom-right-border-off {
-    border-right: none;
-}
-.bloom-bottom-border-off {
-    border-bottom: none;
-}
-.bloom-left-border-off {
-    border-left: none;
-}
-
-.bloom-background-none {
-    background-color: transparent;
-}
-.bloom-background-gray {
-    background-color: @preferredBackgroundGray;
 }
 
 // Making the translation group centered handles multilingual books,
