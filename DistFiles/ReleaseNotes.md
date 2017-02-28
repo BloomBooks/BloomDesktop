@@ -5,11 +5,14 @@
     - We've made the Windows installer less likely to trigger over-eager anti-malware programs. If you still have problems, check out the [installation troubleshooting guide](https://community.software.sil.org/t/how-to-fix-installation-problems/17/3).
 - Linux Installation
     - On Linux, you can now have  alpha, beta, and release versions installed concurrently, just like on Windows.
+- Settings
+    - You can now set the numbering system used for page numbering to one of 25 styles.
 - Edit Tab
     - We have added A3 Landscape & A5 Landscape choices.
     - In "Change Layout", you can now set the language of the text box. This will allow people making translations and glossaries in the back of the book to create a box, for example, which only holds the national language.
     - In the "Add Page box", you can now add pages from the "Basic Book" and "Arithmetic" templates, regardless of the template your book started with. This feature will grow in subsequent releases so that it gets easier to combine pages from multiple template page collections.
     - We've added a button for superscripting selected text.
+    - If you hold down 'c', © is now one of your choices (when not using a keyboard program like keyman).
     - Linux users can now record Talking Books.
 - Publish Tab
     - We have upgraded Bloom to a new Firefox engine which reduces memory use, particularly when making PDFs.
