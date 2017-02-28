@@ -22,8 +22,11 @@
             // Don't know why epub should be different.
             width: 94px;
         }
-        .licenseUrl, .licenseDescription, .licenseNotes {
-            display: none; // show only the logo
+        .licenseUrl {
+            display: none; // included in the licenseDescription field
+        }
+        .licenseDescription, .licenseNotes {
+            display: block; // show all the license information (BL-4316)
         }
     }
     .ISBNContainer {
