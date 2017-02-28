@@ -1,3 +1,20 @@
+## 3.9
+- Custom Templates
+    - We've created a "Template Starter" template that lets you make a book full of template pages that you and others can reuse.
+- Collection Setup
+    - You can now change the UI language when Bloom runs for the first time. Previously, you couldn't change it until you'd made your first collection.
+- Edit Tab
+    - You can now enable automatic paragraph indent on styles.
+    - You can now control spacing between paragraphs.
+    - When you make a books from shellbook, Bloom now moves the original copyright and license to its own field. Thus preserved, you can now set your own copyright and license for the adaptation. Bloom does not yet verify that the new license is compatible with the original.
+    - Text Box Formatting (under "Change Layout")
+        - You can now set the vertical alignment of text boxes (top, middle, bottom)
+        - You can now control the what sides of a text box now have sides
+        - (MAYBE) We have moved borders and background color from the text styles to the Text Box Formatting
+    (Maybe in 3.9) You can now copy a page from one book and paste it into another. One user for this is for making template pages out of complex pages you've already created.
+    (Maybe in 3.9) We've removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
+    (Maybe in 3.9) We've added a new Zoom control.
+
 ## 3.8
 
 - Windows Installation
