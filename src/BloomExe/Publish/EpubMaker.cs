@@ -1129,6 +1129,8 @@ namespace Bloom.Publish
 					return "image/jpeg";
 				case "png":
 					return "image/png";
+				case "svg":
+					return "image/svg+xml";		// https://www.w3.org/TR/SVG/intro.html
 				case "css":
 					return "text/css";
 				case "woff":
