@@ -547,9 +547,58 @@ namespace Bloom.Publish
 				var srcPath = Path.Combine(Book.FolderPath, filename);
 				if(RobustFile.Exists(srcPath))
 					CopyFileToEpub(srcPath);
+				else if (srcPath == "/bloom/api/branding/image")
+					CopyBrandingImageIfPossible(img, url.NotEncoded);
 				else
 					img.ParentNode.RemoveChild(img);
 			}
+		}
+
+		/// <summary>
+		/// If possible, update the HTML img src attribute and copy the desired image file to the ePUB folder.
+		/// Otherwise, remove the img element.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4323.
+		/// The code for hiding blank pages (version 3.9?) will need to use FindBrandingImageIfPossible() to check
+		/// whether or not a branding image on an otherwise blank page exists.
+		/// </remarks>
+		private void CopyBrandingImageIfPossible(XmlElement img, string urlPath)
+		{
+			var path = FindBrandingImageIfPossible(urlPath);
+			if (path != null)
+			{
+				img.SetAttribute("src", Path.GetFileName(path));
+				CopyFileToEpub(path);
+			}
+			else
+			{
+				img.ParentNode.RemoveChild(img);
+			}
+		}
+
+		/// <summary>
+		/// Check whether the desired branding image file exists.  If it does, return its full path.
+		/// Otherwise, return null;
+		/// </summary>
+		private string FindBrandingImageIfPossible(string urlPath)
+		{
+			var idx = urlPath.IndexOf('?');
+			if (idx > 0)
+			{
+				var query = urlPath.Substring(idx + 1);
+				var parsedQuery = HttpUtility.ParseQueryString(query);
+				var file = parsedQuery["id"];
+				if (!String.IsNullOrEmpty(file))
+				{
+					// The following line is the crucial behavior of the BrandingApi implementation, but that interprets an
+					// HTTP request and returns the image bytes.
+					var path = BloomFileLocator.GetOptionalBrandingFile(Book.CollectionSettings.BrandingProjectName, file);
+					if (!String.IsNullOrEmpty(path) && RobustFile.Exists(path))
+						return path;
+				}
+			}
+			return null;
 		}
 
 		// Combines staging and finishing (currently just used in tests).
