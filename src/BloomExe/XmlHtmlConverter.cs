@@ -52,11 +52,11 @@ namespace Bloom
 			var startOfCdata = content.IndexOf(Browser.CdataPrefix, StringComparison.InvariantCulture);
 			const string restoreCdataHere = "/****RestoreCDATAHere*****/";
 			var endOfCdata = content.IndexOf(Browser.CdataSuffix, StringComparison.InvariantCulture);
-			var savedCData = "";
+			var savedCdata = "";
 			if (startOfCdata >= 0 && endOfCdata >= startOfCdata)
 			{
 				endOfCdata += Browser.CdataSuffix.Length;
-				savedCData = content.Substring(startOfCdata, endOfCdata - startOfCdata);
+				savedCdata = content.Substring(startOfCdata, endOfCdata - startOfCdata);
 				content = content.Substring(0, startOfCdata) + restoreCdataHere + content.Substring(endOfCdata, content.Length - endOfCdata);
 			}
 
@@ -130,7 +130,7 @@ namespace Bloom
 						// affect what gets written to the file, this hack was implemented instead.
 						newContents = Regex.Replace(newContents, @"(<br></br>|<br ?/>)[\r\n]*</p>", "</p>");
 
-						newContents = newContents.Replace(restoreCdataHere, savedCData);
+						newContents = newContents.Replace(restoreCdataHere, savedCdata);
 
 						// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 						dom.PreserveWhitespace = true;

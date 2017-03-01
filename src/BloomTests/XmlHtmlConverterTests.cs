@@ -264,6 +264,13 @@ namespace BloomTests
 			Assert.That(xml.Trim(), Is.EqualTo(styleContent.Trim()));
 		}
 
+		// I don't know of a use case where we want tidy to convert an unprotected > into an entity.
+		// There are very few places where these characters can occur unprotected in HTML.
+		// However, trying to parse something as XHTML that has them will fail, making the document
+		// unusable. So it seems best to let Tidy make its best effort to fix anything that
+		// isn't specifically marked up as being in a block of CDATA.
+		// This test confirms that we aren't interfering with Tidy's behavior except in
+		// the one special case we care about.
 		[Test]
 		public void GetXmlDomFromHtml_HasUnProtectedGtInStylesheet_Converts()
 		{
