@@ -334,7 +334,7 @@ namespace Bloom.WebLibraryIntegration
 			return UploadBook(bookFolder, progress, out parseId);
 		}
 
-		public string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null)
+		public string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool includeAudio = false)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -391,7 +391,7 @@ namespace Bloom.WebLibraryIntegration
 				parseId = "";
 				try
 				{
-					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude: pdfToInclude);
+					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, includeAudio);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database."));
@@ -577,6 +577,8 @@ namespace Bloom.WebLibraryIntegration
 				worker.DoWork += BackgroundUpload;
 				worker.RunWorkerCompleted += (sender, args) =>
 				{
+					if (args.Error != null)
+						throw args.Error;
 					dlg.Close();
 				};
 				worker.RunWorkerAsync(new object[] { folder, dlg, container });
@@ -617,10 +619,11 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="context"></param>
 		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, ref ProjectContext context)
 		{
-			if (Path.GetFileName(folder).StartsWith("."))
+			var fileName = Path.GetFileName(folder);
+			if (fileName != null && fileName.StartsWith("."))
 				return; // secret folder, probably .hg
 
-			if (Directory.GetFiles(folder, "*.htm").Count() == 1)
+			if (Directory.GetFiles(folder, "*.htm").Length == 1)
 			{
 				// Exactly one htm file, assume this is a bloom book folder.
 				dlg.Progress.WriteMessage("Starting to upload " + folder);
@@ -630,10 +633,10 @@ namespace Bloom.WebLibraryIntegration
 				// proper parent book collection if possible.
 				var parent = Path.GetDirectoryName(folder);
 				var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
-				if (collectionPath == null && context == null)
-				{
+				if (collectionPath == null)
 					collectionPath = Settings.Default.MruProjects.Latest;
-				}
+				if (collectionPath == null)
+					throw new ApplicationException("Collection not found in this or parent directory.");
 				if (context == null || context.SettingsPath != collectionPath)
 				{
 					if (context != null)
@@ -643,6 +646,7 @@ namespace Bloom.WebLibraryIntegration
 					// Note however that it's not good enough to just store it in the project context. The one that is actually in
 					// the autofac object (_scope in the ProjectContext) is used by autofac to create various objects, in particular, books.
 					context = container.CreateProjectContext(collectionPath);
+					Program.SetProjectContext(context);
 				}
 				var server = context.BookServer;
 				var book = server.GetBookFromBookInfo(new BookInfo(folder, true));
@@ -653,13 +657,11 @@ namespace Bloom.WebLibraryIntegration
 				var bookSelection = new BookSelection();
 				bookSelection.SelectBook(book);
 				var currentEditableCollectionSelection = new CurrentEditableCollectionSelection();
-				if (collectionPath != null)
-				{
-					var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection,
-						bookSelection);
-					currentEditableCollectionSelection.SelectCollection(collection);
-				}
-				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _thumbnailer, null);
+
+				var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection, bookSelection);
+				currentEditableCollectionSelection.SelectCollection(collection);
+
+				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer, null);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null);
 				string dummy;
@@ -667,7 +669,7 @@ namespace Bloom.WebLibraryIntegration
 				var langDict = book.AllLanguages;
 				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToArray();
 				if (languagesToUpload.Any())
-					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, dlg);
+					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, dlg, true);
 				return;
 			}
 			foreach (var sub in Directory.GetDirectories(folder))
@@ -684,7 +686,8 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="languages"></param>
 		/// <param name="invokeTarget"></param>
 		/// <returns></returns>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null,
+			bool includeAudio = false)
 		{
 			var bookFolder = book.FolderPath;
 			parseId = ""; // in case of early return
@@ -725,7 +728,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			if (progressBox.CancelRequested)
 				return "";
-			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath));
+			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath), includeAudio);
 		}
 
 		internal static string UploadPdfPath(string bookFolder)

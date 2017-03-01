@@ -183,14 +183,13 @@ namespace Bloom.WebLibraryIntegration
 
 
 		/// <summary>
-				/// The thing here is that we need to guarantee unique names at the top level, so we wrap the books inside a folder
-				/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
-				/// except the one we want.
-				/// </summary>
-				/// <param name="storageKeyOfBookFolder"></param>
-				/// <param name="pathToBloomBookDirectory"></param>
-			public
-			void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,  string pdfToInclude = null)
+		/// The thing here is that we need to guarantee unique names at the top level, so we wrap the books inside a folder
+		/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
+		/// except the one we want.
+		/// </summary>
+		/// <param name="storageKeyOfBookFolder"></param>
+		/// <param name="pathToBloomBookDirectory"></param>
+		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress, string pdfToInclude = null, bool includeAudio = false)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
@@ -223,10 +222,13 @@ namespace Bloom.WebLibraryIntegration
 
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
 			CopyDirectory(pathToBloomBookDirectory, destDirName);
-			// Don't upload audio (todo: test).
-			string audioDir = Path.Combine(destDirName, "audio");
-			if (Directory.Exists(audioDir))
-				SIL.IO.RobustIO.DeleteDirectory(audioDir, true);
+			if (!includeAudio)
+			{
+				// Don't upload audio (todo: test).
+				string audioDir = Path.Combine(destDirName, "audio");
+				if (Directory.Exists(audioDir))
+					SIL.IO.RobustIO.DeleteDirectory(audioDir, true);
+			}
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
 			foreach (var file in unwantedPdfs)
 				RobustFile.Delete(file);
