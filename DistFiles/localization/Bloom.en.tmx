@@ -118,11 +118,6 @@
         <seg>Bloom Problem</seg>
       </tuv>
     </tu>
-    <tu tuid="BloomIntegrityDialog.MarkDownTextBox">
-      <tuv xml:lang="en">
-        <seg>Need to set the property \"MarkDownText\"</seg>
-      </tuv>
-    </tu>
     <tu tuid="BloomIntegrityDialog.ReportProblem">
       <tuv xml:lang="en">
         <seg>Report Problem</seg>
@@ -1735,6 +1730,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.OverflowContainer">
+      <note>This shows up in pages like the cover where sizing is very flexible. No one thing is too big, but not everything on the page will fit. To see it, put a lot of text on a cover page, until a red bar appears at the bottom; then hover over the bar. </note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>A container on this page is overflowing</seg>
