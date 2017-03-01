@@ -1939,6 +1939,12 @@
         <seg>Text Box Properties</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.TextBoxProperties.VerticalAlignment">
+      <note>Label above the set of options, Top/Center/Bottom</note>
+      <tuv xml:lang="en">
+        <seg>VerticalAlignment</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
       <tuv xml:lang="en">
         <seg>Picture On Bottom</seg>
