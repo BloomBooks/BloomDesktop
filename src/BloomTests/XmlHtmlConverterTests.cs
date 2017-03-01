@@ -246,5 +246,37 @@ namespace BloomTests
 			// The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
 			Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
 		}
+
+		[Test]
+		public void GetXmlDomFromHtml_HasProtectedGtInStylesheet_DoesNotConvert()
+		{
+			var styleContent = @"
+	/*<![CDATA[*/
+	.BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+	.normal-style { text-align: initial ! important; }
+	.normal-style > p { text-indent: -20pt ! important; margin-left: 20pt ! important; margin-bottom: 1em ! important; }
+	/*]]>*/
+	";
+			var html = @"<!DOCTYPE html><html><head><style>" + styleContent + "</style></head><body></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			var xml = dom.DocumentElement.GetElementsByTagName("style")[0].InnerXml;
+			// Trim because it may mess with leading or trailing white space in ways we don't care about.
+			Assert.That(xml.Trim(), Is.EqualTo(styleContent.Trim()));
+		}
+
+		[Test]
+		public void GetXmlDomFromHtml_HasUnProtectedGtInStylesheet_Converts()
+		{
+			var styleContent = @"
+	.BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+	.normal-style { text-align: initial ! important; }
+	.normal-style > p { text-indent: -20pt ! important; margin-left: 20pt ! important; margin-bottom: 1em ! important; }
+	";
+			var html = @"<!DOCTYPE html><html><head><style>" + styleContent + "</style></head><body></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			var xml = dom.DocumentElement.GetElementsByTagName("style")[0].InnerXml;
+			// Trim because it may mess with leading or trailing white space in ways we don't care about.
+			Assert.That(xml.Trim(), Is.EqualTo(styleContent.Replace(">", "&gt;").Trim()));
+		}
 	}
 }

@@ -945,6 +945,9 @@ namespace Bloom
 
 		}
 
+		public const string  CdataPrefix = "/*<![CDATA[*/";
+		public const string CdataSuffix = "/*]]>*/";
+
 		private void SaveCustomizedCssRules(GeckoStyleSheet userModifiedStyleSheet)
 		{
 			try
@@ -956,10 +959,18 @@ namespace Bloom
 				 */
 				var styles = new StringBuilder();
 				styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+				// Now, our styles string may contain invalid xhtml characters like >
+				// We shouldn't have &gt; in XHTML because the content of <style> is supposed to be CSS, and &gt; is an HTML escape.
+				// And in XElement we can't just have > like we can in HTML (<style> is PCDATA, not CDATA).
+				// So, we want to mark the main body of the rules as <![CDATA[ ...]]>, within which we CAN have >.
+				// But, once again, that's HTML markup that's not valid CSS. To fix it we wrap each of the markers
+				// in CSS comments, so the wrappers end up as /*<![CDATA[*/.../*]]>*/.
+				styles.AppendLine(CdataPrefix);
 				foreach (var cssRule in userModifiedStyleSheet.CssRules)
 				{
 					styles.AppendLine(cssRule.CssText);
 				}
+				styles.AppendLine(CdataSuffix);
 				styles.AppendLine("</style>");
 				//Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
 				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
