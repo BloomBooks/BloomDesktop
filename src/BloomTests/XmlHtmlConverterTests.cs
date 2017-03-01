@@ -246,5 +246,44 @@ namespace BloomTests
 			// The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
 			Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
 		}
+
+		[Test]
+		public void GetXmlDomFromHtml_HasProtectedGtInStylesheet_DoesNotConvert()
+		{
+			var styleContent = @"
+	/*<![CDATA[*/
+	.BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+	.normal-style { text-align: initial ! important; }
+	.normal-style > p { text-indent: -20pt ! important; margin-left: 20pt ! important; margin-bottom: 1em ! important; }
+	/*]]>*/
+	";
+			var html = @"<!DOCTYPE html><html><head><style>" + styleContent + "</style></head><body></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			var xml = dom.DocumentElement.GetElementsByTagName("style")[0].InnerXml;
+			// Trim because it may mess with leading or trailing white space in ways we don't care about.
+			Assert.That(xml.Trim(), Is.EqualTo(styleContent.Trim()));
+		}
+
+		// I don't know of a use case where we want tidy to convert an unprotected > into an entity.
+		// There are very few places where these characters can occur unprotected in HTML.
+		// However, trying to parse something as XHTML that has them will fail, making the document
+		// unusable. So it seems best to let Tidy make its best effort to fix anything that
+		// isn't specifically marked up as being in a block of CDATA.
+		// This test confirms that we aren't interfering with Tidy's behavior except in
+		// the one special case we care about.
+		[Test]
+		public void GetXmlDomFromHtml_HasUnProtectedGtInStylesheet_Converts()
+		{
+			var styleContent = @"
+	.BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+	.normal-style { text-align: initial ! important; }
+	.normal-style > p { text-indent: -20pt ! important; margin-left: 20pt ! important; margin-bottom: 1em ! important; }
+	";
+			var html = @"<!DOCTYPE html><html><head><style>" + styleContent + "</style></head><body></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			var xml = dom.DocumentElement.GetElementsByTagName("style")[0].InnerXml;
+			// Trim because it may mess with leading or trailing white space in ways we don't care about.
+			Assert.That(xml.Trim(), Is.EqualTo(styleContent.Replace(">", "&gt;").Trim()));
+		}
 	}
 }
