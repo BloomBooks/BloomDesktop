@@ -251,12 +251,12 @@ namespace BloomTests
 		public void GetXmlDomFromHtml_HasProtectedGtInStylesheet_DoesNotConvert()
 		{
 			var styleContent = @"
-	/*<![CDATA[*/
-	.BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
-	.normal-style { text-align: initial ! important; }
-	.normal-style > p { text-indent: -20pt ! important; margin-left: 20pt ! important; margin-bottom: 1em ! important; }
-	/*]]>*/
-	";
+/*<![CDATA[*/
+.BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+.normal-style { text-align: initial ! important; }
+.normal-style > p { text-indent: -20pt ! important; margin-left: 20pt ! important; margin-bottom: 1em ! important; }
+/*]]>*/
+";
 			var html = @"<!DOCTYPE html><html><head><style>" + styleContent + "</style></head><body></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
 			var xml = dom.DocumentElement.GetElementsByTagName("style")[0].InnerXml;
@@ -275,10 +275,10 @@ namespace BloomTests
 		public void GetXmlDomFromHtml_HasUnProtectedGtInStylesheet_Converts()
 		{
 			var styleContent = @"
-	.BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
-	.normal-style { text-align: initial ! important; }
-	.normal-style > p { text-indent: -20pt ! important; margin-left: 20pt ! important; margin-bottom: 1em ! important; }
-	";
+.BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+.normal-style { text-align: initial ! important; }
+.normal-style > p { text-indent: -20pt ! important; margin-left: 20pt ! important; margin-bottom: 1em ! important; }
+";
 			var html = @"<!DOCTYPE html><html><head><style>" + styleContent + "</style></head><body></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
 			var xml = dom.DocumentElement.GetElementsByTagName("style")[0].InnerXml;
