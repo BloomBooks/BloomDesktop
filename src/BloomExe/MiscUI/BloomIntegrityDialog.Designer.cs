@@ -62,7 +62,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this.markDownTextBox1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.markDownTextBox1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.markDownTextBox1, "BloomIntegrityDialog.MarkDownTextBox");
+			this._L10NSharpExtender.SetLocalizationPriority(this.markDownTextBox1, L10NSharp.LocalizationPriority.NotLocalizable);
 			this.markDownTextBox1.Location = new System.Drawing.Point(12, 12);
 			this.markDownTextBox1.MarkDownText = "Need to set the property \"MarkDownText\"";
 			this.markDownTextBox1.Name = "markDownTextBox1";

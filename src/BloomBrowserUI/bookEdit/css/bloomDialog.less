@@ -9,7 +9,23 @@
 @buttonBorder: rgb(138, 187, 244);
 @buttonShadow: rgb(136, 136, 136);
 @disabledText: rgb(211, 211, 211);
-@dialogZindex: 16010;
+// Used to be 16,010. The reason for that value has been lost.
+// Was changed to 60,000 to fix BL-4342. I (JohnT) did not fully
+// figure out what caused that, but my observation was that click events
+// were being raised on boxes with high z-indexes BEHIND the dialog when
+// a user clicked on the dialog. See the discussion in the issue.
+// The high-z-index items didn't show through the dialog, presumably because
+// they are in a different 'stacking context', though I haven't figured out
+// what it is. But they did get the clicks. As far as I can tell, this
+// is a bug in gecko, but I can't reproduce it in any simple case.
+// (See https://jsfiddle.net/john7540/d4orcuh1/1/ for one attempt).
+// It somehow prevents this if the dialogZindex is higher than any of the
+// hidden elements behind the dialog. (Well, strictly, I didn't try any values
+// between 16,010 and 50,010.) One user of this setting is the text
+// properties dialog in origami mode, and that currently has page elements
+// with z-index as high as 50,000; so I made this a round number higher
+// than that.
+@dialogZindex: 60000;
 
 .bloomDialogContainer {
     h2.tab {
