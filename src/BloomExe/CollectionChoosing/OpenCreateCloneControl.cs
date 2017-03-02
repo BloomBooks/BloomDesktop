@@ -1,8 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
@@ -10,8 +9,8 @@ using Bloom.Properties;
 //using Chorus.UI.Clone;
 using SIL.Windows.Forms.Extensions;
 using SIL.i18n;
-using System.Collections.Generic;
 using System.Linq;
+using Bloom.Workspace;
 using SIL.IO;
 
 namespace Bloom.CollectionChoosing
@@ -30,6 +29,30 @@ namespace Bloom.CollectionChoosing
 		{
 			Font = SystemFonts.MessageBoxFont; //use the default OS UI font
 			InitializeComponent();
+			SetupUILanguageMenu();
+		}
+
+		private void SetupUILanguageMenu()
+		{
+			// Couldn't get the designer to line up the bottom of the text with the buttons on the other side w/o this.
+			const int fiddle = 8;
+			_toolStrip1.Location = new Point(_toolStrip1.Location.X, _toolStrip1.Location.Y - fiddle);
+
+			_uiLanguageMenu.DropDownItems.Clear();
+			WorkspaceView.SetupUiMenu(_uiLanguageMenu, (sender, args) => UiMenuItemClickHandler(sender as ToolStripItem));
+			_toolStrip1.Width = _uiLanguageMenu.Width + 1;
+		}
+
+		private void UiMenuItemClickHandler(ToolStripItem item)
+		{
+			var tag = (CultureInfo)item.Tag;
+
+			_toolStrip1.Width = 100; // keeps the toolstrip from collapsing to a narrow bit while we reset the internal item text
+			L10NSharp.LocalizationManager.SetUILanguage(tag.IetfLanguageTag, true);
+			Settings.Default.UserInterfaceLanguage = tag.IetfLanguageTag;
+			item.Select();
+			_uiLanguageMenu.Text = tag.NativeName;
+			_toolStrip1.Width = _uiLanguageMenu.Width + 1;
 		}
 
 		public void Init(MostRecentPathsList mruList,
@@ -83,6 +106,11 @@ namespace Bloom.CollectionChoosing
 				if (control.Tag != null && control.Tag.ToString() == "sendreceive")
 					control.Visible = Settings.Default.ShowSendReceive;
 			}
+			// We've pulled label1 out into _topRightPanel; do the same check
+			if (label1.Tag != null && label1.Tag.ToString() == "sendreceive")
+			{
+				label1.Visible = Settings.Default.ShowSendReceive;
+			}
 		}
 
 
@@ -106,7 +134,6 @@ namespace Bloom.CollectionChoosing
 								   _templateButton.Font.Style);
 			button.Image = _templateButton.Image;
 
-			button.ImageAlign = ContentAlignment.MiddleLeft;
 			button.Click += clickHandler;
 			button.Text = "  " + localizedLabel;
 

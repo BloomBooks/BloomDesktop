@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Globalization;
-using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
@@ -16,7 +13,6 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
-using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using Messir.Windows.Forms;
@@ -24,6 +20,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
+using System.Collections.Generic;
 
 namespace Bloom.Workspace
 {
@@ -290,33 +287,7 @@ namespace Bloom.Workspace
 		private void SetupUILanguageMenu()
 		{
 			_uiLanguageMenu.DropDownItems.Clear();
-			foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
-			{
-				string englishName="";
-				var langaugeNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en","fr","es","it","tpi"};
-				if((lang.EnglishName != lang.NativeName) && !(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
-				{
-					englishName = " (" + lang.EnglishName + ")";
-				}
-				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName + englishName);
-				item.Tag = lang;
-				item.Click += new EventHandler((a, b) =>
-												{
-													L10NSharp.LocalizationManager.SetUILanguage(((CultureInfo)item.Tag).IetfLanguageTag, true);
-													Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
-													item.Select();
-													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
-													SaveOriginalButtonTexts();
-													_localizationChangedEvent.Raise(null);
-													AdjustButtonTextsForCurrentSize();
-												});
-				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
-				{
-					//doesn't do anything item.Select();
-
-					_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
-				}
-			}
+			SetupUiMenu(_uiLanguageMenu, (sender, args) => UiMenuItemClickHandler(sender as ToolStripItem));
 
 			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
 			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.MoreLanguagesMenuItem", "More..."));
@@ -329,6 +300,19 @@ namespace Bloom.Workspace
 			});
 		}
 
+		private void UiMenuItemClickHandler(ToolStripItem item)
+		{
+			var tag = (CultureInfo)item.Tag;
+
+			L10NSharp.LocalizationManager.SetUILanguage(tag.IetfLanguageTag, true);
+			Settings.Default.UserInterfaceLanguage = tag.IetfLanguageTag;
+			item.Select();
+			_uiLanguageMenu.Text = tag.NativeName;
+			// these next few lines deal with having a smaller workspace window and minimizing the button texts for smaller windows
+			SaveOriginalButtonTexts();
+			_localizationChangedEvent.Raise(null);
+			AdjustButtonTextsForCurrentSize();
+		}
 
 		private void OnEditBook(Book.Book book)
 		{
@@ -658,7 +642,33 @@ namespace Bloom.Workspace
 			}
 		}
 
-#region Responsive Toolbar
+		/// <summary>
+		/// This is a common method between CollectionChoosing.OpenCreateCloneControl.cs and this file.
+		/// If a better place to put this method is found, it could be moved.
+		/// </summary>
+		public static void SetupUiMenu(ToolStripDropDownButton uiMenuControl, EventHandler clickHandler)
+		{
+			uiMenuControl.DropDownItems.Clear();
+			foreach (var lang in LocalizationManager.GetUILanguages(true))
+			{
+				var englishName = string.Empty;
+				var languageNamesRecognizableByOtherLatinScriptReaders = new List<string> { "en", "fr", "es", "it", "tpi" };
+				if ((lang.EnglishName != lang.NativeName) && !languageNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name))
+				{
+					englishName = " (" + lang.EnglishName + ")";
+				}
+				var item = uiMenuControl.DropDownItems.Add(lang.NativeName + englishName);
+				item.Tag = lang;
+				item.Click += clickHandler;
+				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
+				{
+					uiMenuControl.Text = lang.NativeName;
+					uiMenuControl.Width = item.Width;
+				}
+			}
+		}
+
+		#region Responsive Toolbar
 
 		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
