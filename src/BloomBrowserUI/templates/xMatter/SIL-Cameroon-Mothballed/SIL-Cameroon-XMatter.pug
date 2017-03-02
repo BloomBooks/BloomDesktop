@@ -19,10 +19,8 @@ html
 		// Sensitivity to page numbering
 		// Name and address of the publisher
 		+page-xmatter("Credits Page").bloom-frontMatter.countPageButDoNotShowNumber.credits(data-export='front-matter-credits')#AFFEBC7D-9774-4114-8D83-07CCCBD07391
-			+field-acknowledgments-originalVersion
-			+block-licenseAndCopyright#versoLicenseAndCopyright
+			+credits-contents(includeIsbn = false)
 			+standard-ISOLanguageCode
-			+field-acknowledgments-localizedVersion
 
 		+factoryStandard-insideBackCover
 		+factoryStandard-outsideBackCover
