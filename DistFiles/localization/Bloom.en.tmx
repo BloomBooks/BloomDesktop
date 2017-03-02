@@ -118,6 +118,12 @@
         <seg>Bloom Problem</seg>
       </tuv>
     </tu>
+    <tu tuid="BloomIntegrityDialog.MarkDownTextBox">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg></seg>
+      </tuv>
+    </tu>
     <tu tuid="BloomIntegrityDialog.ReportProblem">
       <tuv xml:lang="en">
         <seg>Report Problem</seg>
