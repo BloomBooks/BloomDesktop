@@ -172,14 +172,6 @@
             <seg>مشكلة في Bloom</seg>
          </tuv>
       </tu>
-      <tu tuid="BloomIntegrityDialog.MarkDownTextBox">
-         <tuv xml:lang="en">
-            <seg>Need to set the property \"MarkDownText\"</seg>
-         </tuv>
-         <tuv xml:lang="ar">
-            <seg>يجب تعيين الخاصية \"MarkDownText\"</seg>
-         </tuv>
-      </tu>
       <tu tuid="BloomIntegrityDialog.ReportProblem">
          <tuv xml:lang="en">
             <seg>Report Problem</seg>
