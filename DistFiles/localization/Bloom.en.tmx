@@ -1942,7 +1942,7 @@
     <tu tuid="EditTab.TextBoxProperties.VerticalAlignment">
       <note>Label above the set of options, Top/Center/Bottom</note>
       <tuv xml:lang="en">
-        <seg>VerticalAlignment</seg>
+        <seg>Vertical Alignment</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
