@@ -504,32 +504,15 @@ namespace Bloom.Publish
 				break;	// There should be only one body element.
 			}
 			// Any real image will be displayed.  Image only pages are allowed in Bloom.
-			foreach (XmlElement img in pageElement.GetElementsByTagName("img"))
+			// (This includes background images.)
+			foreach(XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageElement))
 			{
-				if (RealImageFileExists(img))
+				bool isBrandingFile;	// not used here, but part of method signature
+				var path = FindRealImageFileIfPossible(img, out isBrandingFile);
+				if (!String.IsNullOrEmpty(path) && Path.GetFileName(path) != "placeHolder.png")	// consider blank if only placeholder image
 					return false;
 			}
 			return true;
-		}
-
-		/// <summary>
-		/// Check that the image file exists, and is not the place holder image.
-		/// </summary>
-		private bool RealImageFileExists(XmlElement img)
-		{
-			var src = img.GetAttribute("src");
-			if (String.IsNullOrEmpty(src) || src == "placeHolder.png")
-				return false;
-			var url = UrlPathString.CreateFromUrlEncodedString(src);
-			if (url == null || url.PathOnly == null || String.IsNullOrEmpty(url.NotEncoded))
-				return false;
-			var filename = url.PathOnly.NotEncoded;
-			if (String.IsNullOrEmpty(filename))
-				return false;
-			var srcPath = Path.Combine(Book.FolderPath, filename);
-			if (srcPath == kApiBrandingImage)
-				return FindBrandingImageIfPossible(url.NotEncoded) != null;
-			return RobustFile.Exists(srcPath);
 		}
 
 		private void CopyImages(HtmlDom pageDom)
@@ -537,50 +520,56 @@ namespace Bloom.Publish
 			// Manifest has to include all referenced files
 			foreach(XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
 			{
-				var url = HtmlDom.GetImageElementUrl(img);
-				if(url == null || url.NotEncoded == "")
-					continue; // very weird, but all we can do is ignore it.
-				// Notice that we use only the path part of the url. For some unknown reason, some bloom books
-				// (e.g., El Nino in the library) have a query in some image sources, and at least some ePUB readers
-				// can't cope with it.
-				var filename = url.PathOnly.NotEncoded;
-				if(string.IsNullOrEmpty(filename))
-					continue;
-				// Images are always directly in the folder
-				var srcPath = Path.Combine(Book.FolderPath, filename);
-				if(RobustFile.Exists(srcPath))
-					CopyFileToEpub(srcPath);
-				else if (srcPath == kApiBrandingImage)
-					CopyBrandingImageIfPossible(img, url.NotEncoded);
+				bool isBrandingFile;
+				var srcPath = FindRealImageFileIfPossible(img, out isBrandingFile);
+				if (srcPath == null)
+					continue;	// REVIEW: should we remove the element since the image source is empty?
+				if (srcPath == String.Empty)
+				{
+					img.ParentNode.RemoveChild(img);	// the image source file can't be found.
+				}
 				else
-					img.ParentNode.RemoveChild(img);
+				{
+					CopyFileToEpub(srcPath);
+					if (isBrandingFile)
+						img.SetAttribute("src", Path.GetFileName(srcPath));
+				}
 			}
 		}
 
 		/// <summary>
-		/// If possible, update the HTML img src attribute and copy the desired image file to the ePUB folder.
-		/// Otherwise, remove the img element.
+		/// Find the image file in the file system if possible, returning its full path if it exists.
+		/// Return null if the source url is empty.
+		/// Return String.Empty if the image file does not exist in the file system.
+		/// Also return a flag to indicate whether the image file is a branding api image file.
 		/// </summary>
-		/// <remarks>
-		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4323.
-		/// </remarks>
-		private void CopyBrandingImageIfPossible(XmlElement img, string urlPath)
+		private string FindRealImageFileIfPossible(XmlElement img, out bool isBrandingFile)
 		{
-			var path = FindBrandingImageIfPossible(urlPath);
-			if (path != null)
+			isBrandingFile = false;
+			var url = HtmlDom.GetImageElementUrl(img);
+			if (url == null || url.PathOnly == null || String.IsNullOrEmpty(url.NotEncoded))
+				return null; // very weird, but all we can do is ignore it.
+			// Notice that we use only the path part of the url. For some unknown reason, some bloom books
+			// (e.g., El Nino in the library) have a query in some image sources, and at least some ePUB readers
+			// can't cope with it.
+			var filename = url.PathOnly.NotEncoded;
+			if (String.IsNullOrEmpty(filename))
+				return null;
+			// Images are always directly in the folder
+			var srcPath = Path.Combine(Book.FolderPath, filename);
+			if (srcPath == kApiBrandingImage)
 			{
-				img.SetAttribute("src", Path.GetFileName(path));
-				CopyFileToEpub(path);
+				isBrandingFile = true;
+				return FindBrandingImageIfPossible(url.NotEncoded);
 			}
-			else
-			{
-				img.ParentNode.RemoveChild(img);
-			}
+			if (RobustFile.Exists(srcPath))
+				return srcPath;
+			return String.Empty;
 		}
 
 		/// <summary>
 		/// Check whether the desired branding image file exists.  If it does, return its full path.
-		/// Otherwise, return null;
+		/// Otherwise, return String.Empty;
 		/// </summary>
 		private string FindBrandingImageIfPossible(string urlPath)
 		{
@@ -597,7 +586,7 @@ namespace Bloom.Publish
 						return path;
 				}
 			}
-			return null;
+			return String.Empty;
 		}
 
 		// Combines staging and finishing (currently just used in tests).
