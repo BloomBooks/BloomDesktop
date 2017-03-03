@@ -1,5 +1,3 @@
-using Bloom.Workspace;
-
 namespace Bloom.CollectionChoosing
 {
 	partial class OpenCreateCloneControl
@@ -52,13 +50,13 @@ namespace Bloom.CollectionChoosing
 			this._toolStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
-			// 
+			//
 			// toolTip1
-			// 
+			//
 			this.toolTip1.AutomaticDelay = 300;
-			// 
+			//
 			// tableLayoutPanel2
-			// 
+			//
 			this.tableLayoutPanel2.BackColor = System.Drawing.Color.White;
 			this.tableLayoutPanel2.ColumnCount = 3;
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 260F));
@@ -86,9 +84,9 @@ namespace Bloom.CollectionChoosing
 			this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
 			this.tableLayoutPanel2.Size = new System.Drawing.Size(889, 343);
 			this.tableLayoutPanel2.TabIndex = 19;
-			// 
+			//
 			// _browseButton
-			// 
+			//
 			this._browseButton.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._browseButton.FlatAppearance.BorderSize = 0;
 			this._browseButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -108,9 +106,9 @@ namespace Bloom.CollectionChoosing
 			this._browseButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._browseButton.UseVisualStyleBackColor = true;
 			this._browseButton.Click += new System.EventHandler(this.OnBrowseForExistingLibraryClick);
-			// 
+			//
 			// button9
-			// 
+			//
 			this.button9.FlatAppearance.BorderSize = 0;
 			this.button9.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button9.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -128,9 +126,9 @@ namespace Bloom.CollectionChoosing
 			this.button9.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.button9.UseVisualStyleBackColor = true;
 			this.button9.Click += new System.EventHandler(this.CreateNewLibrary_LinkClicked);
-			// 
+			//
 			// _templateButton
-			// 
+			//
 			this._templateButton.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._templateButton.FlatAppearance.BorderSize = 0;
 			this._templateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -149,9 +147,9 @@ namespace Bloom.CollectionChoosing
 			this._templateButton.Text = "template collection button";
 			this._templateButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._templateButton.UseVisualStyleBackColor = true;
-			// 
+			//
 			// button8
-			// 
+			//
 			this.button8.FlatAppearance.BorderSize = 0;
 			this.button8.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button8.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -169,9 +167,9 @@ namespace Bloom.CollectionChoosing
 			this.button8.Text = "Copy From Chorus Hub on Local Network";
 			this.button8.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.button8.UseVisualStyleBackColor = true;
-			// 
+			//
 			// button7
-			// 
+			//
 			this.button7.FlatAppearance.BorderSize = 0;
 			this.button7.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button7.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -189,9 +187,9 @@ namespace Bloom.CollectionChoosing
 			this.button7.Text = "Copy from Internet";
 			this.button7.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.button7.UseVisualStyleBackColor = true;
-			// 
+			//
 			// button6
-			// 
+			//
 			this.button6.FlatAppearance.BorderSize = 0;
 			this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button6.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -209,9 +207,9 @@ namespace Bloom.CollectionChoosing
 			this.button6.Text = "Copy from USB Drive";
 			this.button6.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.button6.UseVisualStyleBackColor = true;
-			// 
+			//
 			// _readMoreLink
-			// 
+			//
 			this._readMoreLink.AutoSize = true;
 			this._readMoreLink.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._readMoreLink, null);
@@ -226,10 +224,10 @@ namespace Bloom.CollectionChoosing
 			this._readMoreLink.Tag = "sendreceive";
 			this._readMoreLink.Text = "Read More";
 			this._readMoreLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._readMoreLabel_Click);
-			// 
+			//
 			// _topRightPanel
-			// 
-			this._topRightPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			//
+			this._topRightPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._topRightPanel.Controls.Add(this._toolStrip1);
 			this._topRightPanel.Controls.Add(this.label1);
@@ -237,12 +235,11 @@ namespace Bloom.CollectionChoosing
 			this._topRightPanel.Name = "_topRightPanel";
 			this._topRightPanel.Size = new System.Drawing.Size(523, 54);
 			this._topRightPanel.TabIndex = 31;
-			// 
+			//
 			// _toolStrip1
-			// 
-			this._toolStrip1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			//
+			this._toolStrip1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
-			this._toolStrip1.AutoSize = false;
 			this._toolStrip1.BackColor = System.Drawing.Color.Transparent;
 			this._toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
 			this._toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -251,16 +248,14 @@ namespace Bloom.CollectionChoosing
 			this._L10NSharpExtender.SetLocalizableToolTip(this._toolStrip1, "Change user interface language");
 			this._L10NSharpExtender.SetLocalizationComment(this._toolStrip1, null);
 			this._L10NSharpExtender.SetLocalizingId(this._toolStrip1, "OpenCreateNewCollectionsDialog.UILanguageMenu");
-			this._toolStrip1.Location = new System.Drawing.Point(423, 9);
+			this._toolStrip1.Location = new System.Drawing.Point(458, 9);
 			this._toolStrip1.Name = "_toolStrip1";
-			this._toolStrip1.Size = new System.Drawing.Size(100, 39);
+			this._toolStrip1.Size = new System.Drawing.Size(65, 25);
 			this._toolStrip1.TabIndex = 25;
-			this._toolStrip1.Renderer = new NoBorderToolStripRenderer();
-			// 
+			//
 			// _uiLanguageMenu
-			// 
-			this._uiLanguageMenu.Alignment = System.Windows.Forms.ToolStripItemAlignment.Left;
-			this._uiLanguageMenu.AutoSize = true;
+			//
+			this._uiLanguageMenu.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
 			this._uiLanguageMenu.AutoToolTip = false;
 			this._uiLanguageMenu.BackColor = System.Drawing.Color.Transparent;
 			this._uiLanguageMenu.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -271,11 +266,12 @@ namespace Bloom.CollectionChoosing
 			this._L10NSharpExtender.SetLocalizationPriority(this._uiLanguageMenu, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._uiLanguageMenu, "OpenCreateNewCollectionsDialog._uiLanguageMenu");
 			this._uiLanguageMenu.Name = "_uiLanguageMenu";
-			this._uiLanguageMenu.Size = new System.Drawing.Size(95, 36);
+			this._uiLanguageMenu.Size = new System.Drawing.Size(62, 22);
+			this._uiLanguageMenu.Text = "English";
 			this._uiLanguageMenu.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-			// 
+			//
 			// label1
-			// 
+			//
 			this.label1.AutoSize = true;
 			this.label1.Font = new System.Drawing.Font("Segoe UI", 9.75F);
 			this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
@@ -291,14 +287,14 @@ namespace Bloom.CollectionChoosing
 			this.label1.Text = "Has someone else used Send/Receive to share a collection with you?\r\nUse one of th" +
     "ese red buttons to copy their collection to your computer.\r\nLater, use Send/Rece" +
     "ive to share your work back with them.";
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "OpenCreateNewCollectionsDialog";
-			// 
+			//
 			// OpenCreateCloneControl
-			// 
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.BackColor = System.Drawing.Color.White;
