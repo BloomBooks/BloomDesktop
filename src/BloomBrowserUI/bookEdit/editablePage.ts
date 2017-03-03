@@ -41,7 +41,10 @@ var styleSheets = [
 // in such a way that after a paste the C# browser object answers false to CanUndo.
 export function ckeditorCanUndo(): boolean {
     // review: do we need to examine all instances?
-    if (CKEDITOR && CKEDITOR.currentInstance
+    // C# may apparently call this before the module that defines the variable CKEDITOR
+    // is even loaded. To avoid an error, we have to check both that it is defined AND
+    // that it has a value.
+    if (typeof CKEDITOR !== "undefined" && CKEDITOR && CKEDITOR.currentInstance
         && (<any>CKEDITOR.currentInstance).undoManager
         && (<any>CKEDITOR.currentInstance).undoManager.undoable()) {
         return true;

@@ -27,7 +27,7 @@ namespace Bloom
 		/// Always log, possibly inform the user, possibly throw the exception
 		/// </summary>
 		/// <param name="modalThreshold">Will show a modal dialog if the channel is this or lower</param>
-		/// <param name="passiveThreshold">Ignored for now</param>
+		/// <param name="passiveThreshold">Will toast if channel is this or lower (and didn't modal) and shortUserLevelMessage is defined.</param>
 		/// <param name="shortUserLevelMessage">Simple message that fits in small toast notification</param>
 		/// <param name="moreDetails">Info adds information about the problem, which we get if they report the problem</param>
 		/// <param name="exception"></param>
