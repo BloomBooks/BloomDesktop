@@ -363,7 +363,7 @@ namespace Bloom.Book
 		// Should we still remove the old one?
 		private void UpdateBookInfoTags(BookInfo info)
 		{
-			info.TagsList = GetVariableOrNull("topic", "en");//topic key always in english
+			info.TopicsList = GetVariableOrNull("topic", "en");//topic key always in english
 		}
 
 
