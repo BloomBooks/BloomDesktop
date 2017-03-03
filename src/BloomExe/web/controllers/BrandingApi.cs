@@ -24,16 +24,7 @@ namespace Bloom.Api
 			server.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
 			{
 				var fileName = request.RequiredFileNameOrPath("id");
-
-				// Note: in Bloom 3.7, our Firefox, when making PDFs, would render svg's as blurry. This was fixed in Bloom 3.8 with
-				// a new Firefox. So SVGs are requested by the html...
-				var path = BloomFileLocator.GetOptionalBrandingFile(_collectionSettings.BrandingProjectName, fileName.NotEncoded);
-
-				// ... but if there is no SVG, we can actually send back a PNG instead, and that works fine:
-				if(string.IsNullOrEmpty(path))
-				{
-					path = BloomFileLocator.GetOptionalBrandingFile(_collectionSettings.BrandingProjectName, Path.ChangeExtension(fileName.NotEncoded, "png"));
-				}
+				var path = FindBrandingImageFileIfPossible(_collectionSettings.BrandingProjectName, fileName.NotEncoded);
 
 				// And this is perfectly normal, to not have a branding image at all, for a particular page:
 				if (string.IsNullOrEmpty(path))
@@ -47,6 +38,24 @@ namespace Bloom.Api
 
 		}
 
+		/// <summary>
+		/// Find the requested branding image file for the given branding, looking for a .png file if the .svg file does not exist.
+		/// </summary>
+		/// <remarks>
+		/// This method is used by EpubMaker as well as here in BrandingApi.
+		/// </remarks>
+		public static string FindBrandingImageFileIfPossible(string branding, string filename)
+		{
+			// Note: in Bloom 3.7, our Firefox, when making PDFs, would render svg's as blurry. This was fixed in Bloom 3.8 with
+			// a new Firefox. So SVGs are requested by the html...
+			var path = BloomFileLocator.GetOptionalBrandingFile(branding, filename);
+
+			// ... but if there is no SVG, we can actually send back a PNG instead, and that works fine:
+			if(string.IsNullOrEmpty(path))
+				path = BloomFileLocator.GetOptionalBrandingFile(branding, Path.ChangeExtension(filename, "png"));
+
+			return path;
+		}
 
 		public class Settings
 		{

@@ -584,9 +584,7 @@ namespace Bloom.Publish
 				var file = parsedQuery["id"];
 				if (!String.IsNullOrEmpty(file))
 				{
-					// The following line is the crucial behavior of the BrandingApi implementation, but that interprets an
-					// HTTP request and returns the image bytes.
-					var path = BloomFileLocator.GetOptionalBrandingFile(Book.CollectionSettings.BrandingProjectName, file);
+					var path = Bloom.Api.BrandingApi.FindBrandingImageFileIfPossible(Book.CollectionSettings.BrandingProjectName, file);
 					if (!String.IsNullOrEmpty(path) && RobustFile.Exists(path))
 						return path;
 				}
