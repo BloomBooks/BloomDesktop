@@ -1,5 +1,3 @@
-using Bloom.Workspace;
-
 namespace Bloom.CollectionChoosing
 {
 	partial class OpenCreateCloneControl
@@ -45,7 +43,7 @@ namespace Bloom.CollectionChoosing
 			this._topRightPanel = new System.Windows.Forms.Panel();
 			this._toolStrip1 = new System.Windows.Forms.ToolStrip();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
-			this.label1 = new System.Windows.Forms.Label();
+			this._sendReceiveInstructionsLabel = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this.tableLayoutPanel2.SuspendLayout();
 			this._topRightPanel.SuspendLayout();
@@ -232,7 +230,7 @@ namespace Bloom.CollectionChoosing
 			this._topRightPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._topRightPanel.Controls.Add(this._toolStrip1);
-			this._topRightPanel.Controls.Add(this.label1);
+			this._topRightPanel.Controls.Add(this._sendReceiveInstructionsLabel);
 			this._topRightPanel.Location = new System.Drawing.Point(363, 3);
 			this._topRightPanel.Name = "_topRightPanel";
 			this._topRightPanel.Size = new System.Drawing.Size(523, 54);
@@ -242,7 +240,6 @@ namespace Bloom.CollectionChoosing
 			// 
 			this._toolStrip1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this._toolStrip1.AutoSize = false;
 			this._toolStrip1.BackColor = System.Drawing.Color.Transparent;
 			this._toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
 			this._toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -251,16 +248,14 @@ namespace Bloom.CollectionChoosing
 			this._L10NSharpExtender.SetLocalizableToolTip(this._toolStrip1, "Change user interface language");
 			this._L10NSharpExtender.SetLocalizationComment(this._toolStrip1, null);
 			this._L10NSharpExtender.SetLocalizingId(this._toolStrip1, "OpenCreateNewCollectionsDialog.UILanguageMenu");
-			this._toolStrip1.Location = new System.Drawing.Point(423, 9);
+			this._toolStrip1.Location = new System.Drawing.Point(458, 9);
 			this._toolStrip1.Name = "_toolStrip1";
-			this._toolStrip1.Size = new System.Drawing.Size(100, 39);
+			this._toolStrip1.Size = new System.Drawing.Size(65, 25);
 			this._toolStrip1.TabIndex = 25;
-			this._toolStrip1.Renderer = new NoBorderToolStripRenderer();
 			// 
 			// _uiLanguageMenu
 			// 
-			this._uiLanguageMenu.Alignment = System.Windows.Forms.ToolStripItemAlignment.Left;
-			this._uiLanguageMenu.AutoSize = true;
+			this._uiLanguageMenu.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
 			this._uiLanguageMenu.AutoToolTip = false;
 			this._uiLanguageMenu.BackColor = System.Drawing.Color.Transparent;
 			this._uiLanguageMenu.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -271,24 +266,25 @@ namespace Bloom.CollectionChoosing
 			this._L10NSharpExtender.SetLocalizationPriority(this._uiLanguageMenu, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._uiLanguageMenu, "OpenCreateNewCollectionsDialog._uiLanguageMenu");
 			this._uiLanguageMenu.Name = "_uiLanguageMenu";
-			this._uiLanguageMenu.Size = new System.Drawing.Size(95, 36);
+			this._uiLanguageMenu.Size = new System.Drawing.Size(62, 22);
+			this._uiLanguageMenu.Text = "English";
 			this._uiLanguageMenu.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
-			// label1
+			// _sendReceiveInstructionsLabel
 			// 
-			this.label1.AutoSize = true;
-			this.label1.Font = new System.Drawing.Font("Segoe UI", 9.75F);
-			this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
-			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.label1, "OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus");
-			this.label1.Location = new System.Drawing.Point(0, -3);
-			this.label1.Margin = new System.Windows.Forms.Padding(3, 10, 3, 0);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(425, 51);
-			this.label1.TabIndex = 24;
-			this.label1.Tag = "sendreceive";
-			this.label1.Text = "Has someone else used Send/Receive to share a collection with you?\r\nUse one of th" +
+			this._sendReceiveInstructionsLabel.AutoSize = true;
+			this._sendReceiveInstructionsLabel.Font = new System.Drawing.Font("Segoe UI", 9.75F);
+			this._sendReceiveInstructionsLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(77)))), ((int)(((byte)(77)))));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._sendReceiveInstructionsLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._sendReceiveInstructionsLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._sendReceiveInstructionsLabel, "OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus");
+			this._sendReceiveInstructionsLabel.Location = new System.Drawing.Point(0, -3);
+			this._sendReceiveInstructionsLabel.Margin = new System.Windows.Forms.Padding(3, 10, 3, 0);
+			this._sendReceiveInstructionsLabel.Name = "_sendReceiveInstructionsLabel";
+			this._sendReceiveInstructionsLabel.Size = new System.Drawing.Size(425, 51);
+			this._sendReceiveInstructionsLabel.TabIndex = 24;
+			this._sendReceiveInstructionsLabel.Tag = "sendreceive";
+			this._sendReceiveInstructionsLabel.Text = "Has someone else used Send/Receive to share a collection with you?\r\nUse one of th" +
     "ese red buttons to copy their collection to your computer.\r\nLater, use Send/Rece" +
     "ive to share your work back with them.";
 			// 
@@ -330,7 +326,7 @@ namespace Bloom.CollectionChoosing
 		private System.Windows.Forms.Button button8;
 		private System.Windows.Forms.Button button9;
 		private System.Windows.Forms.Button _templateButton;
-		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.Label _sendReceiveInstructionsLabel;
 		private System.Windows.Forms.Button _browseButton;
 		private System.Windows.Forms.LinkLabel _readMoreLink;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
