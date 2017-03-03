@@ -33,9 +33,11 @@ namespace Bloom.Book
 		public XMatterHelper(HtmlDom bookDom, string nameOfXMatterPack, IFileLocator fileLocator)
 		{
 			_bookDom = bookDom;
-			_nameOfXMatterPack = nameOfXMatterPack;
+			_nameOfXMatterPack = GetRequiredBookXMatter(bookDom);
+			if (String.IsNullOrEmpty(_nameOfXMatterPack))
+				_nameOfXMatterPack = nameOfXMatterPack;
 
-			string directoryName = nameOfXMatterPack + "-XMatter";
+			string directoryName = _nameOfXMatterPack + "-XMatter";
 			string directoryPath;
 			try
 			{
@@ -45,17 +47,17 @@ namespace Bloom.Book
 			{
 				var errorTemplate = LocalizationManager.GetString("Errors.XMatterNotFound",
 					"This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.");
-				var msg = string.Format(errorTemplate, nameOfXMatterPack);
+				var msg = string.Format(errorTemplate, _nameOfXMatterPack);
 
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), msg);
 				//NB: we don't want to put up a dialog for each one; one failure here often means 20 more are coming as the other books are loaded!
 				throw new ApplicationException(msg);
 			}
-			var htmName = nameOfXMatterPack + "-XMatter.html";
+			var htmName = _nameOfXMatterPack + "-XMatter.html";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			if(!RobustFile.Exists(PathToXMatterHtml))
 			{
-				htmName = nameOfXMatterPack + "-XMatter.htm"; // pre- Bloom 3.7
+				htmName = _nameOfXMatterPack + "-XMatter.htm"; // pre- Bloom 3.7
 				PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			}
 			if (!RobustFile.Exists(PathToXMatterHtml))
@@ -72,6 +74,16 @@ namespace Bloom.Book
 			XMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml, false);
 		}
 
+		/// <summary>
+		/// Return the specific XMatter required for this book, or null if the book doesn't care.
+		/// </summary>
+		private string GetRequiredBookXMatter(HtmlDom bookDom)
+		{
+			var div = bookDom.Body.SelectSingleNode("div[@id='bloomDataDiv']/div[@data-book='xmatter']");
+			if (div == null || String.IsNullOrWhiteSpace(div.InnerText))
+				return null;
+			return div.InnerText.Trim();
+		}
 
 		public string GetStyleSheetFileName()
 		{
