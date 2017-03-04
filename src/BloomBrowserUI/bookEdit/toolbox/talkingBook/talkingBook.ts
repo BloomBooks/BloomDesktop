@@ -19,7 +19,11 @@ export default class TalkingBookModel implements ITabModel {
     }
 
     hideTool() {
-        AudioRecorder.theOneAudioRecorder.removeRecordingSetup();
+        // not quite sure how this can be called when never initialized, but if
+        // we don't have the object we certainly can't use it.
+        if (AudioRecorder.theOneAudioRecorder) {
+            AudioRecorder.theOneAudioRecorder.removeRecordingSetup();
+        }
     }
 
     updateMarkup() {

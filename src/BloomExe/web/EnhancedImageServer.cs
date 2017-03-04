@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using System.IO;
 using System.Net;
+using System.Net.Mime;
 using System.Text.RegularExpressions;
 using Bloom.ImageProcessing;
 using BloomTemp;
@@ -409,6 +410,7 @@ namespace Bloom.Api
 						bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage3);
 					bubbleLangs.AddRange(new [] { "en", "fr", "sp", "ko", "zh-Hans"});
 					// if it isn't available in any of those we'll arbitrarily take the first one.
+					info.ContentType = "application/json";
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new { langs = bubbleLangs }));
 					return true;
 				case "authorMode":
