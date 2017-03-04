@@ -5,28 +5,41 @@
 // ${fileDirname}: the current opened file's dirname
 // ${fileExtname}: the current opened file's extension
 // ${cwd}: the current working directory of the spawned process
-
 {
-
+    "version": "0.1.0",
     "command": "npm",
     "isShellCommand": true,
-    "args": [ "run"
-   ],
+    "args": [
+        "run"
+    ],
     "tasks": [
         {
-            "taskName":"build",
-            "isBuildCommand": true,
+            //I couldn't get this to work
+            //But you can paste this into a terminal: pug ./templates -o ../../output/browser/templates -w --pretty
+            "taskName": "watch template pugs (doesn't work)",
+            "command": "pug",
+            "isShellCommand": true,
             "showOutput": "always",
-            "args": [  ]
+            "isBackground": true,
+            "args": [
+                "./templates",
+                "-o ../../output/browser/templates",
+                "-w",
+                "--pretty"
+            ]
         },
         {
-            "taskName":"testWithChromeContinuous",
+            "taskName": "build",
+            "isBuildCommand": true,
+            "showOutput": "always",
+            "args": []
+        },
+        {
+            "taskName": "testWithChromeContinuous",
             "isBuildCommand": false,
             "isTestCommand": true,
             "showOutput": "always",
-            "args": [
-
-            ]
+            "args": []
         }
     ]
 }
