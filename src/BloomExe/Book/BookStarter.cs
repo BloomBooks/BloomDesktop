@@ -282,13 +282,13 @@ namespace Bloom.Book
 			// (in hopes the user will keep it at the end so the pages can be used in Add Page)
 			if (storage.MetaData.IsSuitableForMakingShells)
 			{
-				storage.MetaData.Title = "Template";
-				storage.Dom.Title = "Template";
-				storage.Dom.SetBookSetting("bookTitle", "en", "Template");
+				storage.MetaData.Title = "My Template";
+				storage.Dom.Title = "My Template";
+				storage.Dom.SetBookSetting("bookTitle", "en", "My Template");
 				// Yes, we want the English word Template in the vernacular Title. Ugly, but that's
 				// what determines the file name, and that's what determines whether Add Page will
 				// include it.
-				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1Iso639Code, "Template");
+				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1Iso639Code, "My Template");
 			}
 		}
 
