@@ -604,16 +604,23 @@ namespace Bloom.Api
 			if (IsSimulatedFileUrl(localPath))
 			{
 				//even beta users should not be confronted with this
+				// localization not really needed because this is seen only by beta testers.
 				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);
 			}
 			else if (IsImageTypeThatCanBeReturned(localPath))
 			{
 				// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Cannot Find Image File", "Server could not find the image file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
+				// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
+				var userMsg = LocalizationManager.GetString("WebServer.Warning.NoImageFile", "Cannot Find Image File");
+				var detailMsg = String.Format("Server could not find the image file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, userMsg, detailMsg);
 			}
 			else
 			{
-				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Cannot Find File", "Server could not find the file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
+				// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
+				var userMsg = LocalizationManager.GetString("WebServer.Warning.NoFile", "Cannot Find File");
+				var detailMsg = String.Format("Server could not find the file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
+				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
 			}
 		}
 

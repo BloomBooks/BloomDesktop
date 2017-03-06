@@ -4693,6 +4693,18 @@
         <seg>Traditional Story</seg>
       </tuv>
     </tu>
+    <tu tuid="WebServer.Warning.NoImageFile">
+      <note>displays as a "toast"</note>
+      <tuv xml:lang="en">
+        <seg>Cannot Find Image File</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WebServer.Warning.NoFile">
+      <note>displays as a "toast"</note>
+      <tuv xml:lang="en">
+        <seg>Cannot Find File</seg>
+      </tuv>
+    </tu>
     <tu tuid="WorkspaceView._tabStrip">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
