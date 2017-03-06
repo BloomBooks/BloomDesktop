@@ -161,7 +161,87 @@ namespace BloomTests.Book
 			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 		}
 
+		[Test]
+		public void TestBookSpecifiesXMatter()
+		{
+			var factoryXMatter = BloomFileLocator.GetInstalledXMatterDirectory();
+			var fileLocator = new FileLocator(new string[] { factoryXMatter });
 
+			// Test that the XMatterHelper finds a required xmatter setting.
+			var dom1 = new HtmlDom("<html>" +
+				"<head>" +
+				"<meta charset='UTF-8'></meta>" +
+				"<meta name='BloomFormatVersion' content='2.0'></meta>" +
+				"<meta name='pageTemplateSource' content='Basic Book'></meta>" +
+				"<meta name='xmatter' content='SuperPaperSaver'></meta>" +
+				"</head>" +
+				"<body>" +
+				"<div id='bloomDataDiv'>" +
+				"<div data-book='contentLanguage1' lang='*'>en</div>" +
+				"<div data-book='contentLanguage1Rtl' lang='*'>False</div>" +
+				"<div data-book='languagesOfBook' lang='*'>English</div>" +
+				"</div>" +
+				"</body>" +
+				"</html>");
+			var helper1 = new XMatterHelper(dom1, "Factory", fileLocator);
+			Assert.That(helper1.GetStyleSheetFileName(), Is.EqualTo("SuperPaperSaver-XMatter.css"));
+
+			// Test that an empty (because only whitespace) xmatter setting defaults to the default.
+			var dom2 = new HtmlDom("<html>" +
+				"<head>" +
+				"<meta charset='UTF-8'></meta>" +
+				"<meta name='BloomFormatVersion' content='2.0'></meta>" +
+				"<meta name='pageTemplateSource' content='Basic Book'></meta>" +
+				"<meta name='xmatter' content=' \t'></meta>" +
+				"</head>" +
+				"<body>" +
+				"<div id='bloomDataDiv'>" +
+				"<div data-book='contentLanguage1' lang='*'>en</div>" +
+				"<div data-book='contentLanguage1Rtl' lang='*'>False</div>" +
+				"<div data-book='languagesOfBook' lang='*'>English</div>" +
+				"</div>" +
+				"</body>" +
+				"</html>");
+			var helper2 = new XMatterHelper(dom2, "Factory", fileLocator);
+			Assert.That(helper2.GetStyleSheetFileName(), Is.EqualTo("Factory-XMatter.css"));
+
+			// Test that a truly empty xmatter setting defaults to the default.
+			var dom3 = new HtmlDom("<html>" +
+				"<head>" +
+				"<meta charset='UTF-8'></meta>" +
+				"<meta name='BloomFormatVersion' content='2.0'></meta>" +
+				"<meta name='pageTemplateSource' content='Basic Book'></meta>" +
+				"<meta name='xmatter' content=''></meta>" +
+				"</head>" +
+				"<body>" +
+				"<div id='bloomDataDiv'>" +
+				"<div data-book='contentLanguage1' lang='*'>en</div>" +
+				"<div data-book='contentLanguage1Rtl' lang='*'>False</div>" +
+				"<div data-book='languagesOfBook' lang='*'>English</div>" +
+				"</div>" +
+				"</body>" +
+				"</html>");
+			var helper3 = new XMatterHelper(dom3, "Factory", fileLocator);
+			Assert.That(helper3.GetStyleSheetFileName(), Is.EqualTo("Factory-XMatter.css"));
+
+			// Test that a missing xmatter setting defaults to the default.
+			var dom4 = new HtmlDom("<html>" +
+				"<head>" +
+				"<meta charset='UTF-8'></meta>" +
+				"<meta name='BloomFormatVersion' content='2.0'></meta>" +
+				"<meta name='pageTemplateSource' content='Basic Book'></meta>" +
+				"</head>" +
+				"<body>" +
+				"<div id='bloomDataDiv'>" +
+				"<div data-book='contentLanguage1' lang='*'>en</div>" +
+				"<div data-book='contentLanguage1Rtl' lang='*'>False</div>" +
+				"<div data-book='languagesOfBook' lang='*'>English</div>" +
+				"</div>" +
+				"</body>" +
+				"</html>");
+			var helper4 = new XMatterHelper(dom4, "Factory", fileLocator);
+			Assert.That(helper4.GetStyleSheetFileName(), Is.EqualTo("Factory-XMatter.css"));
+		}
 
 		//		TODO: at the moment, we'd have to creat a whole xmatter folder
 		/// <summary>

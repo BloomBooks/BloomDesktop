@@ -25,17 +25,20 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// Constructs by finding the file and folder of the xmatter pack, given the its key name e.g. "Factory", "SILIndonesia".
+		/// The default key name is provided as a method parameter, but that can be overridden by a value from inside the book.
 		/// The name of the file should be (key)-XMatter.htm. The name and the location of the folder is not our problem...
 		/// we leave it to the supplied fileLocator to find it.
 		/// </summary>
-		/// <param name="nameOfXMatterPack">e.g. "Factory", "SILIndonesia"</param>
-		/// <param name="fileLocator">The locator needs to be able tell us the path to an xmater html file, given its name</param>
-		public XMatterHelper(HtmlDom bookDom, string nameOfXMatterPack, IFileLocator fileLocator)
+		/// <param name="nameOfDefaultXMatterPack">e.g. "Factory", "SILIndonesia".  This can be overridden inside the bookDom.</param>
+		/// <param name="fileLocator">The locator needs to be able tell us the path to an xmatter html file, given its name</param>
+		public XMatterHelper(HtmlDom bookDom, string nameOfDefaultXMatterPack, IFileLocator fileLocator)
 		{
 			_bookDom = bookDom;
-			_nameOfXMatterPack = nameOfXMatterPack;
+			_nameOfXMatterPack = GetXMatterFromBook(bookDom);
+			if (String.IsNullOrEmpty(_nameOfXMatterPack))
+				_nameOfXMatterPack = nameOfDefaultXMatterPack;
 
-			string directoryName = nameOfXMatterPack + "-XMatter";
+			string directoryName = _nameOfXMatterPack + "-XMatter";
 			string directoryPath;
 			try
 			{
@@ -45,17 +48,17 @@ namespace Bloom.Book
 			{
 				var errorTemplate = LocalizationManager.GetString("Errors.XMatterNotFound",
 					"This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.");
-				var msg = string.Format(errorTemplate, nameOfXMatterPack);
+				var msg = string.Format(errorTemplate, _nameOfXMatterPack);
 
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), msg);
 				//NB: we don't want to put up a dialog for each one; one failure here often means 20 more are coming as the other books are loaded!
 				throw new ApplicationException(msg);
 			}
-			var htmName = nameOfXMatterPack + "-XMatter.html";
+			var htmName = _nameOfXMatterPack + "-XMatter.html";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			if(!RobustFile.Exists(PathToXMatterHtml))
 			{
-				htmName = nameOfXMatterPack + "-XMatter.htm"; // pre- Bloom 3.7
+				htmName = _nameOfXMatterPack + "-XMatter.htm"; // pre- Bloom 3.7
 				PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			}
 			if (!RobustFile.Exists(PathToXMatterHtml))
@@ -72,6 +75,19 @@ namespace Bloom.Book
 			XMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml, false);
 		}
 
+		/// <summary>
+		/// Return the specific XMatter required for this book, or null if the book doesn't care.
+		/// </summary>
+		private string GetXMatterFromBook(HtmlDom bookDom)
+		{
+			var xmatter = bookDom.RawDom.SelectSingleNode("/html/head/meta[@name='xmatter']/@content");
+			if (xmatter == null)
+				return null;
+			var content = xmatter.Value;
+			if (String.IsNullOrWhiteSpace(content))
+				return null;
+			return content.Trim();
+		}
 
 		public string GetStyleSheetFileName()
 		{
