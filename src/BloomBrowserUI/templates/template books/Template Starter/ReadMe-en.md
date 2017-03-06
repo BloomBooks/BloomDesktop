@@ -1,7 +1,12 @@
-A **Template** is a 'book' that is a starting point, not for translating, but for authoring: something like Basic Book or Arithmetic Template. It provides a set of related page layouts that an author can choose from in writing an original book. These pages are also available to use in books created from another template. Usually the text and picture blocks on these pages will be empty, ready for an author to fill in, though sometimes there may be standard text or pictures that should be on every copy of the page.
+This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
+There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<sup>[1](#myfootnote1)</sup>.
 
-When you create a book from the Template Starter, you will typically add various pages derived from custom layout or made by modifying existing layouts. Notice that when you are editing a template book, the page label in the top left of the page is editable. You should give each of your layouts a useful label. Unfortunately, at this time we do not have any mechanism for template books made by end users to have localizable labels.
+The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom.
 
-#Notes:
-1. The Title of your book should end in Template. Bloom currently requires this to enable the pages in your book to be available for use in other books.
-2. You may wish to customize the icon that appears in Bloom's collection tab for your template. To prevent Bloom overwriting your custom icon, simply make it read-only. Often a good way to make a custom icon is to start with the one Bloom creates.
+When you add pages to your template, make sure to give each one useful label and description<sup>[2](#myfootnote2)</sup>. Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named ReadMe-en.md in your template's folder. This file should follow the <a href="http://spec.commonmark.org/dingus/">markdown standard</a>. To provide your instructions in other languages, make version of that file that change the "en" to another language's two letter code. For example ReadMe-fr.md would be shown when Bloom is set to show labels in French.
+
+Notes:
+
+<a name="myfootnote1">1</a>: These books could later be combined using the Folio feature.
+
+<a name="myfootnote2">2</a>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.
