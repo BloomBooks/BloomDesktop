@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Newtonsoft.Json;
 using SIL.IO;
+using SIL.PlatformUtilities;
 
 namespace Bloom.web.controllers
 {
@@ -204,7 +205,7 @@ namespace Bloom.web.controllers
 							return false;
 						return pathLC.EndsWith("template.html") || pathLC.EndsWith("basic book.html") || pathLC.EndsWith("template.htm");
 					})
-				.Select(path => path));
+				.Select(path => Platform.IsWindows ? path.ToLowerInvariant() : path));
 
 			var indexOfBasicBook = bookTemplatePaths.FindIndex(p => p.ToLowerInvariant().Contains("basic book"));
 			if (indexOfBasicBook > 1)
@@ -213,7 +214,8 @@ namespace Bloom.web.controllers
 				bookTemplatePaths.RemoveAt(indexOfBasicBook);
 				bookTemplatePaths.Insert(1,pathOfBasicBook);
 			}
-			return bookTemplatePaths;
+
+			return bookTemplatePaths.Distinct().ToList();
 		}
 
 		private dynamic GetPageGroup(string path)
