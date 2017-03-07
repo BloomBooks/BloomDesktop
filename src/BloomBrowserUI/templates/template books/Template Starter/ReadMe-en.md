@@ -11,7 +11,7 @@ When you add pages to your template, make sure to give each one useful label<sup
 
 Notes:
 
-<a name="note1">1</a>: These books could later be combined using the Folio feature.
+<a name="note1">1</a>: These books could later be combined using the forthcoming Folio feature.
 
 <a name="note2">2</a>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.
 
