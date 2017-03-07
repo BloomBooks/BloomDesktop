@@ -422,20 +422,8 @@ namespace Bloom.Book
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.SortStyleSheetLinks();
 			AddPreviewJavascript(pageDom);
-			AddFillerTextToEmptyEditDivs(pageDom);
+			HtmlDom.AddClassIfMissing(pageDom.Body, "bloom-templateThumbnail");
 			return pageDom;
-		}
-
-		private static void AddFillerTextToEmptyEditDivs(HtmlDom pageDom)
-		{
-			var placeHolderText =
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed porttitor ex at sapien accumsan convallis. Aenean varius nisi justo. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.";
-			var emptyDivs =
-				pageDom.RawDom.SafeSelectNodes("//div[@contenteditable='true' and string-length(normalize-space(text()))=0]");
-			if (emptyDivs.Count > 3)
-				placeHolderText = "Lorem";
-			foreach (XmlElement div in emptyDivs)
-				div.InnerText = placeHolderText;
 		}
 
 		public HtmlDom GetPreviewXmlDocumentForFirstPage()
