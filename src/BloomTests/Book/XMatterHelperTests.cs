@@ -161,7 +161,46 @@ namespace BloomTests.Book
 			helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait);
 		}
 
+		[Test]
+		[TestCase("<meta name='xmatter' content='SuperPaperSaver'></meta>", "SuperPaperSaver-XMatter.css")]
+		[TestCase("<meta name='xmatter' content=''></meta>",                "Factory-XMatter.css")]
+		[TestCase("<meta name='xmatter' content=' \t '></meta>",            "Factory-XMatter.css")]
+		[TestCase("<meta name='xmatter' content='DoesNotExist'></meta>",    "Factory-XMatter.css")]
+		[TestCase("",                                                       "Factory-XMatter.css")]
+		public void TestBookSpecifiesXMatter(string xmatterBook, string expected)
+		{
+			var factoryXMatter = BloomFileLocator.GetInstalledXMatterDirectory();
+			var fileLocator = new FileLocator(new string[] { factoryXMatter });
 
+			// Test that the XMatterHelper finds a required xmatter setting.
+			var dom1 = new HtmlDom("<html>" +
+				"<head>" +
+				"<meta charset='UTF-8'></meta>" +
+				"<meta name='BloomFormatVersion' content='2.0'></meta>" +
+				"<meta name='pageTemplateSource' content='Basic Book'></meta>" +
+				xmatterBook +
+				"</head>" +
+				"<body>" +
+				"<div id='bloomDataDiv'>" +
+				"<div data-book='contentLanguage1' lang='*'>en</div>" +
+				"<div data-book='contentLanguage1Rtl' lang='*'>False</div>" +
+				"<div data-book='languagesOfBook' lang='*'>English</div>" +
+				"</div>" +
+				"</body>" +
+				"</html>");
+			var helper1 = new XMatterHelper(dom1, "Factory", fileLocator);
+			if (!string.IsNullOrEmpty(xmatterBook))
+			{
+				// Verify that we may have what we want for the xmatter specification, valid or not.
+				Assert.That(dom1.GetMetaValue("xmatter", null), Is.Not.Null);
+			}
+			Assert.That(helper1.GetStyleSheetFileName(), Is.EqualTo(expected));
+			if (xmatterBook.Contains("DoesNotExist"))
+			{
+				// Invalid xmatter specification should be removed from the DOM.
+				Assert.That(dom1.GetMetaValue("xmatter", null), Is.Null);
+			}
+		}
 
 		//		TODO: at the moment, we'd have to creat a whole xmatter folder
 		/// <summary>
