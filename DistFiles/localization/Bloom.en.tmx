@@ -1565,7 +1565,7 @@
     <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Click to Edit Copyright and License</seg>
+        <seg>Click to Edit Copyright &amp; License</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.FundingAgenciesPrompt">
@@ -1679,6 +1679,11 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Instructions.DeleteAllowed">
+      <tuv xml:lang="en">
+        <seg>Feel free to modify or delete this page.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.JpegWarningDialog.DoNotUse">
@@ -4196,6 +4201,12 @@
         <seg>A blank page that allows you to add items.</seg>
       </tuv>
     </tu>
+    <tu tuid="TemplateBooks.PageDescription.Flyleaf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This page was automatically inserted because the following page is marked as part of a two page spread.</seg>
+      </tuv>
+    </tu>
     <tu tuid="TemplateBooks.PageDescription.Picture &amp; Word">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -4426,6 +4437,12 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Factory</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Flyleaf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Flyleaf</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.Front Cover">

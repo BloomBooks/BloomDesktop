@@ -188,7 +188,7 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.FundingAgenciesPrompt",
 				"Use this to acknowledge any funding agencies.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CopyrightPrompt",
-				"Click to Edit Copyright and License");
+				"Click to Edit Copyright & License");	// pug files use & everywhere (BL-4120)
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalAcknowledgmentsPrompt",
 				"Original (or Shell) Acknowledgments in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TopicPrompt",
@@ -208,6 +208,15 @@ namespace Bloom.Book
 			// Used in Traditional Front matter
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.InsideFrontCoverTextPrompt",
 				"If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.");
+
+			// Used in Big Book instructions page.  (BL-4115)
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.Instructions.DeleteAllowed",
+				"Feel free to modify or delete this page.");
+			// Inserted by XMatterHelper as needed (BL-4116)
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "TemplateBooks.PageLabel.Flyleaf",
+				"Flyleaf");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "TemplateBooks.PageDescription.Flyleaf",
+				"This page was automatically inserted because the following page is marked as part of a two page spread.");
 
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image");
