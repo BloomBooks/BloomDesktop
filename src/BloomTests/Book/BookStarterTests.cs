@@ -739,6 +739,24 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='xyz']", 1);
 		}
 
+		[Test]
+		public void SetupPage_PageHadDescription_DescriptionClearedButEnglishStillThere()
+		{
+			var contents = @"<div class='bloom-page'>
+						 <div class='pageDescription' lang='en'>hello</div>
+						 <div class='pageDescription' lang='fr'>bonjour</div>
+					</div>";
+
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object, "abc", "def");
+			//should remove the French (I don't see that we actually have any templates that have anything but English, but just in case)
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'pageDescription') and @lang != 'en']", 0);
+			//should leave English as a placeholder
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'pageDescription') and not(normalize-space(.))]", 1);
+		}
+
 		/// <summary>
 		/// This is a regression test for bl-1210, where the translation-group for title would only
 		/// get bloom-editables with the *current* languages. The problem with that is that then the
