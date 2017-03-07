@@ -169,7 +169,7 @@ namespace Bloom.Book
 
 			storage.Save();
 
-			//REVIEW this actually undoes the setting of the intial files name:
+			//REVIEW this actually undoes the setting of the initial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
 		}
@@ -249,19 +249,51 @@ namespace Bloom.Book
 				node.ParentNode.RemoveChild(node);
 			}
 		}
+		/// <summary>
+		/// This clears the description from a page as it comes in.
+		/// </summary>
+		/// <remarks>
+		/// In a normal book,
+		/// well there is no place to see the description once it is added. But if
+		/// we are building a template, then that description will be shown when
+		/// someone uses this template (in the Add Page dialog). The description is
+		/// something like "A blank page that allows to create custom items"; once
+		/// you modify that page, the description stops being accurate.
+		/// Now, I can think of scenarios where you'd want to keep description.
+		/// E.g. you have an alphabet chart, you add that to another template where hey, 
+		/// it's still an alphabet chart. This is a judgment call, which is worse. 
+		/// I'm judging that it's worse to have an out-of-date description than a missing one.
+		/// </remarks>
+		private static void ClearAwayPageDescription(XmlNode pageDiv)
+		{
+			//clear away all pageDescription divs except the English one
+			var nonEnglishDescriptions = new List<XmlNode>();
+			nonEnglishDescriptions.AddRange(from XmlNode x in pageDiv.SafeSelectNodes("//div[contains(@class, 'pageDescription') and @lang != 'en']") select x);
+			foreach (var node in nonEnglishDescriptions)
+			{
+				node.ParentNode.RemoveChild(node);
+			}
+			// now leave the English Description as empty; serving as a placeholder if we are making a template
+			// and want to go into the html and add a description
+			var description = pageDiv.SelectSingleNode("//div[contains(@class, 'pageDescription')]");
+			if(description != null)
+			{
+				description.InnerXml = "";
+			}
+		}
 
 		private void SetBookTitle(BookStorage storage, BookData bookData, bool usingTemplate)
 		{
 			//This is what we were trying to do: there was a defaultNameForDerivedBooks meta tag in the html
 			//which had no language code. It worked fine for English, e.g., naming new English books
-			//"My Book" or "My Dicionary" or whatever.
-			//But in other cases, it actually hurt becuase that English name would be hidden down in the new
+			//"My Book" or "My Dictionary" or whatever.
+			//But in other cases, it actually hurt because that English name would be hidden down in the new
 			//book, where the author wouldn't see it. But some consumer, using English, would see it, and
-			//"My Book" is a pretty dumb name for tha carefully prepared book to be listed under.
+			//"My Book" is a pretty dumb name for the carefully prepared book to be listed under.
 			//
 			//Now, if we are making this book from a shell book, we can keep whatever (title,language) pairs it has.
-			//Those will be just fine, for example, if we have English as one of our national langauges and so get
-			// "vaccinations" for free wihtout having to type that in again.
+			//Those will be just fine, for example, if we have English as one of our national languages and so get
+			// "vaccinations" for free without having to type that in again.
 			//
 			//But if we are making this from a *template*, then we *don't* want to keep the various ways to say the
 			//name of the template. Seeing "Basic Book" as the name of a resulting shell is not helpful.
@@ -305,7 +337,7 @@ namespace Bloom.Book
 				data.WritingSystemAliases.Add("N2", _collectionSettings.Language3Iso639Code);
 
 
-				//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
+				//by default, this comes from the collection, but the book can select one, inclucing "null" to select the factory-supplied empty xmatter
 				var xmatterName = storage.Dom.GetMetaValue("xmatter", _collectionSettings.XMatterPackName);
 
 				var helper = new XMatterHelper(storage.Dom, xmatterName, _fileLocator);
@@ -335,7 +367,7 @@ namespace Bloom.Book
 			//The problem is, if you make a book in some vernacular library, then share it so that others
 			//can use it as a shell, then (as of version 2) Bloom doesn't have a way of realizing that it's
 			//being used as a shell. So everything is editable (not a big deal) but you're also locked out
-			// of editing the acknowledgements for translated version.
+			// of editing the acknowledgments for translated version.
 
 			//It seems to me at the moment (May 2014) that the time to mark something as locked down should
 			//be when the they create a book based on a source-with-content book. So the current approach
@@ -372,7 +404,8 @@ namespace Bloom.Book
 			// just a normal page
 			pageDiv.SetAttribute("data-page", pageDiv.GetAttribute("data-page").Replace("extra", "").Trim());
 			ClearAwayDraftText(pageDiv);
-	   }
+			ClearAwayPageDescription(pageDiv);
+		}
 
 		/// <summary>
 		/// In xmatter, text fields are normally labeled with a "meta" language code, like "N1" for first national language.
