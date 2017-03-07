@@ -9,6 +9,16 @@ When you add pages to your template, make sure to give each one useful label<sup
 
  Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named ReadMe-en.md in your template's folder. This file should follow the <a href="http://spec.commonmark.org/dingus/">markdown standard</a>. To provide your instructions in other languages, make version of that file that change the "en" to another language's two letter code. For example ReadMe-fr.md would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document.
 
+When the Add Page dialog box shows your template pages, it will show a thumbnail:
+
+![thumbnailInAddPage](thumbnailInAddPage.png)
+
+To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:
+
+![pageThumbnailFiles](pageThumbnailFiles.png)
+
+ If you later make a change to the page, the thumbnail will be out of date. To fix that, just open that folder and delete that thumbnail.
+
 Notes:
 
 <a name="note1">1</a>: These books could later be combined using the forthcoming Folio feature.
