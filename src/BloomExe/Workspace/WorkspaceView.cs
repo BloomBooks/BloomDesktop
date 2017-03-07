@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Globalization;
-using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
@@ -16,7 +13,6 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
-using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using Messir.Windows.Forms;
@@ -24,6 +20,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
+using System.Collections.Generic;
 
 namespace Bloom.Workspace
 {
@@ -175,7 +172,7 @@ namespace Bloom.Workspace
 				_tabStrip.AutoSize = false;
 			}
 
-			SetupUILanguageMenu();
+			SetupUiLanguageMenu();
 			_viewInitialized = false;
 		}
 
@@ -287,48 +284,68 @@ namespace Bloom.Workspace
 			LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = !SettingsProtectionSettings.Default.NormallyHidden;
 		}
 
-		private void SetupUILanguageMenu()
+		private void SetupUiLanguageMenu()
 		{
-			_uiLanguageMenu.DropDownItems.Clear();
-			foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
-			{
-				string englishName="";
-				var langaugeNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en","fr","es","it","tpi"};
-				if((lang.EnglishName != lang.NativeName) && !(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
-				{
-					englishName = " (" + lang.EnglishName + ")";
-				}
-				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName + englishName);
-				item.Tag = lang;
-				item.Click += new EventHandler((a, b) =>
-												{
-													L10NSharp.LocalizationManager.SetUILanguage(((CultureInfo)item.Tag).IetfLanguageTag, true);
-													Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
-													item.Select();
-													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
-													SaveOriginalButtonTexts();
-													_localizationChangedEvent.Raise(null);
-													AdjustButtonTextsForCurrentSize();
-												});
-				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
-				{
-					//doesn't do anything item.Select();
-
-					_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
-				}
-			}
+			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick);
 
 			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
 			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.MoreLanguagesMenuItem", "More..."));
 			menu.Click += new EventHandler((a, b) =>
 			{
 				_localizationManager.ShowLocalizationDialogBox(false);
-				SetupUILanguageMenu();
+				SetupUiLanguageMenu();
 				LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
 				_localizationChangedEvent.Raise(null);
 			});
 		}
 
+		/// <summary>
+		/// This is also called by CollectionChoosing.OpenCreateCloneControl
+		/// </summary>
+		public static void SetupUiLanguageMenuCommon(ToolStripDropDownButton uiMenuControl, Action finishClickAction = null)
+		{
+			uiMenuControl.DropDownItems.Clear();
+			foreach (var lang in LocalizationManager.GetUILanguages(true))
+			{
+				var englishName = string.Empty;
+				var languageNamesRecognizableByOtherLatinScriptReaders = new List<string> { "en", "fr", "es", "it", "tpi", "id" };
+				if ((lang.EnglishName != lang.NativeName) && !languageNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name))
+				{
+					englishName = " (" + lang.EnglishName + ")";
+				}
+				var item = uiMenuControl.DropDownItems.Add(lang.NativeName + englishName);
+				item.Tag = lang;
+				item.Click += (sender, args) => UiLanguageMenuItemClickHandler(uiMenuControl, sender as ToolStripItem, finishClickAction);
+				if (lang.IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
+					UpdateMenuTextToShorterNameOfSelection(uiMenuControl, lang);
+			}
+		}
+
+		private static void UiLanguageMenuItemClickHandler(ToolStripDropDownButton toolStripButton, ToolStripItem item, Action finishClickAction)
+		{
+			var tag = (CultureInfo)item.Tag;
+
+			LocalizationManager.SetUILanguage(tag.IetfLanguageTag, true);
+			Settings.Default.UserInterfaceLanguage = tag.IetfLanguageTag;
+			item.Select();
+			UpdateMenuTextToShorterNameOfSelection(toolStripButton, tag);
+
+			if (finishClickAction != null)
+				finishClickAction();
+		}
+
+		private void FinishUiLanguageMenuItemClick()
+		{
+			// these lines deal with having a smaller workspace window and minimizing the button texts for smaller windows
+			SaveOriginalButtonTexts();
+			_localizationChangedEvent.Raise(null);
+			AdjustButtonTextsForCurrentSize();
+		}
+
+		private static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, CultureInfo language)
+		{
+			toolStripButton.Text = language.NativeName;
+		}
 
 		private void OnEditBook(Book.Book book)
 		{
