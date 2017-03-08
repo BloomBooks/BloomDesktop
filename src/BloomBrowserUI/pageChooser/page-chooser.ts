@@ -366,12 +366,13 @@ class PageChooser {
 
 
     getPossibleImageUrl(templateBookFolderUrl: string, pageLabel: string): string {
-        var label = pageLabel.replace('&', '+'); //ampersands don't work in the svg file names, so we use "+" instead
+        var label = pageLabel.replace("&", "+"); //ampersands confuse the url system
         // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
 
         //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
         //See EnhancedImageServer.IsRecursiveRequestContext
-        return "/bloom/api/pageTemplateThumbnail/" + templateBookFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg?generateThumbnaiIfNecessary=true';
+        return "/bloom/api/pageTemplateThumbnail/" + templateBookFolderUrl + '/template/' + label +
+            (this._orientation === "landscape" ? "-landscape" : "") + ".svg?generateThumbnaiIfNecessary=true";
     }
 } // End OF PageChooserClass
 
