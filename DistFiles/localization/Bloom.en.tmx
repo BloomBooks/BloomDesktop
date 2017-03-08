@@ -4505,6 +4505,12 @@
         <seg>Just an Image</seg>
       </tuv>
     </tu>
+    <tu tuid="TemplateBooks.PageLabel.TemplateStarter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>TemplateStarter</seg>
+      </tuv>
+    </tu>
     <tu tuid="TemplateBooks.PageLabel.Outside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">

@@ -595,6 +595,19 @@ function SetupElements(container) {
         $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 
     AddXMatterLabelAfterPageLabel(container);
+    ConstrainContentsOfPageLabel(container);
+}
+
+function ConstrainContentsOfPageLabel(container) {
+    var pageLabel = <HTMLDivElement>document.getElementsByClassName("pageLabel")[0];
+    if (!pageLabel)
+        return;
+    $(pageLabel).blur(event => {
+        // characters that cause problem in windows file names (linux is less picky, according to mono source)
+        pageLabel.innerText = pageLabel.innerText.split(/[\/\\*:?"<>|]/).join("");
+        // characters that mess something else up, found through experimentation
+        pageLabel.innerText = pageLabel.innerText.split(/[#%\r\n]/).join("");
+    });
 }
 
 function AddXMatterLabelAfterPageLabel(container) {
