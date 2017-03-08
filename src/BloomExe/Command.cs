@@ -160,17 +160,19 @@ namespace Bloom
 			if (InsertPage != null)
 			{
 				MostRecentInsertedTemplatePage = page;
-				InsertPage.Invoke(page, new PageInsertEventArgs(userStyleNodeFromNewPage));
+				InsertPage.Invoke(page, new PageInsertEventArgs(true, userStyleNodeFromNewPage));
 			}
 		}
 	}
 
 	public class PageInsertEventArgs : EventArgs
 	{
+		public bool FromTemplate;
 		private XmlNode _userStyles;
 
-		public PageInsertEventArgs(XmlNode userStyles)
+		public PageInsertEventArgs(bool fromTemplate, XmlNode userStyles)
 		{
+			FromTemplate = fromTemplate;
 			_userStyles = userStyles;
 		}
 
