@@ -17,7 +17,7 @@ To speed things up, Bloom only makes this thumbnail once, and stores it in the "
 
 ![pageThumbnailFiles](pageThumbnailFiles.png)
 
- If you later make a change to the page, the thumbnail will be out of date. To fix that, just open that folder and delete that thumbnail.
+ If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If you want to get fancy (like we do for Basic Book), you can also make svg thumbnails so that you control exactly how the thumbnail looks.
 
 Notes:
 
