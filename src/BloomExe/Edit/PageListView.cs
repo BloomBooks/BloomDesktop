@@ -42,6 +42,20 @@ namespace Bloom.Edit
 					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
 					ExecuteCommand = (page) => _model.DuplicatePage(page)});
 			menuItems.Add(
+				new WebThumbNailList.MenuItemSpec()
+				{
+					Label = LocalizationManager.GetString("EditTab.CopyPage", "Copy Page"),
+					EnableFunction = (page) => page != null && _model.CanCopyPage,
+					ExecuteCommand = (page) => _model.CopyPage(page)
+				});
+			menuItems.Add(
+				new WebThumbNailList.MenuItemSpec()
+				{
+					Label = LocalizationManager.GetString("EditTab.PastePage", "Paste Page"),
+					EnableFunction = (page) => page != null && _model.GetClipboardHasPage(),
+					ExecuteCommand = (page) => _model.PastePage(page)
+				});
+			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec() {
 					Label = LocalizationManager.GetString("EditTab.DeletePageButton", "Remove Page"),  // same ID as button in toolbar));
 					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,

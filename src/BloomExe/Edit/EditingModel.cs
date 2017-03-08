@@ -92,7 +92,7 @@ namespace Bloom.Edit
 			bookSelection.SelectionChanged += OnBookSelectionChanged;
 			pageSelection.SelectionChanged += OnPageSelectionChanged;
 			pageSelection.SelectionChanging += OnPageSelectionChanging;
-			templateInsertionCommand.InsertPage += OnInsertTemplatePage;
+			templateInsertionCommand.InsertPage += OnInsertPage;
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
 			pageRefreshEvent.Subscribe((PageRefreshEvent.SaveBehavior behavior) =>
@@ -143,6 +143,7 @@ namespace Bloom.Edit
 		}
 
 		private Form _oldActiveForm;
+		private XmlElement _pageDivFromCopyPage;
 
 		/// <summary>
 		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
@@ -281,9 +282,12 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void OnInsertTemplatePage(object sender, PageInsertEventArgs e)
+		/// <summary>
+		/// This is used both to insert pages from the AddPageDialog, and also "paste page"
+		/// </summary>
+		private void OnInsertPage(object page, PageInsertEventArgs e)
 		{
-			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
+			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), page as Page);
 			if (e.HasStyles)
 			{
 				var existingUserStyles = CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage();
@@ -292,16 +296,19 @@ namespace Bloom.Edit
 			}
 			//_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
 			//_pageSelection.SelectPage(newPage);
-			try
+			if(e.FromTemplate)
 			{
-				Analytics.Track("Insert Template Page", new Dictionary<string, string>
+				try
+				{
+					Analytics.Track("Insert Template Page", new Dictionary<string, string>
 					{
-						{ "template-source", (sender as Page).Book.Title},
-						{ "page", (sender as Page).Caption}
+						{"template-source", (page as IPage).Book.Title},
+						{"page", (page as IPage).Caption}
 					});
-			}
-			catch (Exception)
-			{
+				}
+				catch(Exception)
+				{
+				}
 			}
 			Logger.WriteEvent("InsertTemplatePage");
 		}
@@ -329,6 +336,11 @@ namespace Bloom.Edit
 					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null
 					   && !_currentlyDisplayedBook.LockedDown;//this clause won't work when we start allowing custom front/backmatter pages
 			}
+		}
+
+		public bool CanCopyPage
+		{
+			get { return CanDuplicatePage; }
 		}
 
 		public bool CanDeletePage
@@ -1181,5 +1193,23 @@ namespace Bloom.Edit
 			_pageSelection.ChangingPageFinished();
 		}
 #endif
+
+		public bool GetClipboardHasPage()
+		{
+			return _pageDivFromCopyPage != null;
+		}
+
+		public void CopyPage(IPage page)
+		{
+			// We have to clone this so that if the user changes the page after doing the copy,
+			// when they paste they get the page as it was, not as it is now.
+			_pageDivFromCopyPage = (XmlElement) page.GetDivNodeForThisPage().CloneNode(true);
+		}
+
+		public void PastePage(IPage page)
+		{
+			var pageForPasting = new Page(page.Book, _pageDivFromCopyPage, "not used", "not used", x => _pageDivFromCopyPage);
+			OnInsertPage(pageForPasting, new PageInsertEventArgs(false, null));
+		}
 	}
 }
