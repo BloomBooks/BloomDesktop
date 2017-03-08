@@ -102,18 +102,31 @@ namespace Bloom.web.controllers
 		private string FindOrGenerateThumbnail(string expectedPathOfThumbnailImage)
 		{
 			var localPath = AdjustPossibleLocalHostPathToFilePath(expectedPathOfThumbnailImage);
+
 			var svgpath = Path.ChangeExtension(localPath, "svg");
 			if (File.Exists(svgpath))
 			{
 				return svgpath;
 			}
+
 			var pngpath = Path.ChangeExtension(localPath, "png");
-			if (File.Exists(pngpath))
+
+			//If there is no svg, then we assume the we are using a generated image.
+			//If the book we want a thumbnail from is the one we are currently editing,
+			//then the thumbnail we generated last time might not reflect how the page is laid out
+			//now. So in that case we ignore the existing png thumbnail.
+			//NB: even if we decide to give a refreshed image, it still won't be accurate,
+			//if the user just made a change; the page won't actually be saved yet, so the
+			//newly created thumbnail will not reflect the change. Ah well, we try.
+			if (!localPath.Contains(_bookSelection.CurrentSelection.FolderPath))
 			{
-				return pngpath;
+				if(File.Exists(pngpath))
+				{
+					return pngpath;
+				}
 			}
 
-			// We don't have an image; try to make one.
+			// We don't have an image, or we want to make a fresh one
 			var templatesDirectoryInTemplateBook = Path.GetDirectoryName(expectedPathOfThumbnailImage);
 			var bookPath = Path.GetDirectoryName(templatesDirectoryInTemplateBook);
 			var templateBook = _bookFactory(new BookInfo(bookPath,false), _storageFactory(bookPath));
@@ -165,8 +178,6 @@ namespace Bloom.web.controllers
 			}
 			return resultPath;
 		}
-
-
 
 		private static string AdjustPossibleLocalHostPathToFilePath(string path)
 		{
