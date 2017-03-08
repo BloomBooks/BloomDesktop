@@ -5,9 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Windows.Forms;
 using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
 using Bloom.Edit;
@@ -26,6 +24,8 @@ namespace Bloom.Book
 	/// </summary>
 	public class BookInfo
 	{
+		private const string kTopicPrefix = "topic:";
+
 		private BookMetaData _metadata;
 
 		private BookMetaData MetaData
@@ -298,12 +298,21 @@ namespace Bloom.Book
 			return list.Split(',').Select(item => item.Trim()).Where(item => !string.IsNullOrEmpty(item)).ToArray();
 		}
 
-		public string TagsList
+		public string TopicsList
 		{
-			get { return MetaData.Tags == null ? "" : string.Join(", ", MetaData.Tags); }
+			get
+			{
+				return MetaData.Tags == null ? "" : string.Join(", ", MetaData.Tags.Where(TagIsTopic).Select(GetTopicNameFromTag));
+			}
 			set
 			{
-				MetaData.Tags = SplitList(value);
+				var topicsToSet = SplitList(value);
+				EnsureTopicPrefixes(topicsToSet);
+				if (MetaData.Tags == null)
+					MetaData.Tags = topicsToSet;
+				else
+					// Leave all the non-topic tags intact. Replace all existing topics.
+					MetaData.Tags = MetaData.Tags.Where(t => !TagIsTopic(t)).Union(topicsToSet).ToArray();
 			}
 		}
 
@@ -399,6 +408,25 @@ namespace Bloom.Book
 							m.Groups[1].Value + m.Groups[2].Value.Substring(0, 2) +
 							"(download book to read full email address)"));
 				LicenseNotes = notes;
+			}
+		}
+
+		private bool TagIsTopic(string tag)
+		{
+			return tag.StartsWith(kTopicPrefix) || !tag.Contains(":");
+		}
+
+		private string GetTopicNameFromTag(string tag)
+		{
+			return tag.StartsWith(kTopicPrefix) ? tag.Substring(kTopicPrefix.Length) : tag;
+		}
+
+		private void EnsureTopicPrefixes(string[] topics)
+		{
+			for (int i = 0; i < topics.Length; i++)
+			{
+				if (!topics[i].StartsWith(kTopicPrefix))
+					topics[i] = kTopicPrefix + topics[i];
 			}
 		}
 	}

@@ -1114,11 +1114,11 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.OurHtmlDom.SetBookSetting("topic", "en", "Animal stories");
 			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
+			Assert.That(book.BookInfo.TopicsList, Is.EqualTo("Animal stories"));
 
 			book.OurHtmlDom.SetBookSetting("topic", "en", "Science");
 			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
+			Assert.That(book.BookInfo.TopicsList, Is.EqualTo("Science"));
 		}
 
 		[Test]

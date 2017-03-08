@@ -4,6 +4,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using NUnit.Framework;
 using SIL.TestUtilities;
+using SIL.Windows.Forms;
 
 namespace BloomTests.Book
 {
@@ -151,6 +152,44 @@ namespace BloomTests.Book
 			Assert.That(meta2.CurrentTool, Is.Null);
 			Assert.That(meta2.Tools, Is.Null);
 			Assert.That(meta2.BookletMakingIsAppropriate, Is.True); // default value
+		}
+
+		[TestCase("'Fiction'", "Fiction")]
+		[TestCase("'Math', 'Fiction'", "Math, Fiction")]
+		[TestCase("'topic:Fiction'", "Fiction")]
+		[TestCase("'Fiction','media:audio'", "Fiction")]
+		[TestCase("'media:audio','Fiction'", "Fiction")]
+		[TestCase("'topic:Math','Fiction'", "Math, Fiction")]
+		public void TopicsList_GetsTopicsAndOnlyTopicsFromTagsList(string jsonTagsList, string expectedTopicsList)
+		{
+			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
+			File.WriteAllText(jsonPath, @"{'tags':[" + jsonTagsList + @"]}");
+			var bi = new BookInfo(_folder.Path, true);
+			Assert.AreEqual(expectedTopicsList, bi.TopicsList);
+		}
+
+		[TestCase("'topic:Fiction'", "", "", new string[0])]
+		[TestCase("'media:audio'", "", "", new[] { "media:audio" })]
+		[TestCase("'media:audio', 'topic:Fiction'", "", "", new[] { "media:audio" })]
+		[TestCase("'Fiction'", "Math", "Math", new []{ "topic:Math" })]
+		[TestCase("'Fiction','Math'", "Math", "Math", new[] { "topic:Math" })]
+		[TestCase("'Fiction','Math','media:audio'", "Math", "Math", new[] { "media:audio", "topic:Math" })]
+		[TestCase("'media:audio'", "topic:Math", "Math", new[] { "media:audio", "topic:Math" })]
+		[TestCase("'media:audio','region:Asia'", "topic:Math,topic:Fiction", "Math, Fiction", new[] { "media:audio", "region:Asia", "topic:Math", "topic:Fiction" })]
+		[TestCase("'topic:Science'", "topic:Math,topic:Fiction", "Math, Fiction", new[] { "topic:Math", "topic:Fiction" })]
+		public void TopicsList_SetsTopicsWhileLeavingOtherTagsIntact(string jsonTagsList, string topicsListToSet, string expectedTopicsList, string[] expectedTags)
+		{
+			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
+			File.WriteAllText(jsonPath, @"{'tags':[" + jsonTagsList + @"]}");
+			var bi = new BookInfo(_folder.Path, true);
+
+			//SUT
+			bi.TopicsList = topicsListToSet;
+
+			Assert.AreEqual(expectedTopicsList, bi.TopicsList);
+
+			BookMetaData metadata = (BookMetaData) ReflectionHelper.GetField(bi, "_metadata");
+			Assert.AreEqual(expectedTags, metadata.Tags);
 		}
 	}
 }
