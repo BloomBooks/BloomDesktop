@@ -3,10 +3,11 @@
 @import (less) '../../node_modules/select2/dist/css/select2.css';
 
 @hint-tab-indent: 20px;
+@dialogZindexPlusOne: 60001; // the dialog's z-index is set to 60000 in bookEdit/css/bloomDialog.less
 
-//the select2 dropdown gets appended to the body, not to our dialog, so it needs a really high z-index to show above the dialog.
+//the select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index
 .select2-container{
-    z-index: 30000;
+    z-index: @dialogZindexPlusOne;
 }
 
 // select2 select controls are way too narrow if we don't force a width.
