@@ -1,6 +1,7 @@
 //putting (less) here makes it actually start this file off with the contents of the select2.css,
 //which we're doing for convenience so that we don't have to get it in the installer and then import it explictly
 @import (less) '../../node_modules/select2/dist/css/select2.css';
+@import (reference) "../css/bloomDialog.less";  // needed for @dialogZindexPlusOne
 
 #format-toolbar {
     *{
@@ -78,9 +79,9 @@
     }
 }
 
-//the select2 dropdown gets appended to the body, not to our dialog, so it needs a really high z-index to show above the dialog.
+//the select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index
 .select2-container{
-    z-index: 30000;
+    z-index: @dialogZindexPlusOne;
 }
 
 #spacingRow{
