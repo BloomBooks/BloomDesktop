@@ -335,6 +335,8 @@ namespace Bloom.CollectionTab
 			{
 				if (excludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 					continue; // BL-2246: skip putting this one into the BloomPack
+				if (Path.GetFileName(filePath).StartsWith(BookStorage.PrefixForCorrupHtmFiles))
+					continue;
 
 				FileInfo fi = new FileInfo(filePath);
 
@@ -580,9 +582,9 @@ namespace Bloom.CollectionTab
 
 		}
 
-		public Book.Book GetBookFromBookInfo(BookInfo bookInfo)
+		public Book.Book GetBookFromBookInfo(BookInfo bookInfo, bool forSelectedBook = false)
 		{
-			return _bookServer.GetBookFromBookInfo(bookInfo);
+			return _bookServer.GetBookFromBookInfo(bookInfo, forSelectedBook);
 		}
 
 	}

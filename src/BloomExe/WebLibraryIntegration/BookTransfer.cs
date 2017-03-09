@@ -539,7 +539,8 @@ namespace Bloom.WebLibraryIntegration
 		internal void WaitUntilS3DataIsOnServer(string bucket, string bookPath)
 		{
 			var s3Id = S3BookId(BookMetaData.FromFolder(bookPath));
-			var count = Directory.GetFiles(bookPath).Length;
+			// There's a few files we don't upload, but meta.bak is the only one that regularly messes up the count
+			var count = Directory.GetFiles(bookPath).Count(p=>!p.EndsWith(".bak"));
 			for (int i = 0; i < 30; i++)
 			{
 				var uploaded = _s3Client.GetBookFileCount(bucket, s3Id);
