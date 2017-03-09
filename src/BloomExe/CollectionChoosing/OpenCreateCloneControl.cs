@@ -1,8 +1,6 @@
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
@@ -10,8 +8,8 @@ using Bloom.Properties;
 //using Chorus.UI.Clone;
 using SIL.Windows.Forms.Extensions;
 using SIL.i18n;
-using System.Collections.Generic;
 using System.Linq;
+using Bloom.Workspace;
 using SIL.IO;
 
 namespace Bloom.CollectionChoosing
@@ -30,6 +28,13 @@ namespace Bloom.CollectionChoosing
 		{
 			Font = SystemFonts.MessageBoxFont; //use the default OS UI font
 			InitializeComponent();
+			SetupUiLanguageMenu();
+		}
+
+		private void SetupUiLanguageMenu()
+		{
+			_toolStrip1.Renderer = new Workspace.NoBorderToolStripRenderer();
+			WorkspaceView.SetupUiLanguageMenuCommon(_uiLanguageMenu);
 		}
 
 		public void Init(MostRecentPathsList mruList,
@@ -83,6 +88,8 @@ namespace Bloom.CollectionChoosing
 				if (control.Tag != null && control.Tag.ToString() == "sendreceive")
 					control.Visible = Settings.Default.ShowSendReceive;
 			}
+			// We've pulled _sendReceiveInstructionsLabel out into _topRightPanel; set visibility in the same way
+			_sendReceiveInstructionsLabel.Visible = Settings.Default.ShowSendReceive;
 		}
 
 
