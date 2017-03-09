@@ -2997,6 +2997,11 @@
         <seg>Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</seg>
       </tuv>
     </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_">
+      <tuv xml:lang="en">
+        <seg>Change user interface language</seg>
+      </tuv>
+    </tu>
     <tu tuid="PageList.CantMoveWhenTranslating">
       <tuv xml:lang="en">
         <seg>Pages can not be re-ordered when you are translating a book.</seg>
