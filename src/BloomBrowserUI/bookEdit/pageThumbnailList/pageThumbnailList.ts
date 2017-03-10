@@ -66,6 +66,10 @@ $(window).ready(function () {
         })
 });
 
+export function stopListeningForSave() {
+    (<WebSocket>window["webSocket"]).close();
+}
+
 function fireCSharpEvent(eventName, eventData) {
 
     var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });

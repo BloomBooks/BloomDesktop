@@ -6,21 +6,20 @@ import theOneLocalizationManager from '../lib/localizationManager/localizationMa
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import axios = require('axios');
 
-window.addEventListener("message", process_EditFrame_Message, false);
-
-function process_EditFrame_Message(event: MessageEvent): void {
-
-    var params = event.data.split("\n");
-
-    switch (params[0]) {
-        case "Data":
-            var pageChooser = new PageChooser(params[1]);
-            pageChooser.loadPageGroups();
-            return;
-
-        default:
-    }
-}
+$(window).ready(() => {
+    axios.get("/bloom/api/pageTemplates").then(result => {
+        var templatesJSON = result.data;
+        var pageChooser = new PageChooser(JSON.stringify(templatesJSON));
+        pageChooser.loadPageGroups();
+    })
+        // If we don't catch axios errors we get mysterious JavaScript errors that just say "Error: Network Error".
+        // I think they are something to do with the request completing after the dialog closes.
+        // This catch might not be needed; I put them on all the axios requests.
+        // The danger is that we might lose some error that does matter. I don't know how to distinguish.
+        .catch(error => {
+            console.log(error);
+        });
+});
 
 // latest version of the expected JSON initialization string (from EditingModel.GetTemplateBookInfo)
 // "{\"defaultPageToSelect\":\"(guid of template page)\",
@@ -173,9 +172,14 @@ class PageChooser {
         const id = this._selectedGridItem.attr("data-pageId");
         const templateBookPath = this._selectedGridItem.closest(".group").attr("data-template-book-path");
         if (this._forChooseLayout) {
-            axios.post("/bloom/api/changeLayout", { pageId: id, templateBookPath: templateBookPath })
+            axios.post("/bloom/api/changeLayout", { pageId: id, templateBookPath: templateBookPath }).catch(error => {
+                // we seem to get unimportant errors here, possibly because the dialog gets closed before the post completes.
+                console.log(error);
+            });
         } else {
-            axios.post("/bloom/api/addPage", { templateBookPath: templateBookPath, pageId: id })
+            axios.post("/bloom/api/addPage", { templateBookPath: templateBookPath, pageId: id }).catch(error => {
+                console.log(error);
+            });
         }
         // End the disabling of other panes for the modal dialog. The final argument is because in this
         // method the current window is the dialog, and it's the parent window's document that is being
@@ -371,96 +375,77 @@ class PageChooser {
     }
 } // End OF PageChooserClass
 
-
-//NB: this function does not have access to the PageChooser object which will eventually be created and called.
+// Confusingly, this function is not used by the HTML that primarily loads the JS built from this
+// file (the pageChooserBundle, loaded by page-chooser-main.pug). Instead, it is imported into
+// the editViewFrame and exported from there so it can be invoked directly from C#, in the context of
+// the editable page, to fire off the whole process of launching the dialog which contains an iframe
+// whose source loads this file. (Is there a better place for this function? It is nice to have it
+// with the rest of the page-chooser code, except for the problem of belonging to the parent frame.)
+// NB: this function does not have access to the PageChooser object which will eventually be created and called
+// in the context of the ready function for the dialog iframe content window.
 export function showAddPageDialog(forChooseLayout: boolean) {
-    //enhance: might look nicer to start opening the dialog while we get this info
-    axios.get("/bloom/api/pageTemplates").then(result => {
-        var templatesJSON = result.data;
-        (<any>templatesJSON).forChooseLayout = forChooseLayout;
+    var theDialog;
 
-        var theDialog;
+    //reviewSlog. I don't see why the localiationManager should live on the page. Where stuff is equally relevant to all frames,
+    //it should if anything belong to the root frmate (this one)
+    //var parentElement = (<any>document.getElementById('page')).contentWindow;
+    //var lm = parentElement.localizationManager;
 
-        //reviewSlog. I don't see why the localiationManager should live on the page. Where stuff is equally relevant to all frames,
-        //it should if anything belong to the root frmate (this one)
-        //var parentElement = (<any>document.getElementById('page')).contentWindow;
-        //var lm = parentElement.localizationManager;
+    // don't show if a dialog already exists
+    if ($(document).find(".ui-dialog").length) {
+        return;
+    }
 
-        // don't show if a dialog already exists
-        if ($(document).find(".ui-dialog").length) {
-            return;
-        }
+    var key = 'EditTab.AddPageDialog.Title';
+    var english = 'Add Page...';
 
-        var key = 'EditTab.AddPageDialog.Title';
-        var english = 'Add Page...';
+    if (forChooseLayout) {
+        key = 'EditTab.AddPageDialog.ChooseLayoutTitle';
+        english = 'Choose Different Layout...';
+    }
 
-        if (forChooseLayout) {
-            key = 'EditTab.AddPageDialog.ChooseLayoutTitle';
-            english = 'Choose Different Layout...';
-        }
+    theOneLocalizationManager.asyncGetText(key, english).done(title => {
+        var dialogContents = CreateAddPageDiv();
 
-        theOneLocalizationManager.asyncGetText(key, english).done(title => {
-            var dialogContents = CreateAddPageDiv(templatesJSON);
-
-            theDialog = $(dialogContents).dialog({
-                //reviewslog Typescript didn't like this class: "addPageDialog",
-                autoOpen: false,
-                resizable: false,
-                modal: true,
-                width: 795,
-                height: 550,
-                position: {
-                    my: "left bottom", at: "left bottom", of: window
-                },
-                title: title,
-                close: function () {
-                    $(this).remove();
-                    fireCSharpEvent('setModalStateEvent', 'false');
-                },
-            });
-
-            //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
-            // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
-
-            jQuery(document).on('click', 'body > .ui-widget-overlay', function () {
-                $(".ui-dialog-titlebar-close").trigger('click');
-                return false;
-            });
-            fireCSharpEvent('setModalStateEvent', 'true');
-            theDialog.dialog('open');
-
-            //parentElement.$.notify("testing notify",{});
+        theDialog = $(dialogContents).dialog({
+            //reviewslog Typescript didn't like this class: "addPageDialog",
+            autoOpen: false,
+            resizable: false,
+            modal: true,
+            width: 795,
+            height: 550,
+            position: {
+                my: "left bottom", at: "left bottom", of: window
+            },
+            title: title,
+            close: function () {
+                $(this).remove();
+                fireCSharpEvent('setModalStateEvent', 'false');
+            },
         });
+
+        //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
+        // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
+
+        jQuery(document).on('click', 'body > .ui-widget-overlay', function () {
+            $(".ui-dialog-titlebar-close").trigger('click');
+            return false;
+        });
+        fireCSharpEvent('setModalStateEvent', 'true');
+        theDialog.dialog('open');
+
+        //parentElement.$.notify("testing notify",{});
     });
 }
 
 // "region" Add Page dialog
-function CreateAddPageDiv(templatesJSON) {
-
+function CreateAddPageDiv() {
     var dialogContents = $('<div id="addPageConfig"/>').appendTo($('body'));
 
     // For some reason when the height is 100% we get an unwanted scroll bar on the far right.
     var html = "<iframe id=\"addPage_frame\" src=\"/bloom/pageChooser/page-chooser-main.html\" scrolling=\"no\" style=\"width: 100%; height: 99%; border: none; margin: 0\"></iframe>";
-
     dialogContents.append(html);
-
-    // When the page chooser loads, send it the templatesJSON
-    $('#addPage_frame').load(function () {
-        initializeAddPageDialog(templatesJSON);
-    });
-
     return dialogContents;
-}
-
-//noinspection JSUnusedGlobalSymbols
-// Used by the addPage_frame to initialize the setup dialog with the available template pages
-// 'templatesJSON' will be something like:
-//([{ "templateBookFolderUrl": "/bloom/localhost//...(path to files).../factoryGroups/Templates/Basic Book/",
-//      "templateBookUrl": "/bloom/localhost/...(path to files).../factoryGroups/Templates/Basic Book/Basic Book.htm" }])
-// See property EditingModel.GetJsonTemplatePageObject
-function initializeAddPageDialog(templatesJSON) {
-    var templateMsg = 'Data\n' + JSON.stringify(templatesJSON);
-    (<any>document.getElementById('addPage_frame')).contentWindow.postMessage(templateMsg, '*');
 }
 // "endregion" Add Page dialog
 

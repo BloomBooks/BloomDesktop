@@ -11,6 +11,7 @@ using Bloom.CollectionTab;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Api;
+using Bloom.web.controllers;
 using L10NSharp;
 using SIL.Progress;
 using SIL.Reporting;
@@ -1298,12 +1299,14 @@ namespace Bloom.Edit
 
 		public void ShowAddPageDialog()
 		{
+			PageTemplatesApi.ForPageLayout = false;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
 			RunJavaScript("FrameExports.showAddPageDialog(false);");
 		}
 
 		internal void ShowChangeLayoutDialog(IPage page)
 		{
+			PageTemplatesApi.ForPageLayout = true;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
 			RunJavaScript("FrameExports.showAddPageDialog(true);");
 		}
