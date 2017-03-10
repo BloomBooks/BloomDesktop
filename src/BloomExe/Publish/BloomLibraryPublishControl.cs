@@ -30,6 +30,7 @@ namespace Bloom.Publish
 		private bool _usingCcControls = true;
 		private BackgroundWorker _uploadWorker;
 		private string _originalUploadText;
+		private bool _okToUploadWithNoLanguages;
 
 		private string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
 			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
@@ -95,6 +96,7 @@ namespace Bloom.Publish
 			_copyrightLabel.Text = book.BookInfo.Copyright;
 
 			var allLanguages = book.AllLanguages;
+			_okToUploadWithNoLanguages = book.BookInfo.IsSuitableForMakingShells; // a template is allowed to have no text and so no languages.
 			foreach (var lang in allLanguages.Keys)
 			{
 				var checkBox = new CheckBox();
@@ -112,10 +114,10 @@ namespace Bloom.Publish
 				checkBox.CheckStateChanged += delegate(object sender, EventArgs args)
 				{
 					bool someLangChecked = _languagesFlow.Controls.Cast<CheckBox>().Any(b => b.Checked);
-					_langsLabel.ForeColor = someLangChecked ? Color.Black : Color.Red;
+					_langsLabel.ForeColor = someLangChecked || _okToUploadWithNoLanguages ? Color.Black : Color.Red;
 					if (_okToUploadDependsOnLangsChecked)
 					{
-						_okToUpload = someLangChecked;
+						_okToUpload = someLangChecked || _okToUploadWithNoLanguages;
 						UpdateDisplay();
 					}
 				};
@@ -153,8 +155,11 @@ namespace Bloom.Publish
 			if (!allLanguages.Keys.Any())
 			{
 				_langsLabel.Text += " " + LocalizationManager.GetString("PublishTab.Upload.NoLangsFound", "(None found)");
-				_langsLabel.ForeColor = Color.Red;
-				_okToUpload = false;
+				if (!_okToUploadWithNoLanguages)
+				{
+					_langsLabel.ForeColor = Color.Red;
+					_okToUpload = false;
+				}
 			}
 		}
 
@@ -314,15 +319,15 @@ namespace Bloom.Publish
 
 			if (_book.BookInfo.IsSuitableForMakingShells)
 			{
-				// Hopefully this message is never seen...there is supposed to be no way for an end user to create a template...so I think we can afford
-				// not to burden localizers with it.
-				if (MessageBox.Show(Form.ActiveForm,
-					@"This book is marked as suitable for making shells, that is, a new template like Basic Book containing blank pages for authoring a new book. "
-					+ @"Such books are normally only created and uploaded by HTML specialists. "
-					+ @"If this book is intended as a shell to translate, something is wrong, and you should get expert help before uploading this book."
+				var msg = LocalizationManager.GetString("PublishTab.Upload.Template",
+					"This book seems to be a template, that is, it contains blank pages for authoring a new book "
+					+ "rather than content to translate into other languages. "
+					+ "If that is not what you intended, you should get expert help before uploading this book."
 					+ "\n\n"
-					+ @"Do you want to go ahead?",
-					"Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+					+ "Do you want to go ahead?");
+				var warning = LocalizationManager.GetString("Warning", "Warning");
+				if (MessageBox.Show(Form.ActiveForm, msg,
+					warning, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
 					return;
 			}
 

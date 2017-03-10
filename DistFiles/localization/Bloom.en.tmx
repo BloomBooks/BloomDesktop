@@ -3329,6 +3329,13 @@
         <seg>Sign up for Bloom Library.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Upload.Template">
+      <tuv xml:lang="en">
+        <seg>This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.
+
+Do you want to go ahead?</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Upload.Login.UnknownUser">
       <tuv xml:lang="en">
         <seg>Unknown user</seg>
