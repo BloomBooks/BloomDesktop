@@ -99,7 +99,10 @@ namespace BloomTests.WebLibraryIntegration
 				metadata.IsSuitableForMakingShells = true;
 				metadata.WriteToFolder(originalBookFolder);
 			}
-			int fileCount = Directory.GetFiles(originalBookFolder).Length;
+			// The files that actually get uploaded omit some of the ones in the folder.
+			// The only omitted one that messes up current unit tests is meta.bak
+			var filesToUpload = Directory.GetFiles(originalBookFolder).Where(p => !p.EndsWith(".bak"));
+			int fileCount = filesToUpload.Count();
 
 			Login();
 			//HashSet<string> notifications = new HashSet<string>();
@@ -113,7 +116,7 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(progress.Text, Is.StringContaining(
 				LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata",
 				"In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database.")));
-			Assert.That(progress.Text, Is.StringContaining(Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
+			Assert.That(progress.Text, Is.StringContaining(Path.GetFileName(filesToUpload.First())));
 
 			_transfer.WaitUntilS3DataIsOnServer(BloomS3Client.UnitTestBucketName, originalBookFolder);
 			var dest = _workFolderPath.CombineForPath("output");

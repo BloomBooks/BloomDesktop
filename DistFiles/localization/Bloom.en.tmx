@@ -245,6 +245,11 @@
         <seg>Sorry, Reader Templates do not allow changes to formatting.</seg>
       </tuv>
     </tu>
+    <tu tuid="BookStorage.CorruptBook">
+      <tuv xml:lang="en">
+        <seg>Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</seg>
+      </tuv>
+    </tu>
     <tu tuid="BookStorage.FolderMoved">
       <tuv xml:lang="en">
         <seg>It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</seg>
