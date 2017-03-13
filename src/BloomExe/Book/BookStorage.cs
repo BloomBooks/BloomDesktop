@@ -60,7 +60,7 @@ namespace Bloom.Book
 
 	public class BookStorage : IBookStorage
 	{
-		public delegate BookStorage Factory(string folderPath);//autofac uses this
+		public delegate BookStorage Factory(string folderPath, bool forSelectedBook = false);//autofac uses this
 
 		/// <summary>
 		/// History of this number:
@@ -75,6 +75,8 @@ namespace Bloom.Book
 		///     For the next version of Bloom (expected to be called version 2, but unknown at the moment) we went with
 		///     (coincidentally) kBloomFormatVersion = "2.0"
 		internal const string kBloomFormatVersion = "2.0";
+
+		public const string PrefixForCorruptHtmFiles = "_broken_";
 		private  string _folderPath;
 		private IChangeableFileLocator _fileLocator;
 		private BookRenamedEvent _bookRenamedEvent;
@@ -96,8 +98,12 @@ namespace Bloom.Book
 			set { _metaData = value; }
 		}
 
-
 		public BookStorage(string folderPath, SIL.IO.IChangeableFileLocator baseFileLocator,
+						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
+			:this(folderPath, false, baseFileLocator, bookRenamedEvent, collectionSettings)
+		{ }
+
+		public BookStorage(string folderPath, bool forSelectedBook, SIL.IO.IChangeableFileLocator baseFileLocator,
 						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
 		{
 			_folderPath = folderPath;
@@ -107,7 +113,7 @@ namespace Bloom.Book
 			_bookRenamedEvent = bookRenamedEvent;
 			_collectionSettings = collectionSettings;
 
-			ExpensiveInitialization();
+			ExpensiveInitialization(forSelectedBook);
 		}
 
 		public string PathToExistingHtml
@@ -252,7 +258,7 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!string.IsNullOrEmpty(tempPath))
-					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, null);
+					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, Path.ChangeExtension(PathToExistingHtml, ".bak"));
 			}
 
 			MetaData.Save();
@@ -600,6 +606,7 @@ namespace Bloom.Book
 			// so Union works better here. (And we'll change the name of the book too.)
 			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm").Union(Directory.GetFiles(folderPath, "*.html")));
 			var decoyMarkers = new string[] {"configuration",
+				PrefixForCorruptHtmFiles, // Used to rename corrupt htm files before restoring backup
 				"_conflict", // owncloud
 				"[conflict]", // Google Drive
 				"conflicted copy" // Dropbox
@@ -670,7 +677,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Do whatever is needed to do more than just show a title and thumbnail
 		/// </summary>
-		private void ExpensiveInitialization()
+		private void ExpensiveInitialization(bool forSelectedBook = false)
 		{
 			Debug.WriteLine(string.Format("ExpensiveInitialization({0})", _folderPath));
 			_dom = new HtmlDom();
@@ -719,12 +726,28 @@ namespace Bloom.Book
 				}
 				catch (Exception error)
 				{
-					ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
-					Logger.WriteEvent("*** ERROR in " + PathToExistingHtml);
-					Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
-					return;
+					var backupPath = Path.ChangeExtension(pathToExistingHtml, "bak");
+					// If the user is actually trying to look at this book and it's broken, we will try to restore a backup.
+					// The main reason not to do this otherwise is that we think we should notify the user that we
+					// are restoring a backup, and we don't want to bother him with such notifications about books
+					// he isn't looking at currently.
+					if (forSelectedBook && RobustFile.Exists(backupPath) && TryGetXmlDomFromHtmlFile(backupPath, out xmlDomFromHtmlFile))
+					{
+						string corruptFilePath = GetUniqueFileName(FolderPath, PrefixForCorruptHtmFiles, "htm");
+						RobustFile.Move(PathToExistingHtml, corruptFilePath);
+						RobustFile.Move(backupPath, pathToExistingHtml);
+						var msg = LocalizationManager.GetString("BookStorage.CorruptBook",
+							"Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.");
+						ErrorReport.NotifyUserOfProblem(error, msg);
+					}
+					else
+					{
+						ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
+						Logger.WriteEvent("*** ERROR in " + PathToExistingHtml);
+						Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
+						return;
+					}
 				}
-
 
 				_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
@@ -771,6 +794,20 @@ namespace Bloom.Book
 
 				CleanupUnusedImageFiles();
 			}
+		}
+
+		private bool TryGetXmlDomFromHtmlFile(string path, out XmlDocument xmlDomFromHtmlFile)
+		{
+			try
+			{
+				xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
+			}
+			catch (Exception error)
+			{
+				xmlDomFromHtmlFile = null;
+				return false;
+			}
+			return true;
 		}
 
 		private void ProcessAccessDeniedError(UnauthorizedAccessException error)
@@ -1111,6 +1148,23 @@ namespace Bloom.Book
 				suffix = i.ToString(CultureInfo.InvariantCulture);
 			}
 			return name + suffix;
+		}
+
+		/// <summary>
+		/// if necessary, append a number to make the file name unique within the given folder
+		/// </summary>
+		internal static string GetUniqueFileName(string parentPath, string name, string ext)
+		{
+			int i = 0;
+			string suffix = "";
+			string result;
+			do
+			{
+				result = Path.ChangeExtension(Path.Combine(parentPath, name + suffix), ext);
+				++i;
+				suffix = i.ToString(CultureInfo.InvariantCulture);
+			} while (RobustFile.Exists(result));
+			return result;
 		}
 
 		public string GetBrokenBookRecommendationHtml()

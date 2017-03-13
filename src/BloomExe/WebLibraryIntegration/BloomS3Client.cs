@@ -8,6 +8,7 @@ using System.Text;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
+using Bloom.Book;
 using BloomTemp;
 using L10NSharp;
 using RestSharp.Extensions.MonoHttp;
@@ -229,6 +230,9 @@ namespace Bloom.WebLibraryIntegration
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
 			foreach (var file in unwantedPdfs)
 				RobustFile.Delete(file);
+			// Don't upload corrupt htms that have been repaired
+			foreach (var path in Directory.EnumerateFiles(destDirName, BookStorage.PrefixForCorruptHtmFiles + "*.htm"))
+				RobustFile.Delete(path);
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));

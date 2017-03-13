@@ -794,7 +794,7 @@ namespace Bloom.CollectionTab
 		{
 			try
 			{
-				_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo));
+				_bookSelection.SelectBook(_model.GetBookFromBookInfo(bookInfo, true));
 
 				_bookContextMenu.Enabled = true;
 				//Debug.WriteLine("before selecting " + SelectedBook.Title);

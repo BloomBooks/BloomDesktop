@@ -45,12 +45,8 @@ namespace Bloom.Book
 			//NB: This was coded in an unfortunate way such that touching almost any property causes a new metadata to be quietly created.
 			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
 
-			var jsonPath = MetaDataPath;
-			if (RobustFile.Exists(jsonPath))
-			{
-				_metadata = BookMetaData.FromString(RobustFile.ReadAllText(jsonPath)); // Enhance: error handling?
-			}
-			else
+			_metadata = BookMetaData.FromFolder(FolderPath);
+			if (_metadata == null)
 			{
 				// Look for old tags files not yet migrated
 				var oldTagsPath = Path.Combine(folderPath, "tags.txt");
@@ -58,6 +54,7 @@ namespace Bloom.Book
 				{
 					Book.ConvertTagsToMetaData(oldTagsPath, this);
 				}
+				// otherwise leave it null, first attempt to use will create a default one
 			}
 
 			IsEditable = isEditable;
@@ -248,7 +245,7 @@ namespace Bloom.Book
 			{
 				try
 				{
-					RobustFile.WriteAllText(MetaDataPath, MetaData.Json);
+					MetaData.WriteToFolder(FolderPath);
 					return;
 				}
 				catch (IOException e)
@@ -271,7 +268,7 @@ namespace Bloom.Book
 
 		internal string MetaDataPath
 		{
-			get { return Path.Combine(FolderPath, MetaDataFileName); }
+			get { return BookMetaData.MetaDataPath(FolderPath); }
 		}
 
 		public const string MetaDataFileName = "meta.json";
@@ -475,9 +472,45 @@ namespace Bloom.Book
 			return result;
 		}
 
+		/// <summary>
+		/// Make a metadata, usually by just reading the meta.json file in the book folder.
+		/// If some exception is thrown while trying to do that, or if it doesn't exist,
+		/// Try reading a backup (and restore it if successful).
+		/// If that also fails, return null.
+		/// </summary>
+		/// <param name="bookFolderPath"></param>
+		/// <returns></returns>
 		public static BookMetaData FromFolder(string bookFolderPath)
 		{
-			return FromString(RobustFile.ReadAllText(MetaDataPath(bookFolderPath)));
+			var metaDataPath = MetaDataPath(bookFolderPath);
+			BookMetaData result;
+			if (TryReadMetaData(metaDataPath, out result))
+				return result;
+
+			var backupPath = Path.ChangeExtension(metaDataPath, "bak");
+			if (File.Exists(backupPath) && TryReadMetaData(backupPath, out result))
+			{
+				RobustFile.Delete(metaDataPath); // Don't think it's worth saving the corrupt one
+				RobustFile.Move(backupPath, metaDataPath);
+				return result;
+			}
+			return null;
+		}
+
+		private static bool TryReadMetaData(string path, out BookMetaData result)
+		{
+			result = null;
+			if (!File.Exists(path))
+				return false;
+			try
+			{
+				result = FromString(RobustFile.ReadAllText(path));
+				return true;
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
 		}
 
 		public static string MetaDataPath(string bookFolderPath)
@@ -487,7 +520,14 @@ namespace Bloom.Book
 
 		public void WriteToFolder(string bookFolderPath)
 		{
-			RobustFile.WriteAllText(MetaDataPath(bookFolderPath), Json);
+			string tempFilePath;
+			var metaDataPath = MetaDataPath(bookFolderPath);
+			using (var temp = TempFile.InFolderOf(metaDataPath))
+			{
+				tempFilePath = temp.Path;
+			}
+			RobustFile.WriteAllText(tempFilePath, Json);
+			RobustFile.Replace(tempFilePath, metaDataPath, Path.ChangeExtension(metaDataPath, "bak"));
 		}
 
 		[JsonIgnore]

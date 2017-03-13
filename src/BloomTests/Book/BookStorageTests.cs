@@ -400,6 +400,24 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void MakeBookStorage_CorruptFile_Backup_ForSelect_RestoresBackup()
+		{
+			var badContent = "<htmlBlah>This is not good HTML";
+			RobustFile.WriteAllText(_bookPath, badContent);
+			var goodContent = "<html><head> </head><body><div class='bloom-page'>Some text</div></body></html>";
+			RobustFile.WriteAllText(Path.ChangeExtension(_bookPath, "bak"), goodContent);
+			var collectionSettings = new CollectionSettings(Path.Combine(_fixtureFolder.Path, "test.bloomCollection"));
+			BookStorage storage;
+			using (new ErrorReport.NonFatalErrorReportExpected())
+			{
+				storage = new BookStorage(_folder.Path, true, _fileLocator, new BookRenamedEvent(), collectionSettings);
+			}
+			Assert.That(File.ReadAllText(_bookPath), Is.EqualTo(goodContent));
+			Assert.That(File.ReadAllText(Path.Combine(_folder.Path, BookStorage.PrefixForCorruptHtmFiles + "1.htm")), Is.EqualTo(badContent));
+			AssertThatXmlIn.Dom(storage.Dom.RawDom).HasAtLeastOneMatchForXpath("//div[@class='bloom-page']");
+		}
+
+		[Test]
 		public void Save_SetsJsonFormatVersion()
 		{
 			var storage = GetInitialStorage();
