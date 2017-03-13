@@ -527,7 +527,10 @@ namespace Bloom.Book
 				tempFilePath = temp.Path;
 			}
 			RobustFile.WriteAllText(tempFilePath, Json);
-			RobustFile.Replace(tempFilePath, metaDataPath, Path.ChangeExtension(metaDataPath, "bak"));
+			if (File.Exists(metaDataPath))
+				RobustFile.Replace(tempFilePath, metaDataPath, Path.ChangeExtension(metaDataPath, "bak"));
+			else
+				RobustFile.Move(tempFilePath, metaDataPath);
 		}
 
 		[JsonIgnore]
