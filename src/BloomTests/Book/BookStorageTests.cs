@@ -413,7 +413,7 @@ namespace BloomTests.Book
 				storage = new BookStorage(_folder.Path, true, _fileLocator, new BookRenamedEvent(), collectionSettings);
 			}
 			Assert.That(File.ReadAllText(_bookPath), Is.EqualTo(goodContent));
-			Assert.That(File.ReadAllText(Path.Combine(_folder.Path, BookStorage.PrefixForCorruptHtmFiles + "1.htm")), Is.EqualTo(badContent));
+			Assert.That(File.ReadAllText(Path.Combine(_folder.Path, BookStorage.PrefixForCorruptHtmFiles + ".htm")), Is.EqualTo(badContent));
 			AssertThatXmlIn.Dom(storage.Dom.RawDom).HasAtLeastOneMatchForXpath("//div[@class='bloom-page']");
 		}
 
