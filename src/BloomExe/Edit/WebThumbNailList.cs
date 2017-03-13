@@ -341,6 +341,9 @@ namespace Bloom.Edit
 			_browser.RemoveMessageEventListener("gridClick");
 			_browser.RemoveMessageEventListener("gridReordered");
 			_browser.RemoveMessageEventListener("menuClicked");
+			// We get confusing Javascript errors if the websocket made for the previous version of this page
+			// is still listening after the browser has navigated away to a new version of the page.
+			_browser.RunJavaScript("if (typeof FrameExports !== 'undefined') {FrameExports.stopListeningForSave();}");
 		}
 
 		private void ItemClick(string s)
