@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -65,6 +66,10 @@ namespace Bloom
 		[System.Runtime.InteropServices.DllImport("kernel32.dll")]
 		private static extern bool AttachConsole(int pid);
 #endif
+		/// <summary>
+		/// The UI language of the system when the program starts
+		/// </summary>
+		internal static CultureInfo UserInterfaceCulture = CultureInfo.CurrentUICulture;
 
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
@@ -324,6 +329,7 @@ namespace Bloom
 				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
 				UniqueToken.ReleaseToken();
 			}
+			Settings.Default.FirstTimeRun = false;
 			return 0;
 		}
 
@@ -873,7 +879,10 @@ namespace Bloom
 
 			try
 			{
-				applicationContainer.LocalizationManager = LocalizationManager.Create(Settings.Default.UserInterfaceLanguage,
+				// If the user has not set the interface language, try to use the system language if we can.
+				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-4393.)
+				var desiredLanguage = GetDesiredUiLanguage(installedStringFileFolder);
+				applicationContainer.LocalizationManager = LocalizationManager.Create(desiredLanguage,
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
 										   "SIL/Bloom",
@@ -894,6 +903,9 @@ namespace Bloom
 #endif
 
 				var uiLanguage =   LocalizationManager.UILanguageId;//just feeding this into subsequent creates prevents asking the user twice if the language of their os isn't one we have a tmx for
+				if (uiLanguage != desiredLanguage)
+					Settings.Default.UserInterfaceLanguageSetExplicitly = true;
+
 				var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,
@@ -922,6 +934,42 @@ namespace Bloom
 				//otherwise, we don't know what caused it.
 				throw;
 			}
+		}
+
+		/// <summary>
+		/// Derive the desired UI language from the stored value, or from matching the OS value against
+		/// the available localizations if nothing has been explicitly stored yet.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4393.
+		/// </remarks>
+		private static string GetDesiredUiLanguage(string installedStringFileFolder)
+		{
+			// If LocalizationManager.GetUILanguages() worked before calling LocalizationManager.Create(),
+			// then this method could use LM.GetUILanguages().  But since it doesn't, ...
+			var desiredLanguage = Settings.Default.UserInterfaceLanguage;
+			if (Settings.Default.FirstTimeRun || String.IsNullOrEmpty(desiredLanguage) || !Settings.Default.UserInterfaceLanguageSetExplicitly)
+			{
+				// Nothing has been explicitly selected by the user yet, so try to get a localization for the same language.
+				desiredLanguage = UserInterfaceCulture.IetfLanguageTag;
+				var tmxFiles = Directory.GetFiles(installedStringFileFolder, "Bloom.*.tmx");
+				var availableLanguages = new String[tmxFiles.Length];
+				// Try exact matches first, saving language tags in case we have a partial match.
+				for (int i = 0; i < tmxFiles.Length; ++i)
+				{
+					var pieces = tmxFiles[i].Split(new char[]{'.'});
+					if (desiredLanguage == pieces[1])		// pieces[1] is the embedded language tag
+						return pieces[1];
+					availableLanguages[i] = pieces[1];
+				}
+				// Try partial matches next.
+				foreach (var lang in availableLanguages)
+				{
+					if (desiredLanguage.StartsWith(lang + "-"))
+						return lang;
+				}
+			}
+			return desiredLanguage;
 		}
 
 		private static bool _errorHandlingHasBeenSetUp;
