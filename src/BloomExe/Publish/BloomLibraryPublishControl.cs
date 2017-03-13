@@ -30,7 +30,6 @@ namespace Bloom.Publish
 		private bool _usingCcControls = true;
 		private BackgroundWorker _uploadWorker;
 		private string _originalUploadText;
-		private bool _okToUploadWithNoLanguages;
 
 		private string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
 			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
@@ -96,7 +95,7 @@ namespace Bloom.Publish
 			_copyrightLabel.Text = book.BookInfo.Copyright;
 
 			var allLanguages = book.AllLanguages;
-			_okToUploadWithNoLanguages = book.BookInfo.IsSuitableForMakingShells; // a template is allowed to have no text and so no languages.
+			var okToUploadWithNoLanguages = book.BookInfo.IsSuitableForMakingShells;
 			foreach (var lang in allLanguages.Keys)
 			{
 				var checkBox = new CheckBox();
@@ -114,10 +113,10 @@ namespace Bloom.Publish
 				checkBox.CheckStateChanged += delegate(object sender, EventArgs args)
 				{
 					bool someLangChecked = _languagesFlow.Controls.Cast<CheckBox>().Any(b => b.Checked);
-					_langsLabel.ForeColor = someLangChecked || _okToUploadWithNoLanguages ? Color.Black : Color.Red;
+					_langsLabel.ForeColor = someLangChecked || okToUploadWithNoLanguages ? Color.Black : Color.Red;
 					if (_okToUploadDependsOnLangsChecked)
 					{
-						_okToUpload = someLangChecked || _okToUploadWithNoLanguages;
+						_okToUpload = someLangChecked || okToUploadWithNoLanguages;
 						UpdateDisplay();
 					}
 				};
@@ -155,7 +154,7 @@ namespace Bloom.Publish
 			if (!allLanguages.Keys.Any())
 			{
 				_langsLabel.Text += " " + LocalizationManager.GetString("PublishTab.Upload.NoLangsFound", "(None found)");
-				if (!_okToUploadWithNoLanguages)
+				if (!okToUploadWithNoLanguages)
 				{
 					_langsLabel.ForeColor = Color.Red;
 					_okToUpload = false;
