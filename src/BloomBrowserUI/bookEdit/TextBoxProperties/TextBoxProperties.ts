@@ -107,7 +107,7 @@ export default class TextBoxProperties {
                     this.initializeBackground();
                     this.setButtonClickActions();
                     this.makeLanguageSelect();
-                    this.initializeHintText();
+                    this.initializeHintTab();
                 }, 0); // just push this to the end of the event queue
             });
         });
@@ -181,6 +181,12 @@ export default class TextBoxProperties {
         if (targetGroup) {
             targetGroup.attr('data-default-languages', radioValue);
         }
+        // If not Auto, remove style to show hint on all
+        if (radioValue != "Auto") {
+            targetGroup.removeClass(this.showHintClassName());
+        }
+        // Update visibility of hint bubbles controls based on whether Auto
+        this.updateHintTabControls();
     }
 
     initializeAlignment() {
@@ -414,6 +420,55 @@ export default class TextBoxProperties {
         $('#hint-content').mousedown((e: Event) => e.stopPropagation());
         $('#hint-content').mouseup((e: Event) => e.stopPropagation());
         $('#hint-content').mousemove((e: Event) => e.stopPropagation());
+    }
+
+    showHintClassName(): string { return "bloom-showHintOnEach" }
+
+    initializeHintTab() {
+        this.initializeHintText();
+        this.updateHintTabControls();
+        $('#show-when').change(e => {
+            this.changeShowHintOnEach();
+        });
+    }
+
+    updateHintTabControls() {
+        var languageGroupChecked = $('input[name="languageRadioGroup"]:checked').val() == "Auto";
+        var showHintOnEachGroupDiv = $('#show-hint-on-each-group');
+        var includeLangLabel = $('#include-lang');
+        if (languageGroupChecked) {
+            showHintOnEachGroupDiv.show();
+            var showHintOnEach = $(this.getAffectedTranslationGroup(this.boxBeingEdited))
+                .hasClass(this.showHintClassName());
+            if (showHintOnEach) {
+                $('#show-when').val('show-on-each').trigger("change");
+                includeLangLabel.show();
+            } else {
+                // first item will be selected by default
+                includeLangLabel.hide();
+            }
+        } else {
+            showHintOnEachGroupDiv.hide();
+            includeLangLabel.hide();
+        }
+    }
+
+    showHintOnEachIsSelected() {
+        var selectedItem = $("#show-when option:selected");
+        return (selectedItem.attr('id') === "show-on-each");
+    }
+
+    changeShowHintOnEach() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        var showOnEach = this.showHintOnEachIsSelected();
+        var includeLangLabel = $('#include-lang');
+        if (showOnEach) {
+            targetGroup.addClass(this.showHintClassName());
+            includeLangLabel.show();
+        } else {
+            targetGroup.removeClass(this.showHintClassName());
+            includeLangLabel.hide();
+        }
     }
 
     initializeHintText() {

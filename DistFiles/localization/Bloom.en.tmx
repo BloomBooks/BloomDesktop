@@ -1882,6 +1882,12 @@
         <seg>Language</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.TextBoxProperties.Alignment">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Alignment</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.TextBoxProperties.Background">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1904,6 +1910,12 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Border Style</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.IncludeLang">
+      <note>Becomes visible when "Show on each" option is chosen in combo. Do NOT translate {lang}.</note>
+      <tuv xml:lang="en">
+        <seg>Include the name of the language using {lang}. For example: "Enter color in {lang}".</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TextBoxProperties.LocalLanguage">
@@ -1939,6 +1951,22 @@
     <tu tuid="EditTab.TextBoxProperties.WhatToPut">
       <tuv xml:lang="en">
         <seg>What should authors put in this box?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.ShowHintBubble">
+      <note>Label above pull-down menu with options, ShowOnGroup/ShowOnEach</note>
+      <tuv xml:lang="en">
+        <seg>Show the hint bubble</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.ShowOnGroup">
+      <tuv xml:lang="en">
+        <seg>Just once on the whole group</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.ShowOnEach">
+      <tuv xml:lang="en">
+        <seg>On each language-field in the group</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TextBoxProperties.Title">

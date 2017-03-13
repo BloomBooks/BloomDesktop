@@ -78,4 +78,11 @@
 			#hint-bubble-group
 				.main-label(data-i18n="EditTab.TextBoxProperties.WhatToPut") What should authors put in this box?
 				select#lang-select
-				#hint-content(contenteditable="true")
+				#hint-content-wrapper
+					#hint-content(contenteditable="true")
+					#include-lang(data-i18n="EditTab.TextBoxProperties.IncludeLang") Include the name of the language using {lang}. For example: "Enter color in {lang}".
+				#show-hint-on-each-group
+					.main-label(data-i18n="EditTab.TextBoxProperties.ShowHintBubble") Show the hint bubble
+					select#show-when
+						option#show-on-group(data-i18n="EditTab.TextBoxProperties.ShowOnGroup" value="show-on-group") Just once on the whole group
+						option#show-on-each(data-i18n="EditTab.TextBoxProperties.ShowOnEach" value="show-on-each") On each language-field in the group

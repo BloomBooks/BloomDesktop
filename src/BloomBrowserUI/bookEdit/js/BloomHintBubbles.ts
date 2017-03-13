@@ -41,7 +41,7 @@ export default class BloomHintBubbles {
         // behaviors through classes
         axios.get('/bloom/bubbleLanguages').then(result => {
             let preferredLangs: Array<string> = (<any>result.data).langs;
-            $(container).find('.bloom-translationGroup').each((i,group) => {
+            $(container).find('.bloom-translationGroup').each((i, group) => {
                 var groupElement = $(group);
                 // if the group was given a source bubble, don't add another.
                 // It's tempting here to try to detect directly whether it already has some kind of bubble.
@@ -63,7 +63,7 @@ export default class BloomHintBubbles {
                     return;
                 }
 
-                if (groupElement.attr('data-default-languages').toLowerCase() === 'auto') {
+                if (groupElement.attr('data-default-languages').toLowerCase() === 'auto' && !groupElement.hasClass("bloom-showHintOnEach")) {
                     // attach the bubble to the whole group...otherwise it would be oddly
                     // duplicated on all of them
                     BloomHintBubbles.MakeHelpBubble(groupElement, labelElement, preferredLangs);

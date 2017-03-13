@@ -394,6 +394,7 @@ namespace Bloom.Api
 					{
 						langs.Add(new {label=WorkspaceView.MenuItemName(lang), tag=lang.IetfLanguageTag});
 					}
+					info.ContentType = "application/json";
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new {languages=langs}));
 					return true;
 				case "bubbleLanguages":
