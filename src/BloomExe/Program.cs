@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -65,6 +66,10 @@ namespace Bloom
 		[System.Runtime.InteropServices.DllImport("kernel32.dll")]
 		private static extern bool AttachConsole(int pid);
 #endif
+		/// <summary>
+		/// The UI language of the system when the program starts
+		/// </summary>
+		internal static CultureInfo UserInterfaceCulture = CultureInfo.CurrentUICulture;
 
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
@@ -324,6 +329,7 @@ namespace Bloom
 				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
 				UniqueToken.ReleaseToken();
 			}
+			Settings.Default.FirstTimeRun = false;
 			return 0;
 		}
 
@@ -894,6 +900,31 @@ namespace Bloom
 #endif
 
 				var uiLanguage =   LocalizationManager.UILanguageId;//just feeding this into subsequent creates prevents asking the user twice if the language of their os isn't one we have a tmx for
+				// If the user has not set the interface language, try to use the system language if we can.
+				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-4393.)
+				if (Settings.Default.FirstTimeRun ||
+					String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage) ||
+					!Settings.Default.UserInterfaceLanguageSetExplicitly)
+				{
+					var desiredLang = uiLanguage;
+					var langs = LocalizationManager.GetUILanguages(true);
+					var xLang = langs.FirstOrDefault(x => (x is CultureInfo) && (x as CultureInfo).IetfLanguageTag == UserInterfaceCulture.IetfLanguageTag) as CultureInfo;
+					if (xLang != null)
+					{
+						desiredLang = xLang.IetfLanguageTag;	// match tags like "zh-Hans"
+					}
+					else
+					{
+						xLang = langs.FirstOrDefault(x => (x is CultureInfo) && (x as CultureInfo).TwoLetterISOLanguageName == UserInterfaceCulture.TwoLetterISOLanguageName) as CultureInfo;
+						if (xLang != null)
+							desiredLang = xLang.TwoLetterISOLanguageName;	// match tags like "en" or "fr"
+					}
+					if (desiredLang != uiLanguage)
+					{
+						LocalizationManager.SetUILanguage(desiredLang, true);
+						uiLanguage = LocalizationManager.UILanguageId;
+					}
+				}
 				var unusedGoesIntoStatic = LocalizationManager.Create(uiLanguage,
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,

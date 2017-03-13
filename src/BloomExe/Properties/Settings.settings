@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Bloom.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Bloo_userInterfaceLanguagem.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="FirstTimeRun" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
@@ -13,6 +13,9 @@
     </Setting>
     <Setting Name="UserInterfaceLanguage" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UserInterfaceLanguageSetExplicitly" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="LastSourceLanguageViewed" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />

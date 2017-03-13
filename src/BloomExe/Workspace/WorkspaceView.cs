@@ -324,6 +324,7 @@ namespace Bloom.Workspace
 
 			LocalizationManager.SetUILanguage(tag.IetfLanguageTag, true);
 			Settings.Default.UserInterfaceLanguage = tag.IetfLanguageTag;
+			Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 			item.Select();
 			UpdateMenuTextToShorterNameOfSelection(toolStripButton, tag);
 
