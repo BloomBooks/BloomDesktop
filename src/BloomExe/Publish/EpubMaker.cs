@@ -28,6 +28,44 @@ namespace Bloom.Publish
 	/// The process has two stages, corresponding to the way our UI displays a preview and
 	/// then allows the user to save. We 'stage' the ePUB by generating all the files into a
 	/// temporary folder. Then, if the user says to save, we actually zip them into an ePUB.
+	///
+	/// Currently, we don't attempt to support sophisticated page layouts in epubs.
+	/// For one thing, we have not identified any epub readers on phones that support enough
+	/// EPUB3/HTML features to actually make an EPUB3 fixed-layout page that looks exactly
+	/// like what Bloom puts on paper. For another, the device screen might be much smaller
+	/// than the page was designed for, and the user might be annoyed if he has to zoom
+	/// and scroll horizontally, or that the page does not obey the reader's font controls.
+	///
+	/// So, instead, we currently only attempt to support pages with a basically vertical layout.
+	/// Bloom will do something with more complex ones, but it won't look much like the
+	/// original. Basically, we will arrange the page elements one below the other, make the
+	/// pictures about the original fraction of page wide, and hope for the best.
+	/// Thus, any sort of side-by-side layout will be lost in epubs.
+	///
+	/// There is also no guarantee that what started out as a single page will fit on one
+	/// screen in the reader. All readers we have tested will split a source page (which
+	/// they treat more like a chapter) into as many pages as needed to show all the content.
+	/// But a picture is not guaranteed to be on the same screen as text that was supposed
+	/// to be on the same page.
+	///
+	/// We do output styles that should control text font and size, but readers vary widely
+	/// in whether they obey these at all and, if so, how they interpret a particular font
+	/// size.
+	///
+	/// Epubs deliberately omit blank pages.
+	///
+	/// Epubs currently have a very simplistic table of contents, with entries for the
+	/// start of the book and the first content page.
+	///
+	/// We also simplified in various other ways:
+	/// - although we generally embed fonts used in the document, we don't embed any that
+	/// indicate they do not permit embedding. Currently we don't give any warning about this,
+	/// nor any way for the user to override it if he actually has the right to embed.
+	/// - to save space, we don't embed bold or italic variants of embedded fonts,
+	/// even if bold or italic text in those fonts occurs.
+	/// - we also don't support vertical alignment control (in what height would we vertically
+	/// align something?); each element just takes up as much vertical space as it needs.
+	/// - Currently epubs can only contain audio for one language--the primary vernacular one.
 	/// </summary>
 	public class EpubMaker : IDisposable
 	{
