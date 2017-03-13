@@ -11,9 +11,9 @@
         - You can now set the vertical alignment of text boxes (top, middle, bottom)
         - You can now control the what sides of a text box now have sides
         - (MAYBE) We have moved borders and background color from the text styles to the Text Box Formatting
-    (Maybe in 3.9) You can now copy a page from one book and paste it into another. One user for this is for making template pages out of complex pages you've already created.
-    (Maybe in 3.9) We've removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
-    (Maybe in 3.9) We've added a new Zoom control.
+    - You can now copy a page from one book and paste it into another. One use for this is for making template pages out of complex pages you've already created.
+    - (Maybe in 3.9) We've removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
+    - (Maybe in 3.9) We've added a new Zoom control.
 
 ## 3.8
 

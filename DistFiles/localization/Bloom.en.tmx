@@ -1245,6 +1245,11 @@
         <seg>Copy this information to all other pictures in this book?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.CopyPage">
+      <tuv xml:lang="en">
+        <seg>Copy Page</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.CustomPage.ChangeLayout">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1781,6 +1786,11 @@
     <tu tuid="EditTab.PasteButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Paste (Ctrl+V)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PastePage">
+      <tuv xml:lang="en">
+        <seg>Paste Page</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.PasteButton.ToolTipWhenDisabled">
