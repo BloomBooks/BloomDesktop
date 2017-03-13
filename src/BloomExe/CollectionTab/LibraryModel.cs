@@ -335,7 +335,7 @@ namespace Bloom.CollectionTab
 			{
 				if (excludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 					continue; // BL-2246: skip putting this one into the BloomPack
-				if (Path.GetFileName(filePath).StartsWith(BookStorage.PrefixForCorrupHtmFiles))
+				if (Path.GetFileName(filePath).StartsWith(BookStorage.PrefixForCorruptHtmFiles))
 					continue;
 
 				FileInfo fi = new FileInfo(filePath);

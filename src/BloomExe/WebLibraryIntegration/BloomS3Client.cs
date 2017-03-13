@@ -231,7 +231,7 @@ namespace Bloom.WebLibraryIntegration
 			foreach (var file in unwantedPdfs)
 				RobustFile.Delete(file);
 			// Don't upload corrupt htms that have been repaired
-			foreach (var path in Directory.EnumerateFiles(destDirName, BookStorage.PrefixForCorrupHtmFiles + "*.htm"))
+			foreach (var path in Directory.EnumerateFiles(destDirName, BookStorage.PrefixForCorruptHtmFiles + "*.htm"))
 				RobustFile.Delete(path);
 			UploadDirectory(prefix, wrapperPath, progress);
 

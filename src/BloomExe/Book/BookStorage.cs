@@ -76,7 +76,7 @@ namespace Bloom.Book
 		///     (coincidentally) kBloomFormatVersion = "2.0"
 		internal const string kBloomFormatVersion = "2.0";
 
-		public const string PrefixForCorrupHtmFiles = "_broken_";
+		public const string PrefixForCorruptHtmFiles = "_broken_";
 		private  string _folderPath;
 		private IChangeableFileLocator _fileLocator;
 		private BookRenamedEvent _bookRenamedEvent;
@@ -606,7 +606,7 @@ namespace Bloom.Book
 			// so Union works better here. (And we'll change the name of the book too.)
 			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm").Union(Directory.GetFiles(folderPath, "*.html")));
 			var decoyMarkers = new string[] {"configuration",
-				PrefixForCorrupHtmFiles, // Used to rename corrupt htm files before restoring backup
+				PrefixForCorruptHtmFiles, // Used to rename corrupt htm files before restoring backup
 				"_conflict", // owncloud
 				"[conflict]", // Google Drive
 				"conflicted copy" // Dropbox
@@ -733,13 +733,7 @@ namespace Bloom.Book
 					// he isn't looking at currently.
 					if (forSelectedBook && RobustFile.Exists(backupPath) && TryGetXmlDomFromHtmlFile(backupPath, out xmlDomFromHtmlFile))
 					{
-						var corruptFileName = PrefixForCorrupHtmFiles;
-						string corruptFilePath;
-						int suffix = 1;
-						do
-						{
-							corruptFilePath = Path.Combine(FolderPath, Path.ChangeExtension(corruptFileName + suffix++, "htm"));
-						} while (File.Exists(corruptFilePath));
+						string corruptFilePath = GetUniqueFileName(FolderPath, PrefixForCorruptHtmFiles, "htm");
 						RobustFile.Move(PathToExistingHtml, corruptFilePath);
 						RobustFile.Move(backupPath, pathToExistingHtml);
 						var msg = LocalizationManager.GetString("BookStorage.CorruptBook",
@@ -1145,6 +1139,23 @@ namespace Bloom.Book
 				suffix = i.ToString(CultureInfo.InvariantCulture);
 			}
 			return name + suffix;
+		}
+
+		/// <summary>
+		/// if necessary, append a number to make the file name unique within the given folder
+		/// </summary>
+		internal static string GetUniqueFileName(string parentPath, string name, string ext)
+		{
+			int i = 0;
+			string suffix = "";
+			string result;
+			do
+			{
+				result = Path.ChangeExtension(Path.Combine(parentPath, name + suffix), ext);
+				++i;
+				suffix = i.ToString(CultureInfo.InvariantCulture);
+			} while (RobustFile.Exists(result));
+			return result;
 		}
 
 		public string GetBrokenBookRecommendationHtml()
