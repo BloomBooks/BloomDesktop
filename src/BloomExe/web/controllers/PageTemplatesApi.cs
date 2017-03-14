@@ -118,16 +118,20 @@ namespace Bloom.web.controllers
 
 			var pngpath = Path.ChangeExtension(localPath, "png");
 
-			//If there is no svg, then we assume the we are using a generated image.
-			//If the book we want a thumbnail from is the one we are currently editing,
-			//then the thumbnail we generated last time might not reflect how the page is laid out
-			//now. So in that case we ignore the existing png thumbnail.
-			//NB: even if we decide to give a refreshed image, it still won't be accurate,
-			//if the user just made a change; the page won't actually be saved yet, so the
-			//newly created thumbnail will not reflect the change. Ah well, we try.
-			if (!localPath.Replace("\\","/").Contains(_bookSelection.CurrentSelection.FolderPath.Replace("\\", "/")))
+			if (File.Exists(pngpath))
 			{
-				if(File.Exists(pngpath))
+				var f = new FileInfo(pngpath);
+				if (f.IsReadOnly)
+					return pngpath; // it's locked, don't try and replace it
+
+				//If there is no svg, then we assume the we are using a generated image.
+				//If the book we want a thumbnail from is the one is the one we are currently editing,
+				//then the thumbnail we generated last time might not reflect how the page is laid out
+				//now. So in that case we ignore the existing png thumbnail.
+				//NB: even if we decide to give a refreshed image, it still won't be accurate,
+				//if the user just made a change; the page won't actually be saved yet, so the
+				//newly created thumbnail will not reflect the change. Ah well, we try.
+				if (!localPath.Replace("/","\\").Contains(_bookSelection.CurrentSelection.FolderPath.Replace("/","//")))
 				{
 					return pngpath;
 				}

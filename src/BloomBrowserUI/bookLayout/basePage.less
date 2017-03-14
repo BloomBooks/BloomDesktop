@@ -51,16 +51,19 @@ To handling the mis-match.*/
 }
 
 // when making a thumbnail for a template page, add a kind of text mockup to text areas
-.bloom-templateThumbnail .bloom-editable{
-    background-image: url('templateThumbnailText.svg');
-    background-repeat: repeat-y;
-     //height in ems so it is sentitive to font size. The '3' here is not necessarily
-     //ideal, and was just arrived at through experimentation, balancing accuracy
-     //(how many lines of text really fit in this box) with visual appeal.
-     background-size: 100% 3em;
+.bloom-templateThumbnail {
+    .numberedPage:after { display:none }
+    .bloom-editable {
+        background-image: url('templateThumbnailText.svg');
+        background-repeat: repeat-y;
+        //height in ems so it is sentitive to font size. The '3' here is not necessarily
+        //ideal, and was just arrived at through experimentation, balancing accuracy
+        //(how many lines of text really fit in this box) with visual appeal.
+        background-size: 100% 3em;
 
-     //don't show any text that might be in the text block
-     color: transparent;
+        //don't show any text that might be in the text block
+        color: transparent;
+    }
 }
 
 /* gridItem means this is a page thumbnail */
