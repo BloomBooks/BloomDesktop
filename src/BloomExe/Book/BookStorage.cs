@@ -846,7 +846,7 @@ namespace Bloom.Book
 			}
 
 			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
-			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
+			var nameOfXMatterPack = _collectionSettings.XMatterPackName;
 			nameOfXMatterPack = HandleRetiredXMatterPacks(_dom, nameOfXMatterPack);
 
 			try
