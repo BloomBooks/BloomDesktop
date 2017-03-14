@@ -25,37 +25,41 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// Constructs by finding the file and folder of the xmatter pack, given the its key name e.g. "Factory", "SILIndonesia".
+		/// The default key name is provided as a method parameter, but that can be overridden by a value from inside the book.
 		/// The name of the file should be (key)-XMatter.htm. The name and the location of the folder is not our problem...
 		/// we leave it to the supplied fileLocator to find it.
 		/// </summary>
-		/// <param name="nameOfXMatterPack">e.g. "Factory", "SILIndonesia"</param>
-		/// <param name="fileLocator">The locator needs to be able tell us the path to an xmater html file, given its name</param>
-		public XMatterHelper(HtmlDom bookDom, string nameOfXMatterPack, IFileLocator fileLocator)
+		/// <param name="nameOfDefaultXMatterPack">e.g. "Factory", "SILIndonesia".  This can be overridden inside the bookDom.</param>
+		/// <param name="fileLocator">The locator needs to be able tell us the path to an xmatter html file, given its name</param>
+		public XMatterHelper(HtmlDom bookDom, string nameOfDefaultXMatterPack, IFileLocator fileLocator)
 		{
 			_bookDom = bookDom;
-			_nameOfXMatterPack = nameOfXMatterPack;
-
-			string directoryName = nameOfXMatterPack + "-XMatter";
-			string directoryPath;
-			try
+			var specifiedXMatterPack = bookDom.GetMetaValue("xmatter", null);
+			string directoryPath = null;
+			if (!String.IsNullOrWhiteSpace(specifiedXMatterPack))
 			{
-				directoryPath = fileLocator.LocateDirectoryWithThrow(directoryName);
+				_nameOfXMatterPack = specifiedXMatterPack;
+				var errorTemplate = LocalizationManager.GetString("Errors.SpecifiedXMatterNotFound",
+					"This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.");
+				directoryPath = GetXMatterDirectory(fileLocator, String.Format(errorTemplate, specifiedXMatterPack), false);
+				if (directoryPath == null)
+				{
+					// Remove the xmatter specification from the DOM since it couldn't be found.
+					_bookDom.RemoveMetaElement("xmatter");
+				}
 			}
-			catch(ApplicationException error)
+			if (directoryPath == null)
 			{
+				_nameOfXMatterPack = nameOfDefaultXMatterPack;
 				var errorTemplate = LocalizationManager.GetString("Errors.XMatterNotFound",
 					"This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.");
-				var msg = string.Format(errorTemplate, nameOfXMatterPack);
-
-				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), msg);
-				//NB: we don't want to put up a dialog for each one; one failure here often means 20 more are coming as the other books are loaded!
-				throw new ApplicationException(msg);
+				directoryPath = GetXMatterDirectory(fileLocator, String.Format(errorTemplate, _nameOfXMatterPack), true);
 			}
-			var htmName = nameOfXMatterPack + "-XMatter.html";
+			var htmName = _nameOfXMatterPack + "-XMatter.html";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			if(!RobustFile.Exists(PathToXMatterHtml))
 			{
-				htmName = nameOfXMatterPack + "-XMatter.htm"; // pre- Bloom 3.7
+				htmName = _nameOfXMatterPack + "-XMatter.htm"; // pre- Bloom 3.7
 				PathToXMatterHtml = directoryPath.CombineForPath(htmName);
 			}
 			if (!RobustFile.Exists(PathToXMatterHtml))
@@ -72,6 +76,22 @@ namespace Bloom.Book
 			XMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml, false);
 		}
 
+		private string GetXMatterDirectory(IFileLocator fileLocator, string errorMsg, bool throwIfError)
+		{
+			try
+			{
+				var directoryName = _nameOfXMatterPack + "-XMatter";
+				return fileLocator.LocateDirectoryWithThrow(directoryName);
+			}
+			catch (ApplicationException error)
+			{
+				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), errorMsg);
+				//NB: we don't want to put up a dialog for each one; one failure here often means 20 more are coming as the other books are loaded!
+				if (throwIfError)
+					throw new ApplicationException(errorMsg);
+			}
+			return null;
+		}
 
 		public string GetStyleSheetFileName()
 		{

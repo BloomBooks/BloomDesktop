@@ -2477,6 +2477,11 @@
         <seg>Sorry, something went wrong.</seg>
       </tuv>
     </tu>
+    <tu tuid="Errors.SpecifiedXMatterNotFound">
+      <tuv xml:lang="en">
+        <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</seg>
+      </tuv>
+    </tu>
     <tu tuid="Errors.XMatterNotFound">
       <tuv xml:lang="en">
         <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</seg>
