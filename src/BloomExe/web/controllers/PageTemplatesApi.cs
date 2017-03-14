@@ -125,7 +125,7 @@ namespace Bloom.web.controllers
 			//NB: even if we decide to give a refreshed image, it still won't be accurate,
 			//if the user just made a change; the page won't actually be saved yet, so the
 			//newly created thumbnail will not reflect the change. Ah well, we try.
-			if (!localPath.Contains(_bookSelection.CurrentSelection.FolderPath))
+			if (!localPath.Replace("\\","/").Contains(_bookSelection.CurrentSelection.FolderPath.Replace("\\", "/")))
 			{
 				if(File.Exists(pngpath))
 				{
