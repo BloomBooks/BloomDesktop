@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -190,6 +190,11 @@ namespace Bloom.Wizard
 		public event EventHandler Finished;
 
 		public event EventHandler SelectedPageChanged;
+
+		public void UpdateNextAndFinishButtonText()
+		{
+			_winformsWizard.UpdateNextAndFinishedButtonText();
+		}
 
 		#region ISupportInitialize implementation
 		void ISupportInitialize.BeginInit()

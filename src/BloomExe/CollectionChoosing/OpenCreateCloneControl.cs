@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -339,6 +340,20 @@ namespace Bloom.CollectionChoosing
 		private void _readMoreLabel_Click(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			HelpLauncher.Show(null, "Chorus_Help.chm", "Chorus/Chorus_overview.htm");
+		}
+
+		public void UpdateUiLanguageMenuSelection()
+		{
+			foreach (ToolStripDropDownItem item in _uiLanguageMenu.DropDownItems)
+			{
+				CultureInfo cultureInfo = (CultureInfo) item.Tag;
+				if (cultureInfo.IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
+				{
+					item.Select();
+					WorkspaceView.UpdateMenuTextToShorterNameOfSelection(_uiLanguageMenu, cultureInfo);
+					return;
+				}
+			}
 		}
 	}
 }

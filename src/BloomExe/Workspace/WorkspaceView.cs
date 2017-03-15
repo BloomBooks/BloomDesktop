@@ -345,7 +345,7 @@ namespace Bloom.Workspace
 			AdjustButtonTextsForCurrentSize();
 		}
 
-		private static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, CultureInfo language)
+		public static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, CultureInfo language)
 		{
 			toolStripButton.Text = language.NativeName;
 		}

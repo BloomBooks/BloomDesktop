@@ -16,8 +16,10 @@ namespace Bloom.CollectionChoosing
 			_openAndCreateControl.TemplateButton.Image.Tag = "testfrombloom";
 
 			_openAndCreateControl.Init(mruList,
-				 LocalizationManager.GetString("OpenCreateNewCollectionsDialog.Bloom Collections", "Bloom Collections", "This shows in the file-open dialog that you use to open a different bloom collection") + @"|*.bloomLibrary;*.bloomCollection",
-				 () => NewCollectionWizard.CreateNewCollection());
+				LocalizationManager.GetString("OpenCreateNewCollectionsDialog.Bloom Collections", "Bloom Collections",
+					"This shows in the file-open dialog that you use to open a different bloom collection") +
+				@"|*.bloomLibrary;*.bloomCollection",
+				() => NewCollectionWizard.CreateNewCollection(() => _openAndCreateControl.UpdateUiLanguageMenuSelection()));
 
 			_openAndCreateControl.DoneChoosingOrCreatingLibrary += (x, y) =>
 																{
