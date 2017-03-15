@@ -21,6 +21,8 @@ namespace Bloom.CollectionCreating
 			{
 				components.Dispose();
 			}
+			if (disposing)
+				wizardControl1.Dispose();
 			base.Dispose(disposing);
 		}
 
