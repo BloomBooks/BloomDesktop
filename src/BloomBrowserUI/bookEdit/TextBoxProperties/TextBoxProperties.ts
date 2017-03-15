@@ -3,6 +3,7 @@ import '../../node_modules/select2/dist/js/select2.js';
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import axios = require('axios');
 import { EditableDivUtils } from '../js/editableDivUtils';
+import BloomHintBubbles from '../js/BloomHintBubbles';
 
 declare function WebFxTabPane(element: HTMLElement, useCookie: boolean, callback: any): any; // from tabpane, from a <script> tag
 
@@ -469,6 +470,7 @@ export default class TextBoxProperties {
             targetGroup.removeClass(this.showHintClassName());
             includeLangLabel.hide();
         }
+        BloomHintBubbles.updateQtipPlacement(targetGroup, $('#hint-content').text());
     }
 
     initializeHintText() {
@@ -491,6 +493,7 @@ export default class TextBoxProperties {
                 }
                 langLabel.text(text);
             }
+            BloomHintBubbles.updateQtipPlacement(targetGroup, text);
         });
     }
 

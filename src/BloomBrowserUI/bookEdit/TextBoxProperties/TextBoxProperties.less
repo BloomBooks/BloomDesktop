@@ -12,6 +12,7 @@
 // when the include-lang label is visible.
 @include-lang-width: @main-label-width - @lang-select-width - @hint-content-margin-right - @hint-content-wrapper-margin-right;
 @hint-content-group-margin-top: 10px;
+@label-font-size: 8pt;
 
 //the select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index
 .select2-container{
@@ -28,7 +29,7 @@
 
 #show-when + .select2-container{
     width: 300px !important;
-    margin-top: 10px;
+    margin-top: 3px;
     margin-left: @hint-tab-indent;
 }
 
@@ -43,7 +44,7 @@
     .tab-page {
         .main-label {
             width: @main-label-width;
-            font-size: 8pt;
+            font-size: @label-font-size;
             margin-top: 10px;
         }
         #language-group {
@@ -80,6 +81,7 @@
 
 #include-lang {
     width: 150px;
+    font-size: @label-font-size;
     margin-top: @hint-content-group-margin-top;
 }
 
