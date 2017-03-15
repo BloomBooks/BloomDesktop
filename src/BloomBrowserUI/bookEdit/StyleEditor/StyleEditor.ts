@@ -1026,7 +1026,7 @@ export default class StyleEditor {
 
         for (var i = 0; i < items.length; i++) {
             var selected: string = '';
-            if (current.toString() === items[i]) { // toString() is necessary to match point size string
+            if (current && current.toString() === items[i]) { // toString() is necessary to match point size string
                 selected = ' selected';
             }
             var text = items[i];
