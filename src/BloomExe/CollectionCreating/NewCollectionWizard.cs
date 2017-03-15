@@ -241,7 +241,9 @@ namespace Bloom.CollectionCreating
 
 		private void _finishPage_Initialize(object sender, EventArgs e)
 		{
-			var pattern = LocalizationManager.GetString("NewCollectionWizard.FinishPage","OK, that's all we need to get started with your new '{0}' collection.\r\nClick on the 'Finish' button.");
+			var pattern = LocalizationManager.GetString("NewCollectionWizard.FinishPageContent",
+				"OK, that's all we need to get started with your new '{0}' collection.\r\nClick on the 'Finish' button.",
+				"{0} is the name of the new collection");
 			betterLabel1.Text = String.Format(pattern, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));
 		}
 	}
