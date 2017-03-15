@@ -189,17 +189,18 @@ namespace BloomTests.Book
 				"</body>" +
 				"</html>");
 			var helper1 = new XMatterHelper(dom1, "Factory", fileLocator);
-			if (!string.IsNullOrEmpty(xmatterBook))
+			if (xmatterBook.Contains("DoesNotExist") || string.IsNullOrEmpty(xmatterBook))
+			{
+				// An xmatter specification that cannot be found should be removed from the DOM.
+				// An empty xmatter specification is also removed.
+				Assert.That(dom1.GetMetaValue("xmatter", null), Is.Null);
+			}
+			else
 			{
 				// Verify that we may have what we want for the xmatter specification, valid or not.
 				Assert.That(dom1.GetMetaValue("xmatter", null), Is.Not.Null);
 			}
 			Assert.That(helper1.GetStyleSheetFileName(), Is.EqualTo(expected));
-			if (xmatterBook.Contains("DoesNotExist"))
-			{
-				// Invalid xmatter specification should be removed from the DOM.
-				Assert.That(dom1.GetMetaValue("xmatter", null), Is.Null);
-			}
 		}
 
 		//		TODO: at the moment, we'd have to creat a whole xmatter folder
