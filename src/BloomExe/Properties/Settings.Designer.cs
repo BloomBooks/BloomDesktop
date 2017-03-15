@@ -74,6 +74,19 @@ namespace Bloom.Properties {
             }
         }
         
+		[global::System.Configuration.UserScopedSettingAttribute()]
+		[global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("False")]
+		public bool UserInterfaceLanguageSetExplicitly {
+			get {
+				return ((bool)(this["UserInterfaceLanguageSetExplicitly"]));
+			}
+			set {
+				this["UserInterfaceLanguageSetExplicitly"] = value;
+			}
+		}
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
