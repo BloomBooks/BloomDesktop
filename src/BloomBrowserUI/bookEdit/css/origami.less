@@ -1,5 +1,6 @@
 @import (inline) "../../lib/split-pane/split-pane.css";
 
+@flowerPetalGrey:#7e7e7e;
 @inactiveColor: rgb(80%,80%,80%);
 @activeColor:  #E48C84;
 @font: "Segoe UI", "Open Sans", Arial, sans-serif;
@@ -92,7 +93,9 @@
     color: black;
 }
 .origami-layout-mode .bloom-editable{
-    color: rgb(90%,98%,98%) !important;
+    // We want to see some text in the background, but it can't interfer with the forground.
+    // If you change this color, be sure to see how it looks when grey background is enabled.
+    color:#ececec !important;
 }
 
 @firstButtonOffset: 10px;
@@ -223,7 +226,7 @@
 /*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
 .origami-layout-mode .split-pane-component-inner .textBox-identifier {
     /*content: "Text Box";*/
-    color: @inactiveColor;
+    color: @flowerPetalGrey;
     white-space: normal;
     transition-property: font-size;
     transition-duration: 0.5s;
