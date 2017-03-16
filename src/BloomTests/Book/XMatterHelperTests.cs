@@ -188,7 +188,18 @@ namespace BloomTests.Book
 				"</div>" +
 				"</body>" +
 				"</html>");
-			var helper1 = new XMatterHelper(dom1, "Factory", fileLocator);
+			XMatterHelper helper1;
+			if (xmatterBook.Contains("DoesNotExist"))
+			{
+				using (new SIL.Reporting.ErrorReport.NonFatalErrorReportExpected())
+				{
+					helper1 = new XMatterHelper(dom1, "Factory", fileLocator);
+				}
+			}
+			else
+			{
+				helper1 = new XMatterHelper(dom1, "Factory", fileLocator);
+			}
 			if (xmatterBook.Contains("DoesNotExist") || string.IsNullOrEmpty(xmatterBook))
 			{
 				// An xmatter specification that cannot be found should be removed from the DOM.
