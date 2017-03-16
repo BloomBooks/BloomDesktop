@@ -357,7 +357,9 @@ namespace Bloom.Publish
 				var dataDurationAttr = span.Attributes["data-duration"];
 				if(dataDurationAttr != null)
 				{
-					pageDuration += TimeSpan.FromSeconds(Double.Parse(dataDurationAttr.Value));
+					// Make sure we parse "3.14159" properly since that's the form we'll see regardless of current locale.
+					// (See http://issues.bloomlibrary.org/youtrack/issue/BL-4374.)
+					pageDuration += TimeSpan.FromSeconds(Double.Parse(dataDurationAttr.Value, System.Globalization.CultureInfo.InvariantCulture));
 				}
 				else
 				{
