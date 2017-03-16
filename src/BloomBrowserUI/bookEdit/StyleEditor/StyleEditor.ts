@@ -878,6 +878,7 @@ export default class StyleEditor {
 
     showCreateStyle() {
         this.styleStateChange('enteringStyle');
+        $('#style-select-input').focus();
         return false; // prevent default click
     }
 
