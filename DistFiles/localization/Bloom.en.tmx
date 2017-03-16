@@ -4748,6 +4748,12 @@ Do you want to go ahead?</seg>
         <seg>Traditional Story</seg>
       </tuv>
     </tu>
+    <tu tuid="WebServer.Warning.CannotAccessFile">
+      <note>displays as a "toast", {0} is the URL/filename</note>
+      <tuv xml:lang="en">
+        <seg>Cannot access {0}</seg>
+      </tuv>
+    </tu>
     <tu tuid="WebServer.Warning.NoImageFile">
       <note>displays as a "toast"</note>
       <tuv xml:lang="en">
