@@ -149,17 +149,16 @@ namespace Bloom.Wizard.WinForms
 
 		protected void InvokePagedChangedEvent()
 		{
-			if (_currentShownPage.IsFinishPage)
-			{
-				_nextAndFinishedButton.Text = FinishButtonText;
-			}
-			else
-			{
-				_nextAndFinishedButton.Text = NextButtonText;
-			}
+			UpdateNextAndFinishedButtonText();
 
 			if (SelectedPageChanged != null)
 				SelectedPageChanged(this, EventArgs.Empty);
+		}
+
+		public void UpdateNextAndFinishedButtonText()
+		{
+			if (_nextAndFinishedButton != null && _currentShownPage != null)
+				_nextAndFinishedButton.Text = _currentShownPage.IsFinishPage ? FinishButtonText : NextButtonText;
 		}
 
 		protected virtual void ShowPage(int pageNumber)
@@ -186,6 +185,9 @@ namespace Bloom.Wizard.WinForms
 			_currentShownPage = page;
 			_currentShownPage.InvokeInitializeEvent();
 			_currentShownPage.Dock = DockStyle.Fill;
+
+		    _currentShownPage.BeforeShow();
+
 			_contentPanel.Controls.Add(_currentShownPage);
 			_backButton.Enabled = _history.Count > 0;
 			_nextAndFinishedButton.Enabled = _currentShownPage.AllowNext;

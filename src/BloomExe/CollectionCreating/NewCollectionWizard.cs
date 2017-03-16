@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Design;
-using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -17,13 +17,16 @@ namespace Bloom.CollectionCreating
 {
 	public partial class NewCollectionWizard : Form
 	{
+		public Action UiLanguageChanged;
+
 		private NewCollectionSettings _collectionInfo;
 
-		public static string CreateNewCollection()
+		public static string CreateNewCollection(Action uiLanguageChangedAction)
 		{
 			bool showNewCollectionWizard = Settings.Default.MruProjects.Latest == null;
 			using (var dlg = new NewCollectionWizard(showNewCollectionWizard))
 			{
+				dlg.UiLanguageChanged = uiLanguageChangedAction;
 				dlg.ShowInTaskbar = showNewCollectionWizard;//if we're at this stage, there isn't a bloom icon there already.
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
@@ -45,6 +48,8 @@ namespace Bloom.CollectionCreating
 		{
 			InitializeComponent();
 
+			Icon = Resources.BloomIcon;
+
 			if (ReallyDesignMode)
 				return;
 
@@ -65,60 +70,41 @@ namespace Bloom.CollectionCreating
 
 			//The L10NSharpExtender and this wizard don't get along (they conspire to crash Visual Studio with a stack overflow)
 			//so we do all of this by hand
-			var chooser = new Button();// new L10NSharp.UI.UILanguageComboBox() { ShowOnlyLanguagesHavingLocalizations = false };
-			chooser.Location = new Point(100,100);
-			chooser.Size= new Size(50,50);
-			chooser.Visible = true;
-			chooser.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-			//chooser.SelectedValueChanged += new EventHandler(chooser_SelectedValueChanged);
-			wizardControl1.Controls.Add(chooser);
-
 			SetLocalizedStrings();
 
-			wizardControl1.AfterInitialization();
+			_wizardControl.AfterInitialization();
 		}
 
-		void chooser_SelectedValueChanged(object sender, EventArgs e)
+		public void ChangeLocalization(CultureInfo cultureInfo)
 		{
 			SetLocalizedStrings();
+			if (UiLanguageChanged != null)
+				UiLanguageChanged();
 		}
 
 		private void SetLocalizedStrings()
 		{
-			this.wizardControl1.Title = LocalizationManager.GetString("NewCollectionWizard.NewCollectionWindowTitle",
-																	  "Create New Bloom Collection");
-			this._welcomePage.Text = LocalizationManager.GetString("NewCollectionWizard.WelcomePage",
-																   "Welcome To Bloom!");
-			this._kindOfCollectionPage.Text = LocalizationManager.GetString("NewCollectionWizard.KindOfCollectionPage",
-																			"Choose the Collection Type");
-			_collectionNamePage.Text = LocalizationManager.GetString("NewCollectionWizard.ProjectName",
-																			"Project Name");
-			_collectionNameProblemPage.Text = LocalizationManager.GetString("NewCollectionWizard.CollectionNameProblem",
-																			"Collection Name Problem");
-			this._languageLocationPage.Text = LocalizationManager.GetString("NewCollectionWizard.LocationPage",
-																			"Give Language Location");
-			this._languageFontPage.Text = LocalizationManager.GetString("NewCollectionWizard.FontAndScriptPage",
-																		"Font and Script");
-			this._vernacularLanguagePage.Text = LocalizationManager.GetString("NewCollectionWizard.ChooseLanguagePage",
-																			  "Choose the Main Language For This Collection");
-			this._finishPage.Text = LocalizationManager.GetString("NewCollectionWizard.FinishPage",
-																  "Ready To Create New Collection");
-			wizardControl1.NextButtonText = LocalizationManager.GetString("Common.Next", "&Next",
-																		  "Used for the Next button in wizards, like that used for making a New Collection");
-			wizardControl1.FinishButtonText = LocalizationManager.GetString("Common.Finish", "&Finish",
-																			"Used for the Finish button in wizards, like that used for making a New Collection");
-			wizardControl1.CancelButtonText = LocalizationManager.GetString("Common.CancelButton", "&Cancel");
+			Text = LocalizationManager.GetString("NewCollectionWizard.NewCollectionWindowTitle", "Create New Bloom Collection");
+			_welcomePage.Text = LocalizationManager.GetString("NewCollectionWizard.WelcomePage", "Welcome To Bloom!");
+			_kindOfCollectionPage.Text = LocalizationManager.GetString("NewCollectionWizard.KindOfCollectionPage", "Choose the Collection Type");
+			_collectionNamePage.Text = LocalizationManager.GetString("NewCollectionWizard.ProjectName", "Project Name");
+			_collectionNameProblemPage.Text = LocalizationManager.GetString("NewCollectionWizard.CollectionNameProblem", "Collection Name Problem");
+			_languageLocationPage.Text = LocalizationManager.GetString("NewCollectionWizard.LocationPage", "Give Language Location");
+			_languageFontPage.Text = LocalizationManager.GetString("NewCollectionWizard.FontAndScriptPage", "Font and Script");
+			_vernacularLanguagePage.Text = LocalizationManager.GetString("NewCollectionWizard.ChooseLanguagePage", "Choose the Main Language For This Collection");
+			_finishPage.Text = LocalizationManager.GetString("NewCollectionWizard.FinishPage", "Ready To Create New Collection");
+			_wizardControl.NextButtonText = LocalizationManager.GetString("Common.Next", "&Next", "Used for the Next button in wizards, like that used for making a New Collection");
+			_wizardControl.FinishButtonText = LocalizationManager.GetString("Common.Finish", "&Finish", "Used for the Finish button in wizards, like that used for making a New Collection");
+			_wizardControl.UpdateNextAndFinishButtonText();
+			_wizardControl.CancelButtonText = LocalizationManager.GetString("Common.CancelButton", "&Cancel");
 
-			var one = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine1",
-																"You are almost ready to start making books.");
-			var two = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine2",
-																"In order to keep things simple and organized, Bloom keeps all the books you make in one or more <i>Collections</i>. The first thing we need to do is make one for you.");
-			var three = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine3",
-																"Click 'Next' to get started.");
+			var one = LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine1", "You are almost ready to start making books.");
+			var two = LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine2", "In order to keep things simple and organized, Bloom keeps all the books you make in one or more <i>Collections</i>. The first thing we need to do is make one for you.");
+			var three = LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine3", "Click 'Next' to get started.");
 			_welcomeHtml.HTML = one + "<br/>" + two + "<br/>" + three;
 		}
 
-		protected new bool ReallyDesignMode
+		protected bool ReallyDesignMode
 		{
 			get
 			{
@@ -129,7 +115,7 @@ namespace Bloom.CollectionCreating
 
 		public void SetNextButtonState(UserControl caller, bool enabled)
 		{
-			wizardControl1.SelectedPage.AllowNext = enabled;
+			_wizardControl.SelectedPage.AllowNext = enabled;
 
 			if (caller is KindOfCollectionControl)
 			{
@@ -145,7 +131,7 @@ namespace Bloom.CollectionCreating
 
 			if (caller is LanguageIdControl)
 			{
-				var pattern = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
+				var pattern = LocalizationManager.GetString("NewCollectionWizard.NewBookPattern", "{0} Books", "The {0} is replaced by the name of the language.");
 				// GetPathForNewSettings uses Path.Combine which can fail with certain characters that are illegal in paths, but not in language names.
 				// The characters we ran into were two pipe characters ("|") at the front of the language name.
 				var tentativeCollectionName = string.Format(pattern, _collectionInfo.Language1Name);
@@ -182,7 +168,7 @@ namespace Bloom.CollectionCreating
 
 		private void OnSelectedPageChanged(object sender, EventArgs e)
 		{
-			IPageControl control = wizardControl1.SelectedPage.Tag as IPageControl;
+			IPageControl control = _wizardControl.SelectedPage.Tag as IPageControl;
 			if(control!=null)
 				control.NowVisible();
 		}
