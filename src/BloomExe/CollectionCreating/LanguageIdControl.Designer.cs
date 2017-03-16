@@ -19,6 +19,7 @@ namespace Bloom.CollectionCreating
 			{
 				components.Dispose();
 			}
+			_lookupISOControl.ReadinessChanged -= OnLookupISOControlReadinessChanged;
 			base.Dispose(disposing);
 		}
 

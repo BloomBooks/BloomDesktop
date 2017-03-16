@@ -277,7 +277,7 @@
             <seg>This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Une collection Bloom intitulée '{0}' existe déjà sur cet ordinateur. Voulez-vous la remplacer par une collection de ce pack Bloom ?</seg>
+            <seg>Une collection Bloom intitulée '{0}' existe déjà sur cet ordinateur. Voulez-vous la remplacer par la collection dans ce pack Bloom ?</seg>
          </tuv>
       </tu>
       <tu tuid="BloomPackInstallDialog.SingleCollectionFolder">
@@ -805,7 +805,7 @@
             <seg>Make Reader Template Bloom Pack...</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Créer un modèle de livre pour le pack Bloom...</seg>
+            <seg>Créer un pack Bloom de ces modèles de livre...</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.AdminManagesUpdates">
@@ -1008,7 +1008,7 @@
             <seg>Open Folder on Disk</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Ouvrir le fichier sur le disque</seg>
+            <seg>Ouvrir son dossier sur le disque</seg>
          </tuv>
       </tu>
       <tu tuid="CollectionTab.EditBookButton">
@@ -2028,7 +2028,7 @@
             <seg>Don't see what you need?</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Vous n'arrivez pas à savoir ce qu'il vous faut ?</seg>
+            <seg>Vous ne voyez pas ce qu'il faut ?</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
@@ -3441,7 +3441,7 @@
             <seg>Click to Edit Copyright &amp; License</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg/>
+            <seg>Cliquez pour éditer les droits d'auteur et les termes de licence</seg>
          </tuv>
       </tu>
       <tu tuid="FrontMatter.Factory.Click to choose topic">
@@ -5313,7 +5313,7 @@
             <seg>Maximum Average Length of Sentences in Book</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Durée moyenne maximale des peines dans le livre</seg>
+            <seg>La limite de mots par phrase moyenne dans le livre</seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.MaxUniqueWords">
@@ -5322,7 +5322,7 @@
             <seg>Maximum Unique Words per Book</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Nombre maximal de mots uniques par livre</seg>
+            <seg>La limite de mots uniques par livre</seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.MoreWords">
@@ -5358,7 +5358,7 @@
             <seg>Maximum Words on each Page</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Nombre maximal de mot par page</seg>
+            <seg>La limite de mots par page</seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.PoweredBy">
@@ -5477,7 +5477,7 @@
             <seg>Maximum Words in each Sentence</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Nombre maximal de mots par phrase</seg>
+            <seg>La limite de mots par phrase</seg>
          </tuv>
       </tu>
       <tu tuid="ReaderSetup.SetUpDecodableReaderTool">
@@ -5689,7 +5689,7 @@
             <seg>Make Reader Template Bloom Pack</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg>Créer un modèle de livre pour le pack Bloom</seg>
+            <seg>Créer un pack Bloom de ces modèles de livre</seg>
          </tuv>
       </tu>
       <tu tuid="RegisterDialog.Email">

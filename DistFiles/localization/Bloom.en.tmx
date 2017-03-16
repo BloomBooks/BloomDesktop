@@ -2792,6 +2792,12 @@
         <seg>Ready To Create New Collection</seg>
       </tuv>
     </tu>
+    <tu tuid="NewCollectionWizard.FinishPageContent">
+      <note>{0} is the name of the new collection</note>
+      <tuv xml:lang="en">
+        <seg>OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</seg>
+      </tuv>
+    </tu>
     <tu tuid="NewCollectionWizard.FontAndScriptPage">
       <tuv xml:lang="en">
         <seg>Font and Script</seg>
