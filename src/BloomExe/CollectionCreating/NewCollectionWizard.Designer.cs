@@ -22,7 +22,7 @@ namespace Bloom.CollectionCreating
 				components.Dispose();
 			}
 			if (disposing)
-				wizardControl1.Dispose();
+				_wizardControl.Dispose();
 			base.Dispose(disposing);
 		}
 
