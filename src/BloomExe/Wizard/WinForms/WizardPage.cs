@@ -102,6 +102,16 @@ namespace Bloom.Wizard.WinForms
 			}
 			PagePanel.Controls.AddRange(controls);
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				foreach (Control control in Controls)
+					control.Dispose();
+			}
+			base.Dispose(disposing);
+		}
 	}
 
 	// TODO: move to own file

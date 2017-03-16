@@ -688,7 +688,7 @@
             <seg>Copyright Year</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg/>
+            <seg>Année du copyright</seg>
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.CreativeCommons">
@@ -729,7 +729,7 @@
             <seg>License</seg>
          </tuv>
          <tuv xml:lang="fr">
-            <seg/>
+            <seg>Licence</seg>
          </tuv>
       </tu>
       <tu tuid="MetadataEditor.TitleNoCredit">

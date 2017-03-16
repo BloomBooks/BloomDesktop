@@ -202,6 +202,18 @@ namespace Bloom.Wizard
 			EndInitLogic();
 		}
 		#endregion
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				foreach (var wizardAdapterPage in Pages)
+				{
+					wizardAdapterPage.Dispose();
+				}
+			}
+			base.Dispose(disposing);
+		}
 	}
 
 	class WizardAdapterPage : Control
@@ -373,5 +385,12 @@ namespace Bloom.Wizard
 		#endregion
 
 		public event EventHandler<EventArgs> Initialize;
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				_winformPage.Dispose();
+			base.Dispose(disposing);
+		}
 	}
 }
