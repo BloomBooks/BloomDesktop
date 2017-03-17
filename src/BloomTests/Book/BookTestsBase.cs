@@ -43,13 +43,13 @@ namespace BloomTests.Book
 			_storage.SetupGet(x => x.Dom).Returns(() => _bookDom);
 			_storage.SetupGet(x => x.Key).Returns("testkey");
 			_storage.SetupGet(x => x.FileName).Returns("testTitle");
-			_storage.Setup(x => x.GetRelocatableCopyOfDom(It.IsAny<IProgress>())).Returns(() =>
+			_storage.Setup(x => x.GetRelocatableCopyOfDom()).Returns(() =>
 			{
 				return
 					_bookDom.Clone();
 			});// review: the real thing does more than just clone
-			_storage.Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>(), It.IsAny<IProgress>())).Returns(
-				(HtmlDom x, IProgress y) => { return x.Clone(); });// review: the real thing does more than just clone
+			_storage.Setup(x => x.MakeDomRelocatable(It.IsAny<HtmlDom>())).Returns(
+				(HtmlDom x) => { return x.Clone(); });// review: the real thing does more than just clone
 
 			_storage.Setup(x => x.GetFileLocator()).Returns(() => _fileLocator.Object);
 

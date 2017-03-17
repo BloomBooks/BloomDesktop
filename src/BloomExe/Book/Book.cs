@@ -51,13 +51,6 @@ namespace Bloom.Book
 		internal const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
 
 		public event EventHandler ContentsChanged;
-
-		//nb: it looks like nothing is currently writing to it.
-		//Instead, the code is currently writing to the global application Logger.
-		//Should we remove this, or return some errant code to using it instead of Logger?
-		private readonly IProgress _log = new StringBuilderProgress();
-
-		private bool _haveCheckedForErrorsAtLeastOnce;
 		private readonly BookData _bookData;
 
 		//for moq'ing only
@@ -78,6 +71,19 @@ namespace Bloom.Book
 
 			// This allows the _storage to
 			storage.MetaData = info;
+
+			// We always validate the book during the process of loading the storage,
+			// so we don't need to do it again until something changes...just note the result.
+			if (!string.IsNullOrEmpty(storage.ErrorMessagesHtml))
+			{
+				HasFatalError = true;
+				FatalErrorDescription = storage.ErrorMessagesHtml;
+			}
+			else if (!string.IsNullOrEmpty(storage.InitialLoadErrors))
+			{
+				HasFatalError = true;
+				FatalErrorDescription = storage.InitialLoadErrors;
+			}
 
 			_storage = storage;
 
@@ -258,7 +264,7 @@ namespace Bloom.Book
 
 		public virtual HtmlDom GetEditableHtmlDomForPage(IPage page)
 		{
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 			{
 				return GetErrorDom();
 			}
@@ -358,7 +364,7 @@ namespace Bloom.Book
 		{
 			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
-			dom = _storage.MakeDomRelocatable(dom, _log);
+			dom = _storage.MakeDomRelocatable(dom);
 			// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 			dom.RawDom.PreserveWhitespace = true;
 			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
@@ -386,12 +392,12 @@ namespace Bloom.Book
 			//foreach (XmlNode child in inputHead.ChildNodes)
 			//	importNode.AppendChild(child);
 			//inputHead.ParentNode.ReplaceChild(importNode, inputHead);
-			return _storage.MakeDomRelocatable(inputDom, _log);
+			return _storage.MakeDomRelocatable(inputDom);
 		}
 
 		public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
 		{
-			if(_log.ErrorEncountered)
+			if(HasFatalError)
 			{
 				return GetErrorDom();
 			}
@@ -415,7 +421,7 @@ namespace Bloom.Book
 		// into empty editable divs to give a better idea of what a typical page will look like.
 		internal HtmlDom GetThumbnailXmlDocumentForPage(IPage page)
 		{
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 			{
 				return GetErrorDom();
 			}
@@ -428,7 +434,7 @@ namespace Bloom.Book
 
 		public HtmlDom GetPreviewXmlDocumentForFirstPage()
 		{
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 			{
 				return null;
 			}
@@ -492,7 +498,7 @@ namespace Bloom.Book
 
 		private HtmlDom GetBookDomWithStyleSheets(params string[] cssFileNames)
 		{
-			var dom = _storage.GetRelocatableCopyOfDom(_log);
+			var dom = _storage.GetRelocatableCopyOfDom();
 			dom.RemoveModeStyleSheets();
 			foreach (var cssFileName in cssFileNames)
 			{
@@ -519,7 +525,7 @@ namespace Bloom.Book
 				builder.AppendLine(BookStorage.GenericBookProblemNotice);
 			}
 
-			builder.Append(((StringBuilderProgress) _log).Text);//review: is this ever non-empty?
+			builder.Append(FatalErrorDescription);
 
 			builder.Append("<p>"+ WebUtility.HtmlEncode(extraMessages)+"</p>");
 
@@ -550,7 +556,6 @@ namespace Bloom.Book
 			{
 				if (!BookInfo.IsEditable)
 					return false;
-				GetErrorsIfNotCheckedBefore();
 				return !HasFatalError;
 			}
 		}
@@ -564,7 +569,6 @@ namespace Bloom.Book
 			{
 				if (!BookInfo.IsEditable)
 					return false;
-				GetErrorsIfNotCheckedBefore();
 				return !HasFatalError;
 			}
 		}
@@ -1263,13 +1267,9 @@ namespace Bloom.Book
 			}
 		}
 
-
-
-		public virtual bool HasFatalError
-		{
-			get { return _log.ErrorEncountered || !string.IsNullOrEmpty(_storage.ErrorMessagesHtml); }
-		}
-
+		// Anything that sets HasFatalError true should appropriately set FatalErrorDescription.
+		public virtual bool HasFatalError { get; private set; }
+		private string FatalErrorDescription { get; set; }
 
 		public string ThumbnailPath
 		{
@@ -1499,12 +1499,7 @@ namespace Bloom.Book
 
 		public IEnumerable<IPage> GetPages()
 		{
-			if (!_haveCheckedForErrorsAtLeastOnce)
-			{
-				CheckForErrors();
-			}
-
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 				yield break;
 
 			if (_pagesCache == null)
@@ -1559,7 +1554,7 @@ namespace Bloom.Book
 
 		public Dictionary<string, IPage> GetTemplatePagesIdDictionary()
 		{
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 				return null;
 
 			var result = new Dictionary<string, IPage>();
@@ -2134,22 +2129,13 @@ namespace Bloom.Book
 			}
 		}
 
-		public string GetErrorsIfNotCheckedBefore()
-		{
-			if (!_haveCheckedForErrorsAtLeastOnce)
-			{
-				return CheckForErrors();
-			}
-			return "";
-		}
-
 		public string CheckForErrors()
 		{
 			var errors = _storage.GetValidateErrors();
-			_haveCheckedForErrorsAtLeastOnce = true;
 			if (!String.IsNullOrEmpty(errors))
 			{
-				_log.WriteError(errors);
+				HasFatalError = true;
+				FatalErrorDescription = errors;
 			}
 			return errors ?? "";
 		}
@@ -2172,7 +2158,8 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
-				_log.WriteError(error.Message);
+				HasFatalError = true;
+				FatalErrorDescription = error.Message;
 				throw error;
 			}
 		}

@@ -526,7 +526,7 @@ namespace Bloom.Edit
 
 			_currentlyDisplayedBook = CurrentBook;
 
-			var errors = _currentlyDisplayedBook.GetErrorsIfNotCheckedBefore();
+			var errors = _currentlyDisplayedBook.CheckForErrors();
 			if (!string.IsNullOrEmpty(errors))
 			{
 				ErrorReport.NotifyUserOfProblem(errors);
