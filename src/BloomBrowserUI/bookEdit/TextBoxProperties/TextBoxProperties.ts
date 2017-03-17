@@ -428,7 +428,7 @@ export default class TextBoxProperties {
     initializeHintTab() {
         this.initializeHintText();
         this.updateHintTabControls();
-        $('#show-when').change(e => {
+        $('#hint-scope').change(e => {
             this.changeShowHintOnEach();
         });
     }
@@ -442,7 +442,7 @@ export default class TextBoxProperties {
             var showHintOnEach = $(this.getAffectedTranslationGroup(this.boxBeingEdited))
                 .hasClass(this.showHintClassName());
             if (showHintOnEach) {
-                $('#show-when').val('show-on-each').trigger("change");
+                $('#hint-scope').val('show-on-each').trigger("change");
                 includeLangLabel.show();
             } else {
                 // first item will be selected by default
@@ -455,7 +455,7 @@ export default class TextBoxProperties {
     }
 
     showHintOnEachIsSelected() {
-        var selectedItem = $("#show-when option:selected");
+        var selectedItem = $("#hint-scope option:selected");
         return (selectedItem.attr('id') === "show-on-each");
     }
 
