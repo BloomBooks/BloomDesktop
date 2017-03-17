@@ -19,6 +19,7 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class PageTemplatesApi
 	{
+		public const string TemplateFolderName = "template";
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
@@ -213,19 +214,20 @@ namespace Bloom.web.controllers
 			// 2) Look in their current collection...this is the first one used to make sourceBookPaths
 
 			// 3) Next look through the books that came with bloom and other that this user has installed (e.g. via download or bloompack)
-			//    and add in all other template books that are designed for inclusion in other books. These should end in "template.htm{l}".
-			//    Requiring the book to end in the word "template" is low budget, but fast. Maybe we'll do something better later.
-			//    (It's unfortunate that we have to check for .html as well as htm. Our own templates end in html, while user-created ones
-			//    end in .htm, Bloom's standard for created books.)
-			var pathToCurrentTemplateLC = pathToCurrentTemplateHtml.ToLowerInvariant();
+			//    and add in all other template books that are designed for inclusion in other books. These should contain a folder
+			//    called "template" (which contains thumbnails of the pages that can be inserted).
+			//    Template books whose pages are not suitable for extending Add Pages can be identified by creating a file
+			//    template/NotForAddPage.txt (which can contain any explanation you like).
 			bookTemplatePaths.AddRange(sourceBookPaths
 				.Where(path =>
-					{
-						var pathLC = path.ToLowerInvariant();
-						if (pathLC.Equals(pathToCurrentTemplateLC))
-							return false;
-						return pathLC.EndsWith("template.html") || pathLC.EndsWith("basic book.html") || pathLC.EndsWith("template.htm");
-					})
+				{
+					if (string.IsNullOrEmpty(path))
+						return false; // not sure how this happens.
+					var pathToTemplatesFolder = Path.Combine(Path.GetDirectoryName(path), TemplateFolderName);
+					if (!Directory.Exists(pathToTemplatesFolder))
+						return false;
+					return !RobustFile.Exists(Path.Combine(pathToTemplatesFolder, "NotForAddPage.txt"));
+				})
 				.Select(path => Platform.IsWindows ? path.ToLowerInvariant() : path));
 
 			var indexOfBasicBook = bookTemplatePaths.FindIndex(p => p.ToLowerInvariant().Contains("basic book"));

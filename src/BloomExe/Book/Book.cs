@@ -14,6 +14,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
+using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using MarkdownSharp;
@@ -1666,6 +1667,19 @@ namespace Bloom.Book
 					if (File.Exists(sourcePath))
 						File.Copy(sourcePath, destinationPath);
 				}
+			}
+
+			if (this.IsSuitableForMakingShells)
+			{
+				// If we just added the first template page to a template, it's now usable for adding
+				// pages to other books. But the thumbnail for that template, and the template folder
+				// it lives in, won't get created unless the user chooses Add Page again.
+				// Even if he doesn't (maybe it's a one-page template), we want it to have the folder
+				// that identifies it as a template book for the add pages dialog.
+				// (We don't want to do so when the book is first created, because it's no good in
+				// Add Pages until it has at least one addable page.)
+				var templateFolderPath = Path.Combine(FolderPath, PageTemplatesApi.TemplateFolderName);
+				Directory.CreateDirectory(templateFolderPath); // harmless if it exists already
 			}
 
 			Save();
