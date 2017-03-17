@@ -382,6 +382,67 @@ namespace BloomTests.Book
 			Assert.That(GetPageFromBookDom(book, 1).GetStringAttribute("data-page"), Is.EqualTo("extra") );
 		}
 
+
+		[Test]
+		public void InsertPageAfter_FromDifferentBook_MergesStyles()
+		{
+
+			using (var destBookWrapper = new TestBook("current book", @"<!DOCTYPE html>
+<html>
+<head>
+	<style type='text/css' title='userModifiedStyles'>
+	/*<![CDATA[*/
+	.BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+	/*]]>*/
+	</style>
+</head>
+
+<body>
+	<div class='bloom-page'><div class='bloom-translationGroup BigWords-style'></div></div>
+</body>
+</html>"))
+			{
+				var destBook = destBookWrapper.Book;
+				using (var sourceBookWrapper = new TestBook("source book", @"<!DOCTYPE html>
+<html>
+<head>
+	<style type='text/css' title='userModifiedStyles'>
+	/*<![CDATA[*/
+	.FancyText-style { font-size: 45pt ! important; text-align: center ! important; }
+	.FancyText-style > p {margin-left: 20px !important}
+	.FancyText-style[lang='en'] {font-size: 42pt; }
+	.FancyText-style[lang='he'] {font-size: 50pt; }
+	.BigWords-style {font-size:70pt !important; }
+	.BigWords-style[lang='en'] {font-size:65pt !important; }
+	.BigWords-style > p {margin-left: 20px !important}
+	/*]]>*/
+	</style>
+</head>
+
+<body>
+	<div class='bloom-page'><div class='bloom-translationGroup FancyText-style'></div></div>
+</body>
+</html>"))
+				{
+					var sourceBook = sourceBookWrapper.Book;
+					var existingPage = destBook.GetPages().First();
+					var templatePage = sourceBook.GetPages().First();
+					destBook.InsertPageAfter(existingPage, templatePage);
+					var dom = destBook.RawDom.StripXHtmlNameSpace();
+					var style = dom.SafeSelectNodes("//style")[0];
+					Assert.That(style.InnerText, Does.Contain(".FancyText-style { font-size: 45pt ! important; text-align: center ! important; }"));
+					Assert.That(style.InnerText, Does.Contain(".FancyText-style > p {margin-left: 20px !important}"));
+					Assert.That(style.InnerText, Does.Contain(".FancyText-style[lang='en'] {font-size: 42pt; }"));
+					Assert.That(style.InnerText, Does.Contain(".FancyText-style[lang='he'] {font-size: 50pt; }"));
+					// Original BigWords style should survive unchanged.
+					Assert.That(style.InnerText, Does.Contain(".BigWords-style { font-size: 45pt ! important; text-align: center ! important; }"));
+					Assert.That(style.InnerText, Does.Not.Contain(".BigWords-style {font-size:70pt !important; }"));
+					Assert.That(style.InnerText, Does.Not.Contain(".BigWords-style[lang='en']"));
+					Assert.That(style.InnerText, Does.Not.Contain(".BigWords-style > p"));
+				}
+			}
+		}
+
 		[Test]
 		public void InsertPageAfter_TemplateRefsPicture_PictureCopied()
 		{

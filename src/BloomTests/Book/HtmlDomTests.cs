@@ -605,7 +605,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeUserModifiedStyles_NewStyleHasLangAttr_BothKept()
+		public void MergeUserModifiedStyles_NewStyleHasLangAttr_Ignored()
 		{
 			var bookDom = new HtmlDom(
 				@"<html>
@@ -637,7 +637,7 @@ namespace BloomTests.Book
 			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: ginormous;')]";
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
 			var xpath2 = "//style[@title=\"userModifiedStyles\" and contains(text(),\".MyTest-style[lang='en'] { font-size: smaller;\")]";
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath2, 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath(xpath2);
 		}
 
 		[Test]
@@ -647,7 +647,7 @@ namespace BloomTests.Book
 				@"<html>
 					<head>
 						<style type='text/css' title='userModifiedStyles'>
-							.MyTest-style { font-size: ginormous; }</style>
+							.SomeOther-style { font-size: ginormous; }</style>
 					</head>
 					<body>
 						<div class='MyTest-style bogus'></div>

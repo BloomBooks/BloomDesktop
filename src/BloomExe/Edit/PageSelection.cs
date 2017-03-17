@@ -12,7 +12,13 @@ namespace Bloom.Edit
 		public event EventHandler SelectionChanging; // before it changes
 		public event EventHandler SelectionChanged; // after it changed
 
-		public bool SelectPage(IPage page)
+		/// <summary>
+		/// Should pass prepareAlreadyDone true iff you previously called PrepareToSelectPage
+		/// </summary>
+		/// <param name="page"></param>
+		/// <param name="prepareAlreadyDone"></param>
+		/// <returns></returns>
+		public bool SelectPage(IPage page, bool prepareAlreadyDone = false)
 		{
 #if __MonoCS__
 			// If we haven't finished displaying the previously selected page, we can't select another page yet.
@@ -21,7 +27,8 @@ namespace Bloom.Edit
 				return false;
 #endif
 			//enhance... make pre-change event cancellable
-			InvokeSelectionChanging();
+			if (!prepareAlreadyDone)
+				PrepareToSelectPage();
 			_currentSelection = page;
 
 			InvokeSelectionChanged();
@@ -33,7 +40,10 @@ namespace Bloom.Edit
 			get { return _currentSelection; }
 		}
 
-		private void InvokeSelectionChanging()
+		/// <summary>
+		/// If you call this, you should later call SelectPage(..., true).
+		/// </summary>
+		public void PrepareToSelectPage()
 		{
 			EventHandler handler = SelectionChanging;
 			if (handler != null)

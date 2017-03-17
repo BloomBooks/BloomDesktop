@@ -418,6 +418,9 @@ namespace BloomTests.Book
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable BigWords-style bloom-content1' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
 						</div>
+						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable bloom-content1' contenteditable='true' lang='fr'>
+							Some french
+						</div>
 					</div>
 				</div>
 			</div>
@@ -432,7 +435,7 @@ namespace BloomTests.Book
 		  <div style='bottom: 76%' class='split-pane-component position-top'>
 			<div class='split-pane-component-inner'>
 			  <div class='bloom-translationGroup bloom-trailingElement normal-style'>
-				<div lang='z' contenteditable='true' class='bloom-content1 bloom-editable'>
+				<div lang='z' contenteditable='true' class='bloom-content1 bloom-editable FancyNew-style'>
 				</div>
 			  </div>
 			</div>
@@ -467,8 +470,8 @@ namespace BloomTests.Book
 	  </div>
 	</div>"));
 			var template = (XmlElement) newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
-
-			book.UpdatePageToTemplate(book.OurHtmlDom, template, "thePage");
+			var templatePage = new Page(book, template, "dummy", "id", x => { return template; });
+			book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, "thePage");
 
 			var newPage = (XmlElement)dom.SafeSelectNodes(".//div[@id='thePage']")[0];
 			Assert.That(newPage.Attributes["class"].Value, Is.EqualTo("A5Portrait bloom-page numberedPage customPage bloom-combinedPage bloom-monolingual"));
@@ -476,8 +479,11 @@ namespace BloomTests.Book
 			// We kept the image
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//img[@data-license='cc-by-nc-sa' and @data-copyright='Copyright © 2012, LASI' and @src='erjwx3bl.q3c.png']", 1); // the one in the first page has slightly different attrs
 			CheckEditableText(newPage, "en", "There was an old man called Bilanga who was very tall and also not yet married.");
+			CheckEditableText(newPage, "fr", "Some french");
 			// We should have kept the second one in the new page even though we didn't put anything in it (and there is one in the first page, too).
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-translationGroup')]", 3);
+			// The English and French should both have ended up with this, also the inserted empty div for xyz.
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-editable') and contains(@class, ' FancyNew-style')]", 3);
 		}
 
 		// Enhance: if there are ever cases where there are multiple image containers to migrate, test this.
