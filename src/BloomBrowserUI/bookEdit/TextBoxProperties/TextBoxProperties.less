@@ -4,6 +4,15 @@
 @import (reference) "../css/bloomDialog.less";  // needed for @dialogZindexPlusOne
 
 @hint-tab-indent: 20px;
+@main-label-width: 420px; // currently controls width of hint bubbles tab
+@lang-select-width: 250px; // also the width we want for the hint content when #include-lang visible
+@hint-content-margin-right: 10px;
+@hint-content-wrapper-margin-right: 10px;
+// Giving #include-lang this calculated width makes the expanding hint-content box line up with the language menu
+// when the include-lang label is visible.
+@include-lang-width: @main-label-width - @lang-select-width - @hint-content-margin-right - @hint-content-wrapper-margin-right;
+@hint-content-group-margin-top: 10px;
+@label-font-size: 8pt;
 
 //the select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index
 .select2-container{
@@ -13,8 +22,14 @@
 // select2 select controls are way too narrow if we don't force a width.
 // Need a considerable one for some of the longer language names.
 #lang-select + .select2-container{
-    width: 250px !important;
+    width: @lang-select-width !important;
     margin-top: 10px;
+    margin-left: @hint-tab-indent;
+}
+
+#hint-scope + .select2-container{
+    width: 300px !important;
+    margin-top: 3px;
     margin-left: @hint-tab-indent;
 }
 
@@ -28,8 +43,8 @@
     }
     .tab-page {
         .main-label {
-            width: 420px;
-            font-size: 8pt;
+            width: @main-label-width;
+            font-size: @label-font-size;
             margin-top: 10px;
         }
         #language-group {
@@ -49,12 +64,25 @@
 #text-properties-dialog:not(.formattingDisabled) .hideWhenFormattingEnabled {
     display: none;
 }
+
+#hint-content-wrapper {
+    display:flex;
+    margin-right: @hint-content-wrapper-margin-right;
+}
+
 #hint-content {
     border: 1px solid darkgray;
-    width: 360px;
+    flex-grow: 1;
     height: 100px;
-    margin-top: 10px;
+    margin-top: @hint-content-group-margin-top;
     margin-left: @hint-tab-indent;
+    margin-right: @hint-content-margin-right;
+}
+
+#include-lang {
+    width: 150px;
+    font-size: @label-font-size;
+    margin-top: @hint-content-group-margin-top;
 }
 
 #hint-bubble-group .main-label {

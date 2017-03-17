@@ -3,6 +3,7 @@ import '../../node_modules/select2/dist/js/select2.js';
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import axios = require('axios');
 import { EditableDivUtils } from '../js/editableDivUtils';
+import BloomHintBubbles from '../js/BloomHintBubbles';
 
 declare function WebFxTabPane(element: HTMLElement, useCookie: boolean, callback: any): any; // from tabpane, from a <script> tag
 
@@ -107,7 +108,7 @@ export default class TextBoxProperties {
                     this.initializeBackground();
                     this.setButtonClickActions();
                     this.makeLanguageSelect();
-                    this.initializeHintText();
+                    this.initializeHintTab();
                 }, 0); // just push this to the end of the event queue
             });
         });
@@ -181,6 +182,12 @@ export default class TextBoxProperties {
         if (targetGroup) {
             targetGroup.attr('data-default-languages', radioValue);
         }
+        // If not Auto, remove style to show hint on all
+        if (radioValue != "Auto") {
+            targetGroup.removeClass(this.classNameForHintOnEach());
+        }
+        // Update visibility of hint bubbles controls based on whether Auto
+        this.updateHintTabControls();
     }
 
     initializeAlignment() {
@@ -416,6 +423,56 @@ export default class TextBoxProperties {
         $('#hint-content').mousemove((e: Event) => e.stopPropagation());
     }
 
+    classNameForHintOnEach(): string { return "bloom-showHintOnEach" }
+
+    initializeHintTab() {
+        this.initializeHintText();
+        this.updateHintTabControls();
+        $('#hint-scope').change(e => {
+            this.changeShowHintOnEach();
+        });
+    }
+
+    updateHintTabControls() {
+        var groupCanHaveMoreThanOneLanguage = $('input[name="languageRadioGroup"]:checked').val() == "Auto";
+        var showHintOnEachGroupDiv = $('#show-hint-on-each-group');
+        var includeLangLabel = $('#include-lang');
+        if (groupCanHaveMoreThanOneLanguage) {
+            showHintOnEachGroupDiv.show();
+            var showHintOnEach = $(this.getAffectedTranslationGroup(this.boxBeingEdited))
+                .hasClass(this.classNameForHintOnEach());
+            if (showHintOnEach) {
+                $('#hint-scope').val('show-on-each').trigger("change");
+                includeLangLabel.show();
+            } else {
+                // first item will be selected by default
+                includeLangLabel.hide();
+            }
+        } else {
+            showHintOnEachGroupDiv.hide();
+            includeLangLabel.hide();
+        }
+    }
+
+    showHintOnEachIsSelected() {
+        var selectedItem = $("#hint-scope option:selected");
+        return (selectedItem.attr('id') === "show-on-each");
+    }
+
+    changeShowHintOnEach() {
+        var targetGroup = $(this.getAffectedTranslationGroup(this.boxBeingEdited));
+        var showOnEach = this.showHintOnEachIsSelected();
+        var includeLangLabel = $('#include-lang');
+        if (showOnEach) {
+            targetGroup.addClass(this.classNameForHintOnEach());
+            includeLangLabel.show();
+        } else {
+            targetGroup.removeClass(this.classNameForHintOnEach());
+            includeLangLabel.hide();
+        }
+        BloomHintBubbles.updateQtipPlacement(targetGroup, $('#hint-content').text());
+    }
+
     initializeHintText() {
         this.preventDragStealingClicksOnHintText();
         // it's tempting to go for the current UI language as default, but we REALLY
@@ -436,6 +493,7 @@ export default class TextBoxProperties {
                 }
                 langLabel.text(text);
             }
+            BloomHintBubbles.updateQtipPlacement(targetGroup, text);
         });
     }
 
