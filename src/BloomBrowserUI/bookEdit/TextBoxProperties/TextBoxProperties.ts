@@ -184,7 +184,7 @@ export default class TextBoxProperties {
         }
         // If not Auto, remove style to show hint on all
         if (radioValue != "Auto") {
-            targetGroup.removeClass(this.showHintClassName());
+            targetGroup.removeClass(this.classNameForHintOnEach());
         }
         // Update visibility of hint bubbles controls based on whether Auto
         this.updateHintTabControls();
@@ -423,7 +423,7 @@ export default class TextBoxProperties {
         $('#hint-content').mousemove((e: Event) => e.stopPropagation());
     }
 
-    showHintClassName(): string { return "bloom-showHintOnEach" }
+    classNameForHintOnEach(): string { return "bloom-showHintOnEach" }
 
     initializeHintTab() {
         this.initializeHintText();
@@ -434,13 +434,13 @@ export default class TextBoxProperties {
     }
 
     updateHintTabControls() {
-        var languageGroupChecked = $('input[name="languageRadioGroup"]:checked').val() == "Auto";
+        var groupCanHaveMoreThanOneLanguage = $('input[name="languageRadioGroup"]:checked').val() == "Auto";
         var showHintOnEachGroupDiv = $('#show-hint-on-each-group');
         var includeLangLabel = $('#include-lang');
-        if (languageGroupChecked) {
+        if (groupCanHaveMoreThanOneLanguage) {
             showHintOnEachGroupDiv.show();
             var showHintOnEach = $(this.getAffectedTranslationGroup(this.boxBeingEdited))
-                .hasClass(this.showHintClassName());
+                .hasClass(this.classNameForHintOnEach());
             if (showHintOnEach) {
                 $('#hint-scope').val('show-on-each').trigger("change");
                 includeLangLabel.show();
@@ -464,10 +464,10 @@ export default class TextBoxProperties {
         var showOnEach = this.showHintOnEachIsSelected();
         var includeLangLabel = $('#include-lang');
         if (showOnEach) {
-            targetGroup.addClass(this.showHintClassName());
+            targetGroup.addClass(this.classNameForHintOnEach());
             includeLangLabel.show();
         } else {
-            targetGroup.removeClass(this.showHintClassName());
+            targetGroup.removeClass(this.classNameForHintOnEach());
             includeLangLabel.hide();
         }
         BloomHintBubbles.updateQtipPlacement(targetGroup, $('#hint-content').text());
