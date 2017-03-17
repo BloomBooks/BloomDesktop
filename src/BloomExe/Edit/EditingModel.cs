@@ -34,6 +34,7 @@ namespace Bloom.Edit
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly CollectionSettings _collectionSettings;
+		private readonly SourceCollectionsList _sourceCollectionsList;
 		//private readonly SendReceiver _sendReceiver;
 		private HtmlDom _domForCurrentPage;
 		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
@@ -77,7 +78,8 @@ namespace Bloom.Edit
 			CollectionSettings collectionSettings,
 			//SendReceiver sendReceiver,
 			EnhancedImageServer server,
-			BloomWebSocketServer webSocketServer)
+			BloomWebSocketServer webSocketServer,
+			SourceCollectionsList sourceCollectionsList)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
@@ -87,6 +89,7 @@ namespace Bloom.Edit
 			//_sendReceiver = sendReceiver;
 			_server = server;
 			_webSocketServer = webSocketServer;
+			_sourceCollectionsList = sourceCollectionsList;
 			_templatePagesDict = null;
 
 			bookSelection.SelectionChanged += OnBookSelectionChanged;
@@ -144,6 +147,7 @@ namespace Bloom.Edit
 
 		private Form _oldActiveForm;
 		private XmlElement _pageDivFromCopyPage;
+		private string _bookPathFromCopyPage;
 
 		/// <summary>
 		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
@@ -288,12 +292,6 @@ namespace Bloom.Edit
 		private void OnInsertPage(object page, PageInsertEventArgs e)
 		{
 			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), page as Page);
-			if (e.HasStyles)
-			{
-				var existingUserStyles = CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage();
-				var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existingUserStyles, e.InsertedPageUserStylesNode);
-				existingUserStyles.InnerXml = newMergedUserStyleXml;
-			}
 			//_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
 			//_pageSelection.SelectPage(newPage);
 			if(e.FromTemplate)
@@ -340,7 +338,12 @@ namespace Bloom.Edit
 
 		public bool CanCopyPage
 		{
-			get { return CanDuplicatePage; }
+			// Currently we don't want to allow copying xmatter pages. If we ever do, some research and non-trivial change
+			// will probably be needed, not just removing the restriction. Xmatter pages have classes set on them which will cause
+			// Bloom to delete them when the book is next opened. They also tend to be singletons, which may cause problems if
+			// we let the user make multiple ones.
+			// Note that we don't need the editability restrictions here, since copy doesn't modify this book.
+			get { return _pageSelection != null && _pageSelection.CurrentSelection != null && !_pageSelection.CurrentSelection.IsXMatter; }
 		}
 
 		public bool CanDeletePage
@@ -1204,12 +1207,28 @@ namespace Bloom.Edit
 			// We have to clone this so that if the user changes the page after doing the copy,
 			// when they paste they get the page as it was, not as it is now.
 			_pageDivFromCopyPage = (XmlElement) page.GetDivNodeForThisPage().CloneNode(true);
+			_bookPathFromCopyPage = page.Book.GetPathHtmlFile();
 		}
 
-		public void PastePage(IPage page)
+		/// <summary>
+		/// Paste the previously saved _pageDivFromCopyPage as a new page.
+		/// </summary>
+		/// <param name="pageToPasteAfter">This is NOT the page we are to paste!</param>
+		public void PastePage(IPage pageToPasteAfter)
 		{
-			var pageForPasting = new Page(page.Book, _pageDivFromCopyPage, "not used", "not used", x => _pageDivFromCopyPage);
-			OnInsertPage(pageForPasting, new PageInsertEventArgs(false, null));
+			var templateBook = pageToPasteAfter.Book; // default is to assume it's from the same book
+			bool fromAnotherBook = templateBook.GetPathHtmlFile() != _bookPathFromCopyPage;
+			if (fromAnotherBook)
+			{
+				// Copying from some other book. We need an actual book object, just like when we insert a page from a template,
+				// at least in order to properly copy any images and styles used on the page that are not in the
+				// destination book.
+				// If for some reason (since renamed?) we can't get it, just do the best we can...images and styles may
+				// not be right, but we can still paste the content of the page.
+				templateBook = _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(_bookPathFromCopyPage) ?? templateBook;
+			}
+			var pageForPasting = new Page(templateBook, _pageDivFromCopyPage, "not used", "not used", x => _pageDivFromCopyPage);
+			OnInsertPage(pageForPasting, new PageInsertEventArgs(false)); // false => don't need analytics on use of template pages
 		}
 	}
 }

@@ -1064,9 +1064,10 @@ namespace Bloom.Book
 			UpdateMultilingualSettings(bookDom);
 		}
 
-		public void UpdatePageToTemplate(HtmlDom pageDom, XmlElement templatePageDiv, string pageId)
+		public void UpdatePageToTemplate(HtmlDom pageDom, IPage templatePage, string pageId)
 		{
-			OurHtmlDom.UpdatePageToTemplate(pageDom, templatePageDiv, pageId);
+			OurHtmlDom.UpdatePageToTemplate(pageDom, templatePage.GetDivNodeForThisPage(), pageId);
+			AddMissingStylesFromTemplatePage(templatePage);
 			UpdateEditableAreasOfElement(pageDom);
 		}
 
@@ -1608,10 +1609,25 @@ namespace Bloom.Book
 		{
 			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
+			// we need to break up the effects of changing the selected page.
+			// The before-selection-changes stuff includes saving the old page. We want any changes
+			// (e.g., newly defined styles) from the old page to be saved before we start
+			// possibly merging in things (e.g., imported styles) from the template page.
+			// On the other hand, we do NOT want stuff from the old page (e.g., its copy
+			// of the old book styles) overwriting what we figure out in the process of
+			// doing the insertion. So, do the stuff that involves the old page here,
+			// and later do the stuff that involves the new page.
+			_pageSelection.PrepareToSelectPage();
+
 			ClearPagesCache();
 
 			if(templatePage.Book !=null) // will be null in some unit tests that are unconcerned with stylesheets
 				HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, OurHtmlDom);
+
+			// And, if it comes from a different book, we may need to copy over some of the user-defined
+			// styles from that book. Do this before we set up the new page, which will get a copy of this
+			// book's (possibly updated) stylesheet.
+			AddMissingStylesFromTemplatePage(templatePage);
 
 			XmlDocument dom = OurHtmlDom.RawDom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
@@ -1661,9 +1677,29 @@ namespace Bloom.Book
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
 
-			_pageSelection.SelectPage(newPage);
+			_pageSelection.SelectPage(newPage, true);
 
 			InvokeContentsChanged(null);
+		}
+
+		/// <summary>
+		/// If we are inserting a page from a different book, or updating the layout of our page to one from a
+		/// different book, we may need to copy user-defined styles from that book to our own.
+		/// </summary>
+		/// <param name="templatePage"></param>
+		private void AddMissingStylesFromTemplatePage(IPage templatePage)
+		{
+			if (templatePage.Book.FolderPath != FolderPath)
+			{
+				var domForPage = templatePage.Book.GetEditableHtmlDomForPage(templatePage);
+				if (domForPage != null) // possibly null only in unit tests?
+				{
+					var userStylesOnPage = HtmlDom.GetUserModifiableStylesUsedOnPage(domForPage); // could be empty
+					var existingUserStyles = GetOrCreateUserModifiedStyleElementFromStorage();
+					var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existingUserStyles, userStylesOnPage);
+					existingUserStyles.InnerXml = newMergedUserStyleXml;
+				}
+			}
 		}
 
 		public void DuplicatePage(IPage page)

@@ -640,7 +640,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// For each div in the page which has the specified class, find the corresponding div with that class in newPage,
 		/// and replace its contents with the contents of the source page.
-		/// Also inserts any needed styles we know about.
+		/// For translation groups, also updates the bloom-editable divs to have the expected class.
 		/// </summary>
 		/// <param name="page"></param>
 		/// <param name="parentClass"></param>
@@ -657,13 +657,20 @@ namespace Bloom.Book
 			{
 				var oldParent = (XmlElement) oldParents[i];
 				var newParent = (XmlElement) newParents[i];
-				foreach(var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
+				string childClass = null;
+				foreach (var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
+				{
+					if (childClass == null)
+						childClass = GetStyle(child);
 					newParent.RemoveChild(child);
+				}
 				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
 				// which messes things up unless we make a copy of the collection.
 				foreach(XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
 				{
 					newParent.AppendChild(child);
+					// Bloom-editable divs should have the user-defined class specified in the template if there is one.
+					FixStyle(child, "bloom-editable", childClass);
 					AddKnownStyleIfMissing(child);
 				}
 			}
@@ -712,6 +719,29 @@ namespace Bloom.Book
 					continue; // style already defined
 				userStyles.InnerText += string.IsNullOrEmpty(content) ? defaultDefn : " " + defaultDefn;
 			}
+		}
+
+		private static string GetStyle(XmlNode elt)
+		{
+			if (elt.Attributes == null)
+				return null;
+			var classAttr = elt.Attributes["class"];
+			if (classAttr == null)
+				return null;
+			return classAttr.Value.Split(' ').FirstOrDefault(x => x.EndsWith("-style"));
+		}
+
+		private static void FixStyle(XmlNode child, string requiredClass, string desiredStyle)
+		{
+			if (desiredStyle == null || child.Attributes?["class"] == null || !child.Attributes["class"].Value.Contains(requiredClass) )
+				return;
+			var childStyle = GetStyle(child);
+			string newclass;
+			if (childStyle != null)
+				newclass= child.Attributes["class"].Value.Replace(childStyle, desiredStyle);
+			else
+				newclass = child.Attributes["class"].Value + " " + desiredStyle;
+			((XmlElement) child).SetAttribute("class", newclass);
 		}
 
 		// Both of these are relative to the DOM's Head element
@@ -773,22 +803,27 @@ namespace Bloom.Book
 			if (userStyleElementFromTemplate == null)
 				return AddEmptyUserModifiedStylesNode(domForInsertedPage.Head);
 
-			var keyDict = GetUserStyleKeyDict(userStyleElementFromTemplate, false);
+			var keyDict = GetUserStyleKeyDict(userStyleElementFromTemplate);
 			var keysUsedOnPage = new Dictionary<string, string>();
 			foreach (var keyPair in keyDict)
 			{
-				// Key.Substring(1) strips off initial period from class name
+				var style = GetStyleNameFromRuleSelector(keyPair.Key);
 				var searchResult = domForInsertedPage.SafeSelectNodes(
-					"//div[contains(concat(' ', @class, ' '), ' " + keyPair.Key.Substring(1) + " ')]");
-
-				// At this point we are only worrying about the class name. The style may well specify a lang attribute too,
-				// but we'll deal with that later when we merge the new styles into the previous element, if necessary.
+					"//div[contains(concat(' ', @class, ' '), ' " + style + " ')]");
 				if (searchResult.Count > 0)
 					keysUsedOnPage.Add(keyPair.Key, keyPair.Value);
 			}
 			userStyleElementFromTemplate.InnerText =
 				GetCompleteFilteredUserStylesInnerText(keysUsedOnPage);
 			return userStyleElementFromTemplate;
+		}
+
+		private static string GetStyleNameFromRuleSelector(string selector)
+		{
+			// Key.Substring(1) strips off initial period from class name
+			// Stripping off everything after -style removes [lang] stuff and >p stuff.
+			var indexOfStyle = selector.LastIndexOf("-style", StringComparison.InvariantCulture);
+			return selector.Substring(1, indexOfStyle + "-style".Length - 1);
 		}
 
 		/// <summary>
@@ -808,13 +843,17 @@ namespace Bloom.Book
 			if (insertedPageUserStyleNode == null)
 				return existingUserStyleNode.InnerText;
 
-			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode, true);
-			var insertedPageStyleKeyDict = GetUserStyleKeyDict(insertedPageUserStyleNode, true); // could be empty
+			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
+			var existingStyleNames = new HashSet<string>();
+			foreach (var key in existingStyleKeyDict.Keys)
+			{
+				existingStyleNames.Add(GetStyleNameFromRuleSelector(key));
+			}
+			var insertedPageStyleKeyDict = GetUserStyleKeyDict(insertedPageUserStyleNode); // could be empty
 			foreach (var keyPair in insertedPageStyleKeyDict)
 			{
-				if (existingStyleKeyDict.ContainsKey(keyPair.Key))
+				if (existingStyleNames.Contains(GetStyleNameFromRuleSelector(keyPair.Key)))
 					continue;
-
 				existingStyleKeyDict.Add(keyPair);
 			}
 			return GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict);
@@ -832,7 +871,7 @@ namespace Bloom.Book
 
 		private const int minStyleLength = 6; // "-style".Length
 
-		private static IDictionary<string, string> GetUserStyleKeyDict(XmlNode userStyleNode, bool includeLangAttr)
+		private static IDictionary<string, string> GetUserStyleKeyDict(XmlNode userStyleNode)
 		{
 			var keyDict = new Dictionary<string, string>();
 			var styleStrings = GetStyles(userStyleNode.InnerText); // skips empty lines
@@ -840,14 +879,11 @@ namespace Bloom.Book
 			{
 				if (styleString.Length < minStyleLength)
 					continue; // not sure how we'd get this... but just in case.
-				// At least when includeLangAttr is false, we may easily get the same key twice,
-				// e.g. .normal-style and .normal-style[lang='eng'] will reduce to the same key.
-				// This doesn't matter for the current caller with includeLangAttr false...it only
-				// wants the keys. In the other case, we might be losing something...but dropping
-				// part of a style definition is probably better than crashing, and since each
-				// definition typically includes everything, I think the last one would win
-				// in the HTML, anyway.
-				keyDict[GetClassKeyFromStyleString(styleString, includeLangAttr)] = styleString;
+				var indexOfBrace = styleString.IndexOf("{", StringComparison.InvariantCulture);
+				if (indexOfBrace < 0)
+					continue; // doesn't have a rule...unlikely...anyway not useful.
+				var key = styleString.Substring(0, indexOfBrace).Trim();
+				keyDict[key] = styleString;
 			}
 			return keyDict;
 		}
@@ -889,20 +925,6 @@ namespace Bloom.Book
 				}
 			}
 			yield return completeRule;
-		}
-
-		private static string GetClassKeyFromStyleString(string style, bool includeLangAttr)
-		{
-			// Takes strings like ".StyleName-style {css stuff}\r\n" or ".StyleName-style[lang="zzz"] {css stuff}\r\n"
-			// and returns ".StyleName-style" or ".StyleName-style[lang="zzz"]", depending on whether the string includes
-			// a 'lang' attribute and whether the 'includeLangAttr' param is true or not.
-			var endOfLangAttr = style.IndexOf("]");
-			if (!includeLangAttr || endOfLangAttr < 0)
-			{
-				var removeable = style.IndexOf("-style") + 6;
-				return style.Length > removeable ? style.Remove(removeable) : style;
-			}
-			return style.Length > endOfLangAttr + 1 ? style.Remove(endOfLangAttr + 1) : style;
 		}
 
 		/* The following, to use normal url query parameters to say if we wanted transparency,
