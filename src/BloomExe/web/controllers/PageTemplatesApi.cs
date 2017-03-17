@@ -226,7 +226,7 @@ namespace Bloom.web.controllers
 					var pathToTemplatesFolder = Path.Combine(Path.GetDirectoryName(path), TemplateFolderName);
 					if (!Directory.Exists(pathToTemplatesFolder))
 						return false;
-					return !File.Exists(Path.Combine(pathToTemplatesFolder, "NotForAddPage.txt"));
+					return !RobustFile.Exists(Path.Combine(pathToTemplatesFolder, "NotForAddPage.txt"));
 				})
 				.Select(path => Platform.IsWindows ? path.ToLowerInvariant() : path));
 
