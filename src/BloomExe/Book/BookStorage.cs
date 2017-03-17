@@ -43,8 +43,8 @@ namespace Bloom.Book
 		bool GetLooksOk();
 		HtmlDom Dom { get; }
 		void Save();
-		HtmlDom GetRelocatableCopyOfDom(IProgress log);
-		HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log = null);
+		HtmlDom GetRelocatableCopyOfDom();
+		HtmlDom MakeDomRelocatable(HtmlDom dom);
 		string SaveHtml(HtmlDom bookDom);
 		void SetBookName(string name);
 		string GetValidateErrors();
@@ -56,6 +56,7 @@ namespace Bloom.Book
 		void CleanupUnusedImageFiles();
         BookInfo MetaData { get; set; }
 		string NormalBaseForRelativepaths { get; }
+		string InitialLoadErrors { get; }
 	}
 
 	public class BookStorage : IBookStorage
@@ -86,6 +87,9 @@ namespace Bloom.Book
 		private BookInfo _metaData;
 		private bool _errorAlreadyContainsInstructions;
 		public event EventHandler FolderPathChanged;
+
+		// Returns any errors reported while loading the book (during 'expensive initialization').
+		public string InitialLoadErrors { get; private set; }
 
 		public BookInfo MetaData
 		{
@@ -367,9 +371,8 @@ namespace Bloom.Book
 		/// <summary>
 		/// creates a relocatable copy of our main HtmlDom
 		/// </summary>
-		/// <param name="log"></param>
 		/// <returns></returns>
-		public HtmlDom GetRelocatableCopyOfDom(IProgress log)
+		public HtmlDom GetRelocatableCopyOfDom()
 		{
 
 			HtmlDom relocatableDom = Dom.Clone();
@@ -384,9 +387,8 @@ namespace Bloom.Book
 		/// this one works on the dom passed to it
 		/// </summary>
 		/// <param name="dom"></param>
-		/// <param name="log"></param>
 		/// <returns></returns>
-		public HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log = null)
+		public HtmlDom MakeDomRelocatable(HtmlDom dom)
 		{
 			var relocatableDom = dom.Clone();
 
@@ -694,6 +696,7 @@ namespace Bloom.Book
 				ProcessAccessDeniedError(error);
 				return;
 			}
+			var backupPath = Path.ChangeExtension(pathToExistingHtml, "bak");
 
 			if (!RobustFile.Exists(pathToExistingHtml))
 			{
@@ -726,19 +729,14 @@ namespace Bloom.Book
 				}
 				catch (Exception error)
 				{
-					var backupPath = Path.ChangeExtension(pathToExistingHtml, "bak");
+					InitialLoadErrors = error.Message;
 					// If the user is actually trying to look at this book and it's broken, we will try to restore a backup.
 					// The main reason not to do this otherwise is that we think we should notify the user that we
 					// are restoring a backup, and we don't want to bother him with such notifications about books
 					// he isn't looking at currently.
-					if (forSelectedBook && RobustFile.Exists(backupPath) && TryGetXmlDomFromHtmlFile(backupPath, out xmlDomFromHtmlFile))
+					if (forSelectedBook && TryGetValidXmlDomFromHtmlFile(backupPath, out xmlDomFromHtmlFile))
 					{
-						string corruptFilePath = GetUniqueFileName(FolderPath, PrefixForCorruptHtmFiles, "htm");
-						RobustFile.Move(PathToExistingHtml, corruptFilePath);
-						RobustFile.Move(backupPath, pathToExistingHtml);
-						var msg = LocalizationManager.GetString("BookStorage.CorruptBook",
-							"Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.");
-						ErrorReport.NotifyUserOfProblem(error, msg);
+						RestoreBackup(pathToExistingHtml, error);
 					}
 					else
 					{
@@ -753,15 +751,25 @@ namespace Bloom.Book
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 				_dom.RawDom.PreserveWhitespace = true;
 
-				//Validating here was taking a 1/3 of the startup time
-				// eventually, we need to restructure so that this whole Storage isn't created until actually needed, then maybe this can come back
-				//ErrorMessages = ValidateBook(PathToExistingHtml);
-				// REVIEW: we did in fact change things so that storage isn't used until we've shown all the thumbnails we can (then we go back and update in background)...
-				// so maybe it would be ok to reinstate the above?
+				// An earlier comment warned that this was taking 1/3 of startup time. However, it was being done anyway
+				// at some point where the Book constructor wanted to know whether the book was editable (which
+				// triggers a check since books that don't validate aren't editable).
+				// Hopefully this is OK since another old comment said,
+				// we did in fact change things so that storage isn't used until we've shown all the thumbnails we can (then we go back and update in background)
+				InitialLoadErrors = ValidateBook(_dom, pathToExistingHtml);
+				if (forSelectedBook && !string.IsNullOrEmpty(InitialLoadErrors))
+				{
+					XmlDocument possibleBackupDom;
+					if (TryGetValidXmlDomFromHtmlFile(backupPath, out possibleBackupDom))
+					{
+						RestoreBackup(pathToExistingHtml, new ApplicationException("main html file was not valid: " + InitialLoadErrors));
+						xmlDomFromHtmlFile = possibleBackupDom;
+						_dom = new HtmlDom(xmlDomFromHtmlFile);
+					}
+				}
 
 				//For now, we really need to do this check, at least. This will get picked up by the Book later (feeling kludgy!)
 				//I assume the following will never trigger (I also note that the dom isn't even loaded):
-
 
 				if (!string.IsNullOrEmpty(ErrorMessagesHtml))
 				{
@@ -796,15 +804,31 @@ namespace Bloom.Book
 			}
 		}
 
-		private bool TryGetXmlDomFromHtmlFile(string path, out XmlDocument xmlDomFromHtmlFile)
+		private void RestoreBackup(string pathToExistingHtml, Exception error)
 		{
+			var backupPath = Path.ChangeExtension(pathToExistingHtml, "bak");
+			string corruptFilePath = GetUniqueFileName(FolderPath, PrefixForCorruptHtmFiles, "htm");
+			RobustFile.Move(PathToExistingHtml, corruptFilePath);
+			RobustFile.Move(backupPath, pathToExistingHtml);
+			var msg = LocalizationManager.GetString("BookStorage.CorruptBook",
+				"Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.");
+			ErrorReport.NotifyUserOfProblem(error, msg);
+			// We've restored a validated backup, so as far as the caller is concerned we have a good book.
+			InitialLoadErrors = "";
+		}
+
+		private bool TryGetValidXmlDomFromHtmlFile(string path, out XmlDocument xmlDomFromHtmlFile)
+		{
+			xmlDomFromHtmlFile = null;
+			if (!RobustFile.Exists(path))
+				return false;
 			try
 			{
 				xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
+				return string.IsNullOrEmpty(ValidateBook(new HtmlDom(xmlDomFromHtmlFile), path));
 			}
 			catch (Exception error)
 			{
-				xmlDomFromHtmlFile = null;
 				return false;
 			}
 			return true;
