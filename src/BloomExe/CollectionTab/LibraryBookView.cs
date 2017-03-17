@@ -230,5 +230,10 @@ namespace Bloom.CollectionTab
 			return element == null ? "" :
 					element.GetAttribute("href") ?? "";
 		}
+
+		private void _splitContainerForPreviewAndAboutBrowsers_SplitterMoved(object sender, SplitterEventArgs e)
+		{
+			_readmeBrowser.Refresh();
+		}
 	}
 }
