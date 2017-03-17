@@ -338,11 +338,11 @@ namespace Bloom.Edit
 
 		public bool CanCopyPage
 		{
-			// It seems sensible to allow copying xmatter pages, but they have classes set on them which I think will cause
-			// Bloom to delete them when the book is next opened...needs research if we want to allow this, and probably
-			// some special-case code to adjust page classes. They also tend to be singletons, which may cause problems if
-			// we let the user make multiple ones. Note that we don't need the editability restrictions here, since
-			// copy doesn't modify this book.
+			// Currently we don't want to allow copying xmatter pages. If we ever do, some research and non-trivial change
+			// will probably be needed, not just removing the restriction. Xmatter pages have classes set on them which will cause
+			// Bloom to delete them when the book is next opened. They also tend to be singletons, which may cause problems if
+			// we let the user make multiple ones.
+			// Note that we don't need the editability restrictions here, since copy doesn't modify this book.
 			get { return _pageSelection != null && _pageSelection.CurrentSelection != null && !_pageSelection.CurrentSelection.IsXMatter; }
 		}
 
