@@ -24,11 +24,15 @@ export default class BloomField {
     static ManageField(bloomEditableDiv: HTMLElement) {
 
         BloomField.PreventRemovalOfSomeElements(bloomEditableDiv);
+        BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
+        // ManageWhatHappensIfTheyDeleteEverything() is actually enough, it cleans things up. But can still show some momentary cursor
+        // weirdness. So at least in this common case, we prevent the backspace altogether.
         BloomField.PreventBackspaceAtStartFromRemovingParagraph(bloomEditableDiv);
-        BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
-        BloomField.MakeTabEnterTabElement(bloomEditableDiv);
         BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
         BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
+
+        BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
+        BloomField.MakeTabEnterTabElement(bloomEditableDiv);
 
         /*  The following is assumed to not be needed currently (3.9)... probably not needed
             since we added ckeditor.
@@ -285,9 +289,9 @@ export default class BloomField {
         // if the user types (ctrl+a, del) then we get an empty element or '<br></br>', and need to get a <p> in there.
         // if the user types (ctrl+a, 'blah'), then we get blah outside of any paragraph
 
-        $(field).on("input", function (e) {
+        $(field).keyup(e => {
             if ($(this).find('p').length === 0) {
-                BloomField.ModifyForParagraphMode(this);
+                BloomField.ModifyForParagraphMode(field);
 
                 // Now put the cursor in the paragraph, *after* the character they may have just typed or the
                 // text they just pasted.
@@ -303,7 +307,7 @@ export default class BloomField {
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
         var numberThatShouldBeThere = $(field).find(".bloom-preventRemoval").length;
         if (numberThatShouldBeThere > 0) {
-            $(field).on("input", function (e) {
+            $(field).keyup(e => {
                 if ($(this).find(".bloom-preventRemoval").length < numberThatShouldBeThere) {
                     document.execCommand('undo');
                     e.preventDefault();
