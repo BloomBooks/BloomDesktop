@@ -988,6 +988,8 @@ export default class StyleEditor {
         // See http://codepen.io/alexweissman/pen/zremOV
         var newState = new Option(typedStyle, typedStyle, true, true);
         $('#styleSelect').append(newState).trigger('change');
+        // Ensure we know this style in the future.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4438.
+        this.styles.push(typedStyle);
 
         // This control has been hidden, but the user could show it again.
         // And showing it does not run the duplicate style check, since we expect it to be empty
