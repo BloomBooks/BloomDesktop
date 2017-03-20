@@ -105,8 +105,7 @@ namespace Bloom.Publish
 			string exePath;
 			var bldr = new StringBuilder();
 			// Codebase is reliable even when Resharper copies the EXE somewhere else for testing.
-			var loc = Assembly.GetExecutingAssembly().CodeBase.Substring((Platform.IsUnix ? "file://" : "file:///").Length);
-			var execDir = Path.GetDirectoryName(loc);
+			var execDir = BloomFileLocator.GetCodeBaseFolder();
 			var fromDirectory = String.Empty;
 			var filePath = Path.Combine(execDir, "BloomPdfMaker.exe");
 			if (!RobustFile.Exists(filePath))

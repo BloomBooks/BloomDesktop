@@ -177,16 +177,23 @@ namespace Bloom
 			return Path.Combine(FactoryTemplateBookDirectory, bookName);
 		}
 
+		/// <summary>
+		/// Get the pathname of the directory containing the executing assembly (Bloom.exe).
+		/// </summary>
+		public static string GetCodeBaseFolder()
+		{
+			var file = Assembly.GetExecutingAssembly().CodeBase.Replace("file://", string.Empty);
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+				file = file.TrimStart('/');
+			return Path.GetDirectoryName(file);
+		}
 
 		/// <summary>
 		/// Check whether this file was installed with Bloom (and likely to be read-only on Linux or for allUsers install).
 		/// </summary>
 		public static bool IsInstalledFileOrDirectory(string filepath)
 		{
-			var file = Assembly.GetExecutingAssembly().CodeBase.Replace("file://", string.Empty);
-			if (SIL.PlatformUtilities.Platform.IsWindows)
-				file = file.TrimStart('/');
-			var folder = Path.GetDirectoryName(file);
+			var folder = GetCodeBaseFolder();
 			if (folder.EndsWith("/output/Debug"))
 				folder = folder.Replace("/Debug", string.Empty);	// files now copied to output/browser for access
 			return filepath.Contains(folder);

@@ -38,11 +38,11 @@ namespace BloomTests.Book
 			BookPath = Path.Combine(_folder.FolderPath, testName + ".htm");
 			File.WriteAllText(BookPath, content);
 			var settings = CreateDefaultCollectionsSettings();
-			var codeBaseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase.Substring(8));
+			var codeBaseDir = BloomFileLocator.GetCodeBaseFolder();
 			// This is minimal...if the content doesn't specify xmatter Bloom defaults to Traditional
 			// and needs the file locator to know this folder so it can find it.
 			// May later need to include more folders or allow the individual tests to do so.
-			var locator = new FileLocator(new string[] { codeBaseDir + "/../browser/templates/xmatter"});
+			var locator = new FileLocator(new string[] { codeBaseDir + "/../browser/templates/xMatter"});
 			var storage = new BookStorage(BookFolder, locator, new BookRenamedEvent(), settings);
 			// very minimal...enhance if we need to test something that can really find source collections.
 			var templatefinder = new SourceCollectionsList();
