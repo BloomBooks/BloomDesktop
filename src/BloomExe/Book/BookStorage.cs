@@ -658,17 +658,17 @@ namespace Bloom.Book
 		}
 
 
-		public static string ValidateBook(string path)
+		public string ValidateBook(string path)
 		{
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));//with throw if there are errors
 			return ValidateBook(dom, path);
 		}
 
-		private static string ValidateBook(HtmlDom dom, string path)
+		private string ValidateBook(HtmlDom dom, string path)
 		{
 			Debug.WriteLine(string.Format("ValidateBook({0})", path));
 			var msg= GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(dom,path);
-			return !string.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path);
+			return !string.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path, !MetaData.IsSuitableForMakingTemplates);
 		}
 
 
