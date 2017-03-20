@@ -717,6 +717,14 @@ namespace Bloom.Book
 				XmlDocument xmlDomFromHtmlFile;
 				try
 				{
+					// For 3.8 only: check for file of nulls. Do not merge this into 3.9.
+					using (var fs = RobustFile.OpenRead(PathToExistingHtml))
+					{
+						var buf = new byte[1];
+						fs.Read(buf, 0, 1);
+						if (buf[0] == 0)
+							throw new Exception("HTML file starts with null");
+					}
 					xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml, false);
 				}
 				catch (UnauthorizedAccessException error)
