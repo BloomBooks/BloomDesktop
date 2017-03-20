@@ -27,21 +27,25 @@ export default class BloomField {
         BloomField.PreventBackspaceAtStartFromRemovingParagraph(bloomEditableDiv);
         BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
         BloomField.MakeTabEnterTabElement(bloomEditableDiv);
-
-        //the following is assumed to not be needed currently... probably since we added ckeditor.
-        // BloomField.ModifyForParagraphMode(bloomEditableDiv);
-        // $(bloomEditableDiv).blur(function () {
-        //     BloomField.ModifyForParagraphMode(this);
-        // });
-        // $(bloomEditableDiv).focusin(function () {
-        //     BloomField.HandleFieldFocus(this);
-        // });
-
         BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
         BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
 
-        //BloomField.PrepareNonParagraphField(bloomEditableDiv);
-        //BloomField.ManageWhatHappensIfTheyDeleteEverythingNonParagraph(bloomEditableDiv);
+        /*  The following is assumed to not be needed currently (3.9)... probably not needed
+            since we added ckeditor.
+            However this code is retained because this is *very* expensive code to get these
+            kinds of low-level html editor methods working right, so it
+            makes sense to leave them here in case we have analogous situations come up.
+
+            BloomField.ModifyForParagraphMode(bloomEditableDiv);
+            $(bloomEditableDiv).blur(function () {
+                BloomField.ModifyForParagraphMode(this);
+            });
+            $(bloomEditableDiv).focusin(function () {
+                BloomField.HandleFieldFocus(this);
+            });
+            BloomField.PrepareNonParagraphField(bloomEditableDiv);
+            BloomField.ManageWhatHappensIfTheyDeleteEverythingNonParagraph(bloomEditableDiv);
+        */
     }
 
     private static MakeTabEnterTabElement(field: HTMLElement) {
@@ -111,7 +115,6 @@ export default class BloomField {
                 }
                 e.stopPropagation();
                 e.preventDefault();
-
             }
         });
     }
@@ -258,9 +261,11 @@ export default class BloomField {
         }
     }
 
+    /* Currently unused. See note in ManageField().
     private static HandleFieldFocus(field: HTMLElement) {
         BloomField.MoveCursorToEdgeOfField(field, CursorPosition.start);
     }
+    */
 
     private static MoveCursorToEdgeOfField(field: HTMLElement, position: CursorPosition) {
         var range = document.createRange();
@@ -393,6 +398,7 @@ export default class BloomField {
             }
         }
     }
+
     private static PreventBackspaceAtStartFromRemovingParagraph(field: HTMLElement) {
         $(field).keydown(e => {
             if (e.which === 8 /* backspace*/) {
