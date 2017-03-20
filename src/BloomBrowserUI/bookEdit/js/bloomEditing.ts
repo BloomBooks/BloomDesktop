@@ -728,7 +728,7 @@ export function bootstrap() {
                 // ranges with the first one being empty.
                 var selection = editor.getSelection();
                 var textSelected = selection.getSelectedText();
-                var show = (textSelected.length > 0);
+                var show = (textSelected && textSelected.length > 0);
                 var bar = $("body").find("." + editor.id);
                 localizeCkeditorTooltips(bar);
                 show ? bar.show() : bar.hide();
