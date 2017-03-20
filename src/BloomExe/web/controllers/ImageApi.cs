@@ -13,6 +13,7 @@ using SIL.Extensions;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using L10NSharp;
+using SIL.IO;
 
 namespace Bloom.web.controllers
 {
@@ -44,7 +45,7 @@ namespace Bloom.web.controllers
 			foreach (var name in names)
 			{
 				var path = _bookSelection.CurrentSelection.FolderPath.CombineForPath(name);
-				if (File.Exists(path))
+				if (RobustFile.Exists(path))
 				{
 					var meta = Metadata.FromFile(path);
 					string id;
@@ -85,7 +86,7 @@ namespace Bloom.web.controllers
 				var fileName = request.RequiredParam("image");
 				Guard.AgainstNull(_bookSelection.CurrentSelection, "CurrentBook");
 				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
-				if (!File.Exists(path))
+				if (!RobustFile.Exists(path))
 				{
 					// We can be fed doubly-encoded filenames.  So try to decode a second time and see if that works.
 					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3749.
@@ -101,7 +102,7 @@ namespace Bloom.web.controllers
 				// Using a stream this way, according to one source,
 				// http://stackoverflow.com/questions/552467/how-do-i-reliably-get-an-image-dimensions-in-net-without-loading-the-image,
 				// supposedly avoids loading the image into memory when we only want its dimensions
-				using (var stream = File.OpenRead(path))
+				using (var stream = RobustFile.OpenRead(path))
 				using (var img = Image.FromStream(stream, false, false))
 				{
 					result.width = img.Width;

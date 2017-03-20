@@ -92,7 +92,7 @@ namespace Bloom.web.controllers
 		{
 			var filePath = request.LocalPath().Replace("api/pageTemplateThumbnail/","");
 			var pathToExistingOrGeneratedThumbnail = FindOrGenerateThumbnail(filePath);
-			if(string.IsNullOrEmpty(pathToExistingOrGeneratedThumbnail) || !File.Exists(pathToExistingOrGeneratedThumbnail))
+			if(string.IsNullOrEmpty(pathToExistingOrGeneratedThumbnail) || !RobustFile.Exists(pathToExistingOrGeneratedThumbnail))
 			{
 				request.Failed("Could not make a page thumbnail for "+filePath);
 				return;
@@ -112,14 +112,14 @@ namespace Bloom.web.controllers
 			var localPath = AdjustPossibleLocalHostPathToFilePath(expectedPathOfThumbnailImage);
 
 			var svgpath = Path.ChangeExtension(localPath, "svg");
-			if (File.Exists(svgpath))
+			if (RobustFile.Exists(svgpath))
 			{
 				return svgpath;
 			}
 
 			var pngpath = Path.ChangeExtension(localPath, "png");
 
-			if (File.Exists(pngpath))
+			if (RobustFile.Exists(pngpath))
 			{
 				var f = new FileInfo(pngpath);
 				if (f.IsReadOnly)

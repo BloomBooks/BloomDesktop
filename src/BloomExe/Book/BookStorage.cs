@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -357,7 +357,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Get a temporary file pathname in the current book's folder.  This is needed to ensure proper permissions are granted
 		/// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
-		/// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+		/// RobustFile.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
 		/// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
 		/// </summary>
 		private string GetNameForATempFileInStorageFolder()
@@ -592,7 +592,7 @@ namespace Bloom.Book
 			if (RobustFile.Exists(p))
 				return p;
 			p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".html");
-			if (File.Exists(p))
+			if (RobustFile.Exists(p))
 				return p;
 
 			if (!Directory.Exists(folderPath)) //bl-291 (user had 4 month-old version, so the bug may well be long gone)
@@ -622,7 +622,7 @@ namespace Bloom.Book
 			if (RobustFile.Exists(p))
 				return p;
 			p = Path.Combine(folderPath, "templatePages.html");
-			if (File.Exists(p))
+			if (RobustFile.Exists(p))
 				return p;
 
 			return string.Empty;
@@ -947,7 +947,7 @@ namespace Bloom.Book
 				}
 				// due to BL-2166, we no longer compare times since downloaded books often have
 				// more recent times than the DistFiles versions we want to use
-				// var documentTime = File.GetLastWriteTimeUtc(documentPath);
+				// var documentTime = RobustFile.GetLastWriteTimeUtc(documentPath);
 				if (factoryPath == documentPath)
 					return; // no point in trying to update self!
 				if (IsPathReadonly(documentPath))

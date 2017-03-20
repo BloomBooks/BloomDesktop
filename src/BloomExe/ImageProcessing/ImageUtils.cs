@@ -287,7 +287,7 @@ namespace Bloom.ImageProcessing
 
 			// Use a temporary file pathname in the destination folder.  This is needed to ensure proper permissions are granted
 			// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
-			// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+			// RobustFile.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
 			// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
 			using (var temp = TempFile.InFolderOf(destinationPath))
 			using (var safetyImage = new Bitmap(image))

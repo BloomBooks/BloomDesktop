@@ -3,18 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
 using Bloom.Book;
 using System.IO;
 using System.Net;
-using System.Net.Mime;
 using System.Text.RegularExpressions;
 using Bloom.ImageProcessing;
 using BloomTemp;
 using L10NSharp;
-using Microsoft.Win32;
 using SIL.IO;
 using Bloom.Collection;
 using Bloom.Publish;
@@ -562,7 +558,7 @@ namespace Bloom.Api
 				// On developer machines, we can lose part of path earlier.  Try one more thing.
 				path = info.LocalPathWithoutQuery.Substring(7); // skip leading "/bloom/");
 			}
-			if (!File.Exists(path))
+			if (!RobustFile.Exists(path))
 			{
 				ReportMissingFile(localPath,path);
 				return false;

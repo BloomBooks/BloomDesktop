@@ -65,7 +65,7 @@ namespace Bloom.Edit
 		static private string LocateLAME()
 		{
 #if __MonoCS__
-			if (File.Exists("/usr/bin/lame"))
+			if (RobustFile.Exists("/usr/bin/lame"))
 				return "/usr/bin/lame";
 #else
 			//nb: this is sensitive to whether we are compiled against win32 or not,

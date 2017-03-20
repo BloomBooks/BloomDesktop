@@ -488,7 +488,7 @@ namespace Bloom.Book
 				return result;
 
 			var backupPath = Path.ChangeExtension(metaDataPath, "bak");
-			if (File.Exists(backupPath) && TryReadMetaData(backupPath, out result))
+			if (RobustFile.Exists(backupPath) && TryReadMetaData(backupPath, out result))
 			{
 				RobustFile.Delete(metaDataPath); // Don't think it's worth saving the corrupt one
 				RobustFile.Move(backupPath, metaDataPath);
@@ -500,7 +500,7 @@ namespace Bloom.Book
 		private static bool TryReadMetaData(string path, out BookMetaData result)
 		{
 			result = null;
-			if (!File.Exists(path))
+			if (!RobustFile.Exists(path))
 				return false;
 			try
 			{
@@ -527,7 +527,7 @@ namespace Bloom.Book
 				tempFilePath = temp.Path;
 			}
 			RobustFile.WriteAllText(tempFilePath, Json);
-			if (File.Exists(metaDataPath))
+			if (RobustFile.Exists(metaDataPath))
 				RobustFile.Replace(tempFilePath, metaDataPath, Path.ChangeExtension(metaDataPath, "bak"));
 			else
 				RobustFile.Move(tempFilePath, metaDataPath);

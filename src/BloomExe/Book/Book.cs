@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
@@ -1661,11 +1660,11 @@ namespace Bloom.Book
 			foreach(string sheetName in templatePage.Book.OurHtmlDom.GetTemplateStyleSheets())
 			{
 				var destinationPath = Path.Combine(FolderPath, sheetName);
-				if (!File.Exists(destinationPath))
+				if (!RobustFile.Exists(destinationPath))
 				{
 					var sourcePath = Path.Combine(templatePage.Book.FolderPath, sheetName);
-					if (File.Exists(sourcePath))
-						File.Copy(sourcePath, destinationPath);
+					if (RobustFile.Exists(sourcePath))
+						RobustFile.Copy(sourcePath, destinationPath);
 				}
 			}
 
