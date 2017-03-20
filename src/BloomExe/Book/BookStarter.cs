@@ -496,7 +496,8 @@ namespace Bloom.Book
 			{
 				//any files found under "template" will not be copied. At the moment (Aug 2015), this is only
 				//thumbnail svgs, but we could move readme's and such in there
-				if (Path.GetFileName(dirPath).ToLowerInvariant() != "template")
+				var directoriesToSkip = new[] {"template", Book.ReadMeImagesFolderName.ToLowerInvariant() };
+				if (!directoriesToSkip.Contains(Path.GetFileName(dirPath).ToLowerInvariant()))
 				{
 					CopyFolder(dirPath, Path.Combine(destinationPath, Path.GetFileName(dirPath)));
 				}

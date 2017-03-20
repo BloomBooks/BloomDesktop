@@ -53,6 +53,7 @@ namespace Bloom.Book
 
 		public event EventHandler ContentsChanged;
 		private readonly BookData _bookData;
+		public const string ReadMeImagesFolderName = "ReadMeImages";
 
 		//for moq'ing only
 		public Book()
