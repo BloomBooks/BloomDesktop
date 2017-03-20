@@ -21,45 +21,43 @@
 // for any element marked with a 'bloom-preventRemoval' class.
 
 export default class BloomField {
-    static ManageField(bloomEditableDiv:HTMLElement) {
+    static ManageField(bloomEditableDiv: HTMLElement) {
 
         BloomField.PreventRemovalOfSomeElements(bloomEditableDiv);
+        BloomField.PreventBackspaceAtStartFromRemovingParagraph(bloomEditableDiv);
+        BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
+        BloomField.MakeTabEnterTabElement(bloomEditableDiv);
 
-        if(BloomField.RequiresParagraphs(bloomEditableDiv)) {
-            BloomField.ModifyForParagraphMode(bloomEditableDiv);
-            BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
-            BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
-            BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
-            BloomField.MakeTabEnterTabElement(bloomEditableDiv);
-            BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
+        //the following is assumed to not be needed currently... probably since we added ckeditor.
+        // BloomField.ModifyForParagraphMode(bloomEditableDiv);
+        // $(bloomEditableDiv).blur(function () {
+        //     BloomField.ModifyForParagraphMode(this);
+        // });
+        // $(bloomEditableDiv).focusin(function () {
+        //     BloomField.HandleFieldFocus(this);
+        // });
 
-            $(bloomEditableDiv).blur(function () {
-                BloomField.ModifyForParagraphMode(this);
-            });
-            $(bloomEditableDiv).focusin(function () {
-                BloomField.HandleFieldFocus(this);
-            });
-        }
-        else{
-            BloomField.PrepareNonParagraphField(bloomEditableDiv);
-            BloomField.ManageWhatHappensIfTheyDeleteEverythingNonParagraph(bloomEditableDiv);
-        }
+        BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
+        BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
+
+        //BloomField.PrepareNonParagraphField(bloomEditableDiv);
+        //BloomField.ManageWhatHappensIfTheyDeleteEverythingNonParagraph(bloomEditableDiv);
     }
 
     private static MakeTabEnterTabElement(field: HTMLElement) {
         $(field).keydown(e => {
             if (e.which === 9) {
-                    //note: some people introduce a new element, <tab>. That has the advantage
-                    //of having a stylesheet-controllable width. However, Firefox leave the
-                    //cursor in side of the <tab></tab>, and though we could manage
-                    //to get out of that, what if someone moved back into it? Etc. etc.
-                    //So I'm going with the conservative choice for now, which is the em space,
-                    //which is about as wide as 4 spaces.
-                    document.execCommand("insertHTML", false, "&emsp;");
-                    e.stopPropagation();
-                    e.preventDefault();
-                }
+                //note: some people introduce a new element, <tab>. That has the advantage
+                //of having a stylesheet-controllable width. However, Firefox leave the
+                //cursor in side of the <tab></tab>, and though we could manage
+                //to get out of that, what if someone moved back into it? Etc. etc.
+                //So I'm going with the conservative choice for now, which is the em space,
+                //which is about as wide as 4 spaces.
+                document.execCommand("insertHTML", false, "&emsp;");
+                e.stopPropagation();
+                e.preventDefault();
             }
+        }
         );
     }
 
@@ -152,7 +150,7 @@ export default class BloomField {
         //The following checks the top level elemenents and only allows divs; the two items
         //that we expect in there are the div for the "imagePusherDowner" and the div for
         //the image - container(which in turn contains the caption).
-        $(divToProtect).children().filter(function() {
+        $(divToProtect).children().filter(function () {
             return this.localName.toLowerCase() != 'div';
         }).each(function () {
             //divToProtect.removeChild(this);
@@ -181,7 +179,7 @@ export default class BloomField {
                     //see if it is one those. Anything marked with bloom-preventRemoval is probably not something we want to
                     //be merging with.
                     var previousElement = $(sel.anchorNode).closest('P').prev();
-                    if(previousElement.length>0 && previousElement[0] == divToProtect) {
+                    if (previousElement.length > 0 && previousElement[0] == divToProtect) {
                         e.stopPropagation();
                         e.preventDefault();
                         console.log("Prevented Backspace");
@@ -193,8 +191,8 @@ export default class BloomField {
 
     // Without this, ctrl+a followed by a left-arrow or right-arrow gets you out of all paragraphs,
     // so you can start messing things up.
-    private static PreventArrowingOutIntoField(field:HTMLElement) {
-        $(field).keydown(function(e) {
+    private static PreventArrowingOutIntoField(field: HTMLElement) {
+        $(field).keydown(function (e) {
             var leftArrowPressed = e.which === 37;
             var rightArrowPressed = e.which === 39;
             if (leftArrowPressed || rightArrowPressed) {
@@ -207,16 +205,16 @@ export default class BloomField {
         });
     }
 
-    private static EnsureStartsWithParagraphElement(field:HTMLElement) {
-        if ($(field).children().length > 0 && ( $(field).children().first().prop("tagName").toLowerCase() === 'p')) {
+    private static EnsureStartsWithParagraphElement(field: HTMLElement) {
+        if ($(field).children().length > 0 && ($(field).children().first().prop("tagName").toLowerCase() === 'p')) {
             return;
         }
         $(field).prepend('<p></p>');
     }
 
-    private static EnsureEndsWithParagraphElement(field:HTMLElement) {
+    private static EnsureEndsWithParagraphElement(field: HTMLElement) {
         //Enhance: move any errant paragraphs to after the imageContainer
-        if($(field).children().length > 0 && ( $(field).children().last().prop("tagName").toLowerCase() === 'p')) {
+        if ($(field).children().length > 0 && ($(field).children().last().prop("tagName").toLowerCase() === 'p')) {
             return;
         }
         $(field).append('<p></p>');
@@ -229,7 +227,7 @@ export default class BloomField {
             var node = nodes[n];
             if (node.nodeType === 3) {//Node.TEXT_NODE
                 var paragraph = document.createElement('p');
-                if(node.textContent.trim() !== '') {
+                if (node.textContent.trim() !== '') {
                     paragraph.textContent = node.textContent;
                     node.parentNode.insertBefore(paragraph, node);
                 }
@@ -244,38 +242,32 @@ export default class BloomField {
     //      text doesn't get any of the formatting assigned to paragraphs)
     // 2) when this field was already used by the user, and then later switched to paragraph mode.
     // 3) corner cases that aren't handled by as-you-edit events. E.g., pressing "ctrl+a DEL"
-    private static ModifyForParagraphMode(field:HTMLElement) {
+    private static ModifyForParagraphMode(field: HTMLElement) {
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
         $(field).find('br').remove();
 
         // in cases where we are embedding images inside of bloom-editables, the paragraphs actually have to go at the
         // end, for reason of wrapping. See SHRP C1P4 Pupils Book
         //if(x.startsWith('<div')){
-        if($(field).find('.bloom-keepFirstInField').length > 0){
+        if ($(field).find('.bloom-keepFirstInField').length > 0) {
             BloomField.EnsureEndsWithParagraphElement(field);
             return;
         }
-        else{
-               BloomField.EnsureStartsWithParagraphElement(field);
+        else {
+            BloomField.EnsureStartsWithParagraphElement(field);
         }
     }
 
-    private static RequiresParagraphs(field : HTMLElement) : boolean {
-        return $(field).closest('.bloom-requiresParagraphs').length > 0
-                //this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
-            || ($(field).css('border-top-style') === 'dashed');
+    private static HandleFieldFocus(field: HTMLElement) {
+        BloomField.MoveCursorToEdgeOfField(field, CursorPosition.start);
     }
 
-    private static HandleFieldFocus(field:HTMLElement) {
-       BloomField.MoveCursorToEdgeOfField(field, CursorPosition.start);
-    }
-
-    private static MoveCursorToEdgeOfField(field: HTMLElement, position: CursorPosition ){
+    private static MoveCursorToEdgeOfField(field: HTMLElement, position: CursorPosition) {
         var range = document.createRange();
-        if(position === CursorPosition.start) {
+        if (position === CursorPosition.start) {
             range.selectNodeContents($(field).find('p').first()[0]);
         }
-        else{
+        else {
             range.selectNodeContents($(field).find('p').last()[0]);
         }
         range.collapse(position === CursorPosition.start);//true puts it at the start
@@ -303,9 +295,9 @@ export default class BloomField {
     // around the picture. The problem is that the user can do (ctrl+a, del) to start over on the text, and
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
     // tries to safeguard elements bearing that class.
-    private static PreventRemovalOfSomeElements(field:HTMLElement) {
+    private static PreventRemovalOfSomeElements(field: HTMLElement) {
         var numberThatShouldBeThere = $(field).find(".bloom-preventRemoval").length;
-        if(numberThatShouldBeThere > 0) {
+        if (numberThatShouldBeThere > 0) {
             $(field).on("input", function (e) {
                 if ($(this).find(".bloom-preventRemoval").length < numberThatShouldBeThere) {
                     document.execCommand('undo');
@@ -334,24 +326,24 @@ export default class BloomField {
     // This bug mentions the cursor being in the wrong place: https://bugzilla.mozilla.org/show_bug.cgi?id=904846
     // The reason this is for "non paragraph fields" is that these are the only kind that can be empty. Fields with <p>'s are never
     // totally empty, so they escape this bug.
-    private static PrepareNonParagraphField(field:HTMLElement) {
-        if ($(field).text() === '') {
-            //add a span with only a zero-width space in it
-            //enhance: a zero-width placeholder would be a bit better, but theOneLibSynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
-            $(field).html('&nbsp;');
-            //now we tried deleting it immediately, or after a pause, but that doesn't help. So now we don't delete it until they type or paste something.
-            // REMOVE: why was this doing it for all of the elements? $(container).find(".bloom-editable").one('paste keypress', FixUpOnFirstInput);
-            $(field).one('paste keypress', this.FixUpOnFirstInput);
-        }
-    }
+    // private static PrepareNonParagraphField(field: HTMLElement) {
+    //     if ($(field).text() === '') {
+    //         //add a span with only a zero-width space in it
+    //         //enhance: a zero-width placeholder would be a bit better, but theOneLibSynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
+    //         $(field).html('&nbsp;');
+    //         //now we tried deleting it immediately, or after a pause, but that doesn't help. So now we don't delete it until they type or paste something.
+    //         // REMOVE: why was this doing it for all of the elements? $(container).find(".bloom-editable").one('paste keypress', FixUpOnFirstInput);
+    //         $(field).one('paste keypress', this.FixUpOnFirstInput);
+    //     }
+    // }
 
-    private static ManageWhatHappensIfTheyDeleteEverythingNonParagraph(field: HTMLElement) {
-        // if the user deletes everthing then we get an empty element, and we may need the bug work around described above.
-        // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
-        $(field).on("input", function (e) {
-                BloomField.PrepareNonParagraphField(this);
-        });
-    }
+    // private static ManageWhatHappensIfTheyDeleteEverythingNonParagraph(field: HTMLElement) {
+    //     // if the user deletes everthing then we get an empty element, and we may need the bug work around described above.
+    //     // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
+    //     $(field).on("input", function (e) {
+    //         BloomField.PrepareNonParagraphField(this);
+    //     });
+    // }
 
 
     //In PrepareNonParagraphField(), to work around a FF bug, we made a text box non-empty so that the cursor would show up correctly.
@@ -401,11 +393,28 @@ export default class BloomField {
             }
         }
     }
+    private static PreventBackspaceAtStartFromRemovingParagraph(field: HTMLElement) {
+        $(field).keydown(e => {
+            if (e.which === 8 /* backspace*/) {
+                var sel = window.getSelection();
+                //Are we at the start of a paragraph with nothing selected?
+                if (sel.anchorOffset == 0 && sel.isCollapsed) {
+                    //Are we in the first paragraph?
+                    var previousElement = $(sel.anchorNode).closest('P').prev();
+                    if (previousElement.length == 0) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        console.log("Prevented Backspace");
+                    }
+                }
+            }
+        });
+    }
 }
 enum CursorPosition { start, end }
-interface FFSelection extends Selection{
+interface FFSelection extends Selection {
     //This is nonstandard, but supported by firefox. So we have to tell typescript about it
-    modify(alter:string, direction:string, granularity:string):Selection;
+    modify(alter: string, direction: string, granularity: string): Selection;
 }
 interface JQuery {
     reverse(): JQuery;

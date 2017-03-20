@@ -149,7 +149,7 @@ import './bloomSynphonyExtensions.js'; //add several functions to LanguageData
             var html = $(this).html();
 
             // ignore empty elements
-            if ((html.trim().length > 0) && (html !== '<br>')) {
+            if ((html.trim().length > 0) && (text.trim().length > 0)) {
                 html = theOneLibSynphony.wrap_words_extra(html, results.sight_words, cssSightWord, ' data-segment="word"');
                 html = theOneLibSynphony.wrap_words_extra(html, results.possible_words, cssPossibleWord, ' data-segment="word"');
 
