@@ -209,7 +209,7 @@ namespace Bloom.web.controllers
 			var bookTemplatePaths = new List<string>();
 
 			// 1) we start the list with the template that was used to start this book (or the book itself if it IS a template)
-			bookTemplatePaths.Add(pathToCurrentTemplateHtml);
+			bookTemplatePaths.Add(Platform.IsWindows ? pathToCurrentTemplateHtml.ToLowerInvariant() : pathToCurrentTemplateHtml);
 
 			// 2) Look in their current collection...this is the first one used to make sourceBookPaths
 

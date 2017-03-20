@@ -1,4 +1,9 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.IO;
+using System.Web.UI.WebControls;
+using BloomTemp;
+using NUnit.Framework;
+using SIL.PlatformUtilities;
 
 namespace Bloom.web.controllers
 {
@@ -18,69 +23,117 @@ namespace Bloom.web.controllers
 		[Test]
 		public void GetBookTemplatePaths_NonBasicBookOriginal_BasicBookOfferedSecond()
 		{
-			var pathToCurrentTemplateHtml = "c:\\some\\templates\\here\\originalTemplate.html";
-			var pathToBasicBook = "c:\\installation dir\\templates\\basic book.html";
-			var pathToAlphabet = "c:\\some\\templates\\here\\alphabet template.html";
-			var pathToZebra = "c:\\some\\templates\\here\\zebras template.html";
-			var sourceBookPaths = new[]
+			using (var temp = new TemporaryFolder("NonBasicBookOriginal"))
 			{
-				pathToAlphabet,
-				"c:\\installation dir\\templates\\some book that is not a template at all.html",
-				pathToBasicBook,
-				pathToCurrentTemplateHtml,
-				pathToZebra
-			};
-			var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
-			Assert.AreEqual(4, result.Count);
-			Assert.AreEqual(0, result.IndexOf(pathToCurrentTemplateHtml),
-				"Template used to make the book should be first in the list.");
-			Assert.AreEqual(1, result.IndexOf(pathToBasicBook),
-				"Basic Book should move ahead of Arithmetic to be second in list when it is not first.");
-			Assert.AreEqual(2, result.IndexOf(pathToAlphabet), "Arithmetic should be third.");
-			Assert.AreEqual(3, result.IndexOf(pathToZebra), "Zebra should be last.");
+				var original = new TemplateBookTestFolder(temp.FolderPath, "originalTemplate");
+				var basic = new TemplateBookTestFolder(temp.FolderPath, "basic book");
+				var alphabet = new TemplateBookTestFolder(temp.FolderPath, "alphabet");
+				var zebra = new TemplateBookTestFolder(temp.FolderPath, "zebra");
+				var pathToCurrentTemplateHtml = original.HtmlPath;
+				var pathToBasicBook = basic.HtmlPath;
+				var pathToAlphabet = alphabet.HtmlPath;
+				var pathToZebra = zebra.HtmlPath;
+				var sourceBookPaths = new[]
+				{
+					pathToAlphabet,
+					"c:\\installation dir\\templates\\some book that is not a template at all.html",
+					pathToBasicBook,
+					pathToCurrentTemplateHtml,
+					pathToZebra
+				};
+				var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
+				Assert.AreEqual(4, result.Count);
+				Assert.That(result[0].ToLowerInvariant(), Is.EqualTo(pathToCurrentTemplateHtml.ToLowerInvariant()),
+					"Template used to make the book should be first in the list.");
+				Assert.That(result[1].ToLowerInvariant(), Is.EqualTo(pathToBasicBook.ToLowerInvariant()),
+					"Basic Book should move ahead of Alphabet to be second in list when it is not first.");
+				Assert.That(result[2].ToLowerInvariant(), Is.EqualTo(pathToAlphabet.ToLowerInvariant()), "Alphabet should be third.");
+				Assert.That(result[3].ToLowerInvariant(), Is.EqualTo(pathToZebra.ToLowerInvariant()), "Zebra should be last.");
+				if (!Platform.IsWindows)
+					Assert.That(result[0], Is.EqualTo(pathToCurrentTemplateHtml), "Should not change case on Linux");
+			}
+		}
+
+		/// <summary>
+		/// Sets up a folder that Bloom will recognize as a template book folder with the specified name.
+		/// </summary>
+		class TemplateBookTestFolder
+		{
+			public string HtmlPath;
+			public TemplateBookTestFolder(string rootFolderName, string name)
+			{
+				var templatePath = Path.Combine(rootFolderName, name, PageTemplatesApi.TemplateFolderName);
+				Directory.CreateDirectory(templatePath);
+				HtmlPath = Path.Combine(rootFolderName, name, name + ".htm");
+			}
 		}
 
 		[Test]
 		public void GetBookTemplatePaths_TemplateInThisCollection_ReturnsTemplate()
 		{
-			var pathToCurrentTemplateHtml = "c:\\some\\templates\\here\\\\basic book.htm";
-			var sourceBookPaths = new[] {"c:\\some\\templates\\here\\\\my template.htm"};
-			var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
-			Assert.AreEqual(1, result.IndexOf(sourceBookPaths[0]));
+			using (var temp = new TemporaryFolder("TemplateInThisCollection_ReturnsTemplate"))
+			{
+				var current = new TemplateBookTestFolder(temp.FolderPath, "basic book");
+				var pathToCurrentTemplateHtml = current.HtmlPath;
+				var other = new TemplateBookTestFolder(temp.FolderPath, "my template");
+				var sourceBookPaths = new[] {other.HtmlPath};
+				var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
+				Assert.That(result[1].ToLowerInvariant(), Is.EqualTo(sourceBookPaths[0].ToLowerInvariant()));
+			}
 		}
 
 		[Test]
 		public void GetBookTemplatePaths_TemplateInThisCollectionAndSourceBooks_ReturnsItOnlyOnce()
 		{
-			var pathToCurrentTemplateHtml = "c:\\some\\templates\\here\\\\basic book.htm";
-			var sourceBookPaths = new[]
-				{"c:\\some\\templates\\here\\\\my template.htm", "c:\\some\\templates\\here\\\\my template.htm"};
-			var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
-			Assert.AreEqual(2, result.Count, "Should only list my template once.");
+			using (var temp = new TemporaryFolder("TemplateInThisCollectionAndSourceBooks_ReturnsItOnlyOnce"))
+			{
+				var current = new TemplateBookTestFolder(temp.FolderPath, "basic book");
+				var pathToCurrentTemplateHtml = current.HtmlPath;
+				var other = new TemplateBookTestFolder(temp.FolderPath, "my template");
+				var sourceBookPaths = new[]
+					{other.HtmlPath, other.HtmlPath};
+				var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
+				Assert.AreEqual(2, result.Count, "Should only list my template once.");
+			}
 		}
 
 		[Test]
 		public void GetBookTemplatePaths_TwoTemplatesWithSameName_ListsBoth()
 		{
-			var pathToCurrentTemplateHtml = "c:\\some\\templates\\here\\\\basic book.htm";
-			var sourceBookPaths = new[]
-				{"c:\\some\\templates\\here\\\\my template.htm", "c:\\other\\templates\\overhere\\\\my template.htm"};
-			var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
-			Assert.AreEqual(3, result.Count, "Should list each unique path, not name.");
+			using (var temp = new TemporaryFolder("TwoTemplatesWithSameName_ListsBoth1"))
+			using (var temp2 = new TemporaryFolder("TwoTemplatesWithSameName_ListsBoth2"))
+			{
+				var current = new TemplateBookTestFolder(temp.FolderPath, "basic book");
+				var pathToCurrentTemplateHtml = current.HtmlPath;
+				var other = new TemplateBookTestFolder(temp.FolderPath, "my template");
+				var other2 = new TemplateBookTestFolder(temp2.FolderPath, "my template");
+				var sourceBookPaths = new[]
+					{other.HtmlPath, other2.HtmlPath};
+				var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
+				Assert.AreEqual(3, result.Count, "Should list each unique path, not name.");
+			}
 		}
 
 		/// <summary>
 		/// This is what was actually happening: the drive letter was upper case in one instance, and lower in the other
 		/// </summary>
 		[Test]
-		[Platform(Exclude = "Linux", Reason = "On Linux, case is significant")]
 		public void GetBookTemplatePaths_TwoTemplatesWithSameNameButDifferentCase_ReturnsItOnlyOnce()
 		{
-				var pathToCurrentTemplateHtml = "c:\\some\\templates\\here\\\\basic book.htm";
+			using (var temp = new TemporaryFolder("TemplateInThisCollectionAndSourceBooks_ReturnsItOnlyOnce"))
+			{
+				var current = new TemplateBookTestFolder(temp.FolderPath, "basic book");
+				var pathToCurrentTemplateHtml = current.HtmlPath;
+				var template = new TemplateBookTestFolder(temp.FolderPath, "my template");
+				var ucTemplate = new TemplateBookTestFolder(temp.FolderPath, "My template");
 				var sourceBookPaths = new[]
-					{"C:\\Some\\Templates\\Here\\\\My template.htm", "c:\\some\\templates\\here\\\\my template.htm"};
+					{template.HtmlPath, ucTemplate.HtmlPath};
 				var result = PageTemplatesApi.GetBookTemplatePaths(pathToCurrentTemplateHtml, sourceBookPaths);
-				Assert.AreEqual(2, result.Count, "Should only list my template once.");
+				if (Platform.IsWindows)
+					Assert.AreEqual(2, result.Count, "Should only list my template once on Windows.");
+				else
+					Assert.AreEqual(3, result.Count, "Should list my template twice on Linux, since case is different.");
+			}
 		}
 	}
 }
