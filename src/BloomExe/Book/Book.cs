@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Web;
+using System.Web.Util;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
@@ -52,6 +54,7 @@ namespace Bloom.Book
 
 		public event EventHandler ContentsChanged;
 		private readonly BookData _bookData;
+		public const string ReadMeImagesFolderName = "ReadMeImages";
 
 		//for moq'ing only
 		public Book()
@@ -1450,10 +1453,11 @@ namespace Bloom.Book
 				var options = new MarkdownOptions() {LinkEmails = true, AutoHyperlink=true};
 				var m = new Markdown(options);
 				var contents = m.Transform(RobustFile.ReadAllText(AboutBookMarkdownPath));
-				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unneccessary.... do they scan .md files?
+				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unnecessary.... do they scan .md files?
 
 				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
-				var html = string.Format("<html><head><link rel='stylesheet' href='file://{0}' type='text/css'><head/><body>{1}</body></html>", pathToCss, contents);
+				var pathAsUrl = "file://" + AboutBookMarkdownPath.Replace('\\', '/').Replace(" ", "%20");
+				var html = $"<html><head><base href='{pathAsUrl}'><link rel='stylesheet' href='file://{pathToCss}' type='text/css'><head/><body>{contents}</body></html>";
 				return html;
 
 			} //todo add other ui languages

@@ -329,6 +329,22 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CreateBookOnDiskFromTemplate_HasReadmeImagesFolder_NotCopied()
+		{
+			_starter.TestingSoSkipAddingXMatter = true;
+			var body = @"<div class='bloom-page'>
+						<div class='bloom-translationGroup'>
+						 <div lang='en'>This is some English</div>
+						</div>
+					</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body, null);
+			Directory.CreateDirectory(Path.Combine(sourceTemplateFolder, Bloom.Book.Book.ReadMeImagesFolderName));
+			var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			var folderPath = Path.Combine(Path.GetDirectoryName(bookPath), Bloom.Book.Book.ReadMeImagesFolderName);
+			Assert.IsFalse(Directory.Exists(folderPath));
+		}
+
+		[Test]
 		public void CreateBookOnDiskFromTemplate_HasTokPisinTextAreaSurroundedByParagraph_VernacularTextAreaAdded()
 		{
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path));
