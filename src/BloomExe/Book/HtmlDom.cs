@@ -227,13 +227,16 @@ namespace Bloom.Book
 				body.RemoveAttribute("editMode");
 		}
 
-		public string ValidateBook(string descriptionOfBookForErrorLog)
+		public string ValidateBook(string descriptionOfBookForErrorLog, bool mustHavePages)
 		{
 			var ids = new List<string>();
 			var builder = new StringBuilder();
 
-			Ensure(RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count > 0, "Must have at least one page",
-				builder);
+			if (mustHavePages)
+			{
+				Ensure(RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count > 0, "Must have at least one page",
+					builder);
+			}
 			EnsureIdsAreUnique(this, "textarea", ids, builder);
 			EnsureIdsAreUnique(this, "p", ids, builder);
 			EnsureIdsAreUnique(this, "img", ids, builder);
