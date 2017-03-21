@@ -192,7 +192,11 @@ export default class BloomHintBubbles {
         onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(target);
 
         // get the localized string
-        if (!doNotLocalize) {
+        if (doNotLocalize) {
+            // still need to substitute {lang} if any
+            whatToSay = theOneLocalizationManager.insertLangIntoHint(whatToSay, target);
+        }
+        else {
             if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
             whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSay, target);
         }

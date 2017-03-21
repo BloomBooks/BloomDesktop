@@ -399,13 +399,19 @@ namespace Bloom.Api
 					// Used to select the best label to show in a hint bubble when a bloom-translationGroup has multiple
 					// labels with different languages.
 					var bubbleLangs = new List<string>();
-					bubbleLangs.Add(_bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code);
 					bubbleLangs.Add(LocalizationManager.UILanguageId);
 					if (_bookSelection.CurrentSelection.MultilingualContentLanguage2 != null)
 						bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage2);
 					if (_bookSelection.CurrentSelection.MultilingualContentLanguage3 != null)
 						bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage3);
 					bubbleLangs.AddRange(new [] { "en", "fr", "sp", "ko", "zh-Hans"});
+					// If we don't have a hint in the UI language or any major language, it's still
+					// possible the page was made just for this langauge and has a hint in that language.
+					// Not sure whether this should be before or after the list above.
+					// Definitely wants to be after UILangage, otherwise we get the surprising result
+					// that in a French collection these hints stay French even when all the rest of the
+					// UI changes to English.
+					bubbleLangs.Add(_bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code);
 					// if it isn't available in any of those we'll arbitrarily take the first one.
 					info.ContentType = "application/json";
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new { langs = bubbleLangs }));
