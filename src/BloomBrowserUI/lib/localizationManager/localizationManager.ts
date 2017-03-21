@@ -260,6 +260,12 @@ export class LocalizationManager {
                 var translated = this.getText.apply(this, args);
 
                 // stick in the language
+                return this.insertLangIntoHint(translated, targetElement);
+        }
+
+        // Hints sometimes have a {lang} tag in the text that needs to be substituted.
+        insertLangIntoHint(whatToSay, targetElement: any) {
+                var translated = whatToSay;
                 if (translated.indexOf('{lang}') != -1) {
                         //This is the preferred approach, but it's not working yet.
                         //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
