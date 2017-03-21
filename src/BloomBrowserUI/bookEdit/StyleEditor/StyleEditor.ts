@@ -383,6 +383,7 @@ export default class StyleEditor {
             // And unfortunately select2 updates the tooltip every time it changes, so we have
             // to arrange to reinstate it
             element.change(x=> select2target.attr("title", toolTip));
+            return;
         }
 
         // And then element might be a container with a select2 INSIDE it...
@@ -716,12 +717,6 @@ export default class StyleEditor {
                     tags: false,
                     minimumResultsForSearch: -1 // result is that no search box is shown
                 });
-                // Changed appearance but not content; probably doesn't work in this old version of select2.
-//                 $(".select2-container").tooltip(<any>{
-//     title: function() {
-//         return $(this).prev().attr("title");
-//     },
-// });
                 
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
