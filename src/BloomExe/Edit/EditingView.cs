@@ -856,7 +856,17 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					imageInfo = PalasoImage.FromFileRobustly(existingImagePath);
+					// Copy the old file we're passing in to the dialog.  It's possible that we'll just crop it, and return the modified
+					// image file with an unchanged path.  That's okay, but what if it's from a copied/duplicated page?  Then all the
+					// pages with that image get the modification, which is probably not what is wanted.  Excess files will get trimmed
+					// later when the book is reopened for editing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3689.
+					var folder = Path.GetDirectoryName(existingImagePath);
+					var newFilename = ImageUtils.GetUnusedFilename(folder, Path.GetFileNameWithoutExtension(existingImagePath), Path.GetExtension(existingImagePath));
+					var newImagePath = Path.Combine(folder, newFilename);
+					RobustFile.Copy(existingImagePath, newImagePath);
+					Debug.WriteLine("Created image copy: " + newImagePath);
+					Logger.WriteEvent("Created image copy: " + newImagePath);
+					imageInfo = PalasoImage.FromFileRobustly(newImagePath);
 				}
 				catch(Exception e)
 				{

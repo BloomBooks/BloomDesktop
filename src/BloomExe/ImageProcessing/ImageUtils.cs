@@ -162,6 +162,15 @@ namespace Bloom.ImageProcessing
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2627 ("Weird Image Problem").
 				basename = Path.GetFileNameWithoutExtension(imageInfo.FileName);
 			}
+			return GetUnusedFilename(bookFolderPath, basename, extension);
+		}
+
+		/// <summary>
+		/// Get an unused filename in the given folder based on the basename and extension.  extension must
+		/// start with a period.
+		/// </summary>
+		internal static string GetUnusedFilename(string bookFolderPath, string basename, string extension)
+		{
 			var i = 0;
 			var suffix = "";
 			while (RobustFile.Exists(Path.Combine(bookFolderPath, basename + suffix + extension)))
