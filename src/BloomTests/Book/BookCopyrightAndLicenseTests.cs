@@ -143,6 +143,21 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
 		}
 
+		[Test]
+		public void SetLicenseMetadata_ToNonIgoUrl_OriginalHasIgoUrl_ReturnsToCC40()
+		{
+			string dataDivContent = @"<div lang='*' data-book='licenseUrl'>http://creativecommons.org/licenses/by-nc-sa/3.0/igo/</div>";
+			var dom = MakeDom(dataDivContent);
+			var creativeCommonsLicense = (CreativeCommonsLicense)(BookCopyrightAndLicense.GetMetadata(dom).License);
+			Assert.IsTrue(creativeCommonsLicense.AttributionRequired); // yes, we got a CC license from the licenseUrl
+			creativeCommonsLicense.IntergovernmentalOriganizationQualifier = false;
+			var newMetaData = new Metadata();
+			newMetaData.License = creativeCommonsLicense;
+			var settings = new CollectionSettings();
+			BookCopyrightAndLicense.SetMetadata(newMetaData, dom, null, settings);
+			Assert.That(dom.RawDom.SelectSingleNode("//div[@data-book='licenseUrl']").InnerText, Is.StringEnding("4.0/"));
+		}
+
 		// BRANDING-RELATED TESTS
 
 		[Test]
