@@ -726,6 +726,11 @@
         <seg>Export to XML for InDesign...</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.BookMenu.MakeBloomPack">
+      <tuv xml:lang="en">
+        <seg>Make Bloom Pack...</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
       <tuv xml:lang="en">
         <seg>Update Book</seg>
