@@ -9,8 +9,7 @@
 //
 // Next, we need to support fields that are made of paragraphs. But FF *really* wants to just use <br>s,
 // which are worthless because you can't style them. You can't, for example, do paragraph indents or have :before content.
-// So the first thing we do here is to work-around that limitation. If a contentEditable or any of its ancestors has
-// has a 'bloom-requiresParagraphs' class, we prepare for working in paragraphs, keep you in paragraphs while
+// So the first thing we do here is to work-around that limitation. So we prepare for working in paragraphs, keep you in paragraphs while
 // editing, and make sure all is ok when you leave.
 //
 // Next, our field templates need to have embedded images that text can flow around. To allow that, we have to keep the p elements *after* the image elements, even
