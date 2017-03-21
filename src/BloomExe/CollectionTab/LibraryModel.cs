@@ -252,16 +252,30 @@ namespace Bloom.CollectionTab
 
 		public void MakeBloomPack(string path, bool forReaderTools = false)
 		{
+			var dir = TheOneEditableCollection.PathToDirectory;
+			var rootName = Path.GetFileName(dir);
+			if (rootName == null) return;
+			Logger.WriteEvent("Making BloomPack at "+path+" forReaderTools="+forReaderTools.ToString());
+			MakeBloomPackInternal(path, dir, dir.Length - rootName.Length, "", forReaderTools);
+		}
+
+		public void MakeSingleBookBloomPack(string path, string inputBookFolder)
+		{
+			var rootName = Path.GetFileName(inputBookFolder);
+			if (rootName == null) return;
+			Logger.WriteEvent("Making single book BloomPack at "+path+" bookFolderPath="+inputBookFolder);
+			MakeBloomPackInternal(path, inputBookFolder, inputBookFolder.Length - rootName.Length, rootName + "/", false);
+		}
+
+		private void MakeBloomPackInternal(string path, string dir, int dirNameOffset, string dirNamePrefix, bool forReaderTools)
+		{
 			try
 			{
-				if(RobustFile.Exists(path))
+				if (RobustFile.Exists(path))
 				{
 					// UI already got permission for this
 					RobustFile.Delete(path);
 				}
-
-				Logger.WriteEvent("Making BloomPack at "+path+" forReaderTools="+forReaderTools.ToString());
-
 				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack...", "Bloom"))
 				{
 					try
@@ -271,21 +285,14 @@ namespace Bloom.CollectionTab
 						Application.DoEvents(); // actually show it
 						Cursor.Current = Cursors.WaitCursor;
 
-						var dir = TheOneEditableCollection.PathToDirectory;
-
-						var rootName = Path.GetFileName(dir);
-						if (rootName == null) return;
-
-						var dirNameOffest = dir.Length - rootName.Length;
-
-						Logger.WriteEvent("BloomPack path will be " + path + ", made from " + dir + " with rootName " + rootName);
+						Logger.WriteEvent("BloomPack path will be " + path + ", made from " + dir + " with rootName " + Path.GetFileName(dir));
 						using (var fsOut = RobustFile.Create(path))
 						{
 							using (ZipOutputStream zipStream = new ZipOutputStream(fsOut))
 							{
 								zipStream.SetLevel(9);
 
-								CompressDirectory(dir, zipStream, dirNameOffest, forReaderTools);
+								CompressDirectory(dir, zipStream, dirNameOffset, dirNamePrefix, forReaderTools);
 
 								zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 								zipStream.Close();
@@ -306,24 +313,25 @@ namespace Bloom.CollectionTab
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack");
+				ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack at " + path);
 			}
 		}
 
 		// these files (if encountered) won't be compressed into a BloomPack
-		private static readonly string[] excludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs" };
+		private static readonly string[] _excludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs" };
 
 		/// <summary>
 		/// Adds a directory, along with all files and subdirectories, to the ZipStream.
 		/// </summary>
 		/// <param name="directoryPath">The directory to add recursively</param>
 		/// <param name="zipStream">The ZipStream to which the files and directories will be added</param>
-		/// <param name="dirNameOffest">This number of characters will be removed from the full directory or file name
+		/// <param name="dirNameOffset">This number of characters will be removed from the full directory or file name
 		/// before creating the zip entry name</param>
+		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <remarks>Protected for testing purposes</remarks>
-		protected static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffest,
+		protected static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
 			bool forReaderTools)
 		{
 			if (Path.GetFileName(directoryPath).ToLowerInvariant() == "audio")
@@ -333,14 +341,14 @@ namespace Bloom.CollectionTab
 
 			foreach (var filePath in files)
 			{
-				if (excludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
+				if (_excludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 					continue; // BL-2246: skip putting this one into the BloomPack
 				if (Path.GetFileName(filePath).StartsWith(BookStorage.PrefixForCorruptHtmFiles))
 					continue;
 
 				FileInfo fi = new FileInfo(filePath);
 
-				var entryName = filePath.Substring(dirNameOffest);  // Makes the name in zip based on the folder
+				var entryName = dirNamePrefix + filePath.Substring(dirNameOffset);  // Makes the name in zip based on the folder
 				entryName = ZipEntry.CleanName(entryName);          // Removes drive from name and fixes slash direction
 				ZipEntry newEntry = new ZipEntry(entryName) { DateTime = fi.LastWriteTime };
 				newEntry.IsUnicodeText = true; // encode filename and comment in UTF8
@@ -392,7 +400,7 @@ namespace Bloom.CollectionTab
 				if ((dirName == null) || (dirName.ToLowerInvariant() == "sample texts"))
 					continue; // Don't want to bundle these up
 
-				CompressDirectory(folder, zipStream, dirNameOffest, forReaderTools);
+				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools);
 			}
 		}
 

@@ -1063,6 +1063,24 @@ namespace Bloom.CollectionTab
 			#endif
 		}
 
+		private void OnMakeBloomPackOfBook(object sender, EventArgs e)
+		{
+			using (var dlg = new SaveFileDialog())
+			{
+				var extension = Path.GetExtension(_model.GetSuggestedBloomPackPath());
+				var filename = _bookSelection.CurrentSelection.Storage.FileName;
+				dlg.FileName = Path.ChangeExtension(filename, extension);
+				dlg.Filter = "BloomPack|*.BloomPack";
+				dlg.RestoreDirectory = true;
+				dlg.OverwritePrompt = true;
+				if (DialogResult.Cancel == dlg.ShowDialog())
+				{
+					return;
+				}
+				var folder = _bookSelection.CurrentSelection.Storage.FolderPath;
+				_model.MakeSingleBookBloomPack(dlg.FileName, _bookSelection.CurrentSelection.Storage.FolderPath);
+			}
+		}
 
 		private void _doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -1149,7 +1167,6 @@ namespace Bloom.CollectionTab
 				Analytics.ReportException(error);
 			}
 		}
-
 
 		private void makeReaderTemplateBloomPackToolStripMenuItem_Click(object sender, EventArgs e)
 		{
