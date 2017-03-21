@@ -258,10 +258,15 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!string.IsNullOrEmpty(tempPath))
-					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, Path.ChangeExtension(PathToExistingHtml, ".bak"));
+					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath());
 			}
 
 			MetaData.Save();
+		}
+
+		private string GetBackupFilePath()
+		{
+			return Path.Combine(Path.GetDirectoryName(PathToExistingHtml), "bookhtml.bak");
 		}
 
 		/// <summary>
@@ -734,7 +739,7 @@ namespace Bloom.Book
 				}
 				catch (Exception error)
 				{
-					var backupPath = Path.ChangeExtension(pathToExistingHtml, "bak");
+					var backupPath = GetBackupFilePath();
 					// If the user is actually trying to look at this book and it's broken, we will try to restore a backup.
 					// The main reason not to do this otherwise is that we think we should notify the user that we
 					// are restoring a backup, and we don't want to bother him with such notifications about books
