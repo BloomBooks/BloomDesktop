@@ -3142,6 +3142,12 @@
         <seg>InDesign XML Information</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.LessMemoryPdfMode">
+      <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
+      <tuv xml:lang="en">
+        <seg>Use less memory (slower)</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Notifications.AdobeReaderRecommendation">
       <tuv xml:lang="en">
         <seg>This PDF viewer can be improved by installing the free Adobe Reader on this computer.</seg>

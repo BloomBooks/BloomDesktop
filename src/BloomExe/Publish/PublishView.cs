@@ -336,7 +336,7 @@ namespace Bloom.Publish
 			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 
 			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
-			var textItem = LocalizationManager.GetDynamicString("Bloom", "lessMemoryPdfMode", "Use less memory (slower)");
+			var textItem = LocalizationManager.GetString("PublishTab.LessMemoryPdfMode", "Use less memory (slower)");
 			var menuItem = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(textItem);
 			menuItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse;
 			menuItem.CheckOnClick = true;
