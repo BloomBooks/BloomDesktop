@@ -59,7 +59,7 @@ namespace Bloom
 			Focus();
 			var channel = ApplicationUpdateSupport.ChannelName;
 			_channelLabel.Visible = channel.ToLowerInvariant() != "release";
-			_channelLabel.Text = LocalizationManager.GetDynamicString("Bloom", "SplashScreen." + channel, channel);
+			_channelLabel.Text = channel;	// No need to localize this: seen only by testers or special users (BL-4451)
 			BringToFront();
 		}
 
