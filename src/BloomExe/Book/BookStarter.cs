@@ -79,8 +79,10 @@ namespace Bloom.Book
 
 		private string GetPathToHtmlFile(string folder)
 		{
-			var candidates = from x in Directory.GetFiles(folder, "*.htm")
-							 where !(x.ToLowerInvariant().EndsWith("configuration.htm"))
+			// BL-4160: GetFiles here also returns files that end in, for example, ".html.bak"
+			var candidates = from x in Directory.GetFiles(folder, "*.htm", SearchOption.TopDirectoryOnly)
+							 where !x.ToLowerInvariant().EndsWith("configuration.htm") &&
+							 (x.ToLowerInvariant().EndsWith(".htm") || x.ToLowerInvariant().EndsWith(".html"))
 							 select x;
 			if (candidates.Count() == 1)
 				return candidates.First();
