@@ -405,7 +405,7 @@ namespace BloomTests.Book
 			var badContent = "<htmlBlah>This is not good HTML";
 			RobustFile.WriteAllText(_bookPath, badContent);
 			var goodContent = "<html><head> </head><body><div class='bloom-page'>Some text</div></body></html>";
-			RobustFile.WriteAllText(Path.ChangeExtension(_bookPath, "bak"), goodContent);
+			RobustFile.WriteAllText(Path.Combine(Path.GetDirectoryName(_bookPath), "bookhtml.bak"), goodContent);
 			var collectionSettings = new CollectionSettings(Path.Combine(_fixtureFolder.Path, "test.bloomCollection"));
 			BookStorage storage;
 			using (new ErrorReport.NonFatalErrorReportExpected())
