@@ -433,6 +433,10 @@ namespace Bloom
 		{
 			if(e.Message.StartsWith("[JavaScript Warning"))
 				return;
+			// This is an attempt, based on the log in BL-4444, to eliminate JS errors
+			// with stack traces that indicate they occurred in gecko's own source code.
+			if (e.Message.Contains("{file: \"chrome://"))
+				return;
 			if (e.Message.StartsWith("[JavaScript Error"))
 				ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
 			Debug.WriteLine(e.Message);
