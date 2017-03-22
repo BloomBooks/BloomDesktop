@@ -615,9 +615,9 @@
         <seg>资源集合</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.CopyBook">
+    <tu tuid="CollectionTab.BookMenu.DuplicateBook">
       <tuv xml:lang="en">
-        <seg>Copy Book</seg>
+        <seg>Duplicate Book</seg>
       </tuv>
       <tuv xml:lang="zh-Hans">
         <seg>复制书</seg>

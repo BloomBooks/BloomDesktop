@@ -850,9 +850,9 @@
             <seg>Collection Source</seg>
          </tuv>
       </tu>
-      <tu tuid="CollectionTab.BookMenu.CopyBook">
+      <tu tuid="CollectionTab.BookMenu.DuplicateBook">
          <tuv xml:lang="en">
-            <seg>Copy Book</seg>
+            <seg>Duplicate Book</seg>
          </tuv>
          <tuv xml:lang="fr">
             <seg>Copier le Livre</seg>
