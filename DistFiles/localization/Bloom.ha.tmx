@@ -931,9 +931,9 @@
             <seg>Sabunta bayanan Siga</seg>
          </tuv>
       </tu>
-      <tu tuid="CollectionTab.BookMenu.CopyBook">
+      <tu tuid="CollectionTab.BookMenu.DuplicateBook">
          <tuv xml:lang="en">
-            <seg>Copy Book</seg>
+            <seg>Duplicate Book</seg>
          </tuv>
          <tuv xml:lang="ha">
             <seg>Kwafe Littafi </seg>

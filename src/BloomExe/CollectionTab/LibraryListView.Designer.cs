@@ -593,10 +593,10 @@ namespace Bloom.CollectionTab
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._copyBook, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._copyBook, null);
-			this._L10NSharpExtender.SetLocalizingId(this._copyBook, "CollectionTab.BookMenu.CopyBook");
+			this._L10NSharpExtender.SetLocalizingId(this._copyBook, "CollectionTab.BookMenu.DuplicateBook");
 			this._copyBook.Name = "_copyBook";
 			this._copyBook.Size = new System.Drawing.Size(237, 22);
-			this._copyBook.Text = "Copy Book";
+			this._copyBook.Text = "Duplicate Book";
 			this._copyBook.Click += new System.EventHandler(this._copyBook_Click);
 			// 
 			// toolStripSeparator1

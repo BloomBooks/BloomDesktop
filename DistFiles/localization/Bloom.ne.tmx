@@ -900,9 +900,9 @@
             <seg>थम्बनेल अद्यावधिक गर्नुहोस्</seg>
          </tuv>
       </tu>
-      <tu tuid="CollectionTab.BookMenu.CopyBook">
+      <tu tuid="CollectionTab.BookMenu.DuplicateBook">
          <tuv xml:lang="en">
-            <seg>Copy Book</seg>
+            <seg>Duplicate Book</seg>
          </tuv>
          <tuv xml:lang="ne">
             <seg>पुस्तक नक्कल गर्नुहोस्</seg>
