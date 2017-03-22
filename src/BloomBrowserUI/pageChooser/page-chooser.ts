@@ -101,7 +101,7 @@ class PageChooser {
         var selectedPictures = parseInt(selected.attr('data-pictureCount'));
 
         var current = $((<HTMLIFrameElement>window.parent.document.getElementById('page')).contentWindow.document);
-        var currentEditableDivs = current.find(".bloom-translationGroup").length;
+        var currentEditableDivs = current.find(".bloom-translationGroup:not(.box-header-off)").length;
         var currentPictures = current.find(".bloom-imageContainer").length;
 
         return selectedEditableDivs < currentEditableDivs || selectedPictures < currentPictures;
@@ -335,7 +335,7 @@ class PageChooser {
 
             var currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
-            $(currentGridItemHtml).attr("data-textDivCount", $(div).find(".bloom-translationGroup").length);
+            $(currentGridItemHtml).attr("data-textDivCount", $(div).find(".bloom-translationGroup:not(.box-header-off)").length);
             $(currentGridItemHtml).attr("data-pictureCount", $(div).find(".bloom-imageContainer").length);
 
             if (currentId === defaultPageToSelect)
