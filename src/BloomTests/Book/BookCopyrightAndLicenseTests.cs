@@ -461,8 +461,7 @@ namespace BloomTests.Book
 					<div data-book='copyright' lang='*'> Copyright © 2007, Foo Publishing </div>
 					<div data-book='licenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
 				</div>");
-			OriginalCopyrightAndLicenseMustContain(dom, "Adapted from original, Copyright © 2007, Foo Publishing");
-			OriginalCopyrightAndLicenseMustContainLicense(dom, "CC-BY-NC 3.0");
+			Assert.AreEqual("Adapted from original, Copyright © 2007, Foo Publishing. Licensed under CC-BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
 		[Test]
@@ -471,6 +470,7 @@ namespace BloomTests.Book
 			var dom = SetOriginalCopyrightAndLicense(
 				@" <div id='bloomDataDiv'>
 					<div data-book='bookTitle' lang='en'>A really really empty book</div>
+						<div data-book='copyright' lang='*'> Copyright © 2007, Foo Publishing </div>
 						<div data-book='licenseUrl' lang='*'>
 						http://creativecommons.org/licenses/by/4.0/
 						</div>
@@ -491,10 +491,10 @@ namespace BloomTests.Book
 						You can do anything you want if your name is Fred.
 					</div>
 				</div>");
-			OriginalCopyrightAndLicenseMustContain(dom, "Fred");
+			Assert.AreEqual("Adapted from original without a copyright notice. Licensed under CC-BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 		[Test]
-		public void SetOriginalCopyrightAndLicense_HasCustomeLicenseAndNotes_NotesRetainedInOriginal()
+		public void SetOriginalCopyrightAndLicense_HasCustomLicenseAndNotes_NotesRetainedInOriginal()
 		{
 			var dom = SetOriginalCopyrightAndLicense(
 				@" <div id='bloomDataDiv'>
@@ -503,7 +503,7 @@ namespace BloomTests.Book
 						You can do anything you want if your name is Fred.
 					</div>
 				</div>");
-			OriginalCopyrightAndLicenseMustContain(dom, "Fred");
+			Assert.AreEqual("Adapted from original without a copyright notice. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
 		[Test]
@@ -525,12 +525,11 @@ namespace BloomTests.Book
 						http://creativecommons.org/licenses/by/4.0/
 						</div>
 					</div>");
-			OriginalCopyrightAndLicenseMustContain(dom, "Adapted from original without a copyright notice.");
-			OriginalCopyrightAndLicenseMustContainLicense(dom, "CC-BY 4.0");
+			Assert.AreEqual("Adapted from original without a copyright notice. Licensed under CC-BY 4.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
 		[Test]
-		public void SetOriginalCopyrightAndLicense_AllRightsReserved_GetsExpectedOriginalCopyrightAndLicense()
+		public void SetOriginalCopyrightAndLicense_NoLicense_GetsExpectedOriginalCopyrightAndLicense()
 		{
 			var dom = SetOriginalCopyrightAndLicense(
 				@" <div id='bloomDataDiv'>
@@ -538,8 +537,7 @@ namespace BloomTests.Book
 						<div data-book='copyright' lang='*'> Copyright © 2007, Some Old Publisher </div>
 					</div>");
 
-			//review: what should we say about the license?
-			OriginalCopyrightAndLicenseMustContain(dom, "Adapted from original, Copyright © 2007, Some Old Publisher.");
+			Assert.AreEqual("Adapted from original, Copyright © 2007, Some Old Publisher.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
 		// when we use a translation, it may have its own copyright. However that doesn't mean that we ever replace
@@ -560,8 +558,7 @@ namespace BloomTests.Book
 			// now do it again, simulating adaptation from the translation
 			var bookData = new BookData(dom, _collectionSettings, null);
 			BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(dom, bookData, _collectionSettings);
-			OriginalCopyrightAndLicenseMustContain(dom, "Adapted from original, Copyright © 2007, Foo Publishers");
-			OriginalCopyrightAndLicenseMustContainLicense(dom, "CC-BY 4.0");
+			Assert.AreEqual("Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC-BY 4.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
 		private HtmlDom SetOriginalCopyrightAndLicense(string dataDivString)
@@ -572,20 +569,15 @@ namespace BloomTests.Book
 			return dom;
 		}
 
+		private static string GetEnglishOriginalCopyrightAndLicense(HtmlDom dom)
+		{
+			var multiTextBase = dom.GetBookSetting("originalCopyrightAndLicense");
+			return multiTextBase["*"];
+		}
+
 		private static void OriginalCopyrightAndLicenseMustMatchXpath(HtmlDom dom, string xpath)
 		{
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
-		}
-
-		private void OriginalCopyrightAndLicenseMustContainLicense(HtmlDom dom, string expected)
-		{
-			OriginalCopyrightAndLicenseMustContain(dom, "Released under " + expected);
-		}
-		private void OriginalCopyrightAndLicenseMustContain(HtmlDom dom, string expected)
-		{
-
-			OriginalCopyrightAndLicenseMustMatchXpath(dom,
-							"//div[@id='bloomDataDiv']//div[@data-book='originalCopyrightAndLicense' and @lang='*' and contains(text(), '" + expected + "')]");
 		}
 	}
 }

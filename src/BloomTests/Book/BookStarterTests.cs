@@ -643,13 +643,7 @@ namespace BloomTests.Book
 				"contains(text(), '"+"Adapted from original, Copyright © 2007, Pratham Books"+"')]", 1);
 			AssertThatXmlIn.HtmlFile(GetPathToHtml(secondAdaptation)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']" +
 				"//div[@data-book='originalCopyrightAndLicense' and @lang='*' and " +
-				"contains(text(), '" + ("Released under " + "CC-BY 4.0")+"')]", 1);
-		}
-
-		[Test]
-		public void CreateBookOnDiskFromTemplate_SourceHasExraLicenseTerms_TermsPreservedInOriginal()
-		{
-			Assert.IsTrue(false, "todo");
+				"contains(text(), '" + ("Licensed under " + "CC-BY 4.0")+"')]", 1);
 		}
 
 		private string GetFolderPathToCreatedBook(string sourceBookName)
