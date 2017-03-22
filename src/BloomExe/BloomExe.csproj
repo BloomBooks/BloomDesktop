@@ -315,6 +315,12 @@
     <Compile Include="Edit\TalkingBookTool.cs" />
     <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
+    <Compile Include="MiscUI\InstallationFailedDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiscUI\InstallationFailedDialog.Designer.cs">
+      <DependentUpon>InstallationFailedDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\ElectronicPublishView.cs" />
     <Compile Include="RobustIO.cs" />
@@ -787,6 +793,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\BloomIntegrityDialog.resx">
       <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\InstallationFailedDialog.resx">
+      <DependentUpon>InstallationFailedDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\LanguageFontDetails.resx">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>

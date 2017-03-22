@@ -262,10 +262,15 @@ namespace Bloom.Book
 			{
 				Logger.WriteMinorEvent("ReplaceFileWithUserInteractionIfNeeded({0},{1})", tempPath, PathToExistingHtml);
 				if (!string.IsNullOrEmpty(tempPath))
-					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, Path.ChangeExtension(PathToExistingHtml, ".bak"));
+					FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath, PathToExistingHtml, GetBackupFilePath());
 			}
 
 			MetaData.Save();
+		}
+
+		private string GetBackupFilePath()
+		{
+			return Path.Combine(Path.GetDirectoryName(PathToExistingHtml), "bookhtml.bak");
 		}
 
 		/// <summary>
@@ -696,7 +701,7 @@ namespace Bloom.Book
 				ProcessAccessDeniedError(error);
 				return;
 			}
-			var backupPath = Path.ChangeExtension(pathToExistingHtml, "bak");
+			var backupPath = GetBackupFilePath();
 
 			if (!RobustFile.Exists(pathToExistingHtml))
 			{
@@ -806,7 +811,7 @@ namespace Bloom.Book
 
 		private void RestoreBackup(string pathToExistingHtml, Exception error)
 		{
-			var backupPath = Path.ChangeExtension(pathToExistingHtml, "bak");
+			var backupPath = GetBackupFilePath();
 			string corruptFilePath = GetUniqueFileName(FolderPath, PrefixForCorruptHtmFiles, "htm");
 			RobustFile.Move(PathToExistingHtml, corruptFilePath);
 			RobustFile.Move(backupPath, pathToExistingHtml);
