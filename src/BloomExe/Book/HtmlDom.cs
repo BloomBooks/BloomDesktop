@@ -633,10 +633,13 @@ namespace Bloom.Book
 				newPage.SetAttribute("data-page", dataPageValue); //the template has these as data-page='extra'
 			}
 
-			// migrate text
-			MigrateChildren(page, "bloom-translationGroup", newPage);
+			//the leading '.'s here are needed because newPage is an element in a larger DOM, and we only want to search in this page
+			// migrate text (between visible translation groups!)
+			// enhance: I wish there was a better way to detect invisible translation groups than just knowing about one class
+			// that currently hides them.
+			MigrateChildren(page, ".//div[contains(concat(' ', @class, ' '), ' bloom-translationGroup ') and not(contains(@class, 'box-header-off'))]", newPage);
 			// migrate images
-			MigrateChildren(page, "bloom-imageContainer", newPage);
+			MigrateChildren(page, ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]", newPage);
 			return oldLineage;
 		}
 
@@ -646,12 +649,10 @@ namespace Bloom.Book
 		/// For translation groups, also updates the bloom-editable divs to have the expected class.
 		/// </summary>
 		/// <param name="page"></param>
-		/// <param name="parentClass"></param>
+		/// <param name="xpath"></param>
 		/// <param name="newPage"></param>
-		private static void MigrateChildren(XmlElement page, string parentClass, XmlElement newPage)
+		private static void MigrateChildren(XmlElement page, string xpath, XmlElement newPage)
 		{
-			//the leading '.' here is needed because newPage is an element in a larger DOM, and we only want to search in this page
-			var xpath = ".//div[contains(concat(' ', @class, ' '), ' " + parentClass + " ')]";
 			var oldParents = page.SafeSelectNodes(xpath);
 			var newParents = newPage.SafeSelectNodes(xpath);
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
