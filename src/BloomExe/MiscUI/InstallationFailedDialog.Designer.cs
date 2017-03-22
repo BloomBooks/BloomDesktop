@@ -38,12 +38,13 @@
 			// _label
 			// 
 			this._label.AutoSize = true;
+			this._label.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._label.Location = new System.Drawing.Point(3, 0);
 			this._label.Name = "_label";
-			this._label.Size = new System.Drawing.Size(448, 13);
+			this._label.Size = new System.Drawing.Size(401, 34);
 			this._label.TabIndex = 0;
-			this._label.Text = "Bloom failed during installation. You can use our installation guide to troublesh" +
-    "oot this problem.";
+			this._label.Text = "The installer was not able to install Bloom. Please see the following instruction" +
+    "s:";
 			// 
 			// _tableLayoutPanel
 			// 
@@ -65,9 +66,10 @@
 			// _linkLabel
 			// 
 			this._linkLabel.AutoSize = true;
-			this._linkLabel.Location = new System.Drawing.Point(3, 23);
+			this._linkLabel.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._linkLabel.Location = new System.Drawing.Point(3, 44);
 			this._linkLabel.Name = "_linkLabel";
-			this._linkLabel.Size = new System.Drawing.Size(321, 13);
+			this._linkLabel.Size = new System.Drawing.Size(406, 17);
 			this._linkLabel.TabIndex = 1;
 			this._linkLabel.TabStop = true;
 			this._linkLabel.Text = "https://community.software.sil.org/t/how-to-fix-installation-problems";
