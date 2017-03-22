@@ -6,6 +6,7 @@ using System.Net;
 using System.Reflection;
 using Bloom.Api;
 using Bloom.Collection;
+using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -177,8 +178,9 @@ namespace Bloom.Book
 			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:collectionSettings.LicenseDescriptionLanguagePriorities.ToArray());
 			CopyItemToFieldsInPages(dom, "licenseNotes");
 			CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute:"src");
+			CopyItemToFieldsInPages(dom, "originalCopyrightAndLicense");
 
-			if(!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
+			if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
 				UpdateBookLicenseIcon(GetMetadata(dom), bookFolderPath);
 		}
 
@@ -276,6 +278,63 @@ namespace Bloom.Book
 			Logger.WriteEvent("LicenseUrl: " + dom.GetBookSetting("licenseUrl"));
 			Logger.WriteEvent("LicenseNotes: " + dom.GetBookSetting("licenseNotes"));
 			Logger.WriteEvent("");
+		}
+
+		/// <summary>
+		/// Copy the copyright & license info to the originalCopyrightAndLicense,
+		/// then remove the copyright so the translator can put in their own if they
+		/// want. We retain the license, but the translator is allowed to change that.
+		/// </summary>
+		public static void SetOriginalCopyrightAndLicense(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings)
+		{
+			if (bookData.GetMultiTextVariableOrEmpty("originalCopyrightAndLicense").Count > 0)
+			{
+				return; //leave the original there.
+			}
+			var metadata = BookCopyrightAndLicense.GetMetadata(dom);
+			string idOfLanguageUsed;
+			var languagePriorityIds = collectionSettings.LicenseDescriptionLanguagePriorities;
+
+			//TODO HOW DO I GET THESE IN THE NATIONAL LANGUAGE INSTEAD OF THE UI LANGUAGE?
+
+			var license = metadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
+			string originalLicenseSentence;
+			if(metadata.License is CustomLicense)
+			{
+				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
+				// for that... but sheesh, these are even now very rare in Bloom-land and should become more rare. 
+				// So for now, let's just print the custom license contents.
+				originalLicenseSentence = license;
+			}
+			else
+			{
+				var licenseSentenceTemplate = LocalizationManager.GetString("EditTab.FrontMatter.OriginalLicenseSentence",
+					"Licensed under {0}.",
+					"On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.");
+				originalLicenseSentence = string.IsNullOrWhiteSpace(license) ? "" : string.Format(licenseSentenceTemplate, license);
+				originalLicenseSentence = originalLicenseSentence.Replace("..", ".");  // in case had notes which also had a period.
+			}
+
+			Console.WriteLine(originalLicenseSentence);
+			var copyrightNotice = "";
+			if (string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
+			{
+				var noCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalHadNoCopyrightSentence",
+					"Adapted from original without a copyright notice.",
+					"On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.");
+
+				copyrightNotice = noCopyrightSentence + " " + originalLicenseSentence;
+			}
+			else
+			{
+				var originalCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalHadNoCopyrightSentence",
+					"Adapted from original, {0}.",
+					"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.");
+				copyrightNotice = String.Format(originalCopyrightSentence, metadata.CopyrightNotice.Trim()) + " " + originalLicenseSentence;
+			}
+			Console.WriteLine(copyrightNotice);
+			bookData.Set("originalCopyrightAndLicense", copyrightNotice, "*");
+			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
 		}
 	}
 }

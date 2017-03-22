@@ -227,13 +227,6 @@ namespace Bloom.Edit
 		{
 			try
 			{
-				if(!_model.CanEditCopyrightAndLicense)
-				{
-					MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright",
-						"Sorry, the copyright and license for this book cannot be changed."));
-					return;
-				}
-
 				_model.SaveNow();
 				//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
 

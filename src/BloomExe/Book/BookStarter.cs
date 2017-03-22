@@ -9,6 +9,7 @@ using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -50,7 +51,7 @@ namespace Bloom.Book
 		{
 			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceBookFolder, parentCollectionPath);
 
-			// We use the "initial name" to make the intial copy, and it gives us something
+			// We use the "initial name" to make the initial copy, and it gives us something
 			//to name the folder and file until such time as the user enters a title in for the book.
 			string initialBookName = GetInitialName(sourceBookFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
@@ -122,7 +123,7 @@ namespace Bloom.Book
 			// because the rest is in the xmatter.
 			// For shells, we'll still have pages.
 
-			//Remove from the new book any div-pages labelled as "extraPage"
+			//Remove from the new book any div-pages labeled as "extraPage"
 			for (var initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]");
 				initialPageDivs.Count > 0;
 				initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
@@ -149,7 +150,10 @@ namespace Bloom.Book
 
 			SetBookTitle(storage, bookData, usingTemplate);
 
-
+			if(!usingTemplate)
+			{
+				BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(storage.Dom, bookData, _collectionSettings);
+			}
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
