@@ -195,6 +195,8 @@ namespace Bloom.Book
 				"Click to choose topic");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.ISBNPrompt",
 				"International Standard Book Number. Leave blank if you don't have one of these.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.SimpleLineDrawings",
+				"Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.");
 
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Contributions",
 				"When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.");
