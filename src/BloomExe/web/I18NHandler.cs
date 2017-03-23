@@ -93,17 +93,26 @@ namespace Bloom.Api
 						}
 						else
 						{
-							// it's ok if we don't have a translation, but if the string isn't even in the list of things that need translating,
-							// then we want to remind the developer to add it to the english tmx file.
-							if (!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
+							if (id.StartsWith("TemplateBooks.BookName") || id.StartsWith("TemplateBooks.PageLabel") || id.StartsWith("TemplateBooks.PageDescription"))
 							{
-								ReportL10NMissingString(id, englishText);
+								// Now that end users can create templates, it's annoying to report that their names,
+								// page labels, and page descriptions don't have localizations.
+								englishText = englishText.Trim();
 							}
 							else
 							{
-								//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
-								// And return the English string, which is what we would do the next time anyway.  (BL-3374)
-								LocalizationManager.GetDynamicString("Bloom", id, englishText);
+								// it's ok if we don't have a translation, but if the string isn't even in the list of things that need translating,
+								// then we want to remind the developer to add it to the english tmx file.
+								if (!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
+								{
+									ReportL10NMissingString(id, englishText);
+								}
+								else
+								{
+									//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
+									// And return the English string, which is what we would do the next time anyway.  (BL-3374)
+									LocalizationManager.GetDynamicString("Bloom", id, englishText);
+								}
 							}
 						}
 						info.ContentType = "text/plain";

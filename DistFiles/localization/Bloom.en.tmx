@@ -1649,6 +1649,12 @@
         <seg>Missing credits:</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FrontMatter.SimpleLineDrawings">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FrontMatter.TopicPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -4288,6 +4294,12 @@ Do you want to go ahead?</seg>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Vaccinations</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Template Starter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Template Starter</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.BookName.Wall Calendar">
