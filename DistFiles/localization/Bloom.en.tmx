@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="en"
           adminlang="en"
@@ -1617,6 +1617,24 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalHadNoCopyrightSentence">
+      <note>On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.</note>
+      <tuv xml:lang="en">
+        <seg>Adapted from original without a copyright notice.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalLicenseSentence">
+      <note>On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.</note>
+      <tuv xml:lang="en">
+        <seg>Licensed under {0}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalCopyrightSentence">
+      <note>On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.</note>
+      <tuv xml:lang="en">
+        <seg>Adapted from original, {0}.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.PasteImageCreditsLink">
