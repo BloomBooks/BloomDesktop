@@ -299,7 +299,8 @@ namespace Bloom.Book
 
 			var license = metadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
 			string originalLicenseSentence;
-			if(metadata.License is CustomLicense)
+			var preferredLanguageIds = new[] { collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en" };
+			if (metadata.License is CustomLicense)
 			{
 				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
 				// for that... but sheesh, these are even now very rare in Bloom-land and should become more rare. 
@@ -310,7 +311,8 @@ namespace Bloom.Book
 			{
 				var licenseSentenceTemplate = LocalizationManager.GetString("EditTab.FrontMatter.OriginalLicenseSentence",
 					"Licensed under {0}.",
-					"On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.");
+					"On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.",
+					preferredLanguageIds, out idOfLanguageUsed);
 				originalLicenseSentence = string.IsNullOrWhiteSpace(license) ? "" : string.Format(licenseSentenceTemplate, license);
 				originalLicenseSentence = originalLicenseSentence.Replace("..", ".");  // in case had notes which also had a period.
 			}
@@ -321,15 +323,17 @@ namespace Bloom.Book
 			{
 				var noCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalHadNoCopyrightSentence",
 					"Adapted from original without a copyright notice.",
-					"On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.");
+					"On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.",
+					preferredLanguageIds, out idOfLanguageUsed);
 
 				copyrightNotice = noCopyrightSentence + " " + originalLicenseSentence;
 			}
 			else
 			{
-				var originalCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalHadNoCopyrightSentence",
+				var originalCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalCopyrightSentence",
 					"Adapted from original, {0}.",
-					"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.");
+					"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.",
+					preferredLanguageIds, out idOfLanguageUsed);
 				copyrightNotice = String.Format(originalCopyrightSentence, metadata.CopyrightNotice.Trim()) + " " + originalLicenseSentence;
 			}
 			Console.WriteLine(copyrightNotice);
