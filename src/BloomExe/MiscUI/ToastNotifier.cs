@@ -139,8 +139,10 @@ namespace Bloom.MiscUI
 #endif
 				_goDownTimer.Stop();
 				//If the client app starts with a "show dialog" open (e.g., selecting a file to open), this Close() actually closes *that* dialog, which is, um, bad.
-				//So I'm just going to not do the close, figuring that it only runs once per run of the application anyhow
-				//Close();
+				// But we've been closing in various other contexts using an idle event, and testing doesn't seem to show any problems with
+				// that, and we're now making more and more use of the class, so leaving them to hang around is not good, either.
+				// So far, haven't seen any problems with this approach.
+				Application.Idle += CloseThisLater;
 
 				_currentMessage = null;
 
