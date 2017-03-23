@@ -106,7 +106,15 @@ export default class BloomHintBubbles {
     }
 
     static wantHelpBubbleOnGroup(groupElement: JQuery) {
-        return groupElement.attr('data-default-languages').toLowerCase() === 'auto' && !groupElement.hasClass("bloom-showHintOnEach");
+        // We only ever show them on each field if this class requests it.
+        if (!groupElement.hasClass("bloom-showHintOnEach")) {
+            return false;
+        }
+        // Probably that attribute will only be present on elements with data-default-langauges="auto".
+        // But just to be sure, see if that attribute is present with some other setting, because if
+        // it is, we're only showing one language
+        let defLangs = groupElement.attr('data-default-languages');
+        return defLangs && defLangs.toLowerCase() === 'auto';
     }
 
     // Update placement and content of tooltips on a group and/or all its children. This is used for user-defined hint
