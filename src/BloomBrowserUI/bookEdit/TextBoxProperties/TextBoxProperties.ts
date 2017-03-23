@@ -426,6 +426,11 @@ export default class TextBoxProperties {
     classNameForHintOnEach(): string { return "bloom-showHintOnEach" }
 
     initializeHintTab() {
+        if ($(this.boxBeingEdited).closest(".bloom-templateMode").length == 0) {
+            // not in template mode: hide the hint tab
+            $("#hint-header").hide();
+            return;
+        }
         this.initializeHintText();
         this.updateHintTabControls();
         $('#hint-scope').change(e => {
