@@ -647,10 +647,24 @@ namespace Bloom.Edit
 		/// </summary>
 		private void SetPageZoom()
 		{
-			var body = _domForCurrentPage.Body;
 			var pageZoom = Settings.Default.PageZoom ?? "1.0";
-			body.SetAttribute("style", string.Format("transform: scale({0},{0})", pageZoom));
-			CheckForBL2364("read page zoom");
+			var body = _domForCurrentPage.Body;
+			var pageDiv = body.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]") as XmlElement;
+			if (pageDiv != null)
+			{
+				var outerDiv = InsertContainingScalingDiv(body, pageDiv);
+				outerDiv.SetAttribute("style", string.Format("transform: scale({0},{0}); transform-origin: left top;", pageZoom));
+			}
+			CheckForBL2364("set page zoom");
+		}
+
+		XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
+		{
+			var newDiv = body.OwnerDocument.CreateElement("div");
+			newDiv.SetAttribute("id", "page-scaling-container");
+			body.PrependChild(newDiv);
+			newDiv.AppendChild(pageDiv);
+			return newDiv;
 		}
 
 		/// <summary>
@@ -930,20 +944,43 @@ namespace Bloom.Edit
 			// not worth crashing over a timing problem that means we don't save zoom state
 			if (body == null)
 				return; // BL-3075, not sure how this can happen but it has. Possibly the view is in some state like about:null which has no body.
-			var styleAttr = body.Attributes["style"];
 
-			if (styleAttr == null)
-				return;
-			var style = styleAttr.NodeValue;
-			var match = Regex.Match(style, "scale\\(([^,]*),");
-			if (!match.Success)
-				return;
-			var pageZoom = match.Groups[1].Value;
-			if (pageZoom != Settings.Default.PageZoom)
+			var pageDiv = body.FindFirstChildInTree<GeckoElement>(testForPageScalingDiv);
+			if (pageDiv == null)
+				return;		// shouldn't happen, but ignore.
+
+			var styleAttr = pageDiv.Attributes["style"];
+			if (styleAttr != null)
 			{
-				Settings.Default.PageZoom = pageZoom;
-				Settings.Default.Save();
+				var style = styleAttr.NodeValue;
+				var match = Regex.Match(style, "scale\\(([^,]*),");
+				if (match.Success)
+				{
+					var pageZoom = match.Groups[1].Value;
+					if (pageZoom != Settings.Default.PageZoom)
+					{
+						Settings.Default.PageZoom = pageZoom;
+						Settings.Default.Save();
+					}
+				}
 			}
+			RemoveContainingScalingDiv(body, pageDiv);
+		}
+
+		private void RemoveContainingScalingDiv(GeckoElement body, GeckoElement pageDiv)
+		{
+			body.InsertBefore(pageDiv.FirstChild, pageDiv);
+			body.RemoveChild(pageDiv);
+		}
+
+		private bool testForPageScalingDiv(GeckoElement e)
+		{
+			if (e.NodeName.ToLowerInvariant() != "div")
+				return false;
+			var idAttr = e.Attributes["id"];
+			if (idAttr == null)
+				return false;
+			return idAttr.NodeValue == "page-scaling-container";
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying

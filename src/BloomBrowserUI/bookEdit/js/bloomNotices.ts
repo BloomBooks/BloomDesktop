@@ -25,6 +25,7 @@ export default class BloomNotices {
                     classes: 'ui-tooltip-red',
                     tip: { corner: false }
                 }
+                , container: $("div#page-scaling-container")
             });
         });
     }
@@ -58,6 +59,7 @@ export default class BloomNotices {
                     style: {
                         classes: theClasses
                     }
+                    , container: $("div#page-scaling-container")
                 });
             }
         });

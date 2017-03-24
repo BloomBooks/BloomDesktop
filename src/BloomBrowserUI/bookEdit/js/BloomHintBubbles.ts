@@ -234,7 +234,8 @@ export default class BloomHintBubbles {
             at: 'right center',
             my: 'left center',
             viewport: $(window),
-            adjust: { method: 'none' }
+            adjust: { method: 'none' },
+            container: $("div#page-scaling-container")
         };
 
         var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';

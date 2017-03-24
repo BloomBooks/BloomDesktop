@@ -158,7 +158,8 @@ export default class OverflowChecker {
                                         content: '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' + overflowText,
                                         show: { event: 'mouseenter' },
                                         hide: { event: 'mouseleave' },
-                                        position: { my: 'top right', at: 'right bottom' }
+                                        position: { my: 'top right', at: 'right bottom' },
+                                        container: $("div#page-scaling-container")
                                 });
                         });
                 }
@@ -189,7 +190,8 @@ export default class OverflowChecker {
                                                 content: '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' + overflowText,
                                                 show: { event: 'enterBorder' }, // nonstandard events triggered by mouse move in code below
                                                 hide: { event: 'leaveBorder' },
-                                                position: { my: 'top right', at: 'right bottom' }
+                                                position: { my: 'top right', at: 'right bottom' },
+                                                container: $("div#page-scaling-container")
                                         });
                                 });
                                 var showing = false;
