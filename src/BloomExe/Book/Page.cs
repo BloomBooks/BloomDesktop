@@ -10,7 +10,7 @@ namespace Bloom.Book
 	public interface IPage
 	{
 		string Id { get; }
-		string Caption { get; }
+		string Caption { get; set; }
 		string CaptionI18nId { get; }
 		Image Thumbnail { get; }
 		string XPathToDiv { get; }
@@ -166,7 +166,7 @@ namespace Bloom.Book
 
 		public string Id{get { return _id; }}
 
-		public string Caption { get; private set; }
+		public string Caption { get; set; }
 		public string CaptionI18nId { get; private set; }
 		public Image Thumbnail { get
 		{ return _getThumbnail(this); } }
