@@ -104,16 +104,18 @@ namespace Bloom
 		///   </summary>
 		/// <param name="book"></param>
 		/// <param name="page"></param>
-		///  <param name="isLandscape"></param>
-		///  <returns></returns>
-		public Image GetThumbnailForPage(Book.Book book, IPage page, bool isLandscape)
+		/// <param name="isLandscape"></param>
+		/// <param name="mustRegenerate"></param>
+		/// <returns></returns>
+		public Image GetThumbnailForPage(Book.Book book, IPage page, bool isLandscape, bool mustRegenerate = false)
 		{
 			var pageDom = book.GetThumbnailXmlDocumentForPage(page);
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
 			{
 				BackgroundColor = Color.White,// matches the hand-made previews.
 				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None, // allows the HTML to add its preferred border in the larger preview
-				CenterImageUsingTransparentPadding = true
+				CenterImageUsingTransparentPadding = true,
+				MustRegenerate = mustRegenerate
 			};
 			var pageDiv = pageDom.RawDom.SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page')]").Cast<XmlElement>().FirstOrDefault();
 			// The actual page size is rather arbitrary, but we want the right ratio for A4.
