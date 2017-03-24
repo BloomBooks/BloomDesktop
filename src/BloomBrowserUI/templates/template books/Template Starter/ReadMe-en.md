@@ -21,9 +21,9 @@ To speed things up, Bloom only makes this thumbnail once, and stores it in the "
 
 ## Document Your Template
 
-Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named ReadMe-en.md in your template's folder. This file should follow the <a href="http://spec.commonmark.org/dingus/">markdown standard</a>. To provide your instructions in other languages, make version of that file that change the "en" to another language's two letter code. For example ReadMe-fr.md would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadeMeImages", so that images are referenced like this:
+Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named ReadMe-en.md in your template's folder. This file should follow the <a href="http://spec.commonmark.org/dingus/">markdown standard</a>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example ReadMe-fr.md would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:
 
-`![](ReadMeImages/someExample.png]`
+`![](ReadMeImages/someExample.png)`
 
 When the Add Page dialog box shows your template pages, it will show a thumbnail:
 
@@ -42,6 +42,6 @@ For local colleagues, an easy way to distribute your template is via a Bloom Pac
 
 <a name="note3">3</a>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.
 
-<a name="note4">4</a>: If you want to the Add Page screen to also provide a short description of the page, you'll need to quite Bloom and edit the template's html in Notepad, like this: ![](ReadMeImages/pageDescription.png)
+<a name="note4">4</a>: If you want to the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: ![](ReadMeImages/pageDescription.png)
 
 
