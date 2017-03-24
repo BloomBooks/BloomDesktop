@@ -1,5 +1,8 @@
 /// <binding />
 var gulp = require('gulp');
+var semver = require('semver');
+var {engines} = require('./package');
+
 var debug = require('gulp-debug');
 //var ts = require('gulp-typescript');
 var batch = require('gulp-batch');
@@ -12,6 +15,13 @@ var webpack = require('gulp-webpack');
 var del = require('del');
 var runSequence = require('run-sequence');
 var gulpCopy = require('gulp-copy');
+
+// Ensure the version of node we are running is the one we require
+const version = engines.node;
+if (!semver.satisfies(process.version, version)) {
+    console.log(`Required node version ${version} not satisfied with current version ${process.version}.`);
+    process.exit(1);
+}
 
 //this is where we eventually want everything. Note: the same value must be in the webpack config.
 //This one is really only used for 'clean';
