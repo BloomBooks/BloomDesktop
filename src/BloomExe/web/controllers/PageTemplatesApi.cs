@@ -118,6 +118,7 @@ namespace Bloom.web.controllers
 			}
 
 			var pngpath = Path.ChangeExtension(localPath, "png");
+			bool mustRegenerate = false;
 
 			if (RobustFile.Exists(pngpath))
 			{
@@ -128,14 +129,23 @@ namespace Bloom.web.controllers
 				//If there is no svg, then we assume the we are using a generated image.
 				//If the book we want a thumbnail from is the one is the one we are currently editing,
 				//then the thumbnail we generated last time might not reflect how the page is laid out
-				//now. So in that case we ignore the existing png thumbnail.
-				//NB: even if we decide to give a refreshed image, it still won't be accurate,
-				//if the user just made a change; the page won't actually be saved yet, so the
-				//newly created thumbnail will not reflect the change. Ah well, we try.
-				if (!localPath.Replace("/","\\").Contains(_bookSelection.CurrentSelection.FolderPath.Replace("/","//")))
+				//now. So in that case we ignore the existing png thumbnail (and any cached version
+				//of it we previously saved) and make a new one. Bloom saves the current page
+				//before invoking AddPage, so the file contains the right content for making the new one.
+				var testLocalPath = localPath.Replace("/", "\\");
+				var testFolderPath = _bookSelection.CurrentSelection.FolderPath.Replace("/", "\\");
+				if (Platform.IsWindows)
+				{
+					// Not a formality, since localPath comes from GetBookTemplatePaths and has been
+					// forced to LC on Windows, while the book's FolderPath has not.
+					testLocalPath = testLocalPath.ToLowerInvariant();
+					testFolderPath = testFolderPath.ToLowerInvariant();
+				}
+				if (!testLocalPath.Contains(testFolderPath))
 				{
 					return pngpath;
 				}
+				mustRegenerate = true; // prevent thumbnailer using cached (obsolete) image
 			}
 
 			// We don't have an image, or we want to make a fresh one
@@ -156,7 +166,7 @@ namespace Bloom.web.controllers
 			if (templatePage == null)
 				templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape);
+			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape, mustRegenerate);
 
 			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
 			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this

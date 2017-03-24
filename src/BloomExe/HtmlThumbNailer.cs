@@ -95,6 +95,7 @@ namespace Bloom
 			public int Width = 70;
 			public int Height = DefaultHeight;
 			public string FileName = "thumbnail.png";
+			public bool MustRegenerate = false; // true if a cached image may not be returned.
 		}
 
 
@@ -114,7 +115,7 @@ namespace Bloom
 			lock (this)
 			{
 				//In our cache?
-				if (!String.IsNullOrWhiteSpace(key) && _images.TryGetValue(key, out image))
+				if (!options.MustRegenerate && !String.IsNullOrWhiteSpace(key) && _images.TryGetValue(key, out image))
 				{
 					Debug.WriteLine("Thumbnail Cache HIT: "+ key + " thread=" + Thread.CurrentThread.ManagedThreadId);
 					return image;

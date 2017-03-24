@@ -21,7 +21,7 @@ $(window).ready(() => {
         });
 });
 
-// latest version of the expected JSON initialization string (from EditingModel.GetTemplateBookInfo)
+// latest version of the expected JSON initialization string (from PageTemplatesApi.HandleTemplatesRequest)
 // "{\"defaultPageToSelect\":\"(guid of template page)\",
 //   \"orientation\":\"landscape\",
 //   \"groups\":[{\"templateBookFolderUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book\",
