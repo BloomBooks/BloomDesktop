@@ -348,37 +348,6 @@ export default class StyleEditor {
         return <CSSStyleRule>ruleList[ruleList.length - 1]; //new guy is last
     }
 
-    // Remove all evidence of 'styleName' from the userModifiedStyles stylesheet,
-    // including "styleName-style[lang='xx']" and "styleName-style p" rules.
-    DeleteAllRulesForStyle(styleName: string) {
-        var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
-        if (styleSheet == null) {
-            return; // safety net; shouldn't happen
-        }
-
-        var ruleList: CSSRuleList = styleSheet.cssRules;
-        if (ruleList == null) {
-            return; // nothing to do
-        }
-
-        // we'll go backwards through the list of rules to avoid messing up our loop
-        // when we delete rules
-        for (var i = ruleList.length - 1; i > -1; i--) {
-            var trimmedCss = ruleList[i].cssText.trim();
-            var index = trimmedCss.indexOf('-style');
-            if (index === -1) {
-                styleSheet.deleteRule(i); // in case we've discovered a book that had BL-4266
-                continue;
-            }
-            // We want any rule whose base style name matches our incoming parameter.
-            // The substring strips off the initial period and everything after (and including) '-style' leaving the base style name.
-            var match = trimmedCss.substring(1, index).toLowerCase();
-            if (match === styleName.toLowerCase()) {
-                styleSheet.deleteRule(i);
-            }
-        }
-    }
-
     // Replaces a style in 'sheet' at the specified 'index' with a (presumably) modified style.
     ReplaceExistingStyle(sheet: CSSStyleSheet, index: number, newStyle: string): void {
         sheet.deleteRule(index);
@@ -780,11 +749,6 @@ export default class StyleEditor {
                             (<any>$('#style-select-input').get(0)).trimNotification = function () {
                                 editor.styleStateChange('invalid-characters');
                             };
-                            $('#reset-style').click(function (event) {
-                                event.preventDefault();
-                                editor.resetStyle();
-                                return false;
-                            });
                             $('#show-createStyle').click(function (event) {
                                 event.preventDefault();
                                 editor.showCreateStyle();
@@ -888,17 +852,6 @@ export default class StyleEditor {
         this.styleStateChange('enteringStyle');
         $('#style-select-input').focus();
         return false; // prevent default click
-    }
-
-    resetStyle() {
-        var currentStyle = $('#styleSelect').val(); // the selected styleName w/o "-style"
-
-        this.DeleteAllRulesForStyle(currentStyle);
-
-        this.styleStateChange('initial');
-
-        // Now update all the controls to reflect the effect of resetting this style.
-        this.UpdateControlsToReflectAppliedStyle();
     }
 
     buttonClick(buttonDiv) {
