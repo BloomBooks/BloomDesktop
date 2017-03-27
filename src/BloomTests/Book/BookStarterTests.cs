@@ -78,6 +78,22 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(path).HasNoMatchForXpath("//div[@id='bloomDataDiv' and @data-book='ISBN']");
 			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//div[@data-book='ISBN' and not(text())]");
 		}
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalSpecifiesXMatter_CopyDoesNotSpecifyXMatter()
+		{
+			var extraHeadMaterial = @"<meta name='xmatter' content='TemplateStarter'/>";
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder("", extraHeadMaterial: extraHeadMaterial), _projectFolder.Path));
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='xmatter']", 0);
+		}
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalSpecifiesXMatterForChildren_CopyGetsThatXMatterName()
+		{
+			var extraHeadMaterial = @"<meta name='xmatter-for-children' content='TemplateStarter'/>";
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder("", extraHeadMaterial: extraHeadMaterial), _projectFolder.Path));
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='xmatter' and @content='TemplateStarter']", 1);
+			// but then this should not pass on to grandchildren
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='xmatter-for-children']", 0);
+		}
 
 		//regression
 		[Test]
@@ -686,14 +702,15 @@ namespace BloomTests.Book
 						   );
 		}
 
-		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks, string lineageName = null, bool includeJson = true)
+		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks=null, string lineageName = null, bool includeJson = true, string extraHeadMaterial = "")
 		{
-			var lineage = "";
+			var lineageMeta = "";
 			if (lineageName != null)
-				lineage = @"<meta name='" + lineageName + "' content='first,second' />";
-			var idString = "";
+				lineageMeta = @"<meta name='" + lineageName + "' content='first,second' />";
+			var bookIdMeta = "";
 			if (!includeJson)
-				idString = @"<meta name='bloomBookId' content='thisNewGuy' />";
+				bookIdMeta = @"<meta name='bloomBookId' content='thisNewGuy' />";
+
 			var content = String.Format(
 				@"<?xml version='1.0' encoding='utf-8' ?>
 				<!DOCTYPE html>
@@ -702,9 +719,10 @@ namespace BloomTests.Book
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
 					{0}
 					{1}
+					{2}
 					<title>Test Shell</title>
 					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
-					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />", lineage, idString);
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />", lineageMeta, bookIdMeta, extraHeadMaterial);
 			if(!string.IsNullOrEmpty(defaultNameForDerivedBooks))
 			{
 				content += @"<meta name='defaultNameForDerivedBooks' content='"+defaultNameForDerivedBooks+"'/>";

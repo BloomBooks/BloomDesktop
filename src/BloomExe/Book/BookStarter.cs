@@ -139,10 +139,12 @@ namespace Bloom.Book
 
 			//Note that we do this *before* injecting frontmatter, which is more likely to have a good reason for having English
 			//Useful for things like Primers. Note that Lorem Ipsum and prefixing all text with "_" also work.
-//			if ("true"==GetMetaValue(storage.Dom.RawDom, "removeTranslationsWhenMakingNewBook", "false"))
-//			{
-//				ClearAwayAllTranslations(storage.Dom.RawDom);
-//			}
+			//			if ("true"==GetMetaValue(storage.Dom.RawDom, "removeTranslationsWhenMakingNewBook", "false"))
+			//			{
+			//				ClearAwayAllTranslations(storage.Dom.RawDom);
+			//			}
+
+			ProcessXMatterMetaTags(storage);
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
@@ -176,6 +178,26 @@ namespace Bloom.Book
 			//REVIEW this actually undoes the setting of the initial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
+		}
+
+		/// <summary>
+		/// TemplateStarter intentionally makes its children (user's custom templates) have a special xmatter.
+		/// But books creates with those custom templates should just use whatever xmatter normal books use,
+		/// at least until we allow users to choose different ones, or allow template makers to specify which
+		/// xmatter children should use.
+		/// </summary>
+		private static void ProcessXMatterMetaTags(BookStorage storage)
+		{
+			// Don't copy the parent's xmatter if they specify it
+			storage.Dom.RemoveMetaElement("xmatter");
+
+			// But if the parent says what children should use, then use that.
+			if(storage.Dom.HasMetaElement("xmatter-for-children"))
+			{
+				storage.Dom.UpdateMetaElement("xmatter", storage.Dom.GetMetaValue("xmatter-for-children", ""));
+			}
+			// Children, but not grand-children. So we remove this so the next generation doesn't see it.
+			storage.Dom.RemoveMetaElement("xmatter-for-children");
 		}
 
 		private void SetLineageAndId(BookStorage storage, string sourceFolderPath)
