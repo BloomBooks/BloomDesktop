@@ -32,7 +32,7 @@ namespace Bloom.Collection
 	public class CollectionSettings
 	{
 		private const int kCurrentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
-
+		public const string kDefaultXmatterName = "Traditional";
 		private string _language1Iso639Code;
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
@@ -52,7 +52,7 @@ namespace Bloom.Collection
 		{
 			BrandingProjectName = "Default";
 			PageNumberStyle = "Decimal";
-			XMatterPackName = "Traditional";
+			XMatterPackName = kDefaultXmatterName;
 			Language2Iso639Code = "en";
 			AllowNewBooks = true;
 			CollectionName = "dummy collection";
@@ -717,6 +717,24 @@ namespace Bloom.Collection
 		public IEnumerable<string> LicenseDescriptionLanguagePriorities
 		{
 			get { return new[] { Language1Iso639Code, Language2Iso639Code, Language3Iso639Code, "en" }; }
+		}
+
+		/// <summary>
+		/// The collection settings point to object which might not exist. For example, the xmatter pack might not exist.
+		/// So this should be called as soon as it is ok to show some UI. It will find any dependencies it can't meet,
+		/// revert them to defaults, and notify the user.
+		/// </summary>
+		public void CheckAndFixDependencies(BloomFileLocator bloomFileLocator)
+		{
+			var errorTemplate = LocalizationManager.GetString("Errors.XMatterNotFound",
+					"This Collection called for Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The collection has been changed to use the default Front/Back Matter pages.");
+			var errorMessage = String.Format(errorTemplate, XMatterPackName);
+			XMatterPackName = XMatterHelper.MigrateXMatterName(XMatterPackName);
+			if(string.IsNullOrEmpty(XMatterHelper.GetXMatterDirectory(XMatterPackName, bloomFileLocator, errorMessage, false)))
+			{
+				this.XMatterPackName = kDefaultXmatterName;
+				Save();
+			}
 		}
 	}
 }

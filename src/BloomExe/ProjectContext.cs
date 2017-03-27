@@ -44,6 +44,8 @@ namespace Bloom
 			SettingsPath = projectSettingsPath;
 			BuildSubContainerForThisProject(projectSettingsPath, parentContainer);
 
+			_scope.Resolve<CollectionSettings>().CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
+
 			ProjectWindow = _scope.Resolve <Shell>();
 
 			string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);

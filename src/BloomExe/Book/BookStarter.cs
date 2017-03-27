@@ -362,11 +362,7 @@ namespace Bloom.Book
 				data.WritingSystemAliases.Add("N1", _collectionSettings.Language2Iso639Code);
 				data.WritingSystemAliases.Add("N2", _collectionSettings.Language3Iso639Code);
 
-
-				//by default, this comes from the collection, but the book can select one, inclucing "null" to select the factory-supplied empty xmatter
-				var xmatterName = storage.Dom.GetMetaValue("xmatter", _collectionSettings.XMatterPackName);
-
-				var helper = new XMatterHelper(storage.Dom, xmatterName, _fileLocator);
+				var helper = new XMatterHelper(storage.Dom, _collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation);
 				//TranslationGroupManager.PrepareDataBookTranslationGroups(storage.Dom,languages);

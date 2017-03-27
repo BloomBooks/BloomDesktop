@@ -191,7 +191,7 @@ namespace BloomTests.Book
 			XMatterHelper helper1;
 			if (xmatterBook.Contains("DoesNotExist"))
 			{
-				using (new SIL.Reporting.ErrorReport.NonFatalErrorReportExpected())
+				using (new NonFatalProblem.ExpectedByUnitTest())
 				{
 					helper1 = new XMatterHelper(dom1, "Factory", fileLocator);
 				}
