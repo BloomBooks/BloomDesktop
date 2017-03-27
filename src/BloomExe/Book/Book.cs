@@ -952,9 +952,7 @@ namespace Bloom.Book
 
 		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
 		{
-			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
-			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
-			nameOfXMatterPack = Storage.HandleRetiredXMatterPacks(OurHtmlDom, nameOfXMatterPack);
+			var nameOfXMatterPack = Storage.HandleRetiredXMatterPacks(OurHtmlDom, _collectionSettings.XMatterPackName);
 			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
 			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
 			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.

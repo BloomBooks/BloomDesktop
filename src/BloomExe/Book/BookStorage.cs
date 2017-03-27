@@ -802,10 +802,11 @@ namespace Bloom.Book
 				}
 
 				Dom.UpdatePageDivs();
-
-				UpdateSupportFiles();
-
-				CleanupUnusedImageFiles();
+				if(forSelectedBook)
+				{
+					UpdateSupportFiles();
+					CleanupUnusedImageFiles();
+				}
 			}
 		}
 
@@ -858,9 +859,7 @@ namespace Bloom.Book
 				}
 			}
 
-			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
-			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
-			nameOfXMatterPack = HandleRetiredXMatterPacks(_dom, nameOfXMatterPack);
+			var nameOfXMatterPack = HandleRetiredXMatterPacks(_dom, _collectionSettings.XMatterPackName);
 
 			try
 			{
@@ -990,8 +989,7 @@ namespace Bloom.Book
 			//clear out any old ones
 			_dom.RemoveXMatterStyleSheets();
 
-			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
-			nameOfXMatterPack = HandleRetiredXMatterPacks(dom, nameOfXMatterPack);
+			var nameOfXMatterPack = HandleRetiredXMatterPacks(dom, _collectionSettings.XMatterPackName);
 			var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
 
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation));
