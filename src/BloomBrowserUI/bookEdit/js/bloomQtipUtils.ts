@@ -60,4 +60,13 @@ export default class bloomQtipUtils {
         // Later note: using a real button just absorbs the click event. Other things work better
         //   http://stackoverflow.com/questions/10317128/how-to-make-a-div-contenteditable-and-draggable
     }
+
+    // In editing most (if not all) of the qtips need to be contained by a special div that handles
+    // the zooming (scaling) of the page content.  If they are not contained by this div, 1) they don't
+    // zoom/scale and 2) they appear on the screen in the same location as if the page content they are
+    // supposed to attach to isn't zoomed/scaled.  If they are attached further in than this special
+    // div, then the bubble is squeezed to fit inside the inner zoomed area.
+    public static qtipZoomContainer(): JQuery {
+        return $("div#page-scaling-container");
+    }
 }

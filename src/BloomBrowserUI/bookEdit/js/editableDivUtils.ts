@@ -117,6 +117,17 @@ export class EditableDivUtils {
         }
     }
 
+    // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
+    static getPageScale(): number {
+        var scale = 1.0;
+        var styleString = $("div#page-scaling-container").attr("style");
+        var searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
+        if (searchData) {
+            scale = parseFloat(searchData[1]);
+        }
+        return scale;
+    }
+
     static adjustDraggableOptionsForScaleBug(dialogBox: JQuery, scale: number) {
         dialogBox.draggable({
             // BL-4293 the 'start' and 'drag' functions here work around a known bug in jqueryui.

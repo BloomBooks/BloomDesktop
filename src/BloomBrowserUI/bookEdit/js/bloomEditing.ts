@@ -22,6 +22,7 @@ import "long-press/jquery.longpress.js"
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getToolboxFrameExports } from "./bloomFrames";
+import { EditableDivUtils } from './editableDivUtils';
 
 
 //promise may be needed to run tests with phantomjs
@@ -655,17 +656,14 @@ export function bootstrap() {
         // reviewSlog does this application work?
         if (!theEvent.ctrlKey) return;
         // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
-        var styleString = $("body").attr("style");
-        var scale = 1.0;
-        var searchData = /scale\(([^,]*),/.exec(styleString);
-        if (searchData) {
-            scale = parseFloat(searchData[1]);
-        }
+        var scale = EditableDivUtils.getPageScale();
         // Dividing by 20 seems to make it zoom at a manageable rate, at least with my mouse.
         // The limitation to zooming between 1/3 and 3 times is arbitrary.
         scale = Math.min(Math.max(scale - theEvent.deltaY / 20, 0.33), 3.0);
-        // This works with a rule in editMode.less that makes the transform's origin the top left
-        $("body").attr("style", "transform: scale(" + scale + "," + scale + ")");
+        $("div#page-scaling-container").attr("style", "transform: scale(" + scale + "); transform-origin: top left;");
+        // Setting this style is all we want to do in this context.
+        e.preventDefault();
+        e.cancelBubble = true;
     });
 
     /* reviewSlog typescript just couldn't cope with this. Our browser has this built in , so it's ok

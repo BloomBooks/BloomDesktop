@@ -35,5 +35,5 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
 export function handleResetZoom(clickedButton: any) {
     var pageDom = <HTMLIFrameElement>parent.window.document.getElementById('page');
     var pageBody = $(pageDom.contentWindow.document.body);
-    $(pageBody).css('transform', 'scale(' + 1.0 + ',' + 1.0 + ')');
+    $(pageBody).find("div#page-scaling-container").css('transform', 'scale(1.0)');
 }
