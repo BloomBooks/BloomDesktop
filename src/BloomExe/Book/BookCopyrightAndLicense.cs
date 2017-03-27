@@ -3,7 +3,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using Bloom.Api;
 using Bloom.Collection;
 using L10NSharp;
@@ -40,7 +39,7 @@ namespace Bloom.Book
 			var copyright = dom.GetBookSetting("copyright");
 			if (!copyright.Empty)
 			{
-				metadata.CopyrightNotice = WebUtility.HtmlDecode(copyright.GetFirstAlternative());
+				metadata.CopyrightNotice = WebUtility.HtmlDecode(copyright.GetBestAlternativeString(new[] { "*", "en" }));
 			}
 
 			var licenseUrl = dom.GetBookSetting("licenseUrl").GetBestAlternativeString(new[] { "*", "en" });
@@ -125,8 +124,10 @@ namespace Bloom.Book
 		/// </summary>
 		public static void SetMetadata(Metadata metadata, HtmlDom dom, string bookFolderPath, CollectionSettings collectionSettings)
 		{
-			dom.SetBookSetting("copyright","*",metadata.CopyrightNotice);
-			dom.SetBookSetting("licenseUrl","*",metadata.License.Url);
+			dom.SetBookSetting("copyright", "*", metadata.CopyrightNotice);
+			// This allows Credit-Page-style styles to actually apply to the displayed copyright
+			dom.SetBookSetting("copyright", collectionSettings.Language2Iso639Code, metadata.CopyrightNotice);
+			dom.SetBookSetting("licenseUrl", "*", metadata.License.Url);
 			// This is for backwards compatibility. The book may have  licenseUrl in 'en' created by an earlier version of Bloom.
 			// For backwards compatibiilty, GetMetaData will read that if it doesn't find a '*' license first. So now that we're
 			// setting a licenseUrl for '*', we must make sure the 'en' one is gone, because if we're setting a non-CC license,
@@ -173,7 +174,8 @@ namespace Bloom.Book
 		/// <remarks>This is "internal" just as a convention, that it is accessible for testing purposes only</remarks>
 		internal static void UpdateDomFromDataDiv(HtmlDom dom, string bookFolderPath, CollectionSettings collectionSettings)
 		{
-			CopyItemToFieldsInPages(dom, "copyright");
+			// Adding L2(N1) as first preference allows Credit-Page-style styles to actually apply to the displayed copyright 
+			CopyItemToFieldsInPages(dom, "copyright", languagePreferences: new string[] {collectionSettings.Language2Iso639Code, "*", "en"});
 			CopyItemToFieldsInPages(dom, "licenseUrl");
 			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:collectionSettings.LicenseDescriptionLanguagePriorities.ToArray());
 			CopyItemToFieldsInPages(dom, "licenseNotes");
