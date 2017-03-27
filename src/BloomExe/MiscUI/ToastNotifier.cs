@@ -157,6 +157,11 @@ namespace Bloom.MiscUI
 
 		private void ToastNotifier_Click(object sender, EventArgs e)
 		{
+			// Certain scenarios (like clicking to bring up a yellow screen) need these lines else the yellow screen
+			// is closed by a close-this-dialog either already on the stack or about to be added by GoDownTimerTick.
+			_goDownTimer.Tick -= GoDownTimerTick; //_goDownTimer.Stop() didn't work for some reason
+			Application.Idle -= CloseThisCalledFromIdle;
+
 			EventHandler handler = ToastClicked;
 			ToastClicked = null;	// handle only one click message. (Linux posts two if link clicked, one for Toast window in general.)
 			if (handler != null)
