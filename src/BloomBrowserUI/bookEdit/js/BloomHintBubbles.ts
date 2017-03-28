@@ -120,12 +120,12 @@ export default class BloomHintBubbles {
             return;
         }
         if (this.wantHelpBubbleOnGroup(groupElement)) {
-            let whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSaySource, groupElement);
+            let whatToSay = theOneLocalizationManager.insertLangIntoHint(whatToSaySource, groupElement);
             this.makeHintBubbleCore(groupElement, whatToSay, !whatToSay.startsWith("*")); // should we support * here?
         }
         else {
             children.each((i, target) => {
-                let whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSaySource, $(target));
+                let whatToSay = theOneLocalizationManager.insertLangIntoHint(whatToSaySource, $(target));
                 this.makeHintBubbleCore($(target), whatToSay, !whatToSay.startsWith("*")); // should we support * here?
             })
         }
@@ -162,24 +162,22 @@ export default class BloomHintBubbles {
             }
             var bestSourceIndex = 0; // use first source if no langs match or there is only one
             var bestLangIndex = preferredLangs.length; // pretend the best lang we found is beyond end
-            if (source.length > 1) {
-                for (var i = 0; i < source.length; i++) {
-                    var item = source.eq(i);
-                    var lang = item.attr('lang');
-                    if (!lang) {
-                        continue;
-                    }
-                    // Found at least one source with a lang attr. Assume any localization of this
-                    // bubble is embedded in the document, and don't look in Bloom resources.
-                    doNotLocalize = true;
-                    var index = preferredLangs.indexOf(lang);
-                    if (index === -1) {
-                        index = preferredLangs.length;
-                    }
-                    if (index < bestLangIndex) { // best yet
-                        bestSourceIndex = i;
-                        bestLangIndex = index;
-                    }
+            for (var i = 0; i < source.length; i++) {
+                var item = source.eq(i);
+                var lang = item.attr('lang');
+                if (!lang) {
+                    continue;
+                }
+                // Found at least one source with a lang attr. Assume any localization of this
+                // bubble is embedded in the document, and don't look in Bloom resources.
+                doNotLocalize = true;
+                var index = preferredLangs.indexOf(lang);
+                if (index === -1) {
+                    index = preferredLangs.length;
+                }
+                if (index < bestLangIndex) { // best yet
+                    bestSourceIndex = i;
+                    bestLangIndex = index;
                 }
             }
             whatToSay = source.eq(bestSourceIndex).text();

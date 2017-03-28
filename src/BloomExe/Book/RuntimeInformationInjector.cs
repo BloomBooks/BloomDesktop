@@ -177,6 +177,8 @@ namespace Bloom.Book
 				"You may use this space for author/illustrator, or anything else.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalContributorsPrompt",
 				"The contributions made by writers, illustrators, editors, etc., in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CreditTranslator",
+				"Credit the translator, in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.PasteImageCreditsLink",
 				"Paste Image Credits");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.PasteMissingCredits",
