@@ -2527,7 +2527,7 @@
         <seg>There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</seg>
       </tuv>
     </tu>
-    <tu tuid="Errors.HelpFilePermissions">
+    <tu tuid="Errors.FilePermissionsHelp">
 		<note>Shown following Errors.DeniedAccess. {0} will be a URL.</note>
 		<tuv xml:lang="en">
         <seg>See {0} for one way to fix this.</seg>
