@@ -1577,6 +1577,13 @@
         <seg>Book title in {lang}</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FrontMatter.CreditTranslator">
+      <prop type="x-dynamic">true</prop>
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <tuv xml:lang="en">
+        <seg>Credit the translator, in {lang}</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -4497,6 +4504,13 @@ Do you want to go ahead?</seg>
         <seg>9</seg>
       </tuv>
     </tu>
+    <tu tuid="TemplateBooks.PageLabel.About">
+      <prop type="x-dynamic">true</prop>
+      <note>Caption of 2nd page in books made from Template Starter</note>
+        <tuv xml:lang="en">
+        <seg>About</seg>
+      </tuv>
+    </tu>
     <tu tuid="TemplateBooks.PageLabel.Alphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -4585,6 +4599,13 @@ Do you want to go ahead?</seg>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Front/Back Matter</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Image For Thumbnail">
+      <prop type="x-dynamic">true</prop>
+	  <note>Caption of first page in books made from Template Starter</note>
+        <tuv xml:lang="en">
+        <seg>Image For Thumbnail</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
