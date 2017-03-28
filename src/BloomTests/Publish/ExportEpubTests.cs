@@ -86,7 +86,7 @@ namespace BloomTests.Publish
 		/// <param name="text"></param>
 		/// <param name="lang"></param>
 		/// <param name="extraContent"></param>
-		/// <param name="extraImages"></param>
+		/// <param name="extraContentOutsideTranslationGroup"></param>
 		/// <param name="extraStyleSheet"></param>
 		/// <param name="extraPages"></param>
 		/// <param name="images"></param>
@@ -94,7 +94,7 @@ namespace BloomTests.Publish
 		/// <param name="extraEditDivClasses"></param>
 		/// <param name="parentDivId"></param>
 		/// <returns></returns>
-		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraImages = "",
+		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraContentOutsideTranslationGroup = "",
 			string extraStyleSheet= "", string parentDivId = "somewrapper", string extraPages="", string[] images = null,
 			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto")
 		{
@@ -117,7 +117,7 @@ namespace BloomTests.Publish
 						</div>
 					</div>
 					{5}",
-				lang, text, extraContent, imageDivs, extraImages, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
+				lang, text, extraContent, imageDivs, extraContentOutsideTranslationGroup, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
 			SetDom(body,
 				string.Format(@"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
 							{0}
@@ -397,7 +397,7 @@ namespace BloomTests.Publish
 		public void ImageMissing_IsRemoved()
 		{
 			var book = SetupBookLong("This is some text", "en",
-				extraImages: @"<div><img></img></div>
+				extraContentOutsideTranslationGroup: @"<div><img></img></div>
 							<div><img src=''></img></div>
 							<div><img src='?1023456'></img></div>",
 				images:new [] {"myImage.png?1023456"});
@@ -590,6 +590,73 @@ namespace BloomTests.Publish
 			}
 		}
 
+		/// <summary>
+		/// Content whose display properties resolves to display:none should be removed.
+		/// </summary>
+		[Test]
+		public void InCreditsPage_LicenseUrlAndISBN_AreRemoved()
+		{
+			// This test does some real navigation so needs the server to be running.
+			using (GetTestServer())
+			{
+				// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
+				var book = SetupBookLong("License url and ISBN should be removed from the epub", "en",
+					extraPageClass: " bloom-frontMatter credits",
+					extraContentOutsideTranslationGroup:
+						@"<div class=""bloom-metaData licenseAndCopyrightBlock"" data-functiononhintclick=""bookMetadataEditor"" data-hint=""Click to Edit Copyright &amp; License"">
+							<div class=""copyright Credits-Page-style"" data-derived=""copyright"" lang=""*"">
+								Copyright © 2017, me
+							</div>
+							<div class=""licenseBlock"">
+								<img class=""licenseImage"" src=""license.png"" data-derived=""licenseImage""></img>
+								<div class=""licenseUrl"" data-derived=""licenseUrl"" lang=""*"">
+									http://creativecommons.org/licenses/by/4.0/
+								</div>
+								<div class=""licenseDescription Credits-Page-style"" data-derived=""licenseDescription"" lang=""en"">
+									http://creativecommons.org/licenses/by/4.0/<br></br>
+									You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
+								</div>
+								<div class=""licenseNotes Credits-Page-style"" data-derived=""licenseNotes""></div>
+							</div>
+						</div>
+						<div class=""ISBNContainer"" data-hint=""International Standard Book Number. Leave blank if you don't have one of these."">
+							<span class=""bloom-doNotPublishIfParentOtherwiseEmpty Credits-Page-style"">ISBN</span>
+							<div class=""bloom-translationGroup"" data-default-languages=""*"">
+								<div role=""textbox"" spellcheck=""true"" tabindex=""0"" class=""bloom-editable Credits-Page-style cke_editable cke_editable_inline cke_contents_ltr bloom-content1"" data-book=""ISBN"" contenteditable=""true"" lang=""enc"">
+									<p></p>
+								</div>
+								<div class=""bloom-editable Credits-Page-style"" data-book=""ISBN"" contenteditable=""true"" lang=""*"">
+									ABCDEFG
+								</div>
+								<div role=""textbox"" spellcheck=""true"" tabindex=""0"" class=""bloom-editable Credits-Page-style cke_editable cke_editable_inline cke_contents_ltr bloom-contentNational1"" data-book=""ISBN"" contenteditable=""true"" lang=""en"">
+									<p></p>
+								</div>
+							</div>
+						</div>",
+					extraStyleSheet: "<link rel='stylesheet' href='baseEPUB.css' type='text/css'/>");
+
+				MakeImageFiles(book, "license");
+
+				// Set up the visibility classes correctly
+				book.UpdateEditableAreasOfElement(book.OurHtmlDom);
+
+				MakeEpub("output", "InCreditsPage_LicenseUrlAndISBN_AreRemoved", book);
+				CheckBasicsInManifest();
+				CheckBasicsInPage();
+				//Thread.Sleep(20000);
+
+				//Console.WriteLine(XElement.Parse(_page1Data).ToString());
+
+				var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='ISBNContainer']", _ns);
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='licenseUrl']", _ns);
+				assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'licenseDescription')]", 1);
+				assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//img[@class='licenseImage']", 1);
+				// These temp Ids are added and removed during the creation process
+				assertThatPage1.HasNoMatchForXpath("//xhtml:div[contains(@id, '" + EpubMaker.kTempIdMarker + "')]", _ns);
+			}
+		}
+
 		[Test]
 		public void FindFontsUsedInCss_FindsSimpleFontFamily()
 		{
@@ -680,7 +747,7 @@ namespace BloomTests.Publish
 		{
 			var book = SetupBookLong("This is some text", "en",
 				extraPageClass: " " + sizeClass,
-				extraImages: @"<div><img src='image1.png' width='334' height='220' style='width:334px; height:220px; margin-left: 34px; margin-top: 0px;'></img></div>
+				extraContentOutsideTranslationGroup: @"<div><img src='image1.png' width='334' height='220' style='width:334px; height:220px; margin-left: 34px; margin-top: 0px;'></img></div>
 							<div><img src='image2.png' width='330' height='220' style='width:330px; height: 220px; margin-left: 33px; margin-top: 0px;'></img></div>");
 			MakeImageFiles(book, "image1", "image2");
 			MakeEpub("output", "ImageStyles_ConvertedToPercent" + sizeClass, book);
@@ -715,7 +782,7 @@ namespace BloomTests.Publish
 			// Second image triggers special cases for no width at all.
 			var book = SetupBookLong("This is some text", "en",
 				extraPageClass: " A5Portrait",
-				extraImages: @"<div><img src='image1.png' width='334' height='220' style='width:334px; margin-left: 34px; margin-top: 0px;'></img></div>
+				extraContentOutsideTranslationGroup: @"<div><img src='image1.png' width='334' height='220' style='width:334px; margin-left: 34px; margin-top: 0px;'></img></div>
 							<div><img src='image2.png' width='330' height='220' style='margin-top: 0px;'></img></div>");
 			MakeImageFiles(book, "image1", "image2");
 			MakeEpub("output", "ImageStyles_ConvertedToPercent_SpecialCases", book);
@@ -738,7 +805,7 @@ namespace BloomTests.Publish
 		{
 			var book = SetupBookLong("This is some text", "en",
 				extraPageClass: " A5Portrait",
-				extraImages: @"<div id='anotherWrapper' style='width:80%'>
+				extraContentOutsideTranslationGroup: @"<div id='anotherWrapper' style='width:80%'>
 								<div id='innerrWrapper' style='width:50%'>
 									<div><img src='image1.png' width='40' height='220' style='width:40px; height:220px; margin-left: 14px; margin-top: 0px;'></img></div>
 								</div>

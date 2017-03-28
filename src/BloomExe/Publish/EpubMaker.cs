@@ -1,9 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -18,7 +17,6 @@ using NAudio.Wave;
 #endif
 using SIL.IO;
 using SIL.Progress;
-using SIL.Reporting;
 using SIL.Xml;
 
 namespace Bloom.Publish
@@ -838,7 +836,7 @@ namespace Bloom.Publish
 				// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
 				// browser figure out what is visible. So we can easily match elements in the browser DOM
 				// with the one we are manipulating, make sure they ALL have IDs.
-				EnsureEditableDivsHaveIds(pageElt);
+				EnsureAllDivsHaveIds(pageElt);
 				var normalDom = Book.GetHtmlDomWithJustOnePage(pageElt);
 				bool done = false;
 				var dummy = _browser.Handle; // gets WebBrowser created along with handle
@@ -852,38 +850,40 @@ namespace Bloom.Publish
 					Application.RaiseIdle(new EventArgs());		// needed on Linux to avoid deadlock starving browser navigation
 				}
 			}
-			// Remove bloom-editable material not in one of the interesting languages
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes(".//div").Cast<XmlElement>().ToArray())
+
+			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
 			{
-				if (!HasClass(elt, "bloom-editable"))
-					continue;
-				var langAttr = elt.Attributes["lang"];
-				var lang = langAttr == null ? null : langAttr.Value;
 				if (isXMatter)
 				{
-					var id = elt.Attributes["id"].Value;
-					var display = _browser.RunJavaScript("getComputedStyle(document.getElementById('" + id + "'), null).display");
-					if (display != "none")
+					if (IsDisplayed(elt))
 						continue; // keep it if not hidden.
+				}
+				else if (!HasClass(elt, "bloom-editable"))
+				{
+					continue;
 				}
 				else
 				{
+					// Remove bloom-editable material not in one of the interesting languages
+					var langAttr = elt.Attributes["lang"];
+					var lang = langAttr == null ? null : langAttr.Value;
 					// normal content page. What will be displayed here is predictable enough without
 					// the overhead of navigating a real browser to a real page.
 					if (lang == Book.MultilingualContentLanguage2 || lang == Book.MultilingualContentLanguage3 ||
-					lang == Book.CollectionSettings.Language1Iso639Code)
-					continue; // keep these
+						lang == Book.CollectionSettings.Language1Iso639Code)
+						continue; // keep these
 				}
 				elt.ParentNode.RemoveChild(elt);
 			}
+
 			// Remove any left-over bubbles
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//label").Cast<XmlElement>().ToArray())
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//label"))
 			{
 				if (HasClass(elt, "bubble"))
 					elt.ParentNode.RemoveChild(elt);
 			}
 			// Remove page labels and descriptions
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div").Cast<XmlElement>().ToArray())
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div"))
 			{
 				if (HasClass(elt, "pageLabel"))
 					elt.ParentNode.RemoveChild(elt);
@@ -891,7 +891,7 @@ namespace Bloom.Publish
 					elt.ParentNode.RemoveChild(elt);
 			}
 			// Our recordingmd5 attribute is not allowed
-			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//span[@recordingmd5]").Cast<XmlElement>())
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//span[@recordingmd5]"))
 			{
 				elt.RemoveAttribute("recordingmd5");
 			}
@@ -899,29 +899,30 @@ namespace Bloom.Publish
 				RemoveTempIds(pageElt); // don't need temporary IDs any more.
 		}
 
-		private const string tempIdMarker = "EpubTempIdXXYY";
+		private bool IsDisplayed(XmlElement elt)
+		{
+			var id = elt.Attributes["id"].Value;
+			var display = _browser.RunJavaScript("getComputedStyle(document.getElementById('" + id + "'), null).display");
+			return display != "none";
+		}
 
-		void EnsureEditableDivsHaveIds(XmlElement pageElt)
+		internal const string kTempIdMarker = "EpubTempIdXXYY";
+		private void EnsureAllDivsHaveIds(XmlElement pageElt)
 		{
 			int count = 1;
 			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
 			{
-				if (!HasClass(elt, "bloom-editable"))
-					continue;
 				if (elt.Attributes["id"] != null)
 					continue;
-				elt.SetAttribute("id", tempIdMarker + count++);
+				elt.SetAttribute("id", kTempIdMarker + count++);
 			}
 		}
 
 		void RemoveTempIds(XmlElement pageElt)
 		{
-			int count = 1;
 			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
 			{
-				if (!HasClass(elt, "bloom-editable"))
-					continue;
-				if (!elt.Attributes["id"].Value.StartsWith(tempIdMarker))
+				if (!elt.Attributes["id"].Value.StartsWith(kTempIdMarker))
 					continue;
 				elt.RemoveAttribute("id");
 			}
