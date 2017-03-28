@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1330,6 +1331,22 @@ namespace Bloom.Book
 				// Assume that they are going to change the name. Note as of 3.9 at least, we don't have a way of localizing these.
 				label.RemoveAttribute("data-i18n");
 			}
+		}
+
+		/// <summary>
+		/// Reads the Generator meta tag.
+		/// </summary>
+		/// <returns> the version if it can find it, else 0</returns>
+		public float GetGeneratorVersion()
+		{
+			var generator = GetMetaValue("Generator", "");
+			var match = Regex.Match(generator, "[0-9]+\\.[0-9]+");
+			float version;
+			if (match.Success && float.TryParse(match.Captures[0].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out version))
+			{
+				return version;
+			}
+			return 0;
 		}
 	}
 }

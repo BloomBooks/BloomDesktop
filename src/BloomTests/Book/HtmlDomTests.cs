@@ -63,6 +63,7 @@ namespace BloomTests.Book
 			Assert.AreEqual("new", dom.BaseForRelativePaths);
 		}
 
+
 		[Test]
 		public void RemoveMetaValue_IsThere_RemovesIt()
 		{
@@ -103,6 +104,16 @@ namespace BloomTests.Book
 			dom.LoadXml(@"<div class=''/>");
 			HtmlDom.AddClassIfMissing((XmlElement)dom.FirstChild, "two");
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='two']", 1);
+		}
+
+		[Test]
+		[TestCase(null, 0)]
+		[TestCase("Foobar 6 !", 0)]
+		[TestCase("Bloom Version 3.8.0 (apparent build date: 28-Mar-2017)", 3.8f)]
+		public void GetGeneratorVersion_Works(string value, float expected)
+		{
+			var dom = new HtmlDom($@"<html><head><meta name='Generator' content='{value}'></meta></head></html>");
+			Assert.AreEqual(expected, dom.GetGeneratorVersion());
 		}
 
 		[Test]
