@@ -59,6 +59,8 @@ namespace Bloom.Edit
 
 		readonly List<string> _activeStandardListeners = new List<string>();
 
+		internal const string PageScalingDivId = "page-scaling-container";
+
 		//public event EventHandler UpdatePageList;
 
 		public delegate EditingModel Factory();//autofac uses this
@@ -625,7 +627,7 @@ namespace Bloom.Edit
 		{
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			CheckForBL2364("setup");
-			SetPageZoom();
+			SetupPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			CheckForBL2364("made tags safe");
 			if (_currentPage != null)
@@ -643,14 +645,35 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// Set a style on the body of the main content page that will zoom it to the extent the user currently prefers.
+		/// Insert a div into the body that contains the .bloom-page div and set a style on this new div that will
+		/// zoom/scale the page content to the extent the user currently prefers.  This style cannot go on the body
+		/// element because that make popup dialogs (and their combo box dropdowns) display in the wrong location.
+		/// The style cannot go on the .bloom-page div itself because that makes hint bubbles squeeze to fit inside
+		/// the zoomed page display limits.
 		/// </summary>
-		private void SetPageZoom()
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4172.
+		/// </remarks>
+		private void SetupPageZoom()
 		{
-			var body = _domForCurrentPage.Body;
 			var pageZoom = Settings.Default.PageZoom ?? "1.0";
-			body.SetAttribute("style", string.Format("transform: scale({0},{0})", pageZoom));
-			CheckForBL2364("read page zoom");
+			var body = _domForCurrentPage.Body;
+			var pageDiv = body.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]") as XmlElement;
+			if (pageDiv != null)
+			{
+				var outerDiv = InsertContainingScalingDiv(body, pageDiv);
+				outerDiv.SetAttribute("style", string.Format("transform: scale({0}); transform-origin: left top;", pageZoom));
+			}
+			CheckForBL2364("set page zoom");
+		}
+
+		XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
+		{
+			var newDiv = body.OwnerDocument.CreateElement("div");
+			newDiv.SetAttribute("id", PageScalingDivId);
+			body.PrependChild(newDiv);
+			newDiv.AppendChild(pageDiv);
+			return newDiv;
 		}
 
 		/// <summary>
@@ -867,7 +890,7 @@ namespace Bloom.Edit
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
-					SavePageFrameState();
+					SavePageFrameStateAndCleanupFrame();
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
 					//this old code:
@@ -921,8 +944,14 @@ namespace Bloom.Edit
 		/// <summary>
 		/// Save anything we want to persist from page to page but which is not part of the book from the page's current state.
 		/// Currently this is just the zoom level.
+		/// Also cleanup any html inserted for the page by EditingModel code that we don't want to save.  Currently, this is
+		/// just the div inserted for handling zoom.  (See the comments on SetupPageZoom.)
 		/// </summary>
-		void SavePageFrameState()
+		/// <remarks>
+		/// Note that EditingView.CleanHtmlAndCopyToPageDom() and HtmlDom.ProcessPageAfterEditing() also remove various bits of
+		/// html from the document that we use during editing but don't want to save.
+		/// </remarks>
+		void SavePageFrameStateAndCleanupFrame()
 		{
 			var body = _view.GetPageBody();
 			Debug.Assert(body!=null, "(Debug Only) no body when doing SavePageFrameState()" );
@@ -930,20 +959,49 @@ namespace Bloom.Edit
 			// not worth crashing over a timing problem that means we don't save zoom state
 			if (body == null)
 				return; // BL-3075, not sure how this can happen but it has. Possibly the view is in some state like about:null which has no body.
-			var styleAttr = body.Attributes["style"];
 
-			if (styleAttr == null)
-				return;
-			var style = styleAttr.NodeValue;
-			var match = Regex.Match(style, "scale\\(([^,]*),");
-			if (!match.Success)
-				return;
-			var pageZoom = match.Groups[1].Value;
-			if (pageZoom != Settings.Default.PageZoom)
+			var pageDiv = body.FindFirstChildInTree<GeckoElement>(IsPageScalingDiv);
+			if (pageDiv == null)
+				return;		// shouldn't happen, but ignore.
+
+			var styleAttr = pageDiv.Attributes["style"];
+			if (styleAttr != null)
 			{
-				Settings.Default.PageZoom = pageZoom;
-				Settings.Default.Save();
+				var style = styleAttr.NodeValue;
+				var match = Regex.Match(style, "scale\\(([0-9.]*)");
+				if (match.Success)
+				{
+					var pageZoom = match.Groups[1].Value;
+					if (pageZoom != Settings.Default.PageZoom)
+					{
+						Settings.Default.PageZoom = pageZoom;
+						Settings.Default.Save();
+					}
+				}
 			}
+			RemoveContainingScalingDiv(body, pageDiv);
+		}
+
+		/// <summary>
+		/// Remove the div inserted for page zooming/scaling.  See the comment on SetupPageZoom.
+		/// </summary>
+		private void RemoveContainingScalingDiv(GeckoElement body, GeckoElement pageDiv)
+		{
+			body.InsertBefore(pageDiv.FirstChild, pageDiv);
+			body.RemoveChild(pageDiv);
+		}
+
+		/// <summary>
+		/// Test whether the given element is the div inserted for page zooming/scaling.
+		/// </summary>
+		private bool IsPageScalingDiv(GeckoElement e)
+		{
+			if (e.NodeName.ToLowerInvariant() != "div")
+				return false;
+			var idAttr = e.Attributes["id"];
+			if (idAttr == null)
+				return false;
+			return idAttr.NodeValue == PageScalingDivId;
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying

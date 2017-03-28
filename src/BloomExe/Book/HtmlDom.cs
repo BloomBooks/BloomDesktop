@@ -985,6 +985,9 @@ namespace Bloom.Book
 			// and then see whether it contains bloom-ui surrounded by spaces.
 			// However, we need to do this in the edited page before copying to the storage page, since we are about to suck
 			// info from the edited page into the dataDiv and we don't want the bloom-ui elements in there either!
+			// Note that EditingView.CleanHtmlAndCopyToPageDom() and EditingModel.SavePageFrameStateAndCleanupFrame() also remove bits
+			// of html that are used during editing but are not saved to disk.  (The first calls javascript to deal with items inserted
+			// by javascript, and the second removes items added by the EditingModel class.)
 			foreach(
 				var node in
 					edittedPageDiv.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())

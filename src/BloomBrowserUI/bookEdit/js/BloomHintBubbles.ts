@@ -232,7 +232,8 @@ export default class BloomHintBubbles {
             at: 'right center',
             my: 'left center',
             viewport: $(window),
-            adjust: { method: 'none' }
+            adjust: { method: 'none' },
+            container: bloomQtipUtils.qtipZoomContainer()
         };
 
         var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
