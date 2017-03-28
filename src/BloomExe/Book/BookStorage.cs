@@ -104,7 +104,7 @@ namespace Bloom.Book
 
 		public BookStorage(string folderPath, SIL.IO.IChangeableFileLocator baseFileLocator,
 						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
-			:this(folderPath, false, baseFileLocator, bookRenamedEvent, collectionSettings)
+			:this(folderPath, true, baseFileLocator, bookRenamedEvent, collectionSettings)
 		{ }
 
 		public BookStorage(string folderPath, bool forSelectedBook, SIL.IO.IChangeableFileLocator baseFileLocator,
@@ -801,11 +801,21 @@ namespace Bloom.Book
 					}
 				}
 
+				// probably not needed at runtime if !forSelectedBook, but one unit test relies on it having been done, and is very fast, so ok.
 				Dom.UpdatePageDivs();
 
-				UpdateSupportFiles();
-
-				CleanupUnusedImageFiles();
+				// If the book isn't selected, then we're just here to do minimal things, hopefully quick things, to 
+				// show the title and thumbnail. Of course anything we *don't* do could effect the thumbnail. But
+				// let's wait and deal with that if it seems like a real problem. At the moment it seems to me that
+				// having to select the book to gets its thumbnail updated is a small price to pay.
+				// In particular, things can go wrong when doing UpdateSupportFiles() because the book may call for
+				// xmatter that this user doesn't have installed; when we're just showing all the thumbnails as quickly
+				// as we can, that's really the wrong time to be putting up errors about the xmatter of particular books.
+				if (forSelectedBook)
+				{
+					UpdateSupportFiles();
+					CleanupUnusedImageFiles();
+				}
 			}
 		}
 
@@ -875,13 +885,15 @@ namespace Bloom.Book
 			}
 
 			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
-			var nameOfXMatterPack = _collectionSettings.XMatterPackName;
-			nameOfXMatterPack = HandleRetiredXMatterPacks(_dom, nameOfXMatterPack);
+			var nameOfCollectionXMatterPack = _collectionSettings.XMatterPackName;
+			nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(_dom, nameOfCollectionXMatterPack);
 
 			try
 			{
-				var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
-				Update(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
+				//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
+				//specifies a different one, it will come back with that (if it can be found).
+				var helper = new XMatterHelper(_dom, nameOfCollectionXMatterPack, _fileLocator);
+				Update(Path.GetFileName(helper.PathToXMatterStylesheet), helper.PathToXMatterStylesheet);
 			}
 			catch (Exception error)
 			{
@@ -1006,11 +1018,9 @@ namespace Bloom.Book
 			//clear out any old ones
 			_dom.RemoveXMatterStyleSheets();
 
-			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
-			nameOfXMatterPack = HandleRetiredXMatterPacks(dom, nameOfXMatterPack);
-			var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
+			var helper = new XMatterHelper(_dom, this._collectionSettings.XMatterPackName, _fileLocator);
 
-			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation));
+			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToXMatterStylesheet));
 
 			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
 			// where it should definitely be forward slash. And it works fine in a Windows path too.
@@ -1030,15 +1040,12 @@ namespace Bloom.Book
 
 		public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)
 		{
-			// Bloom 3.7 retired the BigBook xmatter pack.
-			// If we ever create another xmatter pack called BigBook (or rename the Factory pack) we'll need to redo this.
-			string[] retiredPacks = { "BigBook" };
-			const string xmatterSuffix = "-XMatter.css";
+			var currentXmatterName = XMatterHelper.MigrateXMatterName(nameOfXMatterPack);
 
-			if (retiredPacks.Contains(nameOfXMatterPack))
+			if(currentXmatterName != nameOfXMatterPack)
 			{
+				const string xmatterSuffix = "-XMatter.css";
 				EnsureDoesntHaveLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
-				nameOfXMatterPack = "Factory";
 				EnsureHasLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
 				// Since HtmlDom.GetMetaValue() is always called with the collection's xmatter pack as default,
 				// we can just remove this wrong meta element.

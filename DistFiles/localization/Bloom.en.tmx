@@ -2556,6 +2556,17 @@
         <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</seg>
       </tuv>
     </tu>
+    <tu tuid="Errors.XMatterProblemLabel">
+      <note>This shows in the 'toast' that pops up to notify the user of a non-fatal problem.</note>
+      <tuv xml:lang="en">
+        <seg>Front/Back Matter Problem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.XMatterSpecifiedByBookNotFound">
+      <tuv xml:lang="en">
+        <seg>This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</seg>
+      </tuv>
+    </tu>
     <tu tuid="Errors.ZoneAlarm">
       <tuv xml:lang="en">
         <seg>Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</seg>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Bloom.Collection;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
@@ -29,19 +30,20 @@ namespace Bloom.Book
 		/// The name of the file should be (key)-XMatter.htm. The name and the location of the folder is not our problem...
 		/// we leave it to the supplied fileLocator to find it.
 		/// </summary>
-		/// <param name="nameOfDefaultXMatterPack">e.g. "Factory", "SILIndonesia".  This can be overridden inside the bookDom.</param>
+		/// <param name="xmatterNameFromCollectionSettings">e.g. "Factory", "SILIndonesia".  This can be overridden inside the bookDom.</param>
 		/// <param name="fileLocator">The locator needs to be able tell us the path to an xmatter html file, given its name</param>
-		public XMatterHelper(HtmlDom bookDom, string nameOfDefaultXMatterPack, IFileLocator fileLocator)
+		public XMatterHelper(HtmlDom bookDom, string xmatterNameFromCollectionSettings, IFileLocator fileLocator)
 		{
-			_bookDom = bookDom;
-			var specifiedXMatterPack = bookDom.GetMetaValue("xmatter", null);
 			string directoryPath = null;
-			if (!String.IsNullOrWhiteSpace(specifiedXMatterPack))
+			_bookDom = bookDom;
+			var bookSpecificXMatterPack = bookDom.GetMetaValue("xmatter", null);
+			if (!String.IsNullOrWhiteSpace(bookSpecificXMatterPack))
 			{
-				_nameOfXMatterPack = specifiedXMatterPack;
-				var errorTemplate = LocalizationManager.GetString("Errors.SpecifiedXMatterNotFound",
-					"This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.");
-				directoryPath = GetXMatterDirectory(fileLocator, String.Format(errorTemplate, specifiedXMatterPack), false);
+				bookSpecificXMatterPack = MigrateXMatterName(bookSpecificXMatterPack);
+				_nameOfXMatterPack = bookSpecificXMatterPack;
+				var errorTemplate = LocalizationManager.GetString("Errors.XMatterSpecifiedByBookNotFound",
+					"This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.");
+				directoryPath = GetXMatterDirectory(_nameOfXMatterPack, fileLocator, String.Format(errorTemplate, bookSpecificXMatterPack), false);
 				if (directoryPath == null)
 				{
 					// Remove the xmatter specification from the DOM since it couldn't be found.
@@ -50,10 +52,8 @@ namespace Bloom.Book
 			}
 			if (directoryPath == null)
 			{
-				_nameOfXMatterPack = nameOfDefaultXMatterPack;
-				var errorTemplate = LocalizationManager.GetString("Errors.XMatterNotFound",
-					"This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.");
-				directoryPath = GetXMatterDirectory(fileLocator, String.Format(errorTemplate, _nameOfXMatterPack), true);
+				_nameOfXMatterPack = xmatterNameFromCollectionSettings;
+				directoryPath = GetXMatterDirectory(_nameOfXMatterPack, fileLocator, "It should not be possible to get an error here, because the collection verifies its xmatter name in CheckAndFixDependencies()", true);
 			}
 			var htmName = _nameOfXMatterPack + "-XMatter.html";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
@@ -67,7 +67,7 @@ namespace Bloom.Book
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1} (also checked .html)", htmName, directoryPath);
 				throw new ApplicationException();
 			}
-			PathToStyleSheetForPaperAndOrientation = directoryPath.CombineForPath(GetStyleSheetFileName());
+			PathToXMatterStylesheet = directoryPath.CombineForPath(GetStyleSheetFileName());
 			if (!RobustFile.Exists(PathToXMatterHtml))
 			{
 				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), "Could not locate the file {0} in {1}", GetStyleSheetFileName(), directoryPath);
@@ -76,17 +76,17 @@ namespace Bloom.Book
 			XMatterDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToXMatterHtml, false);
 		}
 
-		private string GetXMatterDirectory(IFileLocator fileLocator, string errorMsg, bool throwIfError)
+		public static string GetXMatterDirectory(string nameOfXMatterPack, IFileLocator fileLocator, string errorMsg, bool throwIfError)
 		{
 			try
 			{
-				var directoryName = _nameOfXMatterPack + "-XMatter";
+				var directoryName = nameOfXMatterPack + "-XMatter";
 				return fileLocator.LocateDirectoryWithThrow(directoryName);
 			}
 			catch (ApplicationException error)
 			{
-				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), errorMsg);
-				//NB: we don't want to put up a dialog for each one; one failure here often means 20 more are coming as the other books are loaded!
+				var frontBackMatterProblem = LocalizationManager.GetString("Errors.XMatterProblemLabel", "Front/Back Matter Problem", "This shows in the 'toast' that pops up to notify the user of a non-fatal problem.");
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, frontBackMatterProblem, errorMsg, error);
 				if (throwIfError)
 					throw new ApplicationException(errorMsg);
 			}
@@ -107,9 +107,9 @@ namespace Bloom.Book
 		public string FolderPathForCopyingXMatterFiles { get; set; }
 
 		/// <summary>
-		/// Give the detected paper size and orientation, this is the verified location of the corresponding stylesheet for the selected xmatter pack.
+		/// The location of the stylesheet for the selected xmatter pack.
 		/// </summary>
-		public string PathToStyleSheetForPaperAndOrientation { get; set; }
+		public string PathToXMatterStylesheet { get; set; }
 
 		/// <summary>
 		/// This exists in an XMatter-pack folder, which we infer from this file location.
@@ -137,7 +137,7 @@ namespace Bloom.Book
 			//note: for debugging the template/css purposes, it makes our life easier if, at runtime, the html is pointing the original.
 			//makes it easy to drop into a css editor and fix it up with the content we're looking at.
 			//TODO:But then later, we want to save it so that these are found in the same dir as the book.
-			_bookDom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation.ToLocalhost());
+			_bookDom.AddStyleSheet(PathToXMatterStylesheet.ToLocalhost());
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
 			//REVIEW: I think all stylesheets now get sorted once they are all added: see HtmlDoc.SortStyleSheetLinks()
@@ -256,6 +256,19 @@ namespace Bloom.Book
 			{
 				div.ParentNode.RemoveChild(div);
 			}
+		}
+
+		/// <summary>
+		/// This will return a different name if we recognize the submitted name and we know that we have changed it or retired it.
+		/// </summary>
+		public static string MigrateXMatterName(string nameOfXMatterPack)
+		{
+			// Bloom 3.7 retired the BigBook xmatter pack.
+			// If we ever create another xmatter pack called BigBook (or rename the Factory pack) we'll need to redo this.
+			string[] retiredPacks = { "BigBook" };
+			if (retiredPacks.Contains(nameOfXMatterPack))
+				return CollectionSettings.kDefaultXmatterName;
+			return nameOfXMatterPack;;
 		}
 	}
 }
