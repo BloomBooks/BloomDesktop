@@ -75,6 +75,7 @@ namespace Bloom.CollectionTab
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;
 			_sourceBooksFlow.Controls.Clear();
 			_sourceBooksFlow.HorizontalScroll.Visible = false;
+			_sourceBooksFlow.SizeChanged += _sourceBooksFlow_SizeChanged;
 
 			if (!_model.ShowSourceCollections)
 			{
@@ -322,11 +323,11 @@ namespace Bloom.CollectionTab
 
 			var collections = _model.GetBookCollections();
 			//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
-			var invisibleHackPartner = new Label() {Text = "", Width = 0};
+			var invisibleHackPartner = new Label() {Text = "", Width = 0, Anchor = AnchorStyles.None};
 
 			_sourceBooksFlow.SuspendLayout();
 			_sourceBooksFlow.Controls.Clear();
-			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground, Width = 450 };
+			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground, Width = 450, Anchor = AnchorStyles.None };
 
 			string shellSourceHeading = LocalizationManager.GetString("CollectionTab.SourcesForNewShellsHeading",
 																				"Sources For New Shells");
@@ -334,9 +335,9 @@ namespace Bloom.CollectionTab
 																			   "Sources For New Books");
 			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
 			// Don't truncate the heading: see https://jira.sil.org/browse/BL-250.
-			if (bookSourcesHeader.Width < bookSourcesHeader.Label.Width)
-				bookSourcesHeader.Width = bookSourcesHeader.Label.Width;
-			invisibleHackPartner = new Label() {Text = "", Width = 0};
+			// But do allow it to wrap
+			bookSourcesHeader.AdjustSize(_sourceBooksFlow.Width - SystemInformation.VerticalScrollBarWidth);
+			invisibleHackPartner = new Label() {Text = "", Width = 0, Anchor = AnchorStyles.None };
 			_sourceBooksFlow.Controls.Add(invisibleHackPartner);
 			_sourceBooksFlow.Controls.Add(bookSourcesHeader);
 			_sourceBooksFlow.SetFlowBreak(bookSourcesHeader, true);
@@ -351,18 +352,20 @@ namespace Bloom.CollectionTab
 				if (LoadOneCollection(collection, _sourceBooksFlow))
 				{
 					//without this guy, the FLowLayoutPanel uses the height of a button, on *the next row*, for the height of this row!
-					invisibleHackPartner = new Label() {Text = "", Width = 0};
+					invisibleHackPartner = new Label() {Text = "", Width = 0, Anchor = AnchorStyles.None };
 					_sourceBooksFlow.Controls.Add(invisibleHackPartner);
 					_sourceBooksFlow.Controls.SetChildIndex(invisibleHackPartner, indexForHeader);
 
 					//We showed at least one book, so now go back and insert the header
+					var collectionName = L10NSharp.LocalizationManager.GetDynamicString("Bloom", "CollectionTab." + collection.Name, collection.Name);
 					var collectionHeader = new Label()
-						{
-							Text = L10NSharp.LocalizationManager.GetDynamicString("Bloom", "CollectionTab." + collection.Name, collection.Name),
-							Size = new Size(_sourceBooksFlow.Width - 20, 20),
-							ForeColor = Palette.TextAgainstDarkBackground,
-							Padding = new Padding(10, 0, 0, 0)
-						};
+					{
+						Text = collectionName,
+						Size = GetSizeForLabel(collectionName, _headerFont),
+						ForeColor = Palette.TextAgainstDarkBackground,
+						Padding = new Padding(10, 0, 0, 0),
+						Anchor = AnchorStyles.None
+					};
 					collectionHeader.Margin = new Padding(0, 10, 0, 0);
 					collectionHeader.Font = _headerFont;
 					_sourceBooksFlow.Controls.Add(collectionHeader);
@@ -373,6 +376,50 @@ namespace Bloom.CollectionTab
 
 			AddFinalLinks();
 			_sourceBooksFlow.ResumeLayout();
+		}
+
+		// We want to make the label a size that fits in the parent width.
+		// Otherwise, the flow won't be any narrower than the label, other
+		// things may not wrap properly, and part of the label will be hidden.
+		Size GetSizeForLabel(string text, Font font)
+		{
+			if (string.IsNullOrEmpty(text))
+				return new Size(20,0);
+			var textSize = TextRenderer.MeasureText(text, font,
+				// We need to leave room for the scroll bar, the margin outside the labels (6), the padding inside (10),
+				// and a fudge factor for the frame of the control.
+				new Size(_sourceBooksFlow.Width - SystemInformation.VerticalScrollBarWidth - 6 - 10 - 4, Int32.MaxValue),
+				TextFormatFlags.WordBreak);
+			return new Size(textSize.Width + 10, textSize.Height + 3);
+		}
+
+		private void _sourceBooksFlow_SizeChanged(object sender, EventArgs e)
+		{
+			_sourceBooksFlow.SuspendLayout();
+			// We turn AutoScroll off and back on again as the only workaround I've found
+			// for a bizarre problem in FlowLayoutPanel where the only time it notices
+			// that the width of the widest child control changed is when the visibility of
+			// the horizontal scroll bar changes. And since turning it off and on again
+			// resets the scroll position, we remember it and try to put it back where it should be.
+			// Note: it doesn't work to turn it off and straight on again at the end of the loop,
+			// (perhaps only if some child changed size). I tried several variations.
+			// It's probably possible to do a separate pass to figure out whether anything
+			// is going to change size, but that feels like too much trouble, especially
+			// since we eventually hope to replace this whole control with HTML.
+			var oldPosition = _sourceBooksFlow.AutoScrollPosition;
+			_sourceBooksFlow.AutoScroll = false;
+			foreach (Control c in _sourceBooksFlow.Controls)
+			{
+				var label = c as Label;
+				var header = c as ListHeader;
+				if (header != null)
+					header.AdjustSize(_sourceBooksFlow.Width - SystemInformation.VerticalScrollBarWidth);
+				else if (label != null && !string.IsNullOrEmpty(label.Text))
+					label.Size = GetSizeForLabel(label.Text, label.Font);
+			}
+			_sourceBooksFlow.ResumeLayout(true);
+			_sourceBooksFlow.AutoScroll = true;
+			_sourceBooksFlow.AutoScrollPosition = new Point(-oldPosition.X, -oldPosition.Y);
 		}
 
 		private void AddFinalLinks()
@@ -482,10 +529,10 @@ namespace Bloom.CollectionTab
 						LocalizationManager.GetString("CollectionTab.BloomLibraryLinkLabel",
 																"Get more source books at BloomLibrary.org",
 																"Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
-					Width = 400,
 					Margin = new Padding(17, 0, 0, 0),
 					LinkColor = Palette.TextAgainstDarkBackground
 				};
+				bloomLibrayLink.Size = GetSizeForLabel(bloomLibrayLink.Text, bloomLibrayLink.Font);
 				bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
 				flowLayoutPanel.Controls.Add(bloomLibrayLink);
 				return true;
@@ -580,7 +627,7 @@ namespace Bloom.CollectionTab
 				UseMnemonic = false, //otherwise, it tries to interpret '&' as a shortcut
 				ContextMenuStrip = _bookContextMenu,
 				AutoSize = false,
-
+				Anchor = AnchorStyles.None,
 				Tag = new BookButtonInfo(bookInfo, collection, collection == _model.TheOneEditableCollection)
 			};
 
