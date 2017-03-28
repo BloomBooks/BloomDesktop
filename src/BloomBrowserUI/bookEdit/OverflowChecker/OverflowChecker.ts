@@ -1,7 +1,9 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../StyleEditor/StyleEditor.ts" />
+/// <reference path="../js/bloomQtipUtils.ts" />
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+import bloomQtipUtils from '../js/bloomQtipUtils';
 
 interface qtipInterface extends JQuery {
         qtip(options: string): JQuery;
@@ -158,7 +160,8 @@ export default class OverflowChecker {
                                         content: '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' + overflowText,
                                         show: { event: 'mouseenter' },
                                         hide: { event: 'mouseleave' },
-                                        position: { my: 'top right', at: 'right bottom' }
+                                        position: { my: 'top right', at: 'right bottom' },
+                                        container: bloomQtipUtils.qtipZoomContainer()
                                 });
                         });
                 }
@@ -189,7 +192,8 @@ export default class OverflowChecker {
                                                 content: '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' + overflowText,
                                                 show: { event: 'enterBorder' }, // nonstandard events triggered by mouse move in code below
                                                 hide: { event: 'leaveBorder' },
-                                                position: { my: 'top right', at: 'right bottom' }
+                                                position: { my: 'top right', at: 'right bottom' },
+                                                container: bloomQtipUtils.qtipZoomContainer()
                                         });
                                 });
                                 var showing = false;

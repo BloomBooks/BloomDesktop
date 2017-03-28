@@ -296,7 +296,8 @@ export default class BloomSourceBubbles {
                     adjust: {
                         x: 0,
                         y: 0
-                    }
+                    },
+                    container: bloomQtipUtils.qtipZoomContainer()
                 },
                 content: divForBubble,
 
