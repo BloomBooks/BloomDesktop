@@ -528,7 +528,10 @@ namespace Bloom.Book
 				builder.AppendLine(BookStorage.GenericBookProblemNotice);
 			}
 
-			builder.Append(FatalErrorDescription);
+			// often GetBrokenBookRecommendation and FatalErrorDescription both come from _storage.ErrorMessagesHtml.
+			// Try not to say the same thing twice.
+			if (!builder.ToString().Contains(FatalErrorDescription))
+				builder.Append(FatalErrorDescription);
 
 			builder.Append("<p>"+ WebUtility.HtmlEncode(extraMessages)+"</p>");
 

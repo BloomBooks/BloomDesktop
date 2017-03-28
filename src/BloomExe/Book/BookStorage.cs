@@ -854,8 +854,12 @@ namespace Bloom.Book
 			var message = LocalizationManager.GetString("Errors.DeniedAccess",
 				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
 			message += Environment.NewLine + error.Message;
-			ErrorMessagesHtml = WebUtility.HtmlEncode(message);
 			Logger.WriteEvent("*** ERROR: " + message);
+			message = WebUtility.HtmlEncode(message);
+			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
+			var seeAlso = WebUtility.HtmlEncode(LocalizationManager.GetString("Errors.FilePermissionsHelp", "See {0} for one way to fix this."));
+			message += "<br></br>" + string.Format(seeAlso, "<a href='" + helpUrl + "'>" + helpUrl + "</a>");
+			ErrorMessagesHtml = message;
 			_errorAlreadyContainsInstructions = true;
 		}
 
