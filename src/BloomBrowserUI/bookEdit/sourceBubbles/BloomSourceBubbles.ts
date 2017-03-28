@@ -62,13 +62,33 @@ export default class BloomSourceBubbles {
             $(element).remove();
         });
 
-        //make the source texts in the bubble read-only and remove any user font size adjustments
+        // We don't want languages we're already showing in the text to be shown in the bubble.
+        // Also ignore any elements that are lang='z', which are just prototypes.
+        // Also ignore any text that matches either of the above, probably due to being copies of
+        // the prototype.  (See http://issues.bloomlibrary.org/youtrack/issue/BL-4361.)
+        var ignoreTransDivs = divForBubble.find(
+            "textarea.bloom-visibility-code-on, textarea[lang='z'], div.bloom-visibility-code-on, div[lang='z']");
+        ignoreTransDivs.remove();
+
+        // Make the source texts in the bubble read-only and remove any user font size adjustments.
+        // Also filter out any empty or unwanted source texts.
         divForBubble.find("textarea, div").each(function() {
             //don't want empty items in the bubble
             var $this = $(this);
             if(BloomSourceBubbles.hasNoText(this)) {
                 $this.remove();
                 return true; // skip to next iteration of each()
+            }
+            // Don't show text that may be masquerading as some other language (BL-4361).
+            // But allow it once just in case it may provide a useful reminder while translating.
+            // (The language tag for the hint will likely be totally bogus...)
+            if (divForBubble.find("textarea, div").length > 1) {
+                for (var i = 0; i < ignoreTransDivs.length; ++i) {
+                    if ($this.text() === ignoreTransDivs[i].innerText) {
+                        $this.remove();
+                        return true;
+                    }
+                }
             }
             $this.attr("readonly", "readonly");
             $this.removeClass('bloom-editable');
@@ -88,10 +108,6 @@ export default class BloomSourceBubbles {
 
             $this.addClass("source-text");
         });
-
-        //don't want languages we're already showing in the text to be shown in the bubble
-        //also ignore any elements that are lang='z', which are just prototypes
-        divForBubble.find("*.bloom-visibility-code-on, [lang='z']").remove();
 
         //in case some formatting didn't get cleaned up
         StyleEditor.CleanupElement(divForBubble);
