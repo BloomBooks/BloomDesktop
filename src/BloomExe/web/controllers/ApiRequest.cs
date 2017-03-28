@@ -131,6 +131,13 @@ namespace Bloom.Api
 					throw new ApplicationException(string.Format("The EndpointHandler for {0} never called a Succeeded(), Failed(), or ReplyWith() Function.", info.RawUrl.ToString()));
 				}
 			}
+			catch (System.IO.IOException e)
+			{
+				var shortMsg = String.Format(L10NSharp.LocalizationManager.GetDynamicString("Bloom", "Errors.CannotAccessFile", "Cannot access {0}"), info.RawUrl);
+				var longMsg = String.Format("Bloom could not access {0}.  The file may be open in another program.", info.RawUrl);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, e);
+				return false;
+			}
 			catch (Exception e)
 			{
 				SIL.Reporting.ErrorReport.ReportNonFatalExceptionWithMessage(e, info.RawUrl);
