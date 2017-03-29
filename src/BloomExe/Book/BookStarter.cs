@@ -192,8 +192,9 @@ namespace Bloom.Book
 			var dataDiv = storage.Dom.SelectSingleNode("//div[@id='bloomDataDiv']");
 			if (dataDiv == null)
 				return;
-			// There just might be multiple ones; e.g., Vaccinations (though we don't do it for that
-			// since it's a shell) has three with no lang, en, and *.
+			// There just might be multiple ones; e.g., Vaccinations has three with no lang, en, and *.
+			// (Though we don't actually remove them from books made from Vaccinations, since it is already
+			// a shell and so books made from it are NOT shells.)
 			foreach (var licenseDiv in dataDiv.SelectNodes("./div[@data-book='licenseUrl']").Cast<XmlElement>().ToArray())
 			{
 				licenseDiv.ParentNode.RemoveChild(licenseDiv);
