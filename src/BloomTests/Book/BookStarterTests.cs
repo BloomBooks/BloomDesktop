@@ -193,6 +193,38 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalCC0_BookIsCCBY()
+		{
+			var originalSource = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
+			using (var tempFolder = new TemporaryFolder("BasicBookCc0"))
+			using (var destFolder = new TemporaryFolder("OriginalCC0_BookIsBy"))
+			{
+				var source = Path.Combine(tempFolder.Path, "Basic Book");
+				if (Directory.Exists(source))
+					Directory.Delete(source, true);
+				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
+				var htmPath = Path.Combine(source, "Basic Book.html");
+				var content = RobustFile.ReadAllText(htmPath);
+				// insert cc0 stuff in data div
+				var replacement = @"<div id='bloomDataDiv'><div data-book='licenseUrl' lang='*'>
+            http://creativecommons.org/publicdomain/zero/1.0/
+        </div>
+
+        <div data-book='licenseDescription' lang='en'>
+            You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.
+        </div>".Replace("'", "\"");
+				var patched = content.Replace("<div id=\"bloomDataDiv\">", replacement);
+				RobustFile.WriteAllText(htmPath, patched);
+				var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
+				var assertThatBook = AssertThatXmlIn.HtmlFile(bookPath);
+				assertThatBook.HasNoMatchForXpath("//div[@data-book='licenseUrl' and contains(text(), '/zero/1.0')]");
+				assertThatBook.HasNoMatchForXpath("//div[@data-book='licenseDescription' and contains(text(), 'all without asking permission')]");
+				assertThatBook.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='licenseUrl' and contains(text(), 'by/4.0')]", 1);
+				assertThatBook.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='licenseDescription' and contains(text(), 'You must keep the copyright and credits for authors')]", 1);
+			}
+		}
+
+		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_Validates()
 		{
 			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");

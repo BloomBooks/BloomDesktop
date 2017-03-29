@@ -145,6 +145,7 @@ namespace Bloom.Book
 			//			}
 
 			ProcessXMatterMetaTags(storage);
+			FixCc0License(storage);
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
@@ -178,6 +179,28 @@ namespace Bloom.Book
 			//REVIEW this actually undoes the setting of the initial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
+		}
+
+		/// <summary>
+		/// If the copied book has a CC0 license, this one should have by/4.0
+		/// </summary>
+		/// <param name="storage"></param>
+		private void FixCc0License(BookStorage storage)
+		{
+			var dataDiv = storage.Dom.SelectSingleNode("//div[@id='bloomDataDiv']");
+			if (dataDiv == null)
+				return;
+			var licenseDiv = dataDiv.SelectSingleNode("./div[@data-book='licenseUrl']");
+			if (licenseDiv == null)
+				return;
+			if (licenseDiv.InnerText.Trim() != "http://creativecommons.org/publicdomain/zero/1.0/")
+				return;
+			licenseDiv.InnerText = "http://creativecommons.org/licenses/by/4.0/";
+			var descDiv = dataDiv.SelectSingleNode("./div[@data-book='licenseDescription' and @lang='en']");
+			if (descDiv == null)
+				return;
+			descDiv.InnerText =
+				"http://creativecommons.org/licenses/by/4.0/<br></br>\r\n            You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.";
 		}
 
 		/// <summary>
