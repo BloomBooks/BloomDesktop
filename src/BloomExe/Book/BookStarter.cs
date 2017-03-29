@@ -145,6 +145,10 @@ namespace Bloom.Book
 			//			}
 
 			ProcessXMatterMetaTags(storage);
+			// If we are making a shell (from a template, as opposed to making a translation of a shell),
+			// it should not have a pre-determined license. A default will be filled in later.
+			if (usingTemplate)
+				BookCopyrightAndLicense.RemoveLicense(storage);
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
