@@ -34,7 +34,7 @@ namespace Bloom.CollectionChoosing
 
 		private void SetupUiLanguageMenu()
 		{
-			_toolStrip1.Renderer = new Workspace.NoBorderToolStripRenderer();
+			_toolStrip1.Renderer = new TableLayoutToolStripRenderer();
 			WorkspaceView.SetupUiLanguageMenuCommon(_uiLanguageMenu);
 		}
 
@@ -354,6 +354,36 @@ namespace Bloom.CollectionChoosing
 					return;
 				}
 			}
+		}
+	}
+
+	/// <summary>
+	/// A toolstrip with one item embedded in a panel embedded in a TableLayoutPanel does not display well
+	/// on Linux/Mono.  The text display can be truncated and moves around the panel horizontally.  The
+	/// sizing calculation is carried out properly, but the ensuing location seems almost random.  Rather
+	/// than try to fix possibly several layers of Mono libary code, we calculate the desired location here
+	/// if the text would end up being truncated to prevent that from happening.
+	/// </summary>
+	/// <remarks>
+	/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4409.
+	/// </remarks>
+	public class TableLayoutToolStripRenderer : ToolStripProfessionalRenderer
+	{
+		// Note that this is adapted from Workspace.NoBorderToolStripRenderer.  Changing that class breaks
+		// other uses of Toolstrips in Bloom.
+		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { }
+
+		protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+		{
+			e.SizeTextRectangleToText();
+			if (SIL.PlatformUtilities.Platform.IsUnix && e.ToolStrip != null && e.ToolStrip.Parent != null)
+			{
+				var delta = (e.ToolStrip.Location.X + e.ToolStrip.Width) - e.ToolStrip.Parent.Width;
+				// Try to leave a pixel of margin.
+				if (delta >= 0)
+					e.ToolStrip.Location = new Point(e.ToolStrip.Location.X - (delta + 1), e.ToolStrip.Location.Y);
+			}
+			base.OnRenderItemText(e);
 		}
 	}
 }
