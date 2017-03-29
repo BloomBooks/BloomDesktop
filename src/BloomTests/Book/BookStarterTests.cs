@@ -192,6 +192,69 @@ namespace BloomTests.Book
 			return path;
 		}
 
+		// Strip all license info from books made from templates. (Code that runs later will fill in default.)
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalCC0_LicenseRemoved()
+		{
+			var originalSource = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
+			using (var tempFolder = new TemporaryFolder("BasicBookCc0"))
+			using (var destFolder = new TemporaryFolder("OriginalCC0_BookIsBy"))
+			{
+				var source = Path.Combine(tempFolder.Path, "Basic Book");
+				if (Directory.Exists(source))
+					Directory.Delete(source, true);
+				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
+				var htmPath = Path.Combine(source, "Basic Book.html");
+				var content = RobustFile.ReadAllText(htmPath);
+				// insert cc0 stuff in data div
+				var replacement = @"<div id='bloomDataDiv'><div data-book='licenseUrl' lang='*'>
+            http://creativecommons.org/publicdomain/zero/1.0/
+        </div>
+		<div data-book='licenseUrl' lang='en'>
+            http://creativecommons.org/publicdomain/zero/1.0/
+        </div>
+		<div data-book='licenseUrl'>
+            http://creativecommons.org/publicdomain/zero/1.0/
+        </div>
+        <div data-book='licenseDescription' lang='en'>
+            You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.
+        </div>
+		<div data-book='licenseNotes'>This should be removed too</div>".Replace("'", "\"");
+				var patched = content.Replace("<div id=\"bloomDataDiv\">", replacement);
+				RobustFile.WriteAllText(htmPath, patched);
+				var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
+				var assertThatBook = AssertThatXmlIn.HtmlFile(bookPath);
+				assertThatBook.HasNoMatchForXpath("//div[@data-book='licenseUrl']");
+				assertThatBook.HasNoMatchForXpath("//div[@data-book='licenseDescription']");
+				assertThatBook.HasNoMatchForXpath("//div[@data-book='licenseNotes']");
+			}
+		}
+
+		// We shouldn't mess with license if the original is a shell.
+		[Test]
+		public void CreateBookOnDiskFromShell_OriginalCC0_BookIsCC0()
+		{
+			var originalSource = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
+			using (var tempFolder = new TemporaryFolder("VaccinationsCc0"))
+			using (var destFolder = new TemporaryFolder("Vaccinations_BookIsCC0"))
+			{
+				var source = Path.Combine(tempFolder.Path, "Vaccinations");
+				if (Directory.Exists(source))
+					Directory.Delete(source, true);
+				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
+				var htmPath = Path.Combine(source, "Vaccinations.htm");
+				var content = RobustFile.ReadAllText(htmPath);
+				// insert cc0 stuff in data div
+				var patched = content.Replace("http://creativecommons.org/licenses/by-nc/3.0/", "http://creativecommons.org/publicdomain/zero/1.0/");
+				RobustFile.WriteAllText(htmPath, patched);
+				var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
+				var assertThatBook = AssertThatXmlIn.HtmlFile(bookPath);
+				// For some reason Vaccinations specifies licenseUrl in three ways (no lang, lang="en", lang="*").
+				// We don't want any of them messed with.
+				assertThatBook.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='licenseUrl' and contains(text(), '/zero/1.0')]", 3);
+			}
+		}
+
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_Validates()
 		{
