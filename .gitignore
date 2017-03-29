@@ -100,3 +100,4 @@ Bloom/
 .vs/
 build/Bloom*.nupkg
 src/BloomBrowserUI/filesToFix.lst
+src/BloomBrowserUI/npm-debug.log
