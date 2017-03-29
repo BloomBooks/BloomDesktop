@@ -10,3 +10,39 @@ body {
     background-repeat: no-repeat;
     background-position: center;
 }
+
+
+/* ------------------------------------------------------
+/*		Visibility System
+/*		https://goo.gl/EgnSJo
+/* ------------------------------------------------------*/
+
+//Each bloom-translationGroup has 0 or more div.bloom-editables.
+//Each .bloom-editable has a lang attribute to tell us what language it is in.
+//Each of these is assumed to be unwanted:
+
+//This moved to basePage-shareRules.less:
+.bloom-editable	{
+    display: none;
+    order: 99; //if somehow we don't have an order for this, show it last (default is 0, which would be first)
+}
+.bloom-translationGroup {
+    display: flex;
+    flex-direction: column;
+}
+// And now we can control the order using Flexbox "order" attribute:
+//sadly, as of Dec 2016, browsers do not implement the full attr() spec, so this rule is rejected
+// [data-language-order]{
+// 	order:  attr(data-language-order integer);
+// }
+// Note, we could still use a data-* attribute and do this instead: [data-language-order='1']
+// But for now, we're sticking with the older .bloom-content* classes.
+.bloom-content1 {
+    order: 0;
+}
+.bloom-content2 {
+    order: 1;
+}
+.bloom-content3 {
+    order: 2;
+}
