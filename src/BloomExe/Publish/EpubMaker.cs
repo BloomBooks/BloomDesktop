@@ -830,50 +830,29 @@ namespace Bloom.Publish
 		private void RemoveUnwantedContent(HtmlDom pageDom)
 		{
 			var pageElt = (XmlElement) pageDom.Body.FirstChild;
-			var isXMatter = HasClass(pageElt, "bloom-frontMatter") || HasClass(pageElt, "bloom-backMatter");
-			if (isXMatter)
+			AddEpubClass(pageElt);
+
+			// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
+			// browser figure out what is visible. So we can easily match elements in the browser DOM
+			// with the one we are manipulating, make sure they ALL have IDs.
+			EnsureAllDivsHaveIds(pageElt);
+			var normalDom = Book.GetHtmlDomWithJustOnePage(pageElt);
+			bool done = false;
+			var dummy = _browser.Handle; // gets WebBrowser created along with handle
+			_browser.WebBrowser.DocumentCompleted += (sender, args) => done = true;
+			// just in case something goes wrong, keep program from deadlocking a few lines below.
+			_browser.WebBrowser.NavigationError += (object sender, Gecko.Events.GeckoNavigationErrorEventArgs e) => done = true;
+			_browser.Navigate(normalDom);
+			while (!done)
 			{
-				// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
-				// browser figure out what is visible. So we can easily match elements in the browser DOM
-				// with the one we are manipulating, make sure they ALL have IDs.
-				EnsureAllDivsHaveIds(pageElt);
-				var normalDom = Book.GetHtmlDomWithJustOnePage(pageElt);
-				bool done = false;
-				var dummy = _browser.Handle; // gets WebBrowser created along with handle
-				_browser.WebBrowser.DocumentCompleted += (sender, args) => done = true;
-				// just in case something goes wrong, keep program from deadlocking a few lines below.
-				_browser.WebBrowser.NavigationError += (object sender, Gecko.Events.GeckoNavigationErrorEventArgs e) => done = true;
-				_browser.Navigate(normalDom);
-				while (!done)
-				{
-					Application.DoEvents();
-					Application.RaiseIdle(new EventArgs());		// needed on Linux to avoid deadlock starving browser navigation
-				}
+				Application.DoEvents();
+				Application.RaiseIdle(new EventArgs());		// needed on Linux to avoid deadlock starving browser navigation
 			}
 
 			foreach (XmlElement elt in pageElt.SafeSelectNodes(".//div"))
 			{
-				if (isXMatter)
-				{
-					if (IsDisplayed(elt))
-						continue; // keep it if not hidden.
-				}
-				else if (!HasClass(elt, "bloom-editable"))
-				{
-					continue;
-				}
-				else
-				{
-					// Remove bloom-editable material not in one of the interesting languages
-					var langAttr = elt.Attributes["lang"];
-					var lang = langAttr == null ? null : langAttr.Value;
-					// normal content page. What will be displayed here is predictable enough without
-					// the overhead of navigating a real browser to a real page.
-					if (lang == Book.MultilingualContentLanguage2 || lang == Book.MultilingualContentLanguage3 ||
-						lang == Book.CollectionSettings.Language1Iso639Code)
-						continue; // keep these
-				}
-				elt.ParentNode.RemoveChild(elt);
+				if (!IsDisplayed(elt))
+					elt.ParentNode.RemoveChild(elt);
 			}
 
 			// Remove any left-over bubbles
@@ -895,8 +874,21 @@ namespace Bloom.Publish
 			{
 				elt.RemoveAttribute("recordingmd5");
 			}
-			if (isXMatter)
-				RemoveTempIds(pageElt); // don't need temporary IDs any more.
+			RemoveTempIds(pageElt); // don't need temporary IDs any more.
+		}
+
+		/// <summary>
+		/// This allows us to define visibility rules specific to epub.
+		/// The less should be defined in basePage.less
+		/// </summary>
+		/// <param name="pageElt"></param>
+		private void AddEpubClass(XmlElement pageElt)
+		{
+			var classAttribute = pageElt.Attributes["class"];
+			if (classAttribute != null)
+				pageElt.SetAttribute("class", classAttribute.Value + " epub");
+			else
+				pageElt.SetAttribute("class", "epub");
 		}
 
 		private bool IsDisplayed(XmlElement elt)
