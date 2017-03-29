@@ -1062,6 +1062,12 @@
         <seg>optional</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.SeeWebPage">
+		<note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
+		<tuv xml:lang="en">
+        <seg>See {0}.</seg>
+      </tuv>
+    </tu>
     <tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -2525,12 +2531,6 @@
     <tu tuid="Errors.ErrorUpdating">
       <tuv xml:lang="en">
         <seg>There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Errors.FilePermissionsHelp">
-		<note>Shown following Errors.DeniedAccess. {0} will be a URL.</note>
-		<tuv xml:lang="en">
-        <seg>See {0} for one way to fix this.</seg>
       </tuv>
     </tu>
     <tu tuid="Errors.NeedNewerVersion">

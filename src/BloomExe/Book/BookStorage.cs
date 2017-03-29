@@ -857,7 +857,7 @@ namespace Bloom.Book
 			Logger.WriteEvent("*** ERROR: " + message);
 			message = WebUtility.HtmlEncode(message);
 			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
-			var seeAlso = WebUtility.HtmlEncode(LocalizationManager.GetString("Errors.FilePermissionsHelp", "See {0} for one way to fix this."));
+			var seeAlso = WebUtility.HtmlEncode(LocalizationManager.GetString("Common.SeeWebPage", "See {0}."));
 			message += "<br></br>" + string.Format(seeAlso, "<a href='" + helpUrl + "'>" + helpUrl + "</a>");
 			ErrorMessagesHtml = message;
 			_errorAlreadyContainsInstructions = true;
