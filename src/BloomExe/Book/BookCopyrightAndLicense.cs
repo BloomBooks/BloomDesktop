@@ -262,6 +262,12 @@ namespace Bloom.Book
 			}
 		}
 
+		public static void RemoveLicense(BookStorage storage)
+		{
+			storage.Dom.RemoveBookSetting("licenseUrl");
+			storage.Dom.RemoveBookSetting("licenseDescription");
+			storage.Dom.RemoveBookSetting("licenseNotes");
+		}
 
 		private static bool ShouldSetToDefaultCopyrightAndLicense(HtmlDom dom)
 		{

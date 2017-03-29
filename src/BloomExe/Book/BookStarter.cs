@@ -145,8 +145,10 @@ namespace Bloom.Book
 			//			}
 
 			ProcessXMatterMetaTags(storage);
+			// If we are making a shell (from a template, as opposed to making a translation of a shell),
+			// it should not have a pre-determined license. A default will be filled in later.
 			if (usingTemplate)
-				RemoveLicenseFromShell(storage);
+				BookCopyrightAndLicense.RemoveLicense(storage);
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
@@ -180,33 +182,6 @@ namespace Bloom.Book
 			//REVIEW this actually undoes the setting of the initial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
-		}
-
-		/// <summary>
-		/// If the new book is a shell, it should not have a pre-determined license.
-		/// A default will be filled in later.
-		/// </summary>
-		/// <param name="storage"></param>
-		private void RemoveLicenseFromShell(BookStorage storage)
-		{
-			var dataDiv = storage.Dom.SelectSingleNode("//div[@id='bloomDataDiv']");
-			if (dataDiv == null)
-				return;
-			// There just might be multiple ones; e.g., Vaccinations has three with no lang, en, and *.
-			// (Though we don't actually remove them from books made from Vaccinations, since it is already
-			// a shell and so books made from it are NOT shells.)
-			foreach (var licenseDiv in dataDiv.SelectNodes("./div[@data-book='licenseUrl']").Cast<XmlElement>().ToArray())
-			{
-				licenseDiv.ParentNode.RemoveChild(licenseDiv);
-			}
-			foreach (var descDiv in dataDiv.SelectNodes("./div[@data-book='licenseDescription']").Cast<XmlElement>().ToArray())
-			{
-				descDiv.ParentNode.RemoveChild(descDiv);
-			}
-			foreach (var notesDiv in dataDiv.SelectNodes("./div[@data-book='licenseNotes']").Cast<XmlElement>().ToArray())
-			{
-				notesDiv.ParentNode.RemoveChild(notesDiv);
-			}
 		}
 
 		/// <summary>
