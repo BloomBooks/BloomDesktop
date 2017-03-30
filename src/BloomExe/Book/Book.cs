@@ -139,10 +139,11 @@ namespace Bloom.Book
 			// We introduced "template starter" in 3.9, but books you made with it could be used in 3.8 etc.
 			// If those books came back to 3.9 or greater (which would happen eventually), 
 			// they would still have this tag that they didn't really understand, and which should have been removed.
-			if(_storage.Dom.GetGeneratorVersion() < 3.9)
-			{
-				_storage.Dom.RemoveMetaElement("xmatter");
-			}
+			// Except that this leads to surprising the user: http://issues.bloomlibrary.org/youtrack/issue/BL-4491.
+			//if(_storage.Dom.GetGeneratorVersion() < 3.9)
+			//{
+			//	_storage.Dom.RemoveMetaElement("xmatter");
+			//}
 		}
 
 		void _storage_FolderPathChanged(object sender, EventArgs e)
