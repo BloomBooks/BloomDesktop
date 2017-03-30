@@ -14,6 +14,7 @@ using Bloom.Properties;
 //using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
@@ -926,6 +927,10 @@ namespace Bloom.Edit
 					CheckForBL2364("save");
 					//OK, looks safe, time to save.
 					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
+					if (_pageSelection.CurrentSelection.Book.BookInfo.IsSuitableForMakingShells)
+					{
+						RemoveThumbnailForCurrentPage();
+					}
 					CheckForBL2364("finished save");
 				}
 				finally
@@ -937,6 +942,34 @@ namespace Bloom.Edit
 					var task = _tasksToDoAfterSaving[0];
 					_tasksToDoAfterSaving.RemoveAt(0);
 					task();
+				}
+			}
+		}
+
+		private void RemoveThumbnailForCurrentPage()
+		{
+			// We take advantage here of the fact that the caption in the page selection is not
+			// yet updated, so if it is about to change, we can sneak in first and delete any thumbnail
+			// with the old name. This is also important (when the caption doesn't change) because
+			// it clears the way for making a new thumbnail that matches the current page.
+			// The downside is that it means the only way to get a complete set of Thumbnails is
+			// to use Add Page with a current page that isn't one of this book's content pages;
+			// otherwise, the code here will delete the one for the current page when you later leave it.
+			// But there is no easy way to know, when we are saving a page, that the thumbnail is
+			// still accurate because no changes were made. So I think this is the right thing
+			// to do.
+			var book = _pageSelection.CurrentSelection.Book;
+			var templateFolder = Path.Combine(book.FolderPath, PageTemplatesApi.TemplateFolderName);
+			var pageThumbPath = Path.ChangeExtension(Path.Combine(templateFolder, _pageSelection.CurrentSelection.Caption),
+				".png");
+			if (RobustFile.Exists(pageThumbPath) && !new FileInfo(pageThumbPath).IsReadOnly)
+				RobustFile.Delete(pageThumbPath);
+			if (_domForCurrentPage != null)
+			{
+				var pageLabel = _domForCurrentPage.Body.SelectSingleNode(".//div[@class='pageLabel']");
+				if (pageLabel != null)
+				{
+					_pageSelection.CurrentSelection.Caption = pageLabel.InnerText.Trim();
 				}
 			}
 		}

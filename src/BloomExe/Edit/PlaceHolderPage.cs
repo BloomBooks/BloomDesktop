@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Xml;
 using Bloom.Book;
@@ -18,6 +19,7 @@ namespace Bloom.Edit
 		public string Caption
 		{
 			get { return null; }
+			set {  throw new NotImplementedException();}
 		}
 
 		public string CaptionI18nId { get { return null; } }
