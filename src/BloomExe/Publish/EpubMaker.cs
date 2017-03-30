@@ -830,13 +830,14 @@ namespace Bloom.Publish
 		private void RemoveUnwantedContent(HtmlDom pageDom)
 		{
 			var pageElt = (XmlElement) pageDom.Body.FirstChild;
-			AddEpubClass(pageElt);
 
 			// We need a real dom, with standard stylesheets, loaded into a browser, in order to let the
 			// browser figure out what is visible. So we can easily match elements in the browser DOM
 			// with the one we are manipulating, make sure they ALL have IDs.
 			EnsureAllDivsHaveIds(pageElt);
 			var normalDom = Book.GetHtmlDomWithJustOnePage(pageElt);
+			AddEpubVisibilityStylesheetAndClass(normalDom);
+
 			bool done = false;
 			var dummy = _browser.Handle; // gets WebBrowser created along with handle
 			_browser.WebBrowser.DocumentCompleted += (sender, args) => done = true;
@@ -878,17 +879,28 @@ namespace Bloom.Publish
 		}
 
 		/// <summary>
-		/// This allows us to define visibility rules specific to epub.
-		/// The less should be defined in basePage.less
+		/// The epub-visiblity class and the ebubVisibility.css stylesheet
+		/// are only used to determine the visibility of items.
+		/// They allow us to use the browser to determine visibility rules
+		/// and then remove unwanted content from the dom completely since
+		/// many eReaders do not properly handle display:none.
 		/// </summary>
-		/// <param name="pageElt"></param>
-		private void AddEpubClass(XmlElement pageElt)
+		/// <param name="dom"></param>
+		private void AddEpubVisibilityStylesheetAndClass(HtmlDom dom)
 		{
-			var classAttribute = pageElt.Attributes["class"];
+			var headNode = dom.SelectSingleNodeHonoringDefaultNS("/html/head");
+			var epubVisibilityStylesheet = dom.RawDom.CreateElement("link");
+			epubVisibilityStylesheet.SetAttribute("rel", "stylesheet");
+			epubVisibilityStylesheet.SetAttribute("href", "epubVisibility.css");
+			epubVisibilityStylesheet.SetAttribute("type", "text/css");
+			headNode.AppendChild(epubVisibilityStylesheet);
+
+			var bodyNode = dom.SelectSingleNodeHonoringDefaultNS("/html/body");
+			var classAttribute = bodyNode.Attributes["class"];
 			if (classAttribute != null)
-				pageElt.SetAttribute("class", classAttribute.Value + " epub");
+				bodyNode.SetAttribute("class", classAttribute.Value + " epub-visibility");
 			else
-				pageElt.SetAttribute("class", "epub");
+				bodyNode.SetAttribute("class", "epub-visibility");
 		}
 
 		private bool IsDisplayed(XmlElement elt)

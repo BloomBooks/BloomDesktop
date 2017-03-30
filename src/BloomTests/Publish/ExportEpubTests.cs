@@ -109,7 +109,7 @@ namespace BloomTests.Publish
 		/// <param name="parentDivId"></param>
 		/// <returns></returns>
 		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraContentOutsideTranslationGroup = "",
-			string extraStyleSheet= "", string parentDivId = "somewrapper", string extraPages="", string[] images = null,
+			string parentDivId = "somewrapper", string extraPages="", string[] images = null,
 			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto")
 		{
 			if (images == null)
@@ -132,14 +132,20 @@ namespace BloomTests.Publish
 					</div>
 					{5}",
 				lang, text, extraContent, imageDivs, extraContentOutsideTranslationGroup, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
+
 			SetDom(body,
-				string.Format(@"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
-							{0}
-							<link rel='stylesheet' href='../customCollectionStyles.css'/>
-							<link rel='stylesheet' href='customBookStyles.css'/>", extraStyleSheet));
+				@"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
+				<link rel='stylesheet' href='basePage.css' type='text/css'/>
+				<link rel='stylesheet' href='languageDisplay.css' type='text/css'/>
+				<link rel='stylesheet' href='../customCollectionStyles.css'/>
+				<link rel='stylesheet' href='customBookStyles.css'/>");
 			var book = CreateBook();
 			CreateCommonCssFiles(book);
 			s_bookSelection.SelectBook(book);
+			
+			// Set up the visibility classes correctly
+			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
+
 			return book;
 		}
 
@@ -468,7 +474,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void StandardStyleSheets_AreRemoved()
 		{
-			var book = SetupBookLong("Some text", "en", extraStyleSheet: "<link rel='stylesheet' href='basePage.css'/>");
+			var book = SetupBookLong("Some text", "en");
 			MakeEpub("output", "StandardStyleSheets_AreRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
@@ -495,11 +501,7 @@ namespace BloomTests.Publish
 				extraContent: @"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text should always display</div>
 							<div class='bloom-editable' lang='fr'>French text should only display if configured</div>
 							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
-				extraStyleSheet: "<link rel='stylesheet' href='languageDisplay.css' type='text/css'/><link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 				defaultLanguages: "V");
-
-			// Set up the visibility classes correctly
-			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
 
 			MakeEpub("output", "InvisibleAndUnwantedContentRemoved", book);
 			CheckBasicsInManifest();
@@ -532,12 +534,8 @@ namespace BloomTests.Publish
 					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
 							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
 							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
-				extraStyleSheet: "<link rel='stylesheet' href='languageDisplay.css' type='text/css'/><link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 				extraEditGroupClasses: "bookTitle",
 				defaultLanguages: "V,N1");
-
-			// Set up the visibility classes correctly
-			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
 
 			MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
 			CheckBasicsInManifest();
@@ -552,6 +550,11 @@ namespace BloomTests.Publish
 			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
 		}
 
+		/// <summary>
+		/// The critical point here is that passing defaultLanguages:N1 makes N1 the value of the data-default-languages attribute
+		/// of the translation group, which makes only N1 (English) visible. We want to verify that this results in only that
+		/// language being even PRESENT in the epub.
+		/// </summary>
 		[Test]
 		public void UserSpecifiedNoVernacular_VernacularRemoved()
 		{
@@ -561,11 +564,7 @@ namespace BloomTests.Publish
 					@"<div class='bloom-editable' lang='xyz'>vernacular text should not display in this case because the user turned it off</div>
 							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
 							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
-				extraStyleSheet: "<link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='languageDisplay.css' type='text/css'/>",
 				defaultLanguages: "N1");
-
-			// Set up the visibility classes correctly
-			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
 
 			MakeEpub("output", "UserSpecifiedNoVernacular_VernacularRemoved", book);
 			CheckBasicsInManifest();
@@ -611,13 +610,8 @@ namespace BloomTests.Publish
 					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>acknowledgments in vernacular not displayed</div>
 							<div class='bloom-editable' lang='fr'>National 2 should not be displayed</div>
 							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
-				extraStyleSheet:
-					"<link rel='stylesheet' href='languageDisplay.css' type='text/css'/> <link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
 				extraEditGroupClasses: "originalAcknowledgments",
 				defaultLanguages: "N1");
-
-			// Set up the visibility classes correctly
-			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
 
 			MakeEpub("output", "OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved", book);
 			CheckBasicsInManifest();
@@ -674,13 +668,9 @@ namespace BloomTests.Publish
 								<p></p>
 							</div>
 						</div>
-					</div>",
-				extraStyleSheet: "<link rel='stylesheet' href='basePage.css' type='text/css'/>");
+					</div>");
 
 			MakeImageFiles(book, "license");
-
-			// Set up the visibility classes correctly
-			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
 
 			MakeEpub("output", "InCreditsPage_LicenseUrlAndISBN_AreRemoved", book);
 			CheckBasicsInManifest();
