@@ -669,6 +669,8 @@ namespace Bloom.Edit
 
 		XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
 		{
+			// Note: because this extra div is OUTSIDE the page div, we don't have to remove it later,
+			// because only the page div and its contents are saved back to the permanent file.
 			var newDiv = body.OwnerDocument.CreateElement("div");
 			newDiv.SetAttribute("id", PageScalingDivId);
 			body.PrependChild(newDiv);
@@ -890,7 +892,7 @@ namespace Bloom.Edit
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
-					SavePageFrameStateAndCleanupFrame();
+					SavePageFrameState();
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
 					//this old code:
@@ -944,14 +946,8 @@ namespace Bloom.Edit
 		/// <summary>
 		/// Save anything we want to persist from page to page but which is not part of the book from the page's current state.
 		/// Currently this is just the zoom level.
-		/// Also cleanup any html inserted for the page by EditingModel code that we don't want to save.  Currently, this is
-		/// just the div inserted for handling zoom.  (See the comments on SetupPageZoom.)
 		/// </summary>
-		/// <remarks>
-		/// Note that EditingView.CleanHtmlAndCopyToPageDom() and HtmlDom.ProcessPageAfterEditing() also remove various bits of
-		/// html from the document that we use during editing but don't want to save.
-		/// </remarks>
-		void SavePageFrameStateAndCleanupFrame()
+		void SavePageFrameState()
 		{
 			var body = _view.GetPageBody();
 			Debug.Assert(body!=null, "(Debug Only) no body when doing SavePageFrameState()" );
@@ -979,16 +975,6 @@ namespace Bloom.Edit
 					}
 				}
 			}
-			RemoveContainingScalingDiv(body, pageDiv);
-		}
-
-		/// <summary>
-		/// Remove the div inserted for page zooming/scaling.  See the comment on SetupPageZoom.
-		/// </summary>
-		private void RemoveContainingScalingDiv(GeckoElement body, GeckoElement pageDiv)
-		{
-			body.InsertBefore(pageDiv.FirstChild, pageDiv);
-			body.RemoveChild(pageDiv);
 		}
 
 		/// <summary>
