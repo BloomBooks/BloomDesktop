@@ -30,6 +30,20 @@ namespace BloomTests.Publish
 		private XDocument _manifestDoc; // the contents of _manifestFile as an XDocument.
 		private string _page1Data; // contents of the file "1.xhtml" (the main content of the test book, typically)
 		private XmlNamespaceManager _ns; // Set up with all the namespaces we use (See GetNamespaceManager())
+		private static EnhancedImageServer s_testServer;
+		private static BookSelection s_bookSelection;
+
+		[OneTimeSetUp]
+		public void OneTimeSetup()
+		{
+			s_testServer = GetTestServer();
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			s_testServer.Dispose();
+		}
 
 		public override void Setup()
 		{
@@ -86,7 +100,7 @@ namespace BloomTests.Publish
 		/// <param name="text"></param>
 		/// <param name="lang"></param>
 		/// <param name="extraContent"></param>
-		/// <param name="extraImages"></param>
+		/// <param name="extraContentOutsideTranslationGroup"></param>
 		/// <param name="extraStyleSheet"></param>
 		/// <param name="extraPages"></param>
 		/// <param name="images"></param>
@@ -94,8 +108,8 @@ namespace BloomTests.Publish
 		/// <param name="extraEditDivClasses"></param>
 		/// <param name="parentDivId"></param>
 		/// <returns></returns>
-		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraImages = "",
-			string extraStyleSheet= "", string parentDivId = "somewrapper", string extraPages="", string[] images = null,
+		Bloom.Book.Book SetupBookLong(string text, string lang, string extraPageClass = "", string extraContent = "", string extraContentOutsideTranslationGroup = "",
+			string parentDivId = "somewrapper", string extraPages="", string[] images = null,
 			string extraEditGroupClasses = "", string extraEditDivClasses = "", string defaultLanguages = "auto")
 		{
 			if (images == null)
@@ -117,14 +131,21 @@ namespace BloomTests.Publish
 						</div>
 					</div>
 					{5}",
-				lang, text, extraContent, imageDivs, extraImages, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
+				lang, text, extraContent, imageDivs, extraContentOutsideTranslationGroup, extraPages, extraEditDivClasses, extraEditGroupClasses, defaultLanguages);
+
 			SetDom(body,
-				string.Format(@"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
-							{0}
-							<link rel='stylesheet' href='../customCollectionStyles.css'/>
-							<link rel='stylesheet' href='customBookStyles.css'/>", extraStyleSheet));
+				@"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
+				<link rel='stylesheet' href='basePage.css' type='text/css'/>
+				<link rel='stylesheet' href='languageDisplay.css' type='text/css'/>
+				<link rel='stylesheet' href='../customCollectionStyles.css'/>
+				<link rel='stylesheet' href='customBookStyles.css'/>");
 			var book = CreateBook();
 			CreateCommonCssFiles(book);
+			s_bookSelection.SelectBook(book);
+			
+			// Set up the visibility classes correctly
+			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
+
 			return book;
 		}
 
@@ -399,7 +420,7 @@ namespace BloomTests.Publish
 		public void ImageMissing_IsRemoved()
 		{
 			var book = SetupBookLong("This is some text", "en",
-				extraImages: @"<div><img></img></div>
+				extraContentOutsideTranslationGroup: @"<div><img></img></div>
 							<div><img src=''></img></div>
 							<div><img src='?1023456'></img></div>",
 				images:new [] {"myImage.png?1023456"});
@@ -455,7 +476,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void StandardStyleSheets_AreRemoved()
 		{
-			var book = SetupBookLong("Some text", "en", extraStyleSheet: "<link rel='stylesheet' href='basePage.css'/>");
+			var book = SetupBookLong("Some text", "en");
 			MakeEpub("output", "StandardStyleSheets_AreRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
@@ -480,8 +501,10 @@ namespace BloomTests.Publish
 		{
 			var book = SetupBookLong("Page with a picture on top and a large, centered word below.", "en",
 				extraContent: @"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text should always display</div>
-								<div class='bloom-editable' lang='fr'>French text should only display if configured</div>
-								<div class='bloom-editable' lang='de'>German should never display in this collection</div>");
+							<div class='bloom-editable' lang='fr'>French text should only display if configured</div>
+							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+				defaultLanguages: "V");
+
 			MakeEpub("output", "InvisibleAndUnwantedContentRemoved", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
@@ -506,42 +529,67 @@ namespace BloomTests.Publish
 		[Test]
 		public void National1_InXMatter_IsNotRemoved()
 		{
-			// This test does some real navigation so needs the server to be running.
-			using (GetTestServer())
-			{
-				// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
-				var book = SetupBookLong("English text (first national language) should display in title.", "en",
-					extraPageClass: " bloom-frontMatter frontCover",
-					extraContent:
-						@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
-								<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
-								<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
-					extraStyleSheet: "<link rel='stylesheet' href='languageDisplay.css' type='text/css'/><link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
-					extraEditGroupClasses: "bookTitle",
-					defaultLanguages: "V,N1");
+			// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
+			var book = SetupBookLong("English text (first national language) should display in title.", "en",
+				extraPageClass: " bloom-frontMatter frontCover",
+				extraContent:
+					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text (content1) should always display</div>
+							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
+							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+				extraEditGroupClasses: "bookTitle",
+				defaultLanguages: "V,N1");
 
-				// Set up the visibility classes correctly
-				book.UpdateEditableAreasOfElement(book.OurHtmlDom);
+			MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
+			CheckBasicsInManifest();
+			CheckBasicsInPage();
 
-				MakeEpub("output", "National1_InXMatter_IsNotRemoved", book);
-				CheckBasicsInManifest();
-				CheckBasicsInPage();
+			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
+			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
+			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
+		}
 
-				var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-				assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
-				assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
-				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
-				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
-				assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
-				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
-			}
+		/// <summary>
+		/// The critical point here is that passing defaultLanguages:N1 makes N1 the value of the data-default-languages attribute
+		/// of the translation group, which makes only N1 (English) visible. We want to verify that this results in only that
+		/// language being even PRESENT in the epub.
+		/// </summary>
+		[Test]
+		public void UserSpecifiedNoVernacular_VernacularRemoved()
+		{
+			// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
+			var book = SetupBookLong("English text (first national language) should display but vernacular shouldn't.", "en",
+				extraContent:
+					@"<div class='bloom-editable' lang='xyz'>vernacular text should not display in this case because the user turned it off</div>
+							<div class='bloom-editable' lang='fr'>French text (second national language) should not display</div>
+							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+				defaultLanguages: "N1");
+
+			MakeEpub("output", "UserSpecifiedNoVernacular_VernacularRemoved", book);
+			CheckBasicsInManifest();
+			CheckBasicsInPage();
+
+			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
+			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
 		}
 
 		private static EnhancedImageServer GetTestServer()
 		{
-			var server = new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, new BookSelection(), GetTestFileLocator());
+			var server = new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()), null, GetTestBookSelection(), GetTestFileLocator());
 			server.StartListening();
 			return server;
+		}
+
+		private static BookSelection GetTestBookSelection()
+		{
+			s_bookSelection = new BookSelection();
+			return s_bookSelection;
 		}
 
 		private static BloomFileLocator GetTestFileLocator()
@@ -557,39 +605,89 @@ namespace BloomTests.Publish
 		[Test]
 		public void OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved()
 		{
-			// This test does some real navigation so needs the server to be running.
-			using (GetTestServer())
-			{
-				// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
-				var book = SetupBookLong("Acknowledgments should only show in national 1.", "en",
-					extraPageClass: " bloom-frontMatter credits",
-					extraContent:
-						@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>acknowledgments in vernacular not displayed</div>
-								<div class='bloom-editable' lang='fr'>National 2 should not be displayed</div>
-								<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
-					extraStyleSheet:
-						"<link rel='stylesheet' href='languageDisplay.css' type='text/css'/> <link rel='stylesheet' href='basePage.css' type='text/css'></link><link rel='stylesheet' href='Factory-XMatter/Factory-XMatter.css' type='text/css'></link>",
-					extraEditGroupClasses: "originalAcknowledgments",
-					defaultLanguages: "N1");
+			// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
+			var book = SetupBookLong("Acknowledgments should only show in national 1.", "en",
+				extraPageClass: " bloom-frontMatter credits",
+				extraContent:
+					@"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>acknowledgments in vernacular not displayed</div>
+							<div class='bloom-editable' lang='fr'>National 2 should not be displayed</div>
+							<div class='bloom-editable' lang='de'>German should never display in this collection</div>",
+				extraEditGroupClasses: "originalAcknowledgments",
+				defaultLanguages: "N1");
 
-				// Set up the visibility classes correctly
-				book.UpdateEditableAreasOfElement(book.OurHtmlDom);
+			MakeEpub("output", "OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved", book);
+			CheckBasicsInManifest();
+			CheckBasicsInPage();
+			//Thread.Sleep(20000);
 
-				MakeEpub("output", "OriginalAcknowledgments_InCreditsPage_InVernacular_IsRemoved", book);
-				CheckBasicsInManifest();
-				CheckBasicsInPage();
-				//Thread.Sleep(20000);
+			//Console.WriteLine(XElement.Parse(_page1Data).ToString());
 
-				//Console.WriteLine(XElement.Parse(_page1Data).ToString());
+			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
+			assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
+		}
 
-				var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
-				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='xyz']", _ns);
-				assertThatPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='en']", _ns);
-				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", _ns);
-				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", _ns);
-				assertThatPage1.HasNoMatchForXpath("//xhtml:label", _ns); // labels are hidden
-				assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", _ns);
-			}
+		/// <summary>
+		/// Content whose display properties resolves to display:none should be removed.
+		/// </summary>
+		[Test]
+		public void InCreditsPage_LicenseUrlAndISBN_AreRemoved()
+		{
+			// We are using real stylesheet info here to determine what should be visible, so the right classes must be carefully applied.
+			var book = SetupBookLong("License url and ISBN should be removed from the epub", "en",
+				extraPageClass: " bloom-frontMatter credits",
+				extraContentOutsideTranslationGroup:
+					@"<div class=""bloom-metaData licenseAndCopyrightBlock"" data-functiononhintclick=""bookMetadataEditor"" data-hint=""Click to Edit Copyright &amp; License"">
+						<div class=""copyright Credits-Page-style"" data-derived=""copyright"" lang=""*"">
+							Copyright © 2017, me
+						</div>
+						<div class=""licenseBlock"">
+							<img class=""licenseImage"" src=""license.png"" data-derived=""licenseImage""></img>
+							<div class=""licenseUrl"" data-derived=""licenseUrl"" lang=""*"">
+								http://creativecommons.org/licenses/by/4.0/
+							</div>
+							<div class=""licenseDescription Credits-Page-style"" data-derived=""licenseDescription"" lang=""en"">
+								http://creativecommons.org/licenses/by/4.0/<br></br>
+								You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
+							</div>
+							<div class=""licenseNotes Credits-Page-style"" data-derived=""licenseNotes""></div>
+						</div>
+					</div>
+					<div class=""ISBNContainer"" data-hint=""International Standard Book Number. Leave blank if you don't have one of these."">
+						<span class=""bloom-doNotPublishIfParentOtherwiseEmpty Credits-Page-style"">ISBN</span>
+						<div class=""bloom-translationGroup"" data-default-languages=""*"">
+							<div role=""textbox"" spellcheck=""true"" tabindex=""0"" class=""bloom-editable Credits-Page-style cke_editable cke_editable_inline cke_contents_ltr bloom-content1"" data-book=""ISBN"" contenteditable=""true"" lang=""enc"">
+								<p></p>
+							</div>
+							<div class=""bloom-editable Credits-Page-style"" data-book=""ISBN"" contenteditable=""true"" lang=""*"">
+								ABCDEFG
+							</div>
+							<div role=""textbox"" spellcheck=""true"" tabindex=""0"" class=""bloom-editable Credits-Page-style cke_editable cke_editable_inline cke_contents_ltr bloom-contentNational1"" data-book=""ISBN"" contenteditable=""true"" lang=""en"">
+								<p></p>
+							</div>
+						</div>
+					</div>");
+
+			MakeImageFiles(book, "license");
+
+			MakeEpub("output", "InCreditsPage_LicenseUrlAndISBN_AreRemoved", book);
+			CheckBasicsInManifest();
+			CheckBasicsInPage();
+			//Thread.Sleep(20000);
+
+			//Console.WriteLine(XElement.Parse(_page1Data).ToString());
+
+			var assertThatPage1 = AssertThatXmlIn.String(_page1Data);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='ISBNContainer']", _ns);
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[@class='licenseUrl']", _ns);
+			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'licenseDescription')]", 1);
+			assertThatPage1.HasSpecifiedNumberOfMatchesForXpath("//img[@class='licenseImage']", 1);
+			// These temp Ids are added and removed during the creation process
+			assertThatPage1.HasNoMatchForXpath("//xhtml:div[contains(@id, '" + EpubMaker.kTempIdMarker + "')]", _ns);
 		}
 
 		[Test]
@@ -682,7 +780,7 @@ namespace BloomTests.Publish
 		{
 			var book = SetupBookLong("This is some text", "en",
 				extraPageClass: " " + sizeClass,
-				extraImages: @"<div><img src='image1.png' width='334' height='220' style='width:334px; height:220px; margin-left: 34px; margin-top: 0px;'></img></div>
+				extraContentOutsideTranslationGroup: @"<div><img src='image1.png' width='334' height='220' style='width:334px; height:220px; margin-left: 34px; margin-top: 0px;'></img></div>
 							<div><img src='image2.png' width='330' height='220' style='width:330px; height: 220px; margin-left: 33px; margin-top: 0px;'></img></div>");
 			MakeImageFiles(book, "image1", "image2");
 			MakeEpub("output", "ImageStyles_ConvertedToPercent" + sizeClass, book);
@@ -717,7 +815,7 @@ namespace BloomTests.Publish
 			// Second image triggers special cases for no width at all.
 			var book = SetupBookLong("This is some text", "en",
 				extraPageClass: " A5Portrait",
-				extraImages: @"<div><img src='image1.png' width='334' height='220' style='width:334px; margin-left: 34px; margin-top: 0px;'></img></div>
+				extraContentOutsideTranslationGroup: @"<div><img src='image1.png' width='334' height='220' style='width:334px; margin-left: 34px; margin-top: 0px;'></img></div>
 							<div><img src='image2.png' width='330' height='220' style='margin-top: 0px;'></img></div>");
 			MakeImageFiles(book, "image1", "image2");
 			MakeEpub("output", "ImageStyles_ConvertedToPercent_SpecialCases", book);
@@ -740,7 +838,7 @@ namespace BloomTests.Publish
 		{
 			var book = SetupBookLong("This is some text", "en",
 				extraPageClass: " A5Portrait",
-				extraImages: @"<div id='anotherWrapper' style='width:80%'>
+				extraContentOutsideTranslationGroup: @"<div id='anotherWrapper' style='width:80%'>
 								<div id='innerrWrapper' style='width:50%'>
 									<div><img src='image1.png' width='40' height='220' style='width:40px; height:220px; margin-left: 14px; margin-top: 0px;'></img></div>
 								</div>
