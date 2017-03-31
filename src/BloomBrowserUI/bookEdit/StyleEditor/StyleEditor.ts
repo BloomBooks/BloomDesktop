@@ -13,7 +13,7 @@ import '../../node_modules/select2/dist/js/select2.js';
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
-import { GetDifferenceBetweenHeightAndParentHeight } from '../js/bloomEditing';
+import { GetDifferenceBetweenHeightAndParentHeight, IsPageXMatter } from '../js/bloomEditing';
 import '../../lib/jquery.alphanum';
 import axios = require('axios');
 import { EditableDivUtils } from '../js/editableDivUtils';
@@ -413,7 +413,7 @@ export default class StyleEditor {
             select2target.attr("title", toolTip);
             // And unfortunately select2 updates the tooltip every time it changes, so we have
             // to arrange to reinstate it
-            element.change(x=> select2target.attr("title", toolTip));
+            element.change(x => select2target.attr("title", toolTip));
             return;
         }
 
@@ -548,12 +548,6 @@ export default class StyleEditor {
         };
     }
 
-    IsPageXMatter(targetBox: HTMLElement): boolean {
-        var $target = $(targetBox);
-        return typeof ($target.closest('.bloom-frontMatter')[0]) !== 'undefined' ||
-            typeof ($target.closest('.bloom-backMatter')[0]) !== 'undefined';
-    }
-
     AdjustFormatButton(element: Element): void {
         var newBottom = -1 * GetDifferenceBetweenHeightAndParentHeight($(element.parentElement));
         if (newBottom < 0) {
@@ -604,7 +598,7 @@ export default class StyleEditor {
         axios.get('/bloom/authorMode').then(result => {
             editor.authorMode = result.data === true;
         });
-        editor.xmatterMode = this.IsPageXMatter(targetBox);
+        editor.xmatterMode = IsPageXMatter($(targetBox));
 
         if (this._previousBox != null) {
             StyleEditor.CleanupElement(this._previousBox);

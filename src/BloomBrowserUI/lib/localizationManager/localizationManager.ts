@@ -36,266 +36,270 @@ declare function GetInlineDictionary(): any; //c# injects this
 
 export class LocalizationManager {
 
-        public dictionary: any;
-        private inlineDictionaryLoaded: boolean = false;
+    public dictionary: any;
+    private inlineDictionaryLoaded: boolean = false;
 
-        constructor() {
-                this.dictionary = {};
+    constructor() {
+        this.dictionary = {};
+    }
+
+    /**
+     * Retrieves localized strings from the server
+     * Used in Bloom 2.1
+     * @param {Object} [keyValuePairs] Optional. Each property name (i.e. keyValuePairs.keys) is a string id, and the
+     * property value is the default value/english text. If keyValuePairs is omitted, all dictionary entries will be
+     * returned, otherwise only the requested entries will be returned.
+     * @param [elementsToLocalize]
+     * @param {Function} [callbackDone] Optional function to call when done.
+     */
+    loadStrings(keyValuePairs, elementsToLocalize, callbackDone): void {
+
+        // NOTE: This function is not used in Bloom 2.0, but will be used in Bloom 2.1
+
+        var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'POST', url: '/bloom/i18n/loadStrings' };
+        if (keyValuePairs) ajaxSettings['data'] = keyValuePairs;
+
+        $.ajax(ajaxSettings)
+            .done(function (data) {
+                theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
+
+                // if callback is passes without a list of elements to localize...
+                if (typeof elementsToLocalize === 'function') {
+                    elementsToLocalize()
+                }
+                else if (elementsToLocalize) {
+                    $(elementsToLocalize).each(function () {
+                        theOneLocalizationManager.setElementText(this);
+                    });
+                    if (typeof callbackDone === 'function') callbackDone();
+                }
+                else if (typeof callbackDone === 'function') callbackDone();
+            });
+    }
+
+    /**
+     * Set dictionary values from an object.
+     * Used in Bloom 2.0
+     * @param {Object} keyValuePairObject
+     */
+    loadStringsFromObject(keyValuePairObject): void {
+        // TODO: Evaluate if this function is needed in Bloom 2.1
+        this.dictionary = keyValuePairObject;
+    }
+
+    /**
+     * WARNING! This gets the translated text only if it is already loaded. Otherwise it just gives English back and will give translation next time.
+     * Instead, use asyncGetTextInLang().
+     *
+     * Additional parameters after the englishText are treated as arguments for simpleDotNetFormat.
+     * @param {String} stringId
+     * @param {String} [englishText]
+     * @param [args]
+     * @returns {String}
+     */
+    public getText(stringId: string, englishText?: string, ...args): string {
+        if (typeof stringId === 'undefined') {
+            try {
+                throw new Error('localizationManager.getText() stringid was undefined');
+            }
+            catch (e) {
+                throw (e.message + e.stack);
+            }
+        }
+        if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
+            if (Object.keys(this.dictionary).length == 0) {
+                this.inlineDictionaryLoaded = true;
+                $.extend(theOneLocalizationManager.dictionary, GetInlineDictionary());
+            }
         }
 
-        /**
-         * Retrieves localized strings from the server
-         * Used in Bloom 2.1
-         * @param {Object} [keyValuePairs] Optional. Each property name (i.e. keyValuePairs.keys) is a string id, and the
-         * property value is the default value/english text. If keyValuePairs is omitted, all dictionary entries will be
-         * returned, otherwise only the requested entries will be returned.
-         * @param [elementsToLocalize]
-         * @param {Function} [callbackDone] Optional function to call when done.
-         */
-        loadStrings(keyValuePairs, elementsToLocalize, callbackDone): void {
+        // check if englishText is missing
+        englishText = englishText || stringId;
 
-                // NOTE: This function is not used in Bloom 2.0, but will be used in Bloom 2.1
-
-                var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'POST', url: '/bloom/i18n/loadStrings' };
-                if (keyValuePairs) ajaxSettings['data'] = keyValuePairs;
-
-                $.ajax(ajaxSettings)
-                        .done(function (data) {
-                                theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
-
-                                // if callback is passes without a list of elements to localize...
-                                if (typeof elementsToLocalize === 'function') {
-                                        elementsToLocalize()
-                                }
-                                else if (elementsToLocalize) {
-                                        $(elementsToLocalize).each(function () {
-                                                theOneLocalizationManager.setElementText(this);
-                                        });
-                                        if (typeof callbackDone === 'function') callbackDone();
-                                }
-                                else if (typeof callbackDone === 'function') callbackDone();
-                        });
+        // get the translation
+        var text = this.dictionary[stringId];
+        if (!text) {
+            text = this.dictionary[stringId.replace('&', '&amp;')];
         }
 
-        /**
-         * Set dictionary values from an object.
-         * Used in Bloom 2.0
-         * @param {Object} keyValuePairObject
-         */
-        loadStringsFromObject(keyValuePairObject): void {
-                // TODO: Evaluate if this function is needed in Bloom 2.1
-                this.dictionary = keyValuePairObject;
+        // try to get from L10NSharp
+        if (!text) {
+
+            var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'POST', url: '/bloom/i18n/loadStrings' };
+            var pair = {};
+            pair[stringId] = englishText;
+            ajaxSettings['data'] = pair;
+
+            $.ajax(ajaxSettings)
+                .done(data => {
+                    theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
+                });
+
+            text = englishText;
         }
 
-        /**
-         * WARNING! This gets the translated text only if it is already loaded. Otherwise it just gives English back and will give translation next time.
-         * Instead, use asyncGetTextInLang().
-         *
-         * Additional parameters after the englishText are treated as arguments for simpleDotNetFormat.
-         * @param {String} stringId
-         * @param {String} [englishText]
-         * @param [args]
-         * @returns {String}
-         */
-        public getText(stringId: string, englishText?: string, ...args): string {
-                if (typeof stringId === 'undefined') {
-                        try {
-                                throw new Error('localizationManager.getText() stringid was undefined');
-                        }
-                        catch (e) {
-                                throw (e.message + e.stack);
-                        }
-                }
-                if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
-                        if (Object.keys(this.dictionary).length == 0) {
-                                this.inlineDictionaryLoaded = true;
-                                $.extend(theOneLocalizationManager.dictionary, GetInlineDictionary());
-                        }
-                }
+        text = HtmlDecode(text);
+        // is this a string.format style request?
+        if (args.length > 0) {
 
-                // check if englishText is missing
-                englishText = englishText || stringId;
+            // Do the formatting.
+            text = this.simpleDotNetFormat(text, args);
+        }
 
-                // get the translation
-                var text = this.dictionary[stringId];
-                if (!text) {
-                        text = this.dictionary[stringId.replace('&', '&amp;')];
-                }
+        return text;
+    }
 
-                // try to get from L10NSharp
-                if (!text) {
+    /* Returns a promise to get the translation.
+     *
+     * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
+     * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
+     *  @example
+     * asyncGetTextInLang('topics.health','Health', "UI")
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      })
+     *      .fail($(this).text("?Health?"));
+     * @example
+     * asyncGetTextInLang('topics.health','My name is {0}", "UI", "John")
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      });
+    */
+    asyncGetTextInLang(id: string, englishText: string, langId: string, ...args): JQueryPromise<any> {
+        return this.asyncGetTextInLangCommon(id, englishText, langId, false, args);
+    }
+    /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
+     * UI language, it returns the english formatted text in the same way getText does.
+     *
+     * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
+     *  @example
+     * asyncGetText('topics.health','Health')
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      });
+     * @example
+     * asyncGetText('topics.health','My name is {0}", "John")
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      });
+    */
+    asyncGetText(id: string, englishText: string, ...args): JQueryPromise<any> {
+        return this.asyncGetTextInLangCommon(id, englishText, "UI", true, args);
+    }
 
-                        var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'POST', url: '/bloom/i18n/loadStrings' };
-                        var pair = {};
-                        pair[stringId] = englishText;
-                        ajaxSettings['data'] = pair;
+    asyncGetTextInLangCommon(id: string, englishText: string, langId: string, englishDefault: boolean, args): JQueryPromise<any> {
+        // We already get a promise from the async call, and could just return that.
+        // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
+        //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
+        var deferred = $.Deferred();
 
-                        $.ajax(ajaxSettings)
-                                .done(data => {
-                                        theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
-                                });
-
-                        text = englishText;
-                }
-
-                text = HtmlDecode(text);
-                // is this a string.format style request?
+        //when the async call comes back, we massage the text
+        axios.get("/bloom/i18n/translate",
+            {
+                params: { key: id, englishText: englishText, langId: langId }
+            })
+            .then(response => {
+                var text = HtmlDecode(response.data);
+                // is this a C#-style string.format style request?
                 if (args.length > 0) {
+                    text = this.simpleDotNetFormat(text, args);
+                }
+                deferred.resolve(text);
+            })
 
-                        // Do the formatting.
+            //TODO: I (JH) could not get this to fire, in a unit test environment, when there was no response.
+            .catch(text => {
+                if (englishDefault) {
+                    text = HtmlDecode(englishText);
+                    if (args.length > 0) {
                         text = this.simpleDotNetFormat(text, args);
+                    }
+                    deferred.resolve(text);
+                } else {
+                    deferred.fail();
                 }
+            });
+        return deferred.promise();
+    }
 
-                return text;
-        }
+    localizeThenSetElementText(element: HTMLElement, stringId: string, englishText: string): void {
+        this.asyncGetText(stringId, englishText).then((translation) => {
+            element.innerText = translation;
+        });
+    }
 
-        /* Returns a promise to get the translation.
-         *
-         * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
-         * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
-         *  @example
-         * asyncGetTextInLang('topics.health','Health', "UI")
-         *      .done(translation => {
-         *          $(this).text(translation);
-         *      })
-         *      .fail($(this).text("?Health?"));
-         * @example
-         * asyncGetTextInLang('topics.health','My name is {0}", "UI", "John")
-         *      .done(translation => {
-         *          $(this).text(translation);
-         *      });
-        */
-        asyncGetTextInLang(id: string, englishText: string, langId: string, ...args): JQueryPromise<any> {
-                return this.asyncGetTextInLangCommon(id, englishText, langId, false, args);
-        }
-        /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
-         * UI language, it returns the english formatted text in the same way getText does.
-         *
-         * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
-         *  @example
-         * asyncGetText('topics.health','Health')
-         *      .done(translation => {
-         *          $(this).text(translation);
-         *      });
-         * @example
-         * asyncGetText('topics.health','My name is {0}", "John")
-         *      .done(translation => {
-         *          $(this).text(translation);
-         *      });
-        */
-        asyncGetText(id: string, englishText: string, ...args): JQueryPromise<any> {
-                return this.asyncGetTextInLangCommon(id, englishText, "UI", true, args);
-        }
-
-        asyncGetTextInLangCommon(id: string, englishText: string, langId: string, englishDefault: boolean, args): JQueryPromise<any> {
-                // We already get a promise from the async call, and could just return that.
-                // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
-                //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
-                var deferred = $.Deferred();
-
-                //when the async call comes back, we massage the text
-                axios.get("/bloom/i18n/translate",
-                        {
-                                params: { key: id, englishText: englishText, langId: langId }
-                        })
-                        .then(response => {
-                                var text = HtmlDecode(response.data);
-                                // is this a C#-style string.format style request?
-                                if (args.length > 0) {
-                                        text = this.simpleDotNetFormat(text, args);
-                                }
-                                deferred.resolve(text);
-                        })
-
-                        //TODO: I (JH) could not get this to fire, in a unit test environment, when there was no response.
-                        .catch(text => {
-                                if (englishDefault) {
-                                        text = HtmlDecode(englishText);
-                                        if (args.length > 0) {
-                                                text = this.simpleDotNetFormat(text, args);
-                                        }
-                                        deferred.resolve(text);
-                                } else {
-                                        deferred.fail();
-                                }
-                        });
-                return deferred.promise();
-        }
-
-        localizeThenSetElementText(element: HTMLElement, stringId: string, englishText: string): void {
-                this.asyncGetText(stringId, englishText).then((translation) => {
-                        element.innerText = translation;
-                });
-        }
-
-        /**
-             * Sets the translated text of element.
-             * @param element
-             */
-        setElementText(element): void {
-
-                var key = element.dataset['i18n'];
-                if (!key) return;
-
-                var elem = $(element);
-                var text = this.getText(key, elem.html());
-
-                if (text) elem.html(text);
-        }
-
-        /**
-         * Hints sometimes have a {lang} tag in the text that needs to be substituted.
-         * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
-         * @param {String} whatToSay
-         * @param {element} targetElement
-         * @returns {String}
+    /**
+         * Sets the translated text of element.
+         * @param element
          */
-        getLocalizedHint(whatToSay, targetElement: any): string {
+    setElementText(element): void {
 
-                var args = Array.prototype.slice.call(arguments);
-                args[1] = null; //we're passing null into the gettext englishText arg
-                // this awkward, fragile method call sends along the 2 fixed arguments
-                // to the method, plus any extra arguments we might have been called with,
-                // as parameters for a  c#-style template string
-                var translated = this.getText.apply(this, args);
+        var key = element.dataset['i18n'];
+        if (!key) return;
 
-                // stick in the language
-                return this.insertLangIntoHint(translated, targetElement);
-        }
+        var elem = $(element);
+        var text = this.getText(key, elem.html());
 
-        // Hints sometimes have a {lang} tag in the text that needs to be substituted.
-        insertLangIntoHint(whatToSay, targetElement: any) {
-                var translated = whatToSay;
-                if (translated.indexOf('{lang}') != -1) {
-                        //This is the preferred approach, but it's not working yet.
-                        //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
-                        var languageName = GetInlineDictionary()[$(targetElement).attr('lang')];
-                        translated = translated.replace("{lang}", languageName);
-                }
+        if (text) elem.html(text);
+    }
 
+    /**
+     * Hints sometimes have a {lang} tag in the text that needs to be substituted.
+     * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
+     * @param {String} whatToSay
+     * @param {element} targetElement
+     * @returns {String}
+     */
+    getLocalizedHint(whatToSay, targetElement: any): string {
+
+        var args = Array.prototype.slice.call(arguments);
+        args[1] = null; //we're passing null into the gettext englishText arg
+        // this awkward, fragile method call sends along the 2 fixed arguments
+        // to the method, plus any extra arguments we might have been called with,
+        // as parameters for a  c#-style template string
+        var translated = this.getText.apply(this, args);
+
+        // stick in the language
+        return this.insertLangIntoHint(translated, targetElement);
+    }
+
+    // Hints sometimes have a {lang} tag in the text that needs to be substituted.
+    insertLangIntoHint(whatToSay, targetElement: any) {
+        var translated = whatToSay;
+        if (translated.indexOf('{lang}') != -1) {
+            //This is the preferred approach, but it's not working yet.
+            //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
+            var languageName = GetInlineDictionary()[$(targetElement).attr('lang')];
+            if (!languageName) {
+                //This can happen, for example, if the user enters {lang} in a hint bubble on a group
                 return translated;
+            }
+            translated = translated.replace("{lang}", languageName);
         }
 
-        getVernacularLang(): string {
-                return this.getText('vernacularLang');
-        }
+        return translated;
+    }
 
-        getLanguageName(iso): string {
-                return this.getText(iso);
-        }
+    getVernacularLang(): string {
+        return this.getText('vernacularLang');
+    }
 
-        /**
-         * Return a formatted string.
-         * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
-         * @param {String} format
-         * @param {String[]} args
-         * @returns {String}
-         */
-        simpleDotNetFormat(format: string, args: string[]) {
-                return format.replace(/{(\d+)}/g, function (match: string, index: number) {
-                        return (typeof args[index] !== 'undefined') ? args[index] : match;
-                });
-        }
+    getLanguageName(iso): string {
+        return this.getText(iso);
+    }
+
+    /**
+     * Return a formatted string.
+     * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
+     * @param {String} format
+     * @param {String[]} args
+     * @returns {String}
+     */
+    simpleDotNetFormat(format: string, args: string[]) {
+        return format.replace(/{(\d+)}/g, function (match: string, index: number) {
+            return (typeof args[index] !== 'undefined') ? args[index] : match;
+        });
+    }
 }
 
 /**
@@ -303,12 +307,12 @@ export class LocalizationManager {
  * @param {String} text
  */
 function HtmlDecode(text): string {
-        if (text === "") {   //an empty string leads to div.firstChild, below, being null.
-                return text;
-        }
-        var div = document.createElement('div');
-        div.innerHTML = text;
-        return div.firstChild.nodeValue;
+    if (text === "") {   //an empty string leads to div.firstChild, below, being null.
+        return text;
+    }
+    var div = document.createElement('div');
+    div.innerHTML = text;
+    return div.firstChild.nodeValue;
 }
 
 var theOneLocalizationManager: LocalizationManager = new LocalizationManager();
