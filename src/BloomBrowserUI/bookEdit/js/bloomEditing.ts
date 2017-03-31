@@ -832,5 +832,10 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
         }).catch(e => alert("useLongPress query failed:" + e));
 }
 
+export function IsPageXMatter($target: JQuery): boolean {
+    return typeof ($target.closest(".bloom-frontMatter")[0]) !== "undefined" ||
+        typeof ($target.closest(".bloom-backMatter")[0]) !== "undefined";
+}
+
 
 
