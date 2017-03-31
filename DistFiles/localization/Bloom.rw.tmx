@@ -827,6 +827,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FontSizeTip">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>

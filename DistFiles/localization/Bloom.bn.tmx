@@ -1872,15 +1872,6 @@
             <seg/>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Emphasis">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Emphasis</seg>
-         </tuv>
-         <tuv xml:lang="bn">
-            <seg>গুরুত্ব দিন</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.ExperimentalNotice">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -1888,15 +1879,6 @@
          </tuv>
          <tuv xml:lang="bn">
             <seg>এই পৃষ্ঠাটি একটি পরীক্ষামূলক প্রোটোটাইপ যার অনেকগুলো সমস্যা থাকতে পারে, সে জন্য আমরা ক্ষমাপ্রার্থী।</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Font">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Font</seg>
-         </tuv>
-         <tuv xml:lang="bn">
-            <seg>ফন্ট</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FontMissing">
@@ -1908,6 +1890,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FontSizeTip">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -1970,6 +1953,24 @@
             <seg>যা প্রয়োজন তা কি দেখতে পাচ্ছেন না?</seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.FormatDialog.Emphasis">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Emphasis</seg>
+         </tuv>
+         <tuv xml:lang="bn">
+            <seg>গুরুত্ব দিন</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Font">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Font</seg>
+         </tuv>
+         <tuv xml:lang="bn">
+            <seg>ফন্ট</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -2007,6 +2008,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.MoreTab">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>More</seg>
@@ -2031,6 +2033,15 @@
          </tuv>
          <tuv xml:lang="bn">
             <seg>অনুগ্রহ করে শুধুমাত্র বর্ণানুক্রমিক অক্ষরসমূহ ব্যবহার করুন।"পার্ট২" এর মত, শেষাংশে নম্বর ঠিক আছে।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Spacing">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Spacing</seg>
+         </tuv>
+         <tuv xml:lang="bn">
+            <seg>ফাঁকাকরণ</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.Style">
@@ -2450,15 +2461,6 @@
          </tuv>
          <tuv xml:lang="bn">
             <seg>আপনি মূল বই তৈরির সময় সেখানে কোনকিছু রাখতে পারবেন না।</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Spacing">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Spacing</seg>
-         </tuv>
-         <tuv xml:lang="bn">
-            <seg>ফাঁকাকরণ</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.StyleEditor.BorderToolTip">

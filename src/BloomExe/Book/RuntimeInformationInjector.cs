@@ -169,8 +169,6 @@ namespace Bloom.Book
 			// ATTENTION: Currently, the english here must exactly match whats in the html.
 			// See comment in AddTranslationToDictionaryUsingEnglishAsKey
 
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FontSizeTip",
-				"Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BookTitlePrompt",
 				"Book title in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.AuthorIllustratorPrompt",
