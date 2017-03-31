@@ -439,15 +439,6 @@
         <seg>አርትዕ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Font">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Font</seg>
-      </tuv>
-      <tuv xml:lang="am">
-        <seg> ቅርፀ-ቁምፊ</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.FormatDialog.CharactersTab">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -466,13 +457,32 @@
         <seg>ፍጠር</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="am">
+        <seg> ቅርፀ-ቁምፊ</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More</seg>
       </tuv>
       <tuv xml:lang="am">
         <seg>ተጨማሪ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spacing</seg>
+      </tuv>
+      <tuv xml:lang="am">
+        <seg>በፊደላትና በቃላት መካከል ክፍት ቦታ አሰጣጥ</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.Style">
@@ -564,15 +574,6 @@
       </tuv>
       <tuv xml:lang="am">
         <seg>ገጾች</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Spacing">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Spacing</seg>
-      </tuv>
-      <tuv xml:lang="am">
-        <seg>በፊደላትና በቃላት መካከል ክፍት ቦታ አሰጣጥ</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TemplatePagesList.Heading">

@@ -175,6 +175,7 @@
       </tuv>
     </tu>
     <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -1558,15 +1559,6 @@
         <seg>对当前等级来说，这个句子过长。</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Emphasis">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Emphasis</seg>
-      </tuv>
-      <tuv xml:lang="zh-Hans">
-        <seg>强调</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.ExperimentalNotice">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1576,30 +1568,12 @@
         <seg>抱歉，该页是一个实验模型，存在很多问题，请您原谅。</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Font">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Font</seg>
-      </tuv>
-      <tuv xml:lang="zh-Hans">
-        <seg>字体</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.FontMissing">
       <tuv xml:lang="en">
         <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
       </tuv>
       <tuv xml:lang="zh-Hans">
         <seg>这台电脑上没有当前选中的字体'{0}'，系统会自动使用其他字体。</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FontSizeTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-      </tuv>
-      <tuv xml:lang="zh-Hans">
-        <seg>更改所有样式为‘{0}’语言为‘{1}’的文本框中的文本字号。\n当前字号为{2}pt.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.AlreadyExists">
@@ -1656,6 +1630,24 @@
         <seg>找不到想要的吗?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.Emphasis">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Emphasis</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>强调</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>字体</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1663,6 +1655,15 @@
       </tuv>
       <tuv xml:lang="zh-Hans">
         <seg>改变字体</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>更改所有样式为‘{0}’语言为‘{1}’的文本框中的文本字号。\n当前字号为{2}pt.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
@@ -1693,6 +1694,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More</seg>
@@ -1717,6 +1719,15 @@
       </tuv>
       <tuv xml:lang="zh-Hans">
         <seg>请只用字母，数字可以放在字母后面使用，如“part2”</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spacing</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>间距</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.Style">
@@ -2118,15 +2129,6 @@
       </tuv>
       <tuv xml:lang="zh-Hans">
         <seg>制作原创书时，这里什么都不能放</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Spacing">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Spacing</seg>
-      </tuv>
-      <tuv xml:lang="zh-Hans">
-        <seg>间距</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.StyleEditor.BorderToolTip">
