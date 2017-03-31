@@ -155,6 +155,7 @@
       </tuv>
     </tu>
     <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -1416,15 +1417,6 @@
         <seg>Это предложение слишком длинное для этого уровня.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Emphasis">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Emphasis</seg>
-      </tuv>
-      <tuv xml:lang="ru">
-        <seg>Ударение</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.ExperimentalNotice">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1434,30 +1426,12 @@
         <seg>Эта страница является экспериментальным прототипом, который может работать некорректно, поэтому заранее приносим извинения.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Font">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Font</seg>
-      </tuv>
-      <tuv xml:lang="ru">
-        <seg>Шрифт</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.FontMissing">
       <tuv xml:lang="en">
         <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
       </tuv>
       <tuv xml:lang="ru">
         <seg>Выбранный шрифт '{0}', но он не установлен на вашем компьютере. Необходимо использовать другой шрифт.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FontSizeTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-      </tuv>
-      <tuv xml:lang="ru">
-        <seg>Изменения размера текста для всех блоков со стилем '{0}' и языком '{1}'.\nТекущий размер '{2}'pt.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.AlreadyExists">
@@ -1514,6 +1488,24 @@
         <seg>Вы не можете найти то, что нужно?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.Emphasis">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Emphasis</seg>
+      </tuv>
+      <tuv xml:lang="ru">
+        <seg>Ударение</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="ru">
+        <seg>Шрифт</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1521,6 +1513,15 @@
       </tuv>
       <tuv xml:lang="ru">
         <seg>Изменить начертание шрифта</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="ru">
+        <seg>Изменяет размер текста для всех блоков со стилем '{0}' и языком '{1}'. \nИспользуемый размер {2}pt.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
@@ -1551,6 +1552,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More</seg>
@@ -1575,6 +1577,15 @@
       </tuv>
       <tuv xml:lang="ru">
         <seg>Пожалуйста, используйте только буквы алфавита. Можно также использовать цифры в окончаниях, например "часть2".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spacing</seg>
+      </tuv>
+      <tuv xml:lang="ru">
+        <seg>Интервал</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.Style">
@@ -1959,15 +1970,6 @@
       </tuv>
       <tuv xml:lang="ru">
         <seg>Вы не можете ничего вставить здесь при создании оригинальной книги</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Spacing">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Spacing</seg>
-      </tuv>
-      <tuv xml:lang="ru">
-        <seg>Интервал</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.StyleEditor.BorderToolTip">

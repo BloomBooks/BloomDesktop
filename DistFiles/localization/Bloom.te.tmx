@@ -92,6 +92,7 @@
       </tuv>
     </tu>
     <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -965,15 +966,6 @@
         <seg>ప్రస్తుత ఎంపిక ఫాంట్ '{0}' ఉంది, కానీ అది ఈ కంప్యూటర్లో ఇన్స్టాల్ కాలేదు. కొన్ని ఇతర font ఉపయోగించబడుతుంది.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FontSizeTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-      </tuv>
-      <tuv xml:lang="te">
-        <seg>శైలి మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మారుస్తుంది {0} 'మరియు భాష' {1} '/n ప్రస్తుత పరిమాణం {2}pt </seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1141,6 +1133,15 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>ఫాంట్ ముఖం మార్చండి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>శైలి '{0}' మరియు భాష '{1}'. \ N ప్రస్తుత పరిమాణం {2} pt మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మార్పులు.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">

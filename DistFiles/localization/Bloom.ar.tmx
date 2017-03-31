@@ -324,7 +324,8 @@
          </tuv>
       </tu>
       <tu tuid="BookEditor.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
+        <prop type="x-nolongerused">true</prop>
+        <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
          </tuv>
@@ -1872,15 +1873,6 @@
             <seg/>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Emphasis">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Emphasis</seg>
-         </tuv>
-         <tuv xml:lang="ar">
-            <seg>تأكيد</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.ExperimentalNotice">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -1890,30 +1882,12 @@
             <seg>نعتذر! هذه الصفحة تُعد نموذجاً تجريبياً و قد تحتوي على عدة مشكلات.</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Font">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Font</seg>
-         </tuv>
-         <tuv xml:lang="ar">
-            <seg>الخط</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.FontMissing">
          <tuv xml:lang="en">
             <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
          </tuv>
          <tuv xml:lang="ar">
             <seg>الخط المحدد حاليا هو '{0}'، ولكنه غير مثبَّت على هذا الكمبيوتر.سيتم استخدام خط آخر.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-         </tuv>
-         <tuv xml:lang="ar">
-            <seg>يتم تغيير حجم النص في جميع المربعات التي تحتوي على النمط '{0}' واللغة '{1}'.\nالحجم الحالي {2} نقطة.</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.AlreadyExists">
@@ -1970,6 +1944,24 @@
             <seg>ألا ترى ما تريد؟ </seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.FormatDialog.Emphasis">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Emphasis</seg>
+         </tuv>
+         <tuv xml:lang="ar">
+            <seg>تأكيد</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Font">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Font</seg>
+         </tuv>
+         <tuv xml:lang="ar">
+            <seg>الخط</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -1979,7 +1971,16 @@
             <seg>تغيير واجهة الخط</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+     <tu tuid="EditTab.FormatDialog.FontSizeTip">
+       <prop type="x-dynamic">true</prop>
+       <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+       </tuv>
+       <tuv xml:lang="ar">
+            <seg>تغيير حجم النص في جميع المربعات التي تحتوي على النمط '{0}' واللغة '{1}'.\nالحجم الحالي {2} نقطة.</seg>
+       </tuv>
+     </tu>
+     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Change the font size</seg>
@@ -2007,6 +2008,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.MoreTab">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>More</seg>
@@ -2031,6 +2033,15 @@
          </tuv>
          <tuv xml:lang="ar">
             <seg>الرجاء استخدام أحرف هجائية فقط. لا يوجد مشكلة في الأرقام التي تظهر في النهاية، كما في "part2". </seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Spacing">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Spacing</seg>
+         </tuv>
+         <tuv xml:lang="ar">
+            <seg>المسافات</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.Style">
@@ -2450,15 +2461,6 @@
          </tuv>
          <tuv xml:lang="ar">
             <seg>لا يمكنك وضع أي شيء هنا أثناء إعداد كتاب أصلي.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Spacing">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Spacing</seg>
-         </tuv>
-         <tuv xml:lang="ar">
-            <seg>المسافات</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.StyleEditor.BorderToolTip">

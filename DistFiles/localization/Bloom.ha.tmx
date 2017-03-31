@@ -438,7 +438,8 @@
          </tuv>
       </tu>
       <tu tuid="BookEditor.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
+        <prop type="x-nolongerused">true</prop>
+        <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>
           Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\n
@@ -2050,24 +2051,6 @@
             <seg/>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Emphasis">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Emphasis</seg>
-         </tuv>
-         <tuv xml:lang="ha">
-            <seg>Jaddadawa</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Font">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Font</seg>
-         </tuv>
-         <tuv xml:lang="ha">
-            <seg>Girman Haruffa</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.FontMissing">
          <tuv xml:lang="en">
             <seg>
@@ -2076,19 +2059,6 @@
          </tuv>
          <tuv xml:lang="ha">
             <seg>Girman harafin da aka zaɓa yanzu shine '{0}' amma ba a sa shi a ƙwaƙwalwar wannan na'ura mai aiki da ƙwaƙwalwa ba. Za a yi amfani da girman wasu harufa.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>
-          Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\n
-
-          Current size is {2}pt.
-        </seg>
-         </tuv>
-         <tuv xml:lang="ha">
-            <seg>Canjin yanayin girman rubutun ga dukkan akwatuna da ke dauke da tsarin '{0}' da harshe '{1}'.\nGirma yanzu shine {2}pt.</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.AlreadyExists">
@@ -2145,6 +2115,24 @@
             <seg>Ba ka ganin abin da kake bukata? </seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.FormatDialog.Emphasis">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Emphasis</seg>
+         </tuv>
+         <tuv xml:lang="ha">
+            <seg>Jaddadawa</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Font">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Font</seg>
+         </tuv>
+         <tuv xml:lang="ha">
+            <seg>Girman Haruffa</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -2154,7 +2142,16 @@
             <seg>Canja fuskar girman harafi</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+     <tu tuid="EditTab.FormatDialog.FontSizeTip">
+       <prop type="x-dynamic">true</prop>
+       <tuv xml:lang="en">
+         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+       </tuv>
+       <tuv xml:lang="ha">
+         <seg>Chanjin yanayin girman rubutun ga dukan akwatuna da ke ɗauke da tsarin '{0}' da yare '{1}'.\nGirman rubutun yanzu shine {2}pt.</seg>
+       </tuv>
+     </tu>
+     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Change the font size</seg>
@@ -2182,6 +2179,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.MoreTab">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>More</seg>
@@ -2206,6 +2204,15 @@
          </tuv>
          <tuv xml:lang="ha">
             <seg>Don Allah ka yi amfani da haruffa bakake kawai. Sa lambobi a ƙarshe ya yi daidai, kamar a cikin"kashi na 2".</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Spacing">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Spacing</seg>
+         </tuv>
+         <tuv xml:lang="ha">
+            <seg>Faɗaɗawa</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.Style">
@@ -2560,15 +2567,6 @@
          </tuv>
          <tuv xml:lang="ha">
             <seg>Ba ka iya sa komai a can ciki idan kana yin littafin asali. </seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Spacing">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Spacing</seg>
-         </tuv>
-         <tuv xml:lang="ha">
-            <seg>Faɗaɗawa</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.StyleEditor.BorderToolTip">
