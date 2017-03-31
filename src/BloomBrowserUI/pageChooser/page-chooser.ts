@@ -338,7 +338,11 @@ class PageChooser {
             $(currentGridItemHtml).attr("data-textDivCount", $(div).find(".bloom-translationGroup:not(.box-header-off)").length);
             $(currentGridItemHtml).attr("data-pictureCount", $(div).find(".bloom-imageContainer").length);
 
-            if (currentId === defaultPageToSelect)
+            // The check for _indexOfPageToSelect here keeps the selection on the *first* matching page. In BL-4500, we found
+            // that different templates could reuse the same guid for custom page. That's a problem probably should be
+            // sorted out, but it's out "in the wild" in the Story Primer, so we have to have a fix that doesn't depend
+            // on what templates the user has installed.
+            if (currentId === defaultPageToSelect && this._indexOfPageToSelect == 0)
                 this._indexOfPageToSelect = index;
 
             var pageDescription = $(".pageDescription", div).first().text();
