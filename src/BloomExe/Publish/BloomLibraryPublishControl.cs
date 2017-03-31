@@ -137,7 +137,9 @@ namespace Bloom.Publish
 						"Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection."));
 			}
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
-			RequireValue(_copyrightLabel);
+			// Copyright info is not required if the book has been put in the public domain
+			if (!license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/"))
+				RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
 
 			if (BookTransfer.UseSandbox)

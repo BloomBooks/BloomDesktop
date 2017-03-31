@@ -115,6 +115,7 @@ namespace Bloom.Book
 		{
 			var storage = _bookStorageFactory(initialPath);
 			bool usingTemplate = storage.MetaData.IsSuitableForMakingShells;
+			bool makingTemplate = storage.MetaData.IsSuitableForMakingTemplates;
 
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
@@ -147,7 +148,8 @@ namespace Bloom.Book
 			ProcessXMatterMetaTags(storage);
 			// If we are making a shell (from a template, as opposed to making a translation of a shell),
 			// it should not have a pre-determined license. A default will be filled in later.
-			if (usingTemplate)
+			// (But, if we're MAKING a template, we want to keep the CC0 from Template Starter.)
+			if (usingTemplate && !makingTemplate)
 				BookCopyrightAndLicense.RemoveLicense(storage);
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
