@@ -114,6 +114,31 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// If the user added any custom pages in a version of bloom before 3.9 to a user defined template book, that
+		/// page is unusable as a template page.  Fix it so that is is useable.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4491.
+		/// </remarks>
+		public void FixAnyAddedCustomPages()
+		{
+			foreach (XmlElement node in _dom.SafeSelectNodes("/html/body/div[contains(@class,'bloom-page') and contains(@class,'customPage')and @data-page='']"))
+			{
+				node.SetAttribute("data-page", "extra");
+				foreach (XmlElement label in node.SafeSelectNodes("div[@class='pageLabel']"))
+				{
+					label.RemoveAttribute("data-i18n");
+					break;
+				}
+				foreach (XmlElement description in node.SafeSelectNodes("div[@class='pageDescription']"))
+				{
+					description.InnerText = String.Empty;
+					break;
+				}
+			}
+		}
+
 		private string _baseForRelativePaths = null;
 
 		/// <summary>
@@ -1339,17 +1364,14 @@ namespace Bloom.Book
 		/// <summary>
 		/// Reads the Generator meta tag.
 		/// </summary>
-		/// <returns> the version if it can find it, else 0</returns>
-		public float GetGeneratorVersion()
+		/// <returns> the version if it can find it, else version 0.0</returns>
+		public System.Version GetGeneratorVersion()
 		{
 			var generator = GetMetaValue("Generator", "");
-			var match = Regex.Match(generator, "[0-9]+\\.[0-9]+");
-			float version;
-			if (match.Success && float.TryParse(match.Captures[0].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out version))
-			{
-				return version;
-			}
-			return 0;
+			var match = Regex.Match(generator, "[0-9]+(\\.[0-9]+)+");
+			if (match.Success)
+				return new System.Version(match.Captures[0].Value);
+			return new System.Version(0, 0);
 		}
 	}
 }
