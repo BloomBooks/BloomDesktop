@@ -1831,6 +1831,11 @@
         <seg>Choose a page size and orientation</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.ParagraphSpacing">
+      <tuv xml:lang="en">
+        <seg>Space Between Paragraphs</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
