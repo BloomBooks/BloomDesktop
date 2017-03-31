@@ -1922,15 +1922,6 @@
             <seg/>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Emphasis">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Emphasis</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Accentuer</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.ExperimentalNotice">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -1940,16 +1931,8 @@
             <seg>Cette page étant un prototype expérimental, elle est susceptible de connaître plusieurs dysfonctionnements ; nous nous excsusons de la gêne occasionnée.</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Font">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Font</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Police</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.FontMissing">
+         <prop type="x-nolongerused">true</prop>
          <tuv xml:lang="en">
             <seg>
           The current selected font is '{0}', but it is not installed on this computer.
@@ -1960,6 +1943,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FontSizeTip">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -2022,6 +2006,24 @@
             <seg>Vous ne voyez pas ce qu'il faut ?</seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.FormatDialog.Emphasis">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Emphasis</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Accentuer</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Font">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Font</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Police</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -2059,6 +2061,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.MoreTab">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>More</seg>
@@ -2083,6 +2086,15 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Merci de n'utiliser que des caractères alphabétiques. Vous pouvez utiliser des nombres en fin de mot, par exemple pour écrire"partie2".</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Spacing">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Spacing</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Espacement</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.Style">
@@ -2506,15 +2518,6 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Impossible d'ajouter quoi que ce soit à cet endroit pendant la création d'un livre original.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Spacing">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Spacing</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Espacement</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.StyleEditor.BorderToolTip">

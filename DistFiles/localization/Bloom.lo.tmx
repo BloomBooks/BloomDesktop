@@ -1032,25 +1032,8 @@
         <seg>ດັດແກ້  </seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Emphasis">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Emphasis</seg>
-      </tuv>
-      <tuv xml:lang="lo">
-        <seg>ເນັ້ນຫນັກໃສ່</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Font">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Font</seg>
-      </tuv>
-      <tuv xml:lang="lo">
-        <seg>ຮູບແບບຕົວຫນັງສື  </seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.FontMissing">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
       </tuv>
@@ -1059,6 +1042,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FontSizeTip">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -1121,6 +1105,24 @@
         <seg>ບໍ່ໄດ້ໄປເບິ່ງສິ່ງທີ່ທ່ານຕ້ອງການ?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.Emphasis">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Emphasis</seg>
+      </tuv>
+      <tuv xml:lang="lo">
+        <seg>ເນັ້ນຫນັກໃສ່</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="lo">
+        <seg>ຮູບແບບຕົວຫນັງສື  </seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1158,6 +1160,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More</seg>
@@ -1182,6 +1185,15 @@
       </tuv>
       <tuv xml:lang="lo">
         <seg>ກະລຸນາໃຊ້ລັກສະນະຂອງຕົວອັກສອນເທົ່ານັ້ນ. ຈໍານວນຢູ່ໃນຕອນທ້າຍແມ່ນແລ້ວງາມ, ໃນ "part2".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spacing</seg>
+      </tuv>
+      <tuv xml:lang="lo">
+        <seg>ໄລຍະຫ່າງຕົວຫນັງສື</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.Style">
@@ -1387,15 +1399,6 @@
       </tuv>
       <tuv xml:lang="lo">
         <seg>ທີ່ຕັ້ງ</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Spacing">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Spacing</seg>
-      </tuv>
-      <tuv xml:lang="lo">
-        <seg>ໄລຍະຫ່າງຕົວຫນັງສື</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.StyleEditor.BorderToolTip">

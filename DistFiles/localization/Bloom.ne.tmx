@@ -2009,25 +2009,8 @@
             <seg>सङ्ग्रहहरू</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Emphasis">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Emphasis</seg>
-         </tuv>
-         <tuv xml:lang="ne">
-            <seg>महत्त्व</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Font">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Font</seg>
-         </tuv>
-         <tuv xml:lang="ne">
-            <seg>फन्ट</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.FontMissing">
+         <prop type="x-nolongerused">true</prop>
          <tuv xml:lang="en">
             <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
          </tuv>
@@ -2036,6 +2019,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FontSizeTip">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -2098,6 +2082,24 @@
             <seg>आफूलाई चाहिएको कुरा देख्नुभएन?</seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.FormatDialog.Emphasis">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Emphasis</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>महत्त्व</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Font">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Font</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>फन्ट</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -2135,6 +2137,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.MoreTab">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>More</seg>
@@ -2159,6 +2162,15 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>कृपया अक्षरीय वर्णहरू मात्र प्रयोग गर्नुहोस् अन्तमा देखिने सङ्ख्याहरू "भाग 2" मा जस्तै ठीक छन्।</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Spacing">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Spacing</seg>
+         </tuv>
+         <tuv xml:lang="ne">
+            <seg>अन्तर</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.Style">
@@ -2490,15 +2502,6 @@
          </tuv>
          <tuv xml:lang="ne">
             <seg>मूल पुस्तक बनाउँदा तपाईंले त्यहाँ कुनैपनि कुरा राख्न पाउनुहुन्न।</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Spacing">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Spacing</seg>
-         </tuv>
-         <tuv xml:lang="ne">
-            <seg>अन्तर</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.StyleEditor.BorderToolTip">
