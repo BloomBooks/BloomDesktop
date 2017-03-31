@@ -25,6 +25,10 @@
 // with z-index as high as 50,000; so I made this a round number higher
 // than that.
 @dialogZindex: 60000;
+// Note that  the z-index for the select2 dropdowns used in both ../StyleEditor/StyleEditor.less
+// and ../TextBoxProperties/TextBoxProperties.less must be at least as large as or larger than the
+// dialog's z-index.  (See http://issues.bloomlibrary.org/youtrack/issue/BL-4386.)
+@dialogZindexPlusOne: 60001;
 
 .bloomDialogContainer .selectedIcon {
     background-color: rgb(201, 224, 247);
