@@ -92,6 +92,7 @@
       </tuv>
     </tu>
     <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -975,15 +976,6 @@
         <seg>நடப்பு தேர்ந்தெடுத்த எழுத்துரு என்பது '{0}', ஆனால் அது நிறுவப்படவில்லை இந்தக் கணினியில். மற்ற சில எழுத்துரு பயன்படுத்தப்படும்.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FontSizeTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-      </tuv>
-      <tuv xml:lang="ta">
-        <seg>அனைத்து பெட்டிகளை சுமந்து பாணி '{0}' மற்றும் மொழி '{1}' உரை அளவை மாற்றும்.\n{2} தமிழகத்தில் நடப்பு அளவு உள்ளது.</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1151,6 +1143,15 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>எழுத்துரு முகத்தை மாற்ற</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>அனைத்து பெட்டிகளை சுமந்து பாணி '{0}' மற்றும் மொழி '{1}' உரை அளவை மாற்றும்.\n{2} தமிழகத்தில் நடப்பு அளவு உள்ளது.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">

@@ -92,6 +92,7 @@
       </tuv>
     </tu>
     <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -965,15 +966,6 @@
         <seg>वर्तमान चयनित फ़ॉन्ट '{0}' है, लेकिन यह इस कंप्यूटर पर स्थापित नहीं है। कुछ अन्य फ़ॉन्ट उपयोग किया जाएगा।</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FontSizeTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-      </tuv>
-      <tuv xml:lang="hi">
-        <seg>सभी बक्से की शैली '{0}' और भाषा '{1}' को ले जाने के लिए पाठ का आकार बदलता है।\nवर्तमान आकार {2} पीटी है।</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1141,6 +1133,15 @@
       </tuv>
       <tuv xml:lang="hi">
         <seg>फ़ॉन्ट चेहरा बदल</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>सभी बक्से की शैली '{0}' और भाषा '{1}' को ले जाने के लिए पाठ का आकार बदलता है।\nवर्तमान आकार {2} पीटी है।</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
