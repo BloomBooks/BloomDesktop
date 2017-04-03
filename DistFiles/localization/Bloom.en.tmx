@@ -2363,6 +2363,12 @@
         <seg>Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.</seg>
       </tuv>
     </tu>
+    <tu tuid="Errors.CannotAccessFile">
+      <note>displays as a "toast", {0} is the URL/filename</note>
+      <tuv xml:lang="en">
+        <seg>Cannot access {0}</seg>
+      </tuv>
+    </tu>
     <tu tuid="Errors.CannotConnectToBloomServer">
       <tuv xml:lang="en">
         <seg>Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</seg>

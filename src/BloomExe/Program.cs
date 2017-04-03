@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -139,17 +139,7 @@ namespace Bloom
 
 				if (IsInstallerLaunch(args))
 				{
-					try
-					{
-						InstallerSupport.HandleSquirrelInstallEvent(args); // may exit program
-					}
-					catch (Exception)
-					{
-						// Unfortunately, we can't localize this dialog as we haven't set up localization yet
-						using (var dlg = new InstallationFailedDialog())
-							dlg.ShowDialog();
-						throw;
-					}
+					InstallerSupport.HandleSquirrelInstallEvent(args); // may exit program
 				}
 
 				// Needs to be AFTER HandleSquirrelInstallEvent, because that can happen when the program is launched by Update rather than

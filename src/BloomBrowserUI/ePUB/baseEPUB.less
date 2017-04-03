@@ -3,6 +3,12 @@
 // The remaining rules are things that wound up slightly different from the printed book rules
 // for reasons which I mostly don't remember; unfortunately, the experiments leading to the
 // final epub PR were spread out over a long period.
+
+// IMPORTANT: do not set anything here to display:none.
+// Some/many eReaders do not properly handle display:none which means the content
+// will be displayed in error. To hide content for epubs only, use epubVisibility.less
+// which is used at epub creation time to remove content from the dom completely.
+
 @import "../bookLayout/basePage-sharedRules.less";
 @import "../templates/xMatter/bloom-xmatter-sharedRules.less";
 
@@ -22,12 +28,6 @@
                         // Don't know why epub should be different.
                         width: 94px;
                 }
-                .licenseUrl {
-                        display: none; // included in the licenseDescription field, no need to repeat
-                }
-        }
-        .ISBNContainer {
-                display: none; // would probably need a separate number for epub anyway
         }
 }
 
