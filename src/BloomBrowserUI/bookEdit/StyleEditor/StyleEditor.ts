@@ -363,22 +363,31 @@ export default class StyleEditor {
      * Adds a tooltip to an element
      * @param element a JQuery object to add the tooltip to
      * @param toolTip the text of the tooltip to display
-     * @param delay how many milliseconds to display the tooltip (defaults to 3sec)
+     * @param delay how many milliseconds we want to display the tooltip (defaults to 3sec) -- currently ignored
      */
     AddQtipToElement(element: JQuery, toolTip: string, delay: number = 3000) {
-        if (element.length == 0)
+        if (element.length === 0)
             return;
-        element.qtipSecondary({
-            content: toolTip,
-            show: {
-                event: 'click mouseenter',
-                solo: true
-            },
-            hide: {
-                event: 'unfocus', // qtip-only event that hides tooltip when anything other than the tooltip is clicked
-                inactive: delay // hides if tooltip is inactive for {delay} sec
-            }
-        });
+        // When the element is a span or similar this produces the tooltip
+        element.attr("title", toolTip);
+
+        // if the element is a select being shadowed by a select2, we have to put the tooltip on
+        // the critical element inside the select2.
+        // (https://jsfiddle.net/8odneso7/2/ shows an alternative and nicer technique, but
+        // I can't get it to work, and surmise that we're using an older version of select2
+        // that doesn't have it. This version is probably very implementation-dependent
+        // and may need rework if we ever update select2.)
+        var select2target = element.next().find("span.select2-selection__rendered");
+        if (select2target.length) {
+            select2target.attr("title", toolTip);
+            // And unfortunately select2 updates the tooltip every time it changes, so we have
+            // to arrange to reinstate it
+            element.change(x=> select2target.attr("title", toolTip));
+            return;
+        }
+
+        // And then element might be a container with a select2 INSIDE it...
+        this.AddQtipToElement(element.find("select"), toolTip, delay);
     }
 
     static GetClosestValueInList(listOfOptions: Array<string>, valueToMatch: number) {
