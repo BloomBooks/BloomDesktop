@@ -1248,6 +1248,7 @@ namespace Bloom.Edit
 
 		public void CopyPage(IPage page)
 		{
+			SaveNow();	// need to preserve any typing they've done but not yet saved (BL-4512)
 			// We have to clone this so that if the user changes the page after doing the copy,
 			// when they paste they get the page as it was, not as it is now.
 			_pageDivFromCopyPage = (XmlElement) page.GetDivNodeForThisPage().CloneNode(true);
