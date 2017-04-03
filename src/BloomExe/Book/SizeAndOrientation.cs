@@ -133,7 +133,8 @@ namespace Bloom.Book
 			{
 				var fileName = link.GetStringAttribute("href");
 				if (fileName.ToLowerInvariant().Contains("mode") || fileName.ToLowerInvariant().Contains("page") ||
-					fileName.ToLowerInvariant().Contains("matter") || fileName.ToLowerInvariant().Contains("languagedisplay"))
+					fileName.ToLowerInvariant().Contains("matter") || fileName.ToLowerInvariant().Contains("languagedisplay") ||
+					fileName.ToLowerInvariant().Contains("origami"))
 					continue;
 
 				fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
