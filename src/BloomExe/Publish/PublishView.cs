@@ -389,6 +389,7 @@ namespace Bloom.Publish
 					_workingIndicator.Cursor = Cursors.WaitCursor;
 					Cursor = Cursors.WaitCursor;
 					_workingIndicator.Visible = true;
+					_pdfViewer.Visible = false;
 					break;
 				case PublishModel.DisplayModes.ShowPdf:
 					if (RobustFile.Exists(_model.PdfFilePath))
