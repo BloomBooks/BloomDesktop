@@ -41,4 +41,5 @@
 .long-press-popup .instructions {
         font-family: Segoe UI, sans-serif;
         font-size: 12pt;
+        margin-bottom: 10px;
 }

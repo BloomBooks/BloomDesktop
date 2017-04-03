@@ -221,24 +221,11 @@ require("./jquery.mousewheel.js");
                 var compensationScale = 1.0/bodyScale;
 
                 // for now, a good test case is 1024px wide bloom window, and hold down 'i'
-                var heightNeededForPopup = 300; // just made up based on experiments with 'i'
-                var top = (window.top.innerHeight + $(window).scrollTop() ) - heightNeededForPopup;
-                popup.css('top', top * compensationScale + "px");
-
+                // Height is automatic and vertical position is locked to the bottom of the window.
                 //limit to the visible width that we can use
-                var visibleWidth = window.innerWidth||document.documentElement.clientWidth||document.body.clientWidth||0
+                var visibleWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth || 0
                 visibleWidth = visibleWidth - 25; // fudge
-                popup.css('width', visibleWidth +"px");
-
-                // next problem: if the screen is much taller than the page, then the popup --which doesn't really know what
-                // its height will be (depends on number of keys & width of screen-- doesn't extend its background color
-                // beyond the bottom of the body. If it had an explict height, it would.
-                // So, there may be a better way, but here we set the height of the popup explicity to just take up all the
-                // remaining vertical space.
-                // TODO: this is not giving the right value. I keeps it on screen for likely values of bodyScale, but it
-                // is often too large, causing scroll bars to appear.  If zoomed in, it isn't heigh enough.
-                var visibleHeight = window.innerHeight||document.documentElement.clientHeight||document.body.clientHeight||0;
-                popup.css('height',  (visibleHeight - top) + "px");
+                popup.css('width', visibleWidth + "px");
 
                 //reverse the scaling that we get from parent
                 popup.css('transform', "scale("+ compensationScale +")");
