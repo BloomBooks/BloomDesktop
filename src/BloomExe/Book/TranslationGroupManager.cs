@@ -142,14 +142,16 @@ namespace Bloom.Book
 			// This is the "code" part of the visibility system: https://goo.gl/EgnSJo
 			foreach (XmlElement group in elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
 			{
-				var dataDefaultLanguages = HtmlDom.GetAttributeValue(group, "data-default-languages").Split(new char[] { ',', ' ' },
+				var dataDefaultLanguages = HtmlDom.GetAttributeValue(group, "data-default-languages").Split(new[] { ',', ' ' },
 					StringSplitOptions.RemoveEmptyEntries);
 
+				var elementsToDisplay = new List<XmlElement>();
+
 				//nb: we don't necessarily care that a div is editable or not
-				foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div"))
+				foreach (XmlElement element in group.SafeSelectNodes(".//textarea | .//div"))
 				{
-					HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");
-					var lang = e.GetAttribute("lang");
+					HtmlDom.RemoveClassesBeginingWith(element, "bloom-content");
+					var lang = element.GetAttribute("lang");
 
 					//These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.
 					//Enhance: this is too complex; the semantics of these overlap with each other and with bloom-visibility-code-on, and with data-language-order.
@@ -157,26 +159,34 @@ namespace Bloom.Book
 					string orderClass;
 					if (contentLanguages.TryGetValue(lang, out orderClass))
 					{
-						HtmlDom.AddClass(e, orderClass); //bloom-content1, bloom-content2, bloom-content3
+						HtmlDom.AddClass(element, orderClass); //bloom-content1, bloom-content2, bloom-content3
 					}
 
 					//Enhance: it's even more likely that we can get rid of these by replacing them with bloom-content2, bloom-content3
 					if (lang == settings.Language2Iso639Code)
 					{
-						HtmlDom.AddClass(e, "bloom-contentNational1");
+						HtmlDom.AddClass(element, "bloom-contentNational1");
 					}
 					if (lang == settings.Language3Iso639Code)
 					{
-						HtmlDom.AddClass(e, "bloom-contentNational2");
+						HtmlDom.AddClass(element, "bloom-contentNational2");
 					}
 
-					HtmlDom.RemoveClassesBeginingWith(e, "bloom-visibility-code");
+					HtmlDom.RemoveClassesBeginingWith(element, "bloom-visibility-code");
 					if (ShouldNormallyShowEditable(lang, dataDefaultLanguages, contentLanguageIso2, contentLanguageIso3, settings))
 					{
-						HtmlDom.AddClass(e, "bloom-visibility-code-on");
+						HtmlDom.AddClass(element, "bloom-visibility-code-on");
+						elementsToDisplay.Add(element);
 					}
 
-					UpdateRightToLeftSetting(settings, e, lang);
+					UpdateRightToLeftSetting(settings, element, lang);
+				}
+				if (elementsToDisplay.Count == 1)
+				{
+					// If an element is the only one displayed in its translation group, we don't want to add bloom-content2 or bloom-content3.
+					// This throws off some formatting, specifically adding a margin at the top (BL-4515)
+					HtmlDom.RemoveClass(elementsToDisplay[0], "bloom-content2");
+					HtmlDom.RemoveClass(elementsToDisplay[0], "bloom-content3");
 				}
 			}
 		}

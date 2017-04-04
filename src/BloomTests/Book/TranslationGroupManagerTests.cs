@@ -238,13 +238,82 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-bilingual')]", 1);
 		}
 
+		[Test]
+		public void UpdateContentLanguageClasses_TrilingualBook_DataDefaultLanguageIsAuto_BloomContent2AndBloomContent3ClassesPresent()
+		{
+			var contents = @"<div class='bloom-page'>
+						<div class='bloom-translationGroup' data-default-languages='auto'>
+							<div class='bloom-editable' lang='xyz'></div>
+							<div class='bloom-editable' lang='fr'></div>
+							<div class='bloom-editable' lang='es'></div>
+							</div>
+						</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+			TranslationGroupManager.UpdateContentLanguageClasses(pageDiv, _collectionSettings.Object, "xyz", "fr", "es");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-content2')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-content3')]", 1);
+		}
+
+		[Test]
+		public void UpdateContentLanguageClasses_BilingualBook_DataDefaultLanguageIsNational1_BloomContent2ClassNotPresent()
+		{
+			var contents = @"<div class='bloom-page'>
+						<div class='bloom-translationGroup' data-default-languages='N1'>
+							<div class='bloom-editable' lang='xyz'></div>
+							<div class='bloom-editable' lang='fr'></div>
+							<div class='bloom-editable' lang='es'></div>
+							</div>
+						</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+			TranslationGroupManager.UpdateContentLanguageClasses(pageDiv, _collectionSettings.Object, "xyz", "fr", null);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-content2')]", 0);
+		}
+
+		[Test]
+		public void UpdateContentLanguageClasses_TrilingualBook_DataDefaultLanguageIsNational1_BloomContent2ClassNotPresent()
+		{
+			var contents = @"<div class='bloom-page'>
+						<div class='bloom-translationGroup' data-default-languages='N1'>
+							<div class='bloom-editable' lang='xyz'></div>
+							<div class='bloom-editable' lang='fr'></div>
+							<div class='bloom-editable' lang='es'></div>
+							</div>
+						</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+			TranslationGroupManager.UpdateContentLanguageClasses(pageDiv, _collectionSettings.Object, "xyz", "fr", "es");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-content2')]", 0);
+		}
+
+		[Test]
+		public void UpdateContentLanguageClasses_TrilingualBook_DataDefaultLanguageIsNational2_BloomContent3ClassNotPresent()
+		{
+			var contents = @"<div class='bloom-page'>
+						<div class='bloom-translationGroup' data-default-languages='N2'>
+							<div class='bloom-editable' lang='xyz'></div>
+							<div class='bloom-editable' lang='fr'></div>
+							<div class='bloom-editable' lang='es'></div>
+							</div>
+						</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+			var pageDiv = (XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0];
+			TranslationGroupManager.UpdateContentLanguageClasses(pageDiv, _collectionSettings.Object, "xyz", "fr", "es");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-content3')]", 0);
+		}
+
 		/// <summary>
 		/// the editmode.css rule that lets us simulate the HTML5 "placeholder" attribute with a "data-placeholder"
 		/// cannot reach up to the partent of the div, so it needs to be on the prototype child. But since the prototype these days is usually lang 'x' it is getting
 		/// deleted before we can make use of it. So more now, we are putting the data-placeholder on the partent and make sure we copy it to children.
 		/// </summary>
 		[Test]
-		public void UpdateContentLanguageClasses_TranslationGroupHasPlaceHolder_PlaceholderCopiedToNewChildren()
+		public void PrepareElementsInPageOrDocument_TranslationGroupHasPlaceHolder_PlaceholderCopiedToNewChildren()
 		{
 			var contents = @"<div class='bloom-page  bloom-trilingual'>
 								<div class='bloom-translationGroup' data-placeholder='copy me' >
@@ -262,7 +331,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void PrepareElementsOnPage_HasLabelElementInsideTranslationGroup_LeavesUntouched()
+		public void PrepareElementsInPageOrDocument_HasLabelElementInsideTranslationGroup_LeavesUntouched()
 		{
 			var contents = @"<div class='bloom-page bloom-translationGroup'>
 						<label class='bloom-bubble'>something helpful</label>
@@ -277,7 +346,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void UpdateContentLanguageClasses_PrototypeHasUnderlinedText_CopyHasNone()
+		public void PrepareElementsInPageOrDocument_PrototypeHasUnderlinedText_CopyHasNone()
 		{
 			var contents = @"<div class='bloom-page numberedPage A5Portrait bloom-monolingual'
 							id='f4a22289-1755-4b79-afc1-5d20eaa892fe'>
@@ -302,7 +371,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void UpdateContentLanguageClasses_PrototypeElementHasImageContainer_ImageContainerCopiedToNewSibling()
+		public void PrepareElementsInPageOrDocument_PrototypeElementHasImageContainer_ImageContainerCopiedToNewSibling()
 		{
 			const string contents = @"<div class='bloom-page'>
 										<div class='bloom-translationGroup'>

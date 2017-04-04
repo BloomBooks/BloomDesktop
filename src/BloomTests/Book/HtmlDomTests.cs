@@ -756,5 +756,66 @@ namespace BloomTests.Book
 			}
 			Assert.That(countEmpty, Is.EqualTo(2));
 		}
+
+		[TestCase("", "", "")]
+		[TestCase("class1", "", "class1")]
+		[TestCase("class1", "class1", "")]
+		[TestCase("class1 class2", "class1", "class2")]
+		[TestCase("class1 class2", " class1", "class2")]
+		[TestCase("class1 class2", "class1 ", "class2")]
+		[TestCase("class1 class2", "class2", "class1")]
+		[TestCase(" class1 class2", "class2", "class1")]
+		[TestCase("class1  class2", "class2", "class1")]
+		[TestCase("class1  class2 ", "class2", "class1")]
+		[TestCase("class1 class2 class3", "class1", "class2 class3")]
+		[TestCase("class1 class2 class3", "class2", "class1 class3")]
+		[TestCase("class1 class2 class3", "class3", "class1 class2")]
+		[TestCase("class1 class2", "classNotPresent", "class1 class2")]
+		[TestCase("class1 class2 ", "classNotPresent", "class1 class2")]
+		[TestCase(" class1 class2", "classNotPresent", "class1 class2")]
+		public void RemoveClass_PrefixFalse_ClassRemoved(string input, string classToRemove, string expected)
+		{
+			var content =
+				@"<html>
+					<head></head>
+					<body>
+						<div id='testDiv' class='{0}'></div>
+					</body>
+				</html>";
+			var bookDom = new HtmlDom(string.Format(content, input));
+			var div = (XmlElement)bookDom.RawDom.SafeSelectNodes("//div[@id='testDiv']")[0];
+			HtmlDom.RemoveClass(div, classToRemove, false);
+			Assert.AreEqual(expected, div.Attributes["class"].Value);
+		}
+
+		[TestCase("class1", "class1", "")]
+		[TestCase("class1 class2", "class1", "class2")]
+		[TestCase("class1 class2", " class1", "class2")]
+		[TestCase("class1 class2", "class1 ", "class2")]
+		[TestCase("class1", "class", "")]
+		[TestCase("class1 another-class2", "class", "another-class2")]
+		[TestCase("another-class1 class2", "class", "another-class1")]
+		[TestCase("another-class1 class2", "class ", "another-class1")]
+		[TestCase("another-class1 class2", " class", "another-class1")]
+		[TestCase("class1 class2 class3", "class", "")]
+		[TestCase("class1 another-class2 class3", "class", "another-class2")]
+		[TestCase("class1 class2 another-class3", "another-class", "class1 class2")]
+		[TestCase("class1 class2", "classNotPresent", "class1 class2")]
+		[TestCase("class1 class2 ", "classNotPresent", "class1 class2")]
+		[TestCase(" class1 class2", "classNotPresent", "class1 class2")]
+		public void RemoveClass_PrefixTrue_ClassesRemoved(string input, string classToRemove, string expected)
+		{
+			var content =
+				@"<html>
+					<head></head>
+					<body>
+						<div id='testDiv' class='{0}'></div>
+					</body>
+				</html>";
+			var bookDom = new HtmlDom(string.Format(content, input));
+			var div = (XmlElement)bookDom.RawDom.SafeSelectNodes("//div[@id='testDiv']")[0];
+			HtmlDom.RemoveClass(div, classToRemove, true);
+			Assert.AreEqual(expected, div.Attributes["class"].Value);
+		}
 	}
 }
