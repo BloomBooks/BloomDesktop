@@ -330,6 +330,7 @@ namespace Bloom
 				UniqueToken.ReleaseToken();
 			}
 			Settings.Default.FirstTimeRun = false;
+			Settings.Default.Save();
 			return 0;
 		}
 
