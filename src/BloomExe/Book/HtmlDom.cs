@@ -364,9 +364,12 @@ namespace Bloom.Book
 
 		public static void RemoveClassesBeginingWith(XmlElement xmlElement, string classPrefix)
 		{
+			RemoveClass(xmlElement, classPrefix, true);
+		}
 
+		public static void RemoveClass(XmlElement xmlElement, string classNameOrPrefix, bool prefix = false)
+		{
 			var classes = xmlElement.GetAttribute("class");
-			var original = classes;
 
 			if(String.IsNullOrEmpty(classes))
 				return;
@@ -375,7 +378,7 @@ namespace Bloom.Book
 			classes = "";
 			foreach(var part in parts)
 			{
-				if(!part.StartsWith(classPrefix))
+				if ((prefix && !part.StartsWith(classNameOrPrefix)) || (!prefix && part != classNameOrPrefix))
 					classes += part + " ";
 			}
 			xmlElement.SetAttribute("class", classes.Trim());
