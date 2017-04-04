@@ -387,7 +387,7 @@ export default class StyleEditor {
 
         // localize
         var tipText = 'Changes the text size for all boxes carrying the style \'{0}\' and language \'{1}\'.\nCurrent size is {2}pt.';
-        return theOneLocalizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
+        return theOneLocalizationManager.getText('EditTab.FormatDialog.FontSizeTip', tipText, styleName, lang, ptSize);
     }
 
     /**
