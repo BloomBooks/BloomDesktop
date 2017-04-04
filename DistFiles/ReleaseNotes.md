@@ -1,4 +1,4 @@
-## 3.9
+## 3.9 (alpha)
 - Custom Templates
     - We've created a "Template Starter" template that lets you make a book full of template pages that you and others can reuse.
 - Collection Setup
@@ -15,7 +15,7 @@
     - (Maybe in 3.9) We've removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
     - (Maybe in 3.9) We've added a new Zoom control.
 
-## 3.8
+## 3.8 (beta)
 
 - Windows Installation
     - Bloom now requires a newer .net, .NET 4.6.1. If your computer has received an operating system update in the past year, then you already have this.
@@ -40,7 +40,7 @@
 - Bloom now saves backups of the html file (the file that contains the book's layout and text). These are saved as ".bak" in the same folder. Should that file become corrupted by something like a power outage, Bloom will restore from the backup.
 - Over a hundred other fixes and tiny improvements.
 
-## 3.7
+## 3.7 (release)
 - You can now "unlock" a shell book that you are translating, so that you can do things like:
     - add pages
     - delete pages
