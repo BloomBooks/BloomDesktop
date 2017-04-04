@@ -5347,7 +5347,7 @@
         <seg>Animal Stories</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Historias de animales</seg>
+        <seg>Cuentos de animales</seg>
       </tuv>
     </tu>
     <tu tuid="Topics.Business">
@@ -5357,7 +5357,7 @@
         <seg>Business</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Negocio</seg>
+        <seg>Negocios</seg>
       </tuv>
     </tu>
     <tu tuid="Topics.Community Living">
@@ -5427,7 +5427,7 @@
         <seg>How To</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Cómo</seg>
+        <seg>Manuales</seg>
       </tuv>
     </tu>
     <tu tuid="Topics.Math">
@@ -5526,7 +5526,7 @@
         <seg>Traditional Story</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Historia tradicional</seg>
+        <seg>Cuentos folklórico</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
