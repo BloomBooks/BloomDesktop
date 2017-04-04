@@ -67,7 +67,8 @@ mixin field-credits-branding
 	+optional-branding-image('credits-page').branding
 
 mixin field-title-page-branding
-	+optional-branding-image('title-page').branding
+	.bottomImageWrapper
+		+optional-branding-image('title-page').branding
 
 mixin field-back-cover-branding
 	//- only one of these should succeed. That is, the pack should only supply one or the other

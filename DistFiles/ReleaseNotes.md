@@ -1,4 +1,4 @@
-## 3.9
+## 3.9 (alpha)
 - Custom Templates
     - We've created a "Template Starter" template that lets you make a book full of template pages that you and others can reuse.
 - Collection Setup
@@ -15,7 +15,7 @@
     - (Maybe in 3.9) We've removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
     - (Maybe in 3.9) We've added a new Zoom control.
 
-## 3.8
+## 3.8 (beta)
 
 - Windows Installation
     - Bloom now requires a newer .net, .NET 4.6.1. If your computer has received an operating system update in the past year, then you already have this.
@@ -24,8 +24,9 @@
     - On Linux, you can now have  alpha, beta, and release versions installed concurrently, just like on Windows.
 - Settings
     - You can now set the numbering system used for page numbering to one of 25 styles.
+    - We've added an "SIL International" branding option that puts that logo on the Title Page.
 - Edit Tab
-    - We have added A3 Landscape & A5 Landscape choices.
+    - We have added A3 Landscape and A5 Landscape choices.
     - In "Change Layout", you can now set the language of the text box. This will allow people making translations and glossaries in the back of the book to create a box, for example, which only holds the national language.
     - In the "Add Page box", you can now add pages from the "Basic Book" and "Arithmetic" templates, regardless of the template your book started with. This feature will grow in subsequent releases so that it gets easier to combine pages from multiple template page collections.
     - We've added a button for superscripting selected text.
@@ -36,9 +37,10 @@
     - PDF files that Firefox makes for Bloom can still be huge. If this is a problem for you, please see our [guide to shrinking your pdfs](https://community.software.sil.org/t/how-to-compress-a-bloom-pdf/24).
     - In the Upload section, you can now see the user ID you are logged into bloomlibrary.org with.
     - Linux users can now make Epubs.
+- Bloom now saves backups of the html file (the file that contains the book's layout and text). These are saved as ".bak" in the same folder. Should that file become corrupted by something like a power outage, Bloom will restore from the backup.
 - Over a hundred other fixes and tiny improvements.
 
-## 3.7
+## 3.7 (release)
 - You can now "unlock" a shell book that you are translating, so that you can do things like:
     - add pages
     - delete pages
