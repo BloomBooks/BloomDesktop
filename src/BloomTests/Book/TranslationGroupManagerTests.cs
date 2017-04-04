@@ -414,5 +414,16 @@ namespace BloomTests.Book
 			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("es", new[] { "auto" }, "fr", "es", _collectionSettings.Object),
 				"Auto and Trilingual, so should show all three languages.");
 		}
+
+		[Test]
+		public void ShouldNormallyShowEditable_SituationsWhereNumberedLanguagesShouldBeShown()
+		{
+			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("xyz", new[] { "L1" }, "", "", _collectionSettings.Object),
+				"The data-default-languages calls for the L1");
+			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("fr", new[] { "L2" }, "", "", _collectionSettings.Object),
+				"The data-default-languages calls for the L2.");
+			Assert.IsTrue(TranslationGroupManager.ShouldNormallyShowEditable("es", new[] { "L3"}, "", "", _collectionSettings.Object),
+				"The data-default-languages calls for the L3.");
+		}
 	}
 }
