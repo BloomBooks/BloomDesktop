@@ -826,7 +826,7 @@
         <seg>Inyuguti yatoranyijwe ubu ni '{0}', ariko rero ntyensitaye kuri iyi mudasobwa. Izindi nyuguti ziri bukoreshwe mu mwanya wayo.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FontSizeTip">
+    <tu tuid="EditTab.FormatDialog.FontSizeTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
