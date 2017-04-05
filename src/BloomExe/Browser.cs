@@ -959,23 +959,17 @@ namespace Bloom
 				 * rules don't show up inside of it. So
 				 * this won't work: _editDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
 				 */
-				var styles = new StringBuilder();
-				styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
-				// Now, our styles string may contain invalid xhtml characters like >
-				// We shouldn't have &gt; in XHTML because the content of <style> is supposed to be CSS, and &gt; is an HTML escape.
-				// And in XElement we can't just have > like we can in HTML (<style> is PCDATA, not CDATA).
-				// So, we want to mark the main body of the rules as <![CDATA[ ...]]>, within which we CAN have >.
-				// But, once again, that's HTML markup that's not valid CSS. To fix it we wrap each of the markers
-				// in CSS comments, so the wrappers end up as /*<![CDATA[*/.../*]]>*/.
-				styles.AppendLine(CdataPrefix);
+				var outerStyleElementString = new StringBuilder();
+				outerStyleElementString.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+				var innerCssStylesString = new StringBuilder();
 				foreach (var cssRule in userModifiedStyleSheet.CssRules)
 				{
-					styles.AppendLine(cssRule.CssText);
+					innerCssStylesString.AppendLine(cssRule.CssText);
 				}
-				styles.AppendLine(CdataSuffix);
-				styles.AppendLine("</style>");
+				outerStyleElementString.Append(WrapUserStyleInCdata(innerCssStylesString.ToString()));
+				outerStyleElementString.AppendLine("</style>");
 				//Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
-				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = outerStyleElementString.ToString();
 			}
 			catch (GeckoJavaScriptException jsex)
 			{
@@ -985,6 +979,31 @@ namespace Bloom
 				Logger.WriteEvent("GeckoJavaScriptException (" + jsex.Message + "). We're swallowing it but listing it here in the log.");
 				Debug.Fail("GeckoJavaScriptException(" + jsex.Message + "). In Release version, this would not show.");
 			}
+		}
+
+		/// <summary>
+		/// Wraps the inner css styles for userModifiedStyles in commented CDATA so we can handle invalid
+		/// xhtml characters like >.
+		/// </summary>
+		public static string WrapUserStyleInCdata(string innerCssStyles)
+		{
+			if (innerCssStyles.StartsWith(CdataPrefix))
+			{
+				// For some reason, we are already wrapped in CDATA.
+				// Could happen in HtmlDom.MergeUserStylesOnInsertion().
+				return innerCssStyles;
+			}
+			// Now, our styles string may contain invalid xhtml characters like >
+			// We shouldn't have &gt; in XHTML because the content of <style> is supposed to be CSS, and &gt; is an HTML escape.
+			// And in XElement we can't just have > like we can in HTML (<style> is PCDATA, not CDATA).
+			// So, we want to mark the main body of the rules as <![CDATA[ ...]]>, within which we CAN have >.
+			// But, once again, that's HTML markup that's not valid CSS. To fix it we wrap each of the markers
+			// in CSS comments, so the wrappers end up as /*<![CDATA[*/.../*]]>*/.
+			var cdataString = new StringBuilder();
+			cdataString.AppendLine(CdataPrefix);
+			cdataString.Append(innerCssStyles); // Not using AppendLine, since innerCssStyles is likely several lines
+			cdataString.AppendLine(CdataSuffix);
+			return cdataString.ToString();
 		}
 
 		private void OnUpdateDisplayTick(object sender, EventArgs e)

@@ -871,8 +871,8 @@ namespace Bloom.Book
 			// CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage()
 			Guard.AgainstNull(existingUserStyleNode, "existingUserStyleNode");
 
-			if (insertedPageUserStyleNode == null)
-				return existingUserStyleNode.InnerText;
+			if (insertedPageUserStyleNode == null || insertedPageUserStyleNode.InnerXml == string.Empty)
+				return Browser.WrapUserStyleInCdata(existingUserStyleNode.InnerText);
 
 			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
 			var existingStyleNames = new HashSet<string>();
@@ -887,7 +887,7 @@ namespace Bloom.Book
 					continue;
 				existingStyleKeyDict.Add(keyPair);
 			}
-			return GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict);
+			return Browser.WrapUserStyleInCdata(GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict));
 		}
 
 		private static string GetCompleteFilteredUserStylesInnerText(IDictionary<string, string> desiredKeys )

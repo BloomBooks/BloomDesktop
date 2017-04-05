@@ -525,6 +525,21 @@ namespace BloomTests.Book
 			Assert.AreEqual("1" + NL + "2", HtmlDom.ConvertHtmlBreaksToNewLines("1<br/>2"));
 		}
 
+		private const string StylesContainsXpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'{0}')]";
+
+		private void VerifyUserStylesCdataWrapping(XmlNode dom)
+		{
+			var stylesNodes = dom.SelectNodes("/html/head/style[@title=\"userModifiedStyles\"]");
+			Assert.AreEqual(1, stylesNodes.Count, "Should only be one userModifiedStyles element.");
+			var contents = stylesNodes[0].InnerText.Trim();
+			Assert.That(contents.StartsWith(Browser.CdataPrefix), "userModifiedStyles does not begin with CDATA prefix.");
+			Assert.That(contents.EndsWith(Browser.CdataSuffix), "userModifiedStyles does not end with CDATA suffix.");
+			Assert.That(contents.LastIndexOf(Browser.CdataPrefix).Equals(0),
+				"userModifiedStyles should not contain more than one CDATA prefix");
+			Assert.That(contents.IndexOf(Browser.CdataSuffix).Equals(contents.Length - Browser.CdataSuffix.Length),
+				"userModifiedStyles should not contain more than one CDATA suffix");
+		}
+
 		[Test]
 		public void MergeUserModifiedStyles_EmptyExisting_Works()
 		{
@@ -549,8 +564,9 @@ namespace BloomTests.Book
 			// SUT
 			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
 
-			var xpath = "//style[@title=\"userModifiedStyles\" and starts-with(text(),'.MyTest-style { font-size: ginormous; }')]";
+			var xpath = string.Format(StylesContainsXpath, ".MyTest-style { font-size: ginormous; }");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+			VerifyUserStylesCdataWrapping(bookDom.RawDom);
 		}
 
 		[Test]
@@ -577,8 +593,9 @@ namespace BloomTests.Book
 			// SUT
 			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
 
-			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'.MyTest-style { font-size: ginormous; }')]";
+			var xpath = string.Format(StylesContainsXpath, ".MyTest-style { font-size: ginormous; }");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+			VerifyUserStylesCdataWrapping(bookDom.RawDom);
 		}
 
 		[Test]
@@ -610,10 +627,11 @@ namespace BloomTests.Book
 			// SUT
 			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
 
-			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: ginormous;')]";
+			var xpath = string.Format(StylesContainsXpath, "font-size: ginormous;");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
 			var xpath2 = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: smaller;')]";
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath(xpath2);
+			VerifyUserStylesCdataWrapping(bookDom.RawDom);
 		}
 
 		[Test]
@@ -646,10 +664,11 @@ namespace BloomTests.Book
 			// SUT
 			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
 
-			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: ginormous;')]";
+			var xpath = string.Format(StylesContainsXpath, "font-size: ginormous;");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
 			var xpath2 = "//style[@title=\"userModifiedStyles\" and contains(text(),\".MyTest-style[lang='en'] { font-size: smaller;\")]";
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath(xpath2);
+			VerifyUserStylesCdataWrapping(bookDom.RawDom);
 		}
 
 		[Test]
@@ -691,6 +710,7 @@ namespace BloomTests.Book
 			var xpath2 = commonXpathPart + ",\".MyTest-style[lang='en']" + Environment.NewLine +
 				"{" + Environment.NewLine + "font-size: smaller;" + Environment.NewLine + "}" + Environment.NewLine + "\")]";
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath2, 1);
+			VerifyUserStylesCdataWrapping(bookDom.RawDom);
 		}
 
 		[Test]
