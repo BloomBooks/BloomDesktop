@@ -716,7 +716,7 @@ export default class StyleEditor {
                 toolbar.css('opacity', 1.0);
                 if (!noFormatChange) {
                     editor.getCharTabDescription();
-                    editor.getMoreTabDescription();
+                    editor.getParagraphTabDescription();
 
                     $('#font-select').change(function () { editor.changeFont(); });
                     editor.AddQtipToElement($('#font-select'),
@@ -913,12 +913,12 @@ export default class StyleEditor {
     }
 
     // The More tab settings are never language-dependent
-    getMoreTabDescription() {
+    getParagraphTabDescription() {
         var styleName = StyleEditor.GetBaseStyleNameForElement(this.boxBeingEdited);
         // BL-2386 This one should NOT be language-dependent; only style dependent
         theOneLocalizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style.', styleName)
             .done(translation => {
-                $('#formatMoreDesc').html(translation);
+                $('#formatParaDesc').html(translation);
             });
     }
 
@@ -1272,7 +1272,7 @@ export default class StyleEditor {
         }
         OverflowChecker.MarkOverflowInternal(target);
         this.getCharTabDescription();
-        this.getMoreTabDescription();
+        this.getParagraphTabDescription();
     }
 
     // Remove any additions we made to the element for the purpose of UI alone
