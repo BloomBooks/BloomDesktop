@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="es" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.39.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.3.10.0</prop>
+  <header srclang="es" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.67.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.8.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -1006,6 +1006,15 @@
         <seg>&amp;Finalizar</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.Help">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Help</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Ayuda</seg>
+      </tuv>
+    </tu>
     <tu tuid="Common.HelpButton">
       <tuv xml:lang="en">
         <seg>&amp;Help</seg>
@@ -1137,6 +1146,34 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Hubo un problema al descargar el libro: algo tomó demasiado tiempo. Puede volver a intentarlo en otro momento, o escríbanos a issues@bloomlibrary.org si la descarga no funciona desde su ubicación.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.AddPageButton">
+      <note>This is for the button that LAUNCHES the dialog, not the "Add this page" button that is IN the dialog.</note>
+      <tuv xml:lang="en">
+        <seg>Add Page</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Añandir pagina</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.AddThisPageButton">
+      <note>This is for the button inside the dialog</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add This Page</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Añandir esta pagina</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.Title">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Page...</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Añandir pagina...</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
@@ -2674,6 +2711,106 @@
         <seg>Más...</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Back">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Back</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Atrás</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Check">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>4) Check</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>4) Revisar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.CheckSettings">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1) Check that you are recording into the correct device and that these levels are showing blue:</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>1) Averiguar que está usando el dispositivo de grabación correcto y que el nivel de sonido aparece en la zona azul:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Clear">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Clear</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Borrar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Heading">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Talking Book Tool</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Herramienta de libros parlantes</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Listen">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Listen to the whole page</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Escuchar la página entera</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.LookAtSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2) Look at the highlighted sentence</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>2) Mirar la frase destacada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Next">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>5) Next</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>5) Siguiente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Speak">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>3) Speak</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>3) Grabar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.ToolPurpose">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make an e-book that can play recordings while highlighting sentences.</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Hacer un e-book que pueda reproducir las grabaciones y al mismo tiempo destacar el texto correspondiente.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.Zoom.Reset">
+      <note>This is for the button that changes the page zoom back to 100%</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reset Zoom</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Restablecer el nivel de zoom</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.Toolbox._bookSelection.LongestSentence">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -3377,7 +3514,7 @@
         <seg>Booklet Insides</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Páginas dentro del folleto</seg>
+        <seg>Interior del folleto</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
@@ -3447,7 +3584,7 @@
         <seg>Simple</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Una página por el pedazo de papel</seg>
+        <seg>Una página por hoja</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.OnePagePerPaperRadio-tooltip">
@@ -5244,7 +5381,7 @@
         <seg>Inside Front Cover</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>El interior de la cubierta frontal</seg>
+        <seg>El interior de la portada</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.Instructions">
