@@ -194,8 +194,10 @@ namespace Bloom
 		public static bool IsInstalledFileOrDirectory(string filepath)
 		{
 			var folder = GetCodeBaseFolder();
-			if (folder.EndsWith("/output/Debug"))
-				folder = folder.Replace("/Debug", string.Empty);	// files now copied to output/browser for access
+		    var slash = Path.DirectorySeparatorChar;
+			if (folder.EndsWith($"{slash}output{slash}Debug"))
+				folder = folder.Replace($"{slash}Debug", string.Empty);   // files now copied to output/browser for access
+
 			return filepath.Contains(folder);
 		}
 
