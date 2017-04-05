@@ -1,3 +1,11 @@
+## 4.0 (preliminary plan)
+- Provide a way to create anthologies of multiple books, with an automated Table of Contents.
+- Add an Image Credits field which Bloom will automatically fill and keep up to date.
+- Compress PDFs created by Bloom and use CMYK coloring to satisfy some printshops.
+- Remove Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
+- Add a new Zoom control.
+- Allow user to chose what front/back matter fields to show, and in what languages
+
 ## 3.9 (alpha)
 - Custom Templates
     - We've created a "Template Starter" template that lets you make a book full of template pages that you and others can reuse.
@@ -6,17 +14,14 @@
 - Edit Tab
     - You can now enable automatic paragraph indent on styles.
     - You can now control spacing between paragraphs.
-    - (Maybe in 3.9) When you make books from a shellbook, Bloom now moves the original copyright and license to its own field. Thus preserved, you can now set your own copyright and license for the adaptation. Bloom does not yet verify that the new license is compatible with the original.
+    - When you make books from a shellbook, Bloom now moves the original copyright and license to its own field. Thus preserved, you can now set your own copyright and license for the adaptation. Bloom does not yet verify that the new license is compatible with the original. If you add a book to a Source Collection, Bloom does *not* take this step. Bloom assumes that what you are trying to do is to edit the book you just added in some way, not really create a new derivative.
     - Text Box Formatting (under "Change Layout")
         - You can now set the vertical alignment of text boxes (top, middle, bottom)
         - You can now control the what sides of a text box now have sides
         - We have moved borders and background shading from the text styles to the Text Box Formatting
     - You can now copy a page from one book and paste it into another. One use for this is for making template pages out of complex pages you've already created.
-    - (Maybe in 3.9) We've removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
-    - (Maybe in 3.9) We've added a new Zoom control.
 
 ## 3.8 (beta)
-
 - Windows Installation
     - Bloom now requires a newer .net, .NET 4.6.1. If your computer has received an operating system update in the past year, then you already have this.
     - We've made the Windows installer less likely to trigger over-eager anti-malware programs. If you still have problems, check out the [installation troubleshooting guide](https://community.software.sil.org/t/how-to-fix-installation-problems/17/3).
