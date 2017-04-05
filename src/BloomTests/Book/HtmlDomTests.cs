@@ -525,6 +525,9 @@ namespace BloomTests.Book
 			Assert.AreEqual("1" + NL + "2", HtmlDom.ConvertHtmlBreaksToNewLines("1<br/>2"));
 		}
 
+		private const string CDATAPrefixXpath = "//style[@title=\"userModifiedStyles\" and starts-with(text(),'{0}')]";
+		private const string StylesContainsXpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'{0}')]";
+
 		[Test]
 		public void MergeUserModifiedStyles_EmptyExisting_Works()
 		{
@@ -549,8 +552,11 @@ namespace BloomTests.Book
 			// SUT
 			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
 
-			var xpath = "//style[@title=\"userModifiedStyles\" and starts-with(text(),'.MyTest-style { font-size: ginormous; }')]";
+			var xpath = string.Format(StylesContainsXpath, ".MyTest-style { font-size: ginormous; }");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(string.Format(CDATAPrefixXpath, Browser.CdataPrefix), 1);
+			var suffixXPath = string.Format(StylesContainsXpath, Browser.CdataSuffix);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(suffixXPath, 1);
 		}
 
 		[Test]
@@ -577,8 +583,10 @@ namespace BloomTests.Book
 			// SUT
 			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
 
-			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'.MyTest-style { font-size: ginormous; }')]";
+			var xpath = string.Format(StylesContainsXpath, ".MyTest-style { font-size: ginormous; }");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(string.Format(CDATAPrefixXpath, Browser.CdataPrefix), 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(string.Format(StylesContainsXpath, Browser.CdataSuffix), 1);
 		}
 
 		[Test]
@@ -610,10 +618,12 @@ namespace BloomTests.Book
 			// SUT
 			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
 
-			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: ginormous;')]";
+			var xpath = string.Format(StylesContainsXpath, "font-size: ginormous;");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
 			var xpath2 = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: smaller;')]";
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath(xpath2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(string.Format(CDATAPrefixXpath, Browser.CdataPrefix), 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(string.Format(StylesContainsXpath, Browser.CdataSuffix), 1);
 		}
 
 		[Test]
@@ -646,10 +656,12 @@ namespace BloomTests.Book
 			// SUT
 			bookStyleNode.InnerText = HtmlDom.MergeUserStylesOnInsertion(bookStyleNode, pageStyleNode);
 
-			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: ginormous;')]";
+			var xpath = string.Format(StylesContainsXpath, "font-size: ginormous;");
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
 			var xpath2 = "//style[@title=\"userModifiedStyles\" and contains(text(),\".MyTest-style[lang='en'] { font-size: smaller;\")]";
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath(xpath2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(string.Format(CDATAPrefixXpath, Browser.CdataPrefix), 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(string.Format(StylesContainsXpath, Browser.CdataSuffix), 1);
 		}
 
 		[Test]
@@ -691,6 +703,8 @@ namespace BloomTests.Book
 			var xpath2 = commonXpathPart + ",\".MyTest-style[lang='en']" + Environment.NewLine +
 				"{" + Environment.NewLine + "font-size: smaller;" + Environment.NewLine + "}" + Environment.NewLine + "\")]";
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath2, 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(string.Format(CDATAPrefixXpath, Browser.CdataPrefix), 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(string.Format(StylesContainsXpath, Browser.CdataSuffix), 1);
 		}
 
 		[Test]

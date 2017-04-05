@@ -871,8 +871,8 @@ namespace Bloom.Book
 			// CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage()
 			Guard.AgainstNull(existingUserStyleNode, "existingUserStyleNode");
 
-			if (insertedPageUserStyleNode == null)
-				return existingUserStyleNode.InnerText;
+			if (insertedPageUserStyleNode == null || insertedPageUserStyleNode.InnerXml == string.Empty)
+				return SafelyWrapUserStyleInCdata(existingUserStyleNode.InnerText);
 
 			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
 			var existingStyleNames = new HashSet<string>();
@@ -887,7 +887,26 @@ namespace Bloom.Book
 					continue;
 				existingStyleKeyDict.Add(keyPair);
 			}
-			return GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict);
+			return SafelyWrapUserStyleInCdata(GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict));
+		}
+
+		private static string SafelyWrapUserStyleInCdata(string mergedUserStyles)
+		{
+			// Now, our styles string may contain invalid xhtml characters like >
+			// We shouldn't have &gt; in XHTML because the content of <style> is supposed to be CSS, and &gt; is an HTML escape.
+			// And in XElement we can't just have > like we can in HTML (<style> is PCDATA, not CDATA).
+			// So, we want to mark the main body of the rules as <![CDATA[ ...]]>, within which we CAN have >.
+			// But, once again, that's HTML markup that's not valid CSS. To fix it we wrap each of the markers
+			// in CSS comments, so the wrappers end up as /*<![CDATA[*/.../*]]>*/.
+			if (mergedUserStyles.Contains(Browser.CdataPrefix))
+			{
+				return mergedUserStyles;
+			}
+			var sb = new StringBuilder();
+			sb.AppendLine(Browser.CdataPrefix);
+			sb.Append(mergedUserStyles);
+			sb.AppendLine(Browser.CdataSuffix);
+			return sb.ToString();
 		}
 
 		private static string GetCompleteFilteredUserStylesInnerText(IDictionary<string, string> desiredKeys )
