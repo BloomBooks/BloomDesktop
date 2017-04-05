@@ -2050,7 +2050,12 @@ namespace Bloom.Book
 			return _storage.PathToExistingHtml;
 		}
 
-		public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
+		public PublishModel.BookletLayoutMethod GetDefaultBookletLayoutMethod()
+		{
+			return GetBookletLayoutMethod(GetLayout());
+		}
+
+		public PublishModel.BookletLayoutMethod GetBookletLayoutMethod(Layout layout)
 		{
 			//NB: all we support at the moment is specifying "Calendar"
 			if (OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='defaultBookletLayout' and @content='Calendar']")).Count >
@@ -2058,7 +2063,6 @@ namespace Bloom.Book
 				return PublishModel.BookletLayoutMethod.Calendar;
 			else
 			{
-				var layout = GetLayout();
 				if (layout.SizeAndOrientation.IsLandScape && layout.SizeAndOrientation.PageSizeName == "A5")
 					return PublishModel.BookletLayoutMethod.CutAndStack;
 				return PublishModel.BookletLayoutMethod.SideFold;

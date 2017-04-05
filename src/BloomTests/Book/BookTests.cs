@@ -751,25 +751,56 @@ namespace BloomTests.Book
 			Assert.IsFalse(book.CanDelete);
 		}
 
-
 		[Test]
-		public void GetDefaultBookletLayout_NotSpecified_Fold()
+		public void GetBookletLayoutMethod_A5Portrait_NotCalendar_Fold()
 		{
 			_bookDom = new HtmlDom(@"<html ><head>
 									</head><body></body></html>");
 			var book = CreateBook();
-			Assert.AreEqual(PublishModel.BookletLayoutMethod.SideFold, book.GetDefaultBookletLayout());
+			Assert.AreEqual(PublishModel.BookletLayoutMethod.SideFold, book.GetBookletLayoutMethod(Layout.A5Portrait));
 		}
 
 		[Test]
-		public void GetDefaultBookletLayout_CalendarSpecified_Calendar()
+		public void GetBookletLayoutMethod_CalendarSpecifiedInBook_Calendar()
 		{
 
 			_bookDom = new HtmlDom(@"<html ><head>
 									<meta name='defaultBookletLayout' content='Calendar'/>
 									</head><body></body></html>");
 			var book = CreateBook();
-			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetDefaultBookletLayout());
+			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetBookletLayoutMethod(Layout.A5Portrait));
+			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetBookletLayoutMethod(A5Landscape));
+		}
+
+		private Layout A5Landscape {get { return new Layout() {SizeAndOrientation = SizeAndOrientation.FromString("A5Landscape")};} }
+
+		[Test]
+		public void GetBookletLayoutMethod_A5Landscape_NotCalendar_CutAndStack()
+		{
+			_bookDom = new HtmlDom(@"<html ><head>
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.AreEqual(PublishModel.BookletLayoutMethod.CutAndStack, book.GetBookletLayoutMethod(A5Landscape));
+		}
+
+		[Test]
+		public void GetDefaultBookletLayoutMethod_NotSpecified_Fold()
+		{
+			_bookDom = new HtmlDom(@"<html ><head>
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.AreEqual(PublishModel.BookletLayoutMethod.SideFold, book.GetDefaultBookletLayoutMethod());
+		}
+
+		[Test]
+		public void GetDefaultBookletLayoutMethod_CalendarSpecified_Calendar()
+		{
+
+			_bookDom = new HtmlDom(@"<html ><head>
+									<meta name='defaultBookletLayout' content='Calendar'/>
+									</head><body></body></html>");
+			var book = CreateBook();
+			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetDefaultBookletLayoutMethod());
 		}
 
 
