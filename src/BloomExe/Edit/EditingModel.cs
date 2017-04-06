@@ -1214,7 +1214,7 @@ namespace Bloom.Edit
 		{
 			PageChangingLayout = page;
 			SaveNow();// need to preserve any typing they've done but not yet saved
-			_view.ShowChangeLayoutDialog(page);
+			_view.ShowChangeLayoutDialog();
 		}
 
 		public void ChangeBookLicenseMetaData(Metadata metadata)
