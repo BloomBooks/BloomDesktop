@@ -125,7 +125,10 @@ namespace Bloom.Collection
 			{
 				if (Path.GetFileName(folder.FullName).StartsWith("."))//as in ".hg"
 					continue;
-				if (Path.GetFileName(folder.FullName).ToLowerInvariant().Contains("xmatter"))
+				// Don't want things in the templates/xmatter folder
+				// (even SIL-Cameroon-Mothballed, which no longer has xmatter in its filename)
+				// so filter on the whole path.
+				if (folder.FullName.ToLowerInvariant().Contains("xmatter"))
 					continue;
 				if(RobustFile.Exists(Path.Combine(folder.FullName, ".bloom-ignore")))
 					continue;

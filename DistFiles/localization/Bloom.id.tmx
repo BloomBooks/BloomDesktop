@@ -324,7 +324,8 @@
          </tuv>
       </tu>
       <tu tuid="BookEditor.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
+        <prop type="x-nolongerused">true</prop>
+        <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
          </tuv>
@@ -846,9 +847,9 @@
             <seg>Koleksi Sumber</seg>
          </tuv>
       </tu>
-      <tu tuid="CollectionTab.BookMenu.CopyBook">
+      <tu tuid="CollectionTab.BookMenu.DuplicateBook">
          <tuv xml:lang="en">
-            <seg>Copy Book</seg>
+            <seg>Duplicate Book</seg>
          </tuv>
          <tuv xml:lang="id">
             <seg>Salin Buku</seg>
@@ -1571,7 +1572,7 @@
             <seg>Jika Anda perlu menempatkan informasi lebih lanjut mengenai buku tersebut, Anda bisa menggunakan halaman ini, yaitu di bagian luar dari sampul belakang.</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Background">
+      <tu tuid="EditTab.TextBoxProperties.Background">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Background</seg>
@@ -1595,15 +1596,6 @@
          </tuv>
          <tuv xml:lang="id">
             <seg>Buka HTML yang digunakan untuk membuat PDF ini, dalam Firefox (harus berada di jalurnya) </seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Borders">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Borders</seg>
-         </tuv>
-         <tuv xml:lang="id">
-            <seg>Bingkai</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.CannotChangeCopyright">
@@ -1881,15 +1873,6 @@
             <seg/>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Emphasis">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Emphasis</seg>
-         </tuv>
-         <tuv xml:lang="id">
-            <seg>Penekanan</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.ExperimentalNotice">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -1899,30 +1882,12 @@
             <seg>Halaman ini merupakan bentuk-uji-coba eksperimental yang mungkin memiliki banyak masalah, karena itu kami mohon maaf.</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Font">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Font</seg>
-         </tuv>
-         <tuv xml:lang="id">
-            <seg>Bentuk Huruf</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.FontMissing">
          <tuv xml:lang="en">
             <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
          </tuv>
          <tuv xml:lang="id">
             <seg>Bentuk huruf yang saat ini dipilih adalah '{0}', namun tidak terpasang di komputer ini.Sebagian bentuk huruf lainnya akan digunakan.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-         </tuv>
-         <tuv xml:lang="id">
-            <seg>Ubah ukuran teks untuk semua kotak yang menggunakan gaya '{0}' dan bahasa '{1}'.\nUkuran sekarang adalah {2}pt.</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.AlreadyExists">
@@ -1979,6 +1944,24 @@
             <seg>Yang dibutuhkan tidak ada?</seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.FormatDialog.Emphasis">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Emphasis</seg>
+         </tuv>
+         <tuv xml:lang="id">
+            <seg>Penekanan</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Font">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Font</seg>
+         </tuv>
+         <tuv xml:lang="id">
+            <seg>Bentuk Huruf</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -1988,7 +1971,16 @@
             <seg>Ganti tampilan bentuk huruf</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+     <tu tuid="EditTab.FormatDialog.FontSizeTip">
+       <prop type="x-dynamic">true</prop>
+       <tuv xml:lang="en">
+         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+       </tuv>
+       <tuv xml:lang="id">
+         <seg>Ubah pada ukuran teks untuk semua kotak yang mempunyai gaya '{0}' dan bahasa '{1}'.\n Ukuran sekarang adalah {2}pt. </seg>
+       </tuv>
+     </tu>
+     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Change the font size</seg>
@@ -2016,6 +2008,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.MoreTab">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>More</seg>
@@ -2040,6 +2033,15 @@
          </tuv>
          <tuv xml:lang="id">
             <seg>Mohon gunakan karakter abjad saja. Nomor di akhir dibolehkan, seperti pada "bagian2".</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Spacing">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Spacing</seg>
+         </tuv>
+         <tuv xml:lang="id">
+            <seg>Tempatkan</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.Style">
@@ -2459,15 +2461,6 @@
          </tuv>
          <tuv xml:lang="id">
             <seg>Anda tidak dapat menempatkan apa pun saat membuat buku asli.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Spacing">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Spacing</seg>
-         </tuv>
-         <tuv xml:lang="id">
-            <seg>Tempatkan</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.StyleEditor.BorderToolTip">

@@ -9,7 +9,7 @@
  *  Modified August 2015 to add instructions at the bottom
  *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
-import {EditableDivUtils} from "../../bookEdit/js/editableDivUtils";
+import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 require("./jquery.mousewheel.js");
 
 (function ($, window, undefined) {
@@ -20,70 +20,70 @@ require("./jquery.mousewheel.js");
                         instructions: ""
                 };
 
-        var moreChars={
+        var moreChars = {
                 // extended latin (and african latin)
                 // upper
-                'A':'ĀĂÀÁÂÃÄÅĄⱭÆ∀',
-                'B':'Ɓ',
+                'A': 'ĀĂÀÁÂÃÄÅĄⱭÆ∀',
+                'B': 'Ɓ',
                 'C': 'ÇĆĈƆ̃ĊČƆ',
-                'D':'ÐĎĐḎƊ',
+                'D': 'ÐĎĐḎƊ',
                 'E': 'ÈÉÊẼËĒĖĘẸĚƏÆƎƐ€',
-                'F':'ƑƩ',
-                'G':'ĜĞĠĢƢ',
-                'H':'ĤĦ',
-                'I':'ÌÍȊĬÎǏÏḮĨȈĮĪỈỊḬƗİĲ',
-                'J':'ĴĲ',
-                'K':'ĶƘ',
-                'L':'ĹĻĽŁΛ',
-                'N':'ÑŃŅŇŊƝ₦',
-                'O':'ÒÓÔÕÖŌØŐŒƠƟ',
-                'P':'Ƥ¶',
-                'R':'ŔŘɌⱤ',
-                'S':'ßſŚŜŞṢŠÞ§',
-                'T':'ŢŤṮƬƮ',
-                'U':'ÙÚÛŨÜŪŬŮŰŲɄƯƱ',
-                'V':'Ʋ',
-                'W':'ŴẄΩ',
-                'Y':'ÝŶŸƔƳ',
-                'Z':'ŹŻŽƵƷẔ',
+                'F': 'ƑƩ',
+                'G': 'ĜĞĠĢƢ',
+                'H': 'ĤĦ',
+                'I': 'ÌÍȊĬÎǏÏḮĨȈĮĪỈỊḬƗİĲ',
+                'J': 'ĴĲ',
+                'K': 'ĶƘ',
+                'L': 'ĹĻĽŁΛ',
+                'N': 'ÑŃŅŇŊƝ₦',
+                'O': 'ÒÓÔÕÖŌØŐŒƠƟ',
+                'P': 'Ƥ¶',
+                'R': 'ŔŘɌⱤ',
+                'S': 'ßſŚŜŞṢŠÞ§',
+                'T': 'ŢŤṮƬƮ',
+                'U': 'ÙÚÛŨÜŪŬŮŰŲɄƯƱ',
+                'V': 'Ʋ',
+                'W': 'ŴẄΩ',
+                'Y': 'ÝŶŸƔƳ',
+                'Z': 'ŹŻŽƵƷẔ',
 
                 // lower
-                'a':'āăàáâãäåąɑæαª',
-                'b':'ßβɓ',
+                'a': 'āăàáâãäåąɑæαª',
+                'b': 'ßβɓ',
                 'c': 'çςćĉɔ̃ċč¢ɔ©',
-                'd':'ðďđɖḏɖɗ',
-                'e':'èéêẽëēėęẹěəæεɛ€',
-                'f':'ƒʃƭ',
-                'g':'ĝğġģɠƣ',
-                'h':'ĥħɦẖ',
-                'i':'ìíȋĭîǐïḯĩȉįīỉịḭɨıĳɪᵻᶖι',
-                'j':'ĵɟʄĳ',
-                'k':'ķƙ',
-                'l':'ĺļľłλ',
-                'n':'ñńņňŋɲ',
-                'o':'òóôõöōøőœơɵ°',
-                'p':'ƥ¶',
-                'r':'ŕřɍɽ',
-                's':'ßſśŝşṣšþ§',
-                't':'ţťṯƭʈ',
+                'd': 'ðďđɖḏɖɗ',
+                'e': 'èéêẽëēėęẹěəæεɛ€',
+                'f': 'ƒʃƭ',
+                'g': 'ĝğġģɠƣ',
+                'h': 'ĥħɦẖ',
+                'i': 'ìíȋĭîǐïḯĩȉįīỉịḭɨıĳɪᵻᶖι',
+                'j': 'ĵɟʄĳ',
+                'k': 'ķƙ',
+                'l': 'ĺļľłλ',
+                'n': 'ñńņňŋɲ',
+                'o': 'òóôõöōøőœơɵ°',
+                'p': 'ƥ¶',
+                'r': 'ŕřɍɽ',
+                's': 'ßſśŝşṣšþ§',
+                't': 'ţťṯƭʈ',
                 'u': 'ùúûũüūŭůűųưμυʉʊ',
-                'v':'ʋ',
-                'w':'ŵẅω',
-                'y':'ýŷÿɣyƴ',
-                'z':'źżžƶẕʒƹ',
+                'v': 'ʋ',
+                'w': 'ŵẅω',
+                'y': 'ýŷÿɣyƴ',
+                'z': 'źżžƶẕʒƹ',
 
                 // Misc
-                '$':'£¥€₩₨₳Ƀ¤',
-                '!':'¡‼‽',
-                '?':'¿‽',
-                '%':'‰',
-                '.':'…•',
-                '-':'±‐–—',
-                '+':'±†‡',
-                '\\':'′″‴‘’‚‛',
-                '"':'“”„‟',
-                '<':'«≤‹',
-                '>':'»≥›',
+                '$': '£¥€₩₨₳Ƀ¤',
+                '!': '¡‼‽',
+                '?': '¿‽',
+                '%': '‰',
+                '.': '…•',
+                '-': '±‐–—',
+                '+': '±†‡',
+                '\\': '′″‴‘’‚‛',
+                '"': '“”„‟',
+                '<': '«≤‹',
+                '>': '»≥›',
                 '=': '≈≠≡',
                 '/': '÷'
 
@@ -108,7 +108,7 @@ require("./jquery.mousewheel.js");
         // 46 delete
         // Review: there are others we could add, function keys, num lock, scroll lock, break, forward & back slash, etc.
         //  not sure how much we gain from that...
-        var ignoredKeyDownKeyCodes=[8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
+        var ignoredKeyDownKeyCodes = [8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
         var ignoredKeyUpKeys = [8, 9, 13, /*16,*/ 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
 
         var selectedCharIndex;
@@ -117,15 +117,15 @@ require("./jquery.mousewheel.js");
         var activeElement;
         var textAreaCaretPosition;
         var storedOffset;
-        var shortcuts=[];
+        var shortcuts = [];
         var popup;
         var longpressPopupVisible = false;
 
         $(window).mousewheel(onWheel);
 
 
-        function makeShortcuts(skipKey){
-                shortcuts=[];
+        function makeShortcuts(skipKey) {
+                shortcuts = [];
                 //while numbers are the most convenient, we are not using them because
                 //when the user is trying to get a capital letter, the shift key is held
                 //down and numbers are converted to symbols. I don' know of a way to convert
@@ -133,11 +133,11 @@ require("./jquery.mousewheel.js");
                 // for(var i = 1; i < 10;i++){
                 //     shortcuts.push(String.fromCharCode(48+i));//48 is '1';
                 // }
-                for(var i = 0; i<26;i++){
+                for (var i = 0; i < 26; i++) {
                         //the character used to invoke longPress can't be pressed again as a shortcut,
                         //same for the shifted version of the character.
-                        var key = String.fromCharCode(97+i);
-                        if(key != skipKey && key != skipKey.toLowerCase()){
+                        var key = String.fromCharCode(97 + i);
+                        if (key != skipKey && key != skipKey.toLowerCase()) {
                                 //we use uppercase because that's what you see on the keys of the physical keyboard
                                 shortcuts.push(key.toUpperCase());//97 is charcode for 'a';
                         }
@@ -159,10 +159,10 @@ require("./jquery.mousewheel.js");
                 */
 
                 //once the panel is showing, let the user type any of the shortcuts to select the corresponding character
-                if(longpressPopupVisible && activationKey != e.key){
+                if (longpressPopupVisible && activationKey != e.key) {
                         var unshiftedKey = e.key.toUpperCase();
                         var indexOfSelectedCharacter = shortcuts.indexOf(unshiftedKey);
-                        if(indexOfSelectedCharacter >= 0) {
+                        if (indexOfSelectedCharacter >= 0) {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 selectCharIndex(indexOfSelectedCharacter);
@@ -171,33 +171,33 @@ require("./jquery.mousewheel.js");
                 }
 
 
-                if (ignoredKeyDownKeyCodes.indexOf(e.which)>-1) return;
-                activeElement=e.target;
-;
-                if (e.key==activationKey) {
+                if (ignoredKeyDownKeyCodes.indexOf(e.which) > -1) return;
+                activeElement = e.target;
+                ;
+                if (e.key == activationKey) {
                         e.preventDefault();
                         e.stopPropagation(); //attempt to stop ckeditor from seeing this event
                         makeShortcuts(activationKey);
-                        if (!timer) timer=setTimeout(onTimer, 10);
+                        if (!timer) timer = setTimeout(onTimer, 10);
                         return;
                 }
-                activationKey=e.key;
+                activationKey = e.key;
         }
 
         function onKeyUp(e) {
                 if (ignoredKeyUpKeys.indexOf(e.which) > -1) return;
                 if (activeElement == null) return;
 
-                activationKey=null;
+                activationKey = null;
                 clearTimeout(timer);
-                timer=null;
+                timer = null;
 
                 hidePopup();
         }
         function onTimer() {
                 var typedChar = isTextArea() ?
-                        $(activeElement).val().split('')[getTextAreaCaretPosition(activeElement)-1] :
-                        $(activeElement).text().split('')[getCaretPositionOffset(activeElement)-1];
+                        $(activeElement).val().split('')[getTextAreaCaretPosition(activeElement) - 1] :
+                        $(activeElement).text().split('')[getCaretPositionOffset(activeElement) - 1];
 
                 if (moreChars[typedChar]) {
                         storeCaretPosition();
@@ -209,8 +209,8 @@ require("./jquery.mousewheel.js");
         function showPopup(chars) {
                 popup.find('ul').empty();
                 var letter;
-                for (var i=0; i<chars.length; i++) {
-                        letter=$('<li class=long-press-letter data-shortcut="'+shortcuts[i]+'">'+chars[i]+'</li>');
+                for (var i = 0; i < chars.length; i++) {
+                        letter = $('<li class=long-press-letter data-shortcut="' + shortcuts[i] + '">' + chars[i] + '</li>');
                         letter.mouseenter(activateLetter);
                         letter.click(onPopupLetterClick);
                         popup.find('ul').append(letter);
@@ -218,7 +218,7 @@ require("./jquery.mousewheel.js");
 
                 //When the parent body is scaled, we don't want our popup to scale
                 var bodyScale = document.body.getBoundingClientRect().width / document.body.offsetWidth;
-                var compensationScale = 1.0/bodyScale;
+                var compensationScale = 1.0 / bodyScale;
 
                 // for now, a good test case is 1024px wide bloom window, and hold down 'i'
                 // Height is automatic and vertical position is locked to the bottom of the window.
@@ -228,11 +228,11 @@ require("./jquery.mousewheel.js");
                 popup.css('width', visibleWidth + "px");
 
                 //reverse the scaling that we get from parent
-                popup.css('transform', "scale("+ compensationScale +")");
+                popup.css('transform', "scale(" + compensationScale + ")");
                 popup.css('transform-origin', "top left");
 
                 $('body').append(popup);
-                selectedCharIndex=-1;
+                selectedCharIndex = -1;
                 longpressPopupVisible = true;
         }
         function onPopupLetterClick(e) {
@@ -243,7 +243,7 @@ require("./jquery.mousewheel.js");
                 selectCharIndex($(e.target).index());
         }
         function activateRelativeLetter(i) {
-                selectCharIndex(($('.long-press-letter').length+selectedCharIndex+i) % $('.long-press-letter').length);
+                selectCharIndex(($('.long-press-letter').length + selectedCharIndex + i) % $('.long-press-letter').length);
         }
         function activateNextLetter() {
                 activateRelativeLetter(1);
@@ -256,19 +256,19 @@ require("./jquery.mousewheel.js");
                 popup.detach();
         }
         function onWheel(e, delta, deltaX, deltaY) {
-                if ($('.long-press-popup').length==0) return;
+                if ($('.long-press-popup').length == 0) return;
                 e.preventDefault();
-                delta<0 ? activateNextLetter() : activePreviousLetter();
+                delta < 0 ? activateNextLetter() : activePreviousLetter();
         }
         function selectCharIndex(i) {
                 $('.long-press-letter.selected').removeClass('selected');
                 $('.long-press-letter').eq(i).addClass('selected');
-                selectedCharIndex=i;
+                selectedCharIndex = i;
                 updateChar();
         }
 
         function updateChar() {
-                var newChar=$('.long-press-letter.selected').text();
+                var newChar = $('.long-press-letter.selected').text();
                 replacePreviousLetterWithText(newChar);
         }
 
@@ -298,7 +298,7 @@ require("./jquery.mousewheel.js");
         }
 
         function setFocusDelayed() {
-                window.setTimeout(function() {
+                window.setTimeout(function () {
                         if (activeElement && typeof activeElement.focus != "undefined") {
                                 activeElement.focus();
                         }
@@ -370,7 +370,7 @@ require("./jquery.mousewheel.js");
                                 preCaretRange.setEnd(range.endContainer, range.endOffset);
                                 caretOffset = preCaretRange.toString().length;
                         }
-                } else if ( (sel = doc.selection) && sel.type != "Control") {
+                } else if ((sel = doc.selection) && sel.type != "Control") {
                         var textRange = sel.createRange();
                         var preCaretTextRange = doc.body.createTextRange();
                         preCaretTextRange.moveToElementText(element);
@@ -380,13 +380,13 @@ require("./jquery.mousewheel.js");
                 return caretOffset;
         }
 
-        function getTextAreaCaretPosition (ctrl) {
+        function getTextAreaCaretPosition(ctrl) {
                 var caretPos = 0;
                 if (document.selection) {
                         // IE Support
-                        ctrl.focus ();
-                        var sel = document.selection.createRange ();
-                        sel.moveStart ('character', -ctrl.value.length);
+                        ctrl.focus();
+                        var sel = document.selection.createRange();
+                        sel.moveStart('character', -ctrl.value.length);
                         caretPos = sel.text.length;
                 } else if (ctrl.selectionStart || ctrl.selectionStart == '0') {
                         // Firefox support
@@ -397,7 +397,7 @@ require("./jquery.mousewheel.js");
         function setTextAreaCaretPosition(ctrl, pos) {
                 if (ctrl.setSelectionRange) {
                         ctrl.focus();
-                        ctrl.setSelectionRange(pos,pos);
+                        ctrl.setSelectionRange(pos, pos);
                 } else if (ctrl.createTextRange) {
                         var range = ctrl.createTextRange();
                         range.collapse(true);
@@ -407,10 +407,10 @@ require("./jquery.mousewheel.js");
                 }
         }
 
-        function LongPress( element, options ) {
+        function LongPress(element, options) {
 
                 this.element = element;
-                this.options = $.extend( {}, defaults, options) ;
+                this.options = $.extend({}, defaults, options);
 
                 this._defaults = defaults;
                 this._name = pluginName;
@@ -430,10 +430,10 @@ require("./jquery.mousewheel.js");
 
         };
 
-        $.fn[pluginName] = function ( options ) {
+        $.fn[pluginName] = function (options) {
                 return this.each(function () {
                         if (!$.data(this, 'plugin_' + pluginName)) {
-                                $.data(this, 'plugin_' + pluginName, new LongPress( this, options ));
+                                $.data(this, 'plugin_' + pluginName, new LongPress(this, options));
                         }
                 });
         };

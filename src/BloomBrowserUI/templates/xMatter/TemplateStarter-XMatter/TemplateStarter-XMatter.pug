@@ -1,0 +1,32 @@
+include ../bloom-xmatter-mixins.pug
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title Template Starter Front & Back Matter
+		+stylesheets('TemplateStarter-XMatter.css')
+	body
+		+page-cover('Image For Thumbnail')(data-export='front-matter-cover')&attributes(attributes).frontCover.outsideFrontCover#36e4a8d9-c61c-496d-9f37-2cc274d28b34
+			.bloom-imageContainer.bloom-backgroundImage(data-book='coverImage', style="background-image:url('placeHolder.png')")
+				label.bubble Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.
+
+		+page-xmatter("About").bloom-frontMatter(data-export='front-matter-about')#26e4a8d9-c61c-496d-9f37-2cc274d28b32
+			| Template Title
+			+field("V,en").title
+				+editable(kLanguageForPrototypeOnly)(data-book='bookTitle')
+
+			| Name of Template Creator
+			+field-prototypeDeclaredExplicity("N1, en").templateCreator
+				+editable(kLanguageForPrototypeOnly)(data-book='templateCreator')
+
+			.licenseInfo
+				| Any images that you include in this template will retain their embedded copyright and license, and so books
+				| using those images can and should give credit and abide by those licenses.
+				| However we require that the structure of your template be free of copyright and in the
+				a(href="http://creativecommons.org/publicdomain/zero/1.0/") Public Domain (CC0).
+				p
+				img(src='license.png').licenseImage
+				.div(data-book="licenseUrl")
+

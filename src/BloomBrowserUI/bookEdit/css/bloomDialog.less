@@ -1,3 +1,4 @@
+@import (reference) "../../bookLayout/basePage";
 // Common styles to be applied to htm-js-css dialogs in Bloom
 @backgroundColorWhite: rgb(255, 255, 255);
 @backgroundColorLight: rgb(240, 240, 240);
@@ -30,6 +31,27 @@
 // dialog's z-index.  (See http://issues.bloomlibrary.org/youtrack/issue/BL-4386.)
 @dialogZindexPlusOne: 60001;
 
+.bloomDialogContainer {
+    h2.tab {
+        font-size: 10pt;
+    }
+    .mainBlock {
+        display: inline-block;
+        vertical-align: top;
+        line-height: normal;
+    }
+    .leftBlock {
+        width: 150px;
+    }
+    .indentBlock {
+        width: 100px;
+        img{
+            margin-left: 3px;
+            margin-top: 1px;
+        }
+    }
+}
+
 .bloomDialogContainer .selectedIcon {
     background-color: rgb(201, 224, 247);
     border: 1px solid rgb(98, 162, 228);
@@ -56,9 +78,15 @@
 .bloomDialogContainer .iconHtml {
     width: 22px;
     height: 22px;
-    margin-top: 10px;
     display: inline-block;
     padding: 1px 0 0 1px;
+    position: relative;
+    &.wide {
+        width: 66px;
+    }
+    &.tall {
+        height: 66px;
+    }
 }
 .bloomDialogContainer .iconBox {
     width: 14px;
@@ -71,6 +99,29 @@
     width: 16px;
     height: 16px;
     margin: 2px;
+    display: block;
+    &.grayBackground {
+        background-color: @preferredBackgroundGray; //from basePage.less
+    }
+}
+.bloomDialogContainer .iconHorizontalLine {
+    width: 56px;
+    margin: 0px -50% 0px 1px;
+    border: 1px solid;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+}
+.bloomDialogContainer .iconVerticalLine {
+    height: 56px;
+    margin: 1px -50% 0px 0px;
+    border: 1px solid;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: block;
 }
 .bdRounded {

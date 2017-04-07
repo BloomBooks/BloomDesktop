@@ -209,7 +209,8 @@ namespace Bloom.Book
 			{
 				return (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("V")) ||
 				   (lang == settings.Language2Iso639Code && dataDefaultLanguages.Contains("N1")) ||
-				   (lang == settings.Language3Iso639Code && dataDefaultLanguages.Contains("N2"));
+				   (lang == settings.Language3Iso639Code && dataDefaultLanguages.Contains("N2")) ||
+				   dataDefaultLanguages.Contains(lang); // a literal language id, e.g. "en" (used by template starter)
 			}
 		}
 

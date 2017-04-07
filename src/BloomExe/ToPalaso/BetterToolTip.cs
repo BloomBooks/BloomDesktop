@@ -72,7 +72,10 @@ namespace Bloom.ToPalaso
 			catch (NullReferenceException)
 			{
 #if DEBUG
-				Debug.Fail("Debug Only: If you just changed the UI language, this is a BL-937 Reproduction");
+				Debug.Fail("Debug Only: If you just changed the UI language, this is a BL-938 Reproduction");
+				//So I ran into this in 3.9. I could not find a pattern visible from the input parameters;
+				//when it threw or didn't through, the control and value had strings, the control's container and parentContainer were always null
+				//Just can't tell what is the null thing that it is complaining about. Would need to debug into the winforms source to find out.
 #endif
 				//for the user, swallow
 			}

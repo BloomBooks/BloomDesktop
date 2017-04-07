@@ -28,7 +28,7 @@ mixin page-cover(label)
 
 mixin chooser-topic
 	//- TODO: Somehow the data-functionOnHintClick doesn't interact well with the new label.bubble method.
-	.coverBottomBookTopic.bloom-readOnlyInTranslationMode.bloom-userCannotModifyStyles.bloom-alwaysShowBubble.Cover-Default-style(data-derived="topic", data-functionOnHintClick="ShowTopicChooser()", data-hint = "Click to choose topic")
+	.coverBottomBookTopic.bloom-userCannotModifyStyles.bloom-alwaysShowBubble.Cover-Default-style(data-derived="topic", data-functionOnHintClick="ShowTopicChooser()", data-hint = "Click to choose topic")
 
 mixin field-ISBN
 	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")
@@ -44,7 +44,10 @@ mixin field-acknowledgments-localizedVersion
 	//-   holding place for user style adjustments (like font-size)
 	// removed .bloom-readOnlyInAuthorMode because when you're putting together a shell book, you often have to put in the name of the translator
 	+field-prototypeDeclaredExplicity("N1").versionAcknowledgments
-		+editable("N1").versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments", data-hint="Name of Translator, in {lang}")
+		//- TODO: I want to change this to "Credit people involved in this translation, in {lang}", but many localizations
+		//- will then not be used at all, even their old versions which are better than nothing. How to upgrade the English
+		//- without losing all the rest?
+		+editable("N1").versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments", data-hint="Credit the translator, in {lang}")
 
 mixin field-acknowledgments-originalVersion
 	+field-prototypeDeclaredExplicity("N1").originalAcknowledgments
@@ -71,17 +74,6 @@ mixin field-back-cover-branding
 	//- only one of these should succeed. That is, the pack should only supply one or the other
 	+optional-branding-image('back-cover-outside-wide').branding.branding-wide
 	+optional-branding-image('back-cover-outside').branding
-
-mixin block-licenseAndCopyright
-	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
-		.copyright(data-derived="copyright", lang="*").Credits-Page-style
-			| {copyright}
-		.licenseBlock
-			img.licenseImage(src="license.png" data-derived="licenseImage")
-			.licenseUrl(data-derived="licenseUrl", lang="en") http://creativecommons.org/licenses/by/4.0/
-			.licenseDescription(data-derived="licenseDescription",lang="en").Credits-Page-style You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
-			.licenseNotes(data-derived="licenseNotes", lang="en").Credits-Page-style
-				| {License Notes}
 
 //- -------------------------------------------------------------------------------
 //-	Unless every page of your xmatter pack needs to be different than the "factory"
@@ -122,6 +114,7 @@ mixin factoryStandard-outsideFrontCover
 				//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
 				// because it is never empty
 				.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
+
 					+field-xmatter("V", "smallCoverCredits").Cover-Default-style
 				.bottomRow
 					.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
@@ -137,12 +130,27 @@ mixin factoryStandard-credits-interiorPage
 	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits')&attributes(attributes)#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
 		+credits-contents
 
-mixin credits-contents
-		+block-licenseAndCopyright
+mixin block-licenseAndCopyright
+	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
+		.copyright(data-derived="copyright", lang="*").Credits-Page-style
+			| {copyright}
+		.licenseBlock
+			img.licenseImage(src="license.png" data-derived="licenseImage")
+			.licenseUrl(data-derived="licenseUrl", lang="en") http://creativecommons.org/licenses/by/4.0/
+			.licenseDescription(data-derived="licenseDescription",lang="en").Credits-Page-style You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
+			.licenseNotes(data-derived="licenseNotes", lang="en").Credits-Page-style
+				| {License Notes}
+
+mixin credits-contents(includeIsbn = true)
+	+block-licenseAndCopyright
+	+field-acknowledgments-localizedVersion
+	//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+	.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+	+field-acknowledgments-originalVersion
+
+	if(includeIsbn)
 		+field-ISBN
-		+field-acknowledgments-originalVersion
-		+field-acknowledgments-localizedVersion
-		+field-credits-branding
+	+field-credits-branding
 
 mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
@@ -163,7 +171,7 @@ mixin title-page-contents
 		label.bubble Book title in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
 	+field-prototypeDeclaredExplicity("N1")#originalContributions
-		label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
+		label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()') The contributions made by writers, illustrators, editors, etc., in {lang}
 		+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
 	+field-prototypeDeclaredExplicity("N1")#funding
 		label.bubble Use this to acknowledge any funding agencies.

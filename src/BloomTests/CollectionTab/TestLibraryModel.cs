@@ -30,7 +30,7 @@ namespace BloomTests.CollectionTab
 
 		public void RunCompressDirectoryTest(ZipOutputStream zipStream, bool forReaderTools = false)
 		{
-			CompressDirectory(TestFolderPath, zipStream, GetDirNameOffset, forReaderTools);
+			CompressDirectory(TestFolderPath, zipStream, GetDirNameOffset, "", forReaderTools);
 		}
 	}
 }

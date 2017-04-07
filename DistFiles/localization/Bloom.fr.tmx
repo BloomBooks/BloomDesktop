@@ -328,7 +328,8 @@
          </tuv>
       </tu>
       <tu tuid="BookEditor.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
+        <prop type="x-nolongerused">true</prop>
+        <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
          </tuv>
@@ -850,9 +851,9 @@
             <seg>Collection Source</seg>
          </tuv>
       </tu>
-      <tu tuid="CollectionTab.BookMenu.CopyBook">
+      <tu tuid="CollectionTab.BookMenu.DuplicateBook">
          <tuv xml:lang="en">
-            <seg>Copy Book</seg>
+            <seg>Duplicate Book</seg>
          </tuv>
          <tuv xml:lang="fr">
             <seg>Copier le Livre</seg>
@@ -1577,7 +1578,7 @@
             <seg>Si vous avez besoin de place pour ajouter des informations sur le livre, vous pouvez vous servir de cette page, qui se trouve sur la quatrième de couverture.</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Background">
+      <tu tuid="EditTab.TextBoxProperties.Background">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Background</seg>
@@ -1603,15 +1604,6 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Ouvrir le fichier HTML utilisé pour créer ce PDF dans Firefox (qui doit être en route) </seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Borders">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Borders</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Bords</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.CannotChangeCopyright">
@@ -1931,15 +1923,6 @@
             <seg/>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Emphasis">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Emphasis</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Accentuer</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.ExperimentalNotice">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -1947,15 +1930,6 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Cette page étant un prototype expérimental, elle est susceptible de connaître plusieurs dysfonctionnements ; nous nous excsusons de la gêne occasionnée.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Font">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Font</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Police</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FontMissing">
@@ -1966,15 +1940,6 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>La police actuellement sélectionnée est '{0}', mais n'est pas installée sur cet ordinateur. Une autre police sera utilisée.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Modifie la taille du texte pour tous les champs de style '{0}' et en langue '{1}'.\nLa taille actuelle est de {2}pt.</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.AlreadyExists">
@@ -2031,6 +1996,24 @@
             <seg>Vous ne voyez pas ce qu'il faut ?</seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.FormatDialog.Emphasis">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Emphasis</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Accentuer</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Font">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Font</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Police</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -2040,7 +2023,16 @@
             <seg>Changer de type de police</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+     <tu tuid="EditTab.FormatDialog.FontSizeTip">
+       <prop type="x-dynamic">true</prop>
+       <tuv xml:lang="en">
+         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+       </tuv>
+       <tuv xml:lang="fr">
+         <seg>Modifie la taille du texte pour tous les champs de style '{0}' et en langue '{1}'.\nLa taille actuelle est de {2}pt.</seg>
+       </tuv>
+     </tu>
+     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Change the font size</seg>
@@ -2068,6 +2060,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.MoreTab">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>More</seg>
@@ -2092,6 +2085,15 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Merci de n'utiliser que des caractères alphabétiques. Vous pouvez utiliser des nombres en fin de mot, par exemple pour écrire"partie2".</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Spacing">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Spacing</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Espacement</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.Style">
@@ -2515,15 +2517,6 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Impossible d'ajouter quoi que ce soit à cet endroit pendant la création d'un livre original.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Spacing">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Spacing</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Espacement</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.StyleEditor.BorderToolTip">

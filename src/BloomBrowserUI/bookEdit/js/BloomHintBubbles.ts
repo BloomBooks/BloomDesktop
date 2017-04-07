@@ -4,7 +4,9 @@
 /// <reference path="bloomQtipUtils.ts" />
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
+import axios = require('axios');
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+import { IsPageXMatter } from '../js/bloomEditing';
 import bloomQtipUtils from './bloomQtipUtils';
 
 declare function GetSettings(): any; //c# injects this
@@ -12,7 +14,7 @@ declare function GetSettings(): any; //c# injects this
 export default class BloomHintBubbles {
 
     // Add (yellow) hint bubbles from (usually) label.bubble elements
-    public static addHintBubbles(container: HTMLElement): void {
+    public static addHintBubbles(container: HTMLElement, sourceBubbleDivs: Array<Element>): void {
         //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
         //bloom-translationGroup (those should have a single <label> for the whole group).
         //Notice that the <label> inside an editable div is in a precarious position, it could get
@@ -38,15 +40,40 @@ export default class BloomHintBubbles {
         // Note that in Version 1.0, we didn't have this <label> ability but we had @data-hint.
         // Using <label> instead of the attribute makes the html much easier to read, write, and add additional
         // behaviors through classes
-        $(container).find(".bloom-translationGroup > label.bubble").each(function () {
-            var labelElement = $(this);
-            var whatToSay = labelElement.text();
-            if (!whatToSay)
-                return;
+        axios.get('/bloom/bubbleLanguages').then(result => {
+            let preferredLangs: Array<string> = (<any>result.data).langs;
+            $(container).find('.bloom-translationGroup').each((i, group) => {
+                var groupElement = $(group);
+                // if the group was given a source bubble, don't add another.
+                // It's tempting here to try to detect directly whether it already has some kind of bubble.
+                // This is difficult for a couple of reasons. First, we unfortunately save in the file the
+                // qtip attributes that get added like aria-describedby='qtip-0' and has-qtip='true'.
+                // Because of that, I tried checking to see whether the document really has a div whose ID
+                // matches the aria-described by. But that failed, except when debugging; I infer that
+                // there's some delay between the call that starts the process of adding the qtip and when
+                // it actually comes into existence. Even apart from this, I'm not sure that a saved
+                // aria-described by couldn't accidentally match a qtip created for another div. So
+                // it's more reliable to have the source bubbles code figure out exactly what divs
+                // it puts bubbles on.
+                if (sourceBubbleDivs.indexOf(group) >= 0) {
+                    return;
+                }
+                var labelElement = groupElement.find('label.bubble'); // may be more than one
+                var whatToSay = labelElement.text();
+                if (!whatToSay) {
+                    return;
+                }
 
-            //attach the bubble, separately, to every visible field inside the group
-            labelElement.parent().find("div.bloom-editable:visible").each(function () {
-                BloomHintBubbles.MakeHelpBubble($(this), labelElement);
+                if (this.wantHelpBubbleOnGroup(groupElement)) {
+                    // attach the bubble to the whole group...otherwise it would be oddly
+                    // duplicated on all of them
+                    BloomHintBubbles.MakeHelpBubble(groupElement, labelElement, preferredLangs);
+                } else {
+                    //attach the bubble, separately, to every visible field inside the group
+                    groupElement.find("div.bloom-editable:visible").each(function () {
+                        BloomHintBubbles.MakeHelpBubble($(this), labelElement, preferredLangs);
+                    });
+                }
             });
         });
 
@@ -79,8 +106,36 @@ export default class BloomHintBubbles {
         });
     }
 
+    static wantHelpBubbleOnGroup(groupElement: JQuery) {
+        // For xMatter, we always want to show a hint for each field.
+        return !IsPageXMatter(groupElement) &&
+            // Otherwise, show a hint for each field only if this class requests it.
+            !groupElement.hasClass("bloom-showHintOnEach");
+    }
+
+    // Update placement and content of tooltips on a group and/or all its children. This is used for user-defined hint
+    // bubbles and doesn't handle all the options of the full routine.
+    public static updateQtipPlacement(groupElement: JQuery, whatToSaySource: string) {
+        groupElement.qtip('destroy');
+        let children = groupElement.find("div.bloom-editable:visible");
+        children.qtip('destroy');
+        if (!whatToSaySource) {
+            return;
+        }
+        if (this.wantHelpBubbleOnGroup(groupElement)) {
+            let whatToSay = theOneLocalizationManager.insertLangIntoHint(whatToSaySource, groupElement);
+            this.makeHintBubbleCore(groupElement, whatToSay, !whatToSay.startsWith("*")); // should we support * here?
+        }
+        else {
+            children.each((i, target) => {
+                let whatToSay = theOneLocalizationManager.insertLangIntoHint(whatToSaySource, $(target));
+                this.makeHintBubbleCore($(target), whatToSay, !whatToSay.startsWith("*")); // should we support * here?
+            })
+        }
+    }
+
     //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
-    private static MakeHelpBubble(targetElement: JQuery, elementWithBubbleAttributes: JQuery) {
+    private static MakeHelpBubble(targetElement: JQuery, elementWithBubbleAttributes: JQuery, preferredLangs?: Array<string>) {
         var target = $(targetElement);
         var source = $(elementWithBubbleAttributes);
 
@@ -89,15 +144,6 @@ export default class BloomHintBubbles {
 
         if (target.css('border-bottom-color') === 'transparent')
             return; //don't put tips if they can't edit it. That's just confusing
-
-        var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
-
-        var pos = {
-            at: 'right center',
-            my: 'left center',
-            viewport: $(window),
-            adjust: { method: 'none' }
-        };
 
         // Anybody know why this was here!? BL-1125 complains about this very thing.
         //if (target.hasClass('coverBottomBookTopic'))
@@ -108,12 +154,37 @@ export default class BloomHintBubbles {
         //at the moment, the logic is all around whoever has the data-hint
         //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
         var shouldShowAlways = true;
-        var hideEvents = shouldShowAlways ? false : 'focusout mouseleave';
 
         // get the default text/stringId
+        var doNotLocalize = false;
         var whatToSay = target.attr('data-hint');
         if (!whatToSay) whatToSay = source.attr('data-hint');
-        if (!whatToSay) whatToSay = source.text();
+        if (!whatToSay) { // look in the content of one or more sources
+            if (!preferredLangs) {
+                preferredLangs = ['en', 'fr']; // just for safety; any caller that cares should supply a list.
+            }
+            var bestSourceIndex = 0; // use first source if no langs match or there is only one
+            var bestLangIndex = preferredLangs.length; // pretend the best lang we found is beyond end
+            for (var i = 0; i < source.length; i++) {
+                var item = source.eq(i);
+                var lang = item.attr('lang');
+                if (!lang) {
+                    continue;
+                }
+                // Found at least one source with a lang attr. Assume any localization of this
+                // bubble is embedded in the document, and don't look in Bloom resources.
+                doNotLocalize = true;
+                var index = preferredLangs.indexOf(lang);
+                if (index === -1) {
+                    index = preferredLangs.length;
+                }
+                if (index < bestLangIndex) { // best yet
+                    bestSourceIndex = i;
+                    bestLangIndex = index;
+                }
+            }
+            whatToSay = source.eq(bestSourceIndex).text();
+        }
 
         // no empty bubbles
         if (!whatToSay) return;
@@ -123,8 +194,14 @@ export default class BloomHintBubbles {
         onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(target);
 
         // get the localized string
-        if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
-        whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSay, target);
+        if (doNotLocalize) {
+            // still need to substitute {lang} if any
+            whatToSay = theOneLocalizationManager.insertLangIntoHint(whatToSay, target);
+        }
+        else {
+            if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
+            whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSay, target);
+        }
 
         var functionCall = source.data("functiononhintclick");
         if (functionCall) {
@@ -136,13 +213,34 @@ export default class BloomHintBubbles {
                 functionCall = 'javascript:' + functionCall + ';';
 
             whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
-            hideEvents = false; // Don't specify a hide event...
         }
-
+        // Handle a second line in the bubble which links to something like a javascript function
+        var linkText = source.attr('data-link-text');
+        var linkTarget = source.attr('data-link-target');
+        if (linkText && linkTarget) {
+            linkText = theOneLocalizationManager.getLocalizedHint(linkText, target);
+            if (linkTarget.indexOf('(') > 0)
+                linkTarget = 'javascript:' + linkTarget + ';';
+            whatToSay = whatToSay + "<br><a href='" + linkTarget + "'>" + linkText + "</a>";
+        }
         if (onFocusOnly) {
             shouldShowAlways = false;
-            hideEvents = 'focusout mouseleave';
         }
+        this.makeHintBubbleCore(target, whatToSay, shouldShowAlways);
+    }
+
+    private static makeHintBubbleCore(target: JQuery, whatToSay: string, shouldShowAlways: boolean) {
+
+        var pos = {
+            at: 'right center',
+            my: 'left center',
+            viewport: $(window),
+            adjust: { method: 'none' },
+            container: bloomQtipUtils.qtipZoomContainer()
+        };
+
+        var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
+        var hideEvents = shouldShowAlways ? false : 'focusout mouseleave';
 
         target.qtip({
             content: whatToSay,

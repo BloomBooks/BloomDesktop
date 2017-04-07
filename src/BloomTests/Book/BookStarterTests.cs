@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using Bloom;
@@ -76,6 +77,22 @@ namespace BloomTests.Book
 
 			AssertThatXmlIn.HtmlFile(path).HasNoMatchForXpath("//div[@id='bloomDataDiv' and @data-book='ISBN']");
 			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//div[@data-book='ISBN' and not(text())]");
+		}
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalSpecifiesXMatter_CopyDoesNotSpecifyXMatter()
+		{
+			var extraHeadMaterial = @"<meta name='xmatter' content='TemplateStarter'/>";
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder("", extraHeadMaterial: extraHeadMaterial), _projectFolder.Path));
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='xmatter']", 0);
+		}
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalSpecifiesXMatterForChildren_CopyGetsThatXMatterName()
+		{
+			var extraHeadMaterial = @"<meta name='xmatter-for-children' content='TemplateStarter'/>";
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(GetShellBookFolder("", extraHeadMaterial: extraHeadMaterial), _projectFolder.Path));
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='xmatter' and @content='TemplateStarter']", 1);
+			// but then this should not pass on to grandchildren
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='xmatter-for-children']", 0);
 		}
 
 		//regression
@@ -175,12 +192,86 @@ namespace BloomTests.Book
 			return path;
 		}
 
+		// Strip all license info from books made from templates. (Code that runs later will fill in default.)
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalCC0_LicenseRemoved()
+		{
+			var originalSource = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
+			using (var tempFolder = new TemporaryFolder("BasicBookCc0"))
+			using (var destFolder = new TemporaryFolder("OriginalCC0_BookIsBy"))
+			{
+				var source = Path.Combine(tempFolder.Path, "Basic Book");
+				if (Directory.Exists(source))
+					Directory.Delete(source, true);
+				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
+				var htmPath = Path.Combine(source, "Basic Book.html");
+				var content = RobustFile.ReadAllText(htmPath);
+				// insert cc0 stuff in data div
+				var replacement = @"<div id='bloomDataDiv'><div data-book='licenseUrl' lang='*'>
+            http://creativecommons.org/publicdomain/zero/1.0/
+        </div>
+		<div data-book='licenseUrl' lang='en'>
+            http://creativecommons.org/publicdomain/zero/1.0/
+        </div>
+		<div data-book='licenseUrl'>
+            http://creativecommons.org/publicdomain/zero/1.0/
+        </div>
+        <div data-book='licenseDescription' lang='en'>
+            You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.
+        </div>
+		<div data-book='licenseNotes'>This should be removed too</div>".Replace("'", "\"");
+				var patched = content.Replace("<div id=\"bloomDataDiv\">", replacement);
+				RobustFile.WriteAllText(htmPath, patched);
+				var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
+				var assertThatBook = AssertThatXmlIn.HtmlFile(bookPath);
+				assertThatBook.HasNoMatchForXpath("//div[@data-book='licenseUrl']");
+				assertThatBook.HasNoMatchForXpath("//div[@data-book='licenseDescription']");
+				assertThatBook.HasNoMatchForXpath("//div[@data-book='licenseNotes']");
+			}
+		}
+
+		// We shouldn't mess with license if the original is a shell.
+		[Test]
+		public void CreateBookOnDiskFromShell_OriginalCC0_BookIsCC0()
+		{
+			var originalSource = Path.Combine(BloomFileLocator.SampleShellsDirectory, "Vaccinations");
+			using (var tempFolder = new TemporaryFolder("VaccinationsCc0"))
+			using (var destFolder = new TemporaryFolder("Vaccinations_BookIsCC0"))
+			{
+				var source = Path.Combine(tempFolder.Path, "Vaccinations");
+				if (Directory.Exists(source))
+					Directory.Delete(source, true);
+				DirectoryUtilities.CopyDirectory(originalSource, tempFolder.Path);
+				var htmPath = Path.Combine(source, "Vaccinations.htm");
+				var content = RobustFile.ReadAllText(htmPath);
+				// insert cc0 stuff in data div
+				var patched = content.Replace("http://creativecommons.org/licenses/by-nc/3.0/", "http://creativecommons.org/publicdomain/zero/1.0/");
+				RobustFile.WriteAllText(htmPath, patched);
+				var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, destFolder.Path));
+				var assertThatBook = AssertThatXmlIn.HtmlFile(bookPath);
+				// For some reason Vaccinations specifies licenseUrl in three ways (no lang, lang="en", lang="*").
+				// We don't want any of them messed with.
+				assertThatBook.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='licenseUrl' and contains(text(), '/zero/1.0')]", 3);
+			}
+		}
+
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_Validates()
 		{
 			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
 
 			_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplateStarter_IsTemplate_ButNotTemplateFactory()
+		{
+			var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Template Starter");
+
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			var newMetaData = BookMetaData.FromFolder(path);
+			Assert.That(newMetaData.IsSuitableForMakingShells, Is.True);
+			Assert.That(newMetaData.IsSuitableForMakingTemplates, Is.False);
 		}
 
 		[Test]
@@ -288,6 +379,49 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class,'bloom-translationGroup')]/div[@lang='xyz']", 1);
 			//the new text should also have been emptied of English
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class,'bloom-translationGroup')]/div[@lang='xyz' and not(text())]", 1);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_UnwantedFiles_AreNotCopied()
+		{
+			_starter.TestingSoSkipAddingXMatter = true;
+			var body = @"<div class='bloom-page'>
+						<div class='bloom-translationGroup'>
+						 <div lang='en'>This is some English</div>
+						</div>
+					</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body, null);
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "book.userPrefs"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "book.userPrefs.bak"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "ReadMe-en.md"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "something.jade"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "something.less"), @"some nonsense");
+			File.WriteAllText(Path.Combine(sourceTemplateFolder, "readme.txt"), @"some nonsense");
+			var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			var folderPath = Path.GetDirectoryName(bookPath);
+			Assert.That(File.Exists(Path.Combine(folderPath, "book.userPrefs")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "book.userPrefs.bak")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "ReadMe-en.md")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "something.jade")), Is.False);
+			Assert.That(File.Exists(Path.Combine(folderPath, "something.less")), Is.False);
+			// And just to be sure, we're not skipping EVERYTHING!
+			Assert.That(File.Exists(Path.Combine(folderPath, "readme.txt")), Is.True);
+		}
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_HasReadmeImagesFolder_NotCopied()
+		{
+			_starter.TestingSoSkipAddingXMatter = true;
+			var body = @"<div class='bloom-page'>
+						<div class='bloom-translationGroup'>
+						 <div lang='en'>This is some English</div>
+						</div>
+					</div>";
+			string sourceTemplateFolder = GetShellBookFolder(body, null);
+			Directory.CreateDirectory(Path.Combine(sourceTemplateFolder, Bloom.Book.Book.ReadMeImagesFolderName));
+			var bookPath = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
+			var folderPath = Path.Combine(Path.GetDirectoryName(bookPath), Bloom.Book.Book.ReadMeImagesFolderName);
+			Assert.IsFalse(Directory.Exists(folderPath));
 		}
 
 		[Test]
@@ -541,12 +675,6 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(GetPathToHtml(folderPath)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi' and text()='Tambu Sut']", 1);
 		}
 
-
-
-
-
-
-
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
 		{
@@ -579,6 +707,29 @@ namespace BloomTests.Book
 			Assert.IsFalse(Directory.Exists(goodPath), "Should not have left the folder there, after a failed book creation");
 		}
 
+		// The work of moving the copyright and license to a spot reserved for an original
+		// is done by BookCopyrightAndLicense, and is thoroughly tested on that class. Here,
+		// we just want to have one test that operates on an actual shell that we ship.
+		// What we're testing: when we use a translation, it may have its own copyright. However that doesn't mean that we ever replace
+		// the "original" copyright and license. Those stick with the book through all adaptations.
+		[Test]
+		public void CreateBookOnDiskFromTemplate_SourceIsAlsoAnAdaptation_OriginalCopyrightAndLicensePreserved()
+		{
+			var firstAdaptation = GetFolderPathToCreatedBook("The Moon and the Cap");
+			var secondAdaptation = _starter.CreateBookOnDiskFromTemplate(firstAdaptation, _projectFolder.Path);
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(secondAdaptation)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']"+
+				"//div[@data-book='originalCopyrightAndLicense' and @lang='*' and "+
+				"contains(text(), '"+"Adapted from original, Copyright © 2007, Pratham Books"+"')]", 1);
+			AssertThatXmlIn.HtmlFile(GetPathToHtml(secondAdaptation)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']" +
+				"//div[@data-book='originalCopyrightAndLicense' and @lang='*' and " +
+				"contains(text(), '" + ("Licensed under " + "CC-BY 4.0")+"')]", 1);
+		}
+
+		private string GetFolderPathToCreatedBook(string sourceBookName)
+		{
+			var source = Path.Combine(BloomFileLocator.SampleShellsDirectory, sourceBookName);
+			return _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+		}
 
 		private string GetShellBookFolder()
 		{
@@ -614,14 +765,15 @@ namespace BloomTests.Book
 						   );
 		}
 
-		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks, string lineageName = null, bool includeJson = true)
+		private string GetShellBookFolder(string bodyContents, string defaultNameForDerivedBooks=null, string lineageName = null, bool includeJson = true, string extraHeadMaterial = "")
 		{
-			var lineage = "";
+			var lineageMeta = "";
 			if (lineageName != null)
-				lineage = @"<meta name='" + lineageName + "' content='first,second' />";
-			var idString = "";
+				lineageMeta = @"<meta name='" + lineageName + "' content='first,second' />";
+			var bookIdMeta = "";
 			if (!includeJson)
-				idString = @"<meta name='bloomBookId' content='thisNewGuy' />";
+				bookIdMeta = @"<meta name='bloomBookId' content='thisNewGuy' />";
+
 			var content = String.Format(
 				@"<?xml version='1.0' encoding='utf-8' ?>
 				<!DOCTYPE html>
@@ -630,9 +782,10 @@ namespace BloomTests.Book
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
 					{0}
 					{1}
+					{2}
 					<title>Test Shell</title>
 					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
-					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />", lineage, idString);
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />", lineageMeta, bookIdMeta, extraHeadMaterial);
 			if(!string.IsNullOrEmpty(defaultNameForDerivedBooks))
 			{
 				content += @"<meta name='defaultNameForDerivedBooks' content='"+defaultNameForDerivedBooks+"'/>";
@@ -699,6 +852,24 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='fr']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='es']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']/div[@lang='xyz']", 1);
+		}
+
+		[Test]
+		public void SetupPage_PageHadDescription_DescriptionClearedButEnglishStillThere()
+		{
+			var contents = @"<div class='bloom-page'>
+						 <div class='pageDescription' lang='en'>hello</div>
+						 <div class='pageDescription' lang='fr'>bonjour</div>
+					</div>";
+
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object, "abc", "def");
+			//should remove the French (I don't see that we actually have any templates that have anything but English, but just in case)
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'pageDescription') and @lang != 'en']", 0);
+			//should leave English as a placeholder
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'pageDescription') and not(normalize-space(.))]", 1);
 		}
 
 		/// <summary>

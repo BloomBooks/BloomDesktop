@@ -7,6 +7,7 @@
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 //import '../../lib/jquery.qtip.js'
 //import '../../lib/jquery.qtipSecondary.js'
+import bloomQtipUtils from './bloomQtipUtils';
 
 export default class BloomNotices {
     public static addExperimentalNotice(container: HTMLElement): void {
@@ -25,6 +26,7 @@ export default class BloomNotices {
                     classes: 'ui-tooltip-red',
                     tip: { corner: false }
                 }
+                , container: bloomQtipUtils.qtipZoomContainer()
             });
         });
     }
@@ -58,6 +60,7 @@ export default class BloomNotices {
                     style: {
                         classes: theClasses
                     }
+                    , container: bloomQtipUtils.qtipZoomContainer()
                 });
             }
         });

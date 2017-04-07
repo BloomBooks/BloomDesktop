@@ -187,8 +187,8 @@ namespace Bloom
 					// the status ("channel") of the program on Linux.  Use this package name on Linux to
 					// help screen shots clarify immediately which Linux package is being used.  (and to help
 					// testers remember?)
-					if (path.Contains("/bloom-desktop-unstable/"))
-						return "bloom-desktop-unstable";
+					if (path.Contains("/bloom-desktop-alpha/"))
+						return "bloom-desktop-alpha";
 					if (path.Contains ("/bloom-desktop-beta/"))
 						return "bloom-desktop-beta";
 					return "Release";

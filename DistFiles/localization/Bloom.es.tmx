@@ -184,6 +184,7 @@
       </tuv>
     </tu>
     <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -573,9 +574,9 @@
         <seg>Colección de origen</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.CopyBook">
+    <tu tuid="CollectionTab.BookMenu.DuplicateBook">
       <tuv xml:lang="en">
-        <seg>Copy Book</seg>
+        <seg>Duplicate Book</seg>
       </tuv>
       <tuv xml:lang="es">
         <seg>Copiar el libro</seg>
@@ -1194,7 +1195,7 @@
         <seg>Si usted necesita un lugar para poner más información sobre el libro, puede utilizar esta página, que es la parte exterior de la cubierta posterior.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Background">
+    <tu tuid="EditTab.TextBoxProperties.Background">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Background</seg>
@@ -1218,15 +1219,6 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino).</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Borders">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Borders</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Bordes</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CannotChangeCopyright">
@@ -1399,15 +1391,6 @@
         <seg>Esta frase es demasiado larga para este nivel.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Emphasis">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Emphasis</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Énfasis</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.ExperimentalNotice">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1417,30 +1400,12 @@
         <seg>Esta página es un prototipo experimental que puede tener muchos problemas, para lo cual pedimos disculpas.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Font">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Font</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Fuente</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.FontMissing">
       <tuv xml:lang="en">
         <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
       </tuv>
       <tuv xml:lang="es">
         <seg>La fuente seleccionada es '{0}', pero no está instalado en este computadora. Otra fuente se utiliza.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FontSizeTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Cambia el tamaño del texto para todas las cajas utilizando el estilo '{0}' y el idioma '{1}'.\nTamaño actual es {2} pt.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.AlreadyExists">
@@ -1497,6 +1462,24 @@
         <seg>¿No encuentra lo que necesita?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.Emphasis">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Emphasis</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Énfasis</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Fuente</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1504,6 +1487,15 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Cambiar el tipo de fuente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Cambia el tamaño del texto para todas las cajas utilizando el estilo '{0}' y el idioma '{1}'.\nTamaño actual es {2} pt.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
@@ -1534,6 +1526,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More</seg>
@@ -1558,6 +1551,15 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "part2".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spacing</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Espaciamiento</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.Style">
@@ -1872,15 +1874,6 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>No se puede poner nada allí mientras usted está haciendo un libro original.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Spacing">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Spacing</seg>
-      </tuv>
-      <tuv xml:lang="es">
-        <seg>Espaciamiento</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.StyleEditor.BorderToolTip">

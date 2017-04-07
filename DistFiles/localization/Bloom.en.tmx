@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="en"
           adminlang="en"
@@ -222,6 +222,7 @@
       </tuv>
     </tu>
     <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
@@ -701,9 +702,9 @@
         <seg>Source Collection</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.CopyBook">
+    <tu tuid="CollectionTab.BookMenu.DuplicateBook">
       <tuv xml:lang="en">
-        <seg>Copy Book</seg>
+        <seg>Duplicate Book</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.BookMenu.DeleteBook">
@@ -724,6 +725,11 @@
     <tu tuid="CollectionTab.BookMenu.ExportToXMLForInDesign">
       <tuv xml:lang="en">
         <seg>Export to XML for InDesign...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.MakeBloomPack">
+      <tuv xml:lang="en">
+        <seg>Make Bloom Pack...</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
@@ -1057,6 +1063,12 @@
         <seg>optional</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.SeeWebPage">
+		<note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
+		<tuv xml:lang="en">
+        <seg>See {0}.</seg>
+      </tuv>
+    </tu>
     <tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -1172,12 +1184,6 @@
         <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Background">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Background</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
@@ -1187,12 +1193,6 @@
     <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
       <tuv xml:lang="en">
         <seg>Open the HTML used to make this PDF, in Firefox (must be on path)</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Borders">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Borders</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CannotChangeCopyright">
@@ -1260,6 +1260,11 @@
       <note>get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CopyPage">
+      <tuv xml:lang="en">
+        <seg>Copy Page</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CustomPage.ChangeLayout">
@@ -1399,22 +1404,10 @@
         <seg>Collections</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Emphasis">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Emphasis</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.ExperimentalNotice">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This page is an experimental prototype which may have many problems, for which we apologize.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Font">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Font</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FontMissing">
@@ -1422,10 +1415,10 @@
         <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FontSizeTip">
+    <tu tuid="EditTab.FormatDialog.Alignment">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+        <seg>Alignment</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.AlreadyExists">
@@ -1464,10 +1457,28 @@
         <seg>Don't see what you need?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.Emphasis">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Emphasis</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the font face</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
@@ -1482,6 +1493,12 @@
         <seg>Format</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.Indent">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Indent</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1489,6 +1506,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More</seg>
@@ -1500,10 +1518,27 @@
         <seg>New style</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FormatDialog.ParagraphSpacing">
+      <tuv xml:lang="en">
+        <seg>Space Between Paragraphs</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FormatDialog.PleaseUseAlpha">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.ResetStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reset this style to default settings</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spacing</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FormatDialog.Style">
@@ -1573,10 +1608,17 @@
         <seg>Book title in {lang}</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FrontMatter.CreditTranslator">
+      <prop type="x-dynamic">true</prop>
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <tuv xml:lang="en">
+        <seg>Credit the translator, in {lang}</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Click to Edit Copyright and License</seg>
+        <seg>Click to Edit Copyright &amp; License</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.FundingAgenciesPrompt">
@@ -1597,6 +1639,12 @@
         <seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FrontMatter.ListSeparator">
+      <note>This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.</note>
+      <tuv xml:lang="en">
+        <seg>, </seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FrontMatter.NameofTranslatorPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1613,6 +1661,42 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalHadNoCopyrightSentence">
+      <note>On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.</note>
+      <tuv xml:lang="en">
+        <seg>Adapted from original without a copyright notice.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalLicenseSentence">
+      <note>On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.</note>
+      <tuv xml:lang="en">
+        <seg>Licensed under {0}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalCopyrightSentence">
+      <note>On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.</note>
+      <tuv xml:lang="en">
+        <seg>Adapted from original, {0}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.PasteImageCreditsLink">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Paste Image Credits</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.PasteMissingCredits">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Missing credits:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.SimpleLineDrawings">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.TopicPrompt">
@@ -1678,6 +1762,11 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Instructions.DeleteAllowed">
+      <tuv xml:lang="en">
+        <seg>Feel free to modify or delete this page.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.JpegWarningDialog.DoNotUse">
@@ -1777,6 +1866,11 @@
         <seg>Paste (Ctrl+V)</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.PastePage">
+      <tuv xml:lang="en">
+        <seg>Paste Page</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.PasteButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>There is nothing on the Clipboard that you can paste here.</seg>
@@ -1798,12 +1892,6 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Saving...</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Spacing">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Spacing</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.StyleEditor.BorderToolTip">
@@ -1865,9 +1953,51 @@
         <seg>Template Pages</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.TextBoxProperties.HintBubbles">
+      <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
+      <tuv xml:lang="en">
+        <seg>Hint Bubbles</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.TextBoxProperties.LanguageTab">
       <tuv xml:lang="en">
         <seg>Language</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Alignment">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Alignment</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Background">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Background</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.BordersAndBackground">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Borders &amp; Background</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.BorderSides">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Border Sides</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.BorderStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Border Style</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.IncludeLang">
+      <note>Becomes visible when "Show on each" option is chosen in combo. Do NOT translate {lang}.</note>
+      <tuv xml:lang="en">
+        <seg>Include the name of the language using {lang}. For example: "Enter color in {lang}".</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TextBoxProperties.LocalLanguage">
@@ -1900,9 +2030,36 @@
         <seg>Regional Language</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.TextBoxProperties.WhatToPut">
+      <tuv xml:lang="en">
+        <seg>What should authors put in this box?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.ShowHintBubble">
+      <note>Label above pull-down menu with options, ShowOnGroup/ShowOnEach</note>
+      <tuv xml:lang="en">
+        <seg>Show the hint bubble</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.ShowOnGroup">
+      <tuv xml:lang="en">
+        <seg>Just once on the whole group</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.ShowOnEach">
+      <tuv xml:lang="en">
+        <seg>On each language-field in the group</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.TextBoxProperties.Title">
       <tuv xml:lang="en">
         <seg>Text Box Properties</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.VerticalAlignment">
+      <note>Label above the set of options, Top/Center/Bottom</note>
+      <tuv xml:lang="en">
+        <seg>Vertical Alignment</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
@@ -2421,9 +2578,25 @@
         <seg>Sorry, something went wrong.</seg>
       </tuv>
     </tu>
+    <tu tuid="Errors.SpecifiedXMatterNotFound">
+      <tuv xml:lang="en">
+        <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</seg>
+      </tuv>
+    </tu>
     <tu tuid="Errors.XMatterNotFound">
       <tuv xml:lang="en">
         <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.XMatterProblemLabel">
+      <note>This shows in the 'toast' that pops up to notify the user of a non-fatal problem.</note>
+      <tuv xml:lang="en">
+        <seg>Front/Back Matter Problem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.XMatterSpecifiedByBookNotFound">
+      <tuv xml:lang="en">
+        <seg>This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</seg>
       </tuv>
     </tu>
     <tu tuid="Errors.ZoneAlarm">
@@ -3042,6 +3215,12 @@
         <seg>InDesign XML Information</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.LessMemoryPdfMode">
+      <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
+      <tuv xml:lang="en">
+        <seg>Use less memory (slower)</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Notifications.AdobeReaderRecommendation">
       <tuv xml:lang="en">
         <seg>This PDF viewer can be improved by installing the free Adobe Reader on this computer.</seg>
@@ -3292,6 +3471,13 @@
     <tu tuid="PublishTab.Upload.Login.Signup">
       <tuv xml:lang="en">
         <seg>Sign up for Bloom Library.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Template">
+      <tuv xml:lang="en">
+        <seg>This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.
+
+Do you want to go ahead?</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.Login.UnknownUser">
@@ -4159,6 +4345,12 @@
         <seg>Vaccinations</seg>
       </tuv>
     </tu>
+    <tu tuid="TemplateBooks.BookName.Template Starter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Template Starter</seg>
+      </tuv>
+    </tu>
     <tu tuid="TemplateBooks.BookName.Wall Calendar">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -4169,6 +4361,12 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>A blank page that allows you to add items.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageDescription.Flyleaf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This page was automatically inserted because the following page is marked as part of a two page spread.</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageDescription.Picture &amp; Word">
@@ -4331,6 +4529,13 @@
         <seg>9</seg>
       </tuv>
     </tu>
+    <tu tuid="TemplateBooks.PageLabel.About">
+      <prop type="x-dynamic">true</prop>
+      <note>Caption of 2nd page in books made from Template Starter</note>
+        <tuv xml:lang="en">
+        <seg>About</seg>
+      </tuv>
+    </tu>
     <tu tuid="TemplateBooks.PageLabel.Alphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -4403,6 +4608,12 @@
         <seg>Factory</seg>
       </tuv>
     </tu>
+    <tu tuid="TemplateBooks.PageLabel.Flyleaf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Flyleaf</seg>
+      </tuv>
+    </tu>
     <tu tuid="TemplateBooks.PageLabel.Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -4413,6 +4624,13 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Front/Back Matter</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Image For Thumbnail">
+      <prop type="x-dynamic">true</prop>
+	  <note>Caption of first page in books made from Template Starter</note>
+        <tuv xml:lang="en">
+        <seg>Image For Thumbnail</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
@@ -4666,6 +4884,18 @@
       <note>shows in the topics chooser in the edit tab</note>
       <tuv xml:lang="en">
         <seg>Traditional Story</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WebServer.Warning.NoImageFile">
+      <note>displays as a "toast"</note>
+      <tuv xml:lang="en">
+        <seg>Cannot Find Image File</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WebServer.Warning.NoFile">
+      <note>displays as a "toast"</note>
+      <tuv xml:lang="en">
+        <seg>Cannot Find File</seg>
       </tuv>
     </tu>
     <tu tuid="WorkspaceView._tabStrip">

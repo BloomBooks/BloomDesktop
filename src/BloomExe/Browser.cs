@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,7 +19,6 @@ using Gecko.Events;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
-using Bloom.Workspace;
 using L10NSharp;
 
 namespace Bloom
@@ -74,6 +72,12 @@ namespace Bloom
 				var folder = Path.GetDirectoryName(file);
 				xulRunnerPath = Path.Combine(folder, "Firefox");
 			}
+#if !__MonoCS__
+			// This function seems to be newer than our Linux version of GeckoFx (as of Feb 2017, GeckFx45 rev 23 on Linux).
+			// It somehow prevents a spurious complaint by the debugger that an exception inside XpCom.initialize() is not handled
+			// (although it is).
+			Xpcom.EnableProfileMonitoring = false;
+#endif
 			Xpcom.Initialize(xulRunnerPath);
 
 			var errorsToHide = new List<string>
@@ -429,6 +433,8 @@ namespace Bloom
 		{
 			if(e.Message.StartsWith("[JavaScript Warning"))
 				return;
+			if (e.Message.StartsWith("[JavaScript Error"))
+				ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
 			Debug.WriteLine(e.Message);
 		}
 
@@ -889,9 +895,10 @@ namespace Bloom
 
 				var userModifiedStyleSheet = contentDocument.StyleSheets.FirstOrDefault(s =>
 					{
-						// workaround for bug #40 (https://bitbucket.org/geckofx/geckofx-29.0/issue/40/xpath-error-hresult-0x805b0034)
-						// var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
-						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
+						// We used to have a workaround here for a bug in geckofx-29, but since newer geckos work fine
+						// I'd (gjm) like to go with what's clearer now.
+						//var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
+						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
 						if (titleNode == null)
 							return false;
 						return titleNode.NodeValue == "userModifiedStyles";
@@ -940,6 +947,9 @@ namespace Bloom
 
 		}
 
+		public const string  CdataPrefix = "/*<![CDATA[*/";
+		public const string CdataSuffix = "/*]]>*/";
+
 		private void SaveCustomizedCssRules(GeckoStyleSheet userModifiedStyleSheet)
 		{
 			try
@@ -951,10 +961,18 @@ namespace Bloom
 				 */
 				var styles = new StringBuilder();
 				styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+				// Now, our styles string may contain invalid xhtml characters like >
+				// We shouldn't have &gt; in XHTML because the content of <style> is supposed to be CSS, and &gt; is an HTML escape.
+				// And in XElement we can't just have > like we can in HTML (<style> is PCDATA, not CDATA).
+				// So, we want to mark the main body of the rules as <![CDATA[ ...]]>, within which we CAN have >.
+				// But, once again, that's HTML markup that's not valid CSS. To fix it we wrap each of the markers
+				// in CSS comments, so the wrappers end up as /*<![CDATA[*/.../*]]>*/.
+				styles.AppendLine(CdataPrefix);
 				foreach (var cssRule in userModifiedStyleSheet.CssRules)
 				{
 					styles.AppendLine(cssRule.CssText);
 				}
+				styles.AppendLine(CdataSuffix);
 				styles.AppendLine("</style>");
 				//Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
 				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
@@ -1028,14 +1046,34 @@ namespace Bloom
 			// Review JohnT: does this require integration with the NavigationIsolator?
 			if (_browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
 			{
-				using (var context = new AutoJSContext(_browser.Window))
+				try
 				{
-					string result;
-					context.EvaluateScript(script, (nsISupports)_browser.Document.DomObject, out result);
-					return result;
+					using (var context = new AutoJSContext(_browser.Window))
+					{
+						var result = context.EvaluateScript(script, (nsISupports) _browser.Window.DomWindow,
+							(nsISupports) _browser.Document.DomObject);
+						if (!result.IsString)
+							return null;
+						// This bit of magic was borrowed from GeckoFx's AutoJsContext.ConvertValueToString.
+						// Unfortuately the more convenient version of EvaluateScript which returns a string also eats exceptions
+						// (though it does return a boolean...we want the stack trace, though.)
+						var v = Xpcom.XPConnect.Instance.JSValToVariant(context.ContextPointer, ref result);
+						return nsString.Get(v.GetAsAString);
+					}
+				}
+				catch (GeckoJavaScriptException ex)
+				{
+					ReportJavaScriptError(ex);
 				}
 			}
 			return null;
+		}
+
+		private void ReportJavaScriptError(GeckoJavaScriptException ex)
+		{
+			// For now unimportant JS errors are still quite common, sadly. Per BL-4301, we don't want
+			// more than a toast, even for developers.
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred", ex.Message, ex);
 		}
 
 		HashSet<string> _knownEvents = new HashSet<string>();

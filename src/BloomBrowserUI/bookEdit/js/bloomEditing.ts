@@ -22,6 +22,7 @@ import "long-press/jquery.longpress.js"
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getToolboxFrameExports } from "./bloomFrames";
+import { EditableDivUtils } from './editableDivUtils';
 
 
 //promise may be needed to run tests with phantomjs
@@ -521,18 +522,23 @@ function SetupElements(container) {
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
+    var sourceBubbleDivs = [];
     if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
         $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
             if ($(this).find("textarea, div").length > 1) {
-                BloomSourceBubbles.ProduceSourceBubbles(this);
+                if (BloomSourceBubbles.ProduceSourceBubbles(this)) {
+                    sourceBubbleDivs.push(this);
+                }
             }
         });
     }
 
-    //NB: this should be after the ProduceSourceBubbles(), so that it can remove labels that
-    //would otherwise be underfoot when we call this. This would happen with the Book Title
-    //when there are source languages to show
-    BloomHintBubbles.addHintBubbles(container);
+    //NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower
+    // priority, and should not show if we already have a source bubble.
+    // (Eventually we may make the hint part of the source bubble when there is one...Bl-4295.)
+    // This would happen with the Book Title, which would have both
+    // when there are source languages to show
+    BloomHintBubbles.addHintBubbles(container, sourceBubbleDivs);
 
     // Add overflow event handlers so that when a div is overfull,
     // we add the overflow class and it gets a red background or something
@@ -590,6 +596,19 @@ function SetupElements(container) {
         $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 
     AddXMatterLabelAfterPageLabel(container);
+    ConstrainContentsOfPageLabel(container);
+}
+
+function ConstrainContentsOfPageLabel(container) {
+    var pageLabel = <HTMLDivElement>document.getElementsByClassName("pageLabel")[0];
+    if (!pageLabel)
+        return;
+    $(pageLabel).blur(event => {
+        // characters that cause problem in windows file names (linux is less picky, according to mono source)
+        pageLabel.innerText = pageLabel.innerText.split(/[\/\\*:?"<>|]/).join("");
+        // characters that mess something else up, found through experimentation
+        pageLabel.innerText = pageLabel.innerText.split(/[#%\r\n]/).join("");
+    });
 }
 
 function AddXMatterLabelAfterPageLabel(container) {
@@ -637,17 +656,14 @@ export function bootstrap() {
         // reviewSlog does this application work?
         if (!theEvent.ctrlKey) return;
         // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
-        var styleString = $("body").attr("style");
-        var scale = 1.0;
-        var searchData = /scale\(([^,]*),/.exec(styleString);
-        if (searchData) {
-            scale = parseFloat(searchData[1]);
-        }
+        var scale = EditableDivUtils.getPageScale();
         // Dividing by 20 seems to make it zoom at a manageable rate, at least with my mouse.
         // The limitation to zooming between 1/3 and 3 times is arbitrary.
         scale = Math.min(Math.max(scale - theEvent.deltaY / 20, 0.33), 3.0);
-        // This works with a rule in editMode.less that makes the transform's origin the top left
-        $("body").attr("style", "transform: scale(" + scale + "," + scale + ")");
+        $("div#page-scaling-container").attr("style", "transform: scale(" + scale + "); transform-origin: top left;");
+        // Setting this style is all we want to do in this context.
+        e.preventDefault();
+        e.cancelBubble = true;
     });
 
     /* reviewSlog typescript just couldn't cope with this. Our browser has this built in , so it's ok
@@ -710,7 +726,7 @@ export function bootstrap() {
                 // ranges with the first one being empty.
                 var selection = editor.getSelection();
                 var textSelected = selection.getSelectedText();
-                var show = (textSelected.length > 0);
+                var show = (textSelected && textSelected.length > 0);
                 var bar = $("body").find("." + editor.id);
                 localizeCkeditorTooltips(bar);
                 show ? bar.show() : bar.hide();
@@ -814,6 +830,11 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
                 console.log("longPress disabled")
             };
         }).catch(e => alert("useLongPress query failed:" + e));
+}
+
+export function IsPageXMatter($target: JQuery): boolean {
+    return typeof ($target.closest(".bloom-frontMatter")[0]) !== "undefined" ||
+        typeof ($target.closest(".bloom-backMatter")[0]) !== "undefined";
 }
 
 

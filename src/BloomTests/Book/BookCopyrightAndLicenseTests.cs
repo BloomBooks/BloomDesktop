@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
@@ -449,6 +450,134 @@ namespace BloomTests.Book
 				Console.WriteLine("xpath was:" + xpath);
 				Assert.Fail(description);
 			}
+		}
+
+
+		[Test]
+		public void SetOriginalCopyrightAndLicense_HasCopyrightAndLicense_MovesToOriginalCopyrightAndLicense()
+		{
+			var dom = SetOriginalCopyrightAndLicense(
+				@" <div id='bloomDataDiv'>
+					<div data-book='copyright' lang='*'> Copyright © 2007, Foo Publishing </div>
+					<div data-book='licenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
+				</div>");
+			Assert.AreEqual("Adapted from original, Copyright © 2007, Foo Publishing. Licensed under CC-BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+		}
+
+		[Test]
+		public void SetOriginalCopyrightAndLicense_HasCopyrightAndLicenseAndExtra_CopyrightIsNowEmpty()
+		{
+			var dom = SetOriginalCopyrightAndLicense(
+				@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>A really really empty book</div>
+						<div data-book='copyright' lang='*'> Copyright © 2007, Foo Publishing </div>
+						<div data-book='licenseUrl' lang='*'>
+						http://creativecommons.org/licenses/by/4.0/
+						</div>
+					</div>");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv' and @data-book='copyright']");
+		}
+
+		[Test]
+		public void SetOriginalCopyrightAndLicense_HasCreativeCommonsLicenseAndNotes_NotesRetainedInOriginal()
+		{
+			var dom = SetOriginalCopyrightAndLicense(
+				@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>A really really empty book</div>
+						<div data-book='licenseUrl' lang='*'>
+						http://creativecommons.org/licenses/by/4.0/
+						</div>
+					<div data-derived='licenseNotes' lang='*'>
+						You can do anything you want if your name is Fred.
+					</div>
+				</div>");
+			Assert.AreEqual("Adapted from original without a copyright notice. Licensed under CC-BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
+		}
+		[Test]
+		public void SetOriginalCopyrightAndLicense_HasCustomLicenseAndNotes_NotesRetainedInOriginal()
+		{
+			var dom = SetOriginalCopyrightAndLicense(
+				@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>A really really empty book</div>
+					<div data-derived='licenseNotes' lang='*'>
+						You can do anything you want if your name is Fred.
+					</div>
+				</div>");
+			Assert.AreEqual("Adapted from original without a copyright notice. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
+		}
+
+		[Test]
+		public void SetOriginalCopyrightAndLicense_HasNoCopyrightOrLicense_GetsNoOriginalCopyrightAndLicense()
+		{
+			var dom = SetOriginalCopyrightAndLicense(@" <div id='bloomDataDiv'>
+					  <div data-book='bookTitle' lang='en'>A really really empty book</div>
+					</div>");
+			AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv' and @data-book='originalCopyrightAndLicense']");
+		}
+
+		[Test]
+		public void SetOriginalCopyrightAndLicense_HasLicenseButNoCopyright_GetsExpectedOriginalCopyrightAndLicense()
+		{
+			var dom = SetOriginalCopyrightAndLicense(
+				@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>A really really empty book</div>
+						<div data-book='licenseUrl' lang='*'>
+						http://creativecommons.org/licenses/by/4.0/
+						</div>
+					</div>");
+			Assert.AreEqual("Adapted from original without a copyright notice. Licensed under CC-BY 4.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+		}
+
+		[Test]
+		public void SetOriginalCopyrightAndLicense_NoLicense_GetsExpectedOriginalCopyrightAndLicense()
+		{
+			var dom = SetOriginalCopyrightAndLicense(
+				@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>A really really empty book</div>
+						<div data-book='copyright' lang='*'> Copyright © 2007, Some Old Publisher </div>
+					</div>");
+
+			Assert.AreEqual("Adapted from original, Copyright © 2007, Some Old Publisher.", GetEnglishOriginalCopyrightAndLicense(dom));
+		}
+
+		// when we use a translation, it may have its own copyright. However that doesn't mean that we ever replace
+		// the "original" copyright and license. Those stick with the book through all adaptations.
+		[Test]
+		public void SetOriginalCopyrightAndLicense_SourceIsAlsoAnAdaptation_OriginalCopyrightAndLicensePreserved()
+		{
+			var dom = SetOriginalCopyrightAndLicense(
+				@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>A really really empty book</div>
+						<div data-book='copyright' lang='*'>
+						Copyright © 2007, Foo Publishers
+						</div>
+					<div data-book='licenseUrl' lang='*'>
+						http://creativecommons.org/licenses/by/4.0/
+						</div>
+					</div>");
+			// now do it again, simulating adaptation from the translation
+			var bookData = new BookData(dom, _collectionSettings, null);
+			BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(dom, bookData, _collectionSettings);
+			Assert.AreEqual("Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC-BY 4.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+		}
+
+		private HtmlDom SetOriginalCopyrightAndLicense(string dataDivString)
+		{
+			var dom = new HtmlDom(dataDivString);
+			var bookData = new BookData(dom, _collectionSettings, null);
+			BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(dom, bookData, _collectionSettings);
+			return dom;
+		}
+
+		private static string GetEnglishOriginalCopyrightAndLicense(HtmlDom dom)
+		{
+			var multiTextBase = dom.GetBookSetting("originalCopyrightAndLicense");
+			return multiTextBase["*"];
+		}
+
+		private static void OriginalCopyrightAndLicenseMustMatchXpath(HtmlDom dom, string xpath)
+		{
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
 		}
 	}
 }

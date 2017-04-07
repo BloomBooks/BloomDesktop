@@ -205,7 +205,7 @@ namespace Bloom.Edit
 			{
 				var minimum = TimeSpan.FromMilliseconds(300); // this is arbitrary
 				AudioRecorder.TrimWavFile(PathToTemporaryWav, PathToCurrentAudioSegment, new TimeSpan(), TimeSpan.FromMilliseconds(millisecondsToTrimFromEndForMouseClick), minimum);
-				File.Delete(PathToTemporaryWav);	// Otherwise, these continue to clutter up the temp directory.
+				RobustFile.Delete(PathToTemporaryWav);	// Otherwise, these continue to clutter up the temp directory.
 			}
 			catch (Exception error)
 			{

@@ -1,0 +1,90 @@
+//putting (less) here makes it actually start this file off with the contents of the select2.css,
+//which we're doing for convenience so that we don't have to get it in the installer and then import it explictly
+@import (less) '../../node_modules/select2/dist/css/select2.css';
+@import (reference) "../css/bloomDialog.less";  // needed for @dialogZindexPlusOne
+
+@hint-tab-indent: 20px;
+@main-label-width: 420px; // currently controls width of hint bubbles tab
+@lang-select-width: 250px; // also the width we want for the hint content when #include-lang visible
+@hint-content-margin-right: 10px;
+@hint-content-wrapper-margin-right: 10px;
+// Giving #include-lang this calculated width makes the expanding hint-content box line up with the language menu
+// when the include-lang label is visible.
+@include-lang-width: @main-label-width - @lang-select-width - @hint-content-margin-right - @hint-content-wrapper-margin-right;
+@hint-content-group-margin-top: 10px;
+@label-font-size: 8pt;
+
+//the select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index
+.select2-container{
+    z-index: @dialogZindexPlusOne;
+}
+
+// select2 select controls are way too narrow if we don't force a width.
+// Need a considerable one for some of the longer language names.
+#lang-select + .select2-container{
+    width: @lang-select-width !important;
+    margin-top: 10px;
+    margin-left: @hint-tab-indent;
+}
+
+#hint-scope + .select2-container{
+    width: 300px !important;
+    margin-top: 3px;
+    margin-left: @hint-tab-indent;
+}
+
+.select2-container--open .select2-selection__rendered{
+    background-color: lightblue;
+}
+
+#text-properties-dialog {
+    H2{
+        font-size:10pt;
+    }
+    .tab-page {
+        .main-label {
+            width: @main-label-width;
+            font-size: @label-font-size;
+            margin-top: 10px;
+        }
+        #language-group {
+            input[type="radio"] {
+                margin-left: 5px;
+            }
+            label {
+                margin-left: 7px;
+            }
+        }
+    }
+}
+
+#text-properties-dialog.formattingDisabled .hideWhenFormattingDisabled {
+    display: none;
+}
+#text-properties-dialog:not(.formattingDisabled) .hideWhenFormattingEnabled {
+    display: none;
+}
+
+#hint-content-wrapper {
+    display:flex;
+    margin-right: @hint-content-wrapper-margin-right;
+}
+
+#hint-content {
+    border: 1px solid darkgray;
+    flex-grow: 1;
+    height: 100px;
+    margin-top: @hint-content-group-margin-top;
+    margin-left: @hint-tab-indent;
+    margin-right: @hint-content-margin-right;
+}
+
+#include-lang {
+    width: 150px;
+    font-size: @label-font-size;
+    margin-top: @hint-content-group-margin-top;
+}
+
+#hint-bubble-group .main-label {
+    margin-left: @hint-tab-indent;
+}

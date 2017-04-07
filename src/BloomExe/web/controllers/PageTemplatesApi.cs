@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Newtonsoft.Json;
 using SIL.IO;
+using SIL.PlatformUtilities;
 
 namespace Bloom.web.controllers
 {
@@ -18,6 +19,7 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class PageTemplatesApi
 	{
+		public const string TemplateFolderName = "template";
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
@@ -27,6 +29,8 @@ namespace Bloom.web.controllers
 		//these two factories are needed to instantiate template books if we need to generate thumbnails for them
 		private readonly Book.Book.Factory _bookFactory;
 		private readonly BookStorage.Factory _storageFactory;
+
+		public static bool ForPageLayout = false; // set when most recent relevant command is ShowChangeLayoutDialog
 
 		public PageTemplatesApi(SourceCollectionsList  sourceCollectionsList,BookSelection bookSelection,
 			PageSelection pageSelection, TemplateInsertionCommand templateInsertionCommand,
@@ -58,11 +62,27 @@ namespace Bloom.web.controllers
 			addPageSettings.defaultPageToSelect = _templateInsertionCommand.MostRecentInsertedTemplatePage == null ? "" : _templateInsertionCommand.MostRecentInsertedTemplatePage.Id;
 			addPageSettings.orientation = _bookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
 
-			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), _sourceCollectionsList.GetSourceBookPaths())
+			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), GetCurrentAndSourceBookPaths())
 				.Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
 			addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor;
+			// This works because this is only used for the add/change page dialog and we never show them
+			// both at once. Pushing this information into the settings that the dialog loads removes the
+			// need for cross-domain communication between the dialog and the page that launches it.
+			addPageSettings.forChooseLayout = ForPageLayout;
 
 			request.ReplyWithJson(JsonConvert.SerializeObject(addPageSettings));
+		}
+
+		/// <summary>
+		/// Gives paths to the html files for all source books and those in the current collection
+		/// </summary>
+		public IEnumerable<string> GetCurrentAndSourceBookPaths()
+		{
+			return new [] {_bookSelection.CurrentSelection.CollectionSettings.FolderPath} // Start with the current collection
+				.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections
+				.Distinct() //seems to be needed in case a shortcut points to a folder that's already in the list.
+				.SelectMany(Directory.GetDirectories) // get all the (book) folders in those collections
+					.Select(BookStorage.FindBookHtmlInFolder); // and get the book from each
 		}
 
 		/// <summary>
@@ -72,7 +92,7 @@ namespace Bloom.web.controllers
 		{
 			var filePath = request.LocalPath().Replace("api/pageTemplateThumbnail/","");
 			var pathToExistingOrGeneratedThumbnail = FindOrGenerateThumbnail(filePath);
-			if(string.IsNullOrEmpty(pathToExistingOrGeneratedThumbnail) || !File.Exists(pathToExistingOrGeneratedThumbnail))
+			if(string.IsNullOrEmpty(pathToExistingOrGeneratedThumbnail) || !RobustFile.Exists(pathToExistingOrGeneratedThumbnail))
 			{
 				request.Failed("Could not make a page thumbnail for "+filePath);
 				return;
@@ -90,18 +110,45 @@ namespace Bloom.web.controllers
 		private string FindOrGenerateThumbnail(string expectedPathOfThumbnailImage)
 		{
 			var localPath = AdjustPossibleLocalHostPathToFilePath(expectedPathOfThumbnailImage);
+
 			var svgpath = Path.ChangeExtension(localPath, "svg");
-			if (File.Exists(svgpath))
+			if (RobustFile.Exists(svgpath))
 			{
 				return svgpath;
 			}
+
 			var pngpath = Path.ChangeExtension(localPath, "png");
-			if (File.Exists(pngpath))
+			bool mustRegenerate = false;
+
+			if (RobustFile.Exists(pngpath))
 			{
-				return pngpath;
+				var f = new FileInfo(pngpath);
+				if (f.IsReadOnly)
+					return pngpath; // it's locked, don't try and replace it
+
+				//If there is no svg, then we assume the we are using a generated image.
+				//If the book we want a thumbnail from is the one is the one we are currently editing,
+				//then the thumbnail we generated last time might not reflect how the page is laid out
+				//now. So in that case we ignore the existing png thumbnail (and any cached version
+				//of it we previously saved) and make a new one. Bloom saves the current page
+				//before invoking AddPage, so the file contains the right content for making the new one.
+				var testLocalPath = localPath.Replace("/", "\\");
+				var testFolderPath = _bookSelection.CurrentSelection.FolderPath.Replace("/", "\\");
+				if (Platform.IsWindows)
+				{
+					// Not a formality, since localPath comes from GetBookTemplatePaths and has been
+					// forced to LC on Windows, while the book's FolderPath has not.
+					testLocalPath = testLocalPath.ToLowerInvariant();
+					testFolderPath = testFolderPath.ToLowerInvariant();
+				}
+				if (!testLocalPath.Contains(testFolderPath))
+				{
+					return pngpath;
+				}
+				mustRegenerate = true; // prevent thumbnailer using cached (obsolete) image
 			}
 
-			// We don't have an image; try to make one.
+			// We don't have an image, or we want to make a fresh one
 			var templatesDirectoryInTemplateBook = Path.GetDirectoryName(expectedPathOfThumbnailImage);
 			var bookPath = Path.GetDirectoryName(templatesDirectoryInTemplateBook);
 			var templateBook = _bookFactory(new BookInfo(bookPath,false), _storageFactory(bookPath));
@@ -113,11 +160,13 @@ namespace Bloom.web.controllers
 				caption = caption.Substring(0, caption.Length - "-landscape".Length);
 
 			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
-			IPage templatePage = templateBook.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
+			// The Trim is needed because template may now be created by users editing the pageLabel div, and those
+			// labels typically include a trailing newline.
+			IPage templatePage = templateBook.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+").Trim() == caption);
 			if (templatePage == null)
 				templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape);
+			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape, mustRegenerate);
 
 			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
 			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this
@@ -152,8 +201,6 @@ namespace Bloom.web.controllers
 			return resultPath;
 		}
 
-
-
 		private static string AdjustPossibleLocalHostPathToFilePath(string path)
 		{
 			if (!path.StartsWith("localhost/", StringComparison.InvariantCulture))
@@ -171,18 +218,27 @@ namespace Bloom.web.controllers
 		{
 			var bookTemplatePaths = new List<string>();
 
-			// 1) we start the list with the template that was used to start this book
-			bookTemplatePaths.Add(pathToCurrentTemplateHtml);
+			// 1) we start the list with the template that was used to start this book (or the book itself if it IS a template)
+			bookTemplatePaths.Add(Platform.IsWindows ? pathToCurrentTemplateHtml.ToLowerInvariant() : pathToCurrentTemplateHtml);
 
-			// 2) Future, add those in their current collection
+			// 2) Look in their current collection...this is the first one used to make sourceBookPaths
 
 			// 3) Next look through the books that came with bloom and other that this user has installed (e.g. via download or bloompack)
-			//    and add in all other template books that are designed for inclusion in other books. These should end in "template.html".
-			//    Requiring the book to end in the word "template" is low budget, but fast. Maybe we'll do something better later.
+			//    and add in all other template books that are designed for inclusion in other books. These should contain a folder
+			//    called "template" (which contains thumbnails of the pages that can be inserted).
+			//    Template books whose pages are not suitable for extending Add Pages can be identified by creating a file
+			//    template/NotForAddPage.txt (which can contain any explanation you like).
 			bookTemplatePaths.AddRange(sourceBookPaths
-				.Where(path => ( (path.ToLower().EndsWith("template.html") || path.ToLower().EndsWith("basic book.html"))
-									&& !string.Equals(path, pathToCurrentTemplateHtml, StringComparison.InvariantCultureIgnoreCase)))
-				.Select(path => path));
+				.Where(path =>
+				{
+					if (string.IsNullOrEmpty(path))
+						return false; // not sure how this happens.
+					var pathToTemplatesFolder = Path.Combine(Path.GetDirectoryName(path), TemplateFolderName);
+					if (!Directory.Exists(pathToTemplatesFolder))
+						return false;
+					return !RobustFile.Exists(Path.Combine(pathToTemplatesFolder, "NotForAddPage.txt"));
+				})
+				.Select(path => Platform.IsWindows ? path.ToLowerInvariant() : path));
 
 			var indexOfBasicBook = bookTemplatePaths.FindIndex(p => p.ToLowerInvariant().Contains("basic book"));
 			if (indexOfBasicBook > 1)
@@ -191,7 +247,8 @@ namespace Bloom.web.controllers
 				bookTemplatePaths.RemoveAt(indexOfBasicBook);
 				bookTemplatePaths.Insert(1,pathOfBasicBook);
 			}
-			return bookTemplatePaths;
+
+			return bookTemplatePaths.Distinct().ToList();
 		}
 
 		private dynamic GetPageGroup(string path)
@@ -212,7 +269,7 @@ namespace Bloom.web.controllers
 			// eventually extract a folder name from the path to report the missing template
 			// from within the dialog.
 			// So, manufacture a 'path' something like where we might find the missing template.
-			var templateKey = _bookSelection.CurrentSelection.GetTemplateBookKey();
+			var templateKey = _bookSelection.CurrentSelection.PageTemplateSource;
 			if (string.IsNullOrEmpty(templateKey))
 			{
 				templateKey = "MissingTemplate";  // avoid crashing

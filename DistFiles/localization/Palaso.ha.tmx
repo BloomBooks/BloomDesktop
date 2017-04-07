@@ -481,7 +481,8 @@
          </tuv>
       </tu>
       <tu tuid="LanguageLookup.LookupISOControl._searchText">
-         <tuv xml:lang="en">
+        <prop type="x-nolongerused">true</prop>
+        <tuv xml:lang="en">
             <seg>?</seg>
          </tuv>
          <tuv xml:lang="ha">

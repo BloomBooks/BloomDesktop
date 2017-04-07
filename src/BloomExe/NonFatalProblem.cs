@@ -27,7 +27,7 @@ namespace Bloom
 		/// Always log, possibly inform the user, possibly throw the exception
 		/// </summary>
 		/// <param name="modalThreshold">Will show a modal dialog if the channel is this or lower</param>
-		/// <param name="passiveThreshold">Ignored for now</param>
+		/// <param name="passiveThreshold">Will toast if channel is this or lower (and didn't modal) and shortUserLevelMessage is defined.</param>
 		/// <param name="shortUserLevelMessage">Simple message that fits in small toast notification</param>
 		/// <param name="moreDetails">Info adds information about the problem, which we get if they report the problem</param>
 		/// <param name="exception"></param>
@@ -35,6 +35,8 @@ namespace Bloom
 			string moreDetails = null,
 			Exception exception = null)
 		{
+			s_expectedByUnitTest?.ProblemWasReported();
+
 			// Simplify some checks below by tweaking the channel name on Linux.
 			var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
 			if (channel.EndsWith("-unstable"))
@@ -139,6 +141,33 @@ namespace Bloom
 					return new string[] { "developer", "alpha" };
 				default:
 					return new string[] { };
+			}
+		}
+
+		private static ExpectedByUnitTest s_expectedByUnitTest = null;
+
+		/// <summary>
+		/// use this in unit tests to cleanly check that a message would have been shown.
+		/// E.g.  using (new NonFatalProblem.ExpectedByUnitTest()) {...}
+		/// </summary>
+		public class ExpectedByUnitTest : IDisposable
+		{
+			private bool _reported;
+			public ExpectedByUnitTest()
+			{
+				s_expectedByUnitTest?.Dispose();
+				s_expectedByUnitTest = this;
+			}
+
+			internal void ProblemWasReported()
+			{
+				_reported = true;
+			}
+			public void Dispose()
+			{
+				s_expectedByUnitTest = null;
+				if (!_reported)
+					throw new Exception("NonFatalProblem was expected but wasn't generated.");
 			}
 		}
 	}

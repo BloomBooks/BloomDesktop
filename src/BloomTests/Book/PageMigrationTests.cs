@@ -401,6 +401,7 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdatePageToTemplate_UpdatesPage()
 		{
+			// Makes a book with two pages. The second (with one image and one translationGroup) is the one we will update to the template.
 			SetDom(@"<div class='bloom-page' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='prevPage'>
 			   <div class='marginBox'>
 					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
@@ -418,12 +419,17 @@ namespace BloomTests.Book
 						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable BigWords-style bloom-content1' contenteditable='true' lang='en'>
 							There was an old man called Bilanga who was very tall and also not yet married.
 						</div>
+						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable bloom-content1' contenteditable='true' lang='fr'>
+							Some french
+						</div>
 					</div>
 				</div>
 			</div>
 			");
 			var book = CreateBook();
 			var dom = book.RawDom;
+			// This is the template to which we will update the second page.  It has two translation groups, though only the first is needed to hold the
+			// content from the original page.
 			var newPageDom = MakeDom((@"<div class='A5Portrait bloom-page numberedPage customPage bloom-combinedPage' data-page='extra' id='newTemplate'>
 	  <div lang='en' class='pageLabel'>Picture in Middle</div>
 	  <div lang='en' class='pageDescription'></div>
@@ -432,7 +438,7 @@ namespace BloomTests.Book
 		  <div style='bottom: 76%' class='split-pane-component position-top'>
 			<div class='split-pane-component-inner'>
 			  <div class='bloom-translationGroup bloom-trailingElement normal-style'>
-				<div lang='z' contenteditable='true' class='bloom-content1 bloom-editable'>
+				<div lang='z' contenteditable='true' class='bloom-content1 bloom-editable FancyNew-style'>
 				</div>
 			  </div>
 			</div>
@@ -467,8 +473,8 @@ namespace BloomTests.Book
 	  </div>
 	</div>"));
 			var template = (XmlElement) newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
-
-			book.UpdatePageToTemplate(book.OurHtmlDom, template, "thePage");
+			var templatePage = new Page(book, template, "dummy", "id", x => { return template; });
+			book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, "thePage");
 
 			var newPage = (XmlElement)dom.SafeSelectNodes(".//div[@id='thePage']")[0];
 			Assert.That(newPage.Attributes["class"].Value, Is.EqualTo("A5Portrait bloom-page numberedPage customPage bloom-combinedPage bloom-monolingual"));
@@ -476,8 +482,171 @@ namespace BloomTests.Book
 			// We kept the image
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//img[@data-license='cc-by-nc-sa' and @data-copyright='Copyright © 2012, LASI' and @src='erjwx3bl.q3c.png']", 1); // the one in the first page has slightly different attrs
 			CheckEditableText(newPage, "en", "There was an old man called Bilanga who was very tall and also not yet married.");
+			CheckEditableText(newPage, "fr", "Some french");
 			// We should have kept the second one in the new page even though we didn't put anything in it (and there is one in the first page, too).
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-translationGroup')]", 3);
+			// The English and French should both have ended up with this, also the inserted empty div for xyz.
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-editable') and contains(@class, ' FancyNew-style')]", 3);
+		}
+
+		[Test]
+		public void UpdatePageToTemplate_CopiesTwoTranslationGroupsAndImages()
+		{
+			var book = SetupBookAndUpdatePage(
+				MakeBloomImageGroup("blah.png", 423, 567)
+				+
+				MakeBloomTranslationGroup("ocean-style", new DivContent("The old man and the sea", "en"),
+					new DivContent("El viejo y el mar", "es"))
+				+
+				MakeBloomTranslationGroup("run-style", new DivContent("Run very fast", "en"),
+					new DivContent("Corre muy rápido", "es"))
+				+ MakeBloomImageGroup("something.png", 95, 107),
+
+				MakeBloomImageGroup("placeHolder.png", 23, 67)
+				+ MakeBloomImageGroup("placeHolder.png", 195, 207)
+				+
+				MakeBloomTranslationGroup("big-style", new DivContent("", "z"))
+				+
+				MakeBloomTranslationGroup("small-style", new DivContent("", "z"))
+			);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-translationGroup')]", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-imageContainer')]", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(".//img", 2);
+			VerifyImage(book, 0, "blah.png", 423, 567); // Review: I'm a bit surprised it keeps the old sizes
+			VerifyImage(book, 1, "something.png", 95, 107);
+			VerifyTranslationGroup(book, 0, "big-style", new DivContent("The old man and the sea", "en"),
+				new DivContent("El viejo y el mar", "es"));
+			VerifyTranslationGroup(book, 1, "small-style", new DivContent("Run very fast", "en"),
+					new DivContent("Corre muy rápido", "es"));
+		}
+
+		[Test]
+		public void UpdatePageToTemplate_CopiesTwoTranslationGroups_IgnoringHiddenOnes()
+		{
+			var book = SetupBookAndUpdatePage(
+				MakeBloomTranslationGroup("ocean-style", new DivContent("The old man and the sea", "en"),
+					new DivContent("El viejo y el mar", "es"))
+				+
+				MakeBloomTranslationGroup("run-style", new DivContent("Run very fast", "en"),
+					new DivContent("Corre muy rápido", "es")),
+
+				MakeBloomTranslationGroup("big-style", new DivContent("", "z"))
+				// This is the critcal aspect of this test...an invisible div that must NOT receive the stuff that is visible.
+				+ MakeHiddenTranslationGroup()
+				+
+				MakeBloomTranslationGroup("small-style", new DivContent("", "z"))
+			);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-translationGroup')]", 3);
+			VerifyTranslationGroup(book, 0, "big-style", new DivContent("The old man and the sea", "en"),
+				new DivContent("El viejo y el mar", "es"));
+			// The '2' is critical here, this content needs to have been moved to the THIRD bloom-translationGroup
+			// (skipping the hidden one).
+			VerifyTranslationGroup(book, 2, "small-style", new DivContent("Run very fast", "en"),
+					new DivContent("Corre muy rápido", "es"));
+		}
+
+		private void VerifyTranslationGroup(Bloom.Book.Book book, int index, string style, params DivContent[] content)
+		{
+			var group = book.RawDom.SelectNodes(".//div[contains(@class, 'bloom-translationGroup')]")[index];
+			var editDivs = group.SelectNodes("./div[contains(@class, 'bloom-editable')]");
+			Assert.That(editDivs.Count, Is.GreaterThanOrEqualTo(content.Length)); // may keep 'z'?
+			foreach (var item in content)
+			{
+				CheckEditDiv(style, editDivs, item);
+			}
+		}
+
+		private static void CheckEditDiv(string style, XmlNodeList editDivs, DivContent item)
+		{
+			foreach (XmlElement div in editDivs)
+			{
+				if (div.Attributes["lang"].Value != item.Lang)
+					continue;
+				Assert.That(div.InnerText.Trim(), Is.EqualTo(item.Content.Trim()));
+				Assert.That(div.Attributes["class"].Value, Does.Contain(style));
+				return;
+			}
+			Assert.Fail("no matching div found for " + item.Lang);
+		}
+
+		private void VerifyImage(Bloom.Book.Book book, int index, string imageName, int width, int height)
+		{
+			var div = book.RawDom.SelectNodes(".//div[contains(@class, 'bloom-imageContainer')]")[index];
+			var images = div.SelectNodes("img");
+			Assert.That(images, Has.Count.EqualTo(1), "should only be one image in an image container");
+			var img = (XmlElement)images[0];
+			Assert.That(img.Attributes["src"].Value, Is.EqualTo(imageName));
+			Assert.That(img.Attributes["alt"].Value, Does.Contain(imageName));
+			Assert.That(img.Attributes["width"].Value, Is.EqualTo(width.ToString()));
+			Assert.That(img.Attributes["height"].Value, Is.EqualTo(height.ToString()));
+		}
+
+		class DivContent
+		{
+			public string Content;
+			public string Lang;
+
+			public DivContent(string content, string lang)
+			{
+				Content = content;
+				Lang = lang;
+			}
+		}
+
+		string MakeBloomImageGroup(string name, int width, int height)
+		{
+			return
+				@"<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: " +
+				width + @"px; height: " + height + @"px; margin-left: 199px; margin-top: 0px;' src='" +
+				name + @"' alt='This picture, " + name +
+				@", is missing or was loading too slowly.' height='" + height + @"' width='" + width + @"'></img></div>";
+		}
+
+		string MakeHiddenTranslationGroup()
+		{
+			return @"<div class='box-header-off bloom-translationGroup'></div>";
+		}
+
+		string MakeBloomTranslationGroup(string style, params DivContent[] contentDivs)
+		{
+			var sb = new StringBuilder(@"<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement " + style + @"'>");
+			foreach (var item in contentDivs)
+				sb.AppendLine(MakeBloomEditableDiv(item, style));
+			sb.AppendLine("</div>");
+			return sb.ToString();
+		}
+
+		string MakeBloomEditableDiv(DivContent content, string style)
+		{
+			return
+@"						<div  class='bloom-editable " + style + @" bloom-content1' contenteditable='true' lang='" + content.Lang + @"'>
+							" + content.Content + @"
+						</div>
+";
+		}
+
+		Bloom.Book.Book SetupBookAndUpdatePage(string sourceContent, string templateContent)
+		{
+			SetDom(@"<div class='bloom-page' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
+			   <div class='marginBox'>"
+				+ sourceContent +
+				@"</div>
+			</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			// This is the template to which we will update the page.
+			var newPageDom = MakeDom((@"<div class='A5Portrait bloom-page numberedPage customPage bloom-combinedPage' data-page='extra' id='newTemplate'>
+	  <div lang='en' class='pageLabel'>Picture in Middle</div>
+	  <div lang='en' class='pageDescription'></div>
+	  <div class='marginBox'>
+		" + templateContent + @"
+	  </div>
+	</div>"));
+			var template = (XmlElement)newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
+			var templatePage = new Page(book, template, "dummy", "id", x => { return template; });
+			book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, "thePage");
+			return book;
 		}
 
 		// Enhance: if there are ever cases where there are multiple image containers to migrate, test this.

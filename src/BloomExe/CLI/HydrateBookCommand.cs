@@ -87,7 +87,7 @@ namespace Bloom.CLI
 		{
 			const string bloomPlayerFileName = "bloomPlayer.js";
 			var bloomLibraryJsPath = FileLocator.GetFileDistributedWithApplication(bloomPlayerFileName);
-			File.Copy(bloomLibraryJsPath, Path.Combine(path, bloomPlayerFileName), true);
+			RobustFile.Copy(bloomLibraryJsPath, Path.Combine(path, bloomPlayerFileName), true);
 		}
 	}
 }

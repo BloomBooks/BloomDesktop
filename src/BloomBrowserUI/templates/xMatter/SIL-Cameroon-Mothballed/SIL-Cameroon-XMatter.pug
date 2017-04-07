@@ -1,0 +1,26 @@
+include ../bloom-xmatter-mixins.pug
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title SIL Cameroon Front & Back Matter
+		+stylesheets('SIL-Cameroon-XMatter.css')
+	body
+		+factoryStandard-outsideFrontCover
+		+standard-blankInsideFrontCover
+		+factoryStandard-titlePage
+
+		//Things Cameroon needs customized:
+		// No ISBN
+		// List ISO 639-3 code
+		// Comment on orthography
+		// Sensitivity to page numbering
+		// Name and address of the publisher
+		+page-xmatter("Credits Page").bloom-frontMatter.countPageButDoNotShowNumber.credits(data-export='front-matter-credits')#AFFEBC7D-9774-4114-8D83-07CCCBD07391
+			+credits-contents(includeIsbn = false)
+			+standard-ISOLanguageCode
+
+		+factoryStandard-insideBackCover
+		+factoryStandard-outsideBackCover

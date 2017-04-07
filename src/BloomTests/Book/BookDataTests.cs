@@ -411,17 +411,18 @@ namespace BloomTests.Book
 		}
 
 
-		[Test]
-		public void Constructor_CollectionSettingsHasCountrProvinceDistrict_LanguageLocationFilledIn()
+		[TestCase("", "", "", null)]
+		[TestCase("the country", "", "", "the country")]
+		[TestCase("the country", "the province", "", "the province, the country")]
+		[TestCase("the country", "the province", "the district", "the district, the province, the country")]
+		[TestCase("", "the province", "the district", "the district, the province")]
+		[TestCase("", "", "the district", "the district")]
+		[TestCase("", "the province", "", "the province")]
+		public void Constructor_CollectionSettingsHasVariousLocationFields_LanguageLocationFilledCorrect(string country, string province, string district, string expected)
 		{
-//            var dom = new HtmlDom(@"<html><head><div id='bloomDataDiv'>
-//                    <div data-book='country'>the country</div>
-//                    <div data-book='province'>the province</div>
-//                    <div data-book='district'>the district</div>
-//            </div></head><body></body></html>");
 			var dom = new HtmlDom();
-			var data = new BookData(dom, new CollectionSettings(){Country="the country", Province = "the province", District= "the district"}, null);
-			Assert.AreEqual("the district, the province, the country", data.GetVariableOrNull("languageLocation", "*"));
+			var data = new BookData(dom, new CollectionSettings(){Country=country, Province = province, District= district}, null);
+			Assert.AreEqual(expected, data.GetVariableOrNull("languageLocation", "*"));
 		  }
 
 		/*    data.AddLanguageString("*", "nameOfLanguage", collectionSettings.Language1Name, true);

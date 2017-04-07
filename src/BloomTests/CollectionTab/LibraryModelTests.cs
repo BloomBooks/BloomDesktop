@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Bloom.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
+using SIL.IO;
 using SIL.TestUtilities;
 
 namespace BloomTests.CollectionTab
@@ -121,6 +123,35 @@ namespace BloomTests.CollectionTab
 			foreach (var filePath in actualFiles)
 			{
 				Assert.IsFalse(Equals(Path.GetFileName(filePath), excludedFile));
+			}
+		}
+
+		[Test]
+		public void MakeBloomPack_DoesntIncludeCorruptOrBakFiles()
+		{
+			var srcBookPath = MakeBook();
+			const string excludedFile1 = BookStorage.PrefixForCorruptHtmFiles + ".htm";
+			const string excludedFile2 = BookStorage.PrefixForCorruptHtmFiles + "2.htm";
+			string excludedBackup = Path.GetFileName(srcBookPath) + ".bak";
+			RobustFile.WriteAllText(Path.Combine(srcBookPath, excludedFile1), "rubbish");
+			RobustFile.WriteAllText(Path.Combine(srcBookPath, excludedFile2), "rubbish");
+			RobustFile.WriteAllText(Path.Combine(srcBookPath, excludedBackup), "rubbish");
+			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
+
+			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			MakeTestBloomPack(bloomPackName, false);
+
+			// Don't do anything with the zip file except read in the filenames
+			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
+
+			// +1 for collection-level css file, -3 for corrupt and .bak files, so the count is -2
+			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count()-2));
+
+			foreach (var filePath in actualFiles)
+			{
+				Assert.IsFalse(Equals(Path.GetFileName(filePath), excludedFile1));
+				Assert.IsFalse(Equals(Path.GetFileName(filePath), excludedFile2));
+				Assert.IsFalse(Equals(Path.GetFileName(filePath), excludedBackup));
 			}
 		}
 

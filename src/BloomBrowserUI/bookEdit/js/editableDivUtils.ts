@@ -1,4 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
+import axios = require('axios');
 
 export class EditableDivUtils {
 
@@ -116,6 +117,17 @@ export class EditableDivUtils {
         }
     }
 
+    // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
+    static getPageScale(): number {
+        var scale = 1.0;
+        var styleString = $("div#page-scaling-container").attr("style");
+        var searchData = /transform: *scale\(([0-9.]*)/.exec(styleString);
+        if (searchData) {
+            scale = parseFloat(searchData[1]);
+        }
+        return scale;
+    }
+
     static adjustDraggableOptionsForScaleBug(dialogBox: JQuery, scale: number) {
         dialogBox.draggable({
             // BL-4293 the 'start' and 'drag' functions here work around a known bug in jqueryui.
@@ -129,6 +141,37 @@ export class EditableDivUtils {
             drag: function (event, ui) {
                 ui.position.top = (ui.position.top - $(this).data('startingScrollTop')) / scale;
                 ui.position.left = (ui.position.left - $(this).data('startingScrollLeft')) / scale;
+            }
+        });
+    }
+
+    static pasteImageCredits() {
+        axios.get<any>('/bloom/api/image/imageCreditsForWholeBook').then(result => {
+            var data = result.data;
+            if (!data)
+                return;     // nothing to insert: no images apparently...
+
+            // This is a global method, called from an href attribute of an <a> element.
+            // document.activeElement must be that <a> element, which is owned by a qtip-content
+            // class div element, which in turn is owned by a qtip class element.  The editable
+            // div element to which the qtip bubble is attached has an aria-describedby attribute
+            // that refers to the div.qtip's id.
+            var bubble = document.activeElement.parentElement.parentElement;
+            var query = '[aria-describedby="' + bubble.getAttribute('id') + '"]';
+            var credits = document.querySelectorAll(query);
+            if (credits.length > 0) {
+                var artists = credits[0];
+                // We found where to insert the credits.  If there's a better way to add this
+                // information, I'd be happy to learn what it is.  data is a string consisting
+                // of one or more <p> elements properly terminated by </p> and separated by
+                // newlines.
+                var d2 = document.createElement('div');
+                d2.innerHTML = data;
+                var paras = d2.getElementsByTagName('p');
+                // Note that when the p element is appended to the div element, it gets removed from the list.
+                while (paras.length > 0) {
+                    artists.appendChild(paras[0]);
+                }
             }
         });
     }

@@ -63,6 +63,7 @@ namespace BloomTests.Book
 			Assert.AreEqual("new", dom.BaseForRelativePaths);
 		}
 
+
 		[Test]
 		public void RemoveMetaValue_IsThere_RemovesIt()
 		{
@@ -103,6 +104,17 @@ namespace BloomTests.Book
 			dom.LoadXml(@"<div class=''/>");
 			HtmlDom.AddClassIfMissing((XmlElement)dom.FirstChild, "two");
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("div[@class='two']", 1);
+		}
+
+		[Test]
+		[TestCase(null, "0.0")]
+		[TestCase("Foobar 6 !", "0.0")]
+		[TestCase("Bloom Version 3.8 (apparent build date: 28-Mar-2017)", "3.8")]
+		[TestCase("Bloom Version 3.8.0 (apparent build date: 28-Mar-2017)", "3.8.0")]
+		public void GetGeneratorVersion_Works(string value, string expected)
+		{
+			var dom = new HtmlDom($@"<html><head><meta name='Generator' content='{value}'></meta></head></html>");
+			Assert.AreEqual(new System.Version(expected), dom.GetGeneratorVersion());
 		}
 
 		[Test]
@@ -605,7 +617,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void MergeUserModifiedStyles_NewStyleHasLangAttr_BothKept()
+		public void MergeUserModifiedStyles_NewStyleHasLangAttr_Ignored()
 		{
 			var bookDom = new HtmlDom(
 				@"<html>
@@ -637,7 +649,7 @@ namespace BloomTests.Book
 			var xpath = "//style[@title=\"userModifiedStyles\" and contains(text(),'font-size: ginormous;')]";
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
 			var xpath2 = "//style[@title=\"userModifiedStyles\" and contains(text(),\".MyTest-style[lang='en'] { font-size: smaller;\")]";
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath2, 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath(xpath2);
 		}
 
 		[Test]
@@ -647,7 +659,7 @@ namespace BloomTests.Book
 				@"<html>
 					<head>
 						<style type='text/css' title='userModifiedStyles'>
-							.MyTest-style { font-size: ginormous; }</style>
+							.SomeOther-style { font-size: ginormous; }</style>
 					</head>
 					<body>
 						<div class='MyTest-style bogus'></div>
@@ -679,6 +691,70 @@ namespace BloomTests.Book
 			var xpath2 = commonXpathPart + ",\".MyTest-style[lang='en']" + Environment.NewLine +
 				"{" + Environment.NewLine + "font-size: smaller;" + Environment.NewLine + "}" + Environment.NewLine + "\")]";
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath2, 1);
+		}
+
+		[Test]
+		public void FixAnyAddedCustomPages_Works()
+		{
+			var content =
+				@"<html>
+					<head></head>
+					<body>
+						<div id='bloomDataDiv'>
+							<div data-book='styleNumberSequence' lang='*'>0</div>
+						</div>
+						<div class='bloom-page numberedPage customPage A5Portrait bloom-monolingual' data-page='' id='2141ae70-d84f-4b40-bb30-18c20941e84e' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398386' lang=''>
+							<div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Custom' lang='en'>Custom</div>
+							<div class='pageDescription' lang='en'>A blank page that allows you to add items.</div>
+							<div class='marginBox'></div>
+						</div>
+						<div class='bloom-page numberedPage customPage A5Portrait bloom-monolingual' data-page='extra' id='ff5f83b6-d26e-439f-8df6-cf982a521de4' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398386' lang=''>
+							<div class='pageLabel' lang='en'>Dual Picture Before Text</div>
+							<div class='pageDescription' lang='en'></div>
+							<div class='marginBox'></div>
+						</div>
+					</body>
+				</html>";
+
+			var bookDom = new HtmlDom(content);
+
+			var allTopLevelDivs = "/html/body/div";
+			var pageDivs = "/html/body/div[contains(@class,'bloom-page') and contains(@class,'customPage')]";
+			var badPageDivs = "/html/body/div[contains(@class,'bloom-page') and contains(@class,'customPage') and @data-page='']";
+			var goodPageDivs = "/html/body/div[contains(@class,'bloom-page') and contains(@class,'customPage') and @data-page='extra']";
+			var badPageLabels = "/html/body/div[contains(@class,'bloom-page') and contains(@class,'customPage')]/div[@class='pageLabel' and @data-i18n]";
+			var goodPageLabels = "/html/body/div[contains(@class,'bloom-page') and contains(@class,'customPage')]/div[@class='pageLabel' and not(@data-i18n)]";
+			var pageDescription = "/html/body/div[contains(@class,'bloom-page') and contains(@class,'customPage')]/div[@class='pageDescription']";
+
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(allTopLevelDivs, 3);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(pageDivs, 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(badPageDivs, 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(goodPageDivs, 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(badPageLabels, 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(goodPageLabels, 1);
+			var countEmpty = 0;
+			foreach (XmlElement node in bookDom.RawDom.SafeSelectNodes(pageDescription))
+			{
+				if (String.IsNullOrWhiteSpace(node.InnerXml))
+					++countEmpty;
+			}
+			Assert.That(countEmpty, Is.EqualTo(1));
+
+			bookDom.FixAnyAddedCustomPages();
+
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(allTopLevelDivs, 3);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(pageDivs, 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath(badPageDivs);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(goodPageDivs, 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath(badPageLabels);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(goodPageLabels, 2);
+			countEmpty = 0;
+			foreach (XmlElement node in bookDom.RawDom.SafeSelectNodes(pageDescription))
+			{
+				if (String.IsNullOrWhiteSpace(node.InnerXml))
+					++countEmpty;
+			}
+			Assert.That(countEmpty, Is.EqualTo(2));
 		}
 	}
 }

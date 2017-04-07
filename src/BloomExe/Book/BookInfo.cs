@@ -57,8 +57,6 @@ namespace Bloom.Book
 				// otherwise leave it null, first attempt to use will create a default one
 			}
 
-			//TODO
-			Type = Book.BookType.Publication;
 			IsEditable = isEditable;
 
 			FixDefaultsIfAppropriate();
@@ -103,6 +101,12 @@ namespace Bloom.Book
 		{
 			get { return MetaData.IsSuitableForMakingShells; }
 			set { MetaData.IsSuitableForMakingShells = value; }
+		}
+
+		public bool IsSuitableForMakingTemplates
+		{
+			get { return MetaData.IsSuitableForMakingTemplates; }
+			set { MetaData.IsSuitableForMakingTemplates = value; }
 		}
 
 		public bool IsSuitableForVernacularLibrary
@@ -203,8 +207,6 @@ namespace Bloom.Book
 		}
 
 		public bool IsEditable { get; private set; }
-
-		public Book.BookType Type { get; set; }
 
 		/// <summary>
 		/// This one knows nothing of what language the user speaks... currently using that requires actually reading in the html, which is beyond what this class can do
@@ -486,7 +488,7 @@ namespace Bloom.Book
 				return result;
 
 			var backupPath = Path.ChangeExtension(metaDataPath, "bak");
-			if (File.Exists(backupPath) && TryReadMetaData(backupPath, out result))
+			if (RobustFile.Exists(backupPath) && TryReadMetaData(backupPath, out result))
 			{
 				RobustFile.Delete(metaDataPath); // Don't think it's worth saving the corrupt one
 				RobustFile.Move(backupPath, metaDataPath);
@@ -498,7 +500,7 @@ namespace Bloom.Book
 		private static bool TryReadMetaData(string path, out BookMetaData result)
 		{
 			result = null;
-			if (!File.Exists(path))
+			if (!RobustFile.Exists(path))
 				return false;
 			try
 			{
@@ -525,7 +527,7 @@ namespace Bloom.Book
 				tempFilePath = temp.Path;
 			}
 			RobustFile.WriteAllText(tempFilePath, Json);
-			if (File.Exists(metaDataPath))
+			if (RobustFile.Exists(metaDataPath))
 				RobustFile.Replace(tempFilePath, metaDataPath, Path.ChangeExtension(metaDataPath, "bak"));
 			else
 				RobustFile.Move(tempFilePath, metaDataPath);
@@ -597,6 +599,10 @@ namespace Bloom.Book
 
 		[JsonProperty("suitableForMakingShells")]
 		public bool IsSuitableForMakingShells { get; set; }
+
+		// Special property for Template Starter template.
+		[JsonProperty("suitableForMakingTemplates")]
+		public bool IsSuitableForMakingTemplates { get; set; }
 
 		[JsonProperty("suitableForVernacularLibrary")]
 		public bool IsSuitableForVernacularLibrary { get; set; }

@@ -539,8 +539,10 @@ namespace Bloom.WebLibraryIntegration
 		internal void WaitUntilS3DataIsOnServer(string bucket, string bookPath)
 		{
 			var s3Id = S3BookId(BookMetaData.FromFolder(bookPath));
-			// There's a few files we don't upload, but meta.bak is the only one that regularly messes up the count
-			var count = Directory.GetFiles(bookPath).Count(p=>!p.EndsWith(".bak"));
+			// There's a few files we don't upload, but meta.bak is the only one that regularly messes up the count.
+			// Some tests also deliberately include a _broken_ file to check they aren't uploaded,
+			// so we'd better not wait for that to be there, either.
+			var count = Directory.GetFiles(bookPath).Count(p=>!p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles));
 			for (int i = 0; i < 30; i++)
 			{
 				var uploaded = _s3Client.GetBookFileCount(bucket, s3Id);

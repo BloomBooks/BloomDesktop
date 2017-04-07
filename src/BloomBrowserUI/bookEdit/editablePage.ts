@@ -5,6 +5,7 @@
 import * as $ from 'jquery';
 import * as jQuery from 'jquery';
 import { bootstrap } from './js/bloomEditing';
+import { EditableDivUtils } from './js/editableDivUtils';
 import '../lib/jquery.i18n.custom.ts'; //localize()
 import '../lib/jquery.myimgscale.js'; //scaleImage()
 
@@ -28,6 +29,7 @@ var styleSheets = [
     'bookEdit/css/origami.css',
     'bookEdit/css/tab.winclassic.css',
     'StyleEditor/StyleEditor.css',
+    'bookEdit/TextBoxProperties/TextBoxProperties.css',
     'bookEdit/css/bloomDialog.css',
     'lib/long-press/longpress.css',
     'bookEdit/toolbox/talkingBook/audioRecording.css'
@@ -39,7 +41,10 @@ var styleSheets = [
 // in such a way that after a paste the C# browser object answers false to CanUndo.
 export function ckeditorCanUndo(): boolean {
     // review: do we need to examine all instances?
-    if (CKEDITOR && CKEDITOR.currentInstance
+    // C# may apparently call this before the module that defines the variable CKEDITOR
+    // is even loaded. To avoid an error, we have to check both that it is defined AND
+    // that it has a value.
+    if (typeof CKEDITOR !== "undefined" && CKEDITOR && CKEDITOR.currentInstance
         && (<any>CKEDITOR.currentInstance).undoManager
         && (<any>CKEDITOR.currentInstance).undoManager.undoable()) {
         return true;
@@ -74,6 +79,11 @@ import TopicChooser from './TopicChooser/TopicChooser';
 //ShowTopicChooser() is called by a script tag on a <a> element in a tooltip
 window['ShowTopicChooser'] = () => {
     TopicChooser.showTopicChooser();
+}
+
+//PasteImageCredits() is called by a script tag on a <a> element in a tooltip
+window['PasteImageCredits'] = () => {
+    EditableDivUtils.pasteImageCredits();
 }
 
 $(document).ready(function () {

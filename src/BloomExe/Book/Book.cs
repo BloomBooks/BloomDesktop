@@ -8,12 +8,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
+using System.Web.Util;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
+using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using MarkdownSharp;
@@ -51,14 +53,8 @@ namespace Bloom.Book
 		internal const string kIdOfBasicBook = "056B6F11-4A6C-4942-B2BC-8861E62B03B3";
 
 		public event EventHandler ContentsChanged;
-
-		//nb: it looks like nothing is currently writing to it.
-		//Instead, the code is currently writing to the global application Logger.
-		//Should we remove this, or return some errant code to using it instead of Logger?
-		private readonly IProgress _log = new StringBuilderProgress();
-
-		private bool _haveCheckedForErrorsAtLeastOnce;
 		private readonly BookData _bookData;
+		public const string ReadMeImagesFolderName = "ReadMeImages";
 
 		//for moq'ing only
 		public Book()
@@ -78,6 +74,19 @@ namespace Bloom.Book
 
 			// This allows the _storage to
 			storage.MetaData = info;
+
+			// We always validate the book during the process of loading the storage,
+			// so we don't need to do it again until something changes...just note the result.
+			if (!string.IsNullOrEmpty(storage.ErrorMessagesHtml))
+			{
+				HasFatalError = true;
+				FatalErrorDescription = storage.ErrorMessagesHtml;
+			}
+			else if (!string.IsNullOrEmpty(storage.InitialLoadErrors))
+			{
+				HasFatalError = true;
+				FatalErrorDescription = storage.InitialLoadErrors;
+			}
 
 			_storage = storage;
 
@@ -126,6 +135,19 @@ namespace Bloom.Book
 			_storage.Dom.RemoveExtraBookTitles();
             _storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
+
+			// We introduced "template starter" in 3.9, but books you made with it could be used in 3.8 etc.
+			// If those books came back to 3.9 or greater (which would happen eventually), 
+			// they would still have this tag that they didn't really understand, and which should have been removed.
+			// At the moment, only templates are suitable for making shells, so use that to detect that someone has
+			// edited a user defined template book in a version that doesn't know about user defined templates.
+			if (_storage.Dom.GetGeneratorVersion() < new System.Version(3,9))
+			{
+				if (IsSuitableForMakingShells)
+					_storage.Dom.FixAnyAddedCustomPages();
+				else
+					_storage.Dom.RemoveMetaElement("xmatter");
+			}
 		}
 
 		void _storage_FolderPathChanged(object sender, EventArgs e)
@@ -151,8 +173,6 @@ namespace Bloom.Book
 			EventHandler handler = ContentsChanged;
 			if (handler != null) handler(this, e);
 		}
-
-		public enum BookType { Unknown, Template, Shell, Publication }
 
 		/// <summary>
 		/// If we have to just show title in one language, which should it be?
@@ -237,7 +257,7 @@ namespace Bloom.Book
 			{
 				Debug.Assert(BookInfo.FolderPath == _storage.FolderPath);
 
-				if (Type == BookType.Publication)
+				if (IsEditable)
 				{
 					//REVIEW: evaluate and explain when we would choose the value in the html over the name of the folder.
 					//1 advantage of the folder is that if you have multiple copies, the folder tells you which one you are looking at
@@ -260,7 +280,7 @@ namespace Bloom.Book
 
 		public virtual HtmlDom GetEditableHtmlDomForPage(IPage page)
 		{
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 			{
 				return GetErrorDom();
 			}
@@ -287,6 +307,16 @@ namespace Bloom.Book
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _collectionSettings, _storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
+			if (IsSuitableForMakingShells && !page.IsXMatter)
+			{
+				// We're editing a template page in a template book.
+				// Make the label editable. Note: HtmlDom.ProcessPageAfterEditing knows about removing this.
+				// I don't like the knowledge being in two places, but the place to remove the attribute is in the
+				// middle of a method in HtmlDom and it's this class that knows about the book being a template
+				// and whether it should be added.
+				// (Note: we don't want this for xmatter pages because they don't function as actual template pages.)
+				HtmlDom.MakeEditableDomShowAsTemplate(pageDom);
+			}
 			return pageDom;
 		}
 
@@ -350,7 +380,7 @@ namespace Bloom.Book
 		{
 			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
-			dom = _storage.MakeDomRelocatable(dom, _log);
+			dom = _storage.MakeDomRelocatable(dom);
 			// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 			dom.RawDom.PreserveWhitespace = true;
 			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
@@ -378,12 +408,12 @@ namespace Bloom.Book
 			//foreach (XmlNode child in inputHead.ChildNodes)
 			//	importNode.AppendChild(child);
 			//inputHead.ParentNode.ReplaceChild(importNode, inputHead);
-			return _storage.MakeDomRelocatable(inputDom, _log);
+			return _storage.MakeDomRelocatable(inputDom);
 		}
 
 		public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
 		{
-			if(_log.ErrorEncountered)
+			if(HasFatalError)
 			{
 				return GetErrorDom();
 			}
@@ -407,32 +437,20 @@ namespace Bloom.Book
 		// into empty editable divs to give a better idea of what a typical page will look like.
 		internal HtmlDom GetThumbnailXmlDocumentForPage(IPage page)
 		{
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 			{
 				return GetErrorDom();
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.SortStyleSheetLinks();
 			AddPreviewJavascript(pageDom);
-			AddFillerTextToEmptyEditDivs(pageDom);
+			HtmlDom.AddClassIfMissing(pageDom.Body, "bloom-templateThumbnail");
 			return pageDom;
-		}
-
-		private static void AddFillerTextToEmptyEditDivs(HtmlDom pageDom)
-		{
-			var placeHolderText =
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed porttitor ex at sapien accumsan convallis. Aenean varius nisi justo. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.";
-			var emptyDivs =
-				pageDom.RawDom.SafeSelectNodes("//div[@contenteditable='true' and string-length(normalize-space(text()))=0]");
-			if (emptyDivs.Count > 3)
-				placeHolderText = "Lorem";
-			foreach (XmlElement div in emptyDivs)
-				div.InnerText = placeHolderText;
 		}
 
 		public HtmlDom GetPreviewXmlDocumentForFirstPage()
 		{
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 			{
 				return null;
 			}
@@ -496,7 +514,7 @@ namespace Bloom.Book
 
 		private HtmlDom GetBookDomWithStyleSheets(params string[] cssFileNames)
 		{
-			var dom = _storage.GetRelocatableCopyOfDom(_log);
+			var dom = _storage.GetRelocatableCopyOfDom();
 			dom.RemoveModeStyleSheets();
 			foreach (var cssFileName in cssFileNames)
 			{
@@ -523,7 +541,10 @@ namespace Bloom.Book
 				builder.AppendLine(BookStorage.GenericBookProblemNotice);
 			}
 
-			builder.Append(((StringBuilderProgress) _log).Text);//review: is this ever non-empty?
+			// often GetBrokenBookRecommendation and FatalErrorDescription both come from _storage.ErrorMessagesHtml.
+			// Try not to say the same thing twice.
+			if (!builder.ToString().Contains(FatalErrorDescription))
+				builder.Append(FatalErrorDescription);
 
 			builder.Append("<p>"+ WebUtility.HtmlEncode(extraMessages)+"</p>");
 
@@ -554,20 +575,19 @@ namespace Bloom.Book
 			{
 				if (!BookInfo.IsEditable)
 					return false;
-				GetErrorsIfNotCheckedBefore();
 				return !HasFatalError;
 			}
 		}
 
 		/// <summary>
 		/// In the Bloom app, only one collection at a time is editable; that's the library they opened. All the other collections of templates, shells, etc., are not editable.
+		/// So, a book is editable if it's in that one collection (unless it's in an error state).
 		/// </summary>
 		public bool IsEditable {
 			get
 			{
 				if (!BookInfo.IsEditable)
 					return false;
-				GetErrorsIfNotCheckedBefore();
 				return !HasFatalError;
 			}
 		}
@@ -600,9 +620,9 @@ namespace Bloom.Book
 		public Book FindTemplateBook()
 		{
 			Guard.AgainstNull(_templateFinder, "_templateFinder");
-			if(Type!=BookType.Publication)
-				return null;
-			string templateKey = GetTemplateBookKey();
+			if(!IsEditable)
+				return null; // won't be adding pages, don't need source of templates
+			string templateKey = PageTemplateSource;
 
 			Book book=null;
 			if (!String.IsNullOrEmpty(templateKey))
@@ -617,35 +637,26 @@ namespace Bloom.Book
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
 				if (templateKey == _cachedTemplateKey && _cachedTemplateBook != null)
 					return _cachedTemplateBook;
-				book = _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
+				// a template book is its own primary template...and might not be found by templateFinder,
+				// since we might be in a vernacular collection that it won't look in.
+				book = IsSuitableForMakingShells ? this : _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
 				_cachedTemplateBook = book;
 				_cachedTemplateKey = templateKey;
 			}
 			return book;
 		}
 
-		public string GetTemplateBookKey()
+		//This is the set of pages that we show first in the Add Page dialog.
+		public string PageTemplateSource
 		{
-			return OurHtmlDom.GetMetaValue("pageTemplateSource", "");
+			get { return OurHtmlDom.GetMetaValue("pageTemplateSource", ""); }
+			set { OurHtmlDom.UpdateMetaElement("pageTemplateSource", value);}
 		}
-
-		public BookType TypeOverrideForUnitTests;
 
 		/// <summary>
 		/// once in our lifetime, we want to do any migrations needed for this version of bloom
 		/// </summary>
 		private bool _haveDoneUpdate = false;
-
-		public BookType Type
-		{
-			get
-			{
-				if(TypeOverrideForUnitTests != BookType.Unknown)
-					return TypeOverrideForUnitTests;
-
-				return IsEditable ? BookType.Publication : BookType.Template; //TODO there are other types...should there be some way they can they happen?
-			}
-		}
 
 		public virtual HtmlDom OurHtmlDom
 		{
@@ -708,8 +719,9 @@ namespace Bloom.Book
 			if (RobustFile.Exists(BookInfo.MetaDataPath))
 				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			BringBookUpToDate(OurHtmlDom, progress);
-			if (Type == BookType.Publication)
+			if (IsEditable)
 			{
+				// If the user might be editing it we want it more thoroughly up-to-date
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
 				//ImageUpdater.CompressImages(FolderPath, progress);
@@ -952,8 +964,8 @@ namespace Bloom.Book
 
 		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
 		{
-			var nameOfXMatterPack = Storage.HandleRetiredXMatterPacks(OurHtmlDom, _collectionSettings.XMatterPackName);
-			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
+			var helper = new XMatterHelper(bookDOM, CollectionSettings.XMatterPackName, _storage.GetFileLocator());
+
 			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
 			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
 			// Per BL-3571, if it's using a layout we don't know (e.g., from a newer Bloom) we switch to A5Portrait.
@@ -1007,7 +1019,7 @@ namespace Bloom.Book
 			//so let's get further evidence by looking at the page source and then fix the lineage
 			// However, if we have json lineage, it is normal not to have it in HTML metadata.
 			if (string.IsNullOrEmpty(BookInfo.BookLineage) && bookDOM.GetMetaValue("bloomBookLineage", "") == "")
-				if (bookDOM.GetMetaValue("pageTemplateSource", "") == "Basic Book")
+				if (PageTemplateSource == "Basic Book")
 				{
 					bookDOM.UpdateMetaElement("bloomBookLineage", kIdOfBasicBook);
 				}
@@ -1073,9 +1085,10 @@ namespace Bloom.Book
 			UpdateMultilingualSettings(bookDom);
 		}
 
-		public void UpdatePageToTemplate(HtmlDom pageDom, XmlElement templatePageDiv, string pageId)
+		public void UpdatePageToTemplate(HtmlDom pageDom, IPage templatePage, string pageId)
 		{
-			OurHtmlDom.UpdatePageToTemplate(pageDom, templatePageDiv, pageId);
+			OurHtmlDom.UpdatePageToTemplate(pageDom, templatePage.GetDivNodeForThisPage(), pageId);
+			AddMissingStylesFromTemplatePage(templatePage);
 			UpdateEditableAreasOfElement(pageDom);
 		}
 
@@ -1271,13 +1284,9 @@ namespace Bloom.Book
 			}
 		}
 
-
-
-		public virtual bool HasFatalError
-		{
-			get { return _log.ErrorEncountered || !string.IsNullOrEmpty(_storage.ErrorMessagesHtml); }
-		}
-
+		// Anything that sets HasFatalError true should appropriately set FatalErrorDescription.
+		public virtual bool HasFatalError { get; private set; }
+		private string FatalErrorDescription { get; set; }
 
 		public string ThumbnailPath
 		{
@@ -1304,17 +1313,19 @@ namespace Bloom.Book
 
 		//discontinuing this for now becuase we need to know whether to show the book when all we have is a bookinfo, not access to the
 		//dom like this requires. We'll just hard code the names of the experimental things.
-//        public bool IsExperimental
-//        {
-//            get
-//            {
-//                string metaValue = OurHtmlDom.GetMetaValue("experimental", "false");
-//                return metaValue == "true" || metaValue == "yes";
-//            }
-//        }
+		//        public bool IsExperimental
+		//        {
+		//            get
+		//            {
+		//                string metaValue = OurHtmlDom.GetMetaValue("experimental", "false");
+		//                return metaValue == "true" || metaValue == "yes";
+		//            }
+		//        }
 
 		/// <summary>
-		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells
+		/// In a shell-making library, we want to hide books that are just shells, so rarely make sense as a starting point for more shells.
+		/// Note: the setter on this property just sets the flag to the appropriate state. To actually change
+		/// a book to or from a template, use SwitchSuitableForMakingShells()
 		/// </summary>
 		public bool IsSuitableForMakingShells
 		{
@@ -1322,6 +1333,8 @@ namespace Bloom.Book
 			{
 				return BookInfo.IsSuitableForMakingShells;
 			}
+			set { BookInfo.IsSuitableForMakingShells = value; }
+
 		}
 
 		/// <summary>
@@ -1454,10 +1467,11 @@ namespace Bloom.Book
 				var options = new MarkdownOptions() {LinkEmails = true, AutoHyperlink=true};
 				var m = new Markdown(options);
 				var contents = m.Transform(RobustFile.ReadAllText(AboutBookMarkdownPath));
-				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unneccessary.... do they scan .md files?
+				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unnecessary.... do they scan .md files?
 
 				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
-				var html = string.Format("<html><head><link rel='stylesheet' href='file://{0}' type='text/css'><head/><body>{1}</body></html>", pathToCss, contents);
+				var pathAsUrl = "file://" + AboutBookMarkdownPath.Replace('\\', '/').Replace(" ", "%20");
+				var html = $"<html><head><base href='{pathAsUrl}'><link rel='stylesheet' href='file://{pathToCss}' type='text/css'><head/><body>{contents}</body></html>";
 				return html;
 
 			} //todo add other ui languages
@@ -1503,12 +1517,7 @@ namespace Bloom.Book
 
 		public IEnumerable<IPage> GetPages()
 		{
-			if (!_haveCheckedForErrorsAtLeastOnce)
-			{
-				CheckForErrors();
-			}
-
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 				yield break;
 
 			if (_pagesCache == null)
@@ -1563,7 +1572,7 @@ namespace Bloom.Book
 
 		public Dictionary<string, IPage> GetTemplatePagesIdDictionary()
 		{
-			if (_log.ErrorEncountered)
+			if (HasFatalError)
 				return null;
 
 			var result = new Dictionary<string, IPage>();
@@ -1611,12 +1620,27 @@ namespace Bloom.Book
 
 		public void InsertPageAfter(IPage pageBefore, IPage templatePage)
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
+
+			// we need to break up the effects of changing the selected page.
+			// The before-selection-changes stuff includes saving the old page. We want any changes
+			// (e.g., newly defined styles) from the old page to be saved before we start
+			// possibly merging in things (e.g., imported styles) from the template page.
+			// On the other hand, we do NOT want stuff from the old page (e.g., its copy
+			// of the old book styles) overwriting what we figure out in the process of
+			// doing the insertion. So, do the stuff that involves the old page here,
+			// and later do the stuff that involves the new page.
+			_pageSelection.PrepareToSelectPage();
 
 			ClearPagesCache();
 
 			if(templatePage.Book !=null) // will be null in some unit tests that are unconcerned with stylesheets
 				HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, OurHtmlDom);
+
+			// And, if it comes from a different book, we may need to copy over some of the user-defined
+			// styles from that book. Do this before we set up the new page, which will get a copy of this
+			// book's (possibly updated) stylesheet.
+			AddMissingStylesFromTemplatePage(templatePage);
 
 			XmlDocument dom = OurHtmlDom.RawDom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
@@ -1626,7 +1650,8 @@ namespace Bloom.Book
 			BookStarter.SetupPage(newPageDiv, _collectionSettings, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
-
+			// If we're a template, make the new page a template one.
+			HtmlDom.MakePageWithTemplateStatus(IsSuitableForMakingShells, newPageDiv);
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
 
@@ -1653,26 +1678,59 @@ namespace Bloom.Book
 			foreach(string sheetName in templatePage.Book.OurHtmlDom.GetTemplateStyleSheets())
 			{
 				var destinationPath = Path.Combine(FolderPath, sheetName);
-				if (!File.Exists(destinationPath))
+				if (!RobustFile.Exists(destinationPath))
 				{
 					var sourcePath = Path.Combine(templatePage.Book.FolderPath, sheetName);
-					if (File.Exists(sourcePath))
-						File.Copy(sourcePath, destinationPath);
+					if (RobustFile.Exists(sourcePath))
+						RobustFile.Copy(sourcePath, destinationPath);
 				}
+			}
+
+			if (this.IsSuitableForMakingShells)
+			{
+				// If we just added the first template page to a template, it's now usable for adding
+				// pages to other books. But the thumbnail for that template, and the template folder
+				// it lives in, won't get created unless the user chooses Add Page again.
+				// Even if he doesn't (maybe it's a one-page template), we want it to have the folder
+				// that identifies it as a template book for the add pages dialog.
+				// (We don't want to do so when the book is first created, because it's no good in
+				// Add Pages until it has at least one addable page.)
+				var templateFolderPath = Path.Combine(FolderPath, PageTemplatesApi.TemplateFolderName);
+				Directory.CreateDirectory(templateFolderPath); // harmless if it exists already
 			}
 
 			Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
 
-			_pageSelection.SelectPage(newPage);
+			_pageSelection.SelectPage(newPage, true);
 
 			InvokeContentsChanged(null);
 		}
 
+		/// <summary>
+		/// If we are inserting a page from a different book, or updating the layout of our page to one from a
+		/// different book, we may need to copy user-defined styles from that book to our own.
+		/// </summary>
+		/// <param name="templatePage"></param>
+		private void AddMissingStylesFromTemplatePage(IPage templatePage)
+		{
+			if (templatePage.Book.FolderPath != FolderPath)
+			{
+				var domForPage = templatePage.Book.GetEditableHtmlDomForPage(templatePage);
+				if (domForPage != null) // possibly null only in unit tests?
+				{
+					var userStylesOnPage = HtmlDom.GetUserModifiableStylesUsedOnPage(domForPage); // could be empty
+					var existingUserStyles = GetOrCreateUserModifiedStyleElementFromStorage();
+					var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existingUserStyles, userStylesOnPage);
+					existingUserStyles.InnerXml = newMergedUserStyleXml;
+				}
+			}
+		}
+
 		public void DuplicatePage(IPage page)
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			var pages = GetPageElements();
 			var pageDiv = FindPageDiv(page);
@@ -1731,7 +1789,7 @@ namespace Bloom.Book
 
 		public void DeletePage(IPage page)
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			if(GetPageCount() <2)
 				return;
@@ -1864,7 +1922,7 @@ namespace Bloom.Book
 		/// </summary>
 		public bool RelocatePage(IPage page, int indexOfItemAfterRelocation)
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to edit a non-editable book.");
 
 			if(!CanRelocatePageAsRequested(indexOfItemAfterRelocation))
 			{
@@ -2050,7 +2108,12 @@ namespace Bloom.Book
 			return _storage.PathToExistingHtml;
 		}
 
-		public PublishModel.BookletLayoutMethod GetDefaultBookletLayout()
+		public PublishModel.BookletLayoutMethod GetDefaultBookletLayoutMethod()
+		{
+			return GetBookletLayoutMethod(GetLayout());
+		}
+
+		public PublishModel.BookletLayoutMethod GetBookletLayoutMethod(Layout layout)
 		{
 			//NB: all we support at the moment is specifying "Calendar"
 			if (OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='defaultBookletLayout' and @content='Calendar']")).Count >
@@ -2058,7 +2121,6 @@ namespace Bloom.Book
 				return PublishModel.BookletLayoutMethod.Calendar;
 			else
 			{
-				var layout = GetLayout();
 				if (layout.SizeAndOrientation.IsLandScape && layout.SizeAndOrientation.PageSizeName == "A5")
 					return PublishModel.BookletLayoutMethod.CutAndStack;
 				return PublishModel.BookletLayoutMethod.SideFold;
@@ -2102,22 +2164,13 @@ namespace Bloom.Book
 			}
 		}
 
-		public string GetErrorsIfNotCheckedBefore()
-		{
-			if (!_haveCheckedForErrorsAtLeastOnce)
-			{
-				return CheckForErrors();
-			}
-			return "";
-		}
-
 		public string CheckForErrors()
 		{
 			var errors = _storage.GetValidateErrors();
-			_haveCheckedForErrorsAtLeastOnce = true;
 			if (!String.IsNullOrEmpty(errors))
 			{
-				_log.WriteError(errors);
+				HasFatalError = true;
+				FatalErrorDescription = errors;
 			}
 			return errors ?? "";
 		}
@@ -2140,7 +2193,8 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
-				_log.WriteError(error.Message);
+				HasFatalError = true;
+				FatalErrorDescription = error.Message;
 				throw error;
 			}
 		}
@@ -2188,11 +2242,17 @@ namespace Bloom.Book
 
 		public void Save()
 		{
-			Guard.Against(Type != BookType.Publication, "Tried to save a non-editable book.");
+			Guard.Against(!IsEditable, "Tried to save a non-editable book.");
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			if(!LockDownTheFileAndFolderName)
 			{
 				_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
+			}
+			if(IsSuitableForMakingShells)
+			{
+				// A template book is considered to be its own source, so update the source to match the
+				// current book location.
+				PageTemplateSource = Path.GetFileName(FolderPath);
 			}
 			_storage.Save();
 		}
@@ -2232,6 +2292,30 @@ namespace Bloom.Book
 		public void SetTopic(string englishTopicAsKey)
 		{
 			_bookData.Set("topic",englishTopicAsKey,"en");
+		}
+
+		public void SwitchSuitableForMakingShells(bool isSuitable)
+		{
+			if (isSuitable)
+			{
+				IsSuitableForMakingShells = true;
+				RecordedAsLockedDown = false;
+				// Note that in Book.Save(), we set the PageTemplateSource(). We do that
+				// there instead of here so that it stays up to date if the user changes
+				// the template name.
+
+				OurHtmlDom.MarkPagesWithTemplateStatus(true);
+			}
+			else
+			{
+				IsSuitableForMakingShells = false;
+				OurHtmlDom.MarkPagesWithTemplateStatus(false);
+				// The logic in BookStarter.UpdateEditabilityMetadata is that if we're in a source collection
+				// a book that is not a template should be recorded as locked down (though because we're in
+				// a source collection it won't actually BE locked down).
+				if (CollectionSettings.IsSourceCollection)
+					RecordedAsLockedDown = true;
+			}
 		}
 	}
 }

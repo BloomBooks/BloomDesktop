@@ -1,0 +1,88 @@
+#text-properties-dialog.bloom-ui.bloomDialogContainer(style="visibility: hidden;")
+	.bloomDialogTitleBar(data-i18n="EditTab.TextBoxProperties.Title") Text Box Properties
+	.hideWhenFormattingEnabled.bloomDialogMainPage
+		p(data-i18n="BookEditor.FormattingDisabled") Sorry, Reader Templates do not allow changes to formatting.
+	#tabRoot.hideWhenFormattingDisabled.tab-pane
+		.tab-page
+			h2.tab(data-i18n="EditTab.TextBoxProperties.LanguageTab") Language
+			.main-label(data-i18n="EditTab.TextBoxProperties.NormalLabel")
+				| "Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.
+			#language-group
+				input#tbprop-normal(type="radio" name="languageRadioGroup" value="Auto")
+				label(for="tbprop-normal" data-i18n="EditTab.TextBoxProperties.Normal") Normal
+				br
+				.main-label(data-i18n="EditTab.TextBoxProperties.OtherLanguagesLabel")
+					| Use one of these for simple text boxes that are always in only one language.
+				input#tbprop-vernacular(type="radio" name="languageRadioGroup" value="V")
+				label(for="tbprop-vernacular" data-i18n="EditTab.TextBoxProperties.LocalLanguage") Local Language
+				br
+				input#tbprop-national(type="radio" name="languageRadioGroup" value="N1")
+				label(for="tbprop-national" data-i18n="EditTab.TextBoxProperties.NationalLanguage") National Language
+				br
+				input#tbprop-regional(type="radio" name="languageRadioGroup" value="N2")
+				label(for="tbprop-regional" data-i18n="EditTab.TextBoxProperties.RegionalLanguage") Regional Language
+		.tab-page
+			h2.tab(data-i18n="EditTab.TextBoxProperties.Alignment") Alignment
+			#alignment-group
+				.group-label(data-i18n="EditTab.TextBoxProperties.VerticalAlignment") Vertical Alignment
+				div
+					#align-top.icon16x16.propButton
+						img(src="align-top.png")
+					#align-center.icon16x16.propButton
+						img(src="align-center.png")
+					#align-bottom.icon16x16.propButton
+						img(src="align-bottom.png")
+		.tab-page
+			h2.tab(data-i18n="EditTab.TextBoxProperties.BordersAndBackground") Borders & Background
+			.mainBlock.leftBlock
+				#borderstyle-group
+					.group-label(data-i18n="EditTab.TextBoxProperties.BorderStyle") Border Style
+					div
+						#borderstyle-none.icon16x16.propButton
+							img(src="grayX.png")
+						#borderstyle-black.iconHtml.propButton
+							.iconBox(style="border-color: black")
+						#borderstyle-black-round.iconHtml.propButton
+							.iconBox.bdRounded(style="border-color: black")
+					div(style="margin-left:29px")
+						#borderstyle-gray.iconHtml.propButton
+							.iconBox(style="border-color: gray")
+						#borderstyle-gray-round.iconHtml.propButton
+							.iconBox.bdRounded(style="border-color: gray")
+				#background-group(style="margin-top:10px")
+					.group-label(data-i18n="EditTab.TextBoxProperties.Background") Background
+					div
+						#background-none.icon16x16.propButton
+							img(src="grayX.png")
+						#background-gray.iconHtml.propButton
+							.iconBack.grayBackground
+			.mainBlock
+				#border-side-group
+					.group-label(data-i18n="EditTab.TextBoxProperties.BorderSides") Border Sides
+					div
+						.iconHtml
+						#bordertop.iconHtml.wide.propButton
+							.iconHorizontalLine
+					div
+						#borderleft.iconHtml.tall.propButton
+							.iconVerticalLine
+						.iconHtml.wide
+						#borderright.iconHtml.tall.propButton
+							.iconVerticalLine
+					div
+						.iconHtml
+						#borderbottom.iconHtml.wide.propButton
+							.iconHorizontalLine
+		.tab-page
+			h2#hint-header.tab(data-i18n="EditTab.TextBoxProperties.HintBubbles") Hint Bubbles
+			#hint-bubble-group
+				.main-label(data-i18n="EditTab.TextBoxProperties.WhatToPut") What should authors put in this box?
+				select#lang-select
+				#hint-content-wrapper
+					#hint-content(contenteditable="true")
+					#include-lang(data-i18n="EditTab.TextBoxProperties.IncludeLang") Include the name of the language using {lang}. For example: "Enter color in {lang}".
+				#show-hint-on-each-group
+					.main-label(data-i18n="EditTab.TextBoxProperties.ShowHintBubble") Show the hint bubble
+					select#hint-scope
+						option#show-on-group(data-i18n="EditTab.TextBoxProperties.ShowOnGroup" value="show-on-group") Just once on the whole group
+						option#show-on-each(data-i18n="EditTab.TextBoxProperties.ShowOnEach" value="show-on-each") On each language-field in the group

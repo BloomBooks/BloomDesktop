@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -43,8 +43,8 @@ namespace Bloom.Book
 		bool GetLooksOk();
 		HtmlDom Dom { get; }
 		void Save();
-		HtmlDom GetRelocatableCopyOfDom(IProgress log);
-		HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log = null);
+		HtmlDom GetRelocatableCopyOfDom();
+		HtmlDom MakeDomRelocatable(HtmlDom dom);
 		string SaveHtml(HtmlDom bookDom);
 		void SetBookName(string name);
 		string GetValidateErrors();
@@ -56,6 +56,7 @@ namespace Bloom.Book
 		void CleanupUnusedImageFiles();
         BookInfo MetaData { get; set; }
 		string NormalBaseForRelativepaths { get; }
+		string InitialLoadErrors { get; }
 	}
 
 	public class BookStorage : IBookStorage
@@ -87,6 +88,9 @@ namespace Bloom.Book
 		private bool _errorAlreadyContainsInstructions;
 		public event EventHandler FolderPathChanged;
 
+		// Returns any errors reported while loading the book (during 'expensive initialization').
+		public string InitialLoadErrors { get; private set; }
+
 		public BookInfo MetaData
 		{
 			get
@@ -100,7 +104,7 @@ namespace Bloom.Book
 
 		public BookStorage(string folderPath, SIL.IO.IChangeableFileLocator baseFileLocator,
 						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
-			:this(folderPath, false, baseFileLocator, bookRenamedEvent, collectionSettings)
+			:this(folderPath, true, baseFileLocator, bookRenamedEvent, collectionSettings)
 		{ }
 
 		public BookStorage(string folderPath, bool forSelectedBook, SIL.IO.IChangeableFileLocator baseFileLocator,
@@ -358,7 +362,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Get a temporary file pathname in the current book's folder.  This is needed to ensure proper permissions are granted
 		/// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
-		/// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+		/// RobustFile.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
 		/// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
 		/// </summary>
 		private string GetNameForATempFileInStorageFolder()
@@ -372,9 +376,8 @@ namespace Bloom.Book
 		/// <summary>
 		/// creates a relocatable copy of our main HtmlDom
 		/// </summary>
-		/// <param name="log"></param>
 		/// <returns></returns>
-		public HtmlDom GetRelocatableCopyOfDom(IProgress log)
+		public HtmlDom GetRelocatableCopyOfDom()
 		{
 
 			HtmlDom relocatableDom = Dom.Clone();
@@ -389,9 +392,8 @@ namespace Bloom.Book
 		/// this one works on the dom passed to it
 		/// </summary>
 		/// <param name="dom"></param>
-		/// <param name="log"></param>
 		/// <returns></returns>
-		public HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log = null)
+		public HtmlDom MakeDomRelocatable(HtmlDom dom)
 		{
 			var relocatableDom = dom.Clone();
 
@@ -595,7 +597,7 @@ namespace Bloom.Book
 			if (RobustFile.Exists(p))
 				return p;
 			p = Path.Combine(folderPath, Path.GetFileName(folderPath) + ".html");
-			if (File.Exists(p))
+			if (RobustFile.Exists(p))
 				return p;
 
 			if (!Directory.Exists(folderPath)) //bl-291 (user had 4 month-old version, so the bug may well be long gone)
@@ -625,7 +627,7 @@ namespace Bloom.Book
 			if (RobustFile.Exists(p))
 				return p;
 			p = Path.Combine(folderPath, "templatePages.html");
-			if (File.Exists(p))
+			if (RobustFile.Exists(p))
 				return p;
 
 			return string.Empty;
@@ -661,17 +663,17 @@ namespace Bloom.Book
 		}
 
 
-		public static string ValidateBook(string path)
+		public string ValidateBook(string path)
 		{
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));//with throw if there are errors
 			return ValidateBook(dom, path);
 		}
 
-		private static string ValidateBook(HtmlDom dom, string path)
+		private string ValidateBook(HtmlDom dom, string path)
 		{
 			Debug.WriteLine(string.Format("ValidateBook({0})", path));
 			var msg= GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(dom,path);
-			return !string.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path);
+			return !string.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path, !MetaData.IsSuitableForMakingTemplates);
 		}
 
 
@@ -699,6 +701,7 @@ namespace Bloom.Book
 				ProcessAccessDeniedError(error);
 				return;
 			}
+			var backupPath = GetBackupFilePath();
 
 			if (!RobustFile.Exists(pathToExistingHtml))
 			{
@@ -722,14 +725,6 @@ namespace Bloom.Book
 				XmlDocument xmlDomFromHtmlFile;
 				try
 				{
-					// For 3.8 only: check for file of nulls. Do not merge this into 3.9.
-					using (var fs = RobustFile.OpenRead(PathToExistingHtml))
-					{
-						var buf = new byte[1];
-						fs.Read(buf, 0, 1);
-						if (buf[0] == 0)
-							throw new Exception("HTML file starts with null");
-					}
 					xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml, false);
 				}
 				catch (UnauthorizedAccessException error)
@@ -739,19 +734,14 @@ namespace Bloom.Book
 				}
 				catch (Exception error)
 				{
-					var backupPath = GetBackupFilePath();
+					InitialLoadErrors = error.Message;
 					// If the user is actually trying to look at this book and it's broken, we will try to restore a backup.
 					// The main reason not to do this otherwise is that we think we should notify the user that we
 					// are restoring a backup, and we don't want to bother him with such notifications about books
 					// he isn't looking at currently.
-					if (forSelectedBook && RobustFile.Exists(backupPath) && TryGetXmlDomFromHtmlFile(backupPath, out xmlDomFromHtmlFile))
+					if (forSelectedBook && TryGetValidXmlDomFromHtmlFile(backupPath, out xmlDomFromHtmlFile))
 					{
-						string corruptFilePath = GetUniqueFileName(FolderPath, PrefixForCorruptHtmFiles, "htm");
-						RobustFile.Move(PathToExistingHtml, corruptFilePath);
-						RobustFile.Move(backupPath, pathToExistingHtml);
-						var msg = LocalizationManager.GetString("BookStorage.CorruptBook",
-							"Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.");
-						ErrorReport.NotifyUserOfProblem(error, msg);
+						RestoreBackup(pathToExistingHtml, error);
 					}
 					else
 					{
@@ -766,15 +756,25 @@ namespace Bloom.Book
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 				_dom.RawDom.PreserveWhitespace = true;
 
-				//Validating here was taking a 1/3 of the startup time
-				// eventually, we need to restructure so that this whole Storage isn't created until actually needed, then maybe this can come back
-				//ErrorMessages = ValidateBook(PathToExistingHtml);
-				// REVIEW: we did in fact change things so that storage isn't used until we've shown all the thumbnails we can (then we go back and update in background)...
-				// so maybe it would be ok to reinstate the above?
+				// An earlier comment warned that this was taking 1/3 of startup time. However, it was being done anyway
+				// at some point where the Book constructor wanted to know whether the book was editable (which
+				// triggers a check since books that don't validate aren't editable).
+				// Hopefully this is OK since another old comment said,
+				// we did in fact change things so that storage isn't used until we've shown all the thumbnails we can (then we go back and update in background)
+				InitialLoadErrors = ValidateBook(_dom, pathToExistingHtml);
+				if (forSelectedBook && !string.IsNullOrEmpty(InitialLoadErrors))
+				{
+					XmlDocument possibleBackupDom;
+					if (TryGetValidXmlDomFromHtmlFile(backupPath, out possibleBackupDom))
+					{
+						RestoreBackup(pathToExistingHtml, new ApplicationException("main html file was not valid: " + InitialLoadErrors));
+						xmlDomFromHtmlFile = possibleBackupDom;
+						_dom = new HtmlDom(xmlDomFromHtmlFile);
+					}
+				}
 
 				//For now, we really need to do this check, at least. This will get picked up by the Book later (feeling kludgy!)
 				//I assume the following will never trigger (I also note that the dom isn't even loaded):
-
 
 				if (!string.IsNullOrEmpty(ErrorMessagesHtml))
 				{
@@ -801,8 +801,17 @@ namespace Bloom.Book
 					}
 				}
 
+				// probably not needed at runtime if !forSelectedBook, but one unit test relies on it having been done, and is very fast, so ok.
 				Dom.UpdatePageDivs();
-				if(forSelectedBook)
+
+				// If the book isn't selected, then we're just here to do minimal things, hopefully quick things, to 
+				// show the title and thumbnail. Of course anything we *don't* do could effect the thumbnail. But
+				// let's wait and deal with that if it seems like a real problem. At the moment it seems to me that
+				// having to select the book to gets its thumbnail updated is a small price to pay.
+				// In particular, things can go wrong when doing UpdateSupportFiles() because the book may call for
+				// xmatter that this user doesn't have installed; when we're just showing all the thumbnails as quickly
+				// as we can, that's really the wrong time to be putting up errors about the xmatter of particular books.
+				if (forSelectedBook)
 				{
 					UpdateSupportFiles();
 					CleanupUnusedImageFiles();
@@ -810,15 +819,31 @@ namespace Bloom.Book
 			}
 		}
 
-		private bool TryGetXmlDomFromHtmlFile(string path, out XmlDocument xmlDomFromHtmlFile)
+		private void RestoreBackup(string pathToExistingHtml, Exception error)
 		{
+			var backupPath = GetBackupFilePath();
+			string corruptFilePath = GetUniqueFileName(FolderPath, PrefixForCorruptHtmFiles, "htm");
+			RobustFile.Move(PathToExistingHtml, corruptFilePath);
+			RobustFile.Move(backupPath, pathToExistingHtml);
+			var msg = LocalizationManager.GetString("BookStorage.CorruptBook",
+				"Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.");
+			ErrorReport.NotifyUserOfProblem(error, msg);
+			// We've restored a validated backup, so as far as the caller is concerned we have a good book.
+			InitialLoadErrors = "";
+		}
+
+		private bool TryGetValidXmlDomFromHtmlFile(string path, out XmlDocument xmlDomFromHtmlFile)
+		{
+			xmlDomFromHtmlFile = null;
+			if (!RobustFile.Exists(path))
+				return false;
 			try
 			{
 				xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
+				return string.IsNullOrEmpty(ValidateBook(new HtmlDom(xmlDomFromHtmlFile), path));
 			}
 			catch (Exception error)
 			{
-				xmlDomFromHtmlFile = null;
 				return false;
 			}
 			return true;
@@ -829,8 +854,12 @@ namespace Bloom.Book
 			var message = LocalizationManager.GetString("Errors.DeniedAccess",
 				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
 			message += Environment.NewLine + error.Message;
-			ErrorMessagesHtml = WebUtility.HtmlEncode(message);
 			Logger.WriteEvent("*** ERROR: " + message);
+			message = WebUtility.HtmlEncode(message);
+			var helpUrl = @"http://community.bloomlibrary.org/t/how-to-fix-file-permissions-problems/78";
+			var seeAlso = WebUtility.HtmlEncode(LocalizationManager.GetString("Common.SeeWebPage", "See {0}."));
+			message += "<br></br>" + string.Format(seeAlso, "<a href='" + helpUrl + "'>" + helpUrl + "</a>");
+			ErrorMessagesHtml = message;
 			_errorAlreadyContainsInstructions = true;
 		}
 
@@ -859,12 +888,16 @@ namespace Bloom.Book
 				}
 			}
 
-			var nameOfXMatterPack = HandleRetiredXMatterPacks(_dom, _collectionSettings.XMatterPackName);
+			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
+			var nameOfCollectionXMatterPack = _collectionSettings.XMatterPackName;
+			nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(_dom, nameOfCollectionXMatterPack);
 
 			try
 			{
-				var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
-				Update(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
+				//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
+				//specifies a different one, it will come back with that (if it can be found).
+				var helper = new XMatterHelper(_dom, nameOfCollectionXMatterPack, _fileLocator);
+				Update(Path.GetFileName(helper.PathToXMatterStylesheet), helper.PathToXMatterStylesheet);
 			}
 			catch (Exception error)
 			{
@@ -935,7 +968,7 @@ namespace Bloom.Book
 				}
 				// due to BL-2166, we no longer compare times since downloaded books often have
 				// more recent times than the DistFiles versions we want to use
-				// var documentTime = File.GetLastWriteTimeUtc(documentPath);
+				// var documentTime = RobustFile.GetLastWriteTimeUtc(documentPath);
 				if (factoryPath == documentPath)
 					return; // no point in trying to update self!
 				if (IsPathReadonly(documentPath))
@@ -989,16 +1022,17 @@ namespace Bloom.Book
 			//clear out any old ones
 			_dom.RemoveXMatterStyleSheets();
 
-			var nameOfXMatterPack = HandleRetiredXMatterPacks(dom, _collectionSettings.XMatterPackName);
-			var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
+			var helper = new XMatterHelper(_dom, this._collectionSettings.XMatterPackName, _fileLocator);
 
-			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation));
+			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToXMatterStylesheet));
 
-			string autocssFilePath = ".."+Path.DirectorySeparatorChar+"settingsCollectionStyles.css";
+			// Don't use Path.DirectorySeparatorChar here...we're going to use this path in an href
+			// where it should definitely be forward slash. And it works fine in a Windows path too.
+			string autocssFilePath = "../"+"settingsCollectionStyles.css";
 			if (RobustFile.Exists(Path.Combine(_folderPath,autocssFilePath)))
 				EnsureHasLinkToStyleSheet(dom, autocssFilePath);
 
-			var customCssFilePath = ".." + Path.DirectorySeparatorChar + "customCollectionStyles.css";
+			var customCssFilePath = "../" + "customCollectionStyles.css";
 			if (RobustFile.Exists(Path.Combine(_folderPath, customCssFilePath)))
 				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
 
@@ -1010,15 +1044,12 @@ namespace Bloom.Book
 
 		public string HandleRetiredXMatterPacks(HtmlDom dom, string nameOfXMatterPack)
 		{
-			// Bloom 3.7 retired the BigBook xmatter pack.
-			// If we ever create another xmatter pack called BigBook (or rename the Factory pack) we'll need to redo this.
-			string[] retiredPacks = { "BigBook" };
-			const string xmatterSuffix = "-XMatter.css";
+			var currentXmatterName = XMatterHelper.MigrateXMatterName(nameOfXMatterPack);
 
-			if (retiredPacks.Contains(nameOfXMatterPack))
+			if(currentXmatterName != nameOfXMatterPack)
 			{
+				const string xmatterSuffix = "-XMatter.css";
 				EnsureDoesntHaveLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
-				nameOfXMatterPack = "Factory";
 				EnsureHasLinkToStyleSheet(dom, nameOfXMatterPack + xmatterSuffix);
 				// Since HtmlDom.GetMetaValue() is always called with the collection's xmatter pack as default,
 				// we can just remove this wrong meta element.
@@ -1044,6 +1075,13 @@ namespace Bloom.Book
 				var fileName = link.GetStringAttribute("href");
 				if (fileName == path)
 					return;
+				// We may also have an obsolete link with a Windows-specific path.
+				if (fileName.Replace('\\', '/') == path)
+				{
+					// We want a link that will work on both platforms, so correct it.
+					link.SetAttribute("href", path);
+					return;
+				}
 			}
 			dom.AddStyleSheet(path);
 		}

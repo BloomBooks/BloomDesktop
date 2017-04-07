@@ -61,11 +61,13 @@ namespace BloomTests.WebLibraryIntegration
 			_workFolder.Dispose();
 		}
 
-		private string MakeBook(string bookName, string id, string uploader, string data)
+		private string MakeBook(string bookName, string id, string uploader, string data, bool makeCorruptFile = false)
 		{
 			var f = new TemporaryFolder(_workFolder, bookName);
 			File.WriteAllText(Path.Combine(f.FolderPath, "one.htm"), data);
 			File.WriteAllText(Path.Combine(f.FolderPath, "one.css"), @"test");
+			if (makeCorruptFile)
+				File.WriteAllText(Path.Combine(f.FolderPath, BookStorage.PrefixForCorruptHtmFiles + ".htm"), @"rubbish");
 
 			File.WriteAllText(Path.Combine(f.FolderPath, "meta.json"), "{\"bookInstanceId\":\"" + id + _thisTestId + "\",\"uploadedBy\":\"" + uploader + "\"}");
 
@@ -92,7 +94,7 @@ namespace BloomTests.WebLibraryIntegration
 		public Tuple<string, string> UploadAndDownLoadNewBook(string bookName, string id, string uploader, string data, bool isTemplate = false)
 		{
 			//  Create a book folder with meta.json that includes an uploader and id and some other files.
-			var originalBookFolder = MakeBook(bookName, id, uploader, data);
+			var originalBookFolder = MakeBook(bookName, id, uploader, data, true);
 			if (isTemplate)
 			{
 				var metadata = BookMetaData.FromFolder(originalBookFolder);
@@ -101,7 +103,7 @@ namespace BloomTests.WebLibraryIntegration
 			}
 			// The files that actually get uploaded omit some of the ones in the folder.
 			// The only omitted one that messes up current unit tests is meta.bak
-			var filesToUpload = Directory.GetFiles(originalBookFolder).Where(p => !p.EndsWith(".bak"));
+			var filesToUpload = Directory.GetFiles(originalBookFolder).Where(p => !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles));
 			int fileCount = filesToUpload.Count();
 
 			Login();

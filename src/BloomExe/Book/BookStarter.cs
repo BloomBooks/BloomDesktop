@@ -9,6 +9,7 @@ using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -50,7 +51,7 @@ namespace Bloom.Book
 		{
 			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceBookFolder, parentCollectionPath);
 
-			// We use the "initial name" to make the intial copy, and it gives us something
+			// We use the "initial name" to make the initial copy, and it gives us something
 			//to name the folder and file until such time as the user enters a title in for the book.
 			string initialBookName = GetInitialName(sourceBookFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
@@ -114,6 +115,7 @@ namespace Bloom.Book
 		{
 			var storage = _bookStorageFactory(initialPath);
 			bool usingTemplate = storage.MetaData.IsSuitableForMakingShells;
+			bool makingTemplate = storage.MetaData.IsSuitableForMakingTemplates;
 
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
@@ -122,7 +124,7 @@ namespace Bloom.Book
 			// because the rest is in the xmatter.
 			// For shells, we'll still have pages.
 
-			//Remove from the new book any div-pages labelled as "extraPage"
+			//Remove from the new book any div-pages labeled as "extraPage"
 			for (var initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]");
 				initialPageDivs.Count > 0;
 				initialPageDivs = storage.Dom.SafeSelectNodes("/html/body/div[contains(@data-page,'extra')]"))
@@ -138,10 +140,17 @@ namespace Bloom.Book
 
 			//Note that we do this *before* injecting frontmatter, which is more likely to have a good reason for having English
 			//Useful for things like Primers. Note that Lorem Ipsum and prefixing all text with "_" also work.
-//			if ("true"==GetMetaValue(storage.Dom.RawDom, "removeTranslationsWhenMakingNewBook", "false"))
-//			{
-//				ClearAwayAllTranslations(storage.Dom.RawDom);
-//			}
+			//			if ("true"==GetMetaValue(storage.Dom.RawDom, "removeTranslationsWhenMakingNewBook", "false"))
+			//			{
+			//				ClearAwayAllTranslations(storage.Dom.RawDom);
+			//			}
+
+			ProcessXMatterMetaTags(storage);
+			// If we are making a shell (from a template, as opposed to making a translation of a shell),
+			// it should not have a pre-determined license. A default will be filled in later.
+			// (But, if we're MAKING a template, we want to keep the CC0 from Template Starter.)
+			if (usingTemplate && !makingTemplate)
+				BookCopyrightAndLicense.RemoveLicense(storage);
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
 
@@ -149,7 +158,12 @@ namespace Bloom.Book
 
 			SetBookTitle(storage, bookData, usingTemplate);
 
-
+			if(!usingTemplate &&
+				// when people add a book to a source collection, they are assumed *editing* the book, not making a derivative (BL-4497)
+				!_collectionSettings.IsSourceCollection)
+			{
+				BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(storage.Dom, bookData, _collectionSettings);
+			}
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
 			int multilingualLevel = int.Parse(GetMetaValue(storage.Dom.RawDom, "defaultMultilingualLevel", "1"));
@@ -169,9 +183,29 @@ namespace Bloom.Book
 
 			storage.Save();
 
-			//REVIEW this actually undoes the setting of the intial files name:
+			//REVIEW this actually undoes the setting of the initial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
+		}
+
+		/// <summary>
+		/// TemplateStarter intentionally makes its children (user's custom templates) have a special xmatter.
+		/// But books creates with those custom templates should just use whatever xmatter normal books use,
+		/// at least until we allow users to choose different ones, or allow template makers to specify which
+		/// xmatter children should use.
+		/// </summary>
+		private static void ProcessXMatterMetaTags(BookStorage storage)
+		{
+			// Don't copy the parent's xmatter if they specify it
+			storage.Dom.RemoveMetaElement("xmatter");
+
+			// But if the parent says what children should use, then use that.
+			if(storage.Dom.HasMetaElement("xmatter-for-children"))
+			{
+				storage.Dom.UpdateMetaElement("xmatter", storage.Dom.GetMetaValue("xmatter-for-children", ""));
+			}
+			// Children, but not grand-children. So we remove this so the next generation doesn't see it.
+			storage.Dom.RemoveMetaElement("xmatter-for-children");
 		}
 
 		private void SetLineageAndId(BookStorage storage, string sourceFolderPath)
@@ -249,19 +283,51 @@ namespace Bloom.Book
 				node.ParentNode.RemoveChild(node);
 			}
 		}
+		/// <summary>
+		/// This clears the description from a page as it comes in.
+		/// </summary>
+		/// <remarks>
+		/// In a normal book,
+		/// well there is no place to see the description once it is added. But if
+		/// we are building a template, then that description will be shown when
+		/// someone uses this template (in the Add Page dialog). The description is
+		/// something like "A blank page that allows to create custom items"; once
+		/// you modify that page, the description stops being accurate.
+		/// Now, I can think of scenarios where you'd want to keep description.
+		/// E.g. you have an alphabet chart, you add that to another template where hey, 
+		/// it's still an alphabet chart. This is a judgment call, which is worse. 
+		/// I'm judging that it's worse to have an out-of-date description than a missing one.
+		/// </remarks>
+		private static void ClearAwayPageDescription(XmlNode pageDiv)
+		{
+			//clear away all pageDescription divs except the English one
+			var nonEnglishDescriptions = new List<XmlNode>();
+			nonEnglishDescriptions.AddRange(from XmlNode x in pageDiv.SafeSelectNodes("//div[contains(@class, 'pageDescription') and @lang != 'en']") select x);
+			foreach (var node in nonEnglishDescriptions)
+			{
+				node.ParentNode.RemoveChild(node);
+			}
+			// now leave the English Description as empty; serving as a placeholder if we are making a template
+			// and want to go into the html and add a description
+			var description = pageDiv.SelectSingleNode("//div[contains(@class, 'pageDescription')]");
+			if(description != null)
+			{
+				description.InnerXml = "";
+			}
+		}
 
-		private static void SetBookTitle(BookStorage storage, BookData bookData, bool usingTemplate)
+		private void SetBookTitle(BookStorage storage, BookData bookData, bool usingTemplate)
 		{
 			//This is what we were trying to do: there was a defaultNameForDerivedBooks meta tag in the html
 			//which had no language code. It worked fine for English, e.g., naming new English books
-			//"My Book" or "My Dicionary" or whatever.
-			//But in other cases, it actually hurt becuase that English name would be hidden down in the new
+			//"My Book" or "My Dictionary" or whatever.
+			//But in other cases, it actually hurt because that English name would be hidden down in the new
 			//book, where the author wouldn't see it. But some consumer, using English, would see it, and
-			//"My Book" is a pretty dumb name for tha carefully prepared book to be listed under.
+			//"My Book" is a pretty dumb name for the carefully prepared book to be listed under.
 			//
 			//Now, if we are making this book from a shell book, we can keep whatever (title,language) pairs it has.
-			//Those will be just fine, for example, if we have English as one of our national langauges and so get
-			// "vaccinations" for free wihtout having to type that in again.
+			//Those will be just fine, for example, if we have English as one of our national languages and so get
+			// "vaccinations" for free without having to type that in again.
 			//
 			//But if we are making this from a *template*, then we *don't* want to keep the various ways to say the
 			//name of the template. Seeing "Basic Book" as the name of a resulting shell is not helpful.
@@ -277,6 +343,18 @@ namespace Bloom.Book
 			if(usingTemplate)
 			{
 				bookData.RemoveAllForms("bookTitle");
+			}
+			// If we're making a Template, we really want its title to include Template
+			// (in hopes the user will keep it at the end so the pages can be used in Add Page)
+			if (storage.MetaData.IsSuitableForMakingShells)
+			{
+				storage.MetaData.Title = "My Template";
+				storage.Dom.Title = "My Template";
+				storage.Dom.SetBookSetting("bookTitle", "en", "My Template");
+				// Yes, we want the English word Template in the vernacular Title. Ugly, but that's
+				// what determines the file name, and that's what determines whether Add Page will
+				// include it.
+				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1Iso639Code, "My Template");
 			}
 		}
 
@@ -319,25 +397,29 @@ namespace Bloom.Book
 			//The problem is, if you make a book in some vernacular library, then share it so that others
 			//can use it as a shell, then (as of version 2) Bloom doesn't have a way of realizing that it's
 			//being used as a shell. So everything is editable (not a big deal) but you're also locked out
-			// of editing the acknowledgements for translated version.
+			// of editing the acknowledgments for translated version.
 
 			//It seems to me at the moment (May 2014) that the time to mark something as locked down should
 			//be when the they create a book based on a source-with-content book. So the current approach
 			//below, of pre-locking it, would go away.
 
-			if(_isSourceCollection)
+			// JohnT: added the possibility that the source book is 'suitableForMakingTemplates', that is,
+			// a template factory like the Template Starter book. In this case we want the resulting book
+			// to be a template. Note that the initial state of storage is a copy of the template.
+			// (The only way suitableForMakingTemplates currently becomes true is when loaded that way
+			// from meta.json, which only happens if someone edited it by hand to be that way.)
+			// If we're making a template, the resulting book needs to be suitableForMakingShells
+			// and also needs to NOT be RecordedAsLockedDown, because that suppresses options
+			// we want in the options tab.
+			// If we change this see also Book.SwitchSuitableForMakingShells().
+			if (_isSourceCollection && !storage.MetaData.IsSuitableForMakingTemplates)
 			{
 				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
 			}
 
-#if maybe //hard to pin down when a story primer, dictionary, etc. also becomes a new "source for new shells"
-			//things like picture dictionaries could be used repeatedly
-			//but things from Basic Book are normally not.
-			var x = GetMetaValue(storage.Dom, "DerivativesAreSuitableForMakingShells", "false");
-#else
-			var x = false;
-#endif
-			storage.MetaData.IsSuitableForMakingShells = x;
+			storage.MetaData.IsSuitableForMakingShells = storage.MetaData.IsSuitableForMakingTemplates;
+			// a newly created book is never suitable for making templates, even if its source was.
+			storage.MetaData.IsSuitableForMakingTemplates = false;
 		}
 
 
@@ -352,7 +434,8 @@ namespace Bloom.Book
 			// just a normal page
 			pageDiv.SetAttribute("data-page", pageDiv.GetAttribute("data-page").Replace("extra", "").Trim());
 			ClearAwayDraftText(pageDiv);
-	   }
+			ClearAwayPageDescription(pageDiv);
+		}
 
 		/// <summary>
 		/// In xmatter, text fields are normally labeled with a "meta" language code, like "N1" for first national language.
@@ -433,7 +516,9 @@ namespace Bloom.Book
 				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
 					continue;
 				var ext = Path.GetExtension(filePath).ToLowerInvariant();
-				if (new String[] {".jade", ".less", ".md"}.Any(ex => ex == ext))
+				// We don't need to copy any backups, and we don't want userPrefs because they are likely
+				// to include a page number and we want the new book to open at the cover.
+				if (new String[] {".jade", ".less", ".md", ".bak", ".userprefs"}.Any(ex => ex == ext))
 					continue;
 				RobustFile.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}
@@ -441,7 +526,8 @@ namespace Bloom.Book
 			{
 				//any files found under "template" will not be copied. At the moment (Aug 2015), this is only
 				//thumbnail svgs, but we could move readme's and such in there
-				if (Path.GetFileName(dirPath).ToLowerInvariant() != "template")
+				var directoriesToSkip = new[] {"template", Book.ReadMeImagesFolderName.ToLowerInvariant() };
+				if (!directoriesToSkip.Contains(Path.GetFileName(dirPath).ToLowerInvariant()))
 				{
 					CopyFolder(dirPath, Path.Combine(destinationPath, Path.GetFileName(dirPath)));
 				}

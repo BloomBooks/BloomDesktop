@@ -1,4 +1,4 @@
-Source: bloom-desktop-beta
+Source: bloom-desktop-alpha
 Section: x11
 Priority: extra
 Maintainer: Stephen McConnel <stephen_mcconnel@sil.org>
@@ -6,19 +6,16 @@ Homepage: http://bloomlibrary.org/
 Vcs-Git: git://github.com/BloomBooks/BloomDesktop.git
 Vcs-Browser: https://github.com/BloomBooks/BloomDesktop
 Standards-Version: 3.9.5
-# If the build dependencies fail to install because of nodejs, you'll have to add the nodejs
-# repo (see https://github.com/nodesource/distributions#debinstall).
 Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  wget, unzip, desktop-file-utils,
  optipng, libsndfile1,
- nodejs (>= 5.0),
  mono4-sil, libgdiplus4-sil,
  libenchant-dev, libxklavier-dev, libdconf-dev,
  libicu-dev,
  libgtk2.0-cil (>= 2.12.10), libgtk2.0-dev (>= 2.14), libasound2-dev,
  icu-devtools | libicu-dev (<< 52)
 
-Package: bloom-desktop-beta
+Package: bloom-desktop-alpha
 Architecture: any
 Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  mono4-sil, libgdiplus4-sil, gtklp,
@@ -27,7 +24,7 @@ Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  optipng, libsndfile1,
  wmctrl, lame
 Suggests: art-of-reading
-Replaces: bloom-desktop, bloom-desktop-alpha
+Replaces: bloom-desktop, bloom-desktop-beta
 Conflicts: bloom-desktop-unstable
 Description: Literacy materials development for language communities
  Bloom Desktop is an application that dramatically "lowers the bar" for

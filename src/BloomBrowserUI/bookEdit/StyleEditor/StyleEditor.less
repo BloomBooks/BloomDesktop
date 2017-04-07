@@ -17,14 +17,6 @@
         margin: 10px 0px 5px 0px;
         color: grey;
     }
-    .mainBlock {
-        display: inline-block;
-        vertical-align: top;
-        line-height: normal;
-    }
-    .leftBlock {
-        width: 150px;
-    }
     .spacing-fudge {
         margin: 0px 0px -2px 0px;
     }
@@ -75,6 +67,16 @@
     .state-already-exists #please-use-alpha, .state-already-exists #dont-see {
         display: none;
     }
+    .iconIndent {
+        width: 39px;
+        height: 19px;
+        padding: 2px;
+        margin-bottom: 5px;
+        .IMG {
+            margin-top: 1px;
+            margin-left: 1px;
+        }
+    }
 }
 
 //the select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index
@@ -101,7 +103,6 @@
 
 #lineSpacing img{
     padding-right:5px;
-    height: 16px;
 }
 
 #line-height-select + .select2-container{
@@ -114,10 +115,20 @@
 #size-select + .select2-container{
     width: 60px !important;
 }
+#para-spacing-select + .select2-container{
+    width: 60px !important;
+}
 // #font-select + .select2-container{
 // 	width: 120px;
 // }
 
 .select2-container--open .select2-selection__rendered{
     background-color: lightblue;
+}
+
+#format-toolbar.formattingDisabled .hideWhenFormattingDisabled {
+    display: none;
+}
+#format-toolbar:not(.formattingDisabled) .hideWhenFormattingEnabled {
+    display: none;
 }

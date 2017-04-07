@@ -36,7 +36,7 @@
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>5</LangVersion>
+    <LangVersion>6</LangVersion>
     <EnvironmentVariables>
       <EnvironmentVariables>
         <Variable name="DISPLAY" value=":2" />
@@ -315,6 +315,8 @@
     <Compile Include="Edit\TalkingBookTool.cs" />
     <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
+    <Compile Include="Publish\AudioProcessor.cs" />
+    <Compile Include="Publish\ElectronicPublishView.cs" />
     <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
@@ -703,12 +705,6 @@
     <Compile Include="Edit\EditingView.Designer.cs">
       <DependentUpon>EditingView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Edit\ThumbNailList.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Edit\ThumbNailList.Designer.cs">
-      <DependentUpon>ThumbNailList.cs</DependentUpon>
-    </Compile>
     <Compile Include="Event.cs" />
     <Compile Include="Book\Book.cs" />
     <Compile Include="HtmlThumbNailer.cs" />
@@ -879,9 +875,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\SourceTextControl.resx">
       <DependentUpon>SourceTextControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\ThumbNailList.resx">
-      <DependentUpon>ThumbNailList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\LibraryListView.resx">
       <DependentUpon>LibraryListView.cs</DependentUpon>
@@ -1271,7 +1264,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <!-- Escape the $ (%24) to ensure it is sent to the shell. -->
     <Exec Command="cp -pvn $(SolutionDir)/lib/dotnet/icu%24(icu-config --version|tr -d .|cut -c -2)/icu.net.dll* $(SolutionDir)/lib/dotnet" />
     <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
-    <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; npm install &amp;&amp; ./fixNodejsForLinux.sh &amp;&amp; npm run build" />
+    <Exec Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; ( [ -f node_modules/typescript/package.json ] || npm install) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || npm run build)" />
     <!-- copy the appropriate Geckofx45 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
     <Exec Command="rm -rf $(OutDir)Firefox" />

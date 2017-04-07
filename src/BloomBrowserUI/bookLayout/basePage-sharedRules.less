@@ -1,5 +1,7 @@
 ﻿// Styles that are shared by both the regular book css and the more minimalist epub css.
 
+@preferredBackgroundGray: hsl(0,0%,86%);
+
 body {
 	line-height: 1.5;
 	font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulos SIL", Sans-Serif;
@@ -9,4 +11,58 @@ body {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+}
+
+.bloom-borderstyle-black, .bloom-borderstyle-black-round, .bloom-borderstyle-gray, .bloom-borderstyle-gray-round{
+
+    //It's not 100% clear people won't sometimes wish this was a fixed distance,
+    //rather than proportional. After reading many non-concusive things on the topic,
+    //I'm going with proportional for now.
+    padding: 1em;
+
+    .bloom-editable{
+        //the normal grey edit-time-only border looks weird inset from a visible border
+        //the highlighted border will still show when you're in the box
+        border: none;
+    }
+}
+
+.bloom-borderstyle-black {
+    border: 1px solid black;
+    border-radius: 0px;
+    box-sizing: border-box;
+}
+.bloom-borderstyle-black-round {
+    border: 1px solid black;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+.bloom-borderstyle-gray {
+    border: 1px solid gray;
+    border-radius: 0px;
+    box-sizing: border-box;
+}
+.bloom-borderstyle-gray-round {
+    border: 1px solid gray;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+.bloom-top-border-off {
+    border-top: none;
+}
+.bloom-right-border-off {
+    border-right: none;
+}
+.bloom-bottom-border-off {
+    border-bottom: none;
+}
+.bloom-left-border-off {
+    border-left: none;
+}
+
+.bloom-background-none {
+    background-color: transparent;
+}
+.bloom-background-gray {
+    background-color: @preferredBackgroundGray;
 }

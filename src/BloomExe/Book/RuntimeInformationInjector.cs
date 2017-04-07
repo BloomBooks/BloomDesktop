@@ -55,8 +55,6 @@ namespace Bloom.Book
 			// For now, we just add a few we know we need
 			AddSomeCommonNationalLanguages(d);
 
-			MakePageLabelLocalizable(pageDom, d);
-
 			// Hard-coded localizations for 2.0
 			AddHtmlUiStrings(d);
 
@@ -138,21 +136,6 @@ namespace Bloom.Book
 //			pageDom.Head.InsertAfter(i18nScriptElement, pageDom.Head.LastChild);
 //		}
 
-		private static void MakePageLabelLocalizable(HtmlDom singlePageHtmlDom, Dictionary<string, string> d)
-		{
-			foreach (XmlElement element in singlePageHtmlDom.RawDom.SelectNodes("//*[contains(@class, 'pageLabel')]"))
-			{
-				if (!element.HasAttribute("data-i18n"))
-				{
-					var englishLabel = element.InnerText;
-					var key = "TemplateBooks.PageLabel." + englishLabel;
-					AddTranslationToDictionaryUsingEnglishAsKey(d, key, englishLabel);
-
-					element.SetAttribute("data-i18n", key);
-				}
-			}
-		}
-
 		private static void AddSomeCommonNationalLanguages(Dictionary<string, string> d)
 		{
 			SafelyAddLanguage(d, "en", "English");
@@ -167,7 +150,7 @@ namespace Bloom.Book
 			SafelyAddLanguage(d, "id", "Bahasa Indonesia");
 			SafelyAddLanguage(d, "ar","العربية/عربي‎");//arabic
 			//    return { "en": "English", "vernacularLang": "en", "{V}": "English", "{N1}": "English", "{N2}": "", "ar": "العربية/عربي‎","id": "Bahasa Indonesia",
-			//"ha": "Hausa", "hi": "हिन्दी", "es": "español", "fr": "français", "pt": "português", "swa": "Swahili", "th": "ภาษาไทย", "tpi": "Tok Pisin", "TemplateBooks.PageLabel.Front Cover": "Front Cover", "*You may use this space for author/illustrator, or anything else.": "*You may use this space for author/illustrator, or anything else.", "Click to choose topic": "Click to choose topic", "BookEditor.FontSizeTip": "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\\nCurrent size is {2}pt.", "FrontMatter.Factory.Book title in {lang}": "Book title in {lang}", "FrontMatter.Factory.Click to choose topic": "Click to choose topic", "FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.": "International Standard Book Number. Leave blank if you don't have one of these.", "FrontMatter.Factory.Acknowledgments for translated version, in {lang}": "Acknowledgments for translated version, in {lang}", "FrontMatter.Factory.Use this to acknowledge any funding agencies.": "Use this to acknowledge any funding agencies.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover." };
+			//"ha": "Hausa", "hi": "हिन्दी", "es": "español", "fr": "français", "pt": "português", "swa": "Swahili", "th": "ภาษาไทย", "tpi": "Tok Pisin", "TemplateBooks.PageLabel.Front Cover": "Front Cover", "*You may use this space for author/illustrator, or anything else.": "*You may use this space for author/illustrator, or anything else.", "Click to choose topic": "Click to choose topic", "EditTab.FormatDialog.FontSizeTip": "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\\nCurrent size is {2}pt.", "FrontMatter.Factory.Book title in {lang}": "Book title in {lang}", "FrontMatter.Factory.Click to choose topic": "Click to choose topic", "FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.": "International Standard Book Number. Leave blank if you don't have one of these.", "FrontMatter.Factory.Acknowledgments for translated version, in {lang}": "Acknowledgments for translated version, in {lang}", "FrontMatter.Factory.Use this to acknowledge any funding agencies.": "Use this to acknowledge any funding agencies.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover." };
 
 		}
 
@@ -186,14 +169,18 @@ namespace Bloom.Book
 			// ATTENTION: Currently, the english here must exactly match whats in the html.
 			// See comment in AddTranslationToDictionaryUsingEnglishAsKey
 
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FontSizeTip",
-				"Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BookTitlePrompt",
 				"Book title in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.AuthorIllustratorPrompt",
 				"You may use this space for author/illustrator, or anything else.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalContributorsPrompt",
 				"The contributions made by writers, illustrators, editors, etc., in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CreditTranslator",
+				"Credit the translator, in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.PasteImageCreditsLink",
+				"Paste Image Credits");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.PasteMissingCredits",
+				"Missing credits:");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt",
 				"Acknowledgments for translated version, in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.NameofTranslatorPrompt",
@@ -201,13 +188,15 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.FundingAgenciesPrompt",
 				"Use this to acknowledge any funding agencies.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CopyrightPrompt",
-				"Click to Edit Copyright and License");
+				"Click to Edit Copyright & License");	// pug files use & everywhere (BL-4120)
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalAcknowledgmentsPrompt",
 				"Original (or Shell) Acknowledgments in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TopicPrompt",
 				"Click to choose topic");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.ISBNPrompt",
 				"International Standard Book Number. Leave blank if you don't have one of these.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.SimpleLineDrawings",
+				"Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.");
 
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Contributions",
 				"When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.");
@@ -222,6 +211,15 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.InsideFrontCoverTextPrompt",
 				"If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.");
 
+			// Used in Big Book instructions page.  (BL-4115)
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.Instructions.DeleteAllowed",
+				"Feel free to modify or delete this page.");
+			// Inserted by XMatterHelper as needed (BL-4116)
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "TemplateBooks.PageLabel.Flyleaf",
+				"Flyleaf");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "TemplateBooks.PageDescription.Flyleaf",
+				"This page was automatically inserted because the following page is marked as part of a two page spread.");
+
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.EditMetadata",
@@ -230,7 +228,7 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CutImage", "Cut Image");
 
 			// tool tips for style editor
-			AddTranslationToDictionaryUsingKey(d, "BookEditor.FontSizeTip",
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.FontSizeTip",
 				"Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
 			//No longer used. See BL-799 AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialogTip", "Adjust formatting for style");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingNormal", "Normal");

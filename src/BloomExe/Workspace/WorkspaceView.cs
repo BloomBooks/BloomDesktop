@@ -310,13 +310,7 @@ namespace Bloom.Workspace
 			uiMenuControl.DropDownItems.Clear();
 			foreach (var lang in LocalizationManager.GetUILanguages(true))
 			{
-				var englishName = string.Empty;
-				var languageNamesRecognizableByOtherLatinScriptReaders = new List<string> { "en", "fr", "es", "it", "tpi", "id" };
-				if ((lang.EnglishName != lang.NativeName) && !languageNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name))
-				{
-					englishName = " (" + lang.EnglishName + ")";
-				}
-				var item = uiMenuControl.DropDownItems.Add(lang.NativeName + englishName);
+				var item = uiMenuControl.DropDownItems.Add(MenuItemName(lang));
 				item.Tag = lang;
 				item.Click += (sender, args) => UiLanguageMenuItemClickHandler(uiMenuControl, sender as ToolStripItem, finishClickAction);
 				if (lang.IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
@@ -331,6 +325,7 @@ namespace Bloom.Workspace
 			LocalizationManager.SetUILanguage(tag.IetfLanguageTag, true);
 			Settings.Default.UserInterfaceLanguage = tag.IetfLanguageTag;
 			Settings.Default.UserInterfaceLanguageSetExplicitly = true;
+			Settings.Default.Save();
 			item.Select();
 			UpdateMenuTextToShorterNameOfSelection(toolStripButton, tag);
 
@@ -344,6 +339,18 @@ namespace Bloom.Workspace
 			SaveOriginalButtonTexts();
 			_localizationChangedEvent.Raise(null);
 			AdjustButtonTextsForCurrentSize();
+		}
+
+		public static string MenuItemName(CultureInfo lang)
+		{
+			string englishName = string.Empty;
+			var languageNamesRecognizableByOtherLatinScriptReaders = new List<string> { "en", "fr", "es", "it", "tpi", "id" };
+			if ((lang.EnglishName != lang.NativeName) && !(languageNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
+			{
+				englishName = " (" + lang.EnglishName + ")";
+			}
+			var menuItemName = lang.NativeName + englishName;
+			return menuItemName;
 		}
 
 		public static void UpdateMenuTextToShorterNameOfSelection(ToolStripDropDownButton toolStripButton, CultureInfo language)
@@ -940,7 +947,35 @@ namespace Bloom.Workspace
 		{
 			// this is needed, especially on Linux
 			e.SizeTextRectangleToText();
+			AdjustToolStripLocationIfNecessary(e);
 			base.OnRenderItemText(e);
+		}
+
+		/// <summary>
+		/// A toolstrip with one item embedded in a panel embedded in a TableLayoutPanel does not display well
+		/// on Linux/Mono.  The text display can be truncated and moves around the panel horizontally.  The
+		/// sizing calculation is carried out properly, but the ensuing horizontal location seems almost random.
+		/// Rather than try to fix possibly several layers of Mono libary code, we calculate the desired location
+		/// here to prevent the text from being truncated if possible.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4409.
+		/// </remarks>
+		private void AdjustToolStripLocationIfNecessary(ToolStripItemTextRenderEventArgs e)
+		{
+			if (SIL.PlatformUtilities.Platform.IsUnix &&
+				e.ToolStrip != null &&
+				e.ToolStrip.Items.Count == 1 &&
+				e.ToolStrip.Parent != null &&
+				e.ToolStrip.Parent.Parent is TableLayoutPanel)
+			{
+				var delta = (e.ToolStrip.Location.X + e.ToolStrip.Width) - e.ToolStrip.Parent.Width;
+				// Try to leave a pixel of margin.
+				if (delta >= 0)
+				{
+					e.ToolStrip.Location = new Point(Math.Max(e.ToolStrip.Location.X - (delta + 1), 1), e.ToolStrip.Location.Y);
+				}
+			}
 		}
 	}
 }

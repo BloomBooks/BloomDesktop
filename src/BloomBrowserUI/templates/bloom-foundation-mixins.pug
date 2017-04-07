@@ -13,12 +13,14 @@ mixin metadata-standard
 	meta(charset='UTF-8')
 	meta(name='Generator', content='Bloom')
 	meta(name='BloomFormatVersion', content='2.0')
-
-mixin stylesheets(nameOfTemplateSpecificCSS)
+mixin core-stylesheets
 	+stylesheet('basePage.css')
 	//- +stylesheet('languageDisplay.css')
 	+stylesheet('editMode.css')
 	+stylesheet('editPaneGlobal.css')
+
+mixin stylesheets(nameOfTemplateSpecificCSS)
+	+core-stylesheets
 	+stylesheet(nameOfTemplateSpecificCSS)
 	//- +stylesheet('file://..\customCollectionStyles.css')
 

@@ -3,9 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
 using Bloom.Book;
 using System.IO;
 using System.Net;
@@ -13,10 +11,10 @@ using System.Text.RegularExpressions;
 using Bloom.ImageProcessing;
 using BloomTemp;
 using L10NSharp;
-using Microsoft.Win32;
 using SIL.IO;
 using Bloom.Collection;
 using Bloom.Publish;
+using Bloom.Workspace;
 using Newtonsoft.Json;
 using SIL.Reporting;
 using SIL.Extensions;
@@ -80,6 +78,8 @@ namespace Bloom.Api
 		private object I18NLock = new object();
 		// used to synchronize access to various other methods
 		private object SyncObj = new object();
+		// Special lock for making thumbnails. See discussion at the one point of usage.
+		private object ThumbnailSyncObj = new object();
 		private static string _keyToCurrentPage;
 
 		public string CurrentPageContent { get; set; }
@@ -211,7 +211,17 @@ namespace Bloom.Api
 							pair.Key.ToLower()
 						).Success))
 				{
-					lock(SyncObj)
+					// A single synchronization object won't do, because when processing a request to create a thumbnail,
+					// we have to load the HTML page the thumbnail is based on. If the page content somehow includes
+					// an api request (api/branding/image is one example), that request will deadlock if the
+					// api/pageTemplateThumbnail request already has the main lock.
+					// To the best of my knowledge, there's no shared data between the thumbnailing process and any
+					// other api requests, so it seems safe to have one lock that prevents working on multiple
+					// thumbnails at the same time, and one that prevents working on other api requests at the same time.
+					var syncOn = SyncObj;
+					if (localPath.ToLowerInvariant().StartsWith("api/pagetemplatethumbnail"))
+						syncOn = ThumbnailSyncObj;
+					lock(syncOn)
 					{
 						return ApiRequest.Handle(pair.Value, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
 					}
@@ -370,6 +380,42 @@ namespace Bloom.Api
 					list.Sort();
 					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
 					return true;
+				case "uiLanguages":
+					// Returns json with property languages, an array of objects (one for each UI language Bloom knows about)
+					// each having label (what to show in a menu) and tag (the language code).
+					// Used in language select control in hint bubbles tab of text box properties dialog
+					// brought up from cog control in origami mode.
+					var langs = new List<object>();
+					foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
+					{
+						langs.Add(new {label=WorkspaceView.MenuItemName(lang), tag=lang.IetfLanguageTag});
+					}
+					info.ContentType = "application/json";
+					info.WriteCompleteOutput(JsonConvert.SerializeObject(new {languages=langs}));
+					return true;
+				case "bubbleLanguages":
+					// Returns a list of lang codes such that if a block has hints in multiple languages,
+					// we prefer the one that comes first in the list.
+					// Used to select the best label to show in a hint bubble when a bloom-translationGroup has multiple
+					// labels with different languages.
+					var bubbleLangs = new List<string>();
+					bubbleLangs.Add(LocalizationManager.UILanguageId);
+					if (_bookSelection.CurrentSelection.MultilingualContentLanguage2 != null)
+						bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage2);
+					if (_bookSelection.CurrentSelection.MultilingualContentLanguage3 != null)
+						bubbleLangs.Add(_bookSelection.CurrentSelection.MultilingualContentLanguage3);
+					bubbleLangs.AddRange(new [] { "en", "fr", "sp", "ko", "zh-Hans"});
+					// If we don't have a hint in the UI language or any major language, it's still
+					// possible the page was made just for this langauge and has a hint in that language.
+					// Not sure whether this should be before or after the list above.
+					// Definitely wants to be after UILangage, otherwise we get the surprising result
+					// that in a French collection these hints stay French even when all the rest of the
+					// UI changes to English.
+					bubbleLangs.Add(_bookSelection.CurrentSelection.CollectionSettings.Language1Iso639Code);
+					// if it isn't available in any of those we'll arbitrarily take the first one.
+					info.ContentType = "application/json";
+					info.WriteCompleteOutput(JsonConvert.SerializeObject(new { langs = bubbleLangs }));
+					return true;
 				case "authorMode":
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
@@ -518,7 +564,7 @@ namespace Bloom.Api
 				// On developer machines, we can lose part of path earlier.  Try one more thing.
 				path = info.LocalPathWithoutQuery.Substring(7); // skip leading "/bloom/");
 			}
-			if (!File.Exists(path))
+			if (!RobustFile.Exists(path))
 			{
 				ReportMissingFile(localPath,path);
 				return false;
@@ -561,16 +607,23 @@ namespace Bloom.Api
 			if (IsSimulatedFileUrl(localPath))
 			{
 				//even beta users should not be confronted with this
+				// localization not really needed because this is seen only by beta testers.
 				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);
 			}
 			else if (IsImageTypeThatCanBeReturned(localPath))
 			{
 				// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Cannot Find Image File", "Server could not find the image file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
+				// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
+				var userMsg = LocalizationManager.GetString("WebServer.Warning.NoImageFile", "Cannot Find Image File");
+				var detailMsg = String.Format("Server could not find the image file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, userMsg, detailMsg);
 			}
 			else
 			{
-				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Cannot Find File", "Server could not find the file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
+				// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
+				var userMsg = LocalizationManager.GetString("WebServer.Warning.NoFile", "Cannot Find File");
+				var detailMsg = String.Format("Server could not find the file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
+				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
 			}
 		}
 

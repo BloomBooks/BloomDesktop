@@ -34,6 +34,7 @@ namespace Bloom.Edit
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly CollectionSettings _collectionSettings;
+		private readonly SourceCollectionsList _sourceCollectionsList;
 		//private readonly SendReceiver _sendReceiver;
 		private HtmlDom _domForCurrentPage;
 		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
@@ -58,6 +59,8 @@ namespace Bloom.Edit
 
 		readonly List<string> _activeStandardListeners = new List<string>();
 
+		internal const string PageScalingDivId = "page-scaling-container";
+
 		//public event EventHandler UpdatePageList;
 
 		public delegate EditingModel Factory();//autofac uses this
@@ -77,7 +80,8 @@ namespace Bloom.Edit
 			CollectionSettings collectionSettings,
 			//SendReceiver sendReceiver,
 			EnhancedImageServer server,
-			BloomWebSocketServer webSocketServer)
+			BloomWebSocketServer webSocketServer,
+			SourceCollectionsList sourceCollectionsList)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
@@ -87,12 +91,13 @@ namespace Bloom.Edit
 			//_sendReceiver = sendReceiver;
 			_server = server;
 			_webSocketServer = webSocketServer;
+			_sourceCollectionsList = sourceCollectionsList;
 			_templatePagesDict = null;
 
 			bookSelection.SelectionChanged += OnBookSelectionChanged;
 			pageSelection.SelectionChanged += OnPageSelectionChanged;
 			pageSelection.SelectionChanging += OnPageSelectionChanging;
-			templateInsertionCommand.InsertPage += OnInsertTemplatePage;
+			templateInsertionCommand.InsertPage += OnInsertPage;
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
 			pageRefreshEvent.Subscribe((PageRefreshEvent.SaveBehavior behavior) =>
@@ -143,6 +148,8 @@ namespace Bloom.Edit
 		}
 
 		private Form _oldActiveForm;
+		private XmlElement _pageDivFromCopyPage;
+		private string _bookPathFromCopyPage;
 
 		/// <summary>
 		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
@@ -281,27 +288,27 @@ namespace Bloom.Edit
 			}
 		}
 
-		private void OnInsertTemplatePage(object sender, PageInsertEventArgs e)
+		/// <summary>
+		/// This is used both to insert pages from the AddPageDialog, and also "paste page"
+		/// </summary>
+		private void OnInsertPage(object page, PageInsertEventArgs e)
 		{
-			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
-			if (e.HasStyles)
-			{
-				var existingUserStyles = CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage();
-				var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existingUserStyles, e.InsertedPageUserStylesNode);
-				existingUserStyles.InnerXml = newMergedUserStyleXml;
-			}
+			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), page as Page);
 			//_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
 			//_pageSelection.SelectPage(newPage);
-			try
+			if(e.FromTemplate)
 			{
-				Analytics.Track("Insert Template Page", new Dictionary<string, string>
+				try
+				{
+					Analytics.Track("Insert Template Page", new Dictionary<string, string>
 					{
-						{ "template-source", (sender as Page).Book.Title},
-						{ "page", (sender as Page).Caption}
+						{"template-source", (page as IPage).Book.Title},
+						{"page", (page as IPage).Caption}
 					});
-			}
-			catch (Exception)
-			{
+				}
+				catch(Exception)
+				{
+				}
 			}
 			Logger.WriteEvent("InsertTemplatePage");
 		}
@@ -329,6 +336,16 @@ namespace Bloom.Edit
 					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null
 					   && !_currentlyDisplayedBook.LockedDown;//this clause won't work when we start allowing custom front/backmatter pages
 			}
+		}
+
+		public bool CanCopyPage
+		{
+			// Currently we don't want to allow copying xmatter pages. If we ever do, some research and non-trivial change
+			// will probably be needed, not just removing the restriction. Xmatter pages have classes set on them which will cause
+			// Bloom to delete them when the book is next opened. They also tend to be singletons, which may cause problems if
+			// we let the user make multiple ones.
+			// Note that we don't need the editability restrictions here, since copy doesn't modify this book.
+			get { return _pageSelection != null && _pageSelection.CurrentSelection != null && !_pageSelection.CurrentSelection.IsXMatter; }
 		}
 
 		public bool CanDeletePage
@@ -511,7 +528,7 @@ namespace Bloom.Edit
 
 			_currentlyDisplayedBook = CurrentBook;
 
-			var errors = _currentlyDisplayedBook.GetErrorsIfNotCheckedBefore();
+			var errors = _currentlyDisplayedBook.CheckForErrors();
 			if (!string.IsNullOrEmpty(errors))
 			{
 				ErrorReport.NotifyUserOfProblem(errors);
@@ -610,7 +627,7 @@ namespace Bloom.Edit
 		{
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			CheckForBL2364("setup");
-			SetPageZoom();
+			SetupPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			CheckForBL2364("made tags safe");
 			if (_currentPage != null)
@@ -628,14 +645,37 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// Set a style on the body of the main content page that will zoom it to the extent the user currently prefers.
+		/// Insert a div into the body that contains the .bloom-page div and set a style on this new div that will
+		/// zoom/scale the page content to the extent the user currently prefers.  This style cannot go on the body
+		/// element because that make popup dialogs (and their combo box dropdowns) display in the wrong location.
+		/// The style cannot go on the .bloom-page div itself because that makes hint bubbles squeeze to fit inside
+		/// the zoomed page display limits.
 		/// </summary>
-		private void SetPageZoom()
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4172.
+		/// </remarks>
+		private void SetupPageZoom()
 		{
-			var body = _domForCurrentPage.Body;
 			var pageZoom = Settings.Default.PageZoom ?? "1.0";
-			body.SetAttribute("style", string.Format("transform: scale({0},{0})", pageZoom));
-			CheckForBL2364("read page zoom");
+			var body = _domForCurrentPage.Body;
+			var pageDiv = body.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]") as XmlElement;
+			if (pageDiv != null)
+			{
+				var outerDiv = InsertContainingScalingDiv(body, pageDiv);
+				outerDiv.SetAttribute("style", string.Format("transform: scale({0}); transform-origin: left top;", pageZoom));
+			}
+			CheckForBL2364("set page zoom");
+		}
+
+		XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
+		{
+			// Note: because this extra div is OUTSIDE the page div, we don't have to remove it later,
+			// because only the page div and its contents are saved back to the permanent file.
+			var newDiv = body.OwnerDocument.CreateElement("div");
+			newDiv.SetAttribute("id", PageScalingDivId);
+			body.PrependChild(newDiv);
+			newDiv.AppendChild(pageDiv);
+			return newDiv;
 		}
 
 		/// <summary>
@@ -915,20 +955,39 @@ namespace Bloom.Edit
 			// not worth crashing over a timing problem that means we don't save zoom state
 			if (body == null)
 				return; // BL-3075, not sure how this can happen but it has. Possibly the view is in some state like about:null which has no body.
-			var styleAttr = body.Attributes["style"];
 
-			if (styleAttr == null)
-				return;
-			var style = styleAttr.NodeValue;
-			var match = Regex.Match(style, "scale\\(([^,]*),");
-			if (!match.Success)
-				return;
-			var pageZoom = match.Groups[1].Value;
-			if (pageZoom != Settings.Default.PageZoom)
+			var pageDiv = body.FindFirstChildInTree<GeckoElement>(IsPageScalingDiv);
+			if (pageDiv == null)
+				return;		// shouldn't happen, but ignore.
+
+			var styleAttr = pageDiv.Attributes["style"];
+			if (styleAttr != null)
 			{
-				Settings.Default.PageZoom = pageZoom;
-				Settings.Default.Save();
+				var style = styleAttr.NodeValue;
+				var match = Regex.Match(style, "scale\\(([0-9.]*)");
+				if (match.Success)
+				{
+					var pageZoom = match.Groups[1].Value;
+					if (pageZoom != Settings.Default.PageZoom)
+					{
+						Settings.Default.PageZoom = pageZoom;
+						Settings.Default.Save();
+					}
+				}
 			}
+		}
+
+		/// <summary>
+		/// Test whether the given element is the div inserted for page zooming/scaling.
+		/// </summary>
+		private bool IsPageScalingDiv(GeckoElement e)
+		{
+			if (e.NodeName.ToLowerInvariant() != "div")
+				return false;
+			var idAttr = e.Attributes["id"];
+			if (idAttr == null)
+				return false;
+			return idAttr.NodeValue == PageScalingDivId;
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
@@ -1147,6 +1206,7 @@ namespace Bloom.Edit
 
 		public void ShowAddPageDialog()
 		{
+			SaveNow(); // At least in template mode, the current page shows in the Add Page dialog, and should be current.
 			_view.ShowAddPageDialog();
 		}
 
@@ -1180,5 +1240,40 @@ namespace Bloom.Edit
 			_pageSelection.ChangingPageFinished();
 		}
 #endif
+
+		public bool GetClipboardHasPage()
+		{
+			return _pageDivFromCopyPage != null;
+		}
+
+		public void CopyPage(IPage page)
+		{
+			SaveNow();	// need to preserve any typing they've done but not yet saved (BL-4512)
+			// We have to clone this so that if the user changes the page after doing the copy,
+			// when they paste they get the page as it was, not as it is now.
+			_pageDivFromCopyPage = (XmlElement) page.GetDivNodeForThisPage().CloneNode(true);
+			_bookPathFromCopyPage = page.Book.GetPathHtmlFile();
+		}
+
+		/// <summary>
+		/// Paste the previously saved _pageDivFromCopyPage as a new page.
+		/// </summary>
+		/// <param name="pageToPasteAfter">This is NOT the page we are to paste!</param>
+		public void PastePage(IPage pageToPasteAfter)
+		{
+			var templateBook = pageToPasteAfter.Book; // default is to assume it's from the same book
+			bool fromAnotherBook = templateBook.GetPathHtmlFile() != _bookPathFromCopyPage;
+			if (fromAnotherBook)
+			{
+				// Copying from some other book. We need an actual book object, just like when we insert a page from a template,
+				// at least in order to properly copy any images and styles used on the page that are not in the
+				// destination book.
+				// If for some reason (since renamed?) we can't get it, just do the best we can...images and styles may
+				// not be right, but we can still paste the content of the page.
+				templateBook = _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(_bookPathFromCopyPage) ?? templateBook;
+			}
+			var pageForPasting = new Page(templateBook, _pageDivFromCopyPage, "not used", "not used", x => _pageDivFromCopyPage);
+			OnInsertPage(pageForPasting, new PageInsertEventArgs(false)); // false => don't need analytics on use of template pages
+		}
 	}
 }

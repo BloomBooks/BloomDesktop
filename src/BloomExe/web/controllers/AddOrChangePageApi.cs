@@ -41,11 +41,10 @@ namespace Bloom.web.controllers
 
 		private void HandleAddPage(ApiRequest request)
 		{
-			XmlNode userStylesOnPage;
-			var templatePage = GetPageTemplateAndUserStyles(request, out userStylesOnPage);
+			var templatePage = GetPageTemplateAndUserStyles(request);
 			if (templatePage != null)
 			{
-				_templateInsertionCommand.Insert(templatePage as Page, userStylesOnPage);
+				_templateInsertionCommand.Insert(templatePage as Page);
 				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
 				request.Succeeded();
 				return;
@@ -54,20 +53,12 @@ namespace Bloom.web.controllers
 
 		private void HandleChangeLayout(ApiRequest request)
 		{
-			XmlNode userStylesOnPage;
-			var templatePage = GetPageTemplateAndUserStyles(request, out userStylesOnPage);
+			var templatePage = GetPageTemplateAndUserStyles(request);
 			if (templatePage != null)
 			{
 				var pageToChange = /*PageChangingLayout ??*/ _pageSelection.CurrentSelection;
 				var book = _pageSelection.CurrentSelection.Book;
-				book.UpdatePageToTemplate(book.OurHtmlDom, templatePage.GetDivNodeForThisPage(), pageToChange.Id);
-				if (userStylesOnPage != null)
-				{
-					var existingUserStyles = book.GetOrCreateUserModifiedStyleElementFromStorage();
-					var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existingUserStyles, userStylesOnPage);
-					existingUserStyles.InnerXml = newMergedUserStyleXml;
-					book.Save();
-				}
+				book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, pageToChange.Id);
 				// The Page objects are cached in the page list and may be used if we issue another
 				// change layout command. We must update their lineage so the right "current layout"
 				// will be shown if the user changes the layout of the same page again.
@@ -80,16 +71,15 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private IPage GetPageTemplateAndUserStyles(ApiRequest request, out XmlNode userStylesOnPage)
+		private IPage GetPageTemplateAndUserStyles(ApiRequest request)
 		{
-			userStylesOnPage = null;
 			var requestData = DynamicJson.Parse(request.RequiredPostJson());
 			//var templateBookUrl = request.RequiredParam("templateBookUrl");
 			var templateBookPath = HttpUtility.HtmlDecode(requestData.templateBookPath);
 			var templateBook = _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(templateBookPath);
 			if(templateBook == null)
 			{
-				request.Failed("Could not find template book " + requestData.templateBookUrl);
+				request.Failed("Could not find template book " + templateBookPath);
 				return null;
 			}
 
@@ -100,8 +90,6 @@ namespace Bloom.web.controllers
 				request.Failed("Could not find the page " + requestData.pageId + " in the template book " + requestData.templateBookUrl);
 				return null;
 			}
-			var domForPage = templateBook.GetEditableHtmlDomForPage(page);
-			userStylesOnPage = HtmlDom.GetUserModifiableStylesUsedOnPage(domForPage); // could be empty
 			return page;
 		}
 	}

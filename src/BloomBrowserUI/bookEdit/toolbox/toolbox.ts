@@ -410,25 +410,29 @@ function doKeypressMarkup(): void {
         // more reliable insertion-point-preservation, at the cost of some temporarily inaccurate
         // markup.
         const editableDiv = $(selection.anchorNode).parents(".bloom-editable")[0];
-        const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
-        const ckeditorSelection = ckeditorOfThisBox.getSelection();
+        // In 3.9, this is null when you press backspace in an empty box; the selection.anchorNode is itself a .bloom-editable, so
+        // presumably we could adjust the above query to still get the div it's looking for.
+        if (editableDiv) {
+            const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
+            const ckeditorSelection = ckeditorOfThisBox.getSelection();
 
-        // there is also createBookmarks2(), which avoids actually inserting anything. That has the
-        // advantage that changing a character in the middle of a word will allow the entire word to
-        // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
-        // actually go back to where it was: it gets shifted to the right.
-        const bookmarks = ckeditorSelection.createBookmarks(true);
-        currentTool.updateMarkup();
+            // there is also createBookmarks2(), which avoids actually inserting anything. That has the
+            // advantage that changing a character in the middle of a word will allow the entire word to
+            // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
+            // actually go back to where it was: it gets shifted to the right.
+            const bookmarks = ckeditorSelection.createBookmarks(true);
+            currentTool.updateMarkup();
 
-        //set the selection to wherever our bookmark node ended up
-        //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
-        //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
-        // in some way that is still not understood. This was fixed by changing all this to trigger on
-        // a different event (keydown instead of keypress).
-        ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
-
+            //set the selection to wherever our bookmark node ended up
+            //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
+            //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
+            // in some way that is still not understood. This was fixed by changing all this to trigger on
+            // a different event (keydown instead of keypress).
+            ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
+        }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
         keypressTimer = null;
+
     }, 500);
 }
 

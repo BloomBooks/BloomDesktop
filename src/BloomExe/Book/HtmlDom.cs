@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -110,6 +111,32 @@ namespace Bloom.Book
 				if(String.IsNullOrEmpty(node.GetAttribute("id"))
 				   || (node.GetAttribute("id") == guidMistakenlyUsedForEveryCoverPage))
 					node.SetAttribute("id", Guid.NewGuid().ToString());
+			}
+		}
+
+		/// <summary>
+		/// If the user added any custom pages in a version of bloom before 3.9 to a user defined template book created by
+		/// Bloom 3.9, that page is unusable as a template page later in Bloom 3.9.  Fix it so that is is useable.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4491.
+		/// Note that if we change how template pages are generated, this code may well need to change.
+		/// </remarks>
+		public void FixAnyAddedCustomPages()
+		{
+			foreach (XmlElement node in _dom.SafeSelectNodes("/html/body/div[contains(concat(' ', normalize-space(@class), ' '),' bloom-page ') and contains(concat(' ', normalize-space(@class), ' '),' customPage ')and @data-page='']"))
+			{
+				node.SetAttribute("data-page", "extra");
+				foreach (XmlElement label in node.SafeSelectNodes("div[contains(concat(' ', normalize-space(@class), ' '), ' pageLabel ')]"))
+				{
+					label.RemoveAttribute("data-i18n");
+					break;
+				}
+				foreach (XmlElement description in node.SafeSelectNodes("div[contains(concat(' ', normalize-space(@class), ' '), ' pageDescription ')]"))
+				{
+					description.InnerText = String.Empty;
+					break;
+				}
 			}
 		}
 
@@ -227,13 +254,16 @@ namespace Bloom.Book
 				body.RemoveAttribute("editMode");
 		}
 
-		public string ValidateBook(string descriptionOfBookForErrorLog)
+		public string ValidateBook(string descriptionOfBookForErrorLog, bool mustHavePages)
 		{
 			var ids = new List<string>();
 			var builder = new StringBuilder();
 
-			Ensure(RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count > 0, "Must have at least one page",
-				builder);
+			if (mustHavePages)
+			{
+				Ensure(RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count > 0, "Must have at least one page",
+					builder);
+			}
 			EnsureIdsAreUnique(this, "textarea", ids, builder);
 			EnsureIdsAreUnique(this, "p", ids, builder);
 			EnsureIdsAreUnique(this, "img", ids, builder);
@@ -630,25 +660,26 @@ namespace Bloom.Book
 				newPage.SetAttribute("data-page", dataPageValue); //the template has these as data-page='extra'
 			}
 
-			// migrate text
-			MigrateChildren(page, "bloom-translationGroup", newPage);
+			//the leading '.'s here are needed because newPage is an element in a larger DOM, and we only want to search in this page
+			// migrate text (between visible translation groups!)
+			// enhance: I wish there was a better way to detect invisible translation groups than just knowing about one class
+			// that currently hides them.
+			MigrateChildren(page, ".//div[contains(concat(' ', @class, ' '), ' bloom-translationGroup ') and not(contains(@class, 'box-header-off'))]", newPage);
 			// migrate images
-			MigrateChildren(page, "bloom-imageContainer", newPage);
+			MigrateChildren(page, ".//div[contains(concat(' ', @class, ' '), ' bloom-imageContainer ')]", newPage);
 			return oldLineage;
 		}
 
 		/// <summary>
 		/// For each div in the page which has the specified class, find the corresponding div with that class in newPage,
 		/// and replace its contents with the contents of the source page.
-		/// Also inserts any needed styles we know about.
+		/// For translation groups, also updates the bloom-editable divs to have the expected class.
 		/// </summary>
 		/// <param name="page"></param>
-		/// <param name="parentClass"></param>
+		/// <param name="xpath"></param>
 		/// <param name="newPage"></param>
-		private static void MigrateChildren(XmlElement page, string parentClass, XmlElement newPage)
+		private static void MigrateChildren(XmlElement page, string xpath, XmlElement newPage)
 		{
-			//the leading '.' here is needed because newPage is an element in a larger DOM, and we only want to search in this page
-			var xpath = ".//div[contains(concat(' ', @class, ' '), ' " + parentClass + " ')]";
 			var oldParents = page.SafeSelectNodes(xpath);
 			var newParents = newPage.SafeSelectNodes(xpath);
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
@@ -657,13 +688,20 @@ namespace Bloom.Book
 			{
 				var oldParent = (XmlElement) oldParents[i];
 				var newParent = (XmlElement) newParents[i];
-				foreach(var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
+				string childClass = null;
+				foreach (var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
+				{
+					if (childClass == null)
+						childClass = GetStyle(child);
 					newParent.RemoveChild(child);
+				}
 				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
 				// which messes things up unless we make a copy of the collection.
 				foreach(XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
 				{
 					newParent.AppendChild(child);
+					// Bloom-editable divs should have the user-defined class specified in the template if there is one.
+					FixStyle(child, "bloom-editable", childClass);
 					AddKnownStyleIfMissing(child);
 				}
 			}
@@ -712,6 +750,29 @@ namespace Bloom.Book
 					continue; // style already defined
 				userStyles.InnerText += string.IsNullOrEmpty(content) ? defaultDefn : " " + defaultDefn;
 			}
+		}
+
+		private static string GetStyle(XmlNode elt)
+		{
+			if (elt.Attributes == null)
+				return null;
+			var classAttr = elt.Attributes["class"];
+			if (classAttr == null)
+				return null;
+			return classAttr.Value.Split(' ').FirstOrDefault(x => x.EndsWith("-style"));
+		}
+
+		private static void FixStyle(XmlNode child, string requiredClass, string desiredStyle)
+		{
+			if (desiredStyle == null || child.Attributes?["class"] == null || !child.Attributes["class"].Value.Contains(requiredClass) )
+				return;
+			var childStyle = GetStyle(child);
+			string newclass;
+			if (childStyle != null)
+				newclass= child.Attributes["class"].Value.Replace(childStyle, desiredStyle);
+			else
+				newclass = child.Attributes["class"].Value + " " + desiredStyle;
+			((XmlElement) child).SetAttribute("class", newclass);
 		}
 
 		// Both of these are relative to the DOM's Head element
@@ -773,22 +834,27 @@ namespace Bloom.Book
 			if (userStyleElementFromTemplate == null)
 				return AddEmptyUserModifiedStylesNode(domForInsertedPage.Head);
 
-			var keyDict = GetUserStyleKeyDict(userStyleElementFromTemplate, false);
+			var keyDict = GetUserStyleKeyDict(userStyleElementFromTemplate);
 			var keysUsedOnPage = new Dictionary<string, string>();
 			foreach (var keyPair in keyDict)
 			{
-				// Key.Substring(1) strips off initial period from class name
+				var style = GetStyleNameFromRuleSelector(keyPair.Key);
 				var searchResult = domForInsertedPage.SafeSelectNodes(
-					"//div[contains(concat(' ', @class, ' '), ' " + keyPair.Key.Substring(1) + " ')]");
-
-				// At this point we are only worrying about the class name. The style may well specify a lang attribute too,
-				// but we'll deal with that later when we merge the new styles into the previous element, if necessary.
+					"//div[contains(concat(' ', @class, ' '), ' " + style + " ')]");
 				if (searchResult.Count > 0)
 					keysUsedOnPage.Add(keyPair.Key, keyPair.Value);
 			}
 			userStyleElementFromTemplate.InnerText =
 				GetCompleteFilteredUserStylesInnerText(keysUsedOnPage);
 			return userStyleElementFromTemplate;
+		}
+
+		private static string GetStyleNameFromRuleSelector(string selector)
+		{
+			// Key.Substring(1) strips off initial period from class name
+			// Stripping off everything after -style removes [lang] stuff and >p stuff.
+			var indexOfStyle = selector.LastIndexOf("-style", StringComparison.InvariantCulture);
+			return selector.Substring(1, indexOfStyle + "-style".Length - 1);
 		}
 
 		/// <summary>
@@ -808,13 +874,17 @@ namespace Bloom.Book
 			if (insertedPageUserStyleNode == null)
 				return existingUserStyleNode.InnerText;
 
-			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode, true);
-			var insertedPageStyleKeyDict = GetUserStyleKeyDict(insertedPageUserStyleNode, true); // could be empty
+			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
+			var existingStyleNames = new HashSet<string>();
+			foreach (var key in existingStyleKeyDict.Keys)
+			{
+				existingStyleNames.Add(GetStyleNameFromRuleSelector(key));
+			}
+			var insertedPageStyleKeyDict = GetUserStyleKeyDict(insertedPageUserStyleNode); // could be empty
 			foreach (var keyPair in insertedPageStyleKeyDict)
 			{
-				if (existingStyleKeyDict.ContainsKey(keyPair.Key))
+				if (existingStyleNames.Contains(GetStyleNameFromRuleSelector(keyPair.Key)))
 					continue;
-
 				existingStyleKeyDict.Add(keyPair);
 			}
 			return GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict);
@@ -832,7 +902,7 @@ namespace Bloom.Book
 
 		private const int minStyleLength = 6; // "-style".Length
 
-		private static IDictionary<string, string> GetUserStyleKeyDict(XmlNode userStyleNode, bool includeLangAttr)
+		private static IDictionary<string, string> GetUserStyleKeyDict(XmlNode userStyleNode)
 		{
 			var keyDict = new Dictionary<string, string>();
 			var styleStrings = GetStyles(userStyleNode.InnerText); // skips empty lines
@@ -840,7 +910,11 @@ namespace Bloom.Book
 			{
 				if (styleString.Length < minStyleLength)
 					continue; // not sure how we'd get this... but just in case.
-				keyDict.Add(GetClassKeyFromStyleString(styleString, includeLangAttr), styleString);
+				var indexOfBrace = styleString.IndexOf("{", StringComparison.InvariantCulture);
+				if (indexOfBrace < 0)
+					continue; // doesn't have a rule...unlikely...anyway not useful.
+				var key = styleString.Substring(0, indexOfBrace).Trim();
+				keyDict[key] = styleString;
 			}
 			return keyDict;
 		}
@@ -884,20 +958,6 @@ namespace Bloom.Book
 			yield return completeRule;
 		}
 
-		private static string GetClassKeyFromStyleString(string style, bool includeLangAttr)
-		{
-			// Takes strings like ".StyleName-style {css stuff}\r\n" or ".StyleName-style[lang="zzz"] {css stuff}\r\n"
-			// and returns ".StyleName-style" or ".StyleName-style[lang="zzz"]", depending on whether the string includes
-			// a 'lang' attribute and whether the 'includeLangAttr' param is true or not.
-			var endOfLangAttr = style.IndexOf("]");
-			if (!includeLangAttr || endOfLangAttr < 0)
-			{
-				var removeable = style.IndexOf("-style") + 6;
-				return style.Length > removeable ? style.Remove(removeable) : style;
-			}
-			return style.Length > endOfLangAttr + 1 ? style.Remove(endOfLangAttr + 1) : style;
-		}
-
 		/* The following, to use normal url query parameters to say if we wanted transparency,
 		 * was a nice idea, but turned out to not be necessary. I'm leave the code here in
 		 * case in the future we do find a need to add query parameters.
@@ -920,6 +980,29 @@ namespace Bloom.Book
 		}
 		*/
 
+		public static void MakeEditableDomShowAsTemplate(HtmlDom dom)
+		{
+			var label = dom.SelectSingleNode("//div[contains(@class,'pageLabel')]");
+			if (label != null)
+			{
+				label.SetAttribute("contenteditable", "true");
+			}
+			var page = dom.SelectSingleNode("//div[contains(@class, 'bloom-page')]");
+			page.SetAttribute("class", page.GetAttribute("class") + " bloom-templateMode");
+		}
+
+		// This should reverse what MakeEditableDomShowAsTemplate does.
+		public static void RemoveTemplateEditingMarkup(XmlElement editedPageDiv)
+		{
+			var label = editedPageDiv.SelectSingleNode("//div[contains(@class,'pageLabel')]") as XmlElement;
+			if (label != null)
+			{
+				label.RemoveAttribute("contenteditable");
+			}
+
+			editedPageDiv.SetAttribute("class", editedPageDiv.GetAttribute("class").Replace(" bloom-templateMode", ""));
+		}
+
 		public static void ProcessPageAfterEditing(XmlElement destinationPageDiv, XmlElement edittedPageDiv)
 		{
 			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
@@ -929,10 +1012,14 @@ namespace Bloom.Book
 			// and then see whether it contains bloom-ui surrounded by spaces.
 			// However, we need to do this in the edited page before copying to the storage page, since we are about to suck
 			// info from the edited page into the dataDiv and we don't want the bloom-ui elements in there either!
+			// Note that EditingView.CleanHtmlAndCopyToPageDom() also removes bits
+			// of html that are used during editing but are not saved to disk.  (It calls javascript to deal with items inserted
+			// by javascript.)
 			foreach(
 				var node in
 					edittedPageDiv.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
 				node.ParentNode.RemoveChild(node);
+			RemoveTemplateEditingMarkup(edittedPageDiv);
 
 			destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
@@ -973,10 +1060,10 @@ namespace Bloom.Book
 		public MultiTextBase GetBookSetting(string key)
 		{
 			var result = new MultiTextBase();
-			foreach(XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']"))
+			foreach(XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "' or @data-derived='" + key + "']"))
 			{
 				var lang = e.GetAttribute("lang");
-				result.SetAlternative(lang ?? "", e.InnerXml);
+				result.SetAlternative(lang ?? "", e.InnerXml.Trim());
 			}
 			return result;
 		}
@@ -985,7 +1072,7 @@ namespace Bloom.Book
 		{
 			foreach(
 				XmlElement e in
-					RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']").Cast<XmlElement>().ToList())
+					RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "' or @data-derived='" + key + "']").Cast<XmlElement>().ToList())
 			{
 				e.ParentNode.RemoveChild(e);
 			}
@@ -1238,6 +1325,54 @@ namespace Bloom.Book
 			return html.Replace("<br/>", Environment.NewLine)
 				.Replace("<br />", Environment.NewLine)
 				.Replace("<br>", Environment.NewLine);
+		}
+
+		private IEnumerable<XmlElement> GetContentPageElements()
+		{
+			return _dom.SafeSelectNodes(
+					"/html/body/div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]")
+				.OfType<XmlElement>();
+		}
+
+		/// <summary>
+		/// Can switch a page from being a template page or back to a normal page.
+		/// </summary>
+		/// <param name="areTemplatePages"></param>
+		public void MarkPagesWithTemplateStatus(bool areTemplatePages)
+		{
+			foreach(var page in GetContentPageElements())
+			{
+				MakePageWithTemplateStatus(areTemplatePages, page);
+			}
+		}
+
+		/// <summary>
+		/// Can switch a page from being a template page or back to a normal page.
+		/// </summary>
+		public static void MakePageWithTemplateStatus(bool isTemplatePage, XmlElement page)
+		{
+			page.SetAttribute("data-page", isTemplatePage ? "extra" : "");
+			if (!isTemplatePage)
+				return;
+			var label = page.SelectSingleNode("div[contains(@class,'pageLabel')]") as XmlElement;
+			if (label != null)
+			{
+				// Assume that they are going to change the name. Note as of 3.9 at least, we don't have a way of localizing these.
+				label.RemoveAttribute("data-i18n");
+			}
+		}
+
+		/// <summary>
+		/// Reads the Generator meta tag.
+		/// </summary>
+		/// <returns> the version if it can find it, else version 0.0</returns>
+		public System.Version GetGeneratorVersion()
+		{
+			var generator = GetMetaValue("Generator", "");
+			var match = Regex.Match(generator, "[0-9]+(\\.[0-9]+)+");
+			if (match.Success)
+				return new System.Version(match.Captures[0].Value);
+			return new System.Version(0, 0);
 		}
 	}
 }

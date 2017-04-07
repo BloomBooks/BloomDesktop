@@ -139,8 +139,10 @@ namespace Bloom.MiscUI
 #endif
 				_goDownTimer.Stop();
 				//If the client app starts with a "show dialog" open (e.g., selecting a file to open), this Close() actually closes *that* dialog, which is, um, bad.
-				//So I'm just going to not do the close, figuring that it only runs once per run of the application anyhow
-				//Close();
+				// But we've been closing in various other contexts using an idle event, and testing doesn't seem to show any problems with
+				// that, and we're now making more and more use of the class, so leaving them to hang around is not good, either.
+				// So far, haven't seen any problems with this approach.
+				CloseThisLater();
 
 				_currentMessage = null;
 
@@ -155,6 +157,11 @@ namespace Bloom.MiscUI
 
 		private void ToastNotifier_Click(object sender, EventArgs e)
 		{
+			// Certain scenarios (like clicking to bring up a yellow screen) need these lines else the yellow screen
+			// is closed by a close-this-dialog either already on the stack or about to be added by GoDownTimerTick.
+			_goDownTimer.Tick -= GoDownTimerTick; //_goDownTimer.Stop() didn't work for some reason
+			Application.Idle -= CloseThisCalledFromIdle;
+
 			EventHandler handler = ToastClicked;
 			ToastClicked = null;	// handle only one click message. (Linux posts two if link clicked, one for Toast window in general.)
 			if (handler != null)
@@ -163,12 +170,17 @@ namespace Bloom.MiscUI
 			// This would cause a System.ObjectDisposedException shortly if we call Close() directly from
 			// here, so we add a method to close this ToastNotifier to the Application.Idle processor (which
 			// won't fire until all of the current pending messages have been handled).  See BL-3285.
-			Application.Idle += CloseThisLater;
+			CloseThisLater();
 		}
 
-		private void CloseThisLater(object sender, EventArgs e)
+		private void CloseThisLater()
 		{
-			Application.Idle -= CloseThisLater;
+			Application.Idle += CloseThisCalledFromIdle;
+		}
+
+		private void CloseThisCalledFromIdle(object sender, EventArgs e)
+		{
+			Application.Idle -= CloseThisCalledFromIdle;
 			DialogResult = DialogResult.Yes;
 			this.Close();
 		}

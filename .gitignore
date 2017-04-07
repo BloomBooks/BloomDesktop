@@ -97,6 +97,7 @@ node_modules
 Andika-R.ttf
 *~
 Bloom/
-.vs/config/applicationhost.config
+.vs/
 build/Bloom*.nupkg
 src/BloomBrowserUI/filesToFix.lst
+src/BloomBrowserUI/npm-debug.log

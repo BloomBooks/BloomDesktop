@@ -11,6 +11,7 @@ using Bloom.CollectionTab;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Api;
+using Bloom.web.controllers;
 using L10NSharp;
 using SIL.Progress;
 using SIL.Reporting;
@@ -226,13 +227,6 @@ namespace Bloom.Edit
 		{
 			try
 			{
-				if(!_model.CanEditCopyrightAndLicense)
-				{
-					MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright",
-						"Sorry, the copyright and license for this book cannot be changed."));
-					return;
-				}
-
 				_model.SaveNow();
 				//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
 
@@ -855,7 +849,17 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					imageInfo = PalasoImage.FromFileRobustly(existingImagePath);
+					// Copy the old file we're passing in to the dialog.  It's possible that we'll just crop it, and return the modified
+					// image file with an unchanged path.  That's okay, but what if it's from a copied/duplicated page?  Then all the
+					// pages with that image get the modification, which is probably not what is wanted.  Excess files will get trimmed
+					// later when the book is reopened for editing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3689.
+					var folder = Path.GetDirectoryName(existingImagePath);
+					var newFilename = ImageUtils.GetUnusedFilename(folder, Path.GetFileNameWithoutExtension(existingImagePath), Path.GetExtension(existingImagePath));
+					var newImagePath = Path.Combine(folder, newFilename);
+					RobustFile.Copy(existingImagePath, newImagePath);
+					Debug.WriteLine("Created image copy: " + newImagePath);
+					Logger.WriteEvent("Created image copy: " + newImagePath);
+					imageInfo = PalasoImage.FromFileRobustly(newImagePath);
 				}
 				catch(Exception e)
 				{
@@ -1298,12 +1302,14 @@ namespace Bloom.Edit
 
 		public void ShowAddPageDialog()
 		{
+			PageTemplatesApi.ForPageLayout = false;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
 			RunJavaScript("FrameExports.showAddPageDialog(false);");
 		}
 
 		internal void ShowChangeLayoutDialog(IPage page)
 		{
+			PageTemplatesApi.ForPageLayout = true;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
 			RunJavaScript("FrameExports.showAddPageDialog(true);");
 		}
