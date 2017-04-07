@@ -366,26 +366,41 @@ export default class BloomSourceBubbles {
 
     private static SetupTooltips(editableDiv: JQuery): void {
         // BL-878: show the full-size tool tip when the text area has focus
-        editableDiv.find('.bloom-editable').focus(function (event) {
+        editableDiv.find('.bloom-editable').each((i, elt) => {
+            $(elt).focus(event => {
 
-            // reset tool tips that may be expanded
-            var $body = $('body');
-            $body.find('.qtip').each(function (idx, obj) {
-                var $thisTip = $(obj);
-                $thisTip.addClass('passive-bubble');
-                var maxHeight = $thisTip.attr('data-max-height');
-                if (maxHeight)
-                    $thisTip.css('max-height', parseInt(maxHeight));
+                // reset tool tips that may be expanded
+                var $body = $('body');
+                $body.find('.qtip').each(function (idx, obj) {
+                    var $thisTip = $(obj);
+                    console.log("adding passive bubble in focus")
+                    $thisTip.addClass('passive-bubble');
+                    var maxHeight = $thisTip.attr('data-max-height');
+                    if (maxHeight)
+                        $thisTip.css('max-height', parseInt(maxHeight));
+                });
+
+                // show the full tip, if needed
+                var tipId = (<Element>event.target.parentNode).getAttribute('aria-describedby');
+                var $tip = $body.find('#' + tipId);
+                console.log("removing passive-bubble on focused element");
+                $tip.removeClass('passive-bubble');
+                var maxHeight = $tip.attr('data-max-height');
+                if (maxHeight) {
+                    $tip.css('max-height', '');
+                }
             });
-
-            // show the full tip, if needed
-            var tipId = (<Element>event.target.parentNode).getAttribute('aria-describedby');
-            var $tip = $body.find('#' + tipId);
-            $tip.removeClass('passive-bubble');
-            var maxHeight = $tip.attr('data-max-height');
-            if (maxHeight) {
-                $tip.css('max-height', '');
-            }
+            // reset the tooltip when it loses focus. The "reset other tooltips" code
+            // above is not enough because the field receiving focus may not be one
+            // that has been configured with this event.
+            $(elt).blur(ev => {
+                var tipId = (<Element>ev.target.parentNode).getAttribute('aria-describedby');
+                var $tip = $('body').find('#' + tipId);
+                $tip.addClass('passive-bubble');
+                var maxHeight = $tip.attr('data-max-height');
+                if (maxHeight)
+                    $tip.css('max-height', parseInt(maxHeight));
+            });
         });
     }
 
