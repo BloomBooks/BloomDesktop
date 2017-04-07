@@ -495,9 +495,17 @@ namespace Bloom.Api
 					path = FileLocator.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, modPath);
 				}
 			}
-			catch (ApplicationException)
+			catch (ApplicationException e)
 			{
-				// ignore. Assume this means that this class/method cannot serve that request, but something else may.
+				// Might be from GetFileDistributedWithApplication above, but we could be checking templates that
+				// are NOT distributed with the application.
+				// Otherwise ignore. Assume this means that this class/method cannot serve that request,
+				// but something else may.
+				if (e.Message.StartsWith("Could not locate the required file"))
+				{
+					// LocateFile includes userInstalledSearchPaths (e.g. a shortcut to a collection in a non-standard location)
+					path = BloomFileLocator.sTheMostRecentBloomFileLocator.LocateFile(localPath);
+				}
 			}
 
 			//There's probably a eventual way to make this problem go away,
@@ -522,11 +530,18 @@ namespace Bloom.Api
 				var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
 				if (templateBook != null)
 				{
-					var templatePath = Path.Combine(templateBook.FolderPath,
-						localPath.Substring("pageChooser/".Length));
+					var pathMinusPrefix = localPath.Substring("pageChooser/".Length);
+					var templatePath = Path.Combine(templateBook.FolderPath, pathMinusPrefix);
 					if (RobustFile.Exists(templatePath))
 					{
 						info.ReplyWithImage(templatePath);
+						return true;
+					}
+					// Might be a page from a different template than the one we based this book on
+					path = BloomFileLocator.sTheMostRecentBloomFileLocator.LocateFile(pathMinusPrefix);
+					if (!string.IsNullOrEmpty(path))
+					{
+						info.ReplyWithImage(path);
 						return true;
 					}
 				}
