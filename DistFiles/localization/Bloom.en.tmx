@@ -1617,7 +1617,7 @@
       <prop type="x-dynamic">true</prop>
       <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       <tuv xml:lang="en">
-        <seg>Credit the translator, in {lang}</seg>
+        <seg>Name of the translator, in {lang}</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
