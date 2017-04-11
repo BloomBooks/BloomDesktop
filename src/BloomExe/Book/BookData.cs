@@ -489,7 +489,7 @@ namespace Bloom.Book
 
 		private XmlElement GetOrCreateDataDiv()
 		{
-			if(_dataDiv!=null)
+			if (_dataDiv != null)
 				return _dataDiv;
 			_dataDiv = _dom.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
 			if (_dataDiv == null)
@@ -532,7 +532,7 @@ namespace Bloom.Book
 			//But then this one is acting on the member variable. First Q: why is the rest of this method acting on a local variable dataset?
 			UpdateTitle();
 			SetUpDisplayOfTopicInBook(_dataset);
-            return data;
+			return data;
 		}
 
 		private static DataSet GatherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
@@ -671,12 +671,12 @@ namespace Bloom.Book
 						lang = "*";
 					if (lang == "{V}")
 						lang = _collectionSettings.Language1Iso639Code;
-					if(lang == "{N1}")
+					if (lang == "{N1}")
 						lang = _collectionSettings.Language2Iso639Code;
-					if(lang == "{N2}")
+					if (lang == "{N2}")
 						lang = _collectionSettings.Language3Iso639Code;
 
-					if (string.IsNullOrEmpty(value))
+					if (StringAlternativeHasNoText(value))
 					{
 						// This is a value we may want to delete
 						if (itemsToDelete != null)
@@ -686,8 +686,8 @@ namespace Bloom.Book
 						//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
 						if ((elementName.ToLowerInvariant() == "textarea" || elementName.ToLowerInvariant() == "input" ||
-							 node.GetOptionalStringAttribute("contenteditable", "false") == "true") &&
-							(lang == "V" || lang == "N1" || lang == "N2"))
+						     node.GetOptionalStringAttribute("contenteditable", "false") == "true") &&
+						    (lang == "V" || lang == "N1" || lang == "N2"))
 						{
 							throw new ApplicationException(
 								"Editable element (e.g. TextArea) should not have placeholder @lang attributes (V,N1,N2)\r\n\r\n" +
@@ -791,17 +791,18 @@ namespace Bloom.Book
 						//								targetDom.RemoveChild(node);
 						//							}
 						//							else
-						if (!string.IsNullOrEmpty(lang)) //if we don't even have this language specified (e.g. no national language), the  give up
+						if (!string.IsNullOrEmpty(lang))
+							//if we don't even have this language specified (e.g. no national language), the  give up
 						{
 							//Ideally, we have this string, in this desired language.
 							var s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[] {lang, "*"});
 
-							if(KeysOfVariablesThatAreUrlEncoded.Contains(key))
+							if (KeysOfVariablesThatAreUrlEncoded.Contains(key))
 							{
-								Debug.Assert(!s.Contains("&amp;"),"In memory, all image urls should be encoded such that & is just &.");
+								Debug.Assert(!s.Contains("&amp;"), "In memory, all image urls should be encoded such that & is just &.");
 							}
 							//But if not, maybe we should copy one in from another national language
-							if (string.IsNullOrEmpty(s))
+							if (StringAlternativeHasNoText(s))
 								s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
 
 							//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
@@ -816,14 +817,8 @@ namespace Bloom.Book
 
 							//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
 							if (data.WritingSystemAliases.Count != 0 && lang == data.WritingSystemAliases["N2"] &&
-							    s ==
-							    data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[]
-							    {
-								    data.
-									    WritingSystemAliases
-									    ["N1"]
-								    , "*"
-							    }))
+							    s == GetBestUnwrappedAlternative(data.TextVariables[key].TextAlternatives,
+								    new[] {data.WritingSystemAliases["N1"], "*"}).Form)
 							{
 								s = ""; //don't show it in N2, since it's the same as N1
 							}
@@ -849,6 +844,21 @@ namespace Bloom.Book
 					"Error in UpdateDomFromDataSet(," + elementName + "). RawDom was:\r\n" +
 					targetDom.OuterXml, error);
 			}
+		}
+
+		// internal for testing
+		internal static bool StringAlternativeHasNoText(string s)
+		{
+			if (string.IsNullOrEmpty(s))
+			{
+				return true;
+			}
+			var strippedString =
+				s.Replace("<p>", string.Empty).Replace("</p>", string.Empty)
+				.Replace("<p />", string.Empty).Replace("<p/>", string.Empty)
+				.Replace("<br>", string.Empty).Replace("</br>", string.Empty)
+				.Replace("<br />", string.Empty).Replace("<br/>", string.Empty);
+			return string.IsNullOrWhiteSpace(strippedString);
 		}
 
 		private void UpdateAttributes(DataSet data, XmlElement node, string key)
@@ -946,12 +956,12 @@ namespace Bloom.Book
 				//Today, I'm not seing the issue clearly enough, so I'm just going to path this one exisint hole.
 				 classes.Contains("smallCoverCredits"))
 			{
-				formToCopyFromSinceOursIsMissing =
-					data.TextVariables[key].TextAlternatives.GetBestAlternative(new[] {languageCodeOfTargetField, "*", "en", "fr", "es", "pt"});
+				formToCopyFromSinceOursIsMissing = GetBestUnwrappedAlternative(data.TextVariables[key].TextAlternatives,
+					new[] {languageCodeOfTargetField, "*", "en", "fr", "es", "pt"});
 				if (formToCopyFromSinceOursIsMissing != null)
 					s = formToCopyFromSinceOursIsMissing.Form;
 
-				if (string.IsNullOrEmpty(s))
+				if (StringAlternativeHasNoText(s))
 				{
 					//OK, well even on a non-global language is better than none
 					//s = data.TextVariables[key].TextAlternatives.GetFirstAlternative();
@@ -972,11 +982,18 @@ namespace Bloom.Book
 			return s;
 		}
 
-		public LanguageForm GetFirstAlternativeForm(MultiTextBase alternatives)
+		private LanguageForm GetBestUnwrappedAlternative(MultiTextBase textAlternatives, IEnumerable<string> languagesToTry)
+		{
+			var allForms = textAlternatives.GetOrderedAndFilteredForms(languagesToTry);
+			return allForms.FirstOrDefault(harderWay => !StringAlternativeHasNoText(harderWay.Form));
+		}
+
+		private LanguageForm GetFirstAlternativeForm(MultiTextBase alternatives)
 		{
 			foreach (LanguageForm form in alternatives.Forms)
 			{
-				if (form.Form.Trim().Length > 0)
+				var trimmedForm = form.Form.Trim();
+				if (trimmedForm.Length > 0 && !StringAlternativeHasNoText(trimmedForm))
 				{
 					return form;
 				}
