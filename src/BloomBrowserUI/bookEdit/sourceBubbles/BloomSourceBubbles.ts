@@ -368,6 +368,24 @@ export default class BloomSourceBubbles {
                                 selection.addRange(range);
                             }
                         });
+                        api.elements.tooltip.click((ev) => {
+                            var baseElement = $("body").find("[aria-describedby='" + api.elements.tooltip.attr("id") + "']");
+                            if (baseElement.hasClass("bloom-translationGroup")) {
+                                baseElement = baseElement.find(".bloom-editable:visible").first();
+                            }
+                            var hadTabIndex = baseElement.hasAttr("tabindex");
+                            if (!hadTabIndex) {
+                                baseElement.attr("tabindex", "999");
+                            }
+                            baseElement.focus();
+                            if (!hadTabIndex) {
+                                baseElement.removeAttr("tabindex");
+                            }
+                        });
+                        // no effect
+                        // $(api.elements.tooltip).find("*").click((ev) => {
+                        //     ev.preventDefault();
+                        // });
                     }
                 }
             });
