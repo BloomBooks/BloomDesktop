@@ -14,7 +14,7 @@ declare function GetSettings(): any; //c# injects this
 export default class BloomHintBubbles {
 
     // Add (yellow) hint bubbles from (usually) label.bubble elements
-    public static addHintBubbles(container: HTMLElement, sourceBubbleDivs: Array<Element>): void {
+    public static addHintBubbles(container: HTMLElement, sourceBubbleDivs: Array<Element>, bubbleDivs: Array<Element>): void {
         //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
         //bloom-translationGroup (those should have a single <label> for the whole group).
         //Notice that the <label> inside an editable div is in a precarious position, it could get
@@ -32,6 +32,7 @@ export default class BloomHintBubbles {
             labelElement.remove();
 
             //attach the bubble, this editable only, then remove it
+            // since it's not in a translation group we don't have to worry about the parent group having a source bubble.
             BloomHintBubbles.MakeHelpBubble($(enclosingEditableDiv), labelElement);
         });
 
@@ -40,41 +41,24 @@ export default class BloomHintBubbles {
         // Note that in Version 1.0, we didn't have this <label> ability but we had @data-hint.
         // Using <label> instead of the attribute makes the html much easier to read, write, and add additional
         // behaviors through classes
-        axios.get('/bloom/bubbleLanguages').then(result => {
-            let preferredLangs: Array<string> = (<any>result.data).langs;
-            $(container).find('.bloom-translationGroup').each((i, group) => {
-                var groupElement = $(group);
-                // if the group was given a source bubble, don't add another.
-                // It's tempting here to try to detect directly whether it already has some kind of bubble.
-                // This is difficult for a couple of reasons. First, we unfortunately save in the file the
-                // qtip attributes that get added like aria-describedby='qtip-0' and has-qtip='true'.
-                // Because of that, I tried checking to see whether the document really has a div whose ID
-                // matches the aria-described by. But that failed, except when debugging; I infer that
-                // there's some delay between the call that starts the process of adding the qtip and when
-                // it actually comes into existence. Even apart from this, I'm not sure that a saved
-                // aria-described by couldn't accidentally match a qtip created for another div. So
-                // it's more reliable to have the source bubbles code figure out exactly what divs
-                // it puts bubbles on.
-                if (sourceBubbleDivs.indexOf(group) >= 0) {
-                    return;
-                }
-                var labelElement = groupElement.find('label.bubble'); // may be more than one
-                var whatToSay = labelElement.text();
-                if (!whatToSay) {
-                    return;
-                }
+        $(container).find('.bloom-translationGroup').each((i, group) => {
+            var groupElement = $(group);
+            var labelElement = groupElement.find('label.bubble'); // may be more than one
+            var whatToSay = labelElement.text();
+            if (!whatToSay) {
+                return;
+            }
 
-                if (this.wantHelpBubbleOnGroup(groupElement)) {
-                    // attach the bubble to the whole group...otherwise it would be oddly
-                    // duplicated on all of them
-                    BloomHintBubbles.MakeHelpBubble(groupElement, labelElement, preferredLangs);
-                } else {
-                    //attach the bubble, separately, to every visible field inside the group
-                    groupElement.find("div.bloom-editable:visible").each(function () {
-                        BloomHintBubbles.MakeHelpBubble($(this), labelElement, preferredLangs);
-                    });
-                }
-            });
+            if (this.wantHelpBubbleOnGroup(groupElement)) {
+                // attach the bubble to the whole group...otherwise it would be oddly
+                // duplicated on all of them
+                BloomHintBubbles.MakeHelpBubbleOrAddToSource(groupElement, labelElement, sourceBubbleDivs, bubbleDivs);
+            } else {
+                //attach the bubble, separately, to every visible field inside the group
+                groupElement.find("div.bloom-editable:visible").each((i, elt) => {
+                    BloomHintBubbles.MakeHelpBubbleOrAddToSource($(elt), labelElement, sourceBubbleDivs, bubbleDivs);
+                });
+            }
         });
 
         $(container).find("*.bloom-imageContainer > label.bubble").each(function () {
@@ -83,7 +67,7 @@ export default class BloomHintBubbles {
             var whatToSay = labelElement.text();
             if (!whatToSay)
                 return;
-
+            // These can't have source bubbles, no need to look for that.
             BloomHintBubbles.MakeHelpBubble(imageContainer, labelElement);
         });
 
@@ -102,7 +86,38 @@ export default class BloomHintBubbles {
             if (whatToSay.length == 0 || $(this).css('display') == 'none')
                 return;
 
-            BloomHintBubbles.MakeHelpBubble($(this), $(this));
+            BloomHintBubbles.MakeHelpBubbleOrAddToSource($(this), $(this), sourceBubbleDivs, bubbleDivs);
+        });
+    }
+
+    private static InsertHintIntoSourceDiv(targetElement: JQuery, elementWithBubbleAttributes: JQuery, bubbleDiv: JQuery) {
+        var headers = bubbleDiv.find('ul');
+
+        // This is a preliminary version of the content, since we don't yet have the right list of
+        // preferred languages. We'll fix it later. It needs to give us a language-list-independent
+        // idea of whether the hint is empty, however.
+        var whatToSay = this.getHintContent(targetElement, elementWithBubbleAttributes, null);
+        if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
+        if (!whatToSay) return; // just forget adding a hint if there's no text.
+        // Don't use the corresponding svg from artwork here. Somehow it causes about a 4 second delay (on a fast workstation)
+        headers.prepend("<li id='hint'><a class='sourceTextTab' href='#hint'><img src='/bloom/images/information-licenseCC0.png'/></a></li>");
+        var nav = $(headers.parent());
+        // This is bizarre. We modified "jquery.easytabs.js" to target @lang attributes, rather than ids.
+        // This allows us to have multiple source bubbles each with the same languages, whereas
+        // it would be invalid to have duplicate ids. Here, to make the inserted div the tab that
+        // shows for the tab with href='#hint', we have to pretend that is is in a language
+        // called hint. See comments in BloomSourceBubbles.MakeSourceTextDivForGroup().
+        var content = $("<div lang='hint' class='sourceText'><p>" + whatToSay + "</p></div>");
+        nav.after(content);
+        // whatToSay may not actually be what we want. To make it what we want, we need the real list of
+        // preferred languages. So we will update it after we get that.
+        // We can't wait until we have the language list to insert the main hint element into the source bubble,
+        // because doing that causes the
+        axios.get('/bloom/bubbleLanguages').then(result => {
+            let preferredLangs: Array<string> = (<any>result.data).langs;
+            whatToSay = this.getHintContent(targetElement, elementWithBubbleAttributes, preferredLangs);
+            if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
+            content.find("p").text(whatToSay);
         });
     }
 
@@ -134,6 +149,105 @@ export default class BloomHintBubbles {
         }
     }
 
+    // if the group was given a source bubble, don't add a hint one. Instead, add the hint
+    // to the source bubble.
+    // It's tempting here to try to detect directly whether it already has some kind of bubble.
+    // This is difficult for a couple of reasons. First, we unfortunately save in the file the
+    // qtip attributes that get added like aria-describedby='qtip-0' and has-qtip='true'.
+    // Because of that, I tried checking to see whether the document really has a div whose ID
+    // matches the aria-described by. But that failed, except when debugging; I infer that
+    // there's some delay between the call that starts the process of adding the qtip and when
+    // it actually comes into existence. Even apart from this, I'm not sure that a saved
+    // aria-described by couldn't accidentally match a qtip created for another div. So
+    // it's more reliable to have the source bubbles code figure out exactly what divs
+    // it puts bubbles on.
+    private static MakeHelpBubbleOrAddToSource(targetElement: JQuery, elementWithBubbleAttributes: JQuery,
+        sourceBubbleDivs: Array<Element>, bubbleDivs: Array<Element>) {
+        // If the element we want to put a hint on IS one of the groups that has source bubbles, add it to that
+        // group's source bubble.
+        var index = sourceBubbleDivs.indexOf(targetElement.get(0));
+        if (index >= 0) {
+            this.InsertHintIntoSourceDiv(targetElement, elementWithBubbleAttributes, $(bubbleDivs[index]));
+            return;
+        }
+        for (var i = 0; i < sourceBubbleDivs.length; i++) {
+            // If the element we want to put a hint on is a PARENT of one of the groups that has source bubbles,
+            // add it to that group's source bubble
+            // hints are sometimes put on a parent div (e.g., creditsRow on bottom of cover page)
+            if (sourceBubbleDivs[i].parentNode == targetElement.get(0)) {
+                this.InsertHintIntoSourceDiv(targetElement, elementWithBubbleAttributes, $(bubbleDivs[i]));
+                return;
+            }
+            // If the element we want to put a hint on is a CHILD of one of the groups that has source bubbles,
+            // we'll put the hint for the first visible child into the source and leave the others.
+            if (sourceBubbleDivs[i] == targetElement.get(0).parentElement) {
+                // Is it the first visible?
+                var firstVisible = $(sourceBubbleDivs[i]).find(":visible").get(0);
+                if (firstVisible === targetElement.get(0)) {
+                    this.InsertHintIntoSourceDiv(targetElement, elementWithBubbleAttributes, $(bubbleDivs[i]));
+                    return;
+                }
+                else {
+                    this.MakeHelpBubble(targetElement, elementWithBubbleAttributes);
+                    return;
+                }
+            }
+        }
+        this.MakeHelpBubble(targetElement, elementWithBubbleAttributes);
+    }
+
+    private static getHintContent(target: JQuery, source: JQuery, preferredLangs?: Array<string>): string {
+        var doNotLocalize = false;
+        var whatToSay = target.attr('data-hint');
+        if (!whatToSay) whatToSay = source.attr('data-hint');
+        if (!whatToSay) { // look in the content of one or more sources
+            if (!preferredLangs) {
+                preferredLangs = ['en', 'fr']; // just for safety; any caller that cares should supply a list.
+            }
+            var bestSourceIndex = 0; // use first source if no langs match or there is only one
+            var bestLangIndex = preferredLangs.length; // pretend the best lang we found is beyond end
+            for (var i = 0; i < source.length; i++) {
+                var item = source.eq(i);
+                var lang = item.attr('lang');
+                if (!lang) {
+                    continue;
+                }
+                if (!source.text()) {
+                    // We'd prefer a non-empty hint in the wrong language to an empty one in the right language.
+                    // This is also important because we want this routine to return an empty string only
+                    // if NO hint is available in ANY language. Because it may be used with an incorrect
+                    // list of languages to find out whether we actually have a hint.
+                    continue;
+                }
+                // Found at least one source with a lang attr. Assume any localization of this
+                // bubble is embedded in the document, and don't look in Bloom resources.
+                doNotLocalize = true;
+                var index = preferredLangs.indexOf(lang);
+                if (index === -1) {
+                    index = preferredLangs.length;
+                }
+                if (index < bestLangIndex) { // best yet
+                    bestSourceIndex = i;
+                    bestLangIndex = index;
+                }
+            }
+            whatToSay = source.eq(bestSourceIndex).text();
+        }
+
+        // no empty bubbles
+        if (!whatToSay) return null;
+
+        // get the localized string
+        if (doNotLocalize) {
+            // still need to substitute {lang} if any
+            whatToSay = theOneLocalizationManager.insertLangIntoHint(whatToSay, target);
+        }
+        else {
+            whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSay, target);
+        }
+        return whatToSay;
+    }
+
     //show those bubbles if the item is empty, or if it's not empty, then if it is in focus OR the mouse is over the item
     private static MakeHelpBubble(targetElement: JQuery, elementWithBubbleAttributes: JQuery, preferredLangs?: Array<string>) {
         var target = $(targetElement);
@@ -156,35 +270,7 @@ export default class BloomHintBubbles {
         var shouldShowAlways = true;
 
         // get the default text/stringId
-        var doNotLocalize = false;
-        var whatToSay = target.attr('data-hint');
-        if (!whatToSay) whatToSay = source.attr('data-hint');
-        if (!whatToSay) { // look in the content of one or more sources
-            if (!preferredLangs) {
-                preferredLangs = ['en', 'fr']; // just for safety; any caller that cares should supply a list.
-            }
-            var bestSourceIndex = 0; // use first source if no langs match or there is only one
-            var bestLangIndex = preferredLangs.length; // pretend the best lang we found is beyond end
-            for (var i = 0; i < source.length; i++) {
-                var item = source.eq(i);
-                var lang = item.attr('lang');
-                if (!lang) {
-                    continue;
-                }
-                // Found at least one source with a lang attr. Assume any localization of this
-                // bubble is embedded in the document, and don't look in Bloom resources.
-                doNotLocalize = true;
-                var index = preferredLangs.indexOf(lang);
-                if (index === -1) {
-                    index = preferredLangs.length;
-                }
-                if (index < bestLangIndex) { // best yet
-                    bestSourceIndex = i;
-                    bestLangIndex = index;
-                }
-            }
-            whatToSay = source.eq(bestSourceIndex).text();
-        }
+        var whatToSay = this.getHintContent(target, source, preferredLangs);
 
         // no empty bubbles
         if (!whatToSay) return;
@@ -193,16 +279,7 @@ export default class BloomHintBubbles {
         var onFocusOnly = whatToSay.startsWith('*');
         onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(target);
 
-        // get the localized string
-        if (doNotLocalize) {
-            // still need to substitute {lang} if any
-            whatToSay = theOneLocalizationManager.insertLangIntoHint(whatToSay, target);
-        }
-        else {
-            if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
-            whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSay, target);
-        }
-
+        if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
         var functionCall = source.data("functiononhintclick");
         if (functionCall) {
             if (functionCall === 'bookMetadataEditor' && !BloomHintBubbles.canChangeBookLicense())

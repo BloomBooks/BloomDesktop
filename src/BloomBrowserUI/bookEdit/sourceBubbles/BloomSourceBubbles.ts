@@ -26,23 +26,23 @@ export default class BloomSourceBubbles {
     // for translation.
     // param 'group' is a .bloom-translationGroup DIV
     // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
-    // Returns true if it actually made a source bubble.
-    public static ProduceSourceBubbles(group: HTMLElement, newIso?: string): boolean {
-        var divForBubble = BloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
-        if(divForBubble == null) return false;
+    // Returns the source bubble if it made one.
+    public static ProduceSourceBubbles(group: HTMLElement, newIso?: string): JQuery {
+        return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
+    }
 
+    public static MakeSourceBubblesIntoQtips(elementThatHasBubble: HTMLElement, contentsOfBubble: JQuery) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
-        divForBubble = BloomSourceBubbles.CreateTabsFromDiv(divForBubble);
-        if (divForBubble == null) return false;
+        var divForBubble = BloomSourceBubbles.CreateTabsFromDiv(contentsOfBubble);
+        if (divForBubble == null) return;
 
         // If divForBubble contains more than two languages, create a dropdown menu to contain the
         // extra possibilities. The menu will show (x), where x is the number of items in the dropdown.
         divForBubble = BloomSourceBubbles.CreateDropdownIfNecessary(divForBubble);
 
-        // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
+        // Turns the tabbed and linked div bundle into a qtip bubble attached to the elementThatHasBubble.
         // Also makes sure the tooltips are setup correctly.
-        BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(group, divForBubble);
-        return true;
+        BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(elementThatHasBubble, divForBubble);
     }
 
     // Cleans up a clone of the original translationGroup
@@ -58,7 +58,7 @@ export default class BloomSourceBubbles {
         divForBubble.removeClass(); //remove them all
         divForBubble.addClass("ui-sourceTextsForBubble");
         // For now, we don't want labels (hints) in the source bubbles. BL-4295 discusses possibly changing this.
-        divForBubble.find("label.bubble").each( (index, element) => {
+        divForBubble.find("label.bubble").each((index, element) => {
             $(element).remove();
         });
 
@@ -134,6 +134,13 @@ export default class BloomSourceBubbles {
             var iso = $(this).attr('lang');
             if (iso) {
                 var localizedLanguageName = theOneLocalizationManager.getLanguageName(iso) || iso;
+                // This is bizarre. The href ought to be referring to the element with the specified ID,
+                // which should be the tab CONTENT that should be shown for this language. But we have modified
+                // easytabs (see above) so that the target (main page content div) for a tab is the element whose
+                // lang attr is the value following the # in the href, rather than its id.
+                // Even more bizarrely, we make the id of the list item have that value also, so that
+                // the apparent target of the <a> is the <li> it resides inside. Not sure why this is
+                // helpful.
                 $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + localizedLanguageName + '</a></li>');
             }
         });
