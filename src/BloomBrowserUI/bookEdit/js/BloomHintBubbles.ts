@@ -41,7 +41,9 @@ export default class BloomHintBubbles {
         // Note that in Version 1.0, we didn't have this <label> ability but we had @data-hint.
         // Using <label> instead of the attribute makes the html much easier to read, write, and add additional
         // behaviors through classes
-        $(container).find('.bloom-translationGroup').each((i, group) => {
+        // the addBack allows for the option that container itself is a translation group, which can happen
+        // when reconstructing source bubbles after the user selects in a pull-down.
+        $(container).find('.bloom-translationGroup').addBack('.bloom-translationGroup').each((i, group) => {
             var groupElement = $(group);
             var labelElement = groupElement.find('label.bubble'); // may be more than one
             var whatToSay = labelElement.text();
@@ -90,7 +92,7 @@ export default class BloomHintBubbles {
         });
     }
 
-    private static InsertHintIntoSourceDiv(targetElement: JQuery, elementWithBubbleAttributes: JQuery, bubbleDiv: JQuery) {
+    public static InsertHintIntoSourceDiv(targetElement: JQuery, elementWithBubbleAttributes: JQuery, bubbleDiv: JQuery) {
         var headers = bubbleDiv.find('ul');
 
         // This is a preliminary version of the content, since we don't yet have the right list of

@@ -9,6 +9,7 @@ import theOneLocalizationManager from '../../lib/localizationManager/localizatio
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from '../js/bloomQtipUtils';
 import '../../lib/jquery.easytabs.js'; //load into global space
+import BloomHintBubbles from "../js/BloomHintBubbles";
 
 declare function GetSettings(): any; //c# injects this
 
@@ -31,9 +32,9 @@ export default class BloomSourceBubbles {
         return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
     }
 
-    public static MakeSourceBubblesIntoQtips(elementThatHasBubble: HTMLElement, contentsOfBubble: JQuery) {
+    public static MakeSourceBubblesIntoQtips(elementThatHasBubble: HTMLElement, contentsOfBubble: JQuery, selectIso?: string) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
-        var divForBubble = BloomSourceBubbles.CreateTabsFromDiv(contentsOfBubble);
+        var divForBubble = BloomSourceBubbles.CreateTabsFromDiv(contentsOfBubble, selectIso);
         if (divForBubble == null) return;
 
         // If divForBubble contains more than two languages, create a dropdown menu to contain the
@@ -212,13 +213,26 @@ export default class BloomSourceBubbles {
     // Turns the cloned div 'divForBubble' into a tabbed bundle with the first tab, corresponding to
     // defaultSourceLanguage, selected.
     // N.B.: Sorting the last used source language first means we no longer need to specify which tab is selected.
-    private static CreateTabsFromDiv(divForBubble: JQuery): JQuery {
+    private static CreateTabsFromDiv(divForBubble: JQuery, selectIso?: string): JQuery {
         //now turn that new div into a set of tabs
+        var opts: any = {
+            animate: false,
+            tabs: "> nav > ul > li",
+            updateHash: false
+        };
         if (divForBubble.find('nav li').length > 0) {
-            divForBubble.easytabs({
-                animate: false,
-                tabs: "> nav > ul > li"
-            });
+            divForBubble.easytabs(opts);
+            if (selectIso) {
+                // Somehow easytabs.select is NOT deselecting the item it selected by default.
+                // This might be a consequence of the way we mangled it to select content by
+                // lang rather than id. Or it might be something to do with multiple bubbles
+                // using the same element IDs. Or something I haven't figured out yet.
+                // Anyway, these two lines deselect whatever was selected,
+                // and the third then correctly selects the one we want.
+                divForBubble.find(".active").removeClass('active');
+                divForBubble.find(">div").attr("style", "display: none");
+                (<any>divForBubble).easytabs("select", "#" + selectIso);
+            }
         }
         else {
             divForBubble.remove();//no tabs, so hide the bubble
@@ -233,6 +247,9 @@ export default class BloomSourceBubbles {
     public static CreateDropdownIfNecessary(divForBubble: JQuery): JQuery {
         var FIRST_SELECT_OPTION = 3;
         var tabs = divForBubble.find('nav li'); // may be li elements in the content
+        if (tabs.length && tabs.first().attr("id") == "hint") {
+            FIRST_SELECT_OPTION++; // allow hint in addition to languages.
+        }
         if (tabs.length < FIRST_SELECT_OPTION) return divForBubble; // no change
 
         var dropMenu = "<li class='dropdown-menu'><div>0</div><ul class='dropdown-list'></ul></li>";
@@ -241,7 +258,7 @@ export default class BloomSourceBubbles {
         tabs.each(function (idx) {
             if (idx < FIRST_SELECT_OPTION - 1) return true; // continue to next iteration of .each()
             var $this = $(this);
-            var link = $this.find('a').clone(true); // 'true' to keep easytab click event
+            var link = $this.find('a').clone(false); // don't want to keep easytab click event
             var iso = link.attr('href').substring(1); // strip off hashmark
             var listItem = "<li lang='" + iso + "'></li>";
             container.append(listItem);
@@ -268,8 +285,11 @@ export default class BloomSourceBubbles {
         var group = $(document).find('.bloom-translationGroup[aria-describedby="' + qtip + '"]');
 
         // Redo creating the source bubbles with the selected language first
-        if (group && group.length > 0) // should be
-            BloomSourceBubbles.ProduceSourceBubbles(group[0], newIso);
+        if (group && group.length > 0) {// should be
+            var divForBubble = BloomSourceBubbles.ProduceSourceBubbles(group[0], newIso);
+            BloomHintBubbles.addHintBubbles(group.get(0), [group.get(0)], [divForBubble.get(0)]);
+            BloomSourceBubbles.MakeSourceBubblesIntoQtips(group.get(0), divForBubble, newIso);
+        }
     }
 
     // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
@@ -368,6 +388,9 @@ export default class BloomSourceBubbles {
                                 selection.addRange(range);
                             }
                         });
+                        // We'd like to prevent the source bubble from getting focus. Tried various things...
+
+                        // works, but may cause some problems with pull-down menu?
                         api.elements.tooltip.click((ev) => {
                             var baseElement = $("body").find("[aria-describedby='" + api.elements.tooltip.attr("id") + "']");
                             if (baseElement.hasClass("bloom-translationGroup")) {
@@ -382,6 +405,7 @@ export default class BloomSourceBubbles {
                                 baseElement.removeAttr("tabindex");
                             }
                         });
+
                         // no effect
                         // $(api.elements.tooltip).find("*").click((ev) => {
                         //     ev.preventDefault();
