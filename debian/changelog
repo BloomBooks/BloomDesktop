@@ -1,3 +1,10 @@
+bloom-desktop (3.8.0) stable; urgency=medium
+
+  * Rename the package for version 3.8 to bloom-desktop
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Thu, 13 Apr 2017 11:24:50 -0500
+
 bloom-desktop-beta (3.8.0) stable; urgency=medium
 
   * Rename the package for version 3.8 to bloom-desktop-beta
