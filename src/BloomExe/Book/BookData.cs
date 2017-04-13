@@ -828,9 +828,10 @@ namespace Bloom.Book
 								continue;
 
 							//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
+							var bestAlt = GetBestUnwrappedAlternative(data.TextVariables[key].TextAlternatives,
+								new[] {data.WritingSystemAliases["N1"], "*"});
 							if (data.WritingSystemAliases.Count != 0 && lang == data.WritingSystemAliases["N2"] &&
-							    s == GetBestUnwrappedAlternative(data.TextVariables[key].TextAlternatives,
-								    new[] {data.WritingSystemAliases["N1"], "*"}).Form)
+								bestAlt != null && s == bestAlt.Form)
 							{
 								s = ""; //don't show it in N2, since it's the same as N1
 							}
