@@ -210,14 +210,16 @@ export default class BloomSourceBubbles {
         return items;
     }
 
-    // Turns the cloned div 'divForBubble' into a tabbed bundle with the first tab, corresponding to
-    // defaultSourceLanguage, selected.
-    // N.B.: Sorting the last used source language first means we no longer need to specify which tab is selected.
+    // Turns the cloned div 'divForBubble' into a tabbed bundle. If selectIso is supplied
+    // (when reconstructing after a language in the pull-down is selected), we select that
+    // language; otherwise, the first tab (which might be a hint).
     private static CreateTabsFromDiv(divForBubble: JQuery, selectIso?: string): JQuery {
         //now turn that new div into a set of tabs
         var opts: any = {
             animate: false,
             tabs: "> nav > ul > li",
+            // don't need it messing with the window url, and may help prevent previous
+            // selections being copied into updated qtips.
             updateHash: false
         };
         if (divForBubble.find('nav li').length > 0) {
@@ -389,27 +391,31 @@ export default class BloomSourceBubbles {
                             }
                         });
                         // We'd like to prevent the source bubble from getting focus. Tried various things...
-
-                        // works, but may cause some problems with pull-down menu?
                         api.elements.tooltip.click((ev) => {
+                            // We're going to pick an element to focus. We start by getting the element our qtip
+                            // is attached to.
                             var baseElement = $("body").find("[aria-describedby='" + api.elements.tooltip.attr("id") + "']");
+                            // That might be either a group or an editable div. Focus needs to go to something actually editable,
+                            // so a group is not a candidate. Fortunately, source bubbles are always attached to the top
+                            // of a group (relating to translating the vernacular language, which is first), so focusing
+                            // to the first visible child works.
+                            // (Review: This probably depends on the children actually being in the order they are displayed,
+                            // not re-ordered by flex rules. Seems to be true currently at least.)
                             if (baseElement.hasClass("bloom-translationGroup")) {
                                 baseElement = baseElement.find(".bloom-editable:visible").first();
                             }
+                            // Apparently you can't focus a div that lacks a tabindex, even if it is contenteditable.
+                            // We don't want to permanently modify the element, so cheat by giving it one temporarily.
+                            // -1 won't even temporarily affect any tabbing, since it means only focusable by code.
                             var hadTabIndex = baseElement.hasAttr("tabindex");
                             if (!hadTabIndex) {
-                                baseElement.attr("tabindex", "999");
+                                baseElement.attr("tabindex", "-1");
                             }
                             baseElement.focus();
                             if (!hadTabIndex) {
                                 baseElement.removeAttr("tabindex");
                             }
                         });
-
-                        // no effect
-                        // $(api.elements.tooltip).find("*").click((ev) => {
-                        //     ev.preventDefault();
-                        // });
                     }
                 }
             });
@@ -455,12 +461,6 @@ export default class BloomSourceBubbles {
                 if (maxHeight)
                     $tip.css('max-height', parseInt(maxHeight));
             });
-        });
-    }
-
-    private static HideLabelsThatWouldBeUnderfoot(groupElement: HTMLElement) {
-        $(groupElement).find("label.bubble").each((index, element) => {
-            $(element).remove();
         });
     }
 }
