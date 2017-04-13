@@ -165,6 +165,7 @@ namespace Bloom
 #endif
 		}
 
+#if !__MonoCS__
 	    private static void HandleAppUpdate(UpdateManager mgr)
 	    {
 	        mgr.CreateShortcutForThisExe();
@@ -191,6 +192,7 @@ namespace Bloom
 	            }
 	        }
 	    }
+#endif
 
 	    /// <summary>
 		/// True if we consider our install to be shared by all users of the computer.
