@@ -208,7 +208,13 @@ namespace Bloom.Book
 				var form = source.GetBestAlternative(languagePreferences);
 				if (form != null && !string.IsNullOrWhiteSpace(form.Form))
 				{
-					HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, form.Form);
+					// HtmlDom.GetBookSetting(key) returns the result of XmlNode.InnerXml which will be Html encoded (&amp; &lt; etc).
+					// HtmlDom.SetElementFromUserStringPreservingLineBreaks() calls XmlNode.InnerText, which Html encodes if necessary.
+					// So we need to decode here to prevent double encoding.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
+					// Note that HtmlDom.SetElementFromUserStringPreservingLineBreaks() handles embedded <br/> elements, but makes no
+					// effort to handle p or div elements.
+					var decoded = System.Web.HttpUtility.HtmlDecode(form.Form);
+					HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, decoded);
 					target.SetAttribute("lang", form.WritingSystemId); //this allows us to set the font to suit the language
 				}
 			}
@@ -343,7 +349,12 @@ namespace Bloom.Book
 				copyrightNotice = String.Format(originalCopyrightSentence, metadata.CopyrightNotice.Trim()) + " " + originalLicenseSentence;
 			}
 			Console.WriteLine(copyrightNotice);
-			bookData.Set("originalCopyrightAndLicense", copyrightNotice, "*");
+
+			// The copyright string has to be encoded because it's fed eventually into the XmlNode.InnerXml method, and some people
+			// like to use & in their copyright notices.  metaData.CopyrightNotice is not Html encoded, so it can give us bare &s.
+			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
+			var encodedCopyright = System.Web.HttpUtility.HtmlEncode(copyrightNotice);
+			bookData.Set("originalCopyrightAndLicense", encodedCopyright, "*");
 			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
 		}
 	}

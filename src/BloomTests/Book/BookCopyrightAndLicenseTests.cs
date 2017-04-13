@@ -561,6 +561,68 @@ namespace BloomTests.Book
 			Assert.AreEqual("Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC-BY 4.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
+		[Test]
+		public void AmpersandInOriginalCopyrightHandledProperly()
+		{
+			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
+			var dom = new HtmlDom(
+				@"<html>
+				  <body>
+				    <div id='bloomDataDiv'>
+				      <div data-book='copyright' lang='*'>
+				        Copyright © 2011, LASI &amp; SILA
+				      </div>
+				        <div data-book='licenseImage' lang='*'>
+				            license.png?1413168469953
+				        </div>
+				        <div data-book='licenseUrl' lang='en'>
+				            http://creativecommons.org/licenses/by-nc-sa/4.0/
+				        </div>
+				        <div data-book='licenseDescription' lang='en'>
+				            You may not use this work for commercial purposes. You may adapt or build upon this work, but you may distribute the resulting work only under the same or similar license to this one.You must attribute the work in the manner specified by the author.
+				        </div>
+				    </div>
+				    <div class='bloom-page cover frontCover outsideFrontCover coverColor bloom-frontMatter A4Landscape layout-style-Default' data-page='required singleton' data-export='front-matter-cover' id='2c97f5ad-24a1-47f0-8b5c-fa2181e1b129'>
+				      <div class='bloom-page cover frontCover outsideFrontCover coverColor bloom-frontMatter verso A4Landscape layout-style-Default' data-page='required singleton' data-export='front-matter-credits' id='7a220c97-07e4-47c5-835a-e37dc921f98f'>
+				        <div class='marginBox'>
+				          <div data-functiononhintclick='bookMetadataEditor' data-hint='Click to Edit Copyright &amp; License' id='versoLicenseAndCopyright' class='bloom-metaData'>
+				            <div data-derived='copyright' lang='*' class='copyright'></div>
+				            <img src='license.png?1413168469953' data-book='licenseImage' class='licenseImage'></img>
+				            <div data-derived='licenseUrl' lang='en' class='licenseUrl'></div>
+				            <div data-derived='licenseNotes' lang='en' class='licenseNotes'></div>
+				            <div data-derived='licenseDescription' lang='en' class='licenseDescription'></div>
+				            <div data-derived='originalCopyrightAndLicense' lang='en' class='copyright'></div>
+				          </div>
+				          <div lang='en' contenteditable='true' class='bloom-content1 bloom-editable versionAcknowledgments Version-Acknowledgments-On-Inside-Front-Cover--style bloom-readOnlyInEditMode' data-book='versionAcknowledgments' data-hint='Acknowledgments for translated version, in {lang}'></div>
+				        </div>
+				      </div>
+				    </div>
+				  </body>
+				</html>");
+			var metadata = BookCopyrightAndLicense.GetMetadata(dom);
+			var initialCopyright = metadata.CopyrightNotice;
+			Assert.AreEqual("Copyright © 2011, LASI & SILA", initialCopyright);
+
+			var bookData = new BookData(dom, _collectionSettings, null);
+			BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(dom, bookData, _collectionSettings);
+			var originalCopyright = GetEnglishOriginalCopyrightAndLicense(dom);
+			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI &amp; SILA. Licensed under CC-BY-NC-SA 4.0.", originalCopyright);
+
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(dom, null, _collectionSettings);
+			var nodes1 = dom.RawDom.SelectNodes("/html/body//div[@data-derived='originalCopyrightAndLicense']");
+			Assert.AreEqual(1, nodes1.Count);
+			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI & SILA. Licensed under CC-BY-NC-SA 4.0.", nodes1.Item(0).InnerText);
+			Assert.AreEqual("Adapted from original, Copyright © 2011, LASI &amp; SILA. Licensed under CC-BY-NC-SA 4.0.", nodes1.Item(0).InnerXml);
+			var nodes2 = dom.RawDom.SelectNodes("/html/body//div[@data-derived='copyright']");
+			Assert.AreEqual(1, nodes2.Count);
+			Assert.AreEqual("", nodes2.Item(0).InnerText);
+			Assert.AreEqual("", nodes2.Item(0).InnerXml);
+			var nodes3 = dom.RawDom.SelectNodes("/html/body//div[@data-derived='licenseUrl']");
+			Assert.AreEqual(1, nodes3.Count);
+			Assert.AreEqual("http://creativecommons.org/licenses/by-nc-sa/4.0/", nodes3.Item(0).InnerText);
+			Assert.AreEqual("http://creativecommons.org/licenses/by-nc-sa/4.0/", nodes3.Item(0).InnerXml);
+		}
+
 		private HtmlDom SetOriginalCopyrightAndLicense(string dataDivString)
 		{
 			var dom = new HtmlDom(dataDivString);
