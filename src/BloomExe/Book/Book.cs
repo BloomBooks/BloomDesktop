@@ -842,6 +842,7 @@ namespace Bloom.Book
 		/// <param name="progress"></param>
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
+			RemoveImgTagInDataDiv(bookDOM);
 			if (Title.Contains("allowSharedUpdate"))
 			{
 				// Original version of this code that suffers BL_3166
@@ -959,6 +960,24 @@ namespace Bloom.Book
 					_pagesCache = null;
 					_doingBookUpdate = false;
 				}
+			}
+		}
+
+		private static void RemoveImgTagInDataDiv(HtmlDom bookDom)
+		{
+			// BL-4586 Some old books ended up with background-image urls containing XML img tags 
+			// in the HTML-encoded string. This happened because the coverImage data-book element
+			// contained an img tag instead of a bare filename.
+			// If such a thing exists in this book we will strip it out and replace it with the
+			// filename in the img src attribute.
+			const string dataDivImgXpath = "//div[@id='bloomDataDiv']/div[@data-book='coverImage']";
+			var elementsToCheck = bookDom.SafeSelectNodes(dataDivImgXpath);
+			foreach (XmlNode coverImageElement in elementsToCheck)
+			{
+				var imgNode = coverImageElement.SelectSingleNode("img");
+				if (imgNode == null)
+					continue;
+				coverImageElement.InnerText = imgNode.Attributes["src"].Value;
 			}
 		}
 
