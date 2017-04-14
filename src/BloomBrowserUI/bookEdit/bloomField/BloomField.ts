@@ -31,7 +31,7 @@ export default class BloomField {
         BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
 
         BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
-        BloomField.MakeTabEnterTabElement(bloomEditableDiv);
+        //For furture: this works, but we need more time to think about it. BloomField.MakeTabEnterTabElement(bloomEditableDiv);
 
         /*  The following is assumed to not be needed currently (3.9)... probably not needed
             since we added ckeditor.

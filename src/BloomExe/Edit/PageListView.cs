@@ -198,7 +198,7 @@ namespace Bloom.Edit
 			else
 			{
 				// TODO: localize buttons
-				MessageBox.Show(EditingView.GetInstructionsForUnlockingBook()  , "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				MessageBox.Show(EditingView.GetInstructionsForUnlockingBook(), "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}
 		}
 	}

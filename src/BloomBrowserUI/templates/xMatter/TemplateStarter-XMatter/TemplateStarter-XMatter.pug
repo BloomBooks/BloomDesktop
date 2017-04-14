@@ -14,11 +14,11 @@ html
 
 		+page-xmatter("About").bloom-frontMatter(data-export='front-matter-about')#26e4a8d9-c61c-496d-9f37-2cc274d28b32
 			| Template Title
-			+field("V,en").title
+			+field("en, L1, L2").title
 				+editable(kLanguageForPrototypeOnly)(data-book='bookTitle')
 
 			| Name of Template Creator
-			+field-prototypeDeclaredExplicity("N1, en").templateCreator
+			+field-prototypeDeclaredExplicity("L1").templateCreator
 				+editable(kLanguageForPrototypeOnly)(data-book='templateCreator')
 
 			.licenseInfo

@@ -6,7 +6,7 @@
 - Add a new Zoom control.
 - Allow user to chose what front/back matter fields to show, and in what languages
 
-## 3.9 (alpha)
+## 3.9 (beta)
 - Custom Templates
     - We've created a "Template Starter" template that lets you make a book full of template pages that you and others can reuse.
 - Collection Setup
@@ -21,7 +21,7 @@
         - We have moved borders and background shading from the text styles to the Text Box Formatting
     - You can now copy a page from one book and paste it into another. One use for this is for making template pages out of complex pages you've already created.
 
-## 3.8 (beta)
+## 3.8 (release)
 - Windows Installation
     - Bloom now requires a newer .net, .NET 4.6.1. If your computer has received an operating system update in the past year, then you already have this.
     - We've made the Windows installer less likely to trigger over-eager anti-malware programs. If you still have problems, check out the [installation troubleshooting guide](https://community.software.sil.org/t/how-to-fix-installation-problems/17/3).
@@ -45,7 +45,7 @@
 - Bloom now saves backups of the html file (the file that contains the book's layout and text). These are saved as ".bak" in the same folder. Should that file become corrupted by something like a power outage, Bloom will restore from the backup.
 - Over a hundred other fixes and tiny improvements.
 
-## 3.7 (release)
+## 3.7
 - You can now "unlock" a shell book that you are translating, so that you can do things like:
     - add pages
     - delete pages

@@ -20,7 +20,11 @@
     // somehow this file and editMode rules compete? Not sure why this file AND editMode are both
     // active in the browser.
     // Enhance: some more work could be done to determine why this is.
-    z-index: 15002 !important;
+    // All bubbles but the active one should have .passive-bubble, so this next line is only
+    // applicable to the active one. Hint bubbles have 15004 (haven't figured where that comes from,
+    // it's set in the qtip's style element, probably by the qtip code itself).
+    // We want the CURRENT source bubble to be in front of any competing hints.
+    z-index: 15005 !important;
     &.passive-bubble {
         z-index: 15001 !important;
         .qtip-content {
