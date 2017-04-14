@@ -828,7 +828,7 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
             } else {
                 console.log("Longpress disabled")
             };
-        }).catch(e => alert("useLongpress query failed:" + e));
+        }).catch(e => console.log("useLongpress query failed:" + e));
 }
 
 export function IsPageXMatter($target: JQuery): boolean {
