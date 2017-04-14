@@ -26,7 +26,17 @@ namespace Bloom
 		public static UrlPathString CreateFromUrlEncodedString(string encoded)
 		{
 			encoded = encoded.Replace("+", "%2B");
-			return new UrlPathString(HttpUtility.UrlDecode(encoded));
+			var decoded = HttpUtility.UrlDecode(encoded);
+
+			// BL-4568 Some old books ended up with background-image urls containing XML img tags
+			// in the HTML-encoded string.
+			if (decoded.StartsWith("<img "))
+			{
+				var sourceString = decoded.Substring(decoded.IndexOf("src=\"") + 5);
+				var endIndex = sourceString.IndexOf("\"");
+				decoded = sourceString.Substring(0, endIndex);
+			}
+			return new UrlPathString(decoded);
 		}
 
 		public static UrlPathString CreateFromUnencodedString(string unencoded, bool strictlyTreatAsEncoded=false)

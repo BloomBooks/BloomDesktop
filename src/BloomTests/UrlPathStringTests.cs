@@ -110,6 +110,16 @@ namespace BloomTests
 			Assert.AreEqual("John&John", UrlPathString.CreateFromUnencodedString("John%26John").NotEncoded);
 		}
 
+		[Test]
+		public void CreateFromUrlEncodedString_HandlesDoubleEncoding()
+		{
+			// Some older books may have had XML img tags inside the html-encoded background-image url.
+			// BL-4568 and old Thai Big Book had this in it. Need to handle it for backwards compatibility.
+			var urlencodedString =
+				"%3cimg%20style%3d%22margin-top%3a%200px%3b%22%20src%3d%22placeHolder.png%22%20%2f%3e";
+			Assert.AreEqual("placeHolder.png", UrlPathString.CreateFromUrlEncodedString(urlencodedString).NotEncoded);
+		}
+
 		//note however that a + sign is really ambiguous, and we've decided that since the method name
 		//says that the input is unencoded, we should then assume it is really a plus sign.
 		[Test]
