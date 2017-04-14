@@ -825,11 +825,10 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
                             { instructions: "<div class='instructions'>" + translation + "</div>" }
                         );
                     });
-            }
-            else {
-                console.log("longPress disabled")
+            } else {
+                console.log("Longpress disabled")
             };
-        }).catch(e => alert("useLongPress query failed:" + e));
+        }).catch(e => alert("useLongpress query failed:" + e));
 }
 
 export function IsPageXMatter($target: JQuery): boolean {
