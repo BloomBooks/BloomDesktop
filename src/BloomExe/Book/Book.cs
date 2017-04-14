@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
-using System.Web.Util;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
@@ -137,7 +136,7 @@ namespace Bloom.Book
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
 
 			// We introduced "template starter" in 3.9, but books you made with it could be used in 3.8 etc.
-			// If those books came back to 3.9 or greater (which would happen eventually), 
+			// If those books came back to 3.9 or greater (which would happen eventually),
 			// they would still have this tag that they didn't really understand, and which should have been removed.
 			// At the moment, only templates are suitable for making shells, so use that to detect that someone has
 			// edited a user defined template book in a version that doesn't know about user defined templates.
@@ -842,6 +841,7 @@ namespace Bloom.Book
 		/// <param name="progress"></param>
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
+			RemoveImgTagInDataDiv(bookDOM);
 			if (Title.Contains("allowSharedUpdate"))
 			{
 				// Original version of this code that suffers BL_3166
@@ -959,6 +959,28 @@ namespace Bloom.Book
 					_pagesCache = null;
 					_doingBookUpdate = false;
 				}
+			}
+		}
+
+		private static void RemoveImgTagInDataDiv(HtmlDom bookDom)
+		{
+			// BL-4586 Some old books ended up with background-image urls containing XML img tags
+			// in the HTML-encoded string. This happened because the coverImage data-book element
+			// contained an img tag instead of a bare filename.
+			// If such a thing exists in this book we will strip it out and replace it with the
+			// filename in the img src attribute.
+			const string dataDivImgXpath = "//div[@id='bloomDataDiv']/div[@data-book='coverImage']";
+			var elementsToCheck = bookDom.SafeSelectNodes(dataDivImgXpath);
+			foreach (XmlNode coverImageElement in elementsToCheck)
+			{
+				var imgNodes = coverImageElement.SafeSelectNodes("img");
+				if (imgNodes.Count == 0)
+				{
+					continue;
+				}
+				var imgNode = imgNodes[0];
+				coverImageElement.InnerText = (imgNode.Attributes == null || imgNode.Attributes["src"] == null) ?
+					string.Empty : HttpUtility.UrlDecode(imgNode.Attributes["src"].Value);
 			}
 		}
 
