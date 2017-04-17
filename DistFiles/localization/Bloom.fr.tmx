@@ -2271,10 +2271,10 @@
         <tu tuid="EditTab.FrontMatter.OriginalHadNoCopyrightSentence">
           <note>On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.</note>
           <tuv xml:lang="en">
-            <seg>Adapté de l'original qui ne fait pas mention de droit d'auteur.</seg>
+            <seg>Adapted from original without a copyright notice.</seg>
           </tuv>
           <tuv xml:lang="fr">
-            <seg>改编自原作品，没有著作权声明。</seg>
+            <seg>Adapté de l'original qui ne fait pas mention de droit d'auteur.</seg>
           </tuv>
         </tu>
         <tu tuid="EditTab.FrontMatter.OriginalLicenseSentence">
