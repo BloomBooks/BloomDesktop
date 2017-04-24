@@ -21,6 +21,7 @@
     - In the Upload section, you can now see the user ID you are logged into bloomlibrary.org with.
     - Linux users can now make Epubs.
 - Bloom now saves backups of the html file (the file that contains the book's layout and text). These are saved as ".bak" in the same folder. Should that file become corrupted by something like a power outage, Bloom will restore from the backup.
+- New Portuguese interface.
 - Over a hundred other fixes and tiny improvements.
 
 ## 3.7
