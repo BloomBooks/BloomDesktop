@@ -311,7 +311,7 @@ namespace Bloom.Workspace
 			foreach (var lang in LocalizationManager.GetUILanguages(true))
 			{
 				var englishName = string.Empty;
-				var languageNamesRecognizableByOtherLatinScriptReaders = new List<string> { "en", "fr", "es", "it", "tpi", "id" };
+				var languageNamesRecognizableByOtherLatinScriptReaders = new List<string> { "en", "fr", "es", "it", "pt", "tpi", "id" };
 				if ((lang.EnglishName != lang.NativeName) && !languageNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name))
 				{
 					englishName = " (" + lang.EnglishName + ")";
