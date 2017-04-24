@@ -128,7 +128,7 @@ namespace Bloom.Publish
 					if (this.BookletPortion == BookletPortions.AllPagesNoBooklet)
 						layoutMethod = BookletLayoutMethod.NoBooklet;
 					else
-						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
+						layoutMethod = BookSelection.CurrentSelection.GetBookletLayoutMethod(PageLayout);
 
 					// Check memory for the benefit of developers.  The user won't see anything.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
@@ -178,7 +178,7 @@ namespace Bloom.Publish
 			if (LayoutPagesForRightToLeft)
 				HtmlDom.AddRightToLeftClassToBody(dom);
 			HtmlDom.AddHidePlaceHoldersClassToBody(dom);
-			if (BookSelection.CurrentSelection.GetDefaultBookletLayout() == PublishModel.BookletLayoutMethod.Calendar)
+			if (BookSelection.CurrentSelection.GetDefaultBookletLayoutMethod() == PublishModel.BookletLayoutMethod.Calendar)
 			{
 				HtmlDom.AddCalendarFoldClassToBody(dom);
 			}

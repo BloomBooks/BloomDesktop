@@ -6,6 +6,7 @@
 /// <reference path="../../typings/jquery.qtip.d.ts" />
 import axios = require('axios');
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+import { IsPageXMatter } from '../js/bloomEditing';
 import bloomQtipUtils from './bloomQtipUtils';
 
 declare function GetSettings(): any; //c# injects this
@@ -106,8 +107,10 @@ export default class BloomHintBubbles {
     }
 
     static wantHelpBubbleOnGroup(groupElement: JQuery) {
-        // We only ever show them on each field if this class requests it.
-        return !groupElement.hasClass("bloom-showHintOnEach");
+        // For xMatter, we always want to show a hint for each field.
+        return !IsPageXMatter(groupElement) &&
+            // Otherwise, show a hint for each field only if this class requests it.
+            !groupElement.hasClass("bloom-showHintOnEach");
     }
 
     // Update placement and content of tooltips on a group and/or all its children. This is used for user-defined hint

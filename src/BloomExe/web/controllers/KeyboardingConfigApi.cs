@@ -5,11 +5,11 @@ using Bloom.Api;
 
 namespace Bloom.web.controllers
 {
-	class KeybordingConfigApi
+	class KeyboardingConfigApi
 	{
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("keyboarding/useLongPress", (ApiRequest request) =>
+			server.RegisterEndpointHandler("keyboarding/useLongpress", (ApiRequest request) =>
 			{
 				try
 				{

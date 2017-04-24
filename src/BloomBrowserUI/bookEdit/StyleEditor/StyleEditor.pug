@@ -26,11 +26,11 @@ mixin img(filename)
 			h2.tab(data-i18n="EditTab.FormatDialog.CharactersTab") Characters
 			.bloomDialogMainPage
 				div
-					div(data-i18n="EditTab.Font") Font
+					div(data-i18n="EditTab.FormatDialog.Font") Font
 					.control-section
 						select#font-select
 						select#size-select.allowCustom
-					.spacing-fudge(data-i18n="EditTab.Spacing") Spacing
+					.spacing-fudge(data-i18n="EditTab.FormatDialog.Spacing") Spacing
 					#spacingRow
 						span#lineSpacing(style="white-space: nowrap")
 							+img('linespacing.png')
@@ -39,7 +39,7 @@ mixin img(filename)
 							+img('WordSpacing.png')
 							select#word-space-select
 					.mainBlock.leftBlock(style="margin-top:15px")
-						div(data-i18n="EditTab.Emphasis") Emphasis
+						div(data-i18n="EditTab.FormatDialog.Emphasis") Emphasis
 						div
 							#bold.iconLetter(style="font-weight:bold") B
 							#italic.iconLetter(style="font-weight:italic") I
@@ -49,7 +49,7 @@ mixin img(filename)
 			h2.tab(data-i18n="EditTab.FormatDialog.ParagraphTab") Paragraph
 			.bloomDialogMainPage
 				.mainBlock.indentBlock
-					div(data-i18n="EditTab.Indent") Indent
+					div(data-i18n="EditTab.FormatDialog.Indent") Indent
 					div
 						#indent-none.iconIndent
 							+img('indent_none.png')
@@ -59,7 +59,7 @@ mixin img(filename)
 						//-#indent-hanging.iconIndent
 							+img('indent_hanging.png')
 				.mainBlock
-					div(data-i18n="EditTab.Alignment") Alignment
+					div(data-i18n="EditTab.FormatDialog.Alignment") Alignment
 					div
 						#position-leading.icon16x16
 							+img('text_align_left.png')
@@ -67,7 +67,7 @@ mixin img(filename)
 							+img('text_align_center.png')
 					div(style="margin-top:10px")
 						.mainBlock
-							div(data-i18n="EditTab.ParagraphSpacing") Space Between Paragraphs
+							div(data-i18n="EditTab.FormatDialog.ParagraphSpacing") Space Between Paragraphs
 							div
 								select#para-spacing-select
-			#formatMoreDesc.format-toolbar-description
+			#formatParaDesc.format-toolbar-description

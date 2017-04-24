@@ -155,7 +155,7 @@ namespace Bloom
 								if (SharedByAllUsers())
 									FontInstaller.InstallFont("AndikaNewBasic", needsRestart: false);
 							},
-							onAppUpdate: v => mgr.CreateShortcutForThisExe(),
+							onAppUpdate: v => HandleAppUpdate(mgr),
 							onAppUninstall: v => mgr.RemoveShortcutsForExecutable(Path.GetFileName(Assembly.GetEntryAssembly().Location), StartMenuLocations, SharedByAllUsers()),
 							onFirstRun: () => firstTime = true,
 							arguments: args);
@@ -165,7 +165,36 @@ namespace Bloom
 #endif
 		}
 
-		/// <summary>
+#if !__MonoCS__
+	    private static void HandleAppUpdate(UpdateManager mgr)
+	    {
+	        mgr.CreateShortcutForThisExe();
+
+			// See BL-4590 where an upgrade from a clean 3.7.22 to 3.8 either would get no Bloom.exe stub, or get one of 0KB. 
+			// This is nominally because the installer in 3.7.22 did not use this stub technique... though we don't know why the upgrade
+			// process gave us a 0kb attempt at the stub. So we're fixing it here because we need to push this out quickly.
+	        var stubPath = Application.ExecutablePath.Replace(".exe", "_ExecutionStub.exe");
+
+			// If the move succeeds, then the stub file won't be in our main bin directory anymore... it will already be moved up to the parent
+			// directory. So basically we're just "trying again" here, sigh...
+			if (File.Exists(stubPath))
+	        {
+	            try
+	            {
+	                // the target is the parent directory, and the file name without the "_ExecutionStub" part of the name.
+	                var targetPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Application.ExecutablePath)),
+	                    Path.GetFileName(Application.ExecutablePath));
+	                RobustFile.Copy(stubPath, targetPath, true);
+	            }
+	            catch(Exception e)
+	            {
+	                throw new ApplicationException("Bloom failed to copy the execution stub: "+e.Message, e);
+	            }
+	        }
+	    }
+#endif
+
+	    /// <summary>
 		/// True if we consider our install to be shared by all users of the computer.
 		/// We currently detect this based on being in the Program Files folder.
 		/// </summary>

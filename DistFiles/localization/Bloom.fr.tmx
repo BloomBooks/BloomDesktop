@@ -328,7 +328,8 @@
          </tuv>
       </tu>
       <tu tuid="BookEditor.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
+        <prop type="x-nolongerused">true</prop>
+        <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
          </tuv>
@@ -1922,15 +1923,6 @@
             <seg/>
          </tuv>
       </tu>
-      <tu tuid="EditTab.Emphasis">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Emphasis</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Accentuer</seg>
-         </tuv>
-      </tu>
       <tu tuid="EditTab.ExperimentalNotice">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -1938,15 +1930,6 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Cette page étant un prototype expérimental, elle est susceptible de connaître plusieurs dysfonctionnements ; nous nous excsusons de la gêne occasionnée.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Font">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Font</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Police</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FontMissing">
@@ -1957,15 +1940,6 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>La police actuellement sélectionnée est '{0}', mais n'est pas installée sur cet ordinateur. Une autre police sera utilisée.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.FontSizeTip">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Modifie la taille du texte pour tous les champs de style '{0}' et en langue '{1}'.\nLa taille actuelle est de {2}pt.</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.AlreadyExists">
@@ -2022,6 +1996,24 @@
             <seg>Vous ne voyez pas ce qu'il faut ?</seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.FormatDialog.Emphasis">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Emphasis</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Accentuer</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Font">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Font</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Police</seg>
+         </tuv>
+      </tu>
       <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -2031,7 +2023,16 @@
             <seg>Changer de type de police</seg>
          </tuv>
       </tu>
-      <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+     <tu tuid="EditTab.FormatDialog.FontSizeTip">
+       <prop type="x-dynamic">true</prop>
+       <tuv xml:lang="en">
+         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+       </tuv>
+       <tuv xml:lang="fr">
+         <seg>Modifie la taille du texte pour tous les champs de style '{0}' et en langue '{1}'.\nLa taille actuelle est de {2}pt.</seg>
+       </tuv>
+     </tu>
+     <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>Change the font size</seg>
@@ -2059,6 +2060,7 @@
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.MoreTab">
+         <prop type="x-nolongerused">true</prop>
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
             <seg>More</seg>
@@ -2083,6 +2085,15 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Merci de n'utiliser que des caractères alphabétiques. Vous pouvez utiliser des nombres en fin de mot, par exemple pour écrire"partie2".</seg>
+         </tuv>
+      </tu>
+      <tu tuid="EditTab.FormatDialog.Spacing">
+         <prop type="x-dynamic">true</prop>
+         <tuv xml:lang="en">
+            <seg>Spacing</seg>
+         </tuv>
+         <tuv xml:lang="fr">
+            <seg>Espacement</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.FormatDialog.Style">
@@ -2248,6 +2259,33 @@
             <seg>Contributions faites par les auteurs, illustrateurs, éditeurs, etc., en {lang} </seg>
          </tuv>
       </tu>
+      <tu tuid="EditTab.FrontMatter.OriginalCopyrightSentence">
+          <note>On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.</note>
+          <tuv xml:lang="en">
+            <seg>Adapted from original, {0}.</seg>
+          </tuv>
+          <tuv xml:lang="fr">
+            <seg>Adapté de l’original, {0}.</seg>
+          </tuv>
+        </tu>
+        <tu tuid="EditTab.FrontMatter.OriginalHadNoCopyrightSentence">
+          <note>On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.</note>
+          <tuv xml:lang="en">
+            <seg>Adapted from original without a copyright notice.</seg>
+          </tuv>
+          <tuv xml:lang="fr">
+            <seg>Adapté de l'original qui ne fait pas mention de droit d'auteur.</seg>
+          </tuv>
+        </tu>
+        <tu tuid="EditTab.FrontMatter.OriginalLicenseSentence">
+          <note>On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.</note>
+          <tuv xml:lang="en">
+            <seg>Licensed under {0}.</seg>
+          </tuv>
+          <tuv xml:lang="fr">
+            <seg>Sous licence {0}.</seg>
+          </tuv>
+        </tu>
       <tu tuid="EditTab.FrontMatter.TopicPrompt">
          <prop type="x-dynamic">true</prop>
          <tuv xml:lang="en">
@@ -2506,15 +2544,6 @@
          </tuv>
          <tuv xml:lang="fr">
             <seg>Impossible d'ajouter quoi que ce soit à cet endroit pendant la création d'un livre original.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Spacing">
-         <prop type="x-dynamic">true</prop>
-         <tuv xml:lang="en">
-            <seg>Spacing</seg>
-         </tuv>
-         <tuv xml:lang="fr">
-            <seg>Espacement</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.StyleEditor.BorderToolTip">

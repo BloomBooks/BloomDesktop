@@ -207,9 +207,18 @@ namespace Bloom.Book
 			}
 			else
 			{
+				// Hote there are (perhaps unfortunately) two different labelling systems, but they have a 1-to-1 correspondence:
+				// The V/N1/N2 system feels natural in vernacular book contexts
+				// The L1/L2/L3 system is more natural in source book contexts.
 				return (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("V")) ||
+				   (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("L1")) || 
+				   
 				   (lang == settings.Language2Iso639Code && dataDefaultLanguages.Contains("N1")) ||
+				   (lang == settings.Language2Iso639Code && dataDefaultLanguages.Contains("L2")) ||
+
 				   (lang == settings.Language3Iso639Code && dataDefaultLanguages.Contains("N2")) ||
+				   (lang == settings.Language3Iso639Code && dataDefaultLanguages.Contains("L3")) ||
+
 				   dataDefaultLanguages.Contains(lang); // a literal language id, e.g. "en" (used by template starter)
 			}
 		}

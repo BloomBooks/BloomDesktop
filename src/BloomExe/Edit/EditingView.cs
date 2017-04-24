@@ -1307,7 +1307,7 @@ namespace Bloom.Edit
 			RunJavaScript("FrameExports.showAddPageDialog(false);");
 		}
 
-		internal void ShowChangeLayoutDialog(IPage page)
+		internal void ShowChangeLayoutDialog()
 		{
 			PageTemplatesApi.ForPageLayout = true;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request

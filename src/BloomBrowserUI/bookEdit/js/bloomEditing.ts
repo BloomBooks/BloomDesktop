@@ -825,11 +825,15 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
                             { instructions: "<div class='instructions'>" + translation + "</div>" }
                         );
                     });
-            }
-            else {
-                console.log("longPress disabled")
+            } else {
+                console.log("Longpress disabled")
             };
-        }).catch(e => alert("useLongPress query failed:" + e));
+        }).catch(e => console.log("useLongpress query failed:" + e));
+}
+
+export function IsPageXMatter($target: JQuery): boolean {
+    return typeof ($target.closest(".bloom-frontMatter")[0]) !== "undefined" ||
+        typeof ($target.closest(".bloom-backMatter")[0]) !== "undefined";
 }
 
 
