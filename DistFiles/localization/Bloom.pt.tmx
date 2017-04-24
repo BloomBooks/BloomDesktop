@@ -1,0 +1,4920 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<tmx version="1.4">
+  <header srclang="pt"
+          adminlang="en"
+          creationtool="Palaso Localization Manager"
+          creationtoolversion="2.0.30.0"
+          segtype="block"
+          datatype="unknown"
+          o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.8.000.0</prop>
+    <prop type="x-hardlinebreakreplacement">\n</prop>
+  </header>
+  <body>
+    <tu tuid="._creditsMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Sobre Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="._documentationMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Documentação</seg>
+      </tuv>
+    </tu>
+    <tu tuid="._releaseNotesMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Notas de versão</seg>
+      </tuv>
+    </tu>
+    <tu tuid="._updateFrontMatterToolStripMenu">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Atualizar o livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="._updateThumbnailMenu">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Atualizar miniatura</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".deleteMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Deletar</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".doChecksAndUpdatesOfAllBooksToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fazer verificações e atualizações de todos os livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".openHtmlInBrowserToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Abra o HTML usado para fazer este PDF, em navegador</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".showEventLogToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Mostrar o registo de eventos</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".showHistoryToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Historia da Coleção...</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".showNotesToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Notas Sobre Coleção...</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".toolStripMenuItem1">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Abrir uma pasta de coleções adicionais</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog.AboutDialogWindowTitle">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Sobre Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog._checkForUpdates">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Verificar se há atualizações</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog._releaseNotesLabel">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Notas de versão</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Se você precisa de um lugar para colocar mais informações sobre o livro, você pode usar esta página, que é o interior da contracapa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Se você precisa de um lugar para colocar mais informações sobre o livro, você pode usar esta página, que é a parte externa da contracapa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomIntegrity.WindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Problema de Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomIntegrityDialog.MarkDownTextBox">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg></seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomIntegrityDialog.ReportProblem">
+      <tuv xml:lang="pt">
+        <seg>Reportar problema</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BadCharsInFileName">
+      <tuv xml:lang="pt">
+        <seg>Possivelmente, este é um Bloom Pack antigo criado antes que os Bloom Packs poderiam lidar com caracteres especiais em os nomes de arquivo. Talvez você possa pedir ao autor para recriá-lo usando uma versão atual. Se isso não for possível, talvez um especialista técnico poderá repará-lo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
+      <tuv xml:lang="pt">
+        <seg>Instalação do Bloom Pack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstalled">
+      <tuv xml:lang="pt">
+        <seg>O coleção {0} agora está pronta para uso neste computador.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstaller">
+      <note>Displayed as the message box title</note>
+      <tuv xml:lang="pt">
+        <seg>Instalador do Bloom Pack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.CorruptBloomPack">
+      <tuv xml:lang="pt">
+        <seg>Este Bloom Pack parece ser incompleto ou corrompido.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.DoesNotExist">
+      <tuv xml:lang="pt">
+        <seg>{0} não existe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.ErrorInstallingBloomPack">
+      <tuv xml:lang="pt">
+        <seg>Bloom não foi capaz de instalar esse Bloom Pack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.Extracting">
+      <note>Shown while Bloom Packs are being installed</note>
+      <tuv xml:lang="pt">
+        <seg>Extraindo...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.MustRestartToSee">
+      <tuv xml:lang="pt">
+        <seg>Bloom já está funcionando, mas o conteúdo não será exibido até a próxima vez que você executar Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.NotInstalled">
+      <tuv xml:lang="pt">
+        <seg>A coleção de Bloom não será instalada.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.Opening">
+      <tuv xml:lang="pt">
+        <seg>Abrindo {0}...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.Replace">
+      <tuv xml:lang="pt">
+        <seg>Este computador já tem uma coleção de Bloom chamada '{0}'. Você quer substituí-lo com uma coleção deste Bloom Pack?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.SingleCollectionFolder">
+      <tuv xml:lang="pt">
+        <seg>Os Bloom Packs devem ter apenas uma única pasta de coleção no nível superior da Arquivo ZIP.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.UnableToReplace">
+      <tuv xml:lang="pt">
+        <seg>Bloom não foi capaz de remover a cópia existente do '{0}'. Pare Bloom se estiver em execução e tente novamente. Caso contrário, tente novamente depois de reiniciar seu computador.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Título do livro em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.CharacterMap.Instructions">
+      <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Para selecionar, use a roda do rato (mouse) ou apontar para o que você quer e em seguida solte a chave.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.DefaultForText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esta formatação é o padrão para todas as caixas de texto com estilo '{0}'.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambia o tamanho do texto para todas as caixas com o estilo '{0}' e linguagem '{1}'.\nTamanho atual é {2} pontos.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.ForText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esta formatação é para todas as caixas de texto com estilo '{0}'.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.ForTextInLang">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esta formatação é para todas as caixas de texto de {0} com estilo '{1}'.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.FormattingDisabled">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Desculpa, os modelos de leitor não permitem alterações de formatação.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookStorage.CorruptBook">
+      <tuv xml:lang="pt">
+        <seg>Bloom tinha um problema ao ler este livro e se recuperou restaurando um backup recente. Por favor verifique os alterações recentes neste livro. Se isso acontece sem nenhum motivo aparente, por favor clique em detalhes abaixo e informe-nos.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookStorage.FolderMoved">
+      <tuv xml:lang="pt">
+        <seg>Parece que alguma parte do caminho da pasta para este livro tenha sido movido ou renomeado. Como resultado, não é possível salvar suas alterações nesta página e terá que sair agora. Se você não renomeou ou movido arquivos, por favor clique em Detalhes abaixo e relata o problema para os programadores.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Browser.CopyTroubleshootingInfo">
+      <tuv xml:lang="pt">
+        <seg>Copiar informações sobre solução de problemas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Browser.OpenPageInFirefox">
+      <tuv xml:lang="pt">
+        <seg>Abrir uma página no Firefox (que deve ficar na variável de ambiente PATH)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Click to choose topic">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Clique para escolher o tema</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+      <tuv xml:lang="pt">
+        <seg>Configurações Avançadas do Programa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
+      <tuv xml:lang="pt">
+        <seg>Atualizar Automaticamente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+      <tuv xml:lang="pt">
+        <seg>Mostrar comandos experimentais (por exemplo, exportar XML para o InDesign)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+      <tuv xml:lang="pt">
+        <seg>Mostrar modelos experimentais (por exemplo, dicionário de imagens)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowLocalizationControls">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>(Experimental) Mostrar controles de localização da Interface de usuário</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
+      <tuv xml:lang="pt">
+        <seg>(Experimental) Mostrar Controles Enviar/Receber</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+      <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
+      <tuv xml:lang="pt">
+        <seg>Use servidor de imagem para reduzir o uso de memória com imagens grandes.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Bloom esta trocando a fonte padrão de"{0}" para o novo "Andika novo básico".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Isto melhorará a saída impressa para a maioria dos idiomas. Se sua idioma é um dos poucos que precisam "Andika", pode trocar volta em configurações: Elaboração de Livros.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+      <tuv xml:lang="pt">
+        <seg>Elaboração de livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Branding">
+      <tuv xml:lang="pt">
+        <seg>Identidade visual (branding)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+      <note>{0} is a language name.</note>
+      <tuv xml:lang="pt">
+        <seg>Fonte padrão para {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fonte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+      <tuv xml:lang="pt">
+        <seg>Pack de Matéria de Frente/Trás</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver">
+      <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Economizador de papel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional">
+      <note>Name of the default Front/Back Matter Pack</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Tradicional</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
+      <tuv xml:lang="pt">
+        <seg>Arábico-Oriental</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian">
+      <tuv xml:lang="pt">
+        <seg>Armênio</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali">
+      <tuv xml:lang="pt">
+        <seg>Bengalês</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian">
+      <tuv xml:lang="pt">
+        <seg>Cambojano</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal">
+      <tuv xml:lang="pt">
+        <seg>Cjk-Decimal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal">
+      <tuv xml:lang="pt">
+        <seg>Decimal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari">
+      <tuv xml:lang="pt">
+        <seg>Devanágari</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian">
+      <tuv xml:lang="pt">
+        <seg>Georgiano</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati">
+      <tuv xml:lang="pt">
+        <seg>Gujarati</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi">
+      <tuv xml:lang="pt">
+        <seg>Gurmukhi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
+      <tuv xml:lang="pt">
+        <seg>Hebreu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
+      <tuv xml:lang="pt">
+        <seg>Kannada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer">
+      <tuv xml:lang="pt">
+        <seg>Khmer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao">
+      <tuv xml:lang="pt">
+        <seg>Laosiano</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian">
+      <tuv xml:lang="pt">
+        <seg>Armênio Inferior</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam">
+      <tuv xml:lang="pt">
+        <seg>Malaiala</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian">
+      <tuv xml:lang="pt">
+        <seg>Mongol</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar">
+      <tuv xml:lang="pt">
+        <seg>Myanmar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya">
+      <tuv xml:lang="pt">
+        <seg>Oriya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
+      <tuv xml:lang="pt">
+        <seg>Estilo de numeração</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian">
+      <tuv xml:lang="pt">
+        <seg>Persa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil">
+      <tuv xml:lang="pt">
+        <seg>Tâmil</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
+      <tuv xml:lang="pt">
+        <seg>Telugu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai">
+      <tuv xml:lang="pt">
+        <seg>Tailandês</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan">
+      <tuv xml:lang="pt">
+        <seg>Tibetano</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian">
+      <tuv xml:lang="pt">
+        <seg>Armênio Superior</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Direita para esquerda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Selecione os idiomas que são escritos da direita para a esquerda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <tuv xml:lang="pt">
+        <seg>Sistemas de escrita direita para a esquerda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
+      <tuv xml:lang="pt">
+        <seg>Configurações de escrita especial</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Sobre as Configurações</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ChangeLink">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Configurações</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+      <tuv xml:lang="pt">
+        <seg>Cambiar...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+      <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      <tuv xml:lang="pt">
+        <seg>Idioma 1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+      <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <tuv xml:lang="pt">
+        <seg>Idioma 2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+      <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <tuv xml:lang="pt">
+        <seg>Idioma 3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+      <tuv xml:lang="pt">
+        <seg>Idiomas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+      <tuv xml:lang="pt">
+        <seg>Remover</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+      <note>If there is no third language specified, the link changes to this.</note>
+      <tuv xml:lang="pt">
+        <seg>Fixar...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+      <tuv xml:lang="pt">
+        <seg>Idioma vernácula</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Sobre as Configurações</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._language2Label">
+      <tuv xml:lang="pt">
+        <seg>Idioma 2 (por exemplo, idioma nacional)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._language3Label">
+      <tuv xml:lang="pt">
+        <seg>Idioma 3 (por exemplo, idioma regional) (opcional)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+      <tuv xml:lang="pt">
+        <seg>Nome da Coleção Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Country">
+      <tuv xml:lang="pt">
+        <seg>País</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.District">
+      <tuv xml:lang="pt">
+        <seg>Distrito</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+      <tuv xml:lang="pt">
+        <seg>Informações sobre o projeto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Province">
+      <tuv xml:lang="pt">
+        <seg>Província</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Sobre as Configurações</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.Restart">
+      <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      <tuv xml:lang="pt">
+        <seg>Reiniciar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.RestartMessage">
+      <tuv xml:lang="pt">
+        <seg>Bloom vai fechar e reabrir este projeto com as novas configurações.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.label1">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Pack de Matéria de Frente/Trás</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.label5">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Distrito</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.label7">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>País</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.tabPage1">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Idiomas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.tabPage2">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Elaboração de livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.tabPage3">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Informações sobre o projeto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Fazer um Bloom Pack com um Modelo Leitor...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.AdminManagesUpdates">
+      <tuv xml:lang="pt">
+        <seg>O administrador de sistema gerencia atualizações de Bloom para este computador.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.AdvancedToolStripMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Avançado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Applying">
+      <tuv xml:lang="pt">
+        <seg>Aplicando atualizações</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BloomLibraryLinkLabel">
+      <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
+      <tuv xml:lang="pt">
+        <seg>Obter mais de livros de fonte (origem) em BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BloomLibraryLinkVerificationCaption">
+      <note>get this clicking on BloomLibrary.org link in source collection</note>
+      <tuv xml:lang="pt">
+        <seg>Coleção de fontes de livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.DuplicateBook">
+      <tuv xml:lang="pt">
+        <seg>Duplicar o livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.DeleteBook">
+      <tuv xml:lang="pt">
+        <seg>Deletar livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
+      <tuv xml:lang="pt">
+        <seg>Bloom abrirá este documento HTML em seu programa de processamento de texto (normalmente Word ou LibreOffice). Você será capaz de trabalhar com o texto e as imagens deste livro. Normalmente, estes programas não preservam bem o layout, então não espere muito.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
+      <tuv xml:lang="pt">
+        <seg>Exportar para o Word ou LibreOffice...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.ExportToXMLForInDesign">
+      <tuv xml:lang="pt">
+        <seg>Exportar para XML para o InDesign...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.MakeBloomPack">
+      <tuv xml:lang="pt">
+        <seg>Fazer um Bloom Pack...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
+      <tuv xml:lang="pt">
+        <seg>Atualizar o livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.UpdateThumbnail">
+      <tuv xml:lang="pt">
+        <seg>Atualizar a miniatura</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookSourceHeading">
+      <tuv xml:lang="pt">
+        <seg>Fontes para novos livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookSourcesLockNotice">
+      <tuv xml:lang="pt">
+        <seg>Esta coleção está trancada, então novos livros não podem ser adicionado/removido.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Books From BloomLibrary.org">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Livros de BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+      <tuv xml:lang="pt">
+        <seg>Atualizar todos os livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+      <tuv xml:lang="pt">
+        <seg>Verificar todos os livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.rescueMissingImages">
+      <tuv xml:lang="pt">
+        <seg>Resgatar imagens ausentes...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.showHistory">
+      <tuv xml:lang="pt">
+        <seg>Historia da Coleção...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.showNotes">
+      <tuv xml:lang="pt">
+        <seg>Notas Sobre Coleção...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionTabLabel">
+      <tuv xml:lang="pt">
+        <seg>Coleções</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Collections">
+      <tuv xml:lang="pt">
+        <seg>Coleções</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.ConfiguringBookMessage">
+      <tuv xml:lang="pt">
+        <seg>Compilando...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.ConfirmRecycleDescription">
+      <tuv xml:lang="pt">
+        <seg>O livro '{0}'</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.ContextMenu.OpenFolderOnDisk">
+      <tuv xml:lang="pt">
+        <seg>Abrir pasta no disco</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.EditBookButton">
+      <tuv xml:lang="pt">
+        <seg>Editar este livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Health">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Saúde</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.HiddenBookExplanationForSourceCollections">
+      <tuv xml:lang="pt">
+        <seg>Porque esta é uma coleção de fonte, Bloom não está oferecendo Shells existentes como fontes para os novos Shells. Se você quiser adicionar um idioma a um Shell, em vez você precisa editar a coleção que contém o shell, ao invés de fazer uma cópia dele. Além disso, o calendário atualmente não pode ser usado para fazer um novo Shell.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.MakeBloomPackButton">
+      <tuv xml:lang="pt">
+        <seg>Fazer um Bloom Pack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.MakeBookUsingThisTemplate">
+      <tuv xml:lang="pt">
+        <seg>Fazer um livro usando esta fonte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
+      <tuv xml:lang="pt">
+        <seg>Criar um livro no meu idioma usando este livro fonte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.MoreLanguagesMenuItem">
+      <note>Brings up the localization dialog</note>
+      <tuv xml:lang="pt">
+        <seg>Mais...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Open/CreateCollectionButton">
+      <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
+      <tuv xml:lang="pt">
+        <seg>Outra coleção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Open/CreateCollectionButton_ToolTip_">
+      <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
+      <tuv xml:lang="pt">
+        <seg>Abrir/Criar/Obter Coleção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.OpenCreateCollectionMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Abrir ou crie outra coleção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.PNG Animal Stories - Copy">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Histórias de animais do PNG - cópia</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Progress">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>({0}% Concluído)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.RestartToUpdate">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Reinicie para atualizar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Sample Shells">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Shells de amostra</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SendReceive">
+      <tuv xml:lang="pt">
+        <seg>Enviar/Receber</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SettingsButton">
+      <tuv xml:lang="pt">
+        <seg>Configurações</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Source Collection">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Coleção de fontes de livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+      <tuv xml:lang="pt">
+        <seg>Abrir uma pasta de coleções adicionais</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SourcesForNewShellsHeading">
+      <tuv xml:lang="pt">
+        <seg>Fontes para os novos "Shells"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Templates">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Modelos</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.TitleMissing">
+      <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
+      <tuv xml:lang="pt">
+        <seg>Falta título</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UnableToCheckForUpdate">
+      <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
+      <tuv xml:lang="pt">
+        <seg>Não foi possível conectar ao servidor para verificar se há uma atualização. Você está conectado à internet?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpToDate">
+      <tuv xml:lang="pt">
+        <seg>Sua Bloom é até à data.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdateCheckInProgress">
+      <tuv xml:lang="pt">
+        <seg>Bloom já está trabalhando na verificação de atualizações.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdateFailed">
+      <tuv xml:lang="pt">
+        <seg>Uma nova versão parece estar disponível, não foi possível instalá-lo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdateInstalled">
+      <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
+      <tuv xml:lang="pt">
+        <seg>Atualização para {0} está pronto.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdateNow">
+      <tuv xml:lang="pt">
+        <seg>Atualizar agora</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdatesAvailable">
+      <tuv xml:lang="pt">
+        <seg>Uma nova versão do Bloom está disponível.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Updating">
+      <tuv xml:lang="pt">
+        <seg>Baixando atualização para {0} ({1}kb).</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Vernacular Collection Heading">
+      <prop type="x-nolongerused">true</prop>
+      <note>The {0} is where we fill in the name of the Vernacular.</note>
+      <tuv xml:lang="pt">
+        <seg>{0} Livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Zaza Reader Templates">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Modelos de leitor de Zaza</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab._addToLibraryButton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fazer um livro usando este modelo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.hiddenBooksNotice">
+      <prop type="x-nolongerused">true</prop>
+      <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+      <tuv xml:lang="pt">
+        <seg>Onde está o resto?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.BackButton">
+      <note>In a wizard, this button takes you to the previous step.</note>
+      <tuv xml:lang="pt">
+        <seg>Voltar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Cancel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cancelar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.CancelButton">
+      <tuv xml:lang="pt">
+        <seg>&amp;Cancelar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Finish">
+      <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
+      <tuv xml:lang="pt">
+        <seg>&amp;Terminar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Help">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ajuda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.HelpButton">
+      <tuv xml:lang="pt">
+        <seg>&amp;Ajuda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Loading">
+      <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Carregando...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Next">
+      <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+      <tuv xml:lang="pt">
+        <seg>&amp;Seguinte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.NextButton">
+      <note>In a wizard, this button takes you to the next step.</note>
+      <tuv xml:lang="pt">
+        <seg>Seguinte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OK">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>OK</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OKButton">
+      <tuv xml:lang="pt">
+        <seg>&amp;OK</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Optional">
+      <tuv xml:lang="pt">
+        <seg>opcional</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.SeeWebPage">
+		<note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
+		<tuv xml:lang="pt">
+        <seg>Consulte {0}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Confirmar eliminação</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfirmRecycleDialog.cancelBtn">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>&amp;Cancelar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfirmRecycleDialog.deleteBtn">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>&amp;Deletar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.Completed">
+      <tuv xml:lang="pt">
+        <seg>Seu download ({0}) é completa. Vê-lo na seção de 'Livros de BloomLibrary.org' de suas coleções.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.CompletedCaption">
+      <tuv xml:lang="pt">
+        <seg>Download concluído</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.CopyFailed">
+      <tuv xml:lang="pt">
+        <seg>Bloom baixei o livro mas tive problemas tornar-lo disponível em Bloom. Por favor, reinicie o seu computador e tente novamente. Se você receber essa mensagem novamente, por favor clique no botão 'Detalhes' e relatar o problema para os programadores de Bloom.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.DownloadingDialogTitle">
+      <tuv xml:lang="pt">
+        <seg>Baixando livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.GenericNetworkProblemNotice">
+      <tuv xml:lang="pt">
+        <seg>Houve um problema baixando o seu livro.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.ProblemNotice">
+      <tuv xml:lang="pt">
+        <seg>Houve um problema, baixando o seu livro. Você pode precisar reiniciar o Bloom ou obter ajuda técnica.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.TimeoutProblemNotice">
+      <tuv xml:lang="pt">
+        <seg>Houve um problema de baixar o livro: algo demorou demais. Você pode tentar novamente, ou escrever-nos para issues@BloomLibrary.org, se você não pode fazer o download de sua localização.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.AddPageButton">
+      <note>This is for the button that LAUNCHES the dialog, not the "Add this page" button that is IN the dialog.</note>
+      <tuv xml:lang="pt">
+        <seg>Adicionar página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.AddThisPageButton">
+      <note>This is for the button inside the dialog</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Adicionar esta página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.ChooseLayoutButton">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Usar este configuração (layout)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Continuar assim mesmo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.ChooseLayoutTitle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Escolha configuração diferente...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.ChooseLayoutWillLoseData">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Convertendo para este configuração irá causar algum conteúdo ser perdido.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.NoTemplate">
+      <note>Seen when the book's main template page file is missing.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>(nenhum arquivo de modelo encontrado)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.Title">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Adicionar página...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Se você precisa de um lugar para colocar mais informações sobre o livro, você pode usar esta página, que é o interior da contracapa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BackMatter.OutsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Se você precisa de um lugar para colocar mais informações sobre o livro, você pode usar esta página, que é a parte externa da contracapa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Bilingual">
+      <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      <tuv xml:lang="pt">
+        <seg>Duas idiomas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
+      <tuv xml:lang="pt">
+        <seg>Abrir o HTML usado para fazer este PDF, no Firefox (deve estar no caminho)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CannotChangeCopyright">
+      <tuv xml:lang="pt">
+        <seg>Desculpa, o direito de autor e licença para este livro não podem ser alterados.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CantPasteImageLocked">
+      <tuv xml:lang="pt">
+        <seg>Desculpa, este livro está fechado para que imagens não podem ser alteradas.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ChangeImage">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ChooseLayoutButton">
+      <tuv xml:lang="pt">
+        <seg>Escolha configuração diferente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Realmente excluir a página?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog.DeleteButton">
+      <tuv xml:lang="pt">
+        <seg>&amp;Deletar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog._messageLabel">
+      <tuv xml:lang="pt">
+        <seg>Esta página será removida permanentemente.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ContentLanguagesDropdown">
+      <tuv xml:lang="pt">
+        <seg>Configurações multilingues</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ContentLanguagesDropdown.ToolTip">
+      <tuv xml:lang="pt">
+        <seg>Escolha o idioma para fazer a isto um livro bilingue ou trilingue</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CopyButton">
+      <tuv xml:lang="pt">
+        <seg>Copiar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CopyButton.ToolTip">
+      <tuv xml:lang="pt">
+        <seg>Copiar (Ctrl+C)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CopyButton.ToolTipWhenDisabled">
+      <tuv xml:lang="pt">
+        <seg>Você precisa selecionar algum texto antes que você pode copiá-lo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CopyImageIPMetadataQuestion">
+      <note>get this after you edit the metadata of an image</note>
+      <tuv xml:lang="pt">
+        <seg>Copiar esta informação para todas as outras imagens neste livro?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CopyPage">
+      <tuv xml:lang="pt">
+        <seg>Copie a Página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar Cofiguração (layout)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Or">
+      <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg> ou </seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Texto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.TextBox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Caixa de texto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CutButton">
+      <tuv xml:lang="pt">
+        <seg>Cortar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CutButton.ToolTip">
+      <tuv xml:lang="pt">
+        <seg>Cortar (Ctrl + X)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CutButton.ToolTipWhenDisabled">
+      <tuv xml:lang="pt">
+        <seg>Você precisa selecionar algum texto antes de você pode cortá-la</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DeletePageButton">
+      <tuv xml:lang="pt">
+        <seg>Remover\n página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DeletePageButton.ToolTip">
+      <tuv xml:lang="pt">
+        <seg>Remover esta página do livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DeletePageButton.ToolTipWhenDisabled">
+      <tuv xml:lang="pt">
+        <seg>Esta página não pode ser removida</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DirectFormatting.Bold">
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Bold (realce)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DirectFormatting.Italic">
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Itálico</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DirectFormatting.Superscript">
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Sobrescrito</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DirectFormatting.Underline">
+      <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Sublinhar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DuplicatePageButton">
+      <tuv xml:lang="pt">
+        <seg>Duplicar\n página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DuplicatePageButton.ToolTip">
+      <tuv xml:lang="pt">
+        <seg>Inserir uma nova página que é uma duplicata desta</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
+      <tuv xml:lang="pt">
+        <seg>Esta página não pode ser duplicada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Edit">
+      <tuv xml:lang="pt">
+        <seg>Editar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.EditNotAllowed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Você não pode cambiar estas porque esta não é a cópia original.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord">
+      <tuv xml:lang="pt">
+        <seg>Palavra de vista</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable">
+      <tuv xml:lang="pt">
+        <seg>Esta palavra não é decodificável nesta etapa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esta frase é demasiada longa para este nível.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.EditTabLabel">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Coleções</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Emphasis">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ênfase</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ExperimentalNotice">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esta página é um protótipo experimental que pode ter muitos problemas, que antecipadamente pedimos desculpa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fonte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FontMissing">
+      <tuv xml:lang="pt">
+        <seg>O fonte selecionado atual é '{0}', mas ele não está instalado neste computador. Algum outro fonte será usado.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambia o tamanho do texto para todas as caixas com o estilo '{0}' e idioma '{1}'.\nTamanho atual é {2} puntos.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.AlreadyExists">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esse estilo já existe. Por favor escolha outro nome.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar a borda e o fundo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.CharactersTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Caracteres</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Create">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Criar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.CreateStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Criar um novo estilo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.DontSeeNeed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Não vê o que você precisa?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar o estilo de fonte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar o tamanho da fonte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Format">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Formato</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar o espaçamento entre linhas de texto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Mais</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.NewStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Novo estilo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.PleaseUseAlpha">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Por favor, use apenas caracteres alfabéticos. É aceitável usar números no final, como em "parte2".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.ResetStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Restabelecer as configurações padrão de este estilo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Style">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Estilo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.StyleNameTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Nome do estilo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Muito amplo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Normal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar o espaçamento entre palavras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Amplo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialogTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ajustar o estilo de formatação</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.AuthorIllustratorPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Você pode usar este espaço para autor/ilustrador, ou qualquer outra coisa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Quando você esta fazendo um livro original, use esta caixa para registrar as contribuições feitas por escritores, ilustradores, editores, etc.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Translator">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Quando você faz um livro de um shell, use esta caixa para contar quem fez a tradução.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <prop type="x-dynamic">true</prop>
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <tuv xml:lang="pt">
+        <seg>Título do livro em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.CreditTranslator">
+      <prop type="x-dynamic">true</prop>
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <tuv xml:lang="pt">
+        <seg>Reconhecer o tradutor, em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Clique para editar o direito de autor e licença</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.FundingAgenciesPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Use isto para reconhecer qualquer agência de financiamento.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.ISBNPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Número internacional normalizado de livros. Deixe em branco se você não tem um desses.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.InsideFrontCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Se você precisa de um lugar para colocar mais informações sobre o livro, você pode usar esta página, que é o interior da capa frontal.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.ListSeparator">
+      <note>This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.</note>
+      <tuv xml:lang="pt">
+        <seg>, </seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.NameofTranslatorPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Nome do tradutor, em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Reconhecimentos do original (ou livro shell) em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalContributorsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>As contribuições feitas por escritores, ilustradores, editores, etc., em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalHadNoCopyrightSentence">
+      <note>On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.</note>
+      <tuv xml:lang="pt">
+        <seg>Adaptado do original sem um aviso de direitos autorais.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalLicenseSentence">
+      <note>On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.</note>
+      <tuv xml:lang="pt">
+        <seg>Licenciado sob {0}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalCopyrightSentence">
+      <note>On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.</note>
+      <tuv xml:lang="pt">
+        <seg>Adaptado do original, {0}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.PasteImageCreditsLink">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Colar créditos da imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.PasteMissingCredits">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Créditos faltantes:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.SimpleLineDrawings">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Desenhos de linha simples tem melhor visual. Em vez de usar esta página, você também pode fazer seu próprio arquivo de thumbnail.png e configurá-lo para somente leitura para que Bloom não escreve sobre ele.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.TopicPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Clique para escolher o tema</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Reconhecimentos para versão traduzida, em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.HowToUnlockBook">
+      <tuv xml:lang="pt">
+        <seg>Para desbloquear este "livro shell", vá para a caixa de ferramentas no lado direito, encontrar o ícone de engrenagem e clique em 'Permitir alterações a este shellbook'.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.ChangeImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.CopyImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Copiar Imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.CopyImageFailed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Bloom tinha problemas usando a área de transferência do seu computador. Algum outro programa pode estar interferindo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.CutImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cortar a imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.EditMetadata">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Editar créditos de imagens créditos, direitos autorais, e licença</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.PasteImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Colar imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.TryRestart">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Tente fechar outros programas e reinicie o computador se necessário.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ImageChangeWarning">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Este arquivo está bloqueado como shell. Tem certeza que quer cambia a imagem?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Instructions.DeleteAllowed">
+      <tuv xml:lang="pt">
+        <seg>Sinta-se livre modificar ou deletar esta página.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.JpegWarningDialog.DoNotUse">
+      <tuv xml:lang="pt">
+        <seg>Cancelar esta importação</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.JpegWarningDialog.Photograph">
+      <tuv xml:lang="pt">
+        <seg>Use o arquivo JPEG</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.JpegWarningDialog.WarningText">
+      <tuv xml:lang="pt">
+        <seg>O arquivo escolhido é um arquivo "JPEG". Arquivos JPEG são perfeitos para fotografias e ilustrações de cor. No entanto, arquivos JPEG são problemáticos para a arte de linha preto e branco. Problemas incluem:\n• imprecisão e pontos cinzentas. \n• arquivos de tamanho grande dificultam o compartilhamento do livro.\n• se existem muitos JPEGs grandes, Bloom pode não ter memória suficiente para fazer arquivos PDF.\n\nNote: Como los arquivos JPEG tem "perdas", converter um JPEG, PNG, TIFF ou BMP torna as coisas ainda piores. Se isto é arte de linha preto e branco, você deseja obter um scan original em um daqueles formatos.\n\nFavor selecione de um dos seguintes e, em seguida, clique em "OK":</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.JpegWarningDialog.WindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Aviso de JPEG</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.LayoutInPublishTabOnlyNotice">
+      <tuv xml:lang="pt">
+        <seg>Esta opção só está disponível na guia Publicar.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.LayoutMode.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar cofiguração (layout)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Monolingual">
+      <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      <tuv xml:lang="pt">
+        <seg>Um idioma</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.NewBookName">
+      <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
+      <tuv xml:lang="pt">
+        <seg>Livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.NoImageFoundOnClipboard">
+      <tuv xml:lang="pt">
+        <seg>Até que você pode colar uma ilustração, copie um de outro programa na sua "área de transferência".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.NoOtherLayouts">
+      <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+      <tuv xml:lang="pt">
+        <seg>Não há outras opções de configuração para este modelo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Overflow">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esta caixa tem mais texto do que caberá</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.OverflowContainer">
+      <note>This shows up in pages like the cover where sizing is very flexible. No one thing is too big, but not everything on the page will fit. To see it, put a lot of text on a cover page, until a red bar appears at the bottom; then hover over the bar. </note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Um recipiente nesta página está transbordando</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
+      <tuv xml:lang="pt">
+        <seg>Essa mudança não é permitida. Páginas de matéria de frente e matéria de trás devem permanecer onde estão.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
+      <tuv xml:lang="pt">
+        <seg>Movimento inválido</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageList.Heading">
+      <tuv xml:lang="pt">
+        <seg>Páginas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
+      <tuv xml:lang="pt">
+        <seg>Escolha tamanho de página e de orientação</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PasteButton">
+      <tuv xml:lang="pt">
+        <seg>Colar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PasteButton.ToolTip">
+      <tuv xml:lang="pt">
+        <seg>Colar (Ctrl+V)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PastePage">
+      <tuv xml:lang="pt">
+        <seg>Colar Página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PasteButton.ToolTipWhenDisabled">
+      <tuv xml:lang="pt">
+        <seg>Não há nada na área de transferência que você pode colar aqui.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Position">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Posição</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ReadOnlyInAuthorMode">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Você não pode colocar nada lá ao fazer um livro original.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.SavingNotification">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Salvando...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Espaçamento</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar a borda e o fundo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar o estilo de fonte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar o tamanho da fonte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar o espaçamento entre linhas de texto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Muito amplo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Normal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cambiar o espaçamento entre palavras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Amplo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditorTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ajustar o estilo de formatação</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TemplatePagesList.Heading">
+      <tuv xml:lang="pt">
+        <seg>Páginas modelos</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.HintBubbles">
+      <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
+      <tuv xml:lang="pt">
+        <seg>Balões de Ajuda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.LanguageTab">
+      <tuv xml:lang="pt">
+        <seg>Idioma</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Alignment">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Alinhamento</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Background">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fundo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.BordersAndBackground">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Bordas e Fundo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.BorderSides">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Lados da Borda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.BorderStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Estilo da borda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.IncludeLang">
+      <note>Becomes visible when "Show on each" option is chosen in combo. Do NOT translate {lang}.</note>
+      <tuv xml:lang="pt">
+        <seg>Inclua o nome do idioma usando {lang}. Por exemplo: "Digite a cor em {lang}".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.LocalLanguage">
+      <tuv xml:lang="pt">
+        <seg>Idioma Local</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.NationalLanguage">
+      <tuv xml:lang="pt">
+        <seg>Idioma Nacional</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Normal">
+      <tuv xml:lang="pt">
+        <seg>Normal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.NormalLabel">
+      <tuv xml:lang="pt">
+        <seg>"Normal" mostrará o idioma local e potencialmente o idioma regional ou nacional, dependendo as configurações multilingues do livro. Use isso para a maior parte do conteúdo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.OtherLanguagesLabel">
+      <tuv xml:lang="pt">
+        <seg>Use um destes para caixas de texto simples que são sempre em apenas um idioma.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.RegionalLanguage">
+      <tuv xml:lang="pt">
+        <seg>Idioma Regional</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.WhatToPut">
+      <tuv xml:lang="pt">
+        <seg>Que deveram colocar los autores nesta caixa?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.ShowHintBubble">
+      <note>Label above pull-down menu with options, ShowOnGroup/ShowOnEach</note>
+      <tuv xml:lang="pt">
+        <seg>Mostrar a balão de ajuda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.ShowOnGroup">
+      <tuv xml:lang="pt">
+        <seg>Apenas uma vez no grupo inteiro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.ShowOnEach">
+      <tuv xml:lang="pt">
+        <seg>Em cada de idioma no grupo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Title">
+      <tuv xml:lang="pt">
+        <seg>Propriedades da caixa de texto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.VerticalAlignment">
+      <note>Label above the set of options, Top/Center/Bottom</note>
+      <tuv xml:lang="pt">
+        <seg>Alinhamento Vertical</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+      <tuv xml:lang="pt">
+        <seg>Imagem na parte inferior</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
+      <tuv xml:lang="pt">
+        <seg>Informação de propriedade intelectual da imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ferramenta de Leitor Decodificável</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Bloom pode manipular apenas as primeiras {0} palavras.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Palavras permitidas nesta etapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles">
+      <tuv xml:lang="pt">
+        <seg>Arquivos de texto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
+      <tuv xml:lang="pt">
+        <seg>Letras: {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage">
+      <tuv xml:lang="pt">
+        <seg>O seguinte é um relatório gerado das etapas decodificáveis por {0}. Você pode fazer as alterações desejadas para esse arquivo, mas Bloom não vai notar as alterações. É apenas um relatório.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords">
+      <tuv xml:lang="pt">
+        <seg>Novas palavras decodificáveis: {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords">
+      <tuv xml:lang="pt">
+        <seg>Novas palavras de vista: {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage">
+      <tuv xml:lang="pt">
+        <seg>Etapa {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList">
+      <tuv xml:lang="pt">
+        <seg>Lista completa de palavras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Cartas nesta etapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Abrir um arquivo de letras e palavras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Gerar um relatório com una lista de letras e palavras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Palavras de amostra nesta etapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SetUpStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Configurar as etapas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically">
+      <tuv xml:lang="pt">
+        <seg>Ordenar alfabeticamente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByFrequency">
+      <tuv xml:lang="pt">
+        <seg>Ordenar por frequência</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SortByWordLength">
+      <tuv xml:lang="pt">
+        <seg>Ordenar por comprimento de palavra</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.Stage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Etapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.StageOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>de</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Palavras nesta etapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderToolCheckbox">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ferramenta de Leitor Decodificável</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ferramenta de Leitor Nivelado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Actual">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Atual</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Average">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>média por frase</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Escolha do tema</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ConceptLoad">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Concept Load</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.FoThisLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Para este nível</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Formatting">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Formato</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.HowToMakeLeveledReader">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Como fazer um bom Leitor Nivelado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Suporte de ilustração</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.KeepInMind">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Tenha em mente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Level">
+      <prop type="x-dynamic">true</prop>
+      <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
+      <tuv xml:lang="pt">
+        <seg>Nível</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.LevelOf">
+      <prop type="x-dynamic">true</prop>
+      <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
+      <tuv xml:lang="pt">
+        <seg>de</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Max">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Máximo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PatternAndRecognition">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Padrão e reconhecimento</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>por página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>frase mais longa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Predictability">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Previsibilidade</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.SetUpLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Configurar os níveis</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ThisBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Este livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ThisPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esta página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.TopicFamiliarity">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Familiaridade do tópico</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Total">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>total</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Unique">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>único</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Vocabulary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Vocabulário</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.WordCounts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Contagem de palavras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.LeveledReaderToolCheckbox">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ferramenta de Leitor Nivelado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.More">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Mais...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.Settings.IsTemplateBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Este é um livro modelo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.Settings.IsTemplateBookIntroductionText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Quando você clicar em "Adicionar página", você pode escolher entre páginas contidas em livros de modelo. Para converter este livro em modelo, marque essa caixa de seleção.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.Settings.Unlock">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Permitir as alterações para este "livro shell"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Bloom normalmente impede a maioria das alterações aos livros shell. Se você precisar adicionar páginas, alterar imagens, etc., marque a caixa abaixo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBook.BadState">
+      <note>This is very low priority for translation.</note>
+      <tuv xml:lang="pt">
+        <seg>Gravação de Bloom está em um estado incomum, possivelmente causado por desconectar um microfone. Você precisará reiniciar.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBook.NoInput">
+      <tuv xml:lang="pt">
+        <seg>Nenhum dispositivo de entrada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBook.NoMic">
+      <tuv xml:lang="pt">
+        <seg>Este computador parece não ter nenhum dispositivo de gravação de som disponível. Você vai precisar de um para gravar áudio para um livro falante.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBook.PleaseHoldMessage">
+      <note>Appears when the speak/record button is pressed very briefly</note>
+      <tuv xml:lang="pt">
+        <seg>Por favor, mantenha o botão pressionado até terminar a gravação</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Back">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Voltar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Check">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>4) Verificar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.CheckSettings">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>1) Verifique se você está gravando para o dispositivo correcto e que estes níveis parecem azuis:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Clear">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Desocupar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Heading">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ferramenta de livro falante</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Listen">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Escute a página inteira</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.LookAtSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>2) Mira a frase destacada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Next">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>5) Seguinte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Speak">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>3) Falar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.ToolPurpose">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fazer um e-livro que pode reproduzir gravações ao destacar frases.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.Zoom.Reset">
+      <prop type="x-dynamic">true</prop>
+      <note>This is for the button that changes the page zoom back to 100%</note>
+      <tuv xml:lang="pt">
+        <seg>Redefinir Zoom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox._bookSelection.LongestSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>frase mais longa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Trilingual">
+      <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      <tuv xml:lang="pt">
+        <seg>Três idiomas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.UndoButton">
+      <tuv xml:lang="pt">
+        <seg>Desfazer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.UndoButton.ToolTip">
+      <tuv xml:lang="pt">
+        <seg>Desfazer (Ctrl+Z)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.UndoButton.ToolTipWhenDisabled">
+      <tuv xml:lang="pt">
+        <seg>Não há nada para desfazer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._menusToolStrip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>toolStrip1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.BookProblem">
+      <tuv xml:lang="pt">
+        <seg>Bloom teve um problema mostrando este livro. Isto não significa que seu trabalho seja perdido, mas isso significa que algo está fora de data, está faltando ou está errado.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.BrokenBook">
+      <tuv xml:lang="pt">
+        <seg>Bloom teve um problema mostrando este livro. Isto não significa que seu trabalho seja perdido, mas isso significa que algo está fora de data, está faltando ou está errado. Considere usar o comando 'Informar um problema' no menu 'Ajuda'.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.CannotAccessFile">
+      <note>displays as a "toast", {0} is the URL/filename</note>
+      <tuv xml:lang="pt">
+        <seg>Não foi possível aceder a {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.CannotConnectToBloomServer">
+      <tuv xml:lang="pt">
+        <seg>Bloom era incapaz de começar seu próprio ouvinte HTTP que usa para comunicar com seu navegador Firefox incorporado. Se isso acontecer mesmo se você apenas ha reiniciado o computador, deve pedir que alguém investiga se você tem instalado um produto de firewall agressivo. É possível que o produto de firewall agressivo devería ser desinstalado antes de que você pode usar Bloom.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.CouldNotSavePage">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Não foi possível salvar a página. Por favor clique em detalhes abaixo e nos informar. Então sair de Bloom, executá-lo novamente e verifique se a página que você acabou de editar está faltando alguma coisa. Desculpa!</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.DeniedAccess">
+      <tuv xml:lang="pt">
+        <seg>Seu computador nego acesso ao livro. Pode precisar de ajuda técnica para definir as permissões de sistema operacional para este arquivo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.ErrorSelecting">
+      <tuv xml:lang="pt">
+        <seg>Houve um problema, selecionando o livro. Reiniciando Bloom pode corrigir o problema. Se não, por favor clique no botão 'Detalhes' e relatar o problema para os programadores de Bloom.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.ErrorUpdating">
+      <tuv xml:lang="pt">
+        <seg>Houve um problema atualizando o livro. Reiniciando Bloom pode corrigir o problema. Se não, por favor clique no botão 'Detalhes' e relatar o problema para os programadores de Bloom.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.NeedNewerVersion">
+      <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
+      <tuv xml:lang="pt">
+        <seg>{0} requer uma versão mais recente de Bloom. Baixe a versão mais recente de Bloom de {1}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.ProblemDeletingFile">
+      <tuv xml:lang="pt">
+        <seg>Bloom teve um problema de deletar o arquivo: {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.ProblemImportingPicture">
+      <tuv xml:lang="pt">
+        <seg>Bloom teve um problema de importar esta imagem.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.ReportThisProblemButton">
+      <tuv xml:lang="pt">
+        <seg>Reportar esse problema a Suporte Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.SomethingWentWrong">
+      <tuv xml:lang="pt">
+        <seg>Desculpa, algo deu errado.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.SpecifiedXMatterNotFound">
+      <tuv xml:lang="pt">
+        <seg>Este livro requere um Pack de Matéria de Frente/Trás chamado '{0}', mas Bloom não conseguiu encontrá-lo neste computador. Você pode instalar um Bloom Pack que irá dar-lhe '{0}', ou modificar a configuração do Pack de matéria de frente/trás do livro.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.XMatterNotFound">
+      <tuv xml:lang="pt">
+        <seg>Este livro requere um Pack de Matéria de Frente/Trás chamado '{0}', mas Bloom não conseguiu encontrá-lo neste computador. Você pode instalar um Bloom Pack que irá dar-lhe '{0}', ou seleccionar outro Pack de Matéria de Frente/Trás em Configurações: Elaboração de Livros.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.XMatterProblemLabel">
+      <note>This shows in the 'toast' that pops up to notify the user of a non-fatal problem.</note>
+      <tuv xml:lang="pt">
+        <seg>Problema de Matéria de Frente/Trás</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.XMatterSpecifiedByBookNotFound">
+      <tuv xml:lang="pt">
+        <seg>Este livro requere um Pack de Matéria de Frente/Trás chamado '{0}', mas esta versão de Bloom não tem, e Bloom não conseguiu encontrá-lo neste computador. O livro foi alterado para usar as páginas de Matéria de Frente/Trás das configurações da Coleção.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.ZoneAlarm">
+      <tuv xml:lang="pt">
+        <seg>Bloom não pode começar corretamente, e esse sintoma foi observado em computadores com ZoneAlarm instalado. Nota: desabilitar o ZoneAlarm não ajuda. Nem faz reiniciar com ele desligado. A instalação do ZoneAlarm causa o problema, e até agora só desinstalar o ZoneAlarm corrige o problema.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FirstTabLabel">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Coleções</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.*You may use this space for author/illustrator, or anything else.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>*Você pode usar este espaço para autor/ilustrador, ou qualquer outra coisa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Acknowledgments for translated version, in {lang}">
+      <prop type="x-nolongerused">true</prop>
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <tuv xml:lang="pt">
+        <seg>Reconhecimentos para versão traduzida, em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Acknowledgments in {lang}">
+      <prop type="x-nolongerused">true</prop>
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <tuv xml:lang="pt">
+        <seg>Reconhecimentos em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <tuv xml:lang="pt">
+        <seg>Título do livro em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Click to Edit Copyright &amp; License">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Clique para editar o direito de autor e licença</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Click to choose topic">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Clique para escolher o tema</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Número internacional normalizado de livros. Deixe em branco se você não tem um desses.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.The contributions made by writers, illustrators, editors, etc., in {lang}">
+      <prop type="x-nolongerused">true</prop>
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <tuv xml:lang="pt">
+        <seg>As contribuições feitas por escritores, ilustradores, editores, etc., em {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Use this to acknowledge any funding agencies.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Use isto para reconhecer qualquer agência de financiamento.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.BuildingReaderTemplatesMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Criando modelos de leitor</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.CheckForNewVersionMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Verificar se há uma nova versão</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.CreditsMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Sobre Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.DocumentationMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Documentação</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.Help Menu">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ajuda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.Help Menu_ToolTip_">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Obter Ajuda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.KeyBloomConceptsToolStripMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Conceitos chave de Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.MakeASuggestionMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Fazer uma sugestão</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.RegistrationMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Registo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.ReleaseNotesMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Notas de versão...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.ReportAProblemToolStripMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Reportar um problema...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.ShowEventLogMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Mostrar o registo de eventos</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Usando Modelos de Leitor </seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.WebSiteMenuItem">
+      <tuv xml:lang="pt">
+        <seg>Sitio Web</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Demonstração de Conteúdo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Deep Bloom Paper</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.keyBloomConceptsMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Conceitos chave de Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Instruções dos Livros de Shell</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Manual de Treinamento</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.trainingVideos">
+      <tuv xml:lang="pt">
+        <seg>Vídeos de Treinamento</seg>
+      </tuv>
+    </tu>
+    <tu tuid="InstallProblem.BloomPdfMaker">
+      <tuv xml:lang="pt">
+        <seg>Um componente de Bloom, BloomPdfMaker.exe, parece estar faltando. Isso impede visualizações e impressão. As programas antivírus às vezes faz isso. Você pode precisar de ajuda técnica para reparar a instalação de Bloom e para proteger que este arquivo não seja deletado novamente.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LameEncoder.Progress">
+      <note>Appears in progress indicator</note>
+      <tuv xml:lang="pt">
+        <seg>Convertendo para mp3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LanguageFontDetails.RightToLeftCheck">
+      <tuv xml:lang="pt">
+        <seg>Este escrita é direito para a esquerda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LanguageFontDetails.TallerLinesCheck">
+      <tuv xml:lang="pt">
+        <seg>Este escrita requer linhas mais altas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>A4Horizontal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Landscape SideBySide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>A4Horizontal (lado a lado)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Landscape SplitAcrossPages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>A4Horizontal (dividido em duas páginas)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>A4Vertical</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A5Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>A5Horizontal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A5Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>A5Vertical</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A5Portrait BottomAlign">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>A5Vertical (alinhado abaixo)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A6Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>A6Horizontal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A6Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>A6Vertical</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.B5Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>B5Vertical</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.HalfLetterPortrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>MediaCartaVertical</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.LetterLandscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>CartaHorizontal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.LetterPortrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>CartaVertical</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.QuarterLetterLandscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>QuartaCartaHorizontal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LicenseDialog.WindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Bloom {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LicenseDialog._acceptButton">
+      <tuv xml:lang="pt">
+        <seg>Eu aceito os termos do contrato de licença</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.AgreeToTerms">
+      <tuv xml:lang="pt">
+        <seg>Eu concordo com os termos de uso da Biblioteca Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.Email">
+      <tuv xml:lang="pt">
+        <seg>Endereço de correio electrónico</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.ForgotPassword">
+      <tuv xml:lang="pt">
+        <seg>Esqueci a senha</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.LoginButton">
+      <tuv xml:lang="pt">
+        <seg>&amp;Login</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.Password">
+      <tuv xml:lang="pt">
+        <seg>Senha</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.ShowPassword">
+      <tuv xml:lang="pt">
+        <seg>&amp;Mostrar a senha</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.ShowTerms">
+      <tuv xml:lang="pt">
+        <seg>Mostrar os termos de uso</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.WindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Acesse BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.label3">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>etiqueta3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.AlreadyCollectionWithThatName">
+      <tuv xml:lang="pt">
+        <seg>Já existe uma coleção com esse nome, em &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;..\nPor favor escolha um nome único.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.ChooseLanguagePage">
+      <tuv xml:lang="pt">
+        <seg>Escolha o idioma principal para esta coleção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionNamePage.ExampleText">
+      <tuv xml:lang="pt">
+        <seg>Exemplos: "Livros de saúde", "Histórias de animais de PNG"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+      <tuv xml:lang="pt">
+        <seg>O que você gostaria de chamar esta coleção?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionNameProblem">
+      <tuv xml:lang="pt">
+        <seg>Problema de nome de coleção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
+      <tuv xml:lang="pt">
+        <seg>Coleção será criada em: {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.FinishPage">
+      <tuv xml:lang="pt">
+        <seg>Pronto para criar a nova coleção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.FinishPageContent">
+      <note>{0} is the name of the new collection</note>
+      <tuv xml:lang="pt">
+        <seg>OK, isso é tudo que precisamos para começar com sua nova coleção '{0}'.\nClick no botão 'Concluir'.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.FontAndScriptPage">
+      <tuv xml:lang="pt">
+        <seg>Fonte e Escrita</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage">
+      <tuv xml:lang="pt">
+        <seg>Escolha o tipo de coleção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
+      <tuv xml:lang="pt">
+        <seg>Se você já tem uma coleção que você deseja abrir, clique no botão 'Cancelar'.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+      <tuv xml:lang="pt">
+        <seg>Coleção de fontes de livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+      <tuv xml:lang="pt">
+        <seg>Uma coleção de livros shell ou livros modelos numa ou mais idiomas de comunicação mais ampla. Você poderá fazer o upload dessas Shells para BloomLibrary.org. Você também pode fazer um Bloom Pack para dar aos outros para que eles podem fazer livros vernáculos com suas shells.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+      <tuv xml:lang="pt">
+        <seg>Coleção de Idioma Vernácula/Local</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+      <tuv xml:lang="pt">
+        <seg>Uma coleção de livros no idioma local.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage">
+      <tuv xml:lang="pt">
+        <seg>Dê a localização de idioma</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.Country">
+      <tuv xml:lang="pt">
+        <seg>País</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.District">
+      <tuv xml:lang="pt">
+        <seg>Distrito</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+      <tuv xml:lang="pt">
+        <seg>Estes são opcionais. Bloom vai colocá-los nos lugares corretos na página de título dos livros que você criar.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.Province">
+      <tuv xml:lang="pt">
+        <seg>Província</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.NewBookPattern">
+      <note>The {0} is replaced by the name of the language.</note>
+      <tuv xml:lang="pt">
+        <seg>{0} Livros</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.NewCollectionWindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Criar nova coleção Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.ProjectName">
+      <tuv xml:lang="pt">
+        <seg>Nome do projeto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+      <tuv xml:lang="pt">
+        <seg>Não é possível criar uma nova coleção usando esse nome.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage">
+      <tuv xml:lang="pt">
+        <seg>Bem-vindo ao Bloom!</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine1">
+      <tuv xml:lang="pt">
+        <seg>Você está quase listo para começar a fazer livros.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine2">
+      <tuv xml:lang="pt">
+        <seg>A fim de manter as coisas simples e organizada, Bloom mantém todos os livros que você faz em uma ou mais &lt;i&gt;Coleções&lt;/i&gt;/ A primeira coisa que precisamos é fazer um para você.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine3">
+      <tuv xml:lang="pt">
+        <seg>Clique em 'Seguinte' para começar.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateCloneControl.InDropboxMessage">
+      <tuv xml:lang="pt">
+        <seg>Bloom detecto que esta coleção está localizada na sua pasta Dropbox. Isso pode causar problemas como Dropbox às vezes não permite que Bloom acesse seus próprios arquivos. Se você tiver problemas, nós recomendamos que você mova sua coleção a outro lugar ou desabilite o Dropbox enquanto estiver usando o Bloom.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateCloneControl.InSourceCollectionMessage">
+      <tuv xml:lang="pt">
+        <seg>Esta coleção é parte de seus 'Fontes para novos livros' que você pode ver no canto inferior esquerdo da guia de coleções. Não pode ser aberto para edição.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.Bloom Collections">
+      <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
+      <tuv xml:lang="pt">
+        <seg>Coleções de Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
+      <tuv xml:lang="pt">
+        <seg>Procure outra coleção neste computador</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
+      <tuv xml:lang="pt">
+        <seg>Copie do Chorus Hub na rede Local</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CopyFromInternet">
+      <tuv xml:lang="pt">
+        <seg>Copie da Internet</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
+      <tuv xml:lang="pt">
+        <seg>Copie da unidade USB</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CreateNewCollection">
+      <tuv xml:lang="pt">
+        <seg>Criar uma nova coleção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Abrir/Criar coleções</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.ReadMoreLink">
+      <note>This opens the Chorus Help to learn more about send/receive.</note>
+      <tuv xml:lang="pt">
+        <seg>Leia mais</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
+      <tuv xml:lang="pt">
+        <seg>Alguém tem usado Enviar/Receber para compartilhar uma coleção com você?\nUse um desses botões vermelhos para copiar sua coleção para o seu computador.\nDepois, use o Enviar/Receber para compartilhar seu trabalho com eles.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_">
+      <tuv xml:lang="pt">
+        <seg>Alterar o idioma da interface</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PageList.CantMoveWhenTranslating">
+      <tuv xml:lang="pt">
+        <seg>Páginas não podem ser reordenadas quando você está traduzindo um livro.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
+      <tuv xml:lang="pt">
+        <seg>Por favor, instale o Adobe Reader para que Bloom pode mostrar seu livro completo. Até lá, você pode ainda salvar o livro em PDF e abri-lo em algum outro programa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+      <tuv xml:lang="pt">
+        <seg>Isso é estranho... Adobe Reader deu um erro ao tentar mostrar o PDF. Você pode ainda tentar salvar o livro em PDF.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.AdobeReaderControl.UnknownError">
+      <tuv xml:lang="pt">
+        <seg>Noticia triste. Noticia riste. Bloom não foi capaz de obter que o Adobe Reader mostrara aqui. Então Bloom não pode mostrar seu livro completo.\nPor favor, desinstale a versão existente do 'Adobe Reader' e reinstalar o 'Adobe Reader'.\nAté conseguir consertar isso, você ainda pode salvar o livro em PDF e abri-lo em algum outro programa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.BodyOnlyRadio">
+      <tuv xml:lang="pt">
+        <seg>Páginas interiores do livreto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fazer um livreto das páginas dentro do livro. Páginas serão configuradas e reordenadas para que quando você os dobra, você terá um livreto.\n</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ButtonThatShowsUploadForm">
+      <tuv xml:lang="pt">
+        <seg>Carregar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ButtonThatShowsUploadForm-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Carregar para BloomLibrary.org, onde outros possam baixar e localizá-los em sua próprio idioma.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.CoverOnlyRadio">
+      <tuv xml:lang="pt">
+        <seg>Capa do livreto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.CoverOnlyRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fazer um PDF de apenas a capa dianteira e traiseira (ambos lados), então você pode imprimir em papel colorido.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.EpubButton">
+      <tuv xml:lang="pt">
+        <seg>ePUB</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.EpubRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fazer um ePUB (livro eletrónico) deste livro, permitindo que seja ser lido em vários dispositivos de leitura eletrónica.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
+      <tuv xml:lang="pt">
+        <seg>Não exibir novamente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
+      <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
+      <tuv xml:lang="pt">
+        <seg>Informações XML do InDesign</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.LessMemoryPdfMode">
+      <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
+      <tuv xml:lang="pt">
+        <seg>Use menos memória (mais lenta)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Notifications.AdobeReaderRecommendation">
+      <tuv xml:lang="pt">
+        <seg>Este visualizador PDF pode ser melhorada através da instalação do Adobe Reader gratuito neste computador.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OnPagePerPaperRadio">
+      <prop type="x-nolongerused">true</prop>
+      <note>Instead of making a booklet, just make normal pages</note>
+      <tuv xml:lang="pt">
+        <seg>Uma página por folha de papel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OnePagePerPaperRadio">
+      <note>Instead of making a booklet, just make normal pages</note>
+      <tuv xml:lang="pt">
+        <seg>Simple</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OnePagePerPaperRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fazer um PDF de cada página do livro, uma página por cada folha de papel.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
+      <tuv xml:lang="pt">
+        <seg>Abrir o PDF no visualizador PDF da sistema padrão</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
+      <tuv xml:lang="pt">
+        <seg>Substituir existente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Aviso</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.BadPdf">
+      <tuv xml:lang="pt">
+        <seg>Bloom teve um problema em fazer um PDF deste livro. Você pode precisar de ajuda técnica ou para entrar em contato com os programadores. Mas aqui estão algumas coisas que você pode tentar:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
+      <tuv xml:lang="pt">
+        <seg>Tente fazer isso em um computador com mais memória</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.TryRestart">
+      <tuv xml:lang="pt">
+        <seg>Reinicie o computador e tentar de novo agora mesmo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.TrySmallerImages">
+      <tuv xml:lang="pt">
+        <seg>Substituir imagens grandes (de alta resolução) em seu documento com imagens de mais baixa resolução</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMakingDialog.ConversionProgress._statusLabel">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Carregando...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMakingDialog.WindowTitle">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fazendo PDF...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PrintButton">
+      <tuv xml:lang="pt">
+        <seg>&amp;Imprimir...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Publish">
+      <tuv xml:lang="pt">
+        <seg>Publicar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.SaveButton">
+      <tuv xml:lang="pt">
+        <seg>&amp;Salvar PDF...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.SaveEpub">
+      <tuv xml:lang="pt">
+        <seg>&amp;Salvar ePub...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ShowCropMarks">
+      <tuv xml:lang="pt">
+        <seg>Marcas de corte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Acknowledgments">
+      <tuv xml:lang="pt">
+        <seg>Agradecimentos</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.AdditionalRequests">
+      <tuv xml:lang="pt">
+        <seg>Solicitações adicionais: </seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.AllReserved">
+      <tuv xml:lang="pt">
+        <seg>Todos os direitos reservados (contatar o titular de direitos autorais para quaisquer permissões.)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.CcLink">
+      <tuv xml:lang="pt">
+        <seg>CC-CY-NC</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ConfirmReplaceExisting">
+      <tuv xml:lang="pt">
+        <seg>BloomLibrary.org já tem uma versão anterior de seu livro. Se você carregá-lo novamente, ele será substituído com sua versão atual.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Copyright">
+      <tuv xml:lang="pt">
+        <seg>Direitos autorais</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Credits">
+      <tuv xml:lang="pt">
+        <seg>créditos</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ErrorUploading">
+      <tuv xml:lang="pt">
+        <seg>Desculpe, houve um problema carregando {0}. Alguns detalhes a seguir. Você pode precisar de ajuda técnica.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.FieldsNeedAttention">
+      <tuv xml:lang="pt">
+        <seg>Um ou mais campos acima precisam de sua atenção antes de enviar.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.FinalUploadFailureNotice">
+      <tuv xml:lang="pt">
+        <seg>Desculpe, "{0}" não foi carregado. Às vezes isso é causado por problemas temporários com os servidores que usamos. Vale a pena tentar novamente mais tarde. Por favor informe-nos se você recebe este problema frequentemente.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Gaurantee">
+      <tuv xml:lang="pt">
+        <seg>Por meio de upload, você confirma o seu acordo com os termos de uso da Biblioteca Bloom e concede os direitos que ele descreve.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.GenericUploadProblemNotice">
+      <tuv xml:lang="pt">
+        <seg>Houve um problema de carregar o seu livro.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.IncompleteTranslation">
+      <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
+      <tuv xml:lang="pt">
+        <seg>(tradução incompleta)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Languages">
+      <tuv xml:lang="pt">
+        <seg>Idiomas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.License">
+      <tuv xml:lang="pt">
+        <seg>Uso/Licença</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.AccountAlreadyExists">
+      <tuv xml:lang="pt">
+        <seg>A conta já existe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.AlreadyHaveAccount">
+      <tuv xml:lang="pt">
+        <seg>Não pode ser registrado com esse endereço, porque já temos uma conta com esse endereço. Em vez disso, gostaria de fazer o login?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginConnectFailed">
+      <tuv xml:lang="pt">
+        <seg>Bloom não pôde se conectar ao servidor para verificar o seu login. Por favor, verifique sua conexão de rede.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginFailed">
+      <tuv xml:lang="pt">
+        <seg>Erro de login</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+      <tuv xml:lang="pt">
+        <seg>Bloom não pôde se conectar ao servidor para completar o seu login ou registro. Isto pode ser um problema com sua conexão de internet, nosso servidor ou algum equipamento no meio.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.MustAgreeTerms">
+      <tuv xml:lang="pt">
+        <seg>Para se inscrever para uma conta de BloomLibrary.org, você deve marcar a caixa indicando que você concorda com os termos de uso de BloomLibrary.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.Need Email">
+      <tuv xml:lang="pt">
+        <seg>Endereço de correo electrónico é necessário</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.NoRecordOfUser">
+      <tuv xml:lang="pt">
+        <seg>Não temos um usuário registado com esse e-mail. Você gostaria de se inscrever?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PasswordMismatch">
+      <tuv xml:lang="pt">
+        <seg>Identificação de usuário e senha não combinam</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseAgreeTerms">
+      <tuv xml:lang="pt">
+        <seg>Por favor, concorda com os termos de uso</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseProvideEmail">
+      <tuv xml:lang="pt">
+        <seg>Por favor, coloque um endereço de e-mail válido. Enviaremos um e-mail para este endereço, assim você pode redefinir sua senha.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetConnectFailed">
+      <tuv xml:lang="pt">
+        <seg>Bloom não pôde se conectar ao servidor para redefinir sua senha. Por favor, verifique sua conexão de rede.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetFailed">
+      <tuv xml:lang="pt">
+        <seg>Redefinição de senha falhado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetPassword">
+      <tuv xml:lang="pt">
+        <seg>Redefinindo senha</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.SendingResetPassword">
+      <tuv xml:lang="pt">
+        <seg>Estamos enviando um e-mail a {0} com instruções sobre como redefinir sua senha.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.Signup">
+      <tuv xml:lang="pt">
+        <seg>Cadastre-se para a Biblioteca de Bloom.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Template">
+      <tuv xml:lang="pt">
+        <seg>Este livro parece ser um modelo, ou seja, ele contém páginas em branco para a criação de um novo livro, e não conteúdo para traduzir para outros idiomas. Se isso não é o que você deseja, deve obter ajuda especializada antes de enviar este livro.
+
+Deseja continuar?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.UnknownUser">
+      <tuv xml:lang="pt">
+        <seg>Usuário desconhecido</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.LoginFailure">
+      <tuv xml:lang="pt">
+        <seg>Bloom não pôde entrar para BloomLibrary.org usando suas credenciais salvas. Por favor, verifique sua conexão de rede.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.LoginLink">
+      <tuv xml:lang="pt">
+        <seg>Acesse BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Logout">
+      <tuv xml:lang="pt">
+        <seg>Sair do BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.MakingPdf">
+      <tuv xml:lang="pt">
+        <seg>Fazendo a visualização PDF...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.MakingThumbnail">
+      <tuv xml:lang="pt">
+        <seg>Fazendo imagem em miniatura...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.NoLangsFound">
+      <tuv xml:lang="pt">
+        <seg>(Nenhum encontrado)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.OldVersion">
+      <tuv xml:lang="pt">
+        <seg>Desculpe, esta versão do Desktop de Bloom não é compatível com a versão atual do BloomLibrary.org. Por favor atualize para uma versão mais recente.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Partial">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>(parcial)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.PleaseLogIn">
+      <tuv xml:lang="pt">
+        <seg>Por favor, faça o login no BloomLibrary.org (ou Cadastre-se) antes de carregar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.PleaseSetThis">
+      <note>This shows next to the license, if the license has not yet been set.</note>
+      <tuv xml:lang="pt">
+        <seg>Por favor, defina isso na guia Editar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.SignupLink">
+      <tuv xml:lang="pt">
+        <seg>Cadastre-se para BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Step1">
+      <tuv xml:lang="pt">
+        <seg>Passo 1: Confirmar metadados</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Step2">
+      <tuv xml:lang="pt">
+        <seg>Passo 2: Carregar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.SuggestAssignCC">
+      <tuv xml:lang="pt">
+        <seg>Sugestão: Atribuir uma licença Creative Commons torna mais fácil para você claramente conceder permissões específicas a todos.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.SuggestChangeCC">
+      <tuv xml:lang="pt">
+        <seg>Sugestão: Licenças Creative Commons facilitam muito para que outros possam usar o seu livro, mesmo que eles não são fluentes na língua da sua licença personalizada.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Summary">
+      <tuv xml:lang="pt">
+        <seg>Resumo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.TermsLink">
+      <tuv xml:lang="pt">
+        <seg>Mostrar os termos de uso</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.TimeProblem">
+      <tuv xml:lang="pt">
+        <seg>Houve um problema de carregar o seu livro. Isto é provavelmente porque seu computador está definido para usar o horário errado ou seu tempo de sistema é incorreto. Consulte http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para saber como retificar isso.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Title">
+      <tuv xml:lang="pt">
+        <seg>Título</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadButton">
+      <tuv xml:lang="pt">
+        <seg>Carregar livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadCompleteNotice">
+      <tuv xml:lang="pt">
+        <seg>Parabéns, "{0}" já está disponível no BloomLibrary.org ({1})</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadNotAllowed">
+      <tuv xml:lang="pt">
+        <seg>Carregar não permitido</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadProblemNotice">
+      <tuv xml:lang="pt">
+        <seg>Houve um problema de carregar o seu livro. Você pode precisar reiniciar o Bloom ou obter ajuda técnica.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadProgress">
+      <tuv xml:lang="pt">
+        <seg>Progresso de carregar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadSandbox">
+      <tuv xml:lang="pt">
+        <seg>Carregar livro (para Sandbox)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadingBook">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Carregando registo do livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadingBookMetadata">
+      <note>In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.</note>
+      <tuv xml:lang="pt">
+        <seg>Carregando os metadados do livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadingStatus">
+      <tuv xml:lang="pt">
+        <seg>Carregando {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishView._saveButton">
+      <tuv xml:lang="pt">
+        <seg>Salvar "stub"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts1">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Sobre listas de palavras e textos de amostra: quando você coloca arquivos de texto em sua pasta de textos de amostra, a Ferramenta Leitor Decodificável pode encontrar palavras para sugerir enquanto você estiver criando seus leitores.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts2">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ainda não tem uma lista de palavras para o seu idioma? Considere o uso de software livre WeSay do SIL e a técnica RapidWords.net para facilmente coletar muitas palavras e comece fazer um dicionário.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts4">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ainda não tem textos para o seu idioma? Considera software livre de SayMore do SIL. Com ele você pode gravar as pessoas e depois transcrever o que eles disseram.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Adicionar Nível</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Adicionar Etapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddTexts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Por favor, adicione textos para a pasta de textos de amostra.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AllowedWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>palavras permitidas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AllowedWordsFile">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Arquivo de palavras permitidas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AllowedWordsFileHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Arquivo de palavras permitidas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AverageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Média</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.BookHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.BookMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Máximo de palavras por livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ChooseAllowedWordsFile">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Escolha...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ClickLetter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Clique nas letras para adicioná-los a esta etapa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.CombinationHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Separar com espaços</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.CombinationHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Por exemplo, "ai oo sh ng th ing"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Combinations">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Combinações de letras (grafemas)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.DecodableStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Etapas Decodificáveis</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FileNeedsTxtExtension">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Arquivo precisa de extensão .txt</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FirstSetupAlphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Primeiro,</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FormatNotSupported">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Não pode ler este formato</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.HowToExport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Ajuda a exportar e converter arquivos para usar como textos de amostra</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Language">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Idioma</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Listar las letras e caracteres que formam palavras em ordem alfabética.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Separar com espaços</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Por exemplo, "a b c d"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Letras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Letras e combinações de letras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Para ajudá-lo a fazer os leitores decodificáveis, Bloom precisa saber as letras e as combinações de letras que você estará ensinando.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Separe cada letra ou combinação de letras com um espaço. Por exemplo, aqui está o que poderíamos usar para o idioma inglês:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Observe que a lista inglesa inclui símbolos que são usados para formar palavras, como ' em</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>it's</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Nível</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Nível&amp;nbsp;</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Levels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Níveis de Leitor</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MatchingWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>palavras correspondentes</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MaxAverageWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Máximo comprimento médio de frases em livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MaxUniqueWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Máximo de palavras únicas por livro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MoreWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Mais palavras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.OpenSampleTexts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Abrir a pasta de textos de amostra para este idioma.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PageMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Máximo de palavras em cada página</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PoweredBy">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fornecido por</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Punctuation">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Pontuação</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReaderLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Níveis de Leitor</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Remover o nível {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Remover a etapa {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Remover desta etapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReorderLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Arraste linhas para reordenar os níveis.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReorderStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Arraste linhas para reordenar as etapas.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SampleTexts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Listas de Palavras e Textos de Amostra</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SampleWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Palavras de Amostra</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SearchEngine">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>, o Motor de Busca para Alfabetização.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SelectedLetters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Letras Anteriores e Novas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentenceHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Frase</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentenceMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Máximo de palavras em cada frase</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentencePunctuation.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Pontuação Especial para Finalizar Frases</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentencePunctuation.Help">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Bloom já conhece quais caracteres sempre marcam o fim de frases nos idiomas do mundo. Para adicionar outros, digite aqui escapes de caracteres Unicode. Por exemplo para escritas de idiomas tailandesas, digite \U0020 para indicar a Bloom que espaços normais são usados para quebrar as sentenças.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetUpDecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Configurar a Ferramenta de Leitor Decodificável</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetUpLeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Configurar a Ferramenta de Leitor Nivelado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetupAlphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Configurar o alfabeto para este idioma.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordHelp">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>O que são palavras de vista?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Novas palavras de vista</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordsHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Palavras de vista</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Etapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Etapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Stages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Etapas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Synphony">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>SynPhony</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ToRemember">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Coisas para lembrar para este nível:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.UniqueHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Único</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Palavras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Para ajudá-lo a fazer os leitores decodificáveis, Bloom pode sugerir palavras que cabem dentro da etapa atual. Há duas maneiras para dar carregar palavras a Bloom:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.PlaceTextFiles">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>2) Colocar arquivos de texto no seu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.SampleTextFolder">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Pasta de Textos de Amostra</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.TypeWordsHere">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>1) Digite palavras aqui</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.UseAllowedWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Estamos usando listas de palavras permitidas para definir etapas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.UseLetters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Estamos usando letras com palavras de vista para definir etapas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.lettersHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Letras</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+      <tuv xml:lang="pt">
+        <seg>Além disso, este Bloom Pack levará suas últimas configurações de leitores decodificáveis e nivelados para o idioma \"{0}\". Qualquer pessoa que abre este Bloom Pack, que em seguida abre uma coleção \"{0}\", terá suas configurações atuais do leitores decodificáveis e nivelados substituídas pelas configurações neste Bloom Pack. Eles também receberam o conjunto atual de palavras para uso em leitores decodificáveis.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
+      <tuv xml:lang="pt">
+        <seg>Os seguintes livros serão feitos em modelos:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+      <tuv xml:lang="pt">
+        <seg>Salvar Bloom Pack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Fazer o Bloom Pack de Leitor Modelo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Email">
+      <tuv xml:lang="pt">
+        <seg>Endereço de correio electrónico</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.FirstName">
+      <tuv xml:lang="pt">
+        <seg>Nome próprio</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Heading">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="pt">
+        <seg>Por favor, tome um minuto para registrar {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.HowAreYouUsing">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="pt">
+        <seg>Como está você usando {0}?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.IAmStuckLabel">
+      <tuv xml:lang="pt">
+        <seg>Eu estou estancado, eu vou terminar mais tarde.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Organization">
+      <tuv xml:lang="pt">
+        <seg>Organização</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.RegisterButton">
+      <tuv xml:lang="pt">
+        <seg>&amp;Registrar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Surname">
+      <tuv xml:lang="pt">
+        <seg>Sobrenome</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.WindowTitle">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="pt">
+        <seg>Registrar {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Close">
+      <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      <tuv xml:lang="pt">
+        <seg>Fechar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.CouldNotSendToServer">
+      <tuv xml:lang="pt">
+        <seg>Bloom não foi capaz de enviar seu relatório diretamente para o nosso servidor. Por favor, tente novamente ou e-mail {0} para {1}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Email">
+      <tuv xml:lang="pt">
+        <seg>Correio electrónico</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.IncludeBookButton">
+      <tuv xml:lang="pt">
+        <seg>Incluir o livro '{0}'</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.IncludeScreenshotButton">
+      <tuv xml:lang="pt">
+        <seg>Incluir este captura de tela/ecrã</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Name">
+      <tuv xml:lang="pt">
+        <seg>Nome</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Retry">
+      <note>Shown if there was an error submitting the report. Lets the user try submitting it again.</note>
+      <tuv xml:lang="pt">
+        <seg>Tentar novamente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.SeeDetails">
+      <tuv xml:lang="pt">
+        <seg>Veja o que mais será enviado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.SubmitButton">
+      <tuv xml:lang="pt">
+        <seg>&amp;Enviar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Submitting">
+      <note>This is shown while Bloom is sending the problem report to our server.</note>
+      <tuv xml:lang="pt">
+        <seg>Enviando ao servidor...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Success">
+      <tuv xml:lang="pt">
+        <seg>Recebemos seu relatório, obrigado por tomar o tempo para ajudar a melhorar a Bloom!</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.WhatsTheProblem">
+      <tuv xml:lang="pt">
+        <seg>O que parece ser o problema?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.WindowTitle">
+      <tuv xml:lang="pt">
+        <seg>Reportar um problema</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Zipping">
+      <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
+      <tuv xml:lang="pt">
+        <seg>Compactando (Zipando) livro...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.linkLabel1">
+      <tuv xml:lang="pt">
+        <seg>Não será privada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="SamplePrintNotification.IGetIt">
+      <tuv xml:lang="pt">
+        <seg>Eu entendi. Não mostre novamente.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="SamplePrintNotification.PleaseNotice">
+      <tuv xml:lang="pt">
+        <seg>Por favor, observe as configurações de impressora do exemplo abaixo. Usá-los como um guia enquanto você configura a impressora.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="SamplePrintNotification.WindowTitle">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Amostra de Configurações de Impressão</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ScriptSettingsDialog.DefaultLineSpacing">
+      <tuv xml:lang="pt">
+        <seg>Padrão de Espaçamento de Linha</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ScriptSettingsDialog.RightToLeftScriptCheckBox">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Este escrita é direito para a esquerda</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ScriptSettingsDialog.ScriptSettingsWindowTitle">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Configurações de Escrita Especial...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ScriptSettingsDialog.TallerLinesCheckBox">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Este escrita requer linhas mais altas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="SendReceiveutton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Enviar/Receber</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Arithmetic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Aritmética</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Basic Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Livro Básico</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Big Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Livro Grande</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Decodable Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Leitor Decodificável</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Leveled Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Leitor Nivelado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Picture Dictionary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Dicionário de Imagens</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Vaccinations">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Vacinações</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Template Starter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Iniciador de Modelos</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.BookName.Wall Calendar">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Calendário</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageDescription.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Uma página em branco que permite que você adiciona itens.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageDescription.Flyleaf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esta página foi inserida automaticamente porque a página seguinte é marcada como parte de duas páginas espelhadas.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageDescription.Picture &amp; Word">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Página com uma imagem na parte superior e uma palavra grande, centrado abaixo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.1 Problem">
+      <note>This label indicates a page with one arithmetic problem on it.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>1 Problema</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.10">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>10</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.11">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>11</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.12">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>12</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.13">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>13</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.14">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>14</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.15">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>15</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.16">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>16</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.17">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>17</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.18">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>18</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.19">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>19</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.2 Problems">
+      <note>This label indicates a page with two arithmetic problems on it.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>2 Problemas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.20">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>20</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.21">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>21</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.3 Problems">
+      <note>This label indicates a page with three arithmetic problems on it.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>3 Problemas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>4</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.4 Problems">
+      <note>This label indicates a page with four arithmetic problems on it.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>4 Problemas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.5">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>5</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.6">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>6</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.7">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>7</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.8">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>8</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.9">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>9</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.About">
+      <prop type="x-dynamic">true</prop>
+      <note>Caption of 2nd page in books made from Template Starter</note>
+        <tuv xml:lang="pt">
+        <seg>Sobre</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Alphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Alfabeto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Image">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Texto Básico e imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Texto Básico e Imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Credits Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Página de créditos</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Personalizado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Dia 1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Dia 2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Dia 3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Dia 4</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 5a">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Dia 5a</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 5b">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Dia 5b</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Factory">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Fábrica</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Flyleaf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Folha em branco</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Capa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.FrontBackMatter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Matéria de Frente/Trás</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Image For Thumbnail">
+      <prop type="x-dynamic">true</prop>
+	  <note>Caption of first page in books made from Template Starter</note>
+        <tuv xml:lang="pt">
+        <seg>Imagem para miniatura</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Imagem no parte inferior</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Image in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Imagem no meio</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Inside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Interior da contracapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Inside Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Interior da capa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Instructions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Instruções</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Just Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Só texto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Just a Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Só uma foto</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Just an Image">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Só um imagem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Outside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Contracapa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Paper Saver">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Economizador de papel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Picture &amp; Word">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Imagem e Palavra</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Picture in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Imagem no meio</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Picture on Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Imagem na parte inferior</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.SIL-Cameroon">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>SIL-Camarões</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Super Paper Saver">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Economizador máximo de papel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.This Page Is Intentionally Blank">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Esta página é intencionalmente em branco</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Title Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Página título</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Traditional">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Tradicional</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
+      <note>This is the dialog used to set up the wall calendar</note>
+      <tuv xml:lang="pt">
+        <seg>Configurar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Agriculture">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Agricultura</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Animal Stories">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Histórias de animais</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Business">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Negócios</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Community Living">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Vida comunitária</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Culture">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Cultura</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Dictionary">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Dicionário</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Environment">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Meio ambiente</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Fiction">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Ficção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Health">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Saúde</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.How To">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Guia Prático</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Math">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Matemática</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.NoTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Nenhum tópico</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Non Fiction">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Não ficção</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Personal Development">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Desenvolvimento pessoal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Primer">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Cartilha</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Science">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Ciência</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Spiritual">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Espiritual</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Story Book">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Livro de história</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Tradition">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>Tradição</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Traditional Story">
+      <prop type="x-dynamic">true</prop>
+      <note>shows in the topics chooser in the edit tab</note>
+      <tuv xml:lang="pt">
+        <seg>História tradicional</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WebServer.Warning.NoImageFile">
+      <note>displays as a "toast"</note>
+      <tuv xml:lang="pt">
+        <seg>Arquivo de Imagem Não Encontrado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WebServer.Warning.NoFile">
+      <note>displays as a "toast"</note>
+      <tuv xml:lang="pt">
+        <seg>Arquivo Não Encontrado</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WorkspaceView._tabStrip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>tabStrip1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="You may use this space for author/illustrator, or anything else.">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Você pode usar este espaço para autor/ilustrador, ou qualquer outra coisa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="button3">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>button3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="checkBox1.checkBox1">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Use servidor de imagem para reduzir o uso de memória com imagens grandes.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="columnHeader1">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>ColumnHeader</seg>
+      </tuv>
+    </tu>
+    <tu tuid="tabPage4.tabPage4">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="pt">
+        <seg>Configurações Avançadas do Programa</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>
