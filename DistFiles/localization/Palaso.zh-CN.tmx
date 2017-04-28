@@ -536,7 +536,7 @@
         <seg>You must keep the copyright and credits for authors, illustrators, etc.</seg>
       </tuv>
       <tuv xml:lang="zh-CN">
-        <seg>一定要保留作者、插画家的版权以及对他们的承认</seg>
+        <seg>您必须提供版权标识和作者、画家等等的姓名或名称。</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed">
@@ -546,7 +546,7 @@
         <seg>You are free to make commercial use of this work.</seg>
       </tuv>
       <tuv xml:lang="zh-CN">
-        <seg>可以将此作品用于商业用途</seg>
+        <seg>您可以自由地将本作品用于商业目的。</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.Licenses.CreativeCommons.Derivatives">
@@ -556,7 +556,7 @@
         <seg>You may adapt and add to this work.</seg>
       </tuv>
       <tuv xml:lang="zh-CN">
-        <seg>可以增改此作品以适应当地需要</seg>
+        <seg>您可以自由地修改、转换或以本作品为基础进行创作。</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike">
@@ -566,7 +566,7 @@
         <seg>You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</seg>
       </tuv>
       <tuv xml:lang="zh-CN">
-        <seg>可以增改此作品以适应当地需要，但是在发行时必须使用和这个相同或相似的证书。</seg>
+        <seg>您可以自由地修改、转换或以本作品为基础进行创作，但必须基于与原先许可协议相同的许可协议分拨您贡献的作品。</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives">
@@ -576,7 +576,7 @@
         <seg>You may not make changes or build upon this work without permission.</seg>
       </tuv>
       <tuv xml:lang="zh-CN">
-        <seg>未经允许，不可更改此作品，也不可在其基础上创作。</seg>
+        <seg>如果您修改、转换、或者基于该作品创作，您不得分发修改作品。</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.Licenses.CreativeCommons.NonCommercial">
@@ -586,7 +586,7 @@
         <seg>You may not use this work for commercial purposes.</seg>
       </tuv>
       <tuv xml:lang="zh-CN">
-        <seg>不可将此作品用于商业用途。</seg>
+        <seg>您不得将本作品用于商业目的。</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.Licenses.NullLicense">
