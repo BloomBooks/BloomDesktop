@@ -330,6 +330,7 @@ namespace Bloom
 				UniqueToken.ReleaseToken();
 			}
 			Settings.Default.FirstTimeRun = false;
+			Settings.Default.Save();
 			return 0;
 		}
 
@@ -946,7 +947,7 @@ namespace Bloom
 		private static string GetDesiredUiLanguage(string installedStringFileFolder)
 		{
 			var desiredLanguage = Settings.Default.UserInterfaceLanguage;
-			if (Settings.Default.FirstTimeRun || String.IsNullOrEmpty(desiredLanguage) || !Settings.Default.UserInterfaceLanguageSetExplicitly)
+			if (String.IsNullOrEmpty(desiredLanguage) || !Settings.Default.UserInterfaceLanguageSetExplicitly)
 			{
 				// Nothing has been explicitly selected by the user yet, so try to get a localization for the same language.
 				// First try for an exact match.  (This is motivated by the Chinese localization which specifies more than
