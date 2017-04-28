@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="zh-Hans" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.65.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="zh-CN" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.65.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
     <prop type="x-appversion">3.7.8.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -10,7 +10,7 @@
       <tuv xml:lang="en">
         <seg>About</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>关于</seg>
       </tuv>
     </tu>
@@ -18,7 +18,7 @@
       <tuv xml:lang="en">
         <seg>No Updates</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>没有更新</seg>
       </tuv>
     </tu>
@@ -26,7 +26,7 @@
       <tuv xml:lang="en">
         <seg>Check For Updates</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>搜索更新</seg>
       </tuv>
     </tu>
@@ -34,7 +34,7 @@
       <tuv xml:lang="en">
         <seg>Release Notes</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>发布说明</seg>
       </tuv>
     </tu>
@@ -42,7 +42,7 @@
       <tuv xml:lang="en">
         <seg>Another copy of the application is already running. If you cannot find it, restart your computer.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>另一个相同的程序已经在运行，如果找不到该程序，请重启电脑。</seg>
       </tuv>
     </tu>
@@ -51,7 +51,7 @@
       <tuv xml:lang="en">
         <seg>Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>另一个相同的{0}已经在运行，如果找不到{0}，请重启电脑。</seg>
       </tuv>
     </tu>
@@ -59,7 +59,7 @@
       <tuv xml:lang="en">
         <seg>There was a problem starting the application which might require that you restart your computer.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>启动程序时出现错误，请重启电脑。</seg>
       </tuv>
     </tu>
@@ -68,7 +68,7 @@
       <tuv xml:lang="en">
         <seg>There was a problem starting {0} which might require that you restart your computer.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>启动{0}时出现错误，请重启电脑。</seg>
       </tuv>
     </tu>
@@ -76,7 +76,7 @@
       <tuv xml:lang="en">
         <seg>Waiting for other application to finish...</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>正在等待其他程序完成任务...</seg>
       </tuv>
     </tu>
@@ -85,7 +85,7 @@
       <tuv xml:lang="en">
         <seg>Waiting for other {0} to finish...</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>正在等待其他{0}完成任务...</seg>
       </tuv>
     </tu>
@@ -93,7 +93,7 @@
       <tuv xml:lang="en">
         <seg>&amp;Cancel</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>撤消(&amp;C)</seg>
       </tuv>
     </tu>
@@ -101,7 +101,7 @@
       <tuv xml:lang="en">
         <seg>No</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>不</seg>
       </tuv>
     </tu>
@@ -109,7 +109,7 @@
       <tuv xml:lang="en">
         <seg>&amp;OK</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>确定(&amp;O)</seg>
       </tuv>
     </tu>
@@ -117,7 +117,7 @@
       <tuv xml:lang="en">
         <seg>Yes</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>是</seg>
       </tuv>
     </tu>
@@ -126,7 +126,7 @@
       <tuv xml:lang="en">
         <seg>{0} will be moved to the Recycle Bin.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>{0}将被移动到回收站里。</seg>
       </tuv>
     </tu>
@@ -135,7 +135,7 @@
       <tuv xml:lang="en">
         <seg>{0} will be moved to the Recycle Bin.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>{0}将被移动到回收站里。</seg>
       </tuv>
     </tu>
@@ -143,7 +143,7 @@
       <tuv xml:lang="en">
         <seg>Confirm Delete</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>确定删除</seg>
       </tuv>
     </tu>
@@ -151,7 +151,7 @@
       <tuv xml:lang="en">
         <seg>&amp;Cancel</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>撤消(&amp;C)</seg>
       </tuv>
     </tu>
@@ -159,7 +159,7 @@
       <tuv xml:lang="en">
         <seg>&amp;Delete</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>删除(&amp;D)</seg>
       </tuv>
     </tu>
@@ -168,7 +168,7 @@
       <tuv xml:lang="en">
         <seg>Found {0} images with names close to {1}</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>发现图像{0}和{1}名称相近</seg>
       </tuv>
     </tu>
@@ -176,7 +176,7 @@
       <tuv xml:lang="en">
         <seg>Art Of Reading</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>读物图库</seg>
       </tuv>
     </tu>
@@ -184,7 +184,7 @@
       <tuv xml:lang="en">
         <seg>Camera</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>照相机</seg>
       </tuv>
     </tu>
@@ -193,7 +193,7 @@
       <tuv xml:lang="en">
         <seg>Use {0}</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>使用{0}</seg>
       </tuv>
     </tu>
@@ -201,7 +201,7 @@
       <tuv xml:lang="en">
         <seg>Crop</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>剪裁</seg>
       </tuv>
     </tu>
@@ -209,7 +209,7 @@
       <tuv xml:lang="en">
         <seg>Download Art Of Reading Installer</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>下载“读物图库”安装程序</seg>
       </tuv>
     </tu>
@@ -217,7 +217,7 @@
       <tuv xml:lang="en">
         <seg>Edit...</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>编辑...</seg>
       </tuv>
     </tu>
@@ -225,7 +225,7 @@
       <tuv xml:lang="en">
         <seg>This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>这里是“读物图库”。在上方的搜索框里输入要搜索的对象，然后按Enter。用英语个印尼语输入都可以。</seg>
       </tuv>
     </tu>
@@ -233,7 +233,7 @@
       <tuv xml:lang="en">
         <seg>File</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>文档</seg>
       </tuv>
     </tu>
@@ -241,7 +241,7 @@
       <tuv xml:lang="en">
         <seg>Sorry, something went wrong while getting the image.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>抱歉，获取图像时出现错误。</seg>
       </tuv>
     </tu>
@@ -249,7 +249,7 @@
       <tuv xml:lang="en">
         <seg>Sorry, something went wrong with the ImageToolbox</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>抱歉，图像工具箱出现错误。</seg>
       </tuv>
     </tu>
@@ -257,7 +257,7 @@
       <tuv xml:lang="en">
         <seg>Get Picture</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>获取图片</seg>
       </tuv>
     </tu>
@@ -265,7 +265,7 @@
       <tuv xml:lang="en">
         <seg>Image Toolbox</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>图像工具箱</seg>
       </tuv>
     </tu>
@@ -273,7 +273,7 @@
       <tuv xml:lang="en">
         <seg>Install the Art Of Reading package (this may be very slow)</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>安装“读物图库”资料包（可能很慢）</seg>
       </tuv>
     </tu>
@@ -282,7 +282,7 @@
       <tuv xml:lang="en">
         <seg>Found {0} images</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>发现图像{0}</seg>
       </tuv>
     </tu>
@@ -290,7 +290,7 @@
       <tuv xml:lang="en">
         <seg>Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>该丛书有新版本，支持搜索的语言有阿拉伯语、孟加拉语、汉语、英语、法语、印尼语、印地语、葡萄牙语、西班牙语、泰语和斯瓦西里语。可以免费下载。</seg>
       </tuv>
     </tu>
@@ -298,7 +298,7 @@
       <tuv xml:lang="en">
         <seg>This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>您的电脑尚未安装“读物图库”</seg>
       </tuv>
     </tu>
@@ -306,7 +306,7 @@
       <tuv xml:lang="en">
         <seg>Found no matching images</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>没有匹配的图像</seg>
       </tuv>
     </tu>
@@ -315,7 +315,7 @@
       <tuv xml:lang="en">
         <seg>picture files</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>图片文档</seg>
       </tuv>
     </tu>
@@ -323,7 +323,7 @@
       <tuv xml:lang="en">
         <seg>Problem Getting Image</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>获取图片出现错误</seg>
       </tuv>
     </tu>
@@ -331,7 +331,7 @@
       <tuv xml:lang="en">
         <seg>Sorry, there was a problem loading that image.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>抱歉，加载图像时出现错误。</seg>
       </tuv>
     </tu>
@@ -339,7 +339,7 @@
       <tuv xml:lang="en">
         <seg>This image does not know:\n\nWho created it?\nWho can use it?</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>该图像不知道：\n\n谁是创作者？\n谁可以使用？</seg>
       </tuv>
     </tu>
@@ -347,7 +347,7 @@
       <tuv xml:lang="en">
         <seg>Scanner</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>扫描器</seg>
       </tuv>
     </tu>
@@ -355,7 +355,7 @@
       <tuv xml:lang="en">
         <seg>Search the Art of Reading Gallery</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>搜索“读物图库”</seg>
       </tuv>
     </tu>
@@ -363,7 +363,7 @@
       <tuv xml:lang="en">
         <seg>The search box is currently set to {0}</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>搜索栏使用的语言是{0}</seg>
       </tuv>
     </tu>
@@ -371,7 +371,7 @@
       <tuv xml:lang="en">
         <seg>Set up metadata...</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>设定元数据...</seg>
       </tuv>
     </tu>
@@ -379,7 +379,7 @@
       <tuv xml:lang="en">
         <seg>Other Names</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>其他名称</seg>
       </tuv>
     </tu>
@@ -387,7 +387,7 @@
       <tuv xml:lang="en">
         <seg>This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>此列表包含所有ISO-639语言，也包括ethnologue.com在录的各种语言的不同名称。请点击已经为您选中的“非列表语言”选项。</seg>
       </tuv>
     </tu>
@@ -396,7 +396,7 @@
       <tuv xml:lang="en">
         <seg>Ethnologue.com</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>Ethlonogue.com</seg>
       </tuv>
     </tu>
@@ -404,7 +404,7 @@
       <tuv xml:lang="en">
         <seg>About Language 639-3 Codes &amp; How To Apply For New Ones</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>关于“语言639-3代码”与“如何申请新的”</seg>
       </tuv>
     </tu>
@@ -412,7 +412,7 @@
       <tuv xml:lang="en">
         <seg>About The ISO Language Registry</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>关于ISO语言注册表</seg>
       </tuv>
     </tu>
@@ -420,7 +420,7 @@
       <tuv xml:lang="en">
         <seg>Code</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>代码</seg>
       </tuv>
     </tu>
@@ -429,7 +429,7 @@
       <tuv xml:lang="en">
         <seg>{0} Countries</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>{0}国家</seg>
       </tuv>
     </tu>
@@ -437,7 +437,7 @@
       <tuv xml:lang="en">
         <seg>Country</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>国家</seg>
       </tuv>
     </tu>
@@ -445,7 +445,7 @@
       <tuv xml:lang="en">
         <seg>You can change how the language name will be displayed here:</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>在这里改变显示的语言名称：</seg>
       </tuv>
     </tu>
@@ -453,7 +453,7 @@
       <tuv xml:lang="en">
         <seg>Lookup Language Code...</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>查找语言代码...</seg>
       </tuv>
     </tu>
@@ -461,7 +461,7 @@
       <tuv xml:lang="en">
         <seg>?</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>？</seg>
       </tuv>
     </tu>
@@ -469,7 +469,7 @@
       <tuv xml:lang="en">
         <seg>Name</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>名称</seg>
       </tuv>
     </tu>
@@ -477,7 +477,7 @@
       <tuv xml:lang="en">
         <seg>Show regional dialects</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>显示地区方言</seg>
       </tuv>
     </tu>
@@ -485,7 +485,7 @@
       <tuv xml:lang="en">
         <seg>Unlisted Language</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>未列出语言</seg>
       </tuv>
     </tu>
@@ -493,7 +493,7 @@
       <tuv xml:lang="en">
         <seg>Can't find your language?</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>找不到你的语言？</seg>
       </tuv>
     </tu>
@@ -501,7 +501,7 @@
       <tuv xml:lang="en">
         <seg>Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>抱歉，{0}的内存不足，这将导致变慢或出现问题。请退出并重启。</seg>
       </tuv>
     </tu>
@@ -509,7 +509,7 @@
       <tuv xml:lang="en">
         <seg>Creator: {0}</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>创作者: {0}</seg>
       </tuv>
     </tu>
@@ -517,7 +517,7 @@
       <tuv xml:lang="en">
         <seg>Creator</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>创作者</seg>
       </tuv>
     </tu>
@@ -525,7 +525,7 @@
       <tuv xml:lang="en">
         <seg>License Info</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>许可证信息</seg>
       </tuv>
     </tu>
@@ -535,7 +535,7 @@
       <tuv xml:lang="en">
         <seg>You must keep the copyright and credits for authors, illustrators, etc.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>一定要保留作者、插画家的版权以及对他们的承认</seg>
       </tuv>
     </tu>
@@ -545,7 +545,7 @@
       <tuv xml:lang="en">
         <seg>You are free to make commercial use of this work.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>可以将此作品用于商业用途</seg>
       </tuv>
     </tu>
@@ -555,7 +555,7 @@
       <tuv xml:lang="en">
         <seg>You may adapt and add to this work.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>可以增改此作品以适应当地需要</seg>
       </tuv>
     </tu>
@@ -565,7 +565,7 @@
       <tuv xml:lang="en">
         <seg>You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>可以增改此作品以适应当地需要，但是在发行时必须使用和这个相同或相似的证书。</seg>
       </tuv>
     </tu>
@@ -575,7 +575,7 @@
       <tuv xml:lang="en">
         <seg>You may not make changes or build upon this work without permission.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>未经允许，不可更改此作品，也不可在其基础上创作。</seg>
       </tuv>
     </tu>
@@ -585,7 +585,7 @@
       <tuv xml:lang="en">
         <seg>You may not use this work for commercial purposes.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>不可将此作品用于商业用途。</seg>
       </tuv>
     </tu>
@@ -595,7 +595,7 @@
       <tuv xml:lang="en">
         <seg>For permission to reuse, contact the copyright holder.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>要获得再使用的允许，请联系版权所有者。</seg>
       </tuv>
     </tu>
@@ -603,7 +603,7 @@
       <tuv xml:lang="en">
         <seg>No license specified</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>没指定许可证</seg>
       </tuv>
     </tu>
@@ -611,7 +611,7 @@
       <tuv xml:lang="en">
         <seg>Allow commercial uses of your work?</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>是否允许作品被用于商业用途？</seg>
       </tuv>
     </tu>
@@ -619,7 +619,7 @@
       <tuv xml:lang="en">
         <seg>Allow modifications of your work?</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>是否允许别人更改你的作品？</seg>
       </tuv>
     </tu>
@@ -627,7 +627,7 @@
       <tuv xml:lang="en">
         <seg>Copyright Holder</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>版权所有者</seg>
       </tuv>
     </tu>
@@ -635,7 +635,7 @@
       <tuv xml:lang="en">
         <seg>Creative Commons</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>知识共享</seg>
       </tuv>
     </tu>
@@ -643,7 +643,7 @@
       <tuv xml:lang="en">
         <seg>Creator</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>创作者</seg>
       </tuv>
     </tu>
@@ -651,7 +651,7 @@
       <tuv xml:lang="en">
         <seg>Custom</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>定制</seg>
       </tuv>
     </tu>
@@ -659,7 +659,7 @@
       <tuv xml:lang="en">
         <seg>Copyright and License</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>版权和许可证</seg>
       </tuv>
     </tu>
@@ -667,7 +667,7 @@
       <tuv xml:lang="en">
         <seg>Credit, Copyright, and License</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>致谢，版权，和许可证</seg>
       </tuv>
     </tu>
@@ -675,7 +675,7 @@
       <tuv xml:lang="en">
         <seg>Contact the copyright holder for any permissions</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>想获得任何授权，请联络版权所有者</seg>
       </tuv>
     </tu>
@@ -683,7 +683,7 @@
       <tuv xml:lang="en">
         <seg>Yes, as long as others share alike</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>同意，但是所有人都必须选择和此作品一样的版权形式</seg>
       </tuv>
     </tu>
@@ -692,7 +692,7 @@
       <tuv xml:lang="en">
         <seg>Additional Requests</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>其他要求</seg>
       </tuv>
     </tu>
@@ -701,7 +701,7 @@
       <tuv xml:lang="en">
         <seg>more info</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>更多信息</seg>
       </tuv>
     </tu>
@@ -709,7 +709,7 @@
       <tuv xml:lang="en">
         <seg>Not Enforceable</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>不能执行</seg>
       </tuv>
     </tu>
@@ -717,7 +717,7 @@
       <tuv xml:lang="en">
         <seg>This may also hide other buttons which are not needed by the non-advanced user.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>这也可以把普通用户不需要的按钮隐藏起来。</seg>
       </tuv>
     </tu>
@@ -725,7 +725,7 @@
       <tuv xml:lang="en">
         <seg>The button will show up when you hold down the Ctrl and Shift keys together.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>同时按住Ctrl和Shift键，按钮就会显示出来。</seg>
       </tuv>
     </tu>
@@ -733,7 +733,7 @@
       <tuv xml:lang="en">
         <seg>Settings...</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>设置...</seg>
       </tuv>
     </tu>
@@ -741,7 +741,7 @@
       <tuv xml:lang="en">
         <seg>Hide the button that opens settings.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>隐藏打开设置的按钮。</seg>
       </tuv>
     </tu>
@@ -749,7 +749,7 @@
       <tuv xml:lang="en">
         <seg>Factory Password</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>出厂密码</seg>
       </tuv>
     </tu>
@@ -757,7 +757,7 @@
       <tuv xml:lang="en">
         <seg>To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>为了阻止错误的更改导致工具失效，相关设置已经加锁。</seg>
       </tuv>
     </tu>
@@ -765,7 +765,7 @@
       <tuv xml:lang="en">
         <seg>Settings Protection Password</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>设置保护密码</seg>
       </tuv>
     </tu>
@@ -773,7 +773,7 @@
       <tuv xml:lang="en">
         <seg>Show Characters</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>显示字符</seg>
       </tuv>
     </tu>
@@ -782,7 +782,7 @@
       <tuv xml:lang="en">
         <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "factory password"</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>这些设置的出厂密码是"{0}"。如果忘记，可以用google搜索"{1}" 和 "出厂密码"。</seg>
       </tuv>
     </tu>
@@ -790,7 +790,7 @@
       <tuv xml:lang="en">
         <seg>Require the factory password to get into settings.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>需要出厂密码才能进入设置。</seg>
       </tuv>
     </tu>
@@ -798,7 +798,7 @@
       <tuv xml:lang="en">
         <seg>Settings Protection</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>设置保护</seg>
       </tuv>
     </tu>
@@ -806,7 +806,7 @@
       <tuv xml:lang="en">
         <seg>&amp;Font:</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>字体</seg>
       </tuv>
     </tu>
@@ -814,7 +814,7 @@
       <tuv xml:lang="en">
         <seg>(The selected font is not available on this machine. Using default.)</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>（此机器上没有被选中的字体，正在使用默认字体。）</seg>
       </tuv>
     </tu>
@@ -822,7 +822,7 @@
       <tuv xml:lang="en">
         <seg>This is a &amp;right to left writing system.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>该书写系统是从右到左的。</seg>
       </tuv>
     </tu>
@@ -830,7 +830,7 @@
       <tuv xml:lang="en">
         <seg>&amp;Size:</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>字体大小</seg>
       </tuv>
     </tu>
@@ -838,7 +838,7 @@
       <tuv xml:lang="en">
         <seg>&amp;Test Area:</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>测试区:</seg>
       </tuv>
     </tu>
@@ -846,7 +846,7 @@
       <tuv xml:lang="en">
         <seg>If the keyboard you need is not listed, click the appropriate link below to set it up</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>如果您需要的键盘不在列表中，,请单击相应链接进行设置。</seg>
       </tuv>
     </tu>
@@ -854,7 +854,7 @@
       <tuv xml:lang="en">
         <seg>Windows keyboard settings</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>Windows键盘设置</seg>
       </tuv>
     </tu>
@@ -862,7 +862,7 @@
       <tuv xml:lang="en">
         <seg>Available keyboards</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>可用键盘</seg>
       </tuv>
     </tu>
@@ -870,7 +870,7 @@
       <tuv xml:lang="en">
         <seg>Previously used keyboards</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>以前用过的键盘</seg>
       </tuv>
     </tu>
@@ -878,7 +878,7 @@
       <tuv xml:lang="en">
         <seg>Keyman Configuration</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>Keyman配置</seg>
       </tuv>
     </tu>
@@ -886,7 +886,7 @@
       <tuv xml:lang="en">
         <seg>Keyman 5.0 or later is not Installed.</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>没有安装Keyman 5.0或更新的版本。</seg>
       </tuv>
     </tu>
@@ -894,7 +894,7 @@
       <tuv xml:lang="en">
         <seg>Select the &amp;keyboard with which to type {0} text</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>请选择用以输入{0}文本的键盘</seg>
       </tuv>
     </tu>
@@ -902,7 +902,7 @@
       <tuv xml:lang="en">
         <seg>&amp;Test Area (Use this area to type something to test out your keyboard.)</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>测试区(在这个区域里输入内容以测试键盘)(&amp;T)</seg>
       </tuv>
     </tu>
@@ -910,7 +910,7 @@
       <tuv xml:lang="en">
         <seg>Warning</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>警告</seg>
       </tuv>
     </tu>
@@ -918,7 +918,7 @@
       <tuv xml:lang="en">
         <seg>Unable to connect to SLDR</seg>
       </tuv>
-      <tuv xml:lang="zh-Hans">
+      <tuv xml:lang="zh-CN">
         <seg>无法连接SLDR</seg>
       </tuv>
     </tu>
