@@ -981,16 +981,27 @@ namespace Bloom.Edit
 
 		public GeckoElement GetPageBody()
 		{
-			var frame = _browser1.WebBrowser.Window.Document.GetElementById("page") as GeckoIFrameElement;
-			if(frame == null)
-				return null;
-			// The following line looks like it should work, but it doesn't (at least not reliably in Geckofx45).
-			// return frame.ContentDocument.Body;
-			// On a fast shutdown of Bloom, while it is redisplaying, we can get an empty enumeration.
-			// See http://issues.bloomlibrary.org/youtrack/issue/BL-3988.
-			var elements = frame.ContentWindow.Document.GetElementsByTagName("body");
-			if (elements.Length == 0)
-				return null;
+			GeckoElementCollection elements;
+			try
+			{
+				var frame = _browser1.WebBrowser.Window.Document.GetElementById("page") as GeckoIFrameElement;
+				if(frame == null)
+					return null;
+				// The following line looks like it should work, but it doesn't (at least not reliably in Geckofx45).
+				// return frame.ContentDocument.Body;
+				// On a fast shutdown of Bloom, while it is redisplaying, we can get an empty enumeration.
+				// See http://issues.bloomlibrary.org/youtrack/issue/BL-3988.
+				elements = frame.ContentWindow.Document.GetElementsByTagName("body");
+				if (elements.Length == 0)
+					return null;
+			}
+			catch (ArgumentException ex)
+			{
+				if (ex.Source != "Geckofx-Core")
+					throw;
+				Debug.WriteLine("BL-4633 Probably a GeckoWindow.get_Document() failure, not fully initialized?");
+				return null; // BL-4633 probably a timing error?
+			}
 			return elements.First();
 		}
 
