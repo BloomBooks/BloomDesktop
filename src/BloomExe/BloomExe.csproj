@@ -229,6 +229,9 @@
     <Reference Include="SIL.Core">
       <HintPath>..\..\lib\dotnet\SIL.Core.dll</HintPath>
     </Reference>
+    <Reference Include="SIL.Core.Desktop">
+      <HintPath>..\..\lib\dotnet\SIL.Core.Desktop.dll</HintPath>
+    </Reference>
     <Reference Include="SIL.Media">
       <HintPath>..\..\lib\dotnet\SIL.Media.dll</HintPath>
     </Reference>

@@ -126,6 +126,10 @@
     <Reference Include="SIL.Core">
       <HintPath>..\..\lib\dotnet\SIL.Core.dll</HintPath>
     </Reference>
+    <Reference Include="SIL.Core.Desktop, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\SIL.Core.Desktop.dll</HintPath>
+    </Reference>
     <Reference Include="SIL.Media, Version=3.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\SIL.Media.dll</HintPath>

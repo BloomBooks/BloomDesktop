@@ -16,14 +16,13 @@ using L10NSharp;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Windows.Forms.ImageGallery;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Miscellaneous;
 using Gecko;
 using TempFile = SIL.IO.TempFile;
-using Bloom.Workspace;
 using Gecko.DOM;
 using SIL.IO;
+using SIL.Windows.Forms.ImageToolbox.ImageGallery;
 using SIL.Windows.Forms.Widgets;
 
 namespace Bloom.Edit
@@ -703,7 +702,7 @@ namespace Bloom.Edit
 						}
 						using(var temp = TempFile.TrackExisting(pathToPngVersion))
 						{
-							SIL.IO.RobustIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
+							SIL.IO.RobustImageIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
 
 							using(var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
 							{

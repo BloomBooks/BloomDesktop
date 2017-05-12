@@ -247,7 +247,7 @@ namespace Bloom.Book
 				{
 					using(Stream fs = new FileStream(imagePath, FileMode.Create))
 					{
-						SIL.IO.RobustIO.SaveImage(licenseImage, fs, ImageFormat.Png);
+						RobustImageIO.SaveImage(licenseImage, fs, ImageFormat.Png);
 					}
 				}
 				else
@@ -315,7 +315,7 @@ namespace Bloom.Book
 			if (metadata.License is CustomLicense)
 			{
 				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
-				// for that... but sheesh, these are even now very rare in Bloom-land and should become more rare. 
+				// for that... but sheesh, these are even now very rare in Bloom-land and should become more rare.
 				// So for now, let's just print the custom license contents.
 				originalLicenseSentence = license;
 			}
