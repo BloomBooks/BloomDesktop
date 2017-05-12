@@ -95,7 +95,7 @@
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(162, 15);
 			this.label2.TabIndex = 19;
-			this.label2.Text = "© 2011-2016 SIL International";
+			this.label2.Text = "© 2011-2017 SIL International";
 			this.label2.Click += new System.EventHandler(this.label2_Click);
 			// 
 			// _shortVersionLabel

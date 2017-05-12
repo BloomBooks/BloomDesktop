@@ -2861,6 +2861,18 @@
         <seg>B5Portrait</seg>
       </tuv>
     </tu>
+    <tu tuid="LayoutChoices.Device16x9Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Device16x9Landscape</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.Device16x9Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Device16x9Portrait</seg>
+      </tuv>
+    </tu>
     <tu tuid="LayoutChoices.HalfLetterPortrait">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
