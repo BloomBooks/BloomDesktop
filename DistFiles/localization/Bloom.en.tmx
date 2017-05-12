@@ -2623,6 +2623,12 @@
         <seg>This script requires taller lines</seg>
       </tuv>
     </tu>
+    <tu tuid="LayoutChoices.A3Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A3Landscape</seg>
+      </tuv>
+    </tu>
     <tu tuid="LayoutChoices.A4Landscape">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
