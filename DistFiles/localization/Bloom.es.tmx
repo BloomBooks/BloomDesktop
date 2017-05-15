@@ -2992,6 +2992,15 @@
         <seg>GeckofxHtmlToPdf.exe, un componente de Bloom, parece faltar. Esto impide las previsualizaciones y la impresión. A veces el software antivirus hace esto. Usted puede necesitar ayuda técnica para reparar la instalación Bloom y proteger este archivo sea eliminado.</seg>
       </tuv>
     </tu>
+    <tu tuid="LayoutChoices.A3Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A3Landscape</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>A3Horizontal</seg>
+      </tuv>
+    </tu>
     <tu tuid="LayoutChoices.A4Landscape">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
