@@ -522,12 +522,15 @@ function SetupElements(container) {
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    var sourceBubbleDivs = [];
+    var divsThatHaveSourceBubbles = [];
+    var bubbleDivs = [];
     if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
         $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
             if ($(this).find("textarea, div").length > 1) {
-                if (BloomSourceBubbles.ProduceSourceBubbles(this)) {
-                    sourceBubbleDivs.push(this);
+                var bubble = BloomSourceBubbles.ProduceSourceBubbles(this);
+                if (bubble) {
+                    divsThatHaveSourceBubbles.push(this);
+                    bubbleDivs.push(bubble);
                 }
             }
         });
@@ -538,7 +541,11 @@ function SetupElements(container) {
     // (Eventually we may make the hint part of the source bubble when there is one...Bl-4295.)
     // This would happen with the Book Title, which would have both
     // when there are source languages to show
-    BloomHintBubbles.addHintBubbles(container, sourceBubbleDivs);
+    BloomHintBubbles.addHintBubbles(container, divsThatHaveSourceBubbles, bubbleDivs);
+
+    for (var i = 0; i < bubbleDivs.length; i++) {
+        BloomSourceBubbles.MakeSourceBubblesIntoQtips(divsThatHaveSourceBubbles[i], bubbleDivs[i])
+    }
 
     // Add overflow event handlers so that when a div is overfull,
     // we add the overflow class and it gets a red background or something
