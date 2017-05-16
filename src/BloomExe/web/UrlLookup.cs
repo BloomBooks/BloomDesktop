@@ -88,6 +88,8 @@ namespace Bloom.web
 			}
 		}
 
+		private const string ExceptionMsg = "Exception while attempting look up of URL type {0}: {1}";
+
 		private static bool TryLookupUrl(UrlType urlType, out string url)
 		{
 			url = null;
@@ -112,7 +114,10 @@ namespace Bloom.web
 			catch (Exception e)
 			{
 				_internetAvailable = false;
-				Logger.WriteEvent("Exception while attempting look up of URL type " + urlType + ": " + e);
+				var msg = e.ToString();
+				if (urlType == UrlType.IssueTrackingSystem || urlType == UrlType.IssueTrackingSystemBackend)
+					msg = e.Message;
+				Logger.WriteEvent(string.Format(ExceptionMsg, urlType, msg)); // Review: should this always be "e.Message"?
 			}
 			return false;
 		}
