@@ -112,7 +112,10 @@ namespace Bloom.web
 			catch (Exception e)
 			{
 				_internetAvailable = false;
-				Logger.WriteEvent("Exception while attempting look up of URL type " + urlType + ": " + e);
+				var msg = e.ToString();
+				if (urlType == UrlType.IssueTrackingSystem || urlType == UrlType.IssueTrackingSystemBackend)
+					msg = e.Message;
+				Logger.WriteEvent($"Exception while attempting look up of URL type {urlType}: {msg}");
 			}
 			return false;
 		}
