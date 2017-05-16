@@ -882,33 +882,13 @@ namespace BloomTests.Book
 
 		#endregion
 
-
-//		[Test]
-//		public void SynchronizeDataItemsThroughoutDOM_EnglishTitleButNoVernacular_DoesNotCopyInEnglish()
-//		{
-//			var dom = new HtmlDom(@"<html ><head></head><body>
-//                <div id='bloomDataDiv'>
-//                     <div data-book='bookTitle' lang='en'>the title</div>
-//                </div>
-//                <div class='bloom-page verso'>
-//					 <div id='originalContributions' class='bloom-translationGroup'>
-//						<div data-book='originalContributions' lang='etr'></div>
-//						<div data-book='originalContributions' lang='en'></div>
-//					</div>
-//                </div>
-//                </body></html>");
-//			var collectionSettings = new CollectionSettings()
-//			{
-//				Language1Iso639Code = "fr"
-//			};
-//			var data = new BookData(dom, collectionSettings, null);
-//			data.SynchronizeDataItemsThroughoutDOM();
-//			XmlElement englishContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='en']");
-//			Assert.AreEqual("the contributions", englishContributions.InnerText, "Should copy English into body of course, as normal");
-//			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
-//			Assert.AreEqual("the contributions", frenchContributions.InnerText, "Should copy English into French Contributions becuase it's better than just showing nothing");
-//		}
-
+		private static string GetXpathForContributionsInLang(string lang)
+		{
+			// The old xpath used in most of these tests was getting datadiv results, not bloom-page results,
+			// but the messages on most Asserts made it clear it was supposed to be testing the bloom-page contents.
+			// This xpath tests the bloom-page contents, not the datadiv
+			return "//div[@id='originalContributions']/div[@data-book='originalContributions' and @lang='" + lang + "']";
+		}
 
 		[Test]
 		public void SynchronizeDataItemsThroughoutDOM_HasOnlyEnglishContributorsButEnglishIsLang3_CopiesEnglishIntoNationalLanguageSlot()
@@ -919,8 +899,8 @@ namespace BloomTests.Book
 				</div>
 				<div class='bloom-page verso'>
 					 <div id='originalContributions' class='bloom-translationGroup'>
-						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='fr'></div>
-						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='en'></div>
+						<div class='bloom-copyFromOtherLanguageIfNecessary' data-book='originalContributions' lang='fr'></div>
+						<div class='bloom-copyFromOtherLanguageIfNecessary' data-book='originalContributions' lang='en'></div>
 					</div>
 				</div>
 				</body></html>");
@@ -931,11 +911,10 @@ namespace BloomTests.Book
 				};
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
-			XmlElement englishContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='en']");
+			var englishContributions = dom.SelectSingleNodeHonoringDefaultNS(GetXpathForContributionsInLang("en"));
 			Assert.AreEqual("the contributions", englishContributions.InnerText, "Should copy English into body of course, as normal");
-			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
+			var frenchContributions = dom.SelectSingleNodeHonoringDefaultNS(GetXpathForContributionsInLang("fr"));
 			Assert.AreEqual("the contributions", frenchContributions.InnerText, "Should copy English into French Contributions becuase it's better than just showing nothing");
-			//Assert.AreEqual("en",frenchContributions.GetAttribute("bloom-languageBloomHadToCopyFrom"),"Should have left a record that we did this dubious 'borrowing' from English");
 		}
 
 
@@ -961,11 +940,9 @@ namespace BloomTests.Book
 			};
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
-			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
+			var frenchContributions = dom.SelectSingleNodeHonoringDefaultNS(GetXpathForContributionsInLang("fr"));
 			Assert.AreEqual("les contributeurs", frenchContributions.InnerText, "Should not touch existing French Contributions");
-			//Assert.IsFalse(frenchContributions.HasAttribute("bloom-languageBloomHadToCopyFrom"));
 		}
-
 
 		[Test]
 		public void SynchronizeDataItemsThroughoutDOM_HasFrenchAndEnglishContributorsInDataDiv_DoesNotCopyEnglishIntoFrenchSlot()
@@ -989,69 +966,101 @@ namespace BloomTests.Book
 			};
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
-			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
+			var frenchContributions = dom.SelectSingleNodeHonoringDefaultNS(GetXpathForContributionsInLang("fr"));
 			Assert.AreEqual("les contributeurs", frenchContributions.InnerText, "Should use the French, not the English even though the French in the body was empty");
-			XmlElement vernacularContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='xyz']");
-			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacualr Contributions. Only national language fields get this treatment");
+			var vernacularContributions = dom.SelectSingleNodeHonoringDefaultNS(GetXpathForContributionsInLang("xyz"));
+			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacular Contributions. Only national language fields get this treatment");
 		}
 
 		[Test]
 		public void SynchronizeDataItemsThroughoutDOM_HasOnlyEdoloContributors_CopiesItIntoL2ButNotL1()
 		{
+			// empty french datadiv element, but has self-closing paragraph tag
 			var dom = new HtmlDom(@"<html ><head></head><body>
 				<div id='bloomDataDiv'>
-					 <div data-book='originalContributions' lang='etr'>the contributions</div>
+					 <div data-book='originalContributions' lang='etr'><p>the contributions</p></div>
+					 <div data-book='originalContributions' lang='fr'><p /></div>
 				</div>
 				<div class='bloom-page verso'>
 					 <div id='originalContributions' class='bloom-translationGroup'>
 						<div class='bloom-copyFromOtherLanguageIfNecessary' data-book='originalContributions' lang='fr'></div>
-						<div  class='bloom-copyFromOtherLanguageIfNecessary'  data-book='originalContributions' lang='xyz'></div>
+						<div class='bloom-copyFromOtherLanguageIfNecessary' data-book='originalContributions' lang='xyz'></div>
 					</div>
 				</div>
 				</body></html>");
-			var collectionSettings = new CollectionSettings()
+			var collectionSettings = new CollectionSettings
 			{
 					  Language1Iso639Code = "xyz",
 					  Language2Iso639Code = "fr"
 			};
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
-			XmlElement frenchContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='fr']");
-			Assert.AreEqual("the contributions", frenchContributions.InnerText, "Should copy Edolo into French Contributions becuase it's better than just showing nothing");
-			XmlElement vernacularContributions = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@data-book='originalContributions' and @lang='xyz']");
-			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacualr Contributions. Only national language fields get this treatment");
+			var frenchContributions = dom.SelectSingleNodeHonoringDefaultNS(GetXpathForContributionsInLang("fr"));
+			Assert.AreEqual("the contributions", frenchContributions.InnerText, "Should copy Edolo into French Contributions because it's better than just showing nothing");
+			var vernacularContributions = dom.SelectSingleNodeHonoringDefaultNS(GetXpathForContributionsInLang("xyz"));
+			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacular Contributions. Only national language fields get this treatment");
 		}
 
-		//		[Test]
-		//		public void PrepareForEditing_CustomLicenseNotDiscarded()
-		//		{
-		//			SetDom(@"<div id='bloomDataDiv'>
-		//						<div data-book='copyright' lang='*'>
-		//							Copyright © 2015, me
-		//						</div>
-		//						<div data-book='licenseNotes' lang='en'>
-		//							Custom license info
-		//						</div>
-		//					</div>");
-		//			var book = CreateBook();
-		//			var dom = book.RawDom;
-		//			book.PrepareForEditing();
-		//			var copyright = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='marginBox']//div[@data-book='copyright']").InnerText;
-		//			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
-		//			var licenseImage = licenseBlock.SelectSingleNode("img");
-		//			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']").InnerText;
-		//			var licenseDescription = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']").InnerText;
-		//			var licenseNotes = licenseBlock.SelectSingleNode("div[@data-book='licenseNotes']").InnerText;
-		//			// Check that updated dom has the right license contents on the Credits page
-		//			// Check that data-div hasn't been contaminated with non-custom license stuff
-		//			Assert.AreEqual("Copyright © 2015, me", copyright);
-		//			Assert.AreEqual("Custom license info", licenseNotes);
-		//			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='licenseBlock']/div[@data-book='licenseUrl' and text()='']", 1);
-		//			Assert.IsEmpty(licenseDescription);
-		//			Assert.IsEmpty(licenseImage.Attributes["src"].Value);
-		//			Assert.IsNull(licenseImage.Attributes["alt"]);
-		//		}
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_HasOnlyFrenchContributors_CopiesItIntoEnglishIfNoEnglish()
+		{
+			// empty english datadiv element, but has empty paragraph tag
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					 <div data-book='originalContributions' lang='fr'><p>les contributeurs</p></div>
+					 <div data-book='originalContributions' lang='en'><p></p></div>
+				</div>
+				<div class='bloom-page verso'>
+					 <div id='originalContributions' class='bloom-translationGroup'>
+						<div class='bloom-copyFromOtherLanguageIfNecessary' data-book='originalContributions' lang='en'><p></p></div>
+						<div class='bloom-copyFromOtherLanguageIfNecessary' data-book='originalContributions' lang='xyz'></div>
+					</div>
+				</div>
+				</body></html>");
+			var collectionSettings = new CollectionSettings()
+			{
+				Language1Iso639Code = "xyz",
+				Language2Iso639Code = "en"
+			};
+			var data = new BookData(dom, collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			var englishContributions = dom.SelectSingleNodeHonoringDefaultNS(GetXpathForContributionsInLang("en"));
+			Assert.AreEqual("les contributeurs", englishContributions.InnerText, "Should copy French into English Contributions because it's better than just showing nothing");
+			var vernacularContributions = dom.SelectSingleNodeHonoringDefaultNS(GetXpathForContributionsInLang("xyz"));
+			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacular Contributions. Only national language fields get this treatment");
+		}
 
+		[TestCase("", ExpectedResult = true)]
+		[TestCase("  \t  ", ExpectedResult = true)]
+		[TestCase("<p></p>", ExpectedResult = true)]
+		[TestCase("Bob", ExpectedResult = false)]
+		[TestCase("<p>Bob</p>", ExpectedResult = false)]
+		[TestCase("<p/><p />", ExpectedResult = true)]
+		[TestCase("<br></br>", ExpectedResult = true)]
+		[TestCase("<br/>Bob", ExpectedResult = false)]
+		[TestCase("<br />", ExpectedResult = true)]
+		[TestCase("  <p> </p>  ", ExpectedResult = true)]
+		//[TestCase("\xFEFF", ExpectedResult = true)] // non-breaking zero-width Unicode character
+		public bool StringAlternativeHasNoText_VariousCases(string input)
+		{
+			return BookData.StringAlternativeHasNoText(input);
+		}
+
+		private static string NewLines
+		{
+			get
+			{
+				return Environment.NewLine + "  " + Environment.NewLine + "  " + Environment.NewLine;
+			}
+		}
+
+		// A separate test was required, since I wanted to use Environment.NewLine and the
+		// TestCase attribute requires a constant string.
+		[Test]
+		public void StringAlternativeHasNoText_NewLines()
+		{
+			Assert.IsTrue(BookData.StringAlternativeHasNoText(NewLines));
+		}
 
 		/// <summary>
 		/// BL-3078 where when xmatter was injected and updated, the text stored in data-book overwrote
