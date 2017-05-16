@@ -53,14 +53,27 @@ namespace Bloom.Api
 			catch (SocketException ex)
 			{
 				Logger.WriteEvent("Opening a WebSocketServer on " + websocketaddr + " failed.  Error = " + ex);
-				ErrorReport.NotifyUserOfProblem(ex, "Bloom cannot start properly (cannot set up some internal communications){0}{0}" +
-					"What caused this?{0}" +
-					"Possibly another version of Bloom is running, perhaps not very obviously.{0}{0}" +
-					"What can you do?{0}" +
-					"When you click OK, Bloom will exit. Then, restart your computer.{0}" +
-					"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine);
-				Application.Exit();
+				ReportSocketExceptionAndExit(ex, _server);
 			}
+		}
+
+		private const string SocketExceptionMsg =
+			"Bloom cannot start properly, because something prevented it from opening port {1},{0}" +
+			"which different parts of Bloom use to talk to each other.{0}" +
+			"Possibly another version of Bloom is running, perhaps not very obviously.{0}" +
+			"Other things that can cause this are firewalls (including Covenant Eyes) and anti-malware programs.{0}{0}" +
+			"What can you do?{0}" +
+			"When you click OK, Bloom will exit. Then, restart your computer.{0}" +
+			"If that doesn't fix the problem, try disabling any third-party firewalls and anti-malware programs (Microsoft's are OK).{0}" +
+			"If the problem keeps happening, click 'Details' and report the problem to the developers.";
+
+		/// <summary>
+		/// Internal for re-use by CommandAvailabilityPublisher
+		/// </summary>
+		internal static void ReportSocketExceptionAndExit(SocketException exception, WebSocketServer server)
+		{
+			ErrorReport.NotifyUserOfProblem(exception, SocketExceptionMsg, Environment.NewLine, server.Port);
+			Application.Exit();
 		}
 
 		public void Send(string eventId, string eventData)
