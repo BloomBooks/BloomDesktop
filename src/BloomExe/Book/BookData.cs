@@ -782,8 +782,18 @@ namespace Bloom.Book
 
 						var lang = node.GetOptionalStringAttribute("lang", "*");
 						if (lang == "N1" || lang == "N2" || lang == "V")
+						{
 							lang = data.WritingSystemAliases[lang];
-
+						}
+						else if (lang == "*")
+						{
+							// Some older versions of Bloom apparently used data-default-languages instead of lang.
+							// See http://issues.bloomlibrary.org/youtrack/issue/BL-4591.  If the defaults contain
+							// only a single writing system alias, we can translate that into the specific code.
+							var defaults = node.GetOptionalStringAttribute("data-default-languages", "*");
+							if (defaults == "N1" || defaults == "N2" || defaults == "V")
+								lang = data.WritingSystemAliases[defaults];
+						}
 						//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
 						//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
 						//							{
