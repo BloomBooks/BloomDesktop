@@ -16,6 +16,7 @@ using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 using System;
 using System.Collections.Generic;
+using System.Web;
 using BloomTemp;
 
 namespace BloomTests.Book
@@ -23,11 +24,6 @@ namespace BloomTests.Book
 	[TestFixture]
 	public class BookTests : BookTestsBase
 	{
-//        [Test]
-//        public void InsertPage_PageInMiddle_IsInserted()
-//        {
-//        }
-
 		/// <summary>
 		/// this test is weak... it doesn't *really* tell us that the preview will look right (e.g., that
 		/// the css will be properly found, based on the <base></base>, etc.)
@@ -45,34 +41,93 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter') )]", 3);
 		}
 
-//        [Test]
-//        public void InsertPage_RaisesInsertionEvent()
-//        {
-//            var book = CreateBook();
-//            bool gotEvent = false;
-//            book.PageInserted += new EventHandler((x, y) => gotEvent = true);
-//            Page existingPage = book.GetPages().First();
-//            TestTemplateInsertion(book, existingPage, 1);
-//            Assert.IsTrue(gotEvent);
-//        }
+		[Test]
+		public void BringBookUpToDate_EmbeddedXmlImgTagRemoved()
+		{
+			// Some older books had XML img tags inside the coverImage data-book value. This resulted in an
+			// html-encoded background-image url with XML inside it.
+			// BL-4586 and old Thai Big Book had this in it. Need to handle it for backwards compatibility.
+			const string imgTag = "<img style='width: 360px;' src='myImage.png' height='360' alt='missing'></img>";
+			SetDom(@"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*'>
+							" + imgTag + @"
+						</div>
+					</div>
+					<div class='bloom-page bloom-frontMatter'>
+						<div class='marginBox'>
+							<div class='bloom-imageContainer' data-book='coverImage'>
+								" + imgTag + @"
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
+			Assert.AreEqual("myImage.png", dataBookImage.InnerText);
+			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer') and @data-book='coverImage']");
+			Assert.IsTrue(pageImage.Attributes["class"].Value.Contains("bloom-backgroundImage"));
+			Assert.IsTrue(pageImage.Attributes["style"].Value.Contains("background-image:url('myImage.png'"));
+			Assert.AreEqual(string.Empty, pageImage.InnerText);
+		}
 
+		[Test]
+		public void BringBookUpToDate_EmbeddedEmptyImgTagRemoved()
+		{
+			const string imgTag = "<img>bad tag contents</img>";
+			const string placeHolderFile = "placeHolder.png";
+			SetDom(@"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*'>
+							" + imgTag + @"
+						</div>
+					</div>
+					<div class='bloom-page bloom-frontMatter'>
+						<div class='marginBox'>
+							<div class='bloom-imageContainer' data-book='coverImage'>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
+			Assert.AreEqual(placeHolderFile, dataBookImage.InnerText);
+			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer') and @data-book='coverImage']");
+			Assert.IsTrue(pageImage.Attributes["class"].Value.Contains("bloom-backgroundImage"));
+			Assert.IsTrue(pageImage.Attributes["style"].Value.Contains("background-image:url('" + placeHolderFile + "'"));
+			Assert.AreEqual(string.Empty, pageImage.InnerText);
+		}
 
-
-//		//regression
-//		[Test]
-//		public void UpdateFieldsAndVariables_NewVaccinationsBook_BookIsStillCalledVaccinations()
-//		{
-//			zzzz
-//			SetDom();
-//			var book = CreateBook();
-//			var dom = book.RawDom;
-//			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
-//			textarea1.InnerText = "peace";
-//			book.UpdateFieldsAndVariables_TEMPFORTESTS();
-//			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
-//			Assert.AreEqual("peace", textarea2.InnerText);
-//		}
-
+		[Test]
+		public void BringBookUpToDate_EmbeddedEncodedXmlImgTagRemoved()
+		{
+			// I haven't seen this, but it could happen that the src attribute in the embedded img tag was html encoded.
+			// So we'll make sure it works.
+			const string imageFilename = "my ǆñImageﭳ.png";
+			var encodedFilename = HttpUtility.UrlEncode(imageFilename);
+			var noPlusEncodedName = encodedFilename.Replace("+", "%20");
+			var imgTag = "<img style='width: 360px;' src='" + encodedFilename + "' height='360' alt='missing'></img>";
+			SetDom(@"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*'>
+							" + imgTag + @"
+						</div>
+					</div>
+					<div class='bloom-page bloom-frontMatter'>
+						<div class='marginBox'>
+							<div class='bloom-imageContainer' data-book='coverImage'>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
+			Assert.AreEqual(imageFilename, dataBookImage.InnerText);
+			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer') and @data-book='coverImage']");
+			Assert.IsTrue(pageImage.Attributes["class"].Value.Contains("bloom-backgroundImage"));
+			Assert.IsTrue(pageImage.Attributes["style"].Value.Contains("background-image:url('" + noPlusEncodedName + "'"));
+			Assert.AreEqual(string.Empty, pageImage.InnerText);
+		}
 
 		[Test]
 		public void BringBookUpToDate_VernacularTitleChanged_TitleCopiedToTextAreaOnAnotherPage()
