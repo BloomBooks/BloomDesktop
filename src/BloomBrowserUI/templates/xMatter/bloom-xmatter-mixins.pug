@@ -5,10 +5,6 @@ include ../bloom-foundation-mixins
 //- as custom xmatter templates.
 //- -------------------------------------------------------------------------------
 
-mixin field-xmatter(languages, key)
-	- requireTwoArguments('field-xmatter', arguments);
-	+field-common(languages, key)&attributes(attributes)
-
 mixin image-common(key)
 	+image(data-book=key)&attributes(attributes)
 		block
@@ -122,7 +118,8 @@ mixin factoryStandard-outsideFrontCover
 				//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
 				// because it is never empty
 				.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
-					+field-xmatter("V", "smallCoverCredits").Cover-Default-style
+					+field-prototypeDeclaredExplicity("V")
+						+editable(kLanguageForPrototypeOnly).Cover-Default-style(data-book='smallCoverCredits')
 				.bottomRow
 					.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
 					+chooser-topic.coverBottomBookTopic
