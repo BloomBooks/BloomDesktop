@@ -1,9 +1,7 @@
-﻿using System.IO;
-using Bloom;
+﻿using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
-using ICSharpCode.SharpZipLib.Zip;
 using SIL.TestUtilities;
 
 namespace BloomTests.CollectionTab
@@ -19,18 +17,9 @@ namespace BloomTests.CollectionTab
 			TestFolderPath = testFolder.Path;
 		}
 
-		private int GetDirNameOffset
+		public void RunCompressDirectoryTest(string outputPath, bool forReaderTools = false)
 		{
-			get
-			{
-				var rootName = Path.GetFileName(TestFolderPath);
-				return TestFolderPath.Length - rootName.Length;
-			}
-		}
-
-		public void RunCompressDirectoryTest(ZipOutputStream zipStream, bool forReaderTools = false)
-		{
-			CompressDirectory(TestFolderPath, zipStream, GetDirNameOffset, "", forReaderTools);
+			BookCompressor.CompressDirectory(outputPath, TestFolderPath, "", forReaderTools);
 		}
 	}
 }

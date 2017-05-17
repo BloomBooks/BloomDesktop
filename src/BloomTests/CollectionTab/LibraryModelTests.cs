@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ using SIL.TestUtilities;
 namespace BloomTests.CollectionTab
 {
 	[TestFixture]
+	[SuppressMessage("ReSharper", "LocalizableElement")]
 	class LibraryModelTests
 	{
 		private TemporaryFolder _collection;
@@ -54,18 +56,7 @@ namespace BloomTests.CollectionTab
 		// Imitate LibraryModel.MakeBloomPack() without the user interaction
 		private void MakeTestBloomPack(string bloomPackName, bool forReaderTools)
 		{
-			using (var fsOut = File.Create(bloomPackName))
-			{
-				using (var zipStream = new ZipOutputStream(fsOut))
-				{
-					zipStream.SetLevel(9);
-
-					_testLibraryModel.RunCompressDirectoryTest(zipStream, forReaderTools);
-
-					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
-					zipStream.Close();
-				}
-			}
+			_testLibraryModel.RunCompressDirectoryTest(bloomPackName, forReaderTools);
 		}
 
 		// Don't do anything with the zip file except read in the filenames
