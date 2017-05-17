@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -26,7 +26,7 @@ namespace Bloom.Publish
 
 
 		/// <summary>
-		/// Compress all the existing wav files into mp3s, it they aren't already compressed
+		/// Compress all the existing wav files into mp3s, if they aren't already compressed
 		/// </summary>
 		/// <returns>true if everything is compressed</returns>
 		public static bool TryCompressingAudioAsNeeded(string bookFolderPath, XmlDocument dom)
