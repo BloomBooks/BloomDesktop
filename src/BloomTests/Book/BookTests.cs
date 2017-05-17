@@ -1491,6 +1491,50 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'bloom-trilingual')]", 1);
 		}
 
+		[Test]
+		public void RepairBrokenSmallCoverCredits_Works()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>
+							xyz
+						</div>
+						<div data-book='contentLanguage2' lang='*'>
+							en
+						</div>
+						<div data-book='contentLanguage3' lang='*'>
+							fr
+						</div>
+						<div data-book='smallCoverCredits' lang='*'>
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+								<p>Dr. Stephen McConnel, Ph.D.</p>
+							</div>
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational2' contenteditable='true' lang='mix' />
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational1' contenteditable='true' lang='es'>
+								<p />
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='z' />
+						</div>
+					</div>
+					<div class='bloom-page' id='guid1'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+					</div>
+				  </body></html>");
+			var book = CreateBook();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='*']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='en']", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='mix']", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='es']", 0);
+			book.RepairBrokenSmallCoverCredits(book.OurHtmlDom);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='*']", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='mix']", 0);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='es']", 0);
+		}
+
 
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{
