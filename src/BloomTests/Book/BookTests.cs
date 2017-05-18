@@ -1491,6 +1491,63 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'bloom-trilingual')]", 1);
 		}
 
+		[Test]
+		public void RepairBrokenSmallCoverCredits_Works()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>
+							xyz
+						</div>
+						<div data-book='contentLanguage2' lang='*'>
+							en
+						</div>
+						<div data-book='contentLanguage3' lang='*'>
+							fr
+						</div>
+						<div data-book='smallCoverCredits' lang='*'>
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+								<p>Dr. Stephen McConnel, Ph.D.</p>
+							</div>
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational2' contenteditable='true' lang='mix' />
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational1' contenteditable='true' lang='es'>
+								<p />
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='z' />
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='fr'>
+								<p>M. Stephen McConnel</p>
+							</div>
+						</div>
+						<div data-book='smallCoverCredits' lang='fr'>
+							<p>Stephen McConnel</p>
+						</div>
+					</div>
+					<div class='bloom-page' id='guid1'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+					</div>
+				  </body></html>");
+			var book = CreateBook();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits']", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='*']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='en']");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='mix']");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='es']");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='fr']", 1);
+			book.RepairBrokenSmallCoverCredits(book.OurHtmlDom);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits']", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='*']");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='mix']");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='es']");
+			// Now test code that probably never will be exercised in the wild.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='fr']", 1);
+			var div = book.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='fr']");
+			Assert.AreEqual("Stephen McConnel", div.InnerText.Trim());
+		}
+
 
 		private Mock<IPage> CreateTemplatePage(string divContent)
 		{

@@ -145,12 +145,6 @@ mixin list-numbered(count)
 //- Lesser-used Mixins
 //- ------------------------------------------------
 
-//- Use this to have an element that repeats on multiple pages with the same value
-mixin field-common(languages, key)
-	- requireTwoArguments('field-common', arguments);
-	+field(languages)(data-book=key)&attributes(attributes)
-		block
-
 //- REVIEW: How are we going to allow placeholders/bubbles on these mono fields in the new <label> style, unless there is a wrapping element to hold  both?
 //- use this for fields that are always in the specified language, no translation possible
 mixin field-mono-version1(language, bubbleText)
