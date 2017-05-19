@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
-using System.Web.Util;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
@@ -137,7 +136,7 @@ namespace Bloom.Book
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
 
 			// We introduced "template starter" in 3.9, but books you made with it could be used in 3.8 etc.
-			// If those books came back to 3.9 or greater (which would happen eventually), 
+			// If those books came back to 3.9 or greater (which would happen eventually),
 			// they would still have this tag that they didn't really understand, and which should have been removed.
 			// At the moment, only templates are suitable for making shells, so use that to detect that someone has
 			// edited a user defined template book in a version that doesn't know about user defined templates.
@@ -842,11 +841,13 @@ namespace Bloom.Book
 		/// <param name="progress"></param>
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
+			RemoveImgTagInDataDiv(bookDOM);
 			if (Title.Contains("allowSharedUpdate"))
 			{
 				// Original version of this code that suffers BL_3166
 				progress.WriteStatus("Updating Front/Back Matter...");
 				BringXmatterHtmlUpToDate(bookDOM);
+				RepairBrokenSmallCoverCredits(bookDOM);
 
 				progress.WriteStatus("Gathering Data...");
 				TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
@@ -909,6 +910,7 @@ namespace Bloom.Book
 					// anything (may fix BL-3166).
 					var licenseMetadata = GetLicenseMetadata();
 					BringXmatterHtmlUpToDate(bookDOM);
+					RepairBrokenSmallCoverCredits(bookDOM);
 
 					progress.WriteStatus("Gathering Data...");
 					TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
@@ -959,6 +961,71 @@ namespace Bloom.Book
 					_pagesCache = null;
 					_doingBookUpdate = false;
 				}
+			}
+		}
+
+		/// <summary>
+		/// A bug in the initial release of Bloom 3.8 resulted in the nested editable divs being stored
+		/// for the smallCoverCredits data under the general language tag "*".  (The bug was actually in
+		/// the pug mixins for xmatter.)  The manifestation experienced by users was having the front page
+		/// credits disappear from older books.  New books appeared to work properly.  Fixing the xmatter
+		/// without fixing the book's html would have much the same effect, but for any books that had been
+		/// created or edited with Bloom 3.8 (or newer).  This method restores sanity to the bloomDataDiv
+		/// for the smallCoverCredits content.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4591.
+		/// </remarks>
+		internal void RepairBrokenSmallCoverCredits(HtmlDom bookDOM)
+		{
+			if (bookDOM == null || bookDOM.Body == null)
+				return;		// must be a test running...
+			var dataDiv = bookDOM.Body.SelectSingleNode("div[@id='bloomDataDiv']");
+			if (dataDiv == null)
+				return;		// must be a test running...
+			var badSmallCoverDiv = dataDiv.SelectSingleNode("div[@data-book='smallCoverCredits' and @lang='*']");
+			if (badSmallCoverDiv != null)
+			{
+				var divs = badSmallCoverDiv.SelectNodes("div[@lang!='']");
+				foreach (XmlNode div in divs)
+				{
+					var lang = div.GetStringAttribute("lang");
+					Debug.Assert(lang != "*");
+					var existingDiv = dataDiv.SelectSingleNode("div[@data-book='smallCoverCredits' and @lang='"+lang+"']");
+					if (existingDiv != null)
+						continue;	// I don't think this should ever happen, but just in case...
+					var innerText = div.InnerText;
+					if (String.IsNullOrWhiteSpace(innerText))
+						continue;	// ignore empty content regardless of XML markup
+					var newDiv = dataDiv.OwnerDocument.CreateElement("div");
+					newDiv.SetAttribute("data-book", "smallCoverCredits");
+					newDiv.SetAttribute("lang", lang);
+					newDiv.InnerXml = div.InnerXml.Trim();		// ignore surrounding newlines (or other whitespace)
+					dataDiv.AppendChild(newDiv);
+				}
+				dataDiv.RemoveChild(badSmallCoverDiv);
+			}
+		}
+
+		private static void RemoveImgTagInDataDiv(HtmlDom bookDom)
+		{
+			// BL-4586 Some old books ended up with background-image urls containing XML img tags
+			// in the HTML-encoded string. This happened because the coverImage data-book element
+			// contained an img tag instead of a bare filename.
+			// If such a thing exists in this book we will strip it out and replace it with the
+			// filename in the img src attribute.
+			const string dataDivImgXpath = "//div[@id='bloomDataDiv']/div[@data-book='coverImage']";
+			var elementsToCheck = bookDom.SafeSelectNodes(dataDivImgXpath);
+			foreach (XmlNode coverImageElement in elementsToCheck)
+			{
+				var imgNodes = coverImageElement.SafeSelectNodes("img");
+				if (imgNodes.Count == 0)
+				{
+					continue;
+				}
+				var imgNode = imgNodes[0];
+				coverImageElement.InnerText = (imgNode.Attributes == null || imgNode.Attributes["src"] == null) ?
+					string.Empty : HttpUtility.UrlDecode(imgNode.Attributes["src"].Value);
 			}
 		}
 

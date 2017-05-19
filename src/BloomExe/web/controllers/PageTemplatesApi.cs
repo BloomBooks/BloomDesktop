@@ -255,7 +255,7 @@ namespace Bloom.web.controllers
 		{
 			dynamic pageGroup = new ExpandoObject();
 			pageGroup.templateBookFolderUrl = MassageUrlForJavascript(Path.GetDirectoryName(path));
-			pageGroup.templateBookPath = HttpUtility.HtmlEncode(path);
+			pageGroup.templateBookPath = MassageUrlForJavascript(path);
 			return pageGroup;
 		}
 

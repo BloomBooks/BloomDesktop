@@ -16,6 +16,7 @@ using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 using System;
 using System.Collections.Generic;
+using System.Web;
 using BloomTemp;
 
 namespace BloomTests.Book
@@ -23,11 +24,6 @@ namespace BloomTests.Book
 	[TestFixture]
 	public class BookTests : BookTestsBase
 	{
-//        [Test]
-//        public void InsertPage_PageInMiddle_IsInserted()
-//        {
-//        }
-
 		/// <summary>
 		/// this test is weak... it doesn't *really* tell us that the preview will look right (e.g., that
 		/// the css will be properly found, based on the <base></base>, etc.)
@@ -45,34 +41,93 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter') )]", 3);
 		}
 
-//        [Test]
-//        public void InsertPage_RaisesInsertionEvent()
-//        {
-//            var book = CreateBook();
-//            bool gotEvent = false;
-//            book.PageInserted += new EventHandler((x, y) => gotEvent = true);
-//            Page existingPage = book.GetPages().First();
-//            TestTemplateInsertion(book, existingPage, 1);
-//            Assert.IsTrue(gotEvent);
-//        }
+		[Test]
+		public void BringBookUpToDate_EmbeddedXmlImgTagRemoved()
+		{
+			// Some older books had XML img tags inside the coverImage data-book value. This resulted in an
+			// html-encoded background-image url with XML inside it.
+			// BL-4586 and old Thai Big Book had this in it. Need to handle it for backwards compatibility.
+			const string imgTag = "<img style='width: 360px;' src='myImage.png' height='360' alt='missing'></img>";
+			SetDom(@"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*'>
+							" + imgTag + @"
+						</div>
+					</div>
+					<div class='bloom-page bloom-frontMatter'>
+						<div class='marginBox'>
+							<div class='bloom-imageContainer' data-book='coverImage'>
+								" + imgTag + @"
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
+			Assert.AreEqual("myImage.png", dataBookImage.InnerText);
+			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer') and @data-book='coverImage']");
+			Assert.IsTrue(pageImage.Attributes["class"].Value.Contains("bloom-backgroundImage"));
+			Assert.IsTrue(pageImage.Attributes["style"].Value.Contains("background-image:url('myImage.png'"));
+			Assert.AreEqual(string.Empty, pageImage.InnerText);
+		}
 
+		[Test]
+		public void BringBookUpToDate_EmbeddedEmptyImgTagRemoved()
+		{
+			const string imgTag = "<img>bad tag contents</img>";
+			const string placeHolderFile = "placeHolder.png";
+			SetDom(@"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*'>
+							" + imgTag + @"
+						</div>
+					</div>
+					<div class='bloom-page bloom-frontMatter'>
+						<div class='marginBox'>
+							<div class='bloom-imageContainer' data-book='coverImage'>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
+			Assert.AreEqual(placeHolderFile, dataBookImage.InnerText);
+			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer') and @data-book='coverImage']");
+			Assert.IsTrue(pageImage.Attributes["class"].Value.Contains("bloom-backgroundImage"));
+			Assert.IsTrue(pageImage.Attributes["style"].Value.Contains("background-image:url('" + placeHolderFile + "'"));
+			Assert.AreEqual(string.Empty, pageImage.InnerText);
+		}
 
-
-//		//regression
-//		[Test]
-//		public void UpdateFieldsAndVariables_NewVaccinationsBook_BookIsStillCalledVaccinations()
-//		{
-//			zzzz
-//			SetDom();
-//			var book = CreateBook();
-//			var dom = book.RawDom;
-//			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
-//			textarea1.InnerText = "peace";
-//			book.UpdateFieldsAndVariables_TEMPFORTESTS();
-//			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='copyOfVTitle'  and @lang='xyz']");
-//			Assert.AreEqual("peace", textarea2.InnerText);
-//		}
-
+		[Test]
+		public void BringBookUpToDate_EmbeddedEncodedXmlImgTagRemoved()
+		{
+			// I haven't seen this, but it could happen that the src attribute in the embedded img tag was html encoded.
+			// So we'll make sure it works.
+			const string imageFilename = "my ǆñImageﭳ.png";
+			var encodedFilename = HttpUtility.UrlEncode(imageFilename);
+			var noPlusEncodedName = encodedFilename.Replace("+", "%20");
+			var imgTag = "<img style='width: 360px;' src='" + encodedFilename + "' height='360' alt='missing'></img>";
+			SetDom(@"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*'>
+							" + imgTag + @"
+						</div>
+					</div>
+					<div class='bloom-page bloom-frontMatter'>
+						<div class='marginBox'>
+							<div class='bloom-imageContainer' data-book='coverImage'>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			var dataBookImage = dom.SelectSingleNodeHonoringDefaultNS("//div[@id='bloomDataDiv']/div[@data-book='coverImage']");
+			Assert.AreEqual(imageFilename, dataBookImage.InnerText);
+			var pageImage = dom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class,'bloom-imageContainer') and @data-book='coverImage']");
+			Assert.IsTrue(pageImage.Attributes["class"].Value.Contains("bloom-backgroundImage"));
+			Assert.IsTrue(pageImage.Attributes["style"].Value.Contains("background-image:url('" + noPlusEncodedName + "'"));
+			Assert.AreEqual(string.Empty, pageImage.InnerText);
+		}
 
 		[Test]
 		public void BringBookUpToDate_VernacularTitleChanged_TitleCopiedToTextAreaOnAnotherPage()
@@ -1593,6 +1648,63 @@ namespace BloomTests.Book
 			// bloom-trilingual was also added to the stored version of the page
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 1);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'bloom-trilingual')]", 1);
+		}
+
+		[Test]
+		public void RepairBrokenSmallCoverCredits_Works()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>
+							xyz
+						</div>
+						<div data-book='contentLanguage2' lang='*'>
+							en
+						</div>
+						<div data-book='contentLanguage3' lang='*'>
+							fr
+						</div>
+						<div data-book='smallCoverCredits' lang='*'>
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='en'>
+								<p>Dr. Stephen McConnel, Ph.D.</p>
+							</div>
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational2' contenteditable='true' lang='mix' />
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-contentNational1' contenteditable='true' lang='es'>
+								<p />
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='z' />
+							<div data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='fr'>
+								<p>M. Stephen McConnel</p>
+							</div>
+						</div>
+						<div data-book='smallCoverCredits' lang='fr'>
+							<p>Stephen McConnel</p>
+						</div>
+					</div>
+					<div class='bloom-page' id='guid1'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+					</div>
+				  </body></html>");
+			var book = CreateBook();
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits']", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='*']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='en']");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='mix']");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='es']");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='fr']", 1);
+			book.RepairBrokenSmallCoverCredits(book.OurHtmlDom);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits']", 2);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='*']");
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='mix']");
+			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='es']");
+			// Now test code that probably never will be exercised in the wild.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='fr']", 1);
+			var div = book.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='smallCoverCredits' and @lang='fr']");
+			Assert.AreEqual("Stephen McConnel", div.InnerText.Trim());
 		}
 
 
