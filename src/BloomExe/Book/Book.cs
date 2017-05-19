@@ -847,6 +847,7 @@ namespace Bloom.Book
 				// Original version of this code that suffers BL_3166
 				progress.WriteStatus("Updating Front/Back Matter...");
 				BringXmatterHtmlUpToDate(bookDOM);
+				RepairBrokenSmallCoverCredits(bookDOM);
 
 				progress.WriteStatus("Gathering Data...");
 				TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
@@ -909,6 +910,7 @@ namespace Bloom.Book
 					// anything (may fix BL-3166).
 					var licenseMetadata = GetLicenseMetadata();
 					BringXmatterHtmlUpToDate(bookDOM);
+					RepairBrokenSmallCoverCredits(bookDOM);
 
 					progress.WriteStatus("Gathering Data...");
 					TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
@@ -959,6 +961,49 @@ namespace Bloom.Book
 					_pagesCache = null;
 					_doingBookUpdate = false;
 				}
+			}
+		}
+
+		/// <summary>
+		/// A bug in the initial release of Bloom 3.8 resulted in the nested editable divs being stored
+		/// for the smallCoverCredits data under the general language tag "*".  (The bug was actually in
+		/// the pug mixins for xmatter.)  The manifestation experienced by users was having the front page
+		/// credits disappear from older books.  New books appeared to work properly.  Fixing the xmatter
+		/// without fixing the book's html would have much the same effect, but for any books that had been
+		/// created or edited with Bloom 3.8 (or newer).  This method restores sanity to the bloomDataDiv
+		/// for the smallCoverCredits content.
+		/// </summary>
+		/// <remarks>
+		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4591.
+		/// </remarks>
+		internal void RepairBrokenSmallCoverCredits(HtmlDom bookDOM)
+		{
+			if (bookDOM == null || bookDOM.Body == null)
+				return;		// must be a test running...
+			var dataDiv = bookDOM.Body.SelectSingleNode("div[@id='bloomDataDiv']");
+			if (dataDiv == null)
+				return;		// must be a test running...
+			var badSmallCoverDiv = dataDiv.SelectSingleNode("div[@data-book='smallCoverCredits' and @lang='*']");
+			if (badSmallCoverDiv != null)
+			{
+				var divs = badSmallCoverDiv.SelectNodes("div[@lang!='']");
+				foreach (XmlNode div in divs)
+				{
+					var lang = div.GetStringAttribute("lang");
+					Debug.Assert(lang != "*");
+					var existingDiv = dataDiv.SelectSingleNode("div[@data-book='smallCoverCredits' and @lang='"+lang+"']");
+					if (existingDiv != null)
+						continue;	// I don't think this should ever happen, but just in case...
+					var innerText = div.InnerText;
+					if (String.IsNullOrWhiteSpace(innerText))
+						continue;	// ignore empty content regardless of XML markup
+					var newDiv = dataDiv.OwnerDocument.CreateElement("div");
+					newDiv.SetAttribute("data-book", "smallCoverCredits");
+					newDiv.SetAttribute("lang", lang);
+					newDiv.InnerXml = div.InnerXml.Trim();		// ignore surrounding newlines (or other whitespace)
+					dataDiv.AppendChild(newDiv);
+				}
+				dataDiv.RemoveChild(badSmallCoverDiv);
 			}
 		}
 
