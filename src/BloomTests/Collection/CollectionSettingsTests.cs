@@ -107,5 +107,31 @@ namespace BloomTests.Collection
 			Assert.IsTrue(Regex.Match(css, @"@media\s+print\s+{\s+\.numberedPage:after\s+{\s+content:\s+counter\(pageNumber,\s+" + oldNumberStyle + @"\);\s+}\s+}").Success,
 							  "Css did not generate PageNumber style rule match.");
 		}
+
+		[TestCase("en", "es", "de", new[] {"en", "es", "de", "en"})] // we don't really need it, but English is put at the end even if already present
+		[TestCase("id", "es", "de", new[] { "id", "es", "de", "en" })] // more typical case where adding English is important
+		[TestCase("zh-CN", "es", "de", new[] { "zh-CN", "es", "de", "en" })] // zh-CN does not require an insertion
+		[TestCase("zh-Hans", "es", "de", new[] { "zh-Hans", "zh-CN", "es", "de", "en" })] // any other zh-X requires zh-CN to be inserted following it.
+		[TestCase("es", "zh-Hans", "de", new[] { "es", "zh-Hans", "zh-CN", "de", "en" })] // try in all 3 positions.
+		[TestCase("es", "id", "zh-Hant", new[] { "es", "id", "zh-Hant", "zh-CN", "en" })]
+		[TestCase("es", "zh-Hans", "zh-Hant", new[] { "es", "zh-Hans", "zh-Hant", "zh-CN", "en" })] // if we have two locale-specific ones, the insertion should be after both.
+		[TestCase("fr-CA", "es", "de", new[] { "fr-CA", "fr", "es", "de", "en" })] // any fr-X requires fr inserted after it
+		[TestCase("es", "fr-CA", "de", new[] { "es", "fr-CA", "fr", "de", "en" })]
+		[TestCase("es", "id", "fr-LU", new[] { "es", "id", "fr-LU", "fr", "en" })]
+		// given two fr-X codes, insert fr after the last of them. The main point here is that fr should be tried after fr-FR and fr-LU.
+		// But the result here is actually debatable: should es be preferred to fr in this case?
+		// Maybe the right result is fr-FR, fr-LU, fr, es, en in this case, since the original order indicates that French is better than Spanish?
+		// But it's a very obscure and unlikely case; I think we can live with what the current algorithm does.
+		[TestCase("fr-FR", "es", "fr-LU", new[] {"fr-FR", "es", "fr-LU", "fr", "en" })]
+		[TestCase("zh-Hans", "fr-CA", "es-SV", new[] { "zh-Hans", "zh-CN", "fr-CA", "fr", "es-SV", "es", "en" })] // all three!!
+		[TestCase("fr", "fr-CA", "de", new[] { "fr", "fr-CA", "de", "en" })] // already have the fall-back, don't add again.
+		public void LicenseDescriptionLanguagePriorities_Results(string lang1, string lang2, string lang3, string[] results)
+		{
+			var settings = CreateCollectionSettings(_folder.Path, "test");
+			settings.Language1Iso639Code = lang1;
+			settings.Language2Iso639Code = lang2;
+			settings.Language3Iso639Code = lang3;
+			Assert.That(settings.LicenseDescriptionLanguagePriorities, Is.EqualTo(results));
+		}
 	}
 }

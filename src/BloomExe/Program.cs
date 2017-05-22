@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -949,14 +949,22 @@ namespace Bloom
 			var desiredLanguage = Settings.Default.UserInterfaceLanguage;
 			if (String.IsNullOrEmpty(desiredLanguage) || !Settings.Default.UserInterfaceLanguageSetExplicitly)
 			{
-				// Nothing has been explicitly selected by the user yet, so try to get a localization for the same language.
-				// First try for an exact match.  (This is motivated by the Chinese localization which specifies more than
-				// just the base language tag.)
+				// Nothing has been explicitly selected by the user yet, so try to get a localization for the system language.
+				// First try for an exact match, or failing that a localization with the same language.
+				// (This is motivated by the Chinese localization which currently specifies zh-CN. LM might eventually
+				// support multiple variants for a single language like zh-CN or zh-Hans, at which point both might be in the
+				// list and we'd want the best match. In the meantime we want zh-Hans to find zh-CN. See BL-3691.)
+				string localeMatchingLanguage = null;
 				foreach  (var lang in LocalizationManager.GetAvailableUILanguageTags(installedStringFileFolder, "Bloom"))
 				{
 					if (lang == UserInterfaceCulture.IetfLanguageTag)
 						return UserInterfaceCulture.IetfLanguageTag;
+					if (lang.StartsWith(UserInterfaceCulture.TwoLetterISOLanguageName))
+						localeMatchingLanguage = lang;
 				}
+				// No exact match; did we find one that is at least the right language? If so use that.
+				if (localeMatchingLanguage != null)
+					return localeMatchingLanguage;
 				// If exact matches fail, return the base language tag.  If that doesn't match in the LM.Create method,
 				// then L10NSharp will prompt the user to select one of the available localizations.
 				return UserInterfaceCulture.TwoLetterISOLanguageName;
