@@ -959,7 +959,7 @@ namespace Bloom
 				{
 					if (lang == UserInterfaceCulture.IetfLanguageTag)
 						return UserInterfaceCulture.IetfLanguageTag;
-					if (lang.StartsWith(UserInterfaceCulture.TwoLetterISOLanguageName))
+					if (localeMatchingLanguage == null && lang.StartsWith(UserInterfaceCulture.TwoLetterISOLanguageName))
 						localeMatchingLanguage = lang;
 				}
 				// No exact match; did we find one that is at least the right language? If so use that.
