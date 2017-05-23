@@ -4,7 +4,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using NUnit.Framework;
 using SIL.TestUtilities;
-using SIL.Windows.Forms;
+using SIL.Reflection;
 
 namespace BloomTests.Book
 {
