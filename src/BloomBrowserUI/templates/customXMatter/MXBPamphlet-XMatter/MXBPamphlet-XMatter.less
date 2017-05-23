@@ -25,25 +25,12 @@
 
 .insideBackCover {
     .marginBox {
-        .bloom-editable:only-child {
-            height: 100%;
-            display: inherit;
-        }
-        .bloom-editable:not(:only-child) {
-            flex: auto;
-            display: block;
-            &.Printer-Statement-style {
-                height: auto;
-                padding-bottom: 20px;
-                font-size: 10pt;
-                text-align: center;
-                justify-content: center;
-            }
-        }
         // set a default style for the new Printer's Statement
         .Printer-Statement-style {
             font-size: 10pt;
             line-height: 1.2;
+            text-align: center;
+            justify-content: center;
         }
         display: flex;
         flex-direction: column;
