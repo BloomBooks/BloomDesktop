@@ -23,11 +23,20 @@ export default class bloomQtipUtils {
         });
     }
 
+    // Tell whether an element's bubble might overlap some other element (and therefore typically should
+    // only be shown when the element has focus, or possibly when the mouse is over it).
+    // Currently we approximate this by testing whether a box is narrower than the containing
+    // marginBox (unless it has bloom-alwaysShowBubble, in which case we don't ever want the focus-only
+    // behavior so we make this routine return false).
+    // Unfortunately measuring width seems to be unreliable while window layout is still in progress;
+    // experience suggests wrapping calls to this method and anything that uses the result in a
+    // setTimeout(..., 250).
+    // 250 is a compromise. On my fast desktop, 80ms is enough (at least in my test book); 70 is not.
+    // Don't want to go much over 250 or it will too be noticeable that bubbles are delayed.
+    // Hopefully this will be enough even on slower machines. If not, a focus-only bubble is not a
+    // complete disaster.
+    // (I tried using $(document).ready()...doesn't work. Better ideas welcome!)
     public static mightCauseHorizontallyOverlappingBubbles(element: JQuery): boolean {
-        //We can't actually know for sure if overlapping would happen, but
-        //we can be very conservative and say that if the text
-        //box isn't taking up the whole width, it *might* cause
-        //an overlap
         if ($(element).hasClass('bloom-alwaysShowBubble')) {
             return false;
         }
