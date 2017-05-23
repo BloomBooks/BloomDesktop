@@ -724,7 +724,7 @@ namespace Bloom.Collection
 				for (int i = result.Length - 1; i >= 0; i--)
 				{
 					var culture = result[i];
-					if (culture.Length <= 2)
+					if (culture == null || culture.Length <= 2)
 						continue;
 					var extra = culture.Substring(0, 2); // Generally insert corresponding language for longer culture
 					if (extra == "zh")
