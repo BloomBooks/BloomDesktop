@@ -429,7 +429,7 @@ export default class BloomSourceBubbles {
 
                 BloomSourceBubbles.SetupTooltips($this);
             });
-        }, 250);
+        }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
     }
 
     private static SetupTooltips(editableDiv: JQuery): void {
