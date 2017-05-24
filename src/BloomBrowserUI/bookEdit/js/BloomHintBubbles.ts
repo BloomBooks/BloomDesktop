@@ -324,7 +324,7 @@ export default class BloomHintBubbles {
                 shouldShowAlways = false;
             }
             this.makeHintBubbleCore(target, whatToSay, shouldShowAlways);
-        }, 250);
+        }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
     }
 
     private static makeHintBubbleCore(target: JQuery, whatToSay: string, shouldShowAlways: boolean) {
