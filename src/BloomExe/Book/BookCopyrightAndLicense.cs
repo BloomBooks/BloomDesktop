@@ -36,23 +36,29 @@ namespace Bloom.Book
 			{
 				return GetMetadataWithDefaultCopyrightAndLicense(brandingNameOrFolderPath);
 			}
+			return CreateMetadata(dom.GetBookSetting("copyright"), GetLicenseUrl(dom), dom.GetBookSetting("licenseNotes"));
+		}
+
+		public static Metadata GetOriginalMetadata(HtmlDom dom, string brandingNameOrFolderPath = "")
+		{
+			return CreateMetadata(dom.GetBookSetting("originalCopyright"), dom.GetBookSetting("originalLicenseUrl").GetExactAlternative("*"), dom.GetBookSetting("originalLicenseNotes"));
+		}
+
+		public static Metadata CreateMetadata(MultiTextBase copyright, string licenseUrl, MultiTextBase licenseNotes)
+		{
 			var metadata = new Metadata();
-			var copyright = dom.GetBookSetting("copyright");
 			if (!copyright.Empty)
 			{
 				metadata.CopyrightNotice = WebUtility.HtmlDecode(copyright.GetFirstAlternative());
 			}
 
-			var licenseUrl = dom.GetBookSetting("licenseUrl").GetBestAlternativeString(new[] { "*", "en" });
-
 			if (string.IsNullOrWhiteSpace(licenseUrl))
 			{
 				//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
 				//custom licenses live in this field, so if we have notes (and no URL) it is a custom one.
-				var licenseNotes = dom.GetBookSetting("licenseNotes");
 				if (!licenseNotes.Empty)
 				{
-					metadata.License = new CustomLicense { RightsStatement = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative()) };
+					metadata.License = new CustomLicense {RightsStatement = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative())};
 				}
 				else
 				{
@@ -80,14 +86,18 @@ namespace Bloom.Book
 					throw new ApplicationException("Bloom had trouble parsing this license url: '" + licenseUrl + "'. (ref BL-4108)", e);
 				}
 				//are there notes that go along with that?
-				var licenseNotes = dom.GetBookSetting("licenseNotes");
-				if(!licenseNotes.Empty)
+				if (!licenseNotes.Empty)
 				{
 					var s = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative());
 					metadata.License.RightsStatement = HtmlDom.ConvertHtmlBreaksToNewLines(s);
 				}
 			}
 			return metadata;
+		}
+
+		private static string GetLicenseUrl(HtmlDom dom)
+		{
+			return dom.GetBookSetting("licenseUrl").GetBestAlternativeString(new[] { "*", "en" });
 		}
 
 		private static Metadata GetMetadataWithDefaultCopyrightAndLicense(string brandingNameOrPath)
@@ -303,7 +313,38 @@ namespace Bloom.Book
 			{
 				return; //leave the original there.
 			}
-			var metadata = BookCopyrightAndLicense.GetMetadata(dom);
+			var encodedCopyrightAndLicense = GetOriginalCopyrightAndLicenseNotice(collectionSettings, GetMetadata(dom));
+			bookData.Set("originalCopyrightAndLicense", encodedCopyrightAndLicense, "*");
+			bookData.Set("originalLicenseUrl", GetLicenseUrl(dom), "*");
+			bookData.Set("originalCopyright", System.Web.HttpUtility.HtmlEncode(BookCopyrightAndLicense.GetMetadata(dom).CopyrightNotice), "*");
+			bookData.Set("originalLicenseNotes", dom.GetBookSetting("licenseNotes").GetFirstAlternative(), "*");
+			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
+		}
+
+		/// <summary>
+		/// This is used each time we update xmatter. It assumes originalLicenseUrl, originalCopyright, and originalLicenseNotes have
+		/// already been set while creating the book. It updates the actual displayed originalCopyrightAndLicense to the appropriate
+		/// derived value based on the current language settings of the book. It should be called before we update the DOM from
+		/// the datadiv.
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <param name="bookData"></param>
+		/// <param name="collectionSettings"></param>
+		public static void UpdateOriginalCopyrightAndLicense(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings)
+		{
+			if (bookData.GetMultiTextVariableOrEmpty("originalCopyrightAndLicense").Count == 0)
+			{
+				// If the book doesn't have this it's an original, and we don't want to insert a notice.
+				// (Or possibly, it's an adaptation created before we started inserting original copyright information.
+				// In that case we wish we could make one, but we don't have the information we need to create it correctly.)
+				return;
+			}
+			var encodedCopyrightAndLicense = GetOriginalCopyrightAndLicenseNotice(collectionSettings, GetOriginalMetadata(dom));
+			bookData.Set("originalCopyrightAndLicense", encodedCopyrightAndLicense, "*");
+		}
+
+		private static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, Metadata metadata)
+		{
 			string idOfLanguageUsed;
 			var languagePriorityIds = collectionSettings.LicenseDescriptionLanguagePriorities;
 
@@ -311,11 +352,11 @@ namespace Bloom.Book
 
 			var license = metadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
 			string originalLicenseSentence;
-			var preferredLanguageIds = new[] { collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en" };
+			var preferredLanguageIds = new[] {collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en"};
 			if (metadata.License is CustomLicense)
 			{
 				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
-				// for that... but sheesh, these are even now very rare in Bloom-land and should become more rare. 
+				// for that... but sheesh, these are even now very rare in Bloom-land and should become more rare.
 				// So for now, let's just print the custom license contents.
 				originalLicenseSentence = license;
 			}
@@ -326,10 +367,9 @@ namespace Bloom.Book
 					"On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.",
 					preferredLanguageIds, out idOfLanguageUsed);
 				originalLicenseSentence = string.IsNullOrWhiteSpace(license) ? "" : string.Format(licenseSentenceTemplate, license);
-				originalLicenseSentence = originalLicenseSentence.Replace("..", ".");  // in case had notes which also had a period.
+				originalLicenseSentence = originalLicenseSentence.Replace("..", "."); // in case had notes which also had a period.
 			}
 
-			Console.WriteLine(originalLicenseSentence);
 			var copyrightNotice = "";
 			if (string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
 			{
@@ -346,16 +386,15 @@ namespace Bloom.Book
 					"Adapted from original, {0}.",
 					"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.",
 					preferredLanguageIds, out idOfLanguageUsed);
-				copyrightNotice = String.Format(originalCopyrightSentence, metadata.CopyrightNotice.Trim()) + " " + originalLicenseSentence;
+				copyrightNotice = String.Format(originalCopyrightSentence, metadata.CopyrightNotice.Trim()) + " " +
+				                  originalLicenseSentence;
 			}
-			Console.WriteLine(copyrightNotice);
 
 			// The copyright string has to be encoded because it's fed eventually into the XmlNode.InnerXml method, and some people
 			// like to use & in their copyright notices.  metaData.CopyrightNotice is not Html encoded, so it can give us bare &s.
 			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
 			var encodedCopyright = System.Web.HttpUtility.HtmlEncode(copyrightNotice);
-			bookData.Set("originalCopyrightAndLicense", encodedCopyright, "*");
-			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
+			return encodedCopyright;
 		}
 	}
 }
