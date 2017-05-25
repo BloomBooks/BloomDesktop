@@ -29,16 +29,16 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper4 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
-			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo4 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper3 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo3 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper4 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo4 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			this._loadTimer = new System.Windows.Forms.Timer(this.components);
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
@@ -49,14 +49,14 @@
 			this._contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._openPDF = new System.Windows.Forms.ToolStripMenuItem();
-			this._epubRadio = new System.Windows.Forms.RadioButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
 			this._bookletCoverRadio = new System.Windows.Forms.RadioButton();
 			this.label1 = new System.Windows.Forms.Label();
-			this._uploadRadio = new System.Windows.Forms.RadioButton();
 			this._bookletBodyRadio = new System.Windows.Forms.RadioButton();
 			this._simpleAllPagesRadio = new System.Windows.Forms.RadioButton();
+			this._uploadRadio = new System.Windows.Forms.RadioButton();
+			this._epubRadio = new System.Windows.Forms.RadioButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._pdfViewer = new Bloom.Publish.PdfViewer();
 			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
@@ -92,7 +92,7 @@
 			this._topBarPanel.Controls.Add(this._printButton);
 			this._topBarPanel.Location = new System.Drawing.Point(296, 320);
 			this._topBarPanel.Name = "_topBarPanel";
-			this._topBarPanel.Size = new System.Drawing.Size(327, 70);
+			this._topBarPanel.Size = new System.Drawing.Size(327, 74);
 			this._topBarPanel.TabIndex = 14;
 			// 
 			// _saveButton
@@ -176,7 +176,7 @@
 			this._L10NSharpExtender.SetLocalizationPriority(this._contextMenuStrip, L10NSharp.LocalizationPriority.InternalUseOnly);
 			this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
 			this._contextMenuStrip.Name = "_contextMenuStrip";
-			this._contextMenuStrip.Size = new System.Drawing.Size(426, 48);
+			this._contextMenuStrip.Size = new System.Drawing.Size(432, 48);
 			// 
 			// _openinBrowserMenuItem
 			// 
@@ -185,7 +185,7 @@
 			this._L10NSharpExtender.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._openinBrowserMenuItem, "EditTab.BookContextMenu.openHtmlInBrowser");
 			this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
-			this._openinBrowserMenuItem.Size = new System.Drawing.Size(425, 22);
+			this._openinBrowserMenuItem.Size = new System.Drawing.Size(431, 22);
 			this._openinBrowserMenuItem.Text = "Open the HTML used to make this PDF, in Firefox (must be on path)";
 			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
 			// 
@@ -195,37 +195,9 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._openPDF, null);
 			this._L10NSharpExtender.SetLocalizingId(this._openPDF, "PublishTab.OpenThePDFInTheSystemPDFViewer");
 			this._openPDF.Name = "_openPDF";
-			this._openPDF.Size = new System.Drawing.Size(425, 22);
+			this._openPDF.Size = new System.Drawing.Size(431, 22);
 			this._openPDF.Text = "Open the PDF in the default system PDF viewer";
 			this._openPDF.Click += new System.EventHandler(this._openPDF_Click);
-			// 
-			// _epubRadio
-			// 
-			this._epubRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._epubRadio.Image = global::Bloom.Properties.Resources.epubPublishButton;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._epubRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._epubRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
-			this._epubRadio.Location = new System.Drawing.Point(3, 327);
-			this._epubRadio.Name = "_epubRadio";
-			this._epubRadio.Size = new System.Drawing.Size(105, 82);
-			superToolTipInfo5.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo5.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo5.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo5.BodyText = "Make an ePUB (electronic book) out of this book, allowing it to be read on variou" +
-    "s electronic reading devices.";
-			superToolTipInfo5.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo5.ShowHeader = false;
-			superToolTipInfoWrapper5.SuperToolTipInfo = superToolTipInfo5;
-			superToolTipInfoWrapper5.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper5);
-			this._epubRadio.TabIndex = 18;
-			this._epubRadio.TabStop = true;
-			this._epubRadio.Text = "ePUB";
-			this._epubRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this._epubRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._epubRadio.UseVisualStyleBackColor = true;
-			this._epubRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
 			// 
 			// _menusToolStrip
 			// 
@@ -300,34 +272,6 @@
 			this.label1.Size = new System.Drawing.Size(108, 1);
 			this.label1.TabIndex = 17;
 			// 
-			// _uploadRadio
-			// 
-			this._uploadRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._uploadRadio.Image = global::Bloom.Properties.Resources.upload;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadRadio, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._uploadRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
-			this._uploadRadio.Location = new System.Drawing.Point(3, 415);
-			this._uploadRadio.Name = "_uploadRadio";
-			this._uploadRadio.Size = new System.Drawing.Size(105, 82);
-			superToolTipInfo4.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-			superToolTipInfo4.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
-			superToolTipInfo4.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo4.BodyText = "Upload to BloomLibrary.org, where others can download and localize into their own" +
-    " language.";
-			superToolTipInfo4.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
-			superToolTipInfo4.ShowHeader = false;
-			superToolTipInfoWrapper4.SuperToolTipInfo = superToolTipInfo4;
-			superToolTipInfoWrapper4.UseSuperToolTip = true;
-			this._superToolTip.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper4);
-			this._uploadRadio.TabIndex = 16;
-			this._uploadRadio.TabStop = true;
-			this._uploadRadio.Text = "Upload";
-			this._uploadRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this._uploadRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._uploadRadio.UseVisualStyleBackColor = true;
-			this._uploadRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
 			// _bookletBodyRadio
 			// 
 			this._bookletBodyRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -384,6 +328,62 @@
 			this._simpleAllPagesRadio.UseVisualStyleBackColor = true;
 			this._simpleAllPagesRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
 			// 
+			// _uploadRadio
+			// 
+			this._uploadRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._uploadRadio.Image = global::Bloom.Properties.Resources.upload;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._uploadRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
+			this._uploadRadio.Location = new System.Drawing.Point(3, 415);
+			this._uploadRadio.Name = "_uploadRadio";
+			this._uploadRadio.Size = new System.Drawing.Size(105, 82);
+			superToolTipInfo4.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo4.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo4.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo4.BodyText = "Upload to BloomLibrary.org, where others can download and localize into their own" +
+    " language.";
+			superToolTipInfo4.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo4.ShowHeader = false;
+			superToolTipInfoWrapper4.SuperToolTipInfo = superToolTipInfo4;
+			superToolTipInfoWrapper4.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper4);
+			this._uploadRadio.TabIndex = 16;
+			this._uploadRadio.TabStop = true;
+			this._uploadRadio.Text = "Share on the Web";
+			this._uploadRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._uploadRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._uploadRadio.UseVisualStyleBackColor = true;
+			this._uploadRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+			// 
+			// _epubRadio
+			// 
+			this._epubRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._epubRadio.Image = global::Bloom.Properties.Resources.epubPublishButton;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._epubRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._epubRadio, null);
+			this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
+			this._epubRadio.Location = new System.Drawing.Point(3, 327);
+			this._epubRadio.Name = "_epubRadio";
+			this._epubRadio.Size = new System.Drawing.Size(105, 82);
+			superToolTipInfo5.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+			superToolTipInfo5.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
+			superToolTipInfo5.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
+			superToolTipInfo5.BodyText = "Make an ePUB (electronic book) out of this book, allowing it to be read on variou" +
+    "s electronic reading devices.";
+			superToolTipInfo5.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo5.ShowHeader = false;
+			superToolTipInfoWrapper5.SuperToolTipInfo = superToolTipInfo5;
+			superToolTipInfoWrapper5.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper5);
+			this._epubRadio.TabIndex = 18;
+			this._epubRadio.TabStop = true;
+			this._epubRadio.Text = "ePUB";
+			this._epubRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._epubRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._epubRadio.UseVisualStyleBackColor = true;
+			this._epubRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
+			// 
 			// _L10NSharpExtender
 			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
@@ -419,6 +419,7 @@
 			this.Name = "PublishView";
 			this.Size = new System.Drawing.Size(833, 540);
 			this._workingIndicator.ResumeLayout(false);
+			this._workingIndicator.PerformLayout();
 			this._topBarPanel.ResumeLayout(false);
 			this._topBarPanel.PerformLayout();
 			this.tableLayoutPanel1.ResumeLayout(false);
