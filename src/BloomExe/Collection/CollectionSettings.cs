@@ -716,7 +716,27 @@ namespace Bloom.Collection
 		/// </summary>
 		public IEnumerable<string> LicenseDescriptionLanguagePriorities
 		{
-			get { return new[] { Language1Iso639Code, Language2Iso639Code, Language3Iso639Code, "en" }; }
+			get
+			{
+				var result = new[] { Language1Iso639Code, Language2Iso639Code, Language3Iso639Code, "en" };
+				// reverse-order loop so that given e.g. zh-Hans followed by zh-Hant we insert zh-CN after the second one.
+				// That is, we'll prefer either of the explicit variants to the fall-back.
+				for (int i = result.Length - 1; i >= 0; i--)
+				{
+					var culture = result[i];
+					if (culture == null || culture.Length <= 2)
+						continue;
+					var extra = culture.Substring(0, 2); // Generally insert corresponding language for longer culture
+					if (extra == "zh")
+						extra = "zh-CN"; // Insert this instead for Chinese
+					if (result.IndexOf(extra) >= 0)
+						continue;
+					var temp = result.ToList();
+					temp.Insert(i + 1, extra);
+					result = temp.ToArray();
+				}
+				return result;
+			}
 		}
 
 		/// <summary>
