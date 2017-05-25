@@ -25,26 +25,25 @@
 
 .insideBackCover {
     .marginBox {
-        .bloom-editable:only-child {
-            height: 100%;
-            display: inherit;
-        }
-        .bloom-editable:not(:only-child) {
-            flex: auto;
-            display: block;
-            &.Printer-Statement-style {
-                height: auto;
-                padding-bottom: 20px;
-                font-size: 10pt;
-                text-align: center;
-                justify-content: center;
-            }
-        }
-        // set a default style for the new Printer's Statement
-        .Printer-Statement-style {
+        // Set the default style for the new Printer's Statement
+        // The text should be center aligned at the bottom of the available space.  (An earlier
+        // version of this code used .bloom-editable:only-child and .bloom-editable:not(:only-child)
+        // in a confusing and ineffective way that had the side-effect of displaying vernacular as
+        // well as national language data here, and also didn't push the text to the bottom of the
+        // available space.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4614.)
+        .Printer-Statement-style.bloom-editable.bloom-visibility-code-on {
+            // display:flex is needed for justify-content:flex-end to apply
+            display: flex;      // has been reset to block by .bloom-editable.bloom-visibility-code-on
+            flex-direction: column;     // stack paragraphs in a column
+            justify-content: flex-end;  // push text to the bottom of the available space
+            padding-bottom: 20px;
+            text-align: center;
             font-size: 10pt;
             line-height: 1.2;
         }
+        // Allow the two .bloom-translationGroup boxes contained in the .marginBox box to flex
+        // vertically.  They start out sharing the page 50-50, but the summary (or I suppose the
+        // printer statement) can take more space if needed.
         display: flex;
         flex-direction: column;
     }
