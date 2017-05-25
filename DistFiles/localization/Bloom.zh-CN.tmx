@@ -2218,6 +2218,70 @@
         <seg>模板页</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.TextBoxProperties.LanguageTab">
+      <tuv xml:lang="en">
+        <seg>Language</seg>
+      </tuv>
+      <tuv xml:lang="zh-CN">
+        <seg>语言</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.LocalLanguage">
+      <tuv xml:lang="en">
+        <seg>Local Language</seg>
+      </tuv>
+      <tuv xml:lang="zh-CN">
+        <seg>土语</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.NationalLanguage">
+      <tuv xml:lang="en">
+        <seg>National Language</seg>
+      </tuv>
+      <tuv xml:lang="zh-CN">
+        <seg>国家通用语</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Normal">
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+      <tuv xml:lang="zh-CN">
+        <seg>普通</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.NormalLabel">
+      <tuv xml:lang="en">
+        <seg>"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</seg>
+      </tuv>
+      <tuv xml:lang="zh-CN">
+        <seg>选择“普通”会显示土语，根据本书的多语种设置情况不同，也可能显示地区或国家通用语。该选项适用于大部分内容。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.OtherLanguagesLabel">
+      <tuv xml:lang="en">
+        <seg>Use one of these for simple text boxes that are always in only one language.</seg>
+      </tuv>
+      <tuv xml:lang="zh-CN">
+        <seg>只用一种语言的简单文本框可选择这些选项中的一项</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.RegionalLanguage">
+      <tuv xml:lang="en">
+        <seg>Regional Language</seg>
+      </tuv>
+      <tuv xml:lang="zh-CN">
+        <seg>地区通用语</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TextBoxProperties.Title">
+      <tuv xml:lang="en">
+        <seg>Text Box Properties</seg>
+      </tuv>
+      <tuv xml:lang="zh-CN">
+        <seg>文本框属性</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
       <tuv xml:lang="en">
         <seg>Picture On Bottom</seg>
