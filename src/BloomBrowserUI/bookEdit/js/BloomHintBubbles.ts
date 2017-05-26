@@ -294,33 +294,37 @@ export default class BloomHintBubbles {
 
         // determine onFocusOnly
         var onFocusOnly = whatToSay.startsWith('*');
-        onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(target);
+        // We seem to need a delay to get a reliable result from mightCauseHorizontallyOverlappingBubbles(); see comment there.
+        setTimeout(() => {
 
-        if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
-        var functionCall = source.data("functiononhintclick");
-        if (functionCall) {
-            if (functionCall === 'bookMetadataEditor' && !BloomHintBubbles.canChangeBookLicense())
-                return;
-            shouldShowAlways = true;
+            onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(target);
 
-            if (functionCall.indexOf('(') > 0)
-                functionCall = 'javascript:' + functionCall + ';';
+            if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
+            var functionCall = source.data("functiononhintclick");
+            if (functionCall) {
+                if (functionCall === 'bookMetadataEditor' && !BloomHintBubbles.canChangeBookLicense())
+                    return;
+                shouldShowAlways = true;
 
-            whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
-        }
-        // Handle a second line in the bubble which links to something like a javascript function
-        var linkText = source.attr('data-link-text');
-        var linkTarget = source.attr('data-link-target');
-        if (linkText && linkTarget) {
-            linkText = theOneLocalizationManager.getLocalizedHint(linkText, target);
-            if (linkTarget.indexOf('(') > 0)
-                linkTarget = 'javascript:' + linkTarget + ';';
-            whatToSay = whatToSay + "<br><a href='" + linkTarget + "'>" + linkText + "</a>";
-        }
-        if (onFocusOnly) {
-            shouldShowAlways = false;
-        }
-        this.makeHintBubbleCore(target, whatToSay, shouldShowAlways);
+                if (functionCall.indexOf('(') > 0)
+                    functionCall = 'javascript:' + functionCall + ';';
+
+                whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
+            }
+            // Handle a second line in the bubble which links to something like a javascript function
+            var linkText = source.attr('data-link-text');
+            var linkTarget = source.attr('data-link-target');
+            if (linkText && linkTarget) {
+                linkText = theOneLocalizationManager.getLocalizedHint(linkText, target);
+                if (linkTarget.indexOf('(') > 0)
+                    linkTarget = 'javascript:' + linkTarget + ';';
+                whatToSay = whatToSay + "<br><a href='" + linkTarget + "'>" + linkText + "</a>";
+            }
+            if (onFocusOnly) {
+                shouldShowAlways = false;
+            }
+            this.makeHintBubbleCore(target, whatToSay, shouldShowAlways);
+        }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
     }
 
     private static makeHintBubbleCore(target: JQuery, whatToSay: string, shouldShowAlways: boolean) {

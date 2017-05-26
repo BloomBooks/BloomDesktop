@@ -561,7 +561,7 @@ namespace Bloom.Api
 				// Html/Xml encoded (using &), not Url encoded (using %).
 				path = System.Web.HttpUtility.UrlDecode(localPath);
 			}
-			if (!RobustFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
+			if (!RobustFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath) && _bookSelection.CurrentSelection != null)
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
 				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
