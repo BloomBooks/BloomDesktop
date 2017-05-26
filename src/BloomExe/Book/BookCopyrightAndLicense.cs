@@ -188,10 +188,27 @@ namespace Bloom.Book
 			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:collectionSettings.LicenseDescriptionLanguagePriorities.ToArray());
 			CopyItemToFieldsInPages(dom, "licenseNotes");
 			CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute:"src");
-			CopyItemToFieldsInPages(dom, "originalCopyrightAndLicense");
+			CopyStringToFieldsInPages(dom, "originalCopyrightAndLicense", GetOriginalCopyrightAndLicenseNotice(collectionSettings, dom), "*");
 
 			if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
 				UpdateBookLicenseIcon(GetMetadata(dom), bookFolderPath);
+		}
+
+		private static void CopyStringToFieldsInPages(HtmlDom dom, string key, string val, string lang)
+		{
+			var target = dom.SelectSingleNode("//*[@data-derived='" + key + "']");
+			if (target == null)
+				return;
+			if (string.IsNullOrEmpty(val))
+			{
+				target.RemoveAttribute("lang");
+				target.InnerText = "";
+			}
+			else
+			{
+				HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, val);
+				target.SetAttribute("lang", lang);
+			}
 		}
 
 		private static void CopyItemToFieldsInPages(HtmlDom dom, string key, string valueAttribute = null, string[] languagePreferences= null)
@@ -306,43 +323,31 @@ namespace Bloom.Book
 		/// Copy the copyright & license info to the originalCopyrightAndLicense,
 		/// then remove the copyright so the translator can put in their own if they
 		/// want. We retain the license, but the translator is allowed to change that.
+		/// If the source is already a translation (already has original copyright or license)
+		/// we keep them unchanged.
 		/// </summary>
 		public static void SetOriginalCopyrightAndLicense(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings)
 		{
-			if (bookData.GetMultiTextVariableOrEmpty("originalCopyrightAndLicense").Count > 0)
+			// At least one of these should exist if the source was a derivative, since we don't allow a
+			// book to have no license, nor to be uploaded without copyright...unless of course it was derived
+			// before 3.9, when we started doing this. In that case the best we can do is record the earliest
+			// information we have for this and later adaptations.
+			if (bookData.GetMultiTextVariableOrEmpty("originalLicenseUrl").Count > 0
+				|| bookData.GetMultiTextVariableOrEmpty("originalLicenseNotes").Count > 0
+				|| bookData.GetMultiTextVariableOrEmpty("originalCopyright").Count > 0)
 			{
 				return; //leave the original there.
 			}
-			var encodedCopyrightAndLicense = GetOriginalCopyrightAndLicenseNotice(collectionSettings, GetMetadata(dom));
-			bookData.Set("originalCopyrightAndLicense", encodedCopyrightAndLicense, "*");
 			bookData.Set("originalLicenseUrl", GetLicenseUrl(dom), "*");
 			bookData.Set("originalCopyright", System.Web.HttpUtility.HtmlEncode(BookCopyrightAndLicense.GetMetadata(dom).CopyrightNotice), "*");
 			bookData.Set("originalLicenseNotes", dom.GetBookSetting("licenseNotes").GetFirstAlternative(), "*");
 			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
 		}
 
-		/// <summary>
-		/// This is used each time we update xmatter. It assumes originalLicenseUrl, originalCopyright, and originalLicenseNotes have
-		/// already been set while creating the book. It updates the actual displayed originalCopyrightAndLicense to the appropriate
-		/// derived value based on the current language settings of the book. It should be called before we update the DOM from
-		/// the datadiv.
-		/// </summary>
-		/// <param name="dom"></param>
-		/// <param name="bookData"></param>
-		/// <param name="collectionSettings"></param>
-		public static void UpdateOriginalCopyrightAndLicense(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings)
+		internal static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, HtmlDom dom)
 		{
-			if (bookData.GetMultiTextVariableOrEmpty("originalCopyrightAndLicense").Count == 0)
-			{
-				// If the book doesn't have this it's an original, and we don't want to insert a notice.
-				// (Or possibly, it's an adaptation created before we started inserting original copyright information.
-				// In that case we wish we could make one, but we don't have the information we need to create it correctly.)
-				return;
-			}
-			var encodedCopyrightAndLicense = GetOriginalCopyrightAndLicenseNotice(collectionSettings, GetOriginalMetadata(dom));
-			bookData.Set("originalCopyrightAndLicense", encodedCopyrightAndLicense, "*");
+			return GetOriginalCopyrightAndLicenseNotice(collectionSettings, GetOriginalMetadata(dom));
 		}
-
 		private static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, Metadata metadata)
 		{
 			string idOfLanguageUsed;
@@ -393,8 +398,7 @@ namespace Bloom.Book
 			// The copyright string has to be encoded because it's fed eventually into the XmlNode.InnerXml method, and some people
 			// like to use & in their copyright notices.  metaData.CopyrightNotice is not Html encoded, so it can give us bare &s.
 			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
-			var encodedCopyright = System.Web.HttpUtility.HtmlEncode(copyrightNotice);
-			return encodedCopyright;
+			return copyrightNotice.Trim();
 		}
 	}
 }
