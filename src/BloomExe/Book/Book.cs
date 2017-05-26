@@ -863,9 +863,6 @@ namespace Bloom.Book
 
 		private void BringBookUpToDateUnprotected(HtmlDom bookDOM, IProgress progress)
 		{
-			// Before we update the xmatter, or at least before SynchronizeDataItemsThroughoutDOM(),
-			// so the updated (to current language settings) version of original copyright notice gets injected.
-			BookCopyrightAndLicense.UpdateOriginalCopyrightAndLicense(bookDOM, _bookData, _collectionSettings);
 			progress.WriteStatus("Updating Front/Back Matter...");
 			// Nothing in the update process should change the license info, so save what is current before we mess with
 			// anything (may fix BL-3166).
