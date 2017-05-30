@@ -96,6 +96,15 @@ namespace Bloom
 		}
 	}
 
+	public class AddTextOverPictureCommand : Command
+	{
+		public AddTextOverPictureCommand()
+			: base("addTextBox")
+		{
+
+		}
+	}
+
 	public class CutCommand : Command
 	{
 		public CutCommand()
@@ -109,6 +118,15 @@ namespace Bloom
 	{
 		public CopyCommand()
 			: base("copy")
+		{
+
+		}
+	}
+
+	public class DeleteTextOverPictureCommand : Command
+	{
+		public DeleteTextOverPictureCommand()
+			: base("deleteTextBox")
 		{
 
 		}
