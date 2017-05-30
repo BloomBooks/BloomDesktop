@@ -1,0 +1,58 @@
+@import "../templates/common-mixins.less";
+@MinTextBoxWidth: 30px;
+@MinTextBoxHeight: 40px;
+@DefaultTextBoxWidth: 140px;
+@DefaultTextBoxHeight: @MinTextBoxHeight;
+@DragHandleBackgroundColor: transparent;
+
+// Don't show text over picture borders or resizing handles unless hovering over the image
+.bloom-imageContainer:not(.hoverUp) {
+    .bloom-editable {
+        border: none;
+        // keeps text from jumping when switching between hover/nothover states
+        padding-left: 1px;
+        padding-top: 2px;
+        &:after {
+            content: "" !important;
+        }
+    }
+    .ui-resizable-handle {
+        display: none !important;
+    }
+    .bloom-dragHandleTOP {
+        display: none;
+    }
+}
+
+.bloom-imageContainer {
+    .bloom-textOverPicture {
+        position: absolute;
+        width: @DefaultTextBoxWidth;
+        height: @DefaultTextBoxHeight;
+        min-width: @MinTextBoxWidth;
+        min-height: @MinTextBoxHeight;
+        border-radius: 3px;
+        border: none !important; // needed to override ui-draggable blue border
+        z-index: @textOverPictureZIndex;
+        .bloom-dragHandleTOP {
+            position: absolute;
+            background: url('img/dragHandleGrey.svg') no-repeat center;
+            background-size: contain;
+            background-color: @DragHandleBackgroundColor;
+            width: 16px;
+            height: 16px;
+            left: -12px;
+            top: -12px;
+            cursor: move;
+        }
+        .bloom-translationGroup {
+            background: transparent; // don't want to worry about what background the image has
+            border: none;
+            .bloom-editable {
+                min-width: @MinTextBoxWidth - 3;
+                min-height: @MinTextBoxHeight - 3 !important;
+                text-align: center;
+            }
+        }
+    }
+}

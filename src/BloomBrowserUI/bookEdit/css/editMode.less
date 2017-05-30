@@ -1,5 +1,5 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
-
+@import "../../templates/common-mixins.less";
 @import "../sourceBubbles/sourceBubbles.less";
 
 BODY
@@ -361,15 +361,15 @@ DIV.marginBox
     font-size: 10pt;
     height: 20px;
     width: 20px;
+    z-index: @formatButtonZIndex;
     img{
         position: absolute;
         bottom: 0;
         left: 0;
     }
-}
-#formatButton:Hover
-{
-    color: #000000;
+    &:Hover {
+        color: #000000;
+    }
 }
 /*Toolbox*/
 #pagedragtoolbox
@@ -554,6 +554,10 @@ div.cke_float {
 
     span.cke_toolgroup { margin: 0 !important; }
   }
+}
+
+.bloom-textOverPicture .bloom-editable {
+    padding-top: 1px; // for some reason this is needed to keep edit/non-edit text spacing the same
 }
 
 div.long-press-popup {z-index: 15005} // in front of hint bubbles

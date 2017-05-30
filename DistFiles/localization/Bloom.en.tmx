@@ -1172,6 +1172,12 @@
         <seg>Add Page...</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.AddTextBoxToImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Text Box To Image</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1326,6 +1332,12 @@
     <tu tuid="EditTab.DeletePageButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>This page cannot be removed</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DeleteTextBoxFromImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Delete Text Box From Image</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.DirectFormatting.Bold">
