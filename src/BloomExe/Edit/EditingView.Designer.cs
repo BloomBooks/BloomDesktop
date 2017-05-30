@@ -44,12 +44,12 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			System.Drawing.Imaging.ImageAttributes imageAttributes13 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes14 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes15 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes16 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes17 = new System.Drawing.Imaging.ImageAttributes();
-			System.Drawing.Imaging.ImageAttributes imageAttributes18 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes2 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes3 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes4 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes5 = new System.Drawing.Imaging.ImageAttributes();
+			System.Drawing.Imaging.ImageAttributes imageAttributes6 = new System.Drawing.Imaging.ImageAttributes();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
 			this.settingsLauncherHelper1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
@@ -172,7 +172,7 @@
 			this._duplicatePageButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._duplicatePageButton.Image = null;
 			this._duplicatePageButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._duplicatePageButton.ImageAttributes = imageAttributes13;
+			this._duplicatePageButton.ImageAttributes = imageAttributes1;
 			this._duplicatePageButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._duplicatePageButton.ImageBorderEnabled = false;
 			this._duplicatePageButton.ImageDropShadow = false;
@@ -214,7 +214,7 @@
 			this._deletePageButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._deletePageButton.Image = null;
 			this._deletePageButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._deletePageButton.ImageAttributes = imageAttributes14;
+			this._deletePageButton.ImageAttributes = imageAttributes2;
 			this._deletePageButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._deletePageButton.ImageBorderEnabled = false;
 			this._deletePageButton.ImageDropShadow = false;
@@ -256,7 +256,7 @@
 			this._undoButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._undoButton.Image = null;
 			this._undoButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._undoButton.ImageAttributes = imageAttributes15;
+			this._undoButton.ImageAttributes = imageAttributes3;
 			this._undoButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._undoButton.ImageBorderEnabled = false;
 			this._undoButton.ImageDropShadow = false;
@@ -297,7 +297,7 @@
 			this._cutButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._cutButton.Image = null;
 			this._cutButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._cutButton.ImageAttributes = imageAttributes16;
+			this._cutButton.ImageAttributes = imageAttributes4;
 			this._cutButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._cutButton.ImageBorderEnabled = false;
 			this._cutButton.ImageDropShadow = false;
@@ -337,7 +337,7 @@
 			this._pasteButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._pasteButton.Image = null;
 			this._pasteButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this._pasteButton.ImageAttributes = imageAttributes17;
+			this._pasteButton.ImageAttributes = imageAttributes5;
 			this._pasteButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._pasteButton.ImageBorderEnabled = false;
 			this._pasteButton.ImageDropShadow = false;
@@ -378,7 +378,7 @@
 			this._copyButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._copyButton.Image = null;
 			this._copyButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this._copyButton.ImageAttributes = imageAttributes18;
+			this._copyButton.ImageAttributes = imageAttributes6;
 			this._copyButton.ImageBorderColor = System.Drawing.Color.Transparent;
 			this._copyButton.ImageBorderEnabled = false;
 			this._copyButton.ImageDropShadow = false;

@@ -33,7 +33,12 @@
 			this._settingsLauncherHelper = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._containerPanel = new System.Windows.Forms.Panel();
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
-			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._tabStrip = new Messir.Windows.Forms.TabStrip();
+			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
+			this._editTab = new Messir.Windows.Forms.TabStripButton();
+			this._publishTab = new Messir.Windows.Forms.TabStripButton();
+			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
@@ -55,16 +60,11 @@
 			this._checkForNewVersionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._registrationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._tabStrip = new Messir.Windows.Forms.TabStrip();
-			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
-			this._editTab = new Messir.Windows.Forms.TabStripButton();
-			this._publishTab = new Messir.Windows.Forms.TabStripButton();
-			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
-			this._panelHoldingToolStrip.SuspendLayout();
-			this._toolStrip.SuspendLayout();
+			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this._tabStrip.SuspendLayout();
+			this._toolStrip.SuspendLayout();
+			this._panelHoldingToolStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// _containerPanel
@@ -87,15 +87,109 @@
 			this._toolSpecificPanel.Size = new System.Drawing.Size(762, 66);
 			this._toolSpecificPanel.TabIndex = 17;
 			// 
-			// _panelHoldingToolStrip
+			// _L10NSharpExtender
 			// 
-			this._panelHoldingToolStrip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._panelHoldingToolStrip.BackColor = System.Drawing.Color.Transparent;
-			this._panelHoldingToolStrip.Controls.Add(this._toolStrip);
-			this._panelHoldingToolStrip.Location = new System.Drawing.Point(1006, 3);
-			this._panelHoldingToolStrip.Name = "_panelHoldingToolStrip";
-			this._panelHoldingToolStrip.Size = new System.Drawing.Size(89, 66);
-			this._panelHoldingToolStrip.TabIndex = 29;
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.PrefixForNewItems = "HelpMenu";
+			// 
+			// _tabStrip
+			// 
+			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._tabStrip.FlipButtons = false;
+			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
+			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._collectionTab,
+            this._editTab,
+            this._publishTab});
+			this._L10NSharpExtender.SetLocalizableToolTip(this._tabStrip, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._tabStrip, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._tabStrip, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._tabStrip, "WorkspaceView._tabStrip");
+			this._tabStrip.Location = new System.Drawing.Point(0, 0);
+			this._tabStrip.Name = "_tabStrip";
+			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
+			this._tabStrip.SelectedTab = this._publishTab;
+			this._tabStrip.Size = new System.Drawing.Size(1098, 71);
+			this._tabStrip.TabIndex = 15;
+			this._tabStrip.Text = "tabStrip1";
+			this._tabStrip.UseVisualStyles = false;
+			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
+			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
+			// 
+			// _collectionTab
+			// 
+			this._collectionTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			this._collectionTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
+			this._collectionTab.ForeColor = System.Drawing.Color.Black;
+			this._collectionTab.HotTextColor = System.Drawing.Color.Black;
+			this._collectionTab.Image = global::Bloom.Properties.Resources.library32x32;
+			this._collectionTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._collectionTab.IsSelected = false;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._collectionTab, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._collectionTab, null);
+			this._L10NSharpExtender.SetLocalizingId(this._collectionTab, "CollectionTab.Collections");
+			this._collectionTab.Margin = new System.Windows.Forms.Padding(0);
+			this._collectionTab.Name = "_collectionTab";
+			this._collectionTab.Padding = new System.Windows.Forms.Padding(0);
+			this._collectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._collectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
+			this._collectionTab.Size = new System.Drawing.Size(103, 71);
+			this._collectionTab.Text = "Collections";
+			this._collectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._collectionTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
+			// 
+			// _editTab
+			// 
+			this._editTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			this._editTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
+			this._editTab.ForeColor = System.Drawing.Color.Black;
+			this._editTab.HotTextColor = System.Drawing.Color.Black;
+			this._editTab.Image = global::Bloom.Properties.Resources.edit;
+			this._editTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._editTab.IsSelected = false;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._editTab, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._editTab, null);
+			this._L10NSharpExtender.SetLocalizingId(this._editTab, "EditTab.Edit");
+			this._editTab.Margin = new System.Windows.Forms.Padding(0);
+			this._editTab.Name = "_editTab";
+			this._editTab.Padding = new System.Windows.Forms.Padding(0);
+			this._editTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._editTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
+			this._editTab.Size = new System.Drawing.Size(69, 71);
+			this._editTab.Text = "Edit";
+			this._editTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._editTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
+			// 
+			// _publishTab
+			// 
+			this._publishTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			this._publishTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(214)))), ((int)(((byte)(86)))), ((int)(((byte)(73)))));
+			this._publishTab.Checked = true;
+			this._publishTab.ForeColor = System.Drawing.Color.Black;
+			this._publishTab.HotTextColor = System.Drawing.Color.Black;
+			this._publishTab.Image = global::Bloom.Properties.Resources.publish32x32;
+			this._publishTab.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+			this._publishTab.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this._publishTab.IsSelected = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._publishTab, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._publishTab, null);
+			this._L10NSharpExtender.SetLocalizingId(this._publishTab, "PublishTab.Publish");
+			this._publishTab.Margin = new System.Windows.Forms.Padding(0);
+			this._publishTab.Name = "_publishTab";
+			this._publishTab.Padding = new System.Windows.Forms.Padding(0);
+			this._publishTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+			this._publishTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
+			this._publishTab.Size = new System.Drawing.Size(83, 71);
+			this._publishTab.Text = "Publish";
+			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._publishTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
+			// 
+			// _applicationUpdateCheckTimer
+			// 
+			this._applicationUpdateCheckTimer.Enabled = true;
+			this._applicationUpdateCheckTimer.Interval = 60000;
+			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 
 			// _toolStrip
 			// 
@@ -328,109 +422,15 @@
 			this._aboutBloomMenuItem.Text = "About Bloom";
 			this._aboutBloomMenuItem.Click += new System.EventHandler(this.OnAboutBoxClick);
 			// 
-			// _L10NSharpExtender
+			// _panelHoldingToolStrip
 			// 
-			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
-			this._L10NSharpExtender.PrefixForNewItems = "HelpMenu";
-			// 
-			// _tabStrip
-			// 
-			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._tabStrip.FlipButtons = false;
-			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
-			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._collectionTab,
-            this._editTab,
-            this._publishTab});
-			this._L10NSharpExtender.SetLocalizableToolTip(this._tabStrip, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._tabStrip, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._tabStrip, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._tabStrip, "WorkspaceView._tabStrip");
-			this._tabStrip.Location = new System.Drawing.Point(0, 0);
-			this._tabStrip.Name = "_tabStrip";
-			this._tabStrip.RenderStyle = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
-			this._tabStrip.SelectedTab = this._publishTab;
-			this._tabStrip.Size = new System.Drawing.Size(1098, 71);
-			this._tabStrip.TabIndex = 15;
-			this._tabStrip.Text = "tabStrip1";
-			this._tabStrip.UseVisualStyles = false;
-			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
-			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
-			// 
-			// _collectionTab
-			// 
-			this._collectionTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
-			this._collectionTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._collectionTab.ForeColor = System.Drawing.Color.Black;
-			this._collectionTab.HotTextColor = System.Drawing.Color.Black;
-			this._collectionTab.Image = global::Bloom.Properties.Resources.library32x32;
-			this._collectionTab.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._collectionTab.IsSelected = false;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._collectionTab, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._collectionTab, null);
-			this._L10NSharpExtender.SetLocalizingId(this._collectionTab, "CollectionTab.Collections");
-			this._collectionTab.Margin = new System.Windows.Forms.Padding(0);
-			this._collectionTab.Name = "_collectionTab";
-			this._collectionTab.Padding = new System.Windows.Forms.Padding(0);
-			this._collectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._collectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
-			this._collectionTab.Size = new System.Drawing.Size(103, 71);
-			this._collectionTab.Text = "Collections";
-			this._collectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._collectionTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
-			// 
-			// _editTab
-			// 
-			this._editTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
-			this._editTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
-			this._editTab.ForeColor = System.Drawing.Color.Black;
-			this._editTab.HotTextColor = System.Drawing.Color.Black;
-			this._editTab.Image = global::Bloom.Properties.Resources.edit;
-			this._editTab.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._editTab.IsSelected = false;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._editTab, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._editTab, null);
-			this._L10NSharpExtender.SetLocalizingId(this._editTab, "EditTab.Edit");
-			this._editTab.Margin = new System.Windows.Forms.Padding(0);
-			this._editTab.Name = "_editTab";
-			this._editTab.Padding = new System.Windows.Forms.Padding(0);
-			this._editTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._editTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
-			this._editTab.Size = new System.Drawing.Size(69, 71);
-			this._editTab.Text = "Edit";
-			this._editTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._editTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
-			// 
-			// _publishTab
-			// 
-			this._publishTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
-			this._publishTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(214)))), ((int)(((byte)(86)))), ((int)(((byte)(73)))));
-			this._publishTab.Checked = true;
-			this._publishTab.ForeColor = System.Drawing.Color.Black;
-			this._publishTab.HotTextColor = System.Drawing.Color.Black;
-			this._publishTab.Image = global::Bloom.Properties.Resources.publish32x32;
-			this._publishTab.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this._publishTab.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._publishTab.IsSelected = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._publishTab, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._publishTab, null);
-			this._L10NSharpExtender.SetLocalizingId(this._publishTab, "PublishTab.Publish");
-			this._publishTab.Margin = new System.Windows.Forms.Padding(0);
-			this._publishTab.Name = "_publishTab";
-			this._publishTab.Padding = new System.Windows.Forms.Padding(0);
-			this._publishTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._publishTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
-			this._publishTab.Size = new System.Drawing.Size(83, 71);
-			this._publishTab.Text = "Publish";
-			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._publishTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
-			// 
-			// _applicationUpdateCheckTimer
-			// 
-			this._applicationUpdateCheckTimer.Enabled = true;
-			this._applicationUpdateCheckTimer.Interval = 60000;
-			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
+			this._panelHoldingToolStrip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._panelHoldingToolStrip.BackColor = System.Drawing.Color.Transparent;
+			this._panelHoldingToolStrip.Controls.Add(this._toolStrip);
+			this._panelHoldingToolStrip.Location = new System.Drawing.Point(1006, 3);
+			this._panelHoldingToolStrip.Name = "_panelHoldingToolStrip";
+			this._panelHoldingToolStrip.Size = new System.Drawing.Size(89, 66);
+			this._panelHoldingToolStrip.TabIndex = 29;
 			// 
 			// WorkspaceView
 			// 
@@ -447,13 +447,13 @@
 			this.Size = new System.Drawing.Size(1098, 540);
 			this.Load += new System.EventHandler(this.WorkspaceView_Load);
 			this.Resize += new System.EventHandler(this.WorkspaceView_Resize);
-			this._panelHoldingToolStrip.ResumeLayout(false);
-			this._panelHoldingToolStrip.PerformLayout();
-			this._toolStrip.ResumeLayout(false);
-			this._toolStrip.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this._tabStrip.ResumeLayout(false);
 			this._tabStrip.PerformLayout();
+			this._toolStrip.ResumeLayout(false);
+			this._toolStrip.PerformLayout();
+			this._panelHoldingToolStrip.ResumeLayout(false);
+			this._panelHoldingToolStrip.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -465,33 +465,33 @@
 		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper _settingsLauncherHelper;
 		private System.Windows.Forms.Panel _containerPanel;
 		private System.Windows.Forms.Panel _toolSpecificPanel;
-		private System.Windows.Forms.Panel _panelHoldingToolStrip;
-		private System.Windows.Forms.ToolStrip _toolStrip;
-		private System.Windows.Forms.ToolStripDropDownButton _helpMenu;
-		private System.Windows.Forms.ToolStripMenuItem _aboutBloomMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem _webSiteMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem _documentationMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem _makeASuggestionMenuItem;
 		private Messir.Windows.Forms.TabStripButton _collectionTab;
 		private Messir.Windows.Forms.TabStripButton _editTab;
 		private Messir.Windows.Forms.TabStripButton _publishTab;
 		private Messir.Windows.Forms.TabStrip _tabStrip;
-		private System.Windows.Forms.ToolStripMenuItem _releaseNotesMenuItem;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-		private System.Windows.Forms.ToolStripSeparator _divider2;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private System.Windows.Forms.Timer _applicationUpdateCheckTimer;
+		private System.Windows.Forms.ToolStrip _toolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;
-		private System.Windows.Forms.ToolStripSeparator _divider3;
-		private System.Windows.Forms.ToolStripMenuItem _showLogMenuItem;
-        private System.Windows.Forms.ToolStripSeparator _divider4;
-        private System.Windows.Forms.ToolStripMenuItem _checkForNewVersionMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem _registrationMenuItem;
+		private System.Windows.Forms.ToolStripDropDownButton _helpMenu;
+		private System.Windows.Forms.ToolStripMenuItem _documentationMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _trainingVideosMenuItem;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+		private System.Windows.Forms.ToolStripMenuItem _releaseNotesMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _keyBloomConceptsMenuItem;
+		private System.Windows.Forms.ToolStripSeparator _divider1;
 		private System.Windows.Forms.ToolStripMenuItem buildingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem usingReaderTemplatesMenuItem;
-		private System.Windows.Forms.ToolStripSeparator _divider1;
+		private System.Windows.Forms.ToolStripSeparator _divider2;
 		private System.Windows.Forms.ToolStripMenuItem _reportAProblemMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem _trainingVideosMenuItem;
-		private System.Windows.Forms.Timer _applicationUpdateCheckTimer;
+		private System.Windows.Forms.ToolStripMenuItem _makeASuggestionMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _webSiteMenuItem;
+		private System.Windows.Forms.ToolStripSeparator _divider3;
+		private System.Windows.Forms.ToolStripMenuItem _showLogMenuItem;
+		private System.Windows.Forms.ToolStripSeparator _divider4;
+		private System.Windows.Forms.ToolStripMenuItem _checkForNewVersionMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _registrationMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _aboutBloomMenuItem;
+		private System.Windows.Forms.Panel _panelHoldingToolStrip;
 	}
 }

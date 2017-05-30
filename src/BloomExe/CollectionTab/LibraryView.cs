@@ -128,6 +128,22 @@ namespace Bloom.CollectionTab
 			get { return _topBarControl; }
 		}
 
+		/// <summary>
+		/// TopBarControl.Width is not right here, because (a) the Send/Receive button currently never shows, and
+		/// (b) the Make Bloompack button only shows in source collections.
+		/// </summary>
+		public int WidthToReserveForTopBarControl
+		{
+			get
+			{
+				if (_makeBloomPackButton.Visible)
+					// The should be the distance from the left of the TopBarControl to the right of the makeBloomPack button
+					return _makeBloomPackButton.Bounds.Right + _toolStrip.Left;
+				else
+					return _leftToolStrip.Width;
+			}
+		}
+
 		public Bitmap ToolStripBackground { get; set; }
 
 		private WorkspaceView GetWorkspaceView()

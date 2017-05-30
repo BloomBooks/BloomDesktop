@@ -730,21 +730,12 @@ namespace Bloom.Workspace
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
 		private ToolStripControlHost _zoomWwrapper;
 
-		private int STAGE_1
-		{
-			get
-			{
-				if (_editTab.IsSelected)
-				{
-					return TabButtonSectionWidth + _editingView.TopBarControl.Width + _originalToolStripPanelWidth;
-				}
-				if (_publishTab.IsSelected)
-				{
-					return TabButtonSectionWidth + _publishView.TopBarControl.Width + PUBLISH_PANEL_FUDGE + _originalToolStripPanelWidth;
-				}
-				return TabButtonSectionWidth + _originalToolStripPanelWidth;
-			}
-		}
+		// The width at which we switch to stage 1: the actual space needed for the controls in the top panel,
+		// when each is in its widest form and the preferred extra space is between the tab controls and the TopBarControl.
+		// Since this is meant to be BEFORE we push the _toolSpecificPanel up against the tabs, we use its location
+		// rather than the with of the tabs.
+		private int STAGE_1 => _originalToolSpecificPanelHorizPos + (CurrentTabView?.WidthToReserveForTopBarControl ?? 0) + _originalToolStripPanelWidth;
+
 		private int STAGE_2
 		{
 			get { return STAGE_1 - _stage1SpaceSaved; }
@@ -859,12 +850,14 @@ namespace Bloom.Workspace
 			_stage1SpaceSaved = _originalToolSpecificPanelHorizPos - rightEdge;
 			var currentToolPanelVert = _toolSpecificPanel.Location.Y;
 			_toolSpecificPanel.Location = new Point(rightEdge, currentToolPanelVert);
+			_toolSpecificPanel.Width = this.Width - _toolSpecificPanel.Left; // keep right-aligned
 		}
 
 		private void GrowToFullSize()
 		{
 			// revert _toolSpecificPanel to its original location
 			_toolSpecificPanel.Location = new Point(_originalToolSpecificPanelHorizPos, _toolSpecificPanel.Location.Y);
+			_toolSpecificPanel.Width = this.Width - _toolSpecificPanel.Left; // keep right-aligned
 			_stage1SpaceSaved = 0;
 		}
 

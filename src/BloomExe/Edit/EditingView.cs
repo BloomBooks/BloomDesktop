@@ -166,6 +166,11 @@ namespace Bloom.Edit
 			get { return _topBarPanel; }
 		}
 
+		// The full width of the TopBarControl is a bit much, because the actual values in the _menusToolStrip are usually narrower
+		// than the control name shown in design mode. The "5" just gives a little margin.
+		public int WidthToReserveForTopBarControl => _menusToolStrip.Left + 5
+			+ Math.Max(_contentLanguagesDropdown.Bounds.Right, _layoutChoices.Bounds.Right);
+
 		/// <summary>
 		/// Prevents a white line from appearing below the tool strip
 		/// Be careful if using this on Linux; it can have strange side-effects (https://jira.sil.org/browse/BL-509).
