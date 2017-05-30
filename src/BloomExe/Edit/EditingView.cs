@@ -43,13 +43,15 @@ namespace Bloom.Edit
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
 		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
+		private BloomWebSocketServer _webSocketServer;
 
 		public delegate EditingView Factory(); //autofac uses this
 
-		public EditingView(EditingModel model, PageListView pageListView,
-			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand,
-			DuplicatePageCommand duplicatePageCommand,
-			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
+		public EditingView(EditingModel model, PageListView pageListView, AddTextOverPictureCommand addTextboxCommand,
+			CutCommand cutCommand, CopyCommand copyCommand, DeleteTextOverPictureCommand deleteTextboxCommmand, PasteCommand pasteCommand,
+			UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
+			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent,
+			BloomWebSocketServer webSocketServer)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -59,6 +61,7 @@ namespace Bloom.Edit
 			_undoCommand = undoCommand;
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
+			_webSocketServer = webSocketServer;
 			InitializeComponent();
 			_browser1.Isolator = isolator;
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance; //save it
@@ -66,7 +69,9 @@ namespace Bloom.Edit
 //            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
 			SetupThumnailLists();
 			_model.SetView(this);
-			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
+			_browser1.SetEditingCommands(addTextboxCommand, cutCommand, copyCommand, deleteTextboxCommmand, pasteCommand, undoCommand);
+			addTextboxCommand.Implementer = addTextbox_Click;
+			deleteTextboxCommmand.Implementer = deleteTextbox_Click;
 
 			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
 
@@ -1236,9 +1241,19 @@ namespace Bloom.Edit
 			UpdateEditButtons();
 		}
 
+		private void addTextbox_Click()
+		{
+			_webSocketServer.Send("addTextBox", $"{_browser1.ContextMenuLocation.X},{_browser1.ContextMenuLocation.Y}");
+		}
+
 		private void _cutButton_Click(object sender, EventArgs e)
 		{
 			ExecuteCommandSafely(_cutCommand);
+		}
+
+		private void deleteTextbox_Click()
+		{
+			_webSocketServer.Send("deleteTextBox", $"{_browser1.ContextMenuLocation.X},{_browser1.ContextMenuLocation.Y}");
 		}
 
 		private void _undoButton_Click(object sender, EventArgs e)

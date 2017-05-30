@@ -37,11 +37,17 @@ namespace Bloom
 		private IDisposable _dependentContent;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
-		private  UndoCommand _undoCommand;
-		private  CutCommand _cutCommand;
+		private UndoCommand _undoCommand;
+		private CutCommand _cutCommand;
+		private AddTextOverPictureCommand _addTextBoxCommand;
+		private DeleteTextOverPictureCommand _deleteTextBoxCommand;
 		private bool _disposed;
 		public event EventHandler OnBrowserClick;
 		public static event EventHandler XulRunnerShutdown;
+		// We need some way to pass the cursor location in the Browser context to the EditingView command handlers
+		// for Add/Delete TextOverPicture textboxes. These will store the cursor location when the context menu is
+		// generated.
+		internal Point ContextMenuLocation;
 
 		private static int XulRunnerVersion
 		{
@@ -180,10 +186,12 @@ namespace Bloom
 		/// </summary>
 		public NavigationIsolator Isolator { get; set; }
 
-		public void SetEditingCommands( CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
+		public void SetEditingCommands(AddTextOverPictureCommand addTextboxCommand, CutCommand cutCommand, CopyCommand copyCommand, DeleteTextOverPictureCommand deleteTextboxCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
+			_addTextBoxCommand = addTextboxCommand;
 			_cutCommand = cutCommand;
 			_copyCommand = copyCommand;
+			_deleteTextBoxCommand = deleteTextboxCommand;
 			_pasteCommand = pasteCommand;
 			_undoCommand = undoCommand;
 
@@ -500,6 +508,7 @@ namespace Bloom
 		{
 			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
+			ContextMenuLocation = PointToClient(Cursor.Position);
 			if (ContextMenuProvider != null)
 			{
 				var replacesStdMenu = ContextMenuProvider(e);
@@ -510,8 +519,9 @@ namespace Bloom
 				if (replacesStdMenu)
 					return; // only the provider's items
 			}
+			AddTextOverPictureMenuItem(e);
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", OnOpenPageInStylizer);
-			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
+			m.Enabled = !String.IsNullOrEmpty(GetPathToStylizer());
 
 			if(FFMenuItem == null)
 				AddOpenPageInFFItem(e);
@@ -520,6 +530,53 @@ namespace Bloom
 #endif
 
 			e.ContextMenu.MenuItems.Add(LocalizationManager.GetString("Browser.CopyTroubleshootingInfo", "Copy Troubleshooting Information"), OnGetTroubleShootingInformation);
+		}
+
+		/// <summary>
+		/// Might add a menu item to the Gecko context menu.
+		/// If we are in a "bloom-imageContainer" div the menu item will be to add a text box to the image.
+		/// If we are in a "bloom-textOverPicture" div the menu item will be to delete a text box from the image.
+		/// Otherwise no menu item is added.
+		/// </summary>
+		/// <param name="e"></param>
+		private void AddTextOverPictureMenuItem(GeckoContextMenuEventArgs e)
+		{
+			// Since at this point we don't have a way to keep TextOverPicture textboxes that the user adds to xMatter pages
+			// we won't give them the opportunity. If we later add that capability, besides removing this 'if', make sure that
+			// textboxes appear above cover images.
+			if (SelfOrAncestorHasClass(e.TargetNode, "bloom-frontMatter") || SelfOrAncestorHasClass(e.TargetNode, "bloom-backMatter"))
+			{
+				return;
+			}
+			if (SelfOrAncestorHasClass(e.TargetNode, "bloom-textOverPicture"))
+			{
+				var deleteMessage = LocalizationManager.GetString("EditTab.DeleteTextBoxFromImage", "Delete Text Box From Image");
+				e.ContextMenu.MenuItems.Add(deleteMessage, (sender, args) => _deleteTextBoxCommand.Execute());
+				return; // we don't expect to need both Add and Delete in the same place
+			}
+			if (SelfOrAncestorHasClass(e.TargetNode, "bloom-imageContainer"))
+			{
+				var addMessage = LocalizationManager.GetString("EditTab.AddTextBoxToImage", "Add Text Box To Image");
+				e.ContextMenu.MenuItems.Add(addMessage, (sender, args) => _addTextBoxCommand.Execute());
+			}
+		}
+
+		// Is there something like this already somewhere?
+		// Should I put it elsewhere (some BloomGeckoUtils class or something?)
+		private static bool HasClass(GeckoHtmlElement node, string className)
+		{
+			return (" " + node.ClassName + " ").Split(' ').Contains(className);
+		}
+
+		private static bool SelfOrAncestorHasClass(GeckoNode targetNode, string className)
+		{
+			while (targetNode is GeckoHtmlElement && targetNode.NodeName != "BODY")
+			{
+				if (HasClass((GeckoHtmlElement)targetNode, className))
+					return true;
+				targetNode = targetNode.ParentNode;
+			}
+			return false;
 		}
 
 		private MenuItem AddOpenPageInFFItem(GeckoContextMenuEventArgs e)
