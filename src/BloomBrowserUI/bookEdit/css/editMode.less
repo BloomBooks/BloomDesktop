@@ -361,15 +361,15 @@ DIV.marginBox
     font-size: 10pt;
     height: 20px;
     width: 20px;
+    z-index: 6; // must rise above cartoonBubble text
     img{
         position: absolute;
         bottom: 0;
         left: 0;
     }
-}
-#formatButton:Hover
-{
-    color: #000000;
+    &:Hover {
+        color: #000000;
+    }
 }
 /*Toolbox*/
 #pagedragtoolbox

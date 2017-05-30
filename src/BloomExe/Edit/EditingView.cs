@@ -42,13 +42,15 @@ namespace Bloom.Edit
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
 		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
+		private BloomWebSocketServer _webSocketServer;
 
 		public delegate EditingView Factory(); //autofac uses this
 
 		public EditingView(EditingModel model, PageListView pageListView,
 			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand,
 			DuplicatePageCommand duplicatePageCommand,
-			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
+			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent,
+			BloomWebSocketServer webSocketServer)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -58,6 +60,7 @@ namespace Bloom.Edit
 			_undoCommand = undoCommand;
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
+			_webSocketServer = webSocketServer;
 			InitializeComponent();
 			_browser1.Isolator = isolator;
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance; //save it

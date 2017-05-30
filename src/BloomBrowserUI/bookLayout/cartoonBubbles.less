@@ -1,0 +1,26 @@
+@MinBubbleWidth: 21px;
+@MinBubbleHeight: 21px;
+
+.bloom-cartoonText {
+    position: absolute;
+    width:auto !important; // important needed to override customPage rule
+    height:auto !important; // important needed to override customPage rule
+    min-width: @MinBubbleWidth;
+    min-height: @MinBubbleHeight;
+    background:#fff;
+    cursor: move;
+    border-radius: 3px;
+    border: none !important; // override ui-draggable border when not hovered
+    z-index: 1001; // show up above most things (especially images), but not above dialogs
+    overflow: visible;
+    .bloom-editable {
+        min-width: @MinBubbleWidth - 3;
+        min-height: @MinBubbleHeight - 3 !important;
+        border: none;
+        text-align: center;
+        cursor: move;
+    }
+    &:hover {
+        border: 1px solid #C1E6CA !important; // restore ui-draggable border when hovered
+    }
+}

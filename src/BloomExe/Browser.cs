@@ -40,6 +40,7 @@ namespace Bloom
 		private  UndoCommand _undoCommand;
 		private  CutCommand _cutCommand;
 		private bool _disposed;
+		private BloomWebSocketServer _webSocketServer;
 		public event EventHandler OnBrowserClick;
 		public static event EventHandler XulRunnerShutdown;
 
@@ -163,10 +164,18 @@ namespace Bloom
 			GeckoPreferences.User["mousewheel.with_control.action"] = 0;
 		}
 
+		public Browser(BloomWebSocketServer webSocketServer)
+			: this()
+		{
+			_webSocketServer = webSocketServer;
+		}
+
 		public Browser()
 		{
 			InitializeComponent();
 		}
+
+		public bool HasSocket { get { return _webSocketServer != null; } }
 
 		/// <summary>
 		/// Allow creator to hook up this event handler if the browser needs to handle Ctrl-N.
@@ -510,8 +519,13 @@ namespace Bloom
 				if (replacesStdMenu)
 					return; // only the provider's items
 			}
+			if (HasSocket)
+			{
+				var location = PointToClient(Cursor.Position);
+				AddTextOverPictureMenuItem(e, location);
+			}
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", OnOpenPageInStylizer);
-			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
+			m.Enabled = !String.IsNullOrEmpty(GetPathToStylizer());
 
 			if(FFMenuItem == null)
 				AddOpenPageInFFItem(e);
@@ -520,6 +534,49 @@ namespace Bloom
 #endif
 
 			e.ContextMenu.MenuItems.Add(LocalizationManager.GetString("Browser.CopyTroubleshootingInfo", "Copy Troubleshooting Information"), OnGetTroubleShootingInformation);
+		}
+
+		/// <summary>
+		/// Might add a menu item to the Gecko context menu.
+		/// If we are in a "bloom-imageContainer" div the menu item will be to add a text box to the image.
+		/// If we are in a "bloom-cartoonText" div the menu item will be to delete a text box from the image.
+		/// Otherwise no menu item is added.
+		/// </summary>
+		/// <param name="e"></param>
+		/// <param name="location">Right-click on the edit mode browser is generating a context menu at this point (ClientCoordinates)</param>
+		private void AddTextOverPictureMenuItem(GeckoContextMenuEventArgs e, Point location)
+		{
+			if (SelfOrAncestorHasClass(e.TargetNode, "bloom-imageContainer"))
+			{
+				var addMessage = LocalizationManager.GetString("EditTab.AddTextBoxToImage", "Add Text Box To Image");
+				e.ContextMenu.MenuItems.Add(addMessage, (sender, args) => _webSocketServer.Send("addTextBox",
+					$"{location.X},{location.Y}"));
+				return; // we don't expect to need both Add and Delete in the same place
+			}
+			if (SelfOrAncestorHasClass(e.TargetNode, "bloom-cartoonText"))
+			{
+				var deleteMessage = LocalizationManager.GetString("EditTab.DeleteTextBoxFromImage", "Delete Text Box From Image");
+				e.ContextMenu.MenuItems.Add(deleteMessage, (sender, args) => _webSocketServer.Send("deleteTextBox",
+					$"{location.X},{location.Y}"));
+			}
+		}
+
+		// Is there something like this already somewhere?
+		// Should I put it elsewhere (some BloomGeckoUtils class or something?)
+		private static bool HasClass(GeckoHtmlElement node, string className)
+		{
+			return (" " + node.ClassName + " ").Split(' ').Contains(className);
+		}
+
+		private static bool SelfOrAncestorHasClass(GeckoNode targetNode, string className)
+		{
+			while (targetNode is GeckoHtmlElement && targetNode.NodeName != "BODY")
+			{
+				if (HasClass((GeckoHtmlElement)targetNode, className))
+					return true;
+				targetNode = targetNode.ParentNode;
+			}
+			return false;
 		}
 
 		private MenuItem AddOpenPageInFFItem(GeckoContextMenuEventArgs e)

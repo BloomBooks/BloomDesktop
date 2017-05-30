@@ -66,7 +66,7 @@
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
-			this._browser1 = new Bloom.Browser();
+			this._browser1 = new Bloom.Browser(_webSocketServer);
 			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();

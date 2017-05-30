@@ -5,7 +5,7 @@ import * as $ from "jquery";
 import * as JQuery from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import { cleanupImages, SetOverlayForImagesWithoutMetadata, SetupResizableElement, SetupImagesInContainer } from "./bloomImages";
-import { setupOrigami, cleanupOrigami } from "./origami"
+import { setupOrigami, cleanupOrigami } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -13,12 +13,13 @@ import BloomField from "../bloomField/BloomField";
 import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
+import { initializeTextOverPicture, theOneTextOverPicture } from "./textOverPicture";
 import TopicChooser from "../TopicChooser/TopicChooser";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
-import "jquery.qtip.js"
-import "jquery.qtipSecondary.js"
-import "long-press/jquery.longpress.js"
+import "jquery.qtip.js";
+import "jquery.qtipSecondary.js";
+import "long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getToolboxFrameExports } from "./bloomFrames";
@@ -358,6 +359,7 @@ function SetupElements(container) {
     });
 
     AddEditKeyHandlers(container);
+    initializeTextOverPicture();
 
     //--------------------------------
     //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
@@ -464,6 +466,11 @@ function SetupElements(container) {
             $(this).remove()
         });
     });
+
+    // make any added text-over-picture bubbles draggable
+    if (theOneTextOverPicture) {
+        theOneTextOverPicture.makeTextOverPictureDraggable();
+    }
 
     bloomQtipUtils.repositionPictureDictionaryTooltips(container);
 
