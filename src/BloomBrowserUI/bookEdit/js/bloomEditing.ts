@@ -5,7 +5,7 @@ import * as $ from "jquery";
 import * as JQuery from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import { cleanupImages, SetOverlayForImagesWithoutMetadata, SetupResizableElement, SetupImagesInContainer } from "./bloomImages";
-import { setupOrigami, cleanupOrigami } from "./origami"
+import { setupOrigami, cleanupOrigami } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -13,23 +13,21 @@ import BloomField from "../bloomField/BloomField";
 import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
+import { initializeTextOverPictureManager, theOneTextOverPictureManager } from "./textOverPicture";
 import TopicChooser from "../TopicChooser/TopicChooser";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
-import "jquery.qtip.js"
-import "jquery.qtipSecondary.js"
-import "long-press/jquery.longpress.js"
+import "jquery.qtip.js";
+import "jquery.qtipSecondary.js";
+import "long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getToolboxFrameExports } from "./bloomFrames";
-import { EditableDivUtils } from './editableDivUtils';
-
 
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
 import axios = require("axios");
-
 
 /**
  * Fires an event for C# to handle
@@ -49,6 +47,7 @@ export function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
     }
     return jqueryNode.parent().height() - jqueryNode.height();
 }
+
 function isBrOrWhitespace(node) {
     return node && ((node.nodeType === 1 && node.nodeName.toLowerCase() === "br") ||
         (node.nodeType === 3 && /^\s*$/.test(node.nodeValue)));
@@ -277,6 +276,7 @@ function IsInTranslationMode() {
 function SetupElements(container) {
 
     SetupImagesInContainer(container);
+    initializeTextOverPictureManager();
 
     //add a marginBox if it's missing. We introduced it early in the first beta
     $(container).find(".bloom-page").each(function () {
@@ -595,6 +595,11 @@ function SetupElements(container) {
         }
     });
 
+    // make any added text-over-picture bubbles draggable and clickable
+    if (theOneTextOverPictureManager) {
+        theOneTextOverPictureManager.makeTextOverPictureBoxDraggableClickableAndResizable();
+    }
+
     // focus on the first editable field
     // HACK for BL-1139: except for some reason when the Reader tools are active this causes
     // quick typing on a newly loaded page to get the cursor messed up. So for the Reader tools, the
@@ -649,6 +654,8 @@ interface String {
 
 export function setZoom(newScale: string) {
     $("div#page-scaling-container").attr("style", "transform: scale(" + newScale + "); transform-origin: top left;");
+    // Save changes, so TextOverPicture draggables work correctly.
+    fireCSharpEditEvent("preparePageForEditingAfterOrigamiChangesEvent", "");
 }
 
 // ---------------------------------------------------------------------------------
@@ -830,6 +837,3 @@ export function IsPageXMatter($target: JQuery): boolean {
     return typeof ($target.closest(".bloom-frontMatter")[0]) !== "undefined" ||
         typeof ($target.closest(".bloom-backMatter")[0]) !== "undefined";
 }
-
-
-

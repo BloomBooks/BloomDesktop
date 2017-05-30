@@ -28,7 +28,7 @@ export function undo() {
     getTheOneReaderToolsModel().undo();
 }
 
-
-$(document).ready(function () {
+// DOM ready function
+$(function () {
     restoreToolboxSettings();
 });

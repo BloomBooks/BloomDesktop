@@ -11,8 +11,10 @@ import '../../modified_libraries/gridly/jquery.gridly.js';
 import { SetImageElementUrl } from '../js/bloomImages';
 
 var thumbnailTimerInterval = 200;
+const socketName = "webSocket";
 
-$(window).ready(function () {
+// DOM ready function
+$(function () {
     $('.gridly').gridly({
         base: 35, // px
         gutter: 10, // px
@@ -39,15 +41,15 @@ $(window).ready(function () {
         fireCSharpEvent("menuClicked", $(this).parent().parent().attr('id'));
     });
 
-    const websocketPort = parseInt(window.location.port) + 1;
+    let websocketPort = parseInt(window.location.port, 10) + 1;
 
     //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-    window["webSocket"] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
+    window[socketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
 
     theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...").done(savingNotification =>
-        window["webSocket"].onmessage = event => {
+        (<WebSocket>window[socketName]).addEventListener("message", event => {
             var e = JSON.parse(event.data);
-            if (e.id == "saving") {
+            if (e.id === "saving") {
                 toastr.info(savingNotification, "", {
                     positionClass: "toast-top-left",
                     preventDuplicates: true,
@@ -63,11 +65,11 @@ $(window).ready(function () {
                     iconClass: ""
                 });
             }
-        })
+        }));
 });
 
 export function stopListeningForSave() {
-    (<WebSocket>window["webSocket"]).close();
+    (<WebSocket>window[socketName]).close();
 }
 
 function fireCSharpEvent(eventName, eventData) {
