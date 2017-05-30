@@ -20,6 +20,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using L10NSharp;
+using SIL.Xml;
 
 namespace Bloom
 {
@@ -37,11 +38,15 @@ namespace Bloom
 		private IDisposable _dependentContent;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
-		private  UndoCommand _undoCommand;
-		private  CutCommand _cutCommand;
+		private UndoCommand _undoCommand;
+		private CutCommand _cutCommand;
 		private bool _disposed;
 		public event EventHandler OnBrowserClick;
 		public static event EventHandler XulRunnerShutdown;
+		// We need some way to pass the cursor location in the Browser context to the EditingView command handlers
+		// for Add/Delete TextOverPicture textboxes. These will store the cursor location when the context menu is
+		// generated.
+		internal Point ContextMenuLocation;
 
 		private static int XulRunnerVersion
 		{
@@ -184,7 +189,7 @@ namespace Bloom
 		/// </summary>
 		public NavigationIsolator Isolator { get; set; }
 
-		public void SetEditingCommands( CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
+		public void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
 			_cutCommand = cutCommand;
 			_copyCommand = copyCommand;
@@ -239,8 +244,6 @@ namespace Bloom
 				var isTextSelection = IsThereACurrentTextSelection();
 				_cutCommand.Enabled = _browser != null && isTextSelection;
 				_copyCommand.Enabled = _browser != null && isTextSelection;
-				//_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
-				//_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
 				_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
 				if (_pasteCommand.Enabled)
 				{
@@ -504,6 +507,7 @@ namespace Bloom
 		{
 			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
+			ContextMenuLocation = PointToClient(Cursor.Position);
 			if (ContextMenuProvider != null)
 			{
 				var replacesStdMenu = ContextMenuProvider(e);
@@ -515,7 +519,7 @@ namespace Bloom
 					return; // only the provider's items
 			}
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", OnOpenPageInStylizer);
-			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
+			m.Enabled = !String.IsNullOrEmpty(GetPathToStylizer());
 
 			if(FFMenuItem == null)
 				AddOpenPageInFFItem(e);

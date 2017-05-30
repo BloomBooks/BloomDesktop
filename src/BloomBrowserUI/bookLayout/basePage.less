@@ -1,5 +1,6 @@
 @import "../templates/common-mixins.less";
 @import "basePage-sharedRules.less";
+@import "textOverPicture.less";
 
 .Browser-Reset() {
     /*+init {*/
@@ -518,7 +519,7 @@ h2 {
         height: ~"calc(100% - 3px)"; //hack: this should logically be 1px, but 3 was needed, so I'm missing something, or maybe it's about rounding and such.
 
         // above so buttons show
-        z-index: 1000;
+        z-index: @imageContainerZIndex;
         // Solves BL-1033 small picture frames cycling red overflow
         overflow: hidden;
     }

@@ -98,5 +98,29 @@ namespace BloomTests
 			Assert.That(elementProxy == new object(), Is.False); // won't exercise current == code, but I think still worth checking.
 			Assert.That(elementProxy.Equals(new object()), Is.False);
 		}
+
+		[Test]
+		public void SelfOrAncestorHasClass_MatchesSelf()
+		{
+			var elementProxy = MakeElement("<div class='blueberry pie'/>");
+			Assert.That(elementProxy.SelfOrAncestorHasClass("blueberry"), Is.True);
+			Assert.That(elementProxy.SelfOrAncestorHasClass("berry"), Is.False);
+			Assert.That(elementProxy.SelfOrAncestorHasClass("pie"), Is.True);
+			Assert.That(elementProxy.SelfOrAncestorHasClass("pieplate"), Is.False);
+		}
+
+		[Test]
+		public void SelfOrAncestorHasClass_MatchesAncestor()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<div class='blueberry pie'><div id='foo' class='foolish'/></div>");
+			var fooDiv = (XmlElement)dom.SelectSingleNode("//div[@id='foo']");
+			var elementProxy = new ElementProxy(fooDiv);
+			Assert.That(elementProxy.SelfOrAncestorHasClass("foolish"), Is.True);
+			Assert.That(elementProxy.SelfOrAncestorHasClass("blueberry"), Is.True);
+			Assert.That(elementProxy.SelfOrAncestorHasClass("berry"), Is.False);
+			Assert.That(elementProxy.SelfOrAncestorHasClass("pie"), Is.True);
+			Assert.That(elementProxy.SelfOrAncestorHasClass("pieplate"), Is.False);
+		}
 	}
 }

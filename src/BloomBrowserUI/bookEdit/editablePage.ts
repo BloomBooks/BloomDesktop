@@ -11,16 +11,10 @@ import '../lib/jquery.myimgscale.js'; //scaleImage()
 
 // This exports the functions that should be accessible from other IFrames or from C#.
 // For example, FrameExports.getPageFrameExports().pageSelectionChanging() can be called.
-import { pageSelectionChanging } from './js/bloomEditing';
-export { pageSelectionChanging };
-import { disconnectForGarbageCollection } from './js/bloomEditing';
-export { disconnectForGarbageCollection };
-import { origamiCanUndo } from './js/origami';
-export { origamiCanUndo }
-import { origamiUndo } from './js/origami';
-export { origamiUndo }
-import { setZoom } from './js/bloomEditing';
-export { setZoom };
+import { pageSelectionChanging, pageUnloading, disconnectForGarbageCollection, setZoom } from "./js/bloomEditing";
+export { pageSelectionChanging, pageUnloading, disconnectForGarbageCollection, setZoom };
+import { origamiCanUndo, origamiUndo } from "./js/origami";
+export { origamiCanUndo, origamiUndo }
 
 var styleSheets = [
     'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
@@ -89,7 +83,6 @@ window['PasteImageCredits'] = () => {
 }
 
 $(document).ready(function () {
-
     $('body').find('*[data-i18n]').localize();
     bootstrap();
 });

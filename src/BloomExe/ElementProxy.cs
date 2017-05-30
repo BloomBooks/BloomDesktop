@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Xml;
 using Gecko;
 using Gecko.DOM;
@@ -19,7 +20,6 @@ namespace Bloom
 
 		public ElementProxy(GeckoHtmlElement element)
 		{
-
 			_geckoElement = element;
 		}
 		public ElementProxy(XmlElement element)
@@ -48,16 +48,8 @@ namespace Bloom
 		/// </summary>
 		public string Name
 		{
-			get
-			{
-				if (_xmlElement == null)
-				{
-					return _geckoElement.NodeName;
-				}
-				else
-				{
-					return _xmlElement.Name;
-				}
+			get {
+				return _xmlElement?.Name ?? _geckoElement.NodeName;
 			}
 		}
 
@@ -153,6 +145,50 @@ namespace Bloom
 				}
 
 			}
+		}
+
+		/// <summary>
+		/// Generates a new ElementProxy for the parent of the current ElementProxy up the relevant tree structure.
+		/// Can return null.
+		/// </summary>
+		private ElementProxy Parent
+		{
+			get
+			{
+				if (_xmlElement == null)
+				{
+					var parentG = _geckoElement.Parent;
+					return parentG == null ? null : new ElementProxy(parentG);
+				}
+				else
+				{
+					var parentX = _xmlElement.ParentNode as XmlElement;
+					return parentX == null ? null : new ElementProxy(parentX);
+				}
+			}
+		}
+
+		private static bool HasClass(ElementProxy element, string className)
+		{
+			var elementClassName = element._geckoElement?.ClassName ?? element._xmlElement.Attributes["class"].Value;
+			return ((IList) elementClassName.Split(' ')).Contains(className);
+		}
+
+		public bool SelfOrAncestorHasClass(string className)
+		{
+			if (HasClass(this, className))
+			{
+				return true;
+			}
+			var parent = Parent;
+			while (parent != null && parent.Name != "BODY")
+			{
+				if (HasClass(parent, className))
+					return true;
+
+				parent = parent.Parent;
+			}
+			return false;
 		}
 	}
 }
