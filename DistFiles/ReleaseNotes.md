@@ -1,10 +1,13 @@
-## 4.0 (preliminary plan)
+﻿## 4.1 (preliminary plan)
 - Provide a way to create anthologies of multiple books, with an automated Table of Contents.
 - Add an Image Credits field which Bloom will automatically fill and keep up to date.
-- Compress PDFs created by Bloom and use CMYK coloring to satisfy some printshops.
 - Remove Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
-- Add a new Zoom control.
-- Allow user to chose what front/back matter fields to show, and in what languages
+- Allow user to choose what front/back matter fields to show, and in what languages
+
+## 4.0 (preliminary plan)
+- Publish Book to Android Bloom Reader.
+- Compress PDFs created by Bloom and use CMYK coloring to satisfy some printshops.
+- Add a new Zoom control in Edit Tab.
 
 ## 3.9 (beta)
 - Custom Templates
