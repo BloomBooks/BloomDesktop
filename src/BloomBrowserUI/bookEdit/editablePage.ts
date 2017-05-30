@@ -19,6 +19,8 @@ import { origamiCanUndo } from './js/origami';
 export { origamiCanUndo }
 import { origamiUndo } from './js/origami';
 export { origamiUndo }
+import { setZoom } from './js/bloomEditing';
+export { setZoom };
 
 var styleSheets = [
     'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',

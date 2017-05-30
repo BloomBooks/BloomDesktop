@@ -1063,7 +1063,7 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			// Review JohnT: does this require integration with the NavigationIsolator?
-			if (_browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
+			if (_browser != null && _browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
 			{
 				try
 				{

@@ -47,6 +47,7 @@ namespace Bloom.Workspace
 		private string _originalSettingsText;
 		private string _originalCollectionText;
 		private string _originalHelpText;
+		private Image _originalHelpImage;
 		private string _originalUiLanguageSelection;
 		private LibraryView _collectionView;
 		private EditingView _editingView;
@@ -56,6 +57,7 @@ namespace Bloom.Workspace
 		public event EventHandler ReopenCurrentProject;
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
+		private ZoomControl _zoomControl;
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -96,11 +98,7 @@ namespace Bloom.Workspace
 
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
 			//_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
-
-			_settingsLauncherHelper.ManageComponent(_settingsButton);
-
-			//NB: the rest of these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
-			_settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
+			//NB: these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
 			_settingsLauncherHelper.ManageComponent(_keyBloomConceptsMenuItem);
 			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
@@ -130,6 +128,7 @@ namespace Bloom.Workspace
 			// _collectionView
 			//
 			this._collectionView = (LibraryView) libraryView;
+			_collectionView.ManageSettings(_settingsLauncherHelper);
 			this._collectionView.Dock = System.Windows.Forms.DockStyle.Fill;
 
 			//
@@ -173,7 +172,19 @@ namespace Bloom.Workspace
 			}
 
 			SetupUiLanguageMenu();
+			SetupZoomControl();
+			AdjustButtonTextsForLocale();
 			_viewInitialized = false;
+		}
+
+		private void SetupZoomControl()
+		{
+			_zoomControl = new ZoomControl();
+			_zoomWwrapper = new ToolStripControlHost(_zoomControl);
+			// We're using a ToolStrip to display these three controls in the top right, and it does a nice job
+			// of stretching the width to match localization. But height and spacing we must control exactly,
+			// or it goes into an overflow mode that is very ugly.
+			_zoomWwrapper.Margin = Padding.Empty;
 		}
 
 		private int TabButtonSectionWidth
@@ -298,7 +309,7 @@ namespace Bloom.Workspace
 				_localizationChangedEvent.Raise(null);
 				// The following is needed for proper display on Linux, and doesn't hurt anything on Windows.
 				// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
-				AdjustButtonTextsForCurrentSize();
+				AdjustButtonTextsForLocale();
 			});
 		}
 
@@ -337,8 +348,8 @@ namespace Bloom.Workspace
 		{
 			// these lines deal with having a smaller workspace window and minimizing the button texts for smaller windows
 			SaveOriginalButtonTexts();
+			AdjustButtonTextsForLocale();
 			_localizationChangedEvent.Raise(null);
-			AdjustButtonTextsForCurrentSize();
 		}
 
 		public static string MenuItemName(CultureInfo lang)
@@ -381,11 +392,6 @@ namespace Bloom.Workspace
 			page.Visible = visible;
 		}
 
-		private void OnOpenCreateLibrary_Click(object sender, EventArgs e)
-		{
-			OpenCreateLibrary();
-		}
-
 		public void OpenCreateLibrary()
 		{
 			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
@@ -412,7 +418,7 @@ namespace Bloom.Workspace
 			});
 		}
 
-		private void OnSettingsButton_Click(object sender, EventArgs e)
+		internal void OnSettingsButton_Click(object sender, EventArgs e)
 		{
 			DialogResult result =  _settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 																	{
@@ -465,6 +471,21 @@ namespace Bloom.Workspace
 											});
 
 			_previouslySelectedControl = view;
+
+			var zoomManager = CurrentTabView as IZoomManager;
+			if (zoomManager != null)
+			{
+				if (!_toolStrip.Items.Contains(_zoomWwrapper))
+					_toolStrip.Items.Add(_zoomWwrapper);
+				_zoomControl.Zoom = zoomManager.Zoom;
+				_zoomControl.ZoomChanged += (sender, args) => zoomManager.Zoom = _zoomControl.Zoom;
+				// Todo: set up revese communication.
+			}
+			else
+			{
+				if (_toolStrip.Items.Contains(_zoomWwrapper))
+					_toolStrip.Items.Remove(_zoomWwrapper);
+			}
 		}
 
 		private void BackgroundColorsForLinux(IBloomTabArea currentTabView) {
@@ -707,6 +728,7 @@ namespace Bloom.Workspace
 
 		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
+		private ToolStripControlHost _zoomWwrapper;
 
 		private int STAGE_1
 		{
@@ -824,20 +846,8 @@ namespace Bloom.Workspace
 
 		private void SaveOriginalButtonTexts()
 		{
-			_originalSettingsText = _settingsButton.Text;
-			_originalCollectionText = _openCreateCollectionButton.Text;
 			_originalHelpText = _helpMenu.Text;
 			_originalUiLanguageSelection = _uiLanguageMenu.Text;
-		}
-
-		private void RestoreOriginalButtonTexts()
-		{
-			_settingsButton.Text = _originalSettingsText;
-			_settingsButton.ToolTipText = null;
-			_openCreateCollectionButton.Text = _originalCollectionText;
-			_helpMenu.Text = _originalHelpText;
-			_uiLanguageMenu.Text = _originalUiLanguageSelection;
-			_uiLanguageMenu.ToolTipText = null;
 		}
 
 		private void ShrinkToStage1()
@@ -859,67 +869,44 @@ namespace Bloom.Workspace
 		}
 
 		/// <summary>
-		/// Remove the button texts if needed for the current size of the main window.
+		/// Adjust buttons for the current Locale. In particular the Help button may be an icon or a translation.
 		/// </summary>
-		void AdjustButtonTextsForCurrentSize()
+		void AdjustButtonTextsForLocale()
 		{
-			if (_currentShrinkage == Shrinkage.Stage2 || _currentShrinkage == Shrinkage.Stage3)
-				RemoveButtonTexts();
-		}
-
-		/// <summary>
-		/// Remove the text from each of the buttons, but set the tooltip text where
-		/// needed.  (Tooltips different than the text have already been set on two of
-		/// these buttons.)
-		/// </summary>
-		private void RemoveButtonTexts()
-		{
-			// Mono requires an explicit tooltip text when setting the text to an empty
-			// string, but .Net seems to remember the previous text string used as a
-			// default tooltip.  It's simplest (and safest) to set it in both cases.
-			_settingsButton.Text = string.Empty;
-			_settingsButton.ToolTipText = _originalSettingsText;
-			_helpMenu.Text = string.Empty;
-			_openCreateCollectionButton.Text = string.Empty;
-			// We can't set this text to the empty string because that makes the menu
-			// icon too small by itself.  But setting it to a space also sets the
-			// (default) tooltip to just a space.
-			_uiLanguageMenu.Text = SPACE;
-			_uiLanguageMenu.ToolTipText = _originalUiLanguageSelection;
+			if (_originalHelpImage == null)
+				_originalHelpImage = _helpMenu.Image;
+			var helpText = LocalizationManager.GetString("HelpMenu.Help Menu", "?");
+			if (helpText == "?" || new[] {"en", "fr", "de", "es"}.Contains(LocalizationManager.UILanguageId))
+			{
+				_helpMenu.Text = "";
+				_helpMenu.Image = _originalHelpImage;
+			}
+			else
+			{
+				_helpMenu.Text = helpText;
+				_helpMenu.Image = null;
+			}
 		}
 
 		private void ShrinkToStage2()
 		{
-			// before this we want to change button sizes and icons on the 4 items
-			RemoveButtonTexts();
-			_settingsButton.Image = Resources.settingsbw16x16;
-			_openCreateCollectionButton.Image = Resources.OpenCreateLibrary16x16;
-			_helpMenu.Image = Resources.help16x16;
-			var uiMenuHeight = _uiLanguageMenu.Size.Height;
-			_uiLanguageMenu.Width = uiMenuHeight; // make it a small square (hopefully just show the dropdown arrow?)
-			var panelLocation = _panelHoldingToolStrip.Location;
-			_stage2SpaceSaved = _originalToolStripPanelWidth - PANEL_TOOLSTRIP_SMALLWIDTH;
-			_panelHoldingToolStrip.Width = PANEL_TOOLSTRIP_SMALLWIDTH;
-			_panelHoldingToolStrip.Height -= PANEL_VERTICAL_SPACER;
-			// move the whole panel to the right edge
-			_panelHoldingToolStrip.Location =
-				new Point(panelLocation.X + _stage2SpaceSaved, panelLocation.Y + PANEL_VERTICAL_SPACER);
+			//var panelLocation = _panelHoldingToolStrip.Location;
+			_stage2SpaceSaved = 0; // currently no way to save space at stage 2
+			//_panelHoldingToolStrip.Width = PANEL_TOOLSTRIP_SMALLWIDTH;
+			//_panelHoldingToolStrip.Height -= PANEL_VERTICAL_SPACER;
+			//// move the whole panel to the right edge
+			//_panelHoldingToolStrip.Location =
+			//	new Point(panelLocation.X + _stage2SpaceSaved, panelLocation.Y + PANEL_VERTICAL_SPACER);
 			// otherwise as we keep shrinking the right side of the tool specific panel blanks us out
 			_panelHoldingToolStrip.BringToFront();
 		}
 
 		private void GrowToStage1()
 		{
-			_panelHoldingToolStrip.Width = _originalToolStripPanelWidth;
-			_panelHoldingToolStrip.Height += PANEL_VERTICAL_SPACER;
-			_panelHoldingToolStrip.Location =
-				new Point(this.Width - _originalToolStripPanelWidth, _panelHoldingToolStrip.Location.Y - PANEL_VERTICAL_SPACER);
-			// restore original button sizes and icons
-			RestoreOriginalButtonTexts();
-			_settingsButton.Image = Resources.settings24x24;
-			_openCreateCollectionButton.Image = Resources.OpenCreateLibrary24x24;
-			_helpMenu.Image = Resources.help24x24;
-			_uiLanguageMenu.Width = _originalUiMenuWidth;
+			//_panelHoldingToolStrip.Width = _originalToolStripPanelWidth;
+			//_panelHoldingToolStrip.Height += PANEL_VERTICAL_SPACER;
+			//_panelHoldingToolStrip.Location =
+			//	new Point(this.Width - _originalToolStripPanelWidth, _panelHoldingToolStrip.Location.Y - PANEL_VERTICAL_SPACER);
 			_stage2SpaceSaved = 0;
 		}
 

@@ -6,6 +6,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
+using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
 {
@@ -39,6 +40,8 @@ namespace Bloom.CollectionTab
 			_makeBloomPackButton.Visible = model.IsShellProject;
 			_sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
 
+			_leftToolStrip.Renderer  = new BorderlessToolStripRenderer();
+
 			if (sendReceiveCommand != null)
 			{
 #if Chorus
@@ -61,6 +64,15 @@ namespace Bloom.CollectionTab
 														Logger.WriteEvent("Entered Collections Tab");
 													}
 												});
+		}
+
+		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
+		{
+			//we have a couple of buttons which don't make sense for the remote (therefore vulnerable) low-end user
+			settingsLauncherHelper.ManageComponent(_settingsButton);
+
+			//NB: this isn't really a setting, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
+			settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
 		}
 
 		private void BackgroundColorsForLinux() {
@@ -117,5 +129,33 @@ namespace Bloom.CollectionTab
 		}
 
 		public Bitmap ToolStripBackground { get; set; }
+
+		private WorkspaceView GetWorkspaceView()
+		{
+			Control ancestor = Parent;
+			while (ancestor != null && !(ancestor is WorkspaceView))
+				ancestor = ancestor.Parent;
+			return ancestor as WorkspaceView;
+		}
+
+		private void _settingsButton_Click(object sender, EventArgs e)
+		{
+			GetWorkspaceView().OnSettingsButton_Click(sender, e);
+		}
+
+		private void _openCreateCollectionButton_Click(object sender, EventArgs e)
+		{
+			GetWorkspaceView().OpenCreateLibrary();
+		}
+	}
+
+	// Without this we get a white border we don't want.
+	// Thanks to https://stackoverflow.com/questions/1918247/how-to-disable-the-line-under-tool-strip-in-winform-c
+	internal class BorderlessToolStripRenderer : ToolStripSystemRenderer
+	{
+		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
+		{
+			// we don't want a border!
+		}
 	}
 }

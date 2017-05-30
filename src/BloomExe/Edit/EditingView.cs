@@ -12,6 +12,7 @@ using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Api;
 using Bloom.web.controllers;
+using Bloom.Workspace;
 using L10NSharp;
 using SIL.Progress;
 using SIL.Reporting;
@@ -27,7 +28,7 @@ using SIL.Windows.Forms.Widgets;
 
 namespace Bloom.Edit
 {
-	public partial class EditingView : UserControl, IBloomTabArea
+	public partial class EditingView : UserControl, IBloomTabArea, IZoomManager
 	{
 		private readonly EditingModel _model;
 		private PageListView _pageListView;
@@ -86,10 +87,10 @@ namespace Bloom.Edit
 			Controls.Remove(_topBarPanel);
 			SetupBrowserContextMenu();
 #if __MonoCS__
-			// The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
-			// Merely introducing an "identity color matrix" to the image attributes appears to fix
-			// this problem.  (The active form looks okay with or without this fix.)
-			// See http://issues.bloomlibrary.org/youtrack/issue/BL-3714.
+// The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
+// Merely introducing an "identity color matrix" to the image attributes appears to fix
+// this problem.  (The active form looks okay with or without this fix.)
+// See http://issues.bloomlibrary.org/youtrack/issue/BL-3714.
 			float[][] colorMatrixElements = {
 				new float[] {1,  0,  0,  0,  0},		// red scaling factor of 1
 				new float[] {0,  1,  0,  0,  0},		// green scaling factor of 1
@@ -1333,6 +1334,23 @@ namespace Bloom.Edit
 		{
 			return LocalizationManager.GetString("EditTab.HowToUnlockBook",
 							"To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.");
+		}
+
+		// The zoom factor that is shown in the top right of the toolbar (a percent).
+		public int Zoom
+		{
+			// Whatever the user may have saved (e.g., from earlier use of ctrl-wheel), we'll make this an expected multiple-of-10 percent.
+			get { return (int) Math.Round(float.Parse(Settings.Default.PageZoom ?? "1.0") * 10) * 10; }
+			set
+			{
+				Settings.Default.PageZoom = (value / 100.0).ToString();
+				Settings.Default.Save();
+				if (_browser1 != null)
+				{
+					RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().setZoom(" +
+					              Settings.Default.PageZoom + ");}");
+				}
+			}
 		}
 	}
 }
