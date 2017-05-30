@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Xml;
 using Gecko;
 using Gecko.DOM;
@@ -152,6 +153,38 @@ namespace Bloom
 					return _xmlElement.Name == "input" &&  _xmlElement.GetAttribute("checked") != null;
 				}
 
+			}
+		}
+
+		private static bool HasClass(ElementProxy element, string className)
+		{
+			var elementClassName = element._geckoElement?.ClassName ?? element._xmlElement.Attributes["class"].Value;
+			return ((IList) (" " + elementClassName + " ").Split(' ')).Contains(className);
+		}
+
+		public bool SelfOrAncestorHasClass(string className)
+		{
+			if (_xmlElement == null)
+			{
+				var targetNode = _geckoElement;
+				while (targetNode != null && targetNode.NodeName != "BODY")
+				{
+					if (HasClass(new ElementProxy(targetNode), className))
+						return true;
+					targetNode = targetNode.ParentNode as GeckoHtmlElement;
+				}
+				return false;
+			}
+			else
+			{
+				var targetNode = _xmlElement;
+				while (targetNode != null && targetNode.Name != "BODY")
+				{
+					if (HasClass(new ElementProxy(targetNode), className))
+						return true;
+					targetNode = targetNode.ParentNode as XmlElement;
+				}
+				return false;
 			}
 		}
 	}

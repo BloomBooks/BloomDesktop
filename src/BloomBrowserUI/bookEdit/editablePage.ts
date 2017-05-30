@@ -13,6 +13,8 @@ import '../lib/jquery.myimgscale.js'; //scaleImage()
 // For example, FrameExports.getPageFrameExports().pageSelectionChanging() can be called.
 import { pageSelectionChanging } from './js/bloomEditing';
 export { pageSelectionChanging };
+import { pageUnloading } from './js/bloomEditing';
+export { pageUnloading };
 import { disconnectForGarbageCollection } from './js/bloomEditing';
 export { disconnectForGarbageCollection };
 import { origamiCanUndo } from './js/origami';
@@ -89,7 +91,6 @@ window['PasteImageCredits'] = () => {
 }
 
 $(document).ready(function () {
-
     $('body').find('*[data-i18n]').localize();
     bootstrap();
 });
