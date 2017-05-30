@@ -479,7 +479,7 @@ namespace Bloom.Publish
 			_publishControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 				_pdfViewer.Width, _pdfViewer.Height);
 			_publishControl.Dock = _pdfViewer.Dock;
-			_publishControl.Anchor = _pdfViewer.Anchor;
+			_publishControl.Anchor = System.Windows.Forms.AnchorStyles.Left|System.Windows.Forms.AnchorStyles.Top|System.Windows.Forms.AnchorStyles.Right|System.Windows.Forms.AnchorStyles.Bottom;
 			var saveBackColor = _publishControl.BackColor;
 			Controls.Add(_publishControl); // somehow this changes the backcolor
 			_publishControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
