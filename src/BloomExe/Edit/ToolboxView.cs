@@ -27,7 +27,7 @@ namespace Bloom.Edit
 
 		public static void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("toolbox/settings", HandleSettings);
+			server.RegisterEndpointHandler("toolbox/settings", HandleSettings, false);
 		}
 
 		/// <summary>
