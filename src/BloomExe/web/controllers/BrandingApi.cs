@@ -34,7 +34,7 @@ namespace Bloom.Api
 					return;
 				}
 				request.ReplyWithImage(path);
-			});
+			}, false);
 
 		}
 
