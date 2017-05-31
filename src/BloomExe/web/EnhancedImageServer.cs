@@ -61,8 +61,12 @@ namespace Bloom.Api
 		/// </summary>
 		/// <param name="pattern">Simple string or regex to match APIs that this can handle. This must match what comes after the ".../api/" of the URL</param>
 		/// <param name="handler">The method to call</param>
-		/// <param name="handleOnUiThread">For safety, this defaults to true, but that can kill performance if you don't need it (BL-3452) </param>
-		public void RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread = true)
+		/// <param name="handleOnUiThread">If true, the current thread will suspend until the UI thread can be used to call the method.
+		/// This deliberately no longer has a default. It's something that should be thought about.
+		/// Making it true can kill performance if you don't need it (BL-3452), and complicates exception handling and problem reporting (BL-4679).
+		/// There's also danger of deadlock if something in the UI thread is somehow waiting for this request to complete.
+		/// But, beware of race conditions or anything that manipulates UI controls if you make it false.</param>
+		public void RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread)
 		{
 			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = new EndpointRegistration()
 			{

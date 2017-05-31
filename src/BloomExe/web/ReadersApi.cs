@@ -50,7 +50,7 @@ namespace Bloom.Api
 				if(String.IsNullOrEmpty(bookFontName))
 					bookFontName = "sans-serif";
 				request.ReplyWithText(bookFontName);
-			});
+			}, handleOnUiThread: false);
 
 			server.RegisterEndpointHandler("readers/ui/.*", HandleRequest, true);
 			server.RegisterEndpointHandler("readers/io/.*", HandleRequest, false);

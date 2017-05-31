@@ -20,7 +20,9 @@ namespace Bloom.Api
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("book/settings", HandleBookSettings);
+			// Not sure this needs UI thread, but it can result in saving the page, which seems
+			// safest to do that way.
+			server.RegisterEndpointHandler("book/settings", HandleBookSettings, true);
 		}
 
 		/// <summary>

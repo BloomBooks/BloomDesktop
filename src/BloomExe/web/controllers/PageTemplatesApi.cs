@@ -47,7 +47,9 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("pageTemplates", HandleTemplatesRequest);
+			// We could probably get away with using the server thread here, but the code interacts quite a bit with the
+			// current book and other state.
+			server.RegisterEndpointHandler("pageTemplates", HandleTemplatesRequest, true);
 			// Being on the UI thread causes a deadlock on Linux/Mono.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3818.
 			server.RegisterEndpointHandler("pageTemplateThumbnail", HandleThumbnailRequest, false);
 		}

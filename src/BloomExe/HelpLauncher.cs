@@ -32,7 +32,7 @@ namespace Bloom
 				Show(Application.OpenForms.Cast<Form>().Last(), topic);
 				//if this is called from a simple html anchor, we don't want the browser to do anything
 				request.SucceededDoNotNavigate();
-			});
+			}, true); // opening a form, definitely UI thread
 		}
 	}
 }

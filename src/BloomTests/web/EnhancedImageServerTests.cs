@@ -116,7 +116,7 @@ namespace BloomTests.web
 						Assert.That(request.CurrentCollectionSettings, Is.EqualTo(server.CurrentCollectionSettings));
 						request.ReplyWithText("Did It!");
 					};
-				server.RegisterEndpointHandler("thisWontWorkWithoutInjection", testFunc);
+				server.RegisterEndpointHandler("thisWontWorkWithoutInjection", testFunc, true);
 
 				// Execute
 				server.MakeReply(transaction);
