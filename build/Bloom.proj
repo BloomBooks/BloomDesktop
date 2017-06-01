@@ -35,11 +35,11 @@
 		<teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
 	</PropertyGroup>
 
-	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="NUnit3" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="NUnit3" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
 	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
 	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
 	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets" Condition="'$(OS)'=='Windows_NT'"/>
