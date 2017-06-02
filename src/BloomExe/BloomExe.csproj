@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -469,6 +469,7 @@
     <Compile Include="Publish\EpubView.Designer.cs">
       <DependentUpon>EpubView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\FixPdfUsingGhostscript.cs" />
     <Compile Include="Publish\FontFileFinder.cs" />
     <Compile Include="Publish\FontGroup.cs" />
     <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfProgram.cs" />

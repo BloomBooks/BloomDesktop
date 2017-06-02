@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="en"
           adminlang="en"
@@ -3225,6 +3225,18 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.FixPDF.Color">
+      <note>Message displayed in a progress report dialog box.</note>
+      <tuv xml:lang="en">
+        <seg>Converting color to CMYK for printing.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.FixPDF.Shrink">
+      <note>Message displayed in a progress report dialog box.</note>
+      <tuv xml:lang="en">
+        <seg>Compressing the PDF file.</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
