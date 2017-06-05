@@ -387,6 +387,33 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='test']/*[@data-derived='licenseDescription' and @lang='fr' and contains(text(),'French')]", 1);
 		}
 
+		[Test]
+		public void UpdateDomFromDataDiv_CopiesCopyrightAndOriginalCopyrightToMultipleDestinations()
+		{
+			// We could test other fields too, but these are enought to cover the two main methods that do the copying.
+			var html = @"<html><body>
+							<div id='bloomDataDiv'>
+								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
+								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by-nc/4.0/</div>
+								<div data-book='originalLicenseNotes' lang='*'>You can do anything you want if your name is Fred.</div>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
+							</div>
+							<div id='test' class='test'>
+								<div data-derived='copyright' lang='*'>something obsolete</div>
+								<div data-derived='originalCopyrightAndLicense' lang='en'>BoilerPlateDescription</div>
+							</div>
+							<div id='test2' class='test'>
+								<div data-derived='copyright' lang='*'>something else obsolete to be overwritten</div>
+								<div data-derived='originalCopyrightAndLicense' lang='en'>Some other place we show original copyright</div>
+							</div>
+						</body></html>";
+			var bookDom = new HtmlDom(html);
+
+			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", _collectionSettings);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original, Copyright © 2007, Foo Publishers. Licensed under CC-BY-NC 4.0. You can do anything you want if your name is Fred.')]", 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2008, Bar Publishers')]", 2);
+		}
+
 
 		/// <summary>
 		/// Start out with an html with a bloomDataDiv describe by the parameters, then run it through the derivation of

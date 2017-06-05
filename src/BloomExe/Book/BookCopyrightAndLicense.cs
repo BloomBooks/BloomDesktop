@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using L10NSharp;
@@ -196,18 +197,20 @@ namespace Bloom.Book
 
 		private static void CopyStringToFieldsInPages(HtmlDom dom, string key, string val, string lang)
 		{
-			var target = dom.SelectSingleNode("//*[@data-derived='" + key + "']");
-			if (target == null)
-				return;
-			if (string.IsNullOrEmpty(val))
+			foreach (XmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
 			{
-				target.RemoveAttribute("lang");
-				target.InnerText = "";
-			}
-			else
-			{
-				HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, val);
-				target.SetAttribute("lang", lang);
+				if (target == null)
+					return;
+				if (string.IsNullOrEmpty(val))
+				{
+					target.RemoveAttribute("lang");
+					target.InnerText = "";
+				}
+				else
+				{
+					HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, val);
+					target.SetAttribute("lang", lang);
+				}
 			}
 		}
 
@@ -218,42 +221,38 @@ namespace Bloom.Book
 
             MultiTextBase source = dom.GetBookSetting(key);
 
-			var target = dom.SelectSingleNode("//*[@data-derived='" + key + "']");
-			if (target == null)
+			foreach (XmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
 			{
-				return;
-			}
-
-
-			//just put value into the text of the element
-			if (string.IsNullOrEmpty(valueAttribute))
-			{
-				//clear out what's there now
-				target.RemoveAttribute("lang");
-				target.InnerText = "";
-
-				var form = source.GetBestAlternative(languagePreferences);
-				if (form != null && !string.IsNullOrWhiteSpace(form.Form))
+				//just put value into the text of the element
+				if (string.IsNullOrEmpty(valueAttribute))
 				{
-					// HtmlDom.GetBookSetting(key) returns the result of XmlNode.InnerXml which will be Html encoded (&amp; &lt; etc).
-					// HtmlDom.SetElementFromUserStringPreservingLineBreaks() calls XmlNode.InnerText, which Html encodes if necessary.
-					// So we need to decode here to prevent double encoding.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
-					// Note that HtmlDom.SetElementFromUserStringPreservingLineBreaks() handles embedded <br/> elements, but makes no
-					// effort to handle p or div elements.
-					var decoded = System.Web.HttpUtility.HtmlDecode(form.Form);
-					HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, decoded);
-					target.SetAttribute("lang", form.WritingSystemId); //this allows us to set the font to suit the language
+					//clear out what's there now
+					target.RemoveAttribute("lang");
+					target.InnerText = "";
+
+					var form = source.GetBestAlternative(languagePreferences);
+					if (form != null && !string.IsNullOrWhiteSpace(form.Form))
+					{
+						// HtmlDom.GetBookSetting(key) returns the result of XmlNode.InnerXml which will be Html encoded (&amp; &lt; etc).
+						// HtmlDom.SetElementFromUserStringPreservingLineBreaks() calls XmlNode.InnerText, which Html encodes if necessary.
+						// So we need to decode here to prevent double encoding.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
+						// Note that HtmlDom.SetElementFromUserStringPreservingLineBreaks() handles embedded <br/> elements, but makes no
+						// effort to handle p or div elements.
+						var decoded = System.Web.HttpUtility.HtmlDecode(form.Form);
+						HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, decoded);
+						target.SetAttribute("lang", form.WritingSystemId); //this allows us to set the font to suit the language
+					}
 				}
-			}
-			else //Put the value into an attribute. The license image goes through this path.
-			{
-				target.SetAttribute(valueAttribute, source.GetBestAlternativeString(languagePreferences));
-				if (source.Empty)
+				else //Put the value into an attribute. The license image goes through this path.
 				{
-					//if the license image is empty, make sure we don't have some alternative text
-					//about the image being missing or slow to load
-					target.SetAttribute("alt", "");
-					//over in javascript land, @alt will get set appropriately when the image url is not empty.
+					target.SetAttribute(valueAttribute, source.GetBestAlternativeString(languagePreferences));
+					if (source.Empty)
+					{
+						//if the license image is empty, make sure we don't have some alternative text
+						//about the image being missing or slow to load
+						target.SetAttribute("alt", "");
+						//over in javascript land, @alt will get set appropriately when the image url is not empty.
+					}
 				}
 			}
 		}
