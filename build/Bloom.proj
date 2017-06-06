@@ -40,16 +40,14 @@
 	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
 	<UsingTask TaskName="NUnit3" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="S3BuildPublisher" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.AWS.dll" />
 	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
 	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
-	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets" Condition="'$(OS)'=='Windows_NT'"/>
 
-  <PropertyGroup>
-	<AccessKey>AKIAJ24BTPKNQCTQ3WQQ</AccessKey> <!-- This is for JohnThomson, a user who can upload to our libraries; override with /p:AccessKey=; used by ConfigureS3 target-->
-	<Secret></Secret> <!-- Secret access key for use in $(AccessKey) Must override with /p:Secret=; used by ConfigureS3 target-->
-	<Key>Dev</Key>  <!-- Which set of keys to use; May override with /p:Key=; used by all S3 upload targets. Must configure with this key before using other targets.-->
-	<Bucket>bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
-  </PropertyGroup>
+	<PropertyGroup>
+		<ProfileName>BloomLibrary</ProfileName>
+		<Bucket>bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
+	</PropertyGroup>
 
   <Target Name="VersionNumbers">
 	<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
@@ -186,11 +184,11 @@
 		-->
 		<Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(channelRelease).htm"/>
 		<S3BuildPublisher
-		  EncryptionContainerName ="$(Key)"
+		  CredentialStoreProfileName ="$(ProfileName)"
 		  SourceFiles="../output/installer/DownloadPointers_$(channelRelease).htm"
 		  DestinationBucket="$(Bucket)"
 		  DestinationFolder="channels"
-		  PublicRead="true" />
+		  IsPublicRead="true" />
 	</Target>
 
 	<Target Name="Installer" DependsOnTargets="VersionNumbers; Build ">
@@ -265,35 +263,35 @@
 		When we're ready to go live with squirrel we can change this target folder or the web site.-->
 		<!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
 		<S3BuildPublisher
-		EncryptionContainerName ="$(Key)"
+		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelInstallerFileName)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="installers$(channel)"
-		PublicRead="true" />
+		IsPublicRead="true" />
 
 		<!-- The delta, full, and RELEASES files must all be in the same directory, the one indicated by Program.SquirrelUpdateUrl.
 		This MUST NOT CHANGE once we start shipping squirrel installers, because it's where all the old versions will look for
 		newer ones.-->
 		<S3BuildPublisher
-		EncryptionContainerName ="$(Key)"
+		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelDeltaPkg)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
-		PublicRead="true" />
+		IsPublicRead="true" />
 
 		<S3BuildPublisher
-		EncryptionContainerName ="$(Key)"
+		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
-		PublicRead="true" />
+		IsPublicRead="true" />
 
 		<S3BuildPublisher
-		EncryptionContainerName ="$(Key)"
+		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/RELEASES"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
-		PublicRead="true" />
+		IsPublicRead="true" />
 
 		<CallTarget Targets ='MakeDownloadPointers'/>
 	</Target>

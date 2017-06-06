@@ -45,7 +45,7 @@ _NCrunch*
 build/xulrunner*
 build/Palaso.BuildTasks.dll
 build/MSBuild.*
-build/AWSSDK.dll
+build/AWSSDK*.dll
 packages/*.*
 Copy*.bat
 *.orig
@@ -71,6 +71,7 @@ lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
 LibChorus.*
 build/Palaso.BuildTasks.dll*
+build/SIL.BuildTasks*.dll*
 *.userprefs
 Downloads/
 Bloom Q&A SIL Literacy Oct 2013.pdf
