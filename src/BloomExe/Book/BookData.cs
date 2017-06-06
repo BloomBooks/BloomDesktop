@@ -780,10 +780,17 @@ namespace Bloom.Book
 					{
 						if (UpdateImageFromDataSet(data, node, key)) continue;
 
-						var lang = node.GetOptionalStringAttribute("lang", "*");
+						// Some older versions of Bloom apparently used data-default-languages instead of lang
+						// for some data elements.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4591.
+						// If the data-default-languages attribute contains only a single writing system alias,
+						// it can be translated into a specific language code the same as a lang attribute.
+						string lang;
+						if (!node.HasAttribute("lang"))
+							lang = node.GetOptionalStringAttribute("data-default-languages", "*");
+						else
+							lang = node.GetOptionalStringAttribute("lang", "*");
 						if (lang == "N1" || lang == "N2" || lang == "V")
 							lang = data.WritingSystemAliases[lang];
-
 						//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
 						//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
 						//							{
