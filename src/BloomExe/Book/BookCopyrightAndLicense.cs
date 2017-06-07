@@ -199,8 +199,8 @@ namespace Bloom.Book
 		{
 			foreach (XmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
 			{
-				if (target == null)
-					return;
+				if (target == null) // don't think this can happen, but something like it seemed to in one test...
+					continue;
 				if (string.IsNullOrEmpty(val))
 				{
 					target.RemoveAttribute("lang");
@@ -394,9 +394,6 @@ namespace Bloom.Book
 				                  originalLicenseSentence;
 			}
 
-			// The copyright string has to be encoded because it's fed eventually into the XmlNode.InnerXml method, and some people
-			// like to use & in their copyright notices.  metaData.CopyrightNotice is not Html encoded, so it can give us bare &s.
-			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
 			return copyrightNotice.Trim();
 		}
 	}

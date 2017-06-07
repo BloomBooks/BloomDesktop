@@ -390,7 +390,7 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateDomFromDataDiv_CopiesCopyrightAndOriginalCopyrightToMultipleDestinations()
 		{
-			// We could test other fields too, but these are enought to cover the two main methods that do the copying.
+			// We could test other fields too, but these are enough to cover the two main methods that do the copying.
 			var html = @"<html><body>
 							<div id='bloomDataDiv'>
 								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
