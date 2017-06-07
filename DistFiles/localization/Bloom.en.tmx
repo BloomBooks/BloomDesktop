@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="en"
           adminlang="en"
@@ -3318,6 +3318,36 @@
     <tu tuid="PublishTab.PrintButton">
       <tuv xml:lang="en">
         <seg>&amp;Print...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ProcessPdf.Color">
+      <note>Message displayed in a progress report dialog box.</note>
+      <tuv xml:lang="en">
+        <seg>Converting color to CMYK for printing.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ProcessPdf.ErrorColoring">
+      <note>Message briefly displayed to the user in a toast</note>
+      <tuv xml:lang="en">
+        <seg>Error changing the PDF file colors</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ProcessPdf.ErrorCompressing">
+      <note>Message briefly displayed to the user in a toast</note>
+      <tuv xml:lang="en">
+        <seg>Error compressing the PDF file</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ProcessPdf.ErrorProcessing">
+      <note>Message briefly displayed to the user in a toast</note>
+      <tuv xml:lang="en">
+        <seg>Error compressing &amp; recoloring the PDF file</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ProcessPdf.Shrink">
+      <note>Message displayed in a progress report dialog box.</note>
+      <tuv xml:lang="en">
+        <seg>Compressing the PDF file.</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Publish">
