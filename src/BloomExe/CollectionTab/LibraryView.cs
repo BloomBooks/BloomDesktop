@@ -40,7 +40,7 @@ namespace Bloom.CollectionTab
 			_makeBloomPackButton.Visible = model.IsShellProject;
 			_sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
 
-			_leftToolStrip.Renderer  = new BorderlessToolStripRenderer();
+			//_leftToolStrip.Renderer  = new BorderlessToolStripRenderer();
 
 			if (sendReceiveCommand != null)
 			{
@@ -132,17 +132,7 @@ namespace Bloom.CollectionTab
 		/// TopBarControl.Width is not right here, because (a) the Send/Receive button currently never shows, and
 		/// (b) the Make Bloompack button only shows in source collections.
 		/// </summary>
-		public int WidthToReserveForTopBarControl
-		{
-			get
-			{
-				if (_makeBloomPackButton.Visible)
-					// The should be the distance from the left of the TopBarControl to the right of the makeBloomPack button
-					return _makeBloomPackButton.Bounds.Right + _toolStrip.Left;
-				else
-					return _leftToolStrip.Width;
-			}
-		}
+		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Bounds.Right;
 
 		public Bitmap ToolStripBackground { get; set; }
 
