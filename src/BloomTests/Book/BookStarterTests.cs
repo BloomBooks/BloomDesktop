@@ -717,12 +717,16 @@ namespace BloomTests.Book
 		{
 			var firstAdaptation = GetFolderPathToCreatedBook("The Moon and the Cap");
 			var secondAdaptation = _starter.CreateBookOnDiskFromTemplate(firstAdaptation, _projectFolder.Path);
+			// Note: an earlier version of this test validated things about originalCopyrightAndLicense. But that is now derived
+			// information, never in the data-div and only inserted into the book when we bring it up to date or a couple of other
+			// post-book-starter operations. So all we can do at this point is verify what the book starter is supposed to leave
+			// in the data-div.
 			AssertThatXmlIn.HtmlFile(GetPathToHtml(secondAdaptation)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']"+
-				"//div[@data-book='originalCopyrightAndLicense' and @lang='*' and "+
-				"contains(text(), '"+"Adapted from original, Copyright © 2007, Pratham Books"+"')]", 1);
+				"//div[@data-book='originalCopyright' and @lang='*' and " +
+				"contains(text(), 'Copyright © 2007, Pratham Books"+"')]", 1);
 			AssertThatXmlIn.HtmlFile(GetPathToHtml(secondAdaptation)).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']" +
-				"//div[@data-book='originalCopyrightAndLicense' and @lang='*' and " +
-				"contains(text(), '" + ("Licensed under " + "CC-BY 4.0")+"')]", 1);
+				"//div[@data-book='originalLicenseUrl' and @lang='*' and " +
+				"contains(text(), 'http://creativecommons.org/licenses/by/4.0/')]", 1);
 		}
 
 		private string GetFolderPathToCreatedBook(string sourceBookName)

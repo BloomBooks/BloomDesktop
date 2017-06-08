@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using L10NSharp;
@@ -36,23 +37,29 @@ namespace Bloom.Book
 			{
 				return GetMetadataWithDefaultCopyrightAndLicense(brandingNameOrFolderPath);
 			}
+			return CreateMetadata(dom.GetBookSetting("copyright"), GetLicenseUrl(dom), dom.GetBookSetting("licenseNotes"));
+		}
+
+		public static Metadata GetOriginalMetadata(HtmlDom dom, string brandingNameOrFolderPath = "")
+		{
+			return CreateMetadata(dom.GetBookSetting("originalCopyright"), dom.GetBookSetting("originalLicenseUrl").GetExactAlternative("*"), dom.GetBookSetting("originalLicenseNotes"));
+		}
+
+		public static Metadata CreateMetadata(MultiTextBase copyright, string licenseUrl, MultiTextBase licenseNotes)
+		{
 			var metadata = new Metadata();
-			var copyright = dom.GetBookSetting("copyright");
 			if (!copyright.Empty)
 			{
 				metadata.CopyrightNotice = WebUtility.HtmlDecode(copyright.GetFirstAlternative());
 			}
 
-			var licenseUrl = dom.GetBookSetting("licenseUrl").GetBestAlternativeString(new[] { "*", "en" });
-
 			if (string.IsNullOrWhiteSpace(licenseUrl))
 			{
 				//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
 				//custom licenses live in this field, so if we have notes (and no URL) it is a custom one.
-				var licenseNotes = dom.GetBookSetting("licenseNotes");
 				if (!licenseNotes.Empty)
 				{
-					metadata.License = new CustomLicense { RightsStatement = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative()) };
+					metadata.License = new CustomLicense {RightsStatement = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative())};
 				}
 				else
 				{
@@ -80,14 +87,18 @@ namespace Bloom.Book
 					throw new ApplicationException("Bloom had trouble parsing this license url: '" + licenseUrl + "'. (ref BL-4108)", e);
 				}
 				//are there notes that go along with that?
-				var licenseNotes = dom.GetBookSetting("licenseNotes");
-				if(!licenseNotes.Empty)
+				if (!licenseNotes.Empty)
 				{
 					var s = WebUtility.HtmlDecode(licenseNotes.GetFirstAlternative());
 					metadata.License.RightsStatement = HtmlDom.ConvertHtmlBreaksToNewLines(s);
 				}
 			}
 			return metadata;
+		}
+
+		private static string GetLicenseUrl(HtmlDom dom)
+		{
+			return dom.GetBookSetting("licenseUrl").GetBestAlternativeString(new[] { "*", "en" });
 		}
 
 		private static Metadata GetMetadataWithDefaultCopyrightAndLicense(string brandingNameOrPath)
@@ -178,10 +189,29 @@ namespace Bloom.Book
 			CopyItemToFieldsInPages(dom, "licenseDescription", languagePreferences:collectionSettings.LicenseDescriptionLanguagePriorities.ToArray());
 			CopyItemToFieldsInPages(dom, "licenseNotes");
 			CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute:"src");
-			CopyItemToFieldsInPages(dom, "originalCopyrightAndLicense");
+			CopyStringToFieldsInPages(dom, "originalCopyrightAndLicense", GetOriginalCopyrightAndLicenseNotice(collectionSettings, dom), "*");
 
 			if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
 				UpdateBookLicenseIcon(GetMetadata(dom), bookFolderPath);
+		}
+
+		private static void CopyStringToFieldsInPages(HtmlDom dom, string key, string val, string lang)
+		{
+			foreach (XmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
+			{
+				if (target == null) // don't think this can happen, but something like it seemed to in one test...
+					continue;
+				if (string.IsNullOrEmpty(val))
+				{
+					target.RemoveAttribute("lang");
+					target.InnerText = "";
+				}
+				else
+				{
+					HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, val);
+					target.SetAttribute("lang", lang);
+				}
+			}
 		}
 
 		private static void CopyItemToFieldsInPages(HtmlDom dom, string key, string valueAttribute = null, string[] languagePreferences= null)
@@ -191,42 +221,38 @@ namespace Bloom.Book
 
             MultiTextBase source = dom.GetBookSetting(key);
 
-			var target = dom.SelectSingleNode("//*[@data-derived='" + key + "']");
-			if (target == null)
+			foreach (XmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']"))
 			{
-				return;
-			}
-
-
-			//just put value into the text of the element
-			if (string.IsNullOrEmpty(valueAttribute))
-			{
-				//clear out what's there now
-				target.RemoveAttribute("lang");
-				target.InnerText = "";
-
-				var form = source.GetBestAlternative(languagePreferences);
-				if (form != null && !string.IsNullOrWhiteSpace(form.Form))
+				//just put value into the text of the element
+				if (string.IsNullOrEmpty(valueAttribute))
 				{
-					// HtmlDom.GetBookSetting(key) returns the result of XmlNode.InnerXml which will be Html encoded (&amp; &lt; etc).
-					// HtmlDom.SetElementFromUserStringPreservingLineBreaks() calls XmlNode.InnerText, which Html encodes if necessary.
-					// So we need to decode here to prevent double encoding.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
-					// Note that HtmlDom.SetElementFromUserStringPreservingLineBreaks() handles embedded <br/> elements, but makes no
-					// effort to handle p or div elements.
-					var decoded = System.Web.HttpUtility.HtmlDecode(form.Form);
-					HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, decoded);
-					target.SetAttribute("lang", form.WritingSystemId); //this allows us to set the font to suit the language
+					//clear out what's there now
+					target.RemoveAttribute("lang");
+					target.InnerText = "";
+
+					var form = source.GetBestAlternative(languagePreferences);
+					if (form != null && !string.IsNullOrWhiteSpace(form.Form))
+					{
+						// HtmlDom.GetBookSetting(key) returns the result of XmlNode.InnerXml which will be Html encoded (&amp; &lt; etc).
+						// HtmlDom.SetElementFromUserStringPreservingLineBreaks() calls XmlNode.InnerText, which Html encodes if necessary.
+						// So we need to decode here to prevent double encoding.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
+						// Note that HtmlDom.SetElementFromUserStringPreservingLineBreaks() handles embedded <br/> elements, but makes no
+						// effort to handle p or div elements.
+						var decoded = System.Web.HttpUtility.HtmlDecode(form.Form);
+						HtmlDom.SetElementFromUserStringPreservingLineBreaks(target, decoded);
+						target.SetAttribute("lang", form.WritingSystemId); //this allows us to set the font to suit the language
+					}
 				}
-			}
-			else //Put the value into an attribute. The license image goes through this path.
-			{
-				target.SetAttribute(valueAttribute, source.GetBestAlternativeString(languagePreferences));
-				if (source.Empty)
+				else //Put the value into an attribute. The license image goes through this path.
 				{
-					//if the license image is empty, make sure we don't have some alternative text
-					//about the image being missing or slow to load
-					target.SetAttribute("alt", "");
-					//over in javascript land, @alt will get set appropriately when the image url is not empty.
+					target.SetAttribute(valueAttribute, source.GetBestAlternativeString(languagePreferences));
+					if (source.Empty)
+					{
+						//if the license image is empty, make sure we don't have some alternative text
+						//about the image being missing or slow to load
+						target.SetAttribute("alt", "");
+						//over in javascript land, @alt will get set appropriately when the image url is not empty.
+					}
 				}
 			}
 		}
@@ -296,14 +322,33 @@ namespace Bloom.Book
 		/// Copy the copyright & license info to the originalCopyrightAndLicense,
 		/// then remove the copyright so the translator can put in their own if they
 		/// want. We retain the license, but the translator is allowed to change that.
+		/// If the source is already a translation (already has original copyright or license)
+		/// we keep them unchanged.
 		/// </summary>
 		public static void SetOriginalCopyrightAndLicense(HtmlDom dom, BookData bookData, CollectionSettings collectionSettings)
 		{
-			if (bookData.GetMultiTextVariableOrEmpty("originalCopyrightAndLicense").Count > 0)
+			// At least one of these should exist if the source was a derivative, since we don't allow a
+			// book to have no license, nor to be uploaded without copyright...unless of course it was derived
+			// before 3.9, when we started doing this. In that case the best we can do is record the earliest
+			// information we have for this and later adaptations.
+			if (bookData.GetMultiTextVariableOrEmpty("originalLicenseUrl").Count > 0
+				|| bookData.GetMultiTextVariableOrEmpty("originalLicenseNotes").Count > 0
+				|| bookData.GetMultiTextVariableOrEmpty("originalCopyright").Count > 0)
 			{
 				return; //leave the original there.
 			}
-			var metadata = BookCopyrightAndLicense.GetMetadata(dom);
+			bookData.Set("originalLicenseUrl", GetLicenseUrl(dom), "*");
+			bookData.Set("originalCopyright", System.Web.HttpUtility.HtmlEncode(BookCopyrightAndLicense.GetMetadata(dom).CopyrightNotice), "*");
+			bookData.Set("originalLicenseNotes", dom.GetBookSetting("licenseNotes").GetFirstAlternative(), "*");
+			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
+		}
+
+		internal static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, HtmlDom dom)
+		{
+			return GetOriginalCopyrightAndLicenseNotice(collectionSettings, GetOriginalMetadata(dom));
+		}
+		private static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, Metadata metadata)
+		{
 			string idOfLanguageUsed;
 			var languagePriorityIds = collectionSettings.LicenseDescriptionLanguagePriorities;
 
@@ -311,7 +356,7 @@ namespace Bloom.Book
 
 			var license = metadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
 			string originalLicenseSentence;
-			var preferredLanguageIds = new[] { collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en" };
+			var preferredLanguageIds = new[] {collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en"};
 			if (metadata.License is CustomLicense)
 			{
 				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
@@ -326,10 +371,9 @@ namespace Bloom.Book
 					"On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.",
 					preferredLanguageIds, out idOfLanguageUsed);
 				originalLicenseSentence = string.IsNullOrWhiteSpace(license) ? "" : string.Format(licenseSentenceTemplate, license);
-				originalLicenseSentence = originalLicenseSentence.Replace("..", ".");  // in case had notes which also had a period.
+				originalLicenseSentence = originalLicenseSentence.Replace("..", "."); // in case had notes which also had a period.
 			}
 
-			Console.WriteLine(originalLicenseSentence);
 			var copyrightNotice = "";
 			if (string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
 			{
@@ -346,16 +390,11 @@ namespace Bloom.Book
 					"Adapted from original, {0}.",
 					"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.",
 					preferredLanguageIds, out idOfLanguageUsed);
-				copyrightNotice = String.Format(originalCopyrightSentence, metadata.CopyrightNotice.Trim()) + " " + originalLicenseSentence;
+				copyrightNotice = String.Format(originalCopyrightSentence, metadata.CopyrightNotice.Trim()) + " " +
+				                  originalLicenseSentence;
 			}
-			Console.WriteLine(copyrightNotice);
 
-			// The copyright string has to be encoded because it's fed eventually into the XmlNode.InnerXml method, and some people
-			// like to use & in their copyright notices.  metaData.CopyrightNotice is not Html encoded, so it can give us bare &s.
-			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
-			var encodedCopyright = System.Web.HttpUtility.HtmlEncode(copyrightNotice);
-			bookData.Set("originalCopyrightAndLicense", encodedCopyright, "*");
-			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
+			return copyrightNotice.Trim();
 		}
 	}
 }
