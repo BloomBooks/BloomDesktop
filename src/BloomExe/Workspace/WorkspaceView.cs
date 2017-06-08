@@ -180,11 +180,11 @@ namespace Bloom.Workspace
 		private void SetupZoomControl()
 		{
 			_zoomControl = new ZoomControl();
-			_zoomWwrapper = new ToolStripControlHost(_zoomControl);
+			_zoomWrapper = new ToolStripControlHost(_zoomControl);
 			// We're using a ToolStrip to display these three controls in the top right, and it does a nice job
 			// of stretching the width to match localization. But height and spacing we must control exactly,
 			// or it goes into an overflow mode that is very ugly.
-			_zoomWwrapper.Margin = Padding.Empty;
+			_zoomWrapper.Margin = Padding.Empty;
 		}
 
 		private int TabButtonSectionWidth
@@ -475,16 +475,15 @@ namespace Bloom.Workspace
 			var zoomManager = CurrentTabView as IZoomManager;
 			if (zoomManager != null)
 			{
-				if (!_toolStrip.Items.Contains(_zoomWwrapper))
-					_toolStrip.Items.Add(_zoomWwrapper);
+				if (!_toolStrip.Items.Contains(_zoomWrapper))
+					_toolStrip.Items.Add(_zoomWrapper);
 				_zoomControl.Zoom = zoomManager.Zoom;
 				_zoomControl.ZoomChanged += (sender, args) => zoomManager.Zoom = _zoomControl.Zoom;
-				// Todo: set up revese communication.
 			}
 			else
 			{
-				if (_toolStrip.Items.Contains(_zoomWwrapper))
-					_toolStrip.Items.Remove(_zoomWwrapper);
+				if (_toolStrip.Items.Contains(_zoomWrapper))
+					_toolStrip.Items.Remove(_zoomWrapper);
 			}
 		}
 
@@ -728,7 +727,7 @@ namespace Bloom.Workspace
 
 		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
-		private ToolStripControlHost _zoomWwrapper;
+		private ToolStripControlHost _zoomWrapper;
 
 		// The width at which we switch to stage 1: the actual space needed for the controls in the top panel,
 		// when each is in its widest form and the preferred extra space is between the tab controls and the TopBarControl.

@@ -40,8 +40,6 @@ namespace Bloom.CollectionTab
 			_makeBloomPackButton.Visible = model.IsShellProject;
 			_sendReceiveButton.Visible = Settings.Default.ShowSendReceive;
 
-			//_leftToolStrip.Renderer  = new BorderlessToolStripRenderer();
-
 			if (sendReceiveCommand != null)
 			{
 #if Chorus
@@ -152,16 +150,6 @@ namespace Bloom.CollectionTab
 		private void _openCreateCollectionButton_Click(object sender, EventArgs e)
 		{
 			GetWorkspaceView().OpenCreateLibrary();
-		}
-	}
-
-	// Without this we get a white border we don't want.
-	// Thanks to https://stackoverflow.com/questions/1918247/how-to-disable-the-line-under-tool-strip-in-winform-c
-	internal class BorderlessToolStripRenderer : ToolStripSystemRenderer
-	{
-		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
-		{
-			// we don't want a border!
 		}
 	}
 }
