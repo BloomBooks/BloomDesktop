@@ -72,6 +72,7 @@ namespace Bloom.Publish
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
+			_pdfMaker.CompressPdf = true;	// See http://issues.bloomlibrary.org/youtrack/issue/BL-3721.
 			//_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
 			_currentBookCollectionSelection = currentBookCollectionSelection;
 			ShowCropMarks=false;

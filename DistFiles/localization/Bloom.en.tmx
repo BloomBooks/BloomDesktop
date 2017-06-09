@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="en"
           adminlang="en"
@@ -3286,6 +3286,54 @@
     <tu tuid="PublishTab.PdfMaker.BadPdf">
       <tuv xml:lang="en">
         <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.Compress">
+      <note>Message displayed in a progress report dialog box</note>
+      <tuv xml:lang="en">
+        <seg>Compressing PDF ...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.CompressConvertColor">
+      <note>Message displayed in a progress report dialog box</note>
+      <tuv xml:lang="en">
+        <seg>Compressing PDF &amp; Converting Colors to CMYK ...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.ConvertColor">
+      <note>Message displayed in a progress report dialog box</note>
+      <tuv xml:lang="en">
+        <seg>Converting PDF colors to CMYK ...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.Creating">
+      <note>Message displayed in a progress report dialog box</note>
+      <tuv xml:lang="en">
+        <seg>Creating PDF ...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.ErrorProcessing">
+      <note>Message briefly displayed to the user in a toast</note>
+      <tuv xml:lang="en">
+        <seg>Error creating, compressing, or recoloring the PDF file</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.Finished">
+      <note>Message displayed in a progress report dialog box</note>
+      <tuv xml:lang="en">
+        <seg>Finished making PDF from HTML</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.MakingFromHtml">
+      <note>Message displayed in a progress report dialog box, a partial step of "Creating PDF"</note>
+      <tuv xml:lang="en">
+        <seg>Making PDF from HTML</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.MakingPageOfPdf">
+      <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
+      <tuv xml:lang="en">
+        <seg>Making Page {0} of the PDF</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
