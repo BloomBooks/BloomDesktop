@@ -563,6 +563,8 @@ namespace Bloom.Publish
 
 		internal string PdfPreviewPath { get { return _model.PdfFilePath; } }
 
+		SIL.Windows.Forms.Progress.ProgressDialog _progress;
+
 		public void MakeBooklet()
 		{
 			if (IsMakingPdf)
@@ -592,7 +594,37 @@ namespace Bloom.Publish
 			}
 
 			SetDisplayMode(PublishModel.DisplayModes.Working);
-			_makePdfBackgroundWorker.RunWorkerAsync();
+
+			using (_progress = new SIL.Windows.Forms.Progress.ProgressDialog())
+			{
+				_progress.Overview = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.Creating",
+					"Creating PDF...",
+					@"Message displayed in a progress report dialog box");
+				_progress.BackgroundWorker = _makePdfBackgroundWorker;
+				_makePdfBackgroundWorker.ProgressChanged += UpdateProgress;
+				_progress.ShowDialog();	// will start the background process when loaded/showing
+				_makePdfBackgroundWorker.ProgressChanged -= UpdateProgress;
+				_progress.BackgroundWorker = null;
+				if (_progress.ProgressStateResult != null && _progress.ProgressStateResult.ExceptionThatWasEncountered != null)
+				{
+					string shortMsg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.ErrorProcessing",
+						"Error creating, compressing, or recoloring the PDF file",
+						@"Message briefly displayed to the user in a toast");
+					var longMsg = String.Format("Exception encountered processing the PDF file: {0}", _progress.ProgressStateResult.ExceptionThatWasEncountered);
+					NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, _progress.ProgressStateResult.ExceptionThatWasEncountered);
+				}
+			}
+			_progress = null;
+		}
+
+		private void UpdateProgress(object sender, ProgressChangedEventArgs e)
+		{
+			if (_progress == null || _progress.IsDisposed)
+				return;
+			_progress.Progress = e.ProgressPercentage;
+			var status = e.UserState as string;
+			if (status != null)
+				_progress.StatusText = status;
 		}
 
 		private bool isBooklet()
