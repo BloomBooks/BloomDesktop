@@ -564,5 +564,83 @@ namespace Bloom.Publish
 				{"Country", _collectionSettings.Country}
 			});
 		}
+
+		/// <summary>
+		/// Get the list of color profiles to present to the user in the options menu for publishing.
+		/// </summary>
+		public IEnumerable<ColorProfile> GetColorProfiles()
+		{
+			var profileList = new List<ColorProfile>();
+
+			var profile = new ColorProfile {
+				ProfileName = "RGB",	// REVIEW: can/should this be localized?
+				ProfileDescription = L10NSharp.LocalizationManager.GetString("PublishTab.ColorProfile.RGB", "default color profile, used for monitors",
+					@"tooltip message describing the RGB color scheme"),
+				IccFile = null		// no color transformation needed
+			};
+			profileList.Add(profile);
+			if (ChosenColorProfile == null)
+				ChosenColorProfile = profile;
+
+			profile = new ColorProfile {
+				ProfileName = "CMYK [U.S. Web Coated (SWOP) v2]",	// I think Adobe requires us to use their description to refer to it.
+				ProfileDescription = L10NSharp.LocalizationManager.GetString(@"PublishTab.ColorProfile.CMYK1", "common CMYK color profile used for printing",
+					@"tooltip message describing the ""U.S. Web Coated (SWOP) v2"" CMYK mapping from RGB"),
+				IccFile = "icc/CMYK/USWebCoatedSWOP.icc"
+			};
+			profileList.Add(profile);
+
+			// Adobe provides several more CMYK style icc files, and we can find a large number of freely distributable ones
+			// at http://www.color.org/registry/index.xalter.  There is also at least one built into ghostscript that we could use.
+			// But for now, we just present the one to minimize the burden of choice on the user.  If we get complaints, then we
+			// can either offer a larger fixed set of alternatives or provide a way for a user to add ICC files in a specific
+			// location that we'll pick up and add to the menu dynamically here.  That may take some effort decoding the file
+			// to find its description string.  We could maybe make CMYK the head of a submenu if we want to add more possibilities.
+
+			// complete list of Adobe's distributable CMYK icc files:
+			// ProfileName = "Coated FOGRA27 (ISO 12647-2:2004)", IccFile="icc/CMYK/CoatedFOGRA27.icc"
+			// ProfileName = "Coated FOGRA39 (ISO 12647-2:2004)", IccFile="icc/CMYK/CoatedFOGRA39.icc"
+			// ProfileName = "Coated GRACoL 2006 (ISO 12647-2:2004)", IccFile="icc/CMYK/CoatedGRACoL2006.icc"
+			// ProfileName = "Japan Color 2001 Coated", IccFile="icc/CMYK/JapanColor2001Coated.icc"
+			// ProfileName = "Japan Color 2001 Uncoated", IccFile="icc/CMYK/JapanColor2001Uncoated.icc"
+			// ProfileName = "Japan Color 2002 Newspaper", IccFile="icc/CMYK/JapanColor2002Newspaper.icc"
+			// ProfileName = "Japan Color 2003 Web Coated", IccFile="icc/CMYK/JapanColor2003WebCoated.icc"
+			// ProfileName = "Japan Web Coated (Ad)", IccFile="icc/CMYK/JapanWebCoated.icc"
+			// ProfileName = "Uncoated FOGRA29 (ISO 12647-2:2004)", IccFile="icc/CMYK/UncoatedFOGRA29.icc"
+			// ProfileName = "U.S. Web Coated (SWOP) v2", IccFile="icc/CMYK/USWebCoatedSWOP.icc"
+			// ProfileName = "U.S. Web Uncoated v2", IccFile="icc/CMYK/USWebUncoated.icc"
+			// ProfileName = "Web Coated FOGRA28 (ISO 12647-2:2004)", IccFile="icc/CMYK/WebCoatedFOGRA28.icc"
+			// ProfileName = "Web Coated SWOP 2006 Grade 3 Paper", IccFile="icc/CMYK/WebCoatedSWOP2006Grade3.icc"
+			// ProfileName = "Web Coated SWOP 2006 Grade 5 Paper", IccFile="icc/CMYK/WebCoatedSWOP2006Grade5.icc"
+
+			return profileList;
+		}
+
+		// REVIEW: Should this be stored in the program's preferences somehow?
+		public ColorProfile ChosenColorProfile
+		{
+			get { return _pdfMaker.ChosenColorProfile; }
+			set { _pdfMaker.ChosenColorProfile = value; }
+		}
+	}
+
+	/// <summary>
+	/// Provide the name, description, and relative file location of a given color profile (icc).
+	/// </summary>
+	public class ColorProfile
+	{
+		public string ProfileName;
+		public string ProfileDescription;
+		public string IccFile;
+
+		public override bool Equals (object obj)
+		{
+			var that = obj as ColorProfile;
+			if (that == null)
+				return false;
+			return this.ProfileName == that.ProfileName &&
+				this.ProfileDescription == that.ProfileDescription &&
+				this.IccFile == that.IccFile;
+		}
 	}
 }

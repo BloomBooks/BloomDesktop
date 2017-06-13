@@ -229,7 +229,7 @@
 			this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "LayoutChoices.A5Portrait");
 			this._layoutChoices.Name = "_layoutChoices";
 			this._layoutChoices.Size = new System.Drawing.Size(85, 19);
-			this._layoutChoices.Text = "Page Layout";
+			this._layoutChoices.Text = "Options";
 			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
 			// 
 			// _bookletCoverRadio

@@ -147,7 +147,7 @@ namespace Bloom
 				if (!Settings.Default.LicenseAccepted)
 				{
 					Browser.SetUpXulRunner();
-					using (var dlg = new LicenseDialog())
+					using (var dlg = new LicenseDialog("license.md"))
 						if (dlg.ShowDialog() != DialogResult.OK)
 							return 1;
 					Settings.Default.LicenseAccepted = true;

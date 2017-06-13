@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -12,11 +13,25 @@ namespace Bloom.Registration
 	public partial class LicenseDialog : Form
 	{
 		private Browser _licenseBrowser;
-		public LicenseDialog()
+
+		/// <summary>
+		/// Initialize a new instance of the <see cref="Bloom.Registration.LicenseDialog"/> class.
+		/// </summary>
+		/// <param name="licenseMdFile">filename of the license in Markdown format</param>
+		/// <param name="prolog">prolog to the license (optional, already localized)</param>
+		public LicenseDialog(string licenseMdFile, string prolog = null)
 		{
 			InitializeComponent();
 
 			Text = string.Format(Text, Assembly.GetExecutingAssembly().GetName().Version);
+
+			// If there's no prolog, normalize the variable to an empty string.
+			// If there is a prolog, add a horizontal rule separating the prolog from the license.  (The double
+			// newlines are significant to the markdown.)
+			if (String.IsNullOrWhiteSpace(prolog))
+				prolog = String.Empty;
+			else
+				prolog = String.Format("{0}{1}{1}---{1}{1}", prolog, Environment.NewLine);
 
 			_licenseBrowser = new Browser();
 			_licenseBrowser.Isolator = new NavigationIsolator(); // never used while other browsers are around
@@ -28,7 +43,7 @@ namespace Bloom.Registration
 			var options = new MarkdownOptions() { LinkEmails = true, AutoHyperlink = true };
 			var m = new Markdown(options);
 			var locale = CultureInfo.CurrentUICulture.Name;
-			string licenseFilePath = BloomFileLocator.GetFileDistributedWithApplication("license.md");
+			string licenseFilePath = BloomFileLocator.GetFileDistributedWithApplication(licenseMdFile);
 			var localizedLicenseFilePath = licenseFilePath.Substring(0, licenseFilePath.Length - 3) + "-" + locale + ".md";
 			if (RobustFile.Exists(localizedLicenseFilePath))
 				licenseFilePath = localizedLicenseFilePath;
@@ -43,8 +58,9 @@ namespace Bloom.Registration
 						licenseFilePath = localizedLicenseFilePath;
 				}
 			}
-			var contents = m.Transform(RobustFile.ReadAllText(licenseFilePath, Encoding.UTF8));
-			var html = string.Format("<html><head><head/><body>{0}</body></html>", contents);
+			var markdown = prolog + RobustFile.ReadAllText(licenseFilePath, Encoding.UTF8);
+			var contents = m.Transform(markdown);
+			var html = string.Format("<html><head><head/><body style=\"font-family:sans-serif\">{0}</body></html>", contents);
 			_licenseBrowser.NavigateRawHtml(html);
 			_licenseBrowser.Visible = true;
 		}

@@ -289,7 +289,7 @@ namespace Bloom.Publish
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
 
-			_layoutChoices.Text = _model.PageLayout.ToString();
+			//_layoutChoices.Text = _model.PageLayout.ToString();
 
 			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
 			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
@@ -320,9 +320,32 @@ namespace Bloom.Publish
 				return; // May get called when localization changes even though tab is not visible.
 			var layout = _model.PageLayout;
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
+			var colorProfiles = _model.GetColorProfiles();
+			var chosenProfile = _model.ChosenColorProfile;
+
 			_layoutChoices.DropDownItems.Clear();
-//			_layoutChoices.Items.AddRange(layoutChoices.ToArray());
-//			_layoutChoices.SelectedText = _model.BookSelection.CurrentSelection.GetLayout().ToString();
+
+			var header1 = LocalizationManager.GetString(@"PublishTab.OptionsMenu.PrinterProfiles", "Printer Profiles",
+				@"Header for a region of the menu which lists various print color profile options");
+			var headerItem1 = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(header1);
+			headerItem1.Enabled = false;
+			//headerItem1.ForeColor = Color.Gray;
+			foreach (var profile in colorProfiles)
+			{
+				var colorItem = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(profile.ProfileName);
+				colorItem.Tag = profile;
+				colorItem.Text = profile.ProfileName;	// Not sure these can be localized according to the Adobe license.
+				colorItem.Checked = profile.ProfileName == chosenProfile.ProfileName;
+				colorItem.CheckOnClick = true;
+				colorItem.Click += OnColorProfileChosen;
+			}
+
+			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
+			var header2 = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Layout",
+				@"Header for a region of the menu which lists various standard page layout sizes");
+			var headerItem2 = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(header2);
+			headerItem2.Enabled = false;
+			//headerItem2.ForeColor = Color.Gray;
 			foreach (var lc in layoutChoices)
 			{
 				var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
@@ -333,7 +356,7 @@ namespace Bloom.Publish
 				item.CheckOnClick = true;
 				item.Click += OnLayoutChosen;
 			}
-			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
+			//_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 
 			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
 			var textItem = LocalizationManager.GetString("PublishTab.LessMemoryPdfMode", "Use less memory (slower)");
@@ -351,7 +374,36 @@ namespace Bloom.Publish
 		{
 			var item = (ToolStripMenuItem)sender;
 			_model.PageLayout = ((Layout)item.Tag);
-			_layoutChoices.Text = _model.PageLayout.ToString();
+			//_layoutChoices.Text = _model.PageLayout.ToString();
+			ClearRadioButtons();
+			UpdateDisplay();
+			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
+		}
+
+		private void OnColorProfileChosen(object sender, EventArgs e)
+		{
+			// If the user has not yet accepted the Adobe EULA, try for an agreement.
+			if (!Settings.Default.AdobeColorProfileEula2003Accepted)
+			{
+				var prolog = L10NSharp.LocalizationManager.GetString(@"PublishTab.PrologToAdobeEula",
+					"Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  You must agree to the following license in order to perform this task in Bloom.",
+					@"Brief explanation of what this license is and why the user needs to agree to it");
+				using (var dlg = new Bloom.Registration.LicenseDialog("AdobeColorProfileEULA.md", prolog))
+				{
+					dlg.Text = L10NSharp.LocalizationManager.GetString(@"PublishTab.AdobeEulaTitle",
+						"Adobe Color Profile License Agreement", @"dialog title for license agreement");
+					if (dlg.ShowDialog() == DialogResult.OK)
+					{
+						Settings.Default.AdobeColorProfileEula2003Accepted = true;
+						Settings.Default.Save();
+					}
+				}
+			}
+			if (Settings.Default.AdobeColorProfileEula2003Accepted)
+			{
+				var item = (ToolStripMenuItem)sender;
+				_model.ChosenColorProfile = (ColorProfile)item.Tag;
+			}
 			ClearRadioButtons();
 			UpdateDisplay();
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);

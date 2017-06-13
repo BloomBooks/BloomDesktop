@@ -3168,6 +3168,12 @@
         <seg>Pages can not be re-ordered when you are translating a book.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.AdobeEulaTitle">
+      <note>dialog title for license agreement</note>
+      <tuv xml:lang="en">
+        <seg>Adobe Color Profile License Agreement</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
       <tuv xml:lang="en">
         <seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
@@ -3203,6 +3209,18 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Upload to BloomLibrary.org, where others can download and localize into their own language.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ColorProfile.RGB">
+      <note>tooltip message describing the RGB color scheme</note>
+      <tuv xml:lang="en">
+        <seg>default color profile, used for monitors</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ColorProfile.CMYK1">
+      <note>tooltip message describing the ""U.S. Web Coated (SWOP) v2"" CMYK mapping from RGB</note>
+      <tuv xml:lang="en">
+        <seg>common CMYK color profile used for printing</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.CoverOnlyRadio">
@@ -3268,6 +3286,18 @@
         <seg>Make a PDF of every page of the book, one page per piece of paper.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.OptionsMenu.PrinterProfiles">
+      <note>Header for a region of the menu which lists various print color profile options</note>
+      <tuv xml:lang="en">
+        <seg>Printer Profiles</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OptionsMenu.SizeLayout">
+      <note>Header for a region of the menu which lists various standard page layout sizes</note>
+      <tuv xml:lang="en">
+        <seg>Size/Layout</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
       <tuv xml:lang="en">
         <seg>Open the PDF in the default system PDF viewer</seg>
@@ -3291,19 +3321,19 @@
     <tu tuid="PublishTab.PdfMaker.Compress">
       <note>Message displayed in a progress report dialog box</note>
       <tuv xml:lang="en">
-        <seg>Compressing PDF ...</seg>
+        <seg>Compressing PDF</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.CompressConvertColor">
       <note>Message displayed in a progress report dialog box</note>
       <tuv xml:lang="en">
-        <seg>Compressing PDF &amp; Converting Colors to CMYK ...</seg>
+        <seg>Compressing PDF &amp; Converting Color to CMYK</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.ConvertColor">
       <note>Message displayed in a progress report dialog box</note>
       <tuv xml:lang="en">
-        <seg>Converting PDF colors to CMYK ...</seg>
+        <seg>Converting PDF color to CMYK</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.Creating">
@@ -3368,6 +3398,14 @@
         <seg>&amp;Print...</seg>
       </tuv>
     </tu>
+
+    <tu tuid="PublishTab.PrologToAdobeEula">
+      <note>Brief explanation of what this license is and why the user needs to agree to it</note>
+      <tuv xml:lang="en">
+        <seg>Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  You must agree to the following license in order to perform this task in Bloom.</seg>
+      </tuv>
+    </tu>
+
     <tu tuid="PublishTab.Publish">
       <tuv xml:lang="en">
         <seg>Publish</seg>

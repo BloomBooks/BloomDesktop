@@ -38,6 +38,11 @@ namespace Bloom.Publish
 		/// </remarks>
 		public bool CompressPdf;
 
+		/// <summary>
+		/// The chosen color profile for the PDF output.
+		/// </summary>
+		public ColorProfile ChosenColorProfile;
+
 		///  <summary>
 		///
 		///  </summary>
@@ -95,8 +100,15 @@ namespace Bloom.Publish
 					CheckPdf(outputPdfPath);
 				}
 				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
-				// TODO: convert to CMYK color for printing if so desired. (BL-4457)
-				var fixPdf = new ProcessPdfWithGhostscript(CompressPdf, null, null, worker);
+				// Also convert the color scheme to CMYK if so requested (BL-4457)
+				string rgbProfile = null;
+				string cmykProfile = null;
+				if (!String.IsNullOrEmpty(ChosenColorProfile.IccFile))
+				{
+					rgbProfile = FileLocator.GetFileDistributedWithApplication("icc/RGB/AdobeRGB1998.icc");
+					cmykProfile = FileLocator.GetFileDistributedWithApplication(ChosenColorProfile.IccFile);
+				}
+				var fixPdf = new ProcessPdfWithGhostscript(CompressPdf, rgbProfile, cmykProfile, worker);
 				fixPdf.ProcessPdfFile(outputPdfPath, outputPdfPath);
 			}
 			catch (KeyNotFoundException e)

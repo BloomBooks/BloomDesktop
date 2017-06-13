@@ -168,7 +168,12 @@ namespace Bloom.Publish
 			}
 			if (!String.IsNullOrWhiteSpace(_cmykProfile))
 			{
-				// TODO: handle _rgbProfile and _cmykProfile  (BL-4457)
+				//	-dPDFSETTINGS=/prepress	-- I'm not sure we want this with the Downsample settings above
+				bldr.Append(" -sColorConversionStrategy=CMYK");
+				bldr.Append(" -dOverrideICC=true");
+				bldr.AppendFormat(" -sDefaultRGBProfile=\"{0}\"", _rgbProfile);
+				bldr.AppendFormat(" -sDefaultCMYKProfile=\"{0}\"", _cmykProfile);
+				bldr.AppendFormat(" -sOutputICCProfile=\"{0}\"", _cmykProfile);
 			}
 			bldr.AppendFormat($" -sOutputFile=\"{tempFile}\" \"{_inputPdfPath}\"");
 			return bldr.ToString();
@@ -179,19 +184,19 @@ namespace Bloom.Publish
 			if (_shrink && !String.IsNullOrWhiteSpace(_cmykProfile))
 			{
 				return L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.CompressConvertColor",
-					"Compressing PDF & Converting Colors to CMYK ...",
+					"Compressing PDF & Converting Color to CMYK",
 					@"Message displayed in a progress report dialog box");
 			}
 			else if (!_shrink && !String.IsNullOrWhiteSpace(_cmykProfile))
 			{
 				return L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.ConvertColor",
-					"Converting PDF colors to CMYK ...",
+					"Converting PDF color to CMYK",
 					@"Message displayed in a progress report dialog box");
 			}
 			else
 			{
 				return L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.Compress",
-					"Compressing PDF ...",
+					"Compressing PDF",
 					@"Message displayed in a progress report dialog box");
 			}
 		}
