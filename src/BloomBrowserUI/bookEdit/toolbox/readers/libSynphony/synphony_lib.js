@@ -484,10 +484,12 @@ LibSynphony.prototype.checkStory = function (aFocusWordList, aWordCumulativeList
                     return letters.indexOf(gpc) === -1;
                 });
 
-                re = new XRegExp("(" + unknownGPCs.join('|') + ")+", "gi");
-                possible_words = _.filter(possible_words, function (word) {
-                    return !word.match(re);
-                });
+                if (unknownGPCs.length > 0) {
+                    re = new XRegExp("(" + unknownGPCs.join('|') + ")+", "gi");
+                    possible_words = _.filter(possible_words, function (word) {
+                        return !word.match(re);
+                    });
+                }
             }
         }
 
