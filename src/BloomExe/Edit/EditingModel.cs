@@ -945,49 +945,10 @@ namespace Bloom.Edit
 
 		/// <summary>
 		/// Save anything we want to persist from page to page but which is not part of the book from the page's current state.
-		/// Currently this is just the zoom level.
+		/// Currently there is nothing (once used to persist zoom level set with control wheel).
 		/// </summary>
 		void SavePageFrameState()
 		{
-			var body = _view.GetPageBody();
-			Debug.Assert(body!=null, "(Debug Only) no body when doing SavePageFrameState()" );
-
-			// not worth crashing over a timing problem that means we don't save zoom state
-			if (body == null)
-				return; // BL-3075, not sure how this can happen but it has. Possibly the view is in some state like about:null which has no body.
-
-			var pageDiv = body.FindFirstChildInTree<GeckoElement>(IsPageScalingDiv);
-			if (pageDiv == null)
-				return;		// shouldn't happen, but ignore.
-
-			var styleAttr = pageDiv.Attributes["style"];
-			if (styleAttr != null)
-			{
-				var style = styleAttr.NodeValue;
-				var match = Regex.Match(style, "scale\\(([0-9.]*)");
-				if (match.Success)
-				{
-					var pageZoom = match.Groups[1].Value;
-					if (pageZoom != Settings.Default.PageZoom)
-					{
-						Settings.Default.PageZoom = pageZoom;
-						Settings.Default.Save();
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Test whether the given element is the div inserted for page zooming/scaling.
-		/// </summary>
-		private bool IsPageScalingDiv(GeckoElement e)
-		{
-			if (e.NodeName.ToLowerInvariant() != "div")
-				return false;
-			var idAttr = e.Attributes["id"];
-			if (idAttr == null)
-				return false;
-			return idAttr.NodeValue == PageScalingDivId;
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying

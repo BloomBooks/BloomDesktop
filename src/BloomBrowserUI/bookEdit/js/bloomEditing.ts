@@ -1,4 +1,4 @@
-///<reference path="../../typings/axios/axios.d.ts"/>
+﻿///<reference path="../../typings/axios/axios.d.ts"/>
 //ignore//<reference path="../../typings/es6-promise/es6-promise.d.ts"/>
 ///<reference path="./jquery.hasAttr.d.ts" />
 import * as $ from "jquery";
@@ -647,6 +647,10 @@ interface String {
     startsWith(string): boolean;
 }
 
+export function setZoom(newScale: string) {
+    $("div#page-scaling-container").attr("style", "transform: scale(" + newScale + "); transform-origin: top left;");
+}
+
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
@@ -656,22 +660,6 @@ export function bootstrap() {
     $.fn.reverse = function () {
         return this.pushStack(this.get().reverse(), arguments);
     };
-
-    // Attach a function to implement zooming on mouse wheel with ctrl
-    $("body").on("wheel", function (e) {
-        var theEvent = e.originalEvent as WheelEvent;
-        // reviewSlog does this application work?
-        if (!theEvent.ctrlKey) return;
-        // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
-        var scale = EditableDivUtils.getPageScale();
-        // Dividing by 20 seems to make it zoom at a manageable rate, at least with my mouse.
-        // The limitation to zooming between 1/3 and 3 times is arbitrary.
-        scale = Math.min(Math.max(scale - theEvent.deltaY / 20, 0.33), 3.0);
-        $("div#page-scaling-container").attr("style", "transform: scale(" + scale + "); transform-origin: top left;");
-        // Setting this style is all we want to do in this context.
-        e.preventDefault();
-        e.cancelBubble = true;
-    });
 
     /* reviewSlog typescript just couldn't cope with this. Our browser has this built in , so it's ok
             //if this browser doesn't have endsWith built in, add it

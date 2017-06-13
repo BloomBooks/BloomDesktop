@@ -734,6 +734,7 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="SourceCollectionsList.cs" />
+    <Compile Include="Workspace\IZoomManager.cs" />
     <Compile Include="Workspace\TabStrip.cs" />
     <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
@@ -924,6 +925,9 @@
       <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Workspace\ZoomControl.resx">
+      <DependentUpon>ZoomControl.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
@@ -952,6 +956,12 @@
     </Compile>
     <Compile Include="CollectionTab\LibraryBookView.Designer.cs">
       <DependentUpon>LibraryBookView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Workspace\ZoomControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Workspace\ZoomControl.Designer.cs">
+      <DependentUpon>ZoomControl.cs</DependentUpon>
     </Compile>
     <Compile Include="XmlHtmlConverter.cs" />
     <Compile Include="web\IRequestInfo.cs" />
