@@ -43,40 +43,41 @@
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
 			this.splitContainer1.SuspendLayout();
 			this.SuspendLayout();
-			//
+			// 
 			// _topBarControl
-			//
+			// 
+			this._topBarControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this._topBarControl.BackColor = System.Drawing.Color.Cyan;
 			this._topBarControl.Controls.Add(this._toolStrip);
 			this._topBarControl.Location = new System.Drawing.Point(223, 224);
 			this._topBarControl.Name = "_topBarControl";
 			this._topBarControl.Size = new System.Drawing.Size(327, 70);
 			this._topBarControl.TabIndex = 15;
-			//
+			// 
 			// _toolStrip
-			//
+			// 
 			this._toolStrip.BackColor = System.Drawing.Color.Transparent;
-			this._toolStrip.Dock = System.Windows.Forms.DockStyle.Left;
+			this._toolStrip.Dock = System.Windows.Forms.DockStyle.Right;
 			this._toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._sendReceiveButton,
             this._makeBloomPackButton,
             this._settingsButton,
-            this._openCreateCollectionButton,
-            this._sendReceiveButton});
+            this._openCreateCollectionButton});
 			this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._toolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._toolStrip, "WorkspaceView._toolStrip");
-			this._toolStrip.Location = new System.Drawing.Point(0, 0);
+			this._toolStrip.Location = new System.Drawing.Point(-13, 0);
 			this._toolStrip.Name = "_toolStrip";
 			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStrip.Size = new System.Drawing.Size(371, 70);
+			this._toolStrip.Size = new System.Drawing.Size(340, 70);
 			this._toolStrip.TabIndex = 31;
 			this._toolStrip.Text = "_toolStrip";
-			//
+			// 
 			// _makeBloomPackButton
-			//
+			// 
 			this._makeBloomPackButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._makeBloomPackButton.Image = global::Bloom.Properties.Resources.PackageFlat;
 			this._makeBloomPackButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
@@ -89,9 +90,9 @@
 			this._makeBloomPackButton.Text = "Make Bloom Pack";
 			this._makeBloomPackButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._makeBloomPackButton.Click += new System.EventHandler(this.OnMakeBloomPackButton_Click);
-			//
+			// 
 			// _settingsButton
-			//
+			// 
 			this._settingsButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._settingsButton.Image = global::Bloom.Properties.Resources.settings24x24;
 			this._settingsButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
@@ -103,10 +104,10 @@
 			this._settingsButton.Size = new System.Drawing.Size(53, 43);
 			this._settingsButton.Text = "Settings";
 			this._settingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-	        this._settingsButton.Click += new System.EventHandler(this._settingsButton_Click);
-			//
+			this._settingsButton.Click += new System.EventHandler(this._settingsButton_Click);
+			// 
 			// _openCreateCollectionButton
-			//
+			// 
 			this._openCreateCollectionButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._openCreateCollectionButton.Image = global::Bloom.Properties.Resources.OpenCreateLibrary24x24;
 			this._openCreateCollectionButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
@@ -119,10 +120,10 @@
 			this._openCreateCollectionButton.Size = new System.Drawing.Size(98, 43);
 			this._openCreateCollectionButton.Text = "Other Collection";
 			this._openCreateCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-	        this._openCreateCollectionButton.Click += new System.EventHandler(this._openCreateCollectionButton_Click);
-			//
+			this._openCreateCollectionButton.Click += new System.EventHandler(this._openCreateCollectionButton_Click);
+			// 
 			// _sendReceiveButton
-			//
+			// 
 			this._sendReceiveButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._sendReceiveButton.Image = global::Bloom.Properties.Resources.sendreceiveToolbarButton;
 			this._sendReceiveButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
@@ -134,14 +135,14 @@
 			this._sendReceiveButton.Size = new System.Drawing.Size(82, 43);
 			this._sendReceiveButton.Text = "Send/Receive";
 			this._sendReceiveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			//
+			// 
 			// _L10NSharpExtender
-			//
+			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			//
+			// 
 			// splitContainer1
-			//
+			// 
 			this.splitContainer1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(51)))), ((int)(((byte)(51)))));
 			this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.splitContainer1, null);
@@ -155,9 +156,9 @@
 			this.splitContainer1.SplitterWidth = 10;
 			this.splitContainer1.TabIndex = 0;
 			this.splitContainer1.TabStop = false;
-			//
+			// 
 			// LibraryView
-			//
+			// 
 			this.BackColor = System.Drawing.SystemColors.Control;
 			this.Controls.Add(this._topBarControl);
 			this.Controls.Add(this.splitContainer1);

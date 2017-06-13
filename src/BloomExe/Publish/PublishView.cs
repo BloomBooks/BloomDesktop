@@ -223,6 +223,11 @@ namespace Bloom.Publish
 
 		public int WidthToReserveForTopBarControl => TopBarControl.Width;
 
+		public void PlaceTopBarControl()
+		{
+			_topBarPanel.Dock = DockStyle.Left;
+		}
+
 		public Bitmap ToolStripBackground { get; set; }
 
 		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)

@@ -454,9 +454,11 @@ namespace Bloom.Workspace
 				BackgroundColorsForLinux(CurrentTabView);
 			}
 
-			CurrentTabView.TopBarControl.Dock = DockStyle.Left;
-			if(CurrentTabView!=null)//can remove when we get rid of info view
+			if (CurrentTabView != null) //can remove when we get rid of info view
+			{
+				CurrentTabView.PlaceTopBarControl();
 				_toolSpecificPanel.Controls.Add(CurrentTabView.TopBarControl);
+			}
 
 			_selectedTabAboutToChangeEvent.Raise(new TabChangedDetails()
 			{
@@ -743,10 +745,6 @@ namespace Bloom.Workspace
 		{
 			get { return STAGE_2 - _stage2SpaceSaved;}
 		}
-		private const int PANEL_TOOLSTRIP_SMALLWIDTH = 66;
-		private const int PANEL_VERTICAL_SPACER = 10; // Used to center the shrunk icons vertically in the Tool Strip Panel
-		private const int PUBLISH_PANEL_FUDGE = 21; // Somehow Publish view TopBarControl's width isn't right
-		private const string SPACE = " ";
 
 		private void AdjustTabStripDisplayForScreenSize()
 		{
@@ -840,6 +838,9 @@ namespace Bloom.Workspace
 			_originalUiLanguageSelection = _uiLanguageMenu.Text;
 		}
 
+		// Stage 1 removes the space we initially leave in edit and publish views to the left of the
+		// tool-specific buttons. (It has no visible effect in collection view, where the tool-specific buttons
+		// are right-aligned.)
 		private void ShrinkToStage1()
 		{
 			// Calculate right edge of tabs and move _toolSpecificPanel over to it
@@ -849,14 +850,26 @@ namespace Bloom.Workspace
 			_stage1SpaceSaved = _originalToolSpecificPanelHorizPos - rightEdge;
 			var currentToolPanelVert = _toolSpecificPanel.Location.Y;
 			_toolSpecificPanel.Location = new Point(rightEdge, currentToolPanelVert);
-			_toolSpecificPanel.Width = this.Width - _toolSpecificPanel.Left; // keep right-aligned
+			AlignTopRightPanels();
+		}
+
+		/// <summary>
+		/// Keep the _panelHoldingToolStrip in the top right and the _toolSpecificPanel's right edge aligned with it.
+		/// Normally during resize this happens automatically since both are anchored Right. But when we fiddle with
+		/// the width or position of one of them we need to straighten things out.
+		/// </summary>
+		void AlignTopRightPanels()
+		{
+			_panelHoldingToolStrip.Left = this.Width - _panelHoldingToolStrip.Width; // align this panel on the right.
+			_toolSpecificPanel.Width = _panelHoldingToolStrip.Left - _toolSpecificPanel.Left;
+
 		}
 
 		private void GrowToFullSize()
 		{
 			// revert _toolSpecificPanel to its original location
 			_toolSpecificPanel.Location = new Point(_originalToolSpecificPanelHorizPos, _toolSpecificPanel.Location.Y);
-			_toolSpecificPanel.Width = this.Width - _toolSpecificPanel.Left; // keep right-aligned
+			AlignTopRightPanels();
 			_stage1SpaceSaved = 0;
 		}
 
@@ -880,41 +893,38 @@ namespace Bloom.Workspace
 			}
 		}
 
+		// Currently stage 2 removes the space between the right-hand toolstrip and the tool-specific controls,
+		// by shrinking _panelHoldingToolStrip.
 		private void ShrinkToStage2()
 		{
-			//var panelLocation = _panelHoldingToolStrip.Location;
-			_stage2SpaceSaved = 0; // currently no way to save space at stage 2
-			//_panelHoldingToolStrip.Width = PANEL_TOOLSTRIP_SMALLWIDTH;
-			//_panelHoldingToolStrip.Height -= PANEL_VERTICAL_SPACER;
-			//// move the whole panel to the right edge
-			//_panelHoldingToolStrip.Location =
-			//	new Point(panelLocation.X + _stage2SpaceSaved, panelLocation.Y + PANEL_VERTICAL_SPACER);
-			// otherwise as we keep shrinking the right side of the tool specific panel blanks us out
-			_panelHoldingToolStrip.BringToFront();
+			_panelHoldingToolStrip.Width = _toolStrip.Width + 3;
+			AlignTopRightPanels();
+			_stage2SpaceSaved = _originalToolStripPanelWidth - _panelHoldingToolStrip.Width;
 		}
 
 		private void GrowToStage1()
 		{
-			//_panelHoldingToolStrip.Width = _originalToolStripPanelWidth;
-			//_panelHoldingToolStrip.Height += PANEL_VERTICAL_SPACER;
-			//_panelHoldingToolStrip.Location =
-			//	new Point(this.Width - _originalToolStripPanelWidth, _panelHoldingToolStrip.Location.Y - PANEL_VERTICAL_SPACER);
+			_panelHoldingToolStrip.Width = _originalToolStripPanelWidth;
+			AlignTopRightPanels();
 			_stage2SpaceSaved = 0;
 		}
 
+		// Stage 3 hides the right-hand toolstrip altogether.
 		private void ShrinkToStage3()
 		{
 			// Extreme measures for really small screens
 			_panelHoldingToolStrip.Visible = false;
+			_toolSpecificPanel.Width = Width - _toolSpecificPanel.Left;
 		}
 
 		private void GrowToStage2()
 		{
 			_panelHoldingToolStrip.Visible = true;
+			AlignTopRightPanels();
 		}
 
 
-#endregion
+		#endregion
 
 	}
 

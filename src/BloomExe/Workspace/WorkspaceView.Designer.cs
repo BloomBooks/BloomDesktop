@@ -38,7 +38,6 @@
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
-			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
@@ -60,6 +59,7 @@
 			this._checkForNewVersionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._registrationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
 			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this._tabStrip.SuspendLayout();
@@ -84,7 +84,7 @@
 			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
 			this._toolSpecificPanel.Location = new System.Drawing.Point(333, 2);
 			this._toolSpecificPanel.Name = "_toolSpecificPanel";
-			this._toolSpecificPanel.Size = new System.Drawing.Size(762, 66);
+			this._toolSpecificPanel.Size = new System.Drawing.Size(676, 66);
 			this._toolSpecificPanel.TabIndex = 17;
 			// 
 			// _L10NSharpExtender
@@ -184,12 +184,6 @@
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._publishTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
-			// 
-			// _applicationUpdateCheckTimer
-			// 
-			this._applicationUpdateCheckTimer.Enabled = true;
-			this._applicationUpdateCheckTimer.Interval = 60000;
-			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 
 			// _toolStrip
 			// 
@@ -421,6 +415,12 @@
 			this._aboutBloomMenuItem.Size = new System.Drawing.Size(214, 22);
 			this._aboutBloomMenuItem.Text = "About Bloom";
 			this._aboutBloomMenuItem.Click += new System.EventHandler(this.OnAboutBoxClick);
+			// 
+			// _applicationUpdateCheckTimer
+			// 
+			this._applicationUpdateCheckTimer.Enabled = true;
+			this._applicationUpdateCheckTimer.Interval = 60000;
+			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 
 			// _panelHoldingToolStrip
 			// 

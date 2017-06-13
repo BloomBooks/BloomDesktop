@@ -211,6 +211,11 @@ namespace Bloom.Edit
 			_editButtonsUpdateTimer.Enabled = Parent != null;
 		}
 
+		public void PlaceTopBarControl()
+		{
+			_topBarPanel.Dock = DockStyle.Left;
+		}
+
 		public Bitmap ToolStripBackground { get; set; }
 
 		private void _handleMessageTimer_Tick(object sender, EventArgs e)
