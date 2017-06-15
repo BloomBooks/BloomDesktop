@@ -95,8 +95,7 @@ namespace Bloom.Publish
 					CheckPdf(outputPdfPath);
 				}
 				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
-				// TODO: convert to CMYK color for printing if so desired. (BL-4457)
-				var fixPdf = new ProcessPdfWithGhostscript(CompressPdf, null, null, worker);
+				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
 				fixPdf.ProcessPdfFile(outputPdfPath, outputPdfPath);
 			}
 			catch (KeyNotFoundException e)

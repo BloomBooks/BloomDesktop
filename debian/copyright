@@ -1721,3 +1721,8 @@ License: Zlib
        misrepresented as being the original software.
  .
     3. This notice may not be removed or altered from any source distribution.
+
+Files: /usr/lib/bloom-desktop-alpha/ColorProfiles/*
+Copyright: 2013 Adobe Systems, Inc.
+License: ColorProfileDistributionLicense (/usr/lib/bloom-desktop-alpha/DistFiles/AdobeColorProfileEULA.md)
+Comment: URL=https://www.adobe.com/support/downloads/iccprofiles/iccprofiles_win.html

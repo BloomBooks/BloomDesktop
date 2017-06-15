@@ -34,22 +34,17 @@ namespace Bloom.Publish
 		public string _inputPdfPath;
 		public string _outputPdfPath;
 
-		private readonly bool _shrink;
-		private readonly string _rgbProfile;
-		private readonly string _cmykProfile;
 		private readonly BackgroundWorker _worker;
 
-		public ProcessPdfWithGhostscript(bool shrink, string rgbProfile, string cmykProfile, BackgroundWorker worker)
+		public enum OutputType {
+			DesktopPrinting,	// shrink images to 600dpi in compressed format
+			Printshop		// shrink images to 300dpi, convert color to CMYK (-dPDFSETTINGS=/prepress + other options)
+		};
+		private readonly OutputType _type;
+
+		public ProcessPdfWithGhostscript(OutputType type, BackgroundWorker worker)
 		{
-			_shrink = shrink;
-
-			// Both the RGB profile and the CMYK profile are needed to handle color conversion.  They should both
-			// be set if either one is set.
-			Debug.Assert((String.IsNullOrWhiteSpace(rgbProfile) && String.IsNullOrWhiteSpace(cmykProfile)) ||
-				(!String.IsNullOrWhiteSpace(rgbProfile) && !String.IsNullOrWhiteSpace(cmykProfile)));
-			_rgbProfile = rgbProfile;
-			_cmykProfile = cmykProfile;
-
+			_type = type;
 			_worker = worker;
 		}
 
@@ -61,12 +56,6 @@ namespace Bloom.Publish
 		{
 			_inputPdfPath = inputFile;
 			_outputPdfPath = outputFile;
-			if (!_shrink && String.IsNullOrWhiteSpace(_cmykProfile))
-			{
-				if (_inputPdfPath != _outputPdfPath)
-					RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
-				return;
-			}
 			var exePath = "/usr/bin/gs";
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				exePath = FindGhostcriptOnWindows();
@@ -90,7 +79,7 @@ namespace Bloom.Publish
 					// If the process made the file larger and didn't change the color scheme, ignore the result.
 					var oldInfo = new FileInfo(_inputPdfPath);
 					var newInfo = new FileInfo(tempPdfFile.Path);
-					if (newInfo.Length < oldInfo.Length || !String.IsNullOrWhiteSpace(_cmykProfile))
+					if (newInfo.Length < oldInfo.Length || _type == OutputType.Printshop)
 						RobustFile.Copy(tempPdfFile.Path, _outputPdfPath, true);
 					else if (_inputPdfPath != _outputPdfPath)
 						RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
@@ -156,44 +145,51 @@ namespace Bloom.Publish
 			// CompatibilityLevel=1.6 - Acrobat 7.0
 			// CompatibilityLevel=1.7 - Acrobat 8.0/9.0 (~2008)
 			bldr.Append("-sDEVICE=pdfwrite -dBATCH -dNOPAUSE -dCompatibilityLevel=1.7");	// REVIEW: is this the right compatibility level?
-			if (_shrink)
+			switch (_type)
 			{
+			case OutputType.DesktopPrinting:
 				// See http://issues.bloomlibrary.org/youtrack/issue/BL-3721 for the need for this operation.
 				// See also https://stackoverflow.com/questions/9497120/how-to-downsample-images-within-pdf-file and
 				// https://superuser.com/questions/435410/where-are-ghostscript-options-switches-documented.  We are trying
-				// for "press quality" (or better).
-				bldr.Append(" -dDownsampleColorImages=true -dColorImageResolution=600 -dColorImageDownsampleThreshold=1.0");
-				bldr.Append(" -dDownsampleGrayImages=true -dGrayImageResolution=600 -dGrayImageDownsampleThreshold=1.0");
-				bldr.Append(" -dDownsampleMonoImages=true -dMonoImageResolution=1200 -dMonoImageDownsampleThreshold=1.0");
+				// for "press quality" (or better), but leaving the color as RGB.
+				bldr.Append(" -dColorImageResolution=600");
+				bldr.Append(" -dGrayImageResolution=600");
+				bldr.Append(" -dMonoImageResolution=1200");
+				break;
+			case OutputType.Printshop:
+				// This reduces images to 300dpi, converting the color to CMYK.
+				bldr.Append(" -dPDFSETTINGS=/prepress");
+				bldr.Append(" -sColorConversionStrategy=CMYK");
+				bldr.Append(" -dOverrideICC=true");
+				var rgbProfile = FileLocator.GetFileDistributedWithApplication("ColorProfiles/RGB/AdobeRGB1998.icc");
+				var cmykProfile = FileLocator.GetFileDistributedWithApplication("ColorProfiles/CMYK/USWebCoatedSWOP.icc");
+				bldr.AppendFormat(" -sDefaultRGBProfile=\"{0}\"", rgbProfile);
+				bldr.AppendFormat(" -sDefaultCMYKProfile=\"{0}\"", cmykProfile);
+				bldr.AppendFormat(" -sOutputICCProfile=\"{0}\"", cmykProfile);
+				break;
 			}
-			if (!String.IsNullOrWhiteSpace(_cmykProfile))
-			{
-				// TODO: handle _rgbProfile and _cmykProfile  (BL-4457)
-			}
+			bldr.Append(" -dDownsampleColorImages=true -dColorImageDownsampleThreshold=1.0");
+			bldr.Append(" -dDownsampleGrayImages=true -dGrayImageDownsampleThreshold=1.0");
+			bldr.Append(" -dDownsampleMonoImages=true -dMonoImageDownsampleThreshold=1.0");
 			bldr.AppendFormat($" -sOutputFile=\"{tempFile}\" \"{_inputPdfPath}\"");
 			return bldr.ToString();
 		}
 
 		private string GetSpecificStatus()
 		{
-			if (_shrink && !String.IsNullOrWhiteSpace(_cmykProfile))
+			switch (_type)
 			{
-				return L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.CompressConvertColor",
-					"Compressing PDF & Converting Colors to CMYK ...",
-					@"Message displayed in a progress report dialog box");
-			}
-			else if (!_shrink && !String.IsNullOrWhiteSpace(_cmykProfile))
-			{
-				return L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.ConvertColor",
-					"Converting PDF colors to CMYK ...",
-					@"Message displayed in a progress report dialog box");
-			}
-			else
-			{
+			case OutputType.DesktopPrinting:
 				return L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.Compress",
-					"Compressing PDF ...",
+					"Compressing PDF",
 					@"Message displayed in a progress report dialog box");
+			case OutputType.Printshop:
+				return L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.CompressConvertColor",
+					"Compressing PDF & Converting Color to CMYK",
+					@"Message displayed in a progress report dialog box");
+								break;
 			}
+			return String.Empty;
 		}
 
 		int _firstPage;
