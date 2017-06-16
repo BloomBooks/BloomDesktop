@@ -376,7 +376,7 @@ namespace Bloom.Edit
 				var dom = _model.GetXmlDocumentForEditScreenWebPage();
 				_model.RemoveStandardEventListeners();
 				_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true);
-				_model.CheckForBL2364("navigated to page");
+				_model.CheckForBL2634("navigated to page");
 				_pageListView.Focus();
 				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
 				// initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").

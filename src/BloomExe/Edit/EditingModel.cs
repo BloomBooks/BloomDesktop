@@ -576,7 +576,7 @@ namespace Bloom.Edit
 		// completed saving it.
 		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
 		{
-			CheckForBL2364("start of page selection changing--should have old IDs");
+			CheckForBL2634("start of page selection changing--should have old IDs");
 			if (_view != null && !_inProcessOfDeleting && !_inProcessOfLoading)
 			{
 				_view.ChangingPages = true;
@@ -626,14 +626,14 @@ namespace Bloom.Edit
 		public void SetupServerWithCurrentPageIframeContents()
 		{
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
-			CheckForBL2364("setup");
+			CheckForBL2634("setup");
 			SetupPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
-			CheckForBL2364("made tags safe");
+			CheckForBL2634("made tags safe");
 			if (_currentPage != null)
 				_currentPage.Dispose();
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
-			CheckForBL2364("made simulated page");
+			CheckForBL2634("made simulated page");
 
 			// Enhance JohnT: Can we somehow have a much simpler toolbox content until the user displays it?
 			//if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
@@ -664,7 +664,7 @@ namespace Bloom.Edit
 				var outerDiv = InsertContainingScalingDiv(body, pageDiv);
 				outerDiv.SetAttribute("style", string.Format("transform: scale({0}); transform-origin: left top;", pageZoom));
 			}
-			CheckForBL2364("set page zoom");
+			CheckForBL2634("set page zoom");
 		}
 
 		XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
@@ -888,7 +888,7 @@ namespace Bloom.Edit
 						_view.Invoke((Action)(SaveNow));
 						return;
 					}
-					CheckForBL2364("beginning SaveNow");
+					CheckForBL2634("beginning SaveNow");
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
@@ -925,10 +925,10 @@ namespace Bloom.Edit
 						Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
 						throw err;
 					}
-					CheckForBL2364("save");
+					CheckForBL2634("save");
 					//OK, looks safe, time to save.
 					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
-					CheckForBL2364("finished save");
+					CheckForBL2634("finished save");
 				}
 				finally
 				{
@@ -953,7 +953,7 @@ namespace Bloom.Edit
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
 		// to save is not in the book we're trying to save it into.
-		internal void CheckForBL2364(string when)
+		internal void CheckForBL2634(string when)
 		{
 			try
 			{
@@ -968,12 +968,12 @@ namespace Bloom.Edit
 					// This code is aimed at finding out a little more about the circumstances.
 					try
 					{
-						Logger.WriteEvent("BL2364 failure: pageDiv is {0}", _domForCurrentPage.RawDom.OuterXml);
-						Logger.WriteEvent("BL2364 failure: selection div is {0}", _pageSelection.CurrentSelection.GetDivNodeForThisPage().OuterXml);
+						Logger.WriteEvent("BL2634 failure: pageDiv is {0}", _domForCurrentPage.RawDom.OuterXml);
+						Logger.WriteEvent("BL2634 failure: selection div is {0}", _pageSelection.CurrentSelection.GetDivNodeForThisPage().OuterXml);
 					}
 					catch (Exception)
 					{
-						Logger.WriteEvent("Bl2364: failed to write XML of DOM and selection");
+						Logger.WriteEvent("Bl2634: failed to write XML of DOM and selection");
 					}
 					throw new ApplicationException(
 						string.Format(
@@ -983,7 +983,7 @@ namespace Bloom.Edit
 				// By comparing this with the stacks dumped when the check fails, we can hopefully tell whether the DOM or
 				// the Current Selection ID somehow changed, which may help partition the space we need to look in to
 				// solve the problem.
-				Logger.WriteMinorEvent(String.Format("CheckForBl2364({0}: both ids are " + _pageSelection.CurrentSelection.Id, when));
+				Logger.WriteMinorEvent(String.Format("CheckForBl2634({0}: both ids are " + _pageSelection.CurrentSelection.Id, when));
 			}
 			catch (Exception err)
 			{
