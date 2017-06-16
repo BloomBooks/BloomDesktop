@@ -4,14 +4,17 @@
 - Allow user to choose what front/back matter fields to show, and in what languages
 
 ## 4.0 (alpha)
-- Add a new Zoom control in Edit Tab.
-- Compress PDFs created by Bloom
-- Add moveable text blocks on top of images.
-- When creating a new collection, Bloom now chooses the *primary* country of the language as a default.
-- When choosing a language, Bloom no longer displays "alternative names* of languages, as some may be offensive.
-- Remove Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
-- Add option to use CMYK coloring to satisfy some printshops. (not yet)
-- Publish Book to Android Bloom Reader. (not yet)
+- Collection Tab
+    - When creating a new collection, Bloom now chooses the *primary* country of the language as a default.
+    - When choosing a language, Bloom no longer displays "alternative names* of languages, as some may be offensive.
+- Edit Tab
+    - You can now add moveable text blocks on top of images. Use this for comic books or kids’ books that fill the page with an image and then put text on top of it. (not landed in alpha yet).
+    - We've added new zoom control in the upper left. We've removed CTRL-Mouse wheel zooming (sorry) because it appears that some people were doing it accidentally and then getting very confused.
+    - We removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
+- Publish Tab
+    - PDFs are now automatically compressed, so they are often a small fraction of their previous size
+    - When you save a PDF, you can now choose CMYK coloring to satisfy some print shops.
+    - Publish Book to Android Bloom Reader (planned for 4.0, but not in alpha yet).
 
 ## 3.9 (beta)
 - Custom Templates
