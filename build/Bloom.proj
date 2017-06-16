@@ -213,6 +213,8 @@
 		<!-- Bloom expects an icon with a name corresponding to the EXE, which gets used for the desktop shortcut.
 		If we one day make distinct icons for the channels, we'll need to revise this to get the right channel-specific icon.-->
 		<Copy SourceFiles="$(RootDir)\src\SquirrelInstaller\Bloom.ico"  DestinationFiles="$(RootDir)\output\Release\Bloom$(channelRelease).ico"/>
+		<!-- The same is true for an initial splash image.  Right now, all channels use the same splash image for the instant splash. -->
+		<Copy SourceFiles="$(RootDir)\src\BloomSplash.png"  DestinationFiles="$(RootDir)\output\$(Configuration)\Bloom$(channel)Splash.png"/>
 
 		<Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
 
