@@ -296,8 +296,6 @@ namespace Bloom.Publish
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
 
-			_layoutChoices.Text = _model.PageLayout.ToString();
-
 			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
 			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
 			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
@@ -328,8 +326,11 @@ namespace Bloom.Publish
 			var layout = _model.PageLayout;
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
 			_layoutChoices.DropDownItems.Clear();
-//			_layoutChoices.Items.AddRange(layoutChoices.ToArray());
-//			_layoutChoices.SelectedText = _model.BookSelection.CurrentSelection.GetLayout().ToString();
+			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
+			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Layout",
+				@"Header for a region of the menu which lists various standard page layout sizes");
+			var headerItem2 = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(headerText);
+			headerItem2.Enabled = false;
 			foreach (var lc in layoutChoices)
 			{
 				var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
@@ -340,7 +341,6 @@ namespace Bloom.Publish
 				item.CheckOnClick = true;
 				item.Click += OnLayoutChosen;
 			}
-			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 
 			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
 			var textItem = LocalizationManager.GetString("PublishTab.LessMemoryPdfMode", "Use less memory (slower)");
@@ -358,7 +358,6 @@ namespace Bloom.Publish
 		{
 			var item = (ToolStripMenuItem)sender;
 			_model.PageLayout = ((Layout)item.Tag);
-			_layoutChoices.Text = _model.PageLayout.ToString();
 			ClearRadioButtons();
 			UpdateDisplay();
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);

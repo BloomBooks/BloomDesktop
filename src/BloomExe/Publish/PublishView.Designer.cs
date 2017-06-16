@@ -223,13 +223,13 @@
 			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
 			this._layoutChoices.ForeColor = System.Drawing.Color.White;
 			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._layoutChoices, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "LayoutChoices.A5Portrait");
+			this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, "Choose a page size and orientation");
+			this._L10NSharpExtender.SetLocalizationComment(this._layoutChoices, "menu header in the Publish tab");
+			this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "PublishTab.Options");
 			this._layoutChoices.Name = "_layoutChoices";
 			this._layoutChoices.Size = new System.Drawing.Size(85, 19);
-			this._layoutChoices.Text = "Page Layout";
+			this._layoutChoices.Text = "Options";
 			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
 			// 
 			// _bookletCoverRadio

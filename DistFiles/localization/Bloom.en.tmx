@@ -3168,6 +3168,12 @@
         <seg>Pages can not be re-ordered when you are translating a book.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.AdobeEulaTitle">
+      <note>dialog title for license agreement</note>
+      <tuv xml:lang="en">
+        <seg>Adobe Color Profile License Agreement</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
       <tuv xml:lang="en">
         <seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
@@ -3268,6 +3274,18 @@
         <seg>Make a PDF of every page of the book, one page per piece of paper.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Options">
+      <note>menu header in the Publish tab</note>
+      <tuv xml:lang="en">
+        <seg>Options</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OptionsMenu.SizeLayout">
+      <note>Header for a region of the menu which lists various standard page layout sizes</note>
+      <tuv xml:lang="en">
+        <seg>Size/Layout</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
       <tuv xml:lang="en">
         <seg>Open the PDF in the default system PDF viewer</seg>
@@ -3291,25 +3309,25 @@
     <tu tuid="PublishTab.PdfMaker.Compress">
       <note>Message displayed in a progress report dialog box</note>
       <tuv xml:lang="en">
-        <seg>Compressing PDF ...</seg>
+        <seg>Compressing PDF</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.CompressConvertColor">
       <note>Message displayed in a progress report dialog box</note>
       <tuv xml:lang="en">
-        <seg>Compressing PDF &amp; Converting Colors to CMYK ...</seg>
-      </tuv>
-    </tu>
-    <tu tuid="PublishTab.PdfMaker.ConvertColor">
-      <note>Message displayed in a progress report dialog box</note>
-      <tuv xml:lang="en">
-        <seg>Converting PDF colors to CMYK ...</seg>
+        <seg>Compressing PDF &amp; Converting Color to CMYK</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.Creating">
       <note>Message displayed in a progress report dialog box</note>
       <tuv xml:lang="en">
         <seg>Creating PDF ...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.DesktopPrinting">
+      <note>displayed as file type for Save File dialog.  Don't use vertical bar (|) in this string!</note>
+      <tuv xml:lang="en">
+        <seg>PDF for Desktop Printing</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.ErrorProcessing">
@@ -3334,6 +3352,12 @@
       <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
       <tuv xml:lang="en">
         <seg>Making Page {0} of the PDF</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.Printshop">
+      <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable.  Don't use vertical bar (|) in this string!</note>
+      <tuv xml:lang="en">
+        <seg>PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
@@ -3363,9 +3387,27 @@
         <seg>Making PDF...</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.PdfNotSaved">
+      <note>title for the message box</note>
+      <tuv xml:lang="en">
+        <seg>PDF Not Saved</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfNotSavedWhy">
+      <note>explanation that file was not saved displayed in a message box</note>
+      <tuv xml:lang="en">
+        <seg>The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.PrintButton">
       <tuv xml:lang="en">
         <seg>&amp;Print...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PrologToAdobeEula">
+      <note>Brief explanation of what this license is and why the user needs to agree to it</note>
+      <tuv xml:lang="en">
+        <seg>Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Publish">
