@@ -7,12 +7,20 @@ using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.IO;
 using SIL.Progress;
+using System.Drawing;
+using System;
+using System.Drawing.Imaging;
+using System.Drawing.Drawing2D;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.Book
 {
 	public class BookCompressor
 	{
 		public const string ExtensionForDeviceBloomBook = ".bloomd";
+
+		// these image files may need to be reduced before being stored in the compressed output file
+		internal static readonly string[] ImageFileExtensions = new[] { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
 		// these files (if encountered) won't be included the compressed version
 		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav" };
@@ -33,7 +41,7 @@ namespace Bloom.Book
 
 			using (var tempFile = TempFile.WithFilenameInTempFolder(book.Title + ExtensionForDeviceBloomBook))
 			{
-				CompressDirectory(tempFile.Path, bookFolderPath, "");
+				CompressDirectory(tempFile.Path, bookFolderPath, "", reduceImages:true);
 
 				// todo: if the code remains as is such that the caller just gets a path, it will be responsible
 				// for ensuring we aren't leaving temp files hanging around. But it might be better to eventually have this
@@ -44,7 +52,7 @@ namespace Bloom.Book
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool excludeAudio = false)
+			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
 			{
@@ -54,7 +62,7 @@ namespace Bloom.Book
 
 					var rootName = Path.GetFileName(directoryToCompress);
 					int dirNameOffset = directoryToCompress.Length - rootName.Length;
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -73,9 +81,10 @@ namespace Bloom.Book
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
+		/// <para> name="reduceImages">If true, image files are reduced in size to no larger than 300x300 before saving</para>
 		/// <remarks>Protected for testing purposes</remarks>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			bool forReaderTools, bool excludeAudio)
+			bool forReaderTools, bool excludeAudio, bool reduceImages)
 		{
 			if (excludeAudio && Path.GetFileName(directoryToCompress).ToLowerInvariant() == "audio")
 				return;
@@ -110,6 +119,11 @@ namespace Bloom.Book
 				else if (forReaderTools && (Path.GetFileName(filePath)=="meta.json"))
 				{
 					modifiedContent = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(filePath));
+					newEntry.Size = modifiedContent.Length;
+				}
+				else if (reduceImages && ImageFileExtensions.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
+				{
+					modifiedContent = GetBytesOfReducedImage(filePath);
 					newEntry.Size = modifiedContent.Length;
 				}
 				else
@@ -147,7 +161,7 @@ namespace Bloom.Book
 				if ((dirName == null) || (dirName.ToLowerInvariant() == "sample texts"))
 					continue; // Don't want to bundle these up
 
-				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio);
+				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
 			}
 		}
 
@@ -202,6 +216,58 @@ namespace Bloom.Book
 			}
 
 			return text;
+		}
+
+		const int kMaxWidth = 300;
+		const int kMaxHeight = 300;
+
+		/// <summary>
+		/// For electronic books, we want to minimize the actual size of images since they'll
+		/// be displayed on small screens anyway.  So before zipping up the file, we replace its
+		/// bytes with the bytes of a reduced copy of itself.  If the original image is already
+		/// small enough, we return its bytes directly.
+		/// </summary>
+		/// <returns>The bytes of the (possibly) reduced image.</returns>
+		internal static byte[] GetBytesOfReducedImage(string filePath)
+		{
+			using (var image = Image.FromFile(filePath))
+			{
+				int originalWidth = image.Width;
+				int originalHeight = image.Height;
+				if (originalWidth > kMaxWidth || originalHeight > kMaxHeight)
+				{
+					// Preserve the aspect ratio
+					float scaleX = (float)kMaxWidth / (float)originalWidth;
+					float scaleY = (float)kMaxHeight / (float)originalHeight;
+					float scale = Math.Min(scaleX, scaleY);
+
+					// New width and height maintaining the aspect ratio
+					int newWidth = (int)(originalWidth * scale);
+					int newHeight = (int)(originalHeight * scale);
+					using (var newImage = new Bitmap(newWidth, newHeight, image.PixelFormat))
+					{
+						// Draws the image in the specified size with quality mode set to HighQuality
+						using (Graphics graphics = Graphics.FromImage(newImage))
+						{
+							graphics.CompositingQuality = CompositingQuality.HighQuality;
+							graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+							graphics.SmoothingMode = SmoothingMode.HighQuality;
+							graphics.DrawImage(image, 0, 0, newWidth, newHeight);
+						}
+						// Save the file in the same format as the original, and return its bytes.
+						using (var tempFile = TempFile.WithExtension(Path.GetExtension(filePath)))
+						{
+							RobustImageIO.SaveImage(newImage, tempFile.Path, image.RawFormat);
+							// Copy the metadata from the original file to the new file.
+							var metadata = SIL.Windows.Forms.ClearShare.Metadata.FromFile(filePath);
+							if (!metadata.IsEmpty)
+								metadata.Write(tempFile.Path);
+							return RobustFile.ReadAllBytes(tempFile.Path);
+						}
+					}
+				}
+			}
+			return RobustFile.ReadAllBytes(filePath);
 		}
 	}
 }
