@@ -171,14 +171,15 @@ describe("StyleEditor", function () {
         expect(GetRuleForFooStyle()).not.toBeNull();
     });
 
-    it("MakeBigger makes the text of the target style bigger", function () {
-        $('body').append("<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>");
-        var originalSize = GetCalculatedFontSize('#testTarget');
-        MakeBigger();
-        expect(GetCalculatedFontSize('#testTarget')).toBe(originalSize + 2);
-        MakeBigger();
-        expect(GetCalculatedFontSize('#testTarget')).toBe(originalSize + 4);
-    });
+    // MakeBigger() isn't really used anymore, we do things differently now.
+    // it("MakeBigger makes the text of the target style bigger", function () {
+    //     $('body').append("<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>");
+    //     var originalSize = GetCalculatedFontSize('#testTarget');
+    //     MakeBigger();
+    //     expect(GetCalculatedFontSize('#testTarget')).toBe(originalSize + 2);
+    //     MakeBigger();
+    //     expect(GetCalculatedFontSize('#testTarget')).toBe(originalSize + 4);
+    // });
 
     //note originally i was just letting everything be changeable, regardless. The problem is that then things like title
     //and subtitle were getting conflated. So that is a future enhancement; for now, I'm keeping things simple by saying
