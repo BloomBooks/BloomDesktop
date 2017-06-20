@@ -8,4 +8,4 @@ RUNMODE=INSTALLED
 . ./environ
 cd "$OLDPWD"
 
-exec mono --debug "$LIB"/Bloom.exe "$@"
+exec "$LIB"/BloomLauncher "$@"
