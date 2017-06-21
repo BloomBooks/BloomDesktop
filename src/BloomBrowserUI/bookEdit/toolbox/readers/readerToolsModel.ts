@@ -324,7 +324,7 @@ export class ReaderToolsModel {
 
                 for (var i = 0; i < level.thingsToRemember.length; i++) {
                     var li = document.createElement('li');
-                    li.appendChild(document.createTextNode(level.thingsToRemember[i]));
+                    li.innerHTML = level.thingsToRemember[i];
                     list.appendChild(li);
                 }
             }
