@@ -94,10 +94,10 @@ namespace BloomTests.Book
 		{
 			// shirtWithTransparentBg.png: PNG image data, 2208 x 2400, 8-bit/color RGBA, non-interlaced
 
-			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirtWithTransparentBg.png");
+			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
 			var originalBytes = File.ReadAllBytes(path);
 			var reducedBytes = BookCompressor.GetBytesOfReducedImage(path);
-			Assert.Greater(originalBytes.Length, reducedBytes.Length, "shirtWithTransparentBg.png is reduced from 2208x2400");
+			Assert.Greater(originalBytes.Length, reducedBytes.Length, "shirt.png is reduced from 2208x2400");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
 				var oldMetadata = Metadata.FromFile(path);
@@ -110,9 +110,9 @@ namespace BloomTests.Book
 				else
 				{
 					Assert.IsFalse(newMetadata.IsEmpty);
-					Assert.AreEqual(oldMetadata.CopyrightNotice, newMetadata.CopyrightNotice, "copyright preserved for shirtWithTransparentBg.png");
-					Assert.AreEqual(oldMetadata.Creator, newMetadata.Creator, "creator preserved for shirtWithTransparentBg.png");
-					Assert.AreEqual(oldMetadata.License.ToString(), newMetadata.License.ToString(), "license preserved for shirtWithTransparentBg.png");
+					Assert.AreEqual(oldMetadata.CopyrightNotice, newMetadata.CopyrightNotice, "copyright preserved for shirt.png");
+					Assert.AreEqual(oldMetadata.Creator, newMetadata.Creator, "creator preserved for shirt.png");
+					Assert.AreEqual(oldMetadata.License.ToString(), newMetadata.License.ToString(), "license preserved for shirt.png");
 				}
 			}
 		}
