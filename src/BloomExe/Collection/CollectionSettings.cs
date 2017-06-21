@@ -341,12 +341,12 @@ namespace Bloom.Collection
 				var sb = new StringBuilder();
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
-				AddFontCssRule(sb, "BODY", GetDefaultFontName(), 0);
-				AddFontCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, Language1LineHeight);
-				AddFontCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, Language2LineHeight);
+				AddFontCssRule(sb, "BODY", GetDefaultFontName(), false, 0);
+				AddFontCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight);
+				AddFontCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight);
 				if (!string.IsNullOrEmpty(Language3Iso639Code))
 				{
-					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, Language3LineHeight);
+					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight);
 				}
 				AddNumberingStyleCssRule(sb, PageNumberStyle);
 				RobustFile.WriteAllText(path, sb.ToString());
@@ -372,12 +372,15 @@ namespace Bloom.Collection
 			sb.AppendLine("}");
 		}
 
-		private void AddFontCssRule(StringBuilder sb, string selector, string fontName, decimal lineHeight)
+		private void AddFontCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight)
 		{
 			sb.AppendLine();
 			sb.AppendLine(selector);
 			sb.AppendLine("{");
 			sb.AppendLine(" font-family: '" + fontName + "';");
+
+			if (isRtl)
+				sb.AppendLine(" direction: rtl;");
 
 			if (lineHeight > 0)
 				sb.AppendLine(" line-height: " + lineHeight + ";");
