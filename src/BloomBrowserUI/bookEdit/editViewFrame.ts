@@ -9,7 +9,7 @@ import { getToolboxFrameExports } from './js/bloomFrames';
 export { getToolboxFrameExports };
 import { getPageFrameExports } from './js/bloomFrames';
 export { getPageFrameExports };
-import { showAddPageDialog } from '../pageChooser/page-chooser';
+import { showAddPageDialog } from '../pageChooser/launch-page-chooser';
 export { showAddPageDialog };
 
 //Called by c# using FrameExports.handleUndo()
