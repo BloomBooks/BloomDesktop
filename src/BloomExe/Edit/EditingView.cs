@@ -373,9 +373,19 @@ namespace Bloom.Edit
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				_model.SetupServerWithCurrentPageIframeContents();
 				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
-				var dom = _model.GetXmlDocumentForEditScreenWebPage();
-				_model.RemoveStandardEventListeners();
-				_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true);
+				if (_model.AreToolboxAndOuterFrameCurrent())
+				{
+					var pageUrl = _model.GetUrlForCurrentPage();
+					_browser1.SetEditDom(domForCurrentPage);
+					RunJavaScript("FrameExports.switchContentPage('" + pageUrl + "');");
+				}
+				else
+				{
+					_model.SetupServerWithCurrentBookToolboxContents();
+					var dom = _model.GetXmlDocumentForEditScreenWebPage();
+					_model.RemoveStandardEventListeners();
+					_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true);
+				}
 				_model.CheckForBL2634("navigated to page");
 				_pageListView.Focus();
 				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
