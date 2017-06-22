@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="en"
           adminlang="en"
@@ -2473,13 +2473,6 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Make an e-book that can play recordings while highlighting sentences.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Toolbox.Zoom.Reset">
-      <prop type="x-dynamic">true</prop>
-      <note>This is for the button that changes the page zoom back to 100%</note>
-      <tuv xml:lang="en">
-        <seg>Reset Zoom</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Toolbox._bookSelection.LongestSentence">
