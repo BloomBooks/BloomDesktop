@@ -1,4 +1,4 @@
-// Copyright (c) 2014 SIL International
+﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 namespace Bloom.Api
@@ -14,7 +14,7 @@ namespace Bloom.Api
 	public interface IRequestInfo
 	{
 		string LocalPathWithoutQuery { get; }
-		string ContentType { set; }
+		string ContentType { get; set; }
 		string RawUrl { get; }
 		bool HaveOutput { get; }
 		void WriteCompleteOutput(string s);
@@ -28,5 +28,6 @@ namespace Bloom.Api
 		string GetPostString();
 		HttpMethods HttpMethod { get; }
 		void SucceededDoNotNavigate();
+		string FileUsedForResponse { get; }
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2014 SIL International
+﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
@@ -50,6 +50,7 @@ namespace Bloom.Api
 		public string ContentType
 		{
 			set { _actualContext.Response.ContentType = value; }
+			get { return _actualContext.Response.ContentType; }
 		}
 
 		public string HttpMethod
@@ -69,6 +70,8 @@ namespace Bloom.Api
 			HaveOutput = true;
 			return;
 		}
+
+		public string FileUsedForResponse { get; private set; }
 
 		public void WriteCompleteOutput(string s)
 		{
@@ -111,6 +114,7 @@ namespace Bloom.Api
 				return;
 			}
 
+			FileUsedForResponse = path;
 			try
 			{
 				fs = RobustFile.OpenRead(path);
@@ -144,17 +148,29 @@ namespace Bloom.Api
 					// changed, Geckofx would use the cached file rather than requesting the updated file from the localhost.
 					_actualContext.Response.AppendHeader("Last-Modified", lastModified);
 				}
+				else if (fs.Length < 2 * 1024 * 1024)
+				{
+					// This buffer size was picked to be big enough for any of the standard files we load in every page.
+					// Profiling indicates it is MUCH faster to use Response.Close() rather than writing to the output stream,
+					// though the gain may be illusory since the final 'false' argument allows our code to proceed without waiting
+					// for the complete data transfer. At a minimum, it makes this thread available to work on another
+					// request sooner.
+					var buffer = new byte[fs.Length];
+					fs.Read(buffer, 0, (int)fs.Length);
+					_actualContext.Response.Close(buffer, false);
+				}
 				else
 				{
+					// For really big (typically image) files, use the old buffered approach
 					var buffer = new byte[1024*512]; //512KB
 					int read;
 					while((read = fs.Read(buffer, 0, buffer.Length)) > 0)
 						_actualContext.Response.OutputStream.Write(buffer, 0, read);
+					_actualContext.Response.OutputStream.Close();
 				}
 
 			}
 
-			_actualContext.Response.OutputStream.Close();
 			HaveOutput = true;
 		}
 
