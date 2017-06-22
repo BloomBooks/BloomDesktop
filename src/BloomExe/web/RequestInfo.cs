@@ -51,7 +51,6 @@ namespace Bloom.Api
 		public string ContentType
 		{
 			set { _actualContext.Response.ContentType = value; }
-			get { return _actualContext.Response.ContentType; }
 		}
 
 		public string HttpMethod
@@ -72,7 +71,6 @@ namespace Bloom.Api
 			return;
 		}
 
-		public string FileUsedForResponse { get; private set; }
 		public string DoNotCacheFolder { get; set; }
 
 		public void WriteCompleteOutput(string s)
@@ -116,7 +114,6 @@ namespace Bloom.Api
 				return;
 			}
 
-			FileUsedForResponse = path;
 			try
 			{
 				fs = RobustFile.OpenRead(path);
@@ -138,8 +135,6 @@ namespace Bloom.Api
 					_actualContext.Response.AppendHeader("Cache-Control",
 						"max-age=86400"); // one day, should well and truly cover one session on one book.
 				}
-				Debug.WriteLine("serving file " + path);
-					//helps with debugging what file is being chosen
 
 				// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
 				// to the OutputStream. It is normally used to check if the contents of the file have changed without taking the

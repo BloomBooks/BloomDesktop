@@ -14,7 +14,7 @@ namespace Bloom.Api
 	public interface IRequestInfo
 	{
 		string LocalPathWithoutQuery { get; }
-		string ContentType { get; set; }
+		string ContentType { set; }
 		string RawUrl { get; }
 		bool HaveOutput { get; }
 		void WriteCompleteOutput(string s);
@@ -28,7 +28,6 @@ namespace Bloom.Api
 		string GetPostString();
 		HttpMethods HttpMethod { get; }
 		void SucceededDoNotNavigate();
-		string FileUsedForResponse { get; }
 		string DoNotCacheFolder { set; }
 	}
 }

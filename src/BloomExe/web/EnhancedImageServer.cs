@@ -193,47 +193,15 @@ namespace Bloom.Api
 			}
 		}
 
-		Dictionary<string, Tuple<string, string>> _urlToFileAndType = new Dictionary<string, Tuple<string, string>>();
-
 		// Every path should return false or send a response.
 		// Otherwise we can get a timeout error as the browser waits for a response.
 		//
 		// NOTE: this method gets called on different threads!
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
-			Tuple<string, string> previousReply;
-			if (_urlToFileAndType.TryGetValue(info.RawUrl, out previousReply))
-			{
-				info.ContentType = previousReply.Item2;
-				info.ReplyWithFileContent(previousReply.Item1);
-				return true;
-			}
 			if (CurrentCollectionSettings != null && CurrentCollectionSettings.SettingsFilePath != null)
 				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath);
-			var result = ProcessRequestCore(info);
-			// Eliminating My Documents stuff should usually cut out things in the current book which
-			// would tend to build up as we switch pages and books.
-			// Currently that's only a small minority of the things we load for each page, so cutting
-			// them out doesn't detract much from the performance gain.
-			if (info.FileUsedForResponse != null
-				&& !info.FileUsedForResponse.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)))
-			{
-				// This is very inefficient but it updates the dictionary without needing locking
-				// (which seems to interfere with Gecko's threading and actually slows things down).
-				// And it only happens once per program run per cachable file.
-				var temp = new Dictionary<string, Tuple<string, string>>(_urlToFileAndType);
-				temp[info.RawUrl] = Tuple.Create(info.FileUsedForResponse, info.ContentType);
-				_urlToFileAndType = temp;
-			}
-			return result;
-		}
 
-		// Every path should return false or send a response.
-		// Otherwise we can get a timeout error as the browser waits for a response.
-		//
-		// NOTE: this method gets called on different threads!
-		private bool ProcessRequestCore(IRequestInfo info)
-		{
 			var localPath = GetLocalPathWithoutQuery(info);
 
 			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.

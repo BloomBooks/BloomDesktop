@@ -37,7 +37,7 @@ namespace Bloom.Api
 
 		public string LocalPathWithoutQuery { get; set; }
 
-		public string ContentType { get; set; }
+		public string ContentType { private get; set; }
 
 		/// <summary>
 		/// wrap so that it is easily consumed by our standard xml unit test stuff, which can't handled fragments
@@ -101,7 +101,6 @@ namespace Bloom.Api
 			return "";
 		}
 		public void SucceededDoNotNavigate(){}
-		public string FileUsedForResponse { get; }
 		public string DoNotCacheFolder { get; set; }
 
 		public string RawUrl { get; private set; }
