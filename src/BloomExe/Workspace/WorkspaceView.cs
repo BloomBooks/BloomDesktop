@@ -21,6 +21,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using System.Collections.Generic;
+using Gecko.Cache;
 
 namespace Bloom.Workspace
 {
@@ -486,6 +487,16 @@ namespace Bloom.Workspace
 			{
 				if (_toolStrip.Items.Contains(_zoomWrapper))
 					_toolStrip.Items.Remove(_zoomWrapper);
+			}
+			// Possibly overkill, but makes sure nothing obsolete hangs around long.
+			try
+			{
+				Gecko.Cache.CacheService.Clear(CacheStoragePolicy.Anywhere);
+			}
+			catch (Exception e)
+			{
+				// Unfortunately it typically throws, being for some reason unable to clear everything...
+				// doc says it may still have got rid of some things, so seems marginally worth doing...
 			}
 		}
 

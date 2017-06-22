@@ -29,5 +29,6 @@ namespace Bloom.Api
 		HttpMethods HttpMethod { get; }
 		void SucceededDoNotNavigate();
 		string FileUsedForResponse { get; }
+		string DoNotCacheFolder { set; }
 	}
 }

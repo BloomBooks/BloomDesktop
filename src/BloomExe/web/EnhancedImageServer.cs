@@ -208,6 +208,8 @@ namespace Bloom.Api
 				info.ReplyWithFileContent(previousReply.Item1);
 				return true;
 			}
+			if (CurrentCollectionSettings != null && CurrentCollectionSettings.SettingsFilePath != null)
+				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath);
 			var result = ProcessRequestCore(info);
 			// Eliminating My Documents stuff should usually cut out things in the current book which
 			// would tend to build up as we switch pages and books.

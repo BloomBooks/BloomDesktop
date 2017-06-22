@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
@@ -72,6 +73,7 @@ namespace Bloom.Api
 		}
 
 		public string FileUsedForResponse { get; private set; }
+		public string DoNotCacheFolder { get; set; }
 
 		public void WriteCompleteOutput(string s)
 		{
@@ -131,6 +133,12 @@ namespace Bloom.Api
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
 				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
+				if (ShouldCache(path))
+				{
+					_actualContext.Response.AppendHeader("Cache-Control",
+						"max-age=86400"); // one day, should well and truly cover one session on one book.
+				}
+				Debug.WriteLine("serving file " + path);
 					//helps with debugging what file is being chosen
 
 				// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
@@ -172,6 +180,22 @@ namespace Bloom.Api
 			}
 
 			HaveOutput = true;
+		}
+
+		HashSet<string> _cacheableExtensions = new HashSet<string>(new[] {".js", ".css", ".jpg", ".jpeg", ".svg", ".png"});
+
+		private bool ShouldCache(string path)
+		{
+#if DEBUG
+			// Developers never want caching...interferes with trying new versions of stuff.
+			return false;
+#endif
+			if (string.IsNullOrEmpty(DoNotCacheFolder))
+				return false; // if for some reason this hasn't been set, play safe and don't cache.
+			if (path.StartsWith(DoNotCacheFolder))
+				return false; // in the folder we never cache, typically the editable project folder
+
+			return _cacheableExtensions.Contains(Path.GetExtension(path));
 		}
 
 		public void ReplyWithImage(string path)

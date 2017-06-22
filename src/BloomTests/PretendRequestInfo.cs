@@ -102,6 +102,7 @@ namespace Bloom.Api
 		}
 		public void SucceededDoNotNavigate(){}
 		public string FileUsedForResponse { get; }
+		public string DoNotCacheFolder { get; set; }
 
 		public string RawUrl { get; private set; }
 	}
