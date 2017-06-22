@@ -95,5 +95,28 @@ namespace BloomTests.ImageProcessing
 				}
 			}
 		}
+
+		// I think shirt.png still has a transparent background after being fixed by optipng, but I'm not absolutely sure,
+		// so I'm leaving both tests in place.
+		[Test]
+		public static void ProcessAndSaveImageIntoFolder_SimpleImageHasTransparentBackground_ImageNotConvertedAndFileSizeNotIncreased2()
+		{
+			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
+			var originalFileSize = new FileInfo(inputPath).Length;
+			using (var image = PalasoImage.FromFileRobustly(inputPath))
+			{
+				using (var folder = new TemporaryFolder("TransparentPngTest"))
+				{
+					var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path, false);
+					Assert.AreEqual(".png", Path.GetExtension(fileName));
+					var outputPath = folder.Combine(fileName);
+					using (var result = Image.FromFile(outputPath))
+					{
+						Assert.AreEqual(ImageFormat.Png, result.RawFormat);
+						Assert.That(originalFileSize <= new FileInfo(outputPath).Length);
+					}
+				}
+			}
+		}
 	}
 }
