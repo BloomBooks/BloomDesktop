@@ -40,6 +40,20 @@ export function showDialog(dialogContents: string, options: any): JQuery {
         return dialogElement;
 }
 
+export function toolboxIsShowing() { return (<HTMLInputElement>$(document).find('#pure-toggle-right').get(0)).checked; }
+
+export function doWhenToolboxLoaded(task) {
+        var toolboxWindow = getToolboxFrameExports();
+        if (toolboxWindow) {
+                task(toolboxWindow);
+        }
+        else {
+                setTimeout(() => {
+                        doWhenToolboxLoaded(task);
+                }, 10);
+        }
+}
+
 //Called by c# using FrameExports.canUndo()
 export function canUndo(): string {
         // See comments on handleUndo()

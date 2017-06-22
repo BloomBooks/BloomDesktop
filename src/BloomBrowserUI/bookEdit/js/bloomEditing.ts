@@ -21,7 +21,7 @@ import "jquery.qtipSecondary.js"
 import "long-press/jquery.longpress.js"
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { getToolboxFrameExports } from "./bloomFrames";
+import { getEditViewFrameExports } from "./bloomFrames";
 import { EditableDivUtils } from './editableDivUtils';
 
 
@@ -291,14 +291,16 @@ function SetupElements(container) {
         this.innerHTML = this.value;
     });
 
-    var toolbox = getToolboxFrameExports().getTheOneToolbox();
-    var toolboxVisible = false;
-    // toolbox might be undefined in unit testing?
+    var rootFrameExports = getEditViewFrameExports();
+    var toolboxVisible = rootFrameExports.toolboxIsShowing();
+    rootFrameExports.doWhenToolboxLoaded(toolboxFrameExports => {
+        var toolbox = toolboxFrameExports.getTheOneToolbox();
+        // toolbox might be undefined in unit testing?
 
-    if (toolbox) {
-        toolboxVisible = toolbox.toolboxIsShowing();
-        toolbox.configureElementsForTools(container);
-    }
+        if (toolbox) {
+            toolbox.configureElementsForTools(container);
+        }
+    });
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
 
