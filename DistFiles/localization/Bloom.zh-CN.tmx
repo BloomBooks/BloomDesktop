@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="zh-CN" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.65.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
     <prop type="x-appversion">3.7.8.0</prop>
@@ -2842,16 +2842,6 @@
       </tuv>
       <tuv xml:lang="zh-CN">
         <seg>制作能边放录音边高亮所读句子的电子书</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.Toolbox.Zoom.Reset">
-      <note>This is for the button that changes the page zoom back to 100%</note>
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Reset Zoom</seg>
-      </tuv>
-      <tuv xml:lang="zh-CN">
-        <seg>重置缩放</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Toolbox._bookSelection.LongestSentence">

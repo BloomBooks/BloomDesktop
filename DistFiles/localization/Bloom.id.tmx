@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
    <header srclang="id"
            adminlang="en"
@@ -3150,16 +3150,6 @@
          </tuv>
          <tuv xml:lang="id">
             <seg>Membuat e-book yang dapat memutar rekaman sementara menyoroti kalimat.</seg>
-         </tuv>
-      </tu>
-      <tu tuid="EditTab.Toolbox.Zoom.Reset">
-         <prop type="x-dynamic">true</prop>
-         <note>This is for the button that changes the page zoom back to 100%</note>
-         <tuv xml:lang="en">
-            <seg>Reset Zoom</seg>
-         </tuv>
-         <tuv xml:lang="id">
-            <seg>Ulang Zoom</seg>
          </tuv>
       </tu>
       <tu tuid="EditTab.Toolbox._bookSelection.LongestSentence">

@@ -30,10 +30,3 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
     })[0];
     axios.post("/bloom/api/book/settings", settings);
 }
-
-
-export function handleResetZoom(clickedButton: any) {
-    var pageDom = <HTMLIFrameElement>parent.window.document.getElementById('page');
-    var pageBody = $(pageDom.contentWindow.document.body);
-    $(pageBody).find("div#page-scaling-container").css('transform', 'scale(1.0)');
-}
