@@ -492,7 +492,10 @@ namespace Bloom
 				return;
 			}
 			if(_splashForm==null)
+			{
 				_splashForm = SplashScreen.CreateAndShow();//warning: this does an ApplicationEvents()
+				CloseFastSplashScreen();
+			}
 			else if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
 			{
 				// BL-3192. If there is some modal in front (e.g. dropbox or screen DPI warnings), just wait. We'll keep getting called with these
@@ -1222,6 +1225,16 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			get
 			{
 				return Assembly.GetEntryAssembly() == null;
+			}
+		}
+
+		private static void CloseFastSplashScreen()
+		{
+			// signal the native process (that launched us) to close the splash screen
+			using (var closeSplashEvent = new EventWaitHandle(false,
+				EventResetMode.ManualReset, "CloseSquirrelSplashScreenEvent"))
+			{
+				closeSplashEvent.Set();
 			}
 		}
 	}
