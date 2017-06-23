@@ -133,7 +133,7 @@ namespace Bloom.Api
 				if (ShouldCache(path))
 				{
 					_actualContext.Response.AppendHeader("Cache-Control",
-						"max-age=86400"); // one day, should well and truly cover one session on one book.
+						"max-age=600000"); // about a week...if someone spends longer editing one book, well, files will get loaded one more time...
 				}
 
 				// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
