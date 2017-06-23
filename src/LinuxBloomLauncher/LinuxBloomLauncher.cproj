@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}</ProjectGuid>
+    <Compiler>
+      <Compiler ctype="GccCompiler" />
+    </Compiler>
+    <Language>C</Language>
+    <Target>Bin</Target>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <Externalconsole>true</Externalconsole>
+    <OutputName>BloomLauncher</OutputName>
+    <CompileTarget>Bin</CompileTarget>
+    <DefineSymbols>DEBUG MONODEVELOP</DefineSymbols>
+    <SourceDirectory>.</SourceDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release</OutputPath>
+    <Externalconsole>true</Externalconsole>
+    <OutputName>BloomLauncher</OutputName>
+    <CompileTarget>Bin</CompileTarget>
+    <OptimizationLevel>3</OptimizationLevel>
+    <DefineSymbols>MONODEVELOP</DefineSymbols>
+    <SourceDirectory>.</SourceDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BloomLauncher.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <CompileFlags Include="`pkg-config --cflags gtk+-2.0` `pkg-config --libs gtk+-2.0`" />
+  </ItemGroup>
+  <Target Name="Build" Condition="'$(OS)'!='Windows_NT'">
+    <Exec Command="mkdir -p $(OutputPath)" />
+    <Exec Command="glib-compile-resources --target=resources.c --generate-source BloomLauncher.gresource.xml" />
+    <Exec Command="g++ -Wall -g -o $(OutputPath)\$(OutputName) @(Compile) resources.c @(CompileFlags)" />
+    <Exec Command="cp $(OutputPath)\$(OutputName) ../../output/$(Configuration)" />
+  </Target>
+  <Target Name="Clean" Condition="'$(OS)'!='Windows_NT'">
+    <Exec Command="rm -rf $(OutputPath)" />
+    <Exec Command="rm -f ../../output/$(Configuration)/$(OutputName)" />
+  </Target>
+</Project>

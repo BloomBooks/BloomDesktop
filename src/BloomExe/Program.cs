@@ -1228,13 +1228,24 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			}
 		}
 
+		/// <summary>
+		/// If launched by a fast splash screen program, signal it to close.
+		/// </summary>
 		private static void CloseFastSplashScreen()
 		{
-			// signal the native process (that launched us) to close the splash screen
-			using (var closeSplashEvent = new EventWaitHandle(false,
-				EventResetMode.ManualReset, "CloseSquirrelSplashScreenEvent"))
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
-				closeSplashEvent.Set();
+				File.Delete("/tmp/BloomLaunching.now");	// (okay if file doesn't exist)
+			}
+			else if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				// signal the native process (that launched us) to close the splash screen
+				// (okay if there's nobody there to receive the signal)
+				using (var closeSplashEvent = new EventWaitHandle(false,
+					EventResetMode.ManualReset, "CloseSquirrelSplashScreenEvent"))
+				{
+					closeSplashEvent.Set();
+				}
 			}
 		}
 	}
