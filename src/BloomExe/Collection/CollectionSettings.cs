@@ -349,6 +349,10 @@ namespace Bloom.Collection
 					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight);
 				}
 				AddNumberingStyleCssRule(sb, PageNumberStyle);
+				if (IsLanguage1Rtl)
+				{
+					AddRtlCreditsCssRules(sb);
+				}
 				RobustFile.WriteAllText(path, sb.ToString());
 			}
 			catch (Exception error)
@@ -357,15 +361,31 @@ namespace Bloom.Collection
 			}
 		}
 
+		private void AddRtlCreditsCssRules(StringBuilder sb)
+		{
+			const string kLicenseImageSelector = ".credits .licenseAndCopyrightBlock img";
+			const string kLicenseDescriptionSelector = ".credits .Credits-Page-style";
+			sb.AppendLine();
+			sb.AppendLine(kLicenseImageSelector);
+			sb.AppendLine("{");
+			sb.AppendLine(" float: right;");
+			sb.AppendLine("}");
+			sb.AppendLine();
+			sb.AppendLine(kLicenseDescriptionSelector);
+			sb.AppendLine("{");
+			sb.AppendLine(" clear: right;");
+			sb.AppendLine("}");
+		}
+
 		// styleNameKey must be the non-localized version
 		private void AddNumberingStyleCssRule(StringBuilder sb, string styleNameKey)
 		{
-			var mediaSelector = "@media print";
-			var selector = " .numberedPage:after";
+			const string kMediaSelector = "@media print";
+			const string kPageSelector = " .numberedPage:after";
 			sb.AppendLine();
-			sb.AppendLine(mediaSelector);
+			sb.AppendLine(kMediaSelector);
 			sb.AppendLine("{");
-			sb.AppendLine(selector);
+			sb.AppendLine(kPageSelector);
 			sb.AppendLine(" {");
 			sb.AppendLine("  content: counter(pageNumber, " + styleNameKey.ToLower() + ");");
 			sb.AppendLine(" }");
