@@ -47,8 +47,10 @@ export function showDialog(dialogContents: string, options: any): JQuery {
 export function toolboxIsShowing() { return (<HTMLInputElement>$(document).find('#pure-toggle-right').get(0)).checked; }
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
-export function doWhenToolboxLoaded(task) {
-        var toolboxWindow = getToolboxFrameExports();
+// (The value passed to the task function will be the value from getToolboxFrameExports(). Unfortunately we
+// haven't yet managed to declare a type for that, so I can't easily specify it here.)
+export function doWhenToolboxLoaded(task: (toolboxFrameExports: any) => any) {
+        let toolboxWindow = getToolboxFrameExports();
         if (toolboxWindow) {
                 task(toolboxWindow);
         }

@@ -291,10 +291,10 @@ function SetupElements(container) {
         this.innerHTML = this.value;
     });
 
-    var rootFrameExports = getEditViewFrameExports();
-    var toolboxVisible = rootFrameExports.toolboxIsShowing();
+    let rootFrameExports = getEditViewFrameExports();
+    let toolboxVisible = rootFrameExports.toolboxIsShowing();
     rootFrameExports.doWhenToolboxLoaded(toolboxFrameExports => {
-        var toolbox = toolboxFrameExports.getTheOneToolbox();
+        let toolbox = toolboxFrameExports.getTheOneToolbox();
         // toolbox might be undefined in unit testing?
 
         if (toolbox) {
