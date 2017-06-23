@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2014-2015 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -198,6 +199,9 @@ namespace Bloom.Api
 		// NOTE: this method gets called on different threads!
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
+			if (CurrentCollectionSettings != null && CurrentCollectionSettings.SettingsFilePath != null)
+				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath);
+
 			var localPath = GetLocalPathWithoutQuery(info);
 
 			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.

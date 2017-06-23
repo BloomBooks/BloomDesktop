@@ -9,7 +9,7 @@ import { getToolboxFrameExports } from './js/bloomFrames';
 export { getToolboxFrameExports };
 import { getPageFrameExports } from './js/bloomFrames';
 export { getPageFrameExports };
-import { showAddPageDialog } from '../pageChooser/page-chooser';
+import { showAddPageDialog } from '../pageChooser/launch-page-chooser';
 export { showAddPageDialog };
 
 //Called by c# using FrameExports.handleUndo()
@@ -31,6 +31,10 @@ export function handleUndo(): void {
         // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
 }
 
+export function switchContentPage(newSource: string) {
+        (<HTMLIFrameElement>document.getElementById('page')).src = newSource;
+}
+
 // This function allows code in the toolbox (or other) frame to create a dialog with dynamic content in the root frame
 // (so that it can be dragged anywhere in the gecko window). The dialog() function behaves strangely (e.g., draggable doesn't work)
 // if the jquery wrapper for the element is created in a different frame than the parent of the dialog element.
@@ -38,6 +42,23 @@ export function showDialog(dialogContents: string, options: any): JQuery {
         var dialogElement = $(dialogContents).appendTo($('body'));
         dialogElement.dialog(options);
         return dialogElement;
+}
+
+export function toolboxIsShowing() { return (<HTMLInputElement>$(document).find('#pure-toggle-right').get(0)).checked; }
+
+// Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
+// (The value passed to the task function will be the value from getToolboxFrameExports(). Unfortunately we
+// haven't yet managed to declare a type for that, so I can't easily specify it here.)
+export function doWhenToolboxLoaded(task: (toolboxFrameExports: any) => any) {
+        let toolboxWindow = getToolboxFrameExports();
+        if (toolboxWindow) {
+                task(toolboxWindow);
+        }
+        else {
+                setTimeout(() => {
+                        doWhenToolboxLoaded(task);
+                }, 10);
+        }
 }
 
 //Called by c# using FrameExports.canUndo()

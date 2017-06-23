@@ -42,6 +42,7 @@ namespace Bloom.Edit
 		private SimulatedPageFile _currentPage;
 		public bool Visible;
 		private Book.Book _currentlyDisplayedBook;
+		private Book.Book _bookForToolboxContent;
 		private EditingView _view;
 		private List<ContentLanguage> _contentLanguages;
 		private IPage _previouslySelectedPage;
@@ -634,16 +635,19 @@ namespace Bloom.Edit
 				_currentPage.Dispose();
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 			CheckForBL2634("made simulated page");
-
-			// Enhance JohnT: Can we somehow have a much simpler toolbox content until the user displays it?
-			//if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
-				_server.ToolboxContent = ToolboxView.MakeToolboxContent(_currentlyDisplayedBook);
-			//else
-			//	_server.ToolboxContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
-
 			_server.AuthorMode = CanAddPages;
 		}
 
+		public bool AreToolboxAndOuterFrameCurrent()
+		{
+			return _currentlyDisplayedBook == _bookForToolboxContent;
+		}
+
+		public void SetupServerWithCurrentBookToolboxContents()
+		{
+			_server.ToolboxContent = ToolboxView.MakeToolboxContent(_currentlyDisplayedBook);
+			_bookForToolboxContent = _currentlyDisplayedBook;
+		}
 		/// <summary>
 		/// Insert a div into the body that contains the .bloom-page div and set a style on this new div that will
 		/// zoom/scale the page content to the extent the user currently prefers.  This style cannot go on the body
@@ -687,6 +691,11 @@ namespace Bloom.Edit
 		public HtmlDom GetXmlDocumentForCurrentPage()
 		{
 			return _domForCurrentPage;
+		}
+
+		public string GetUrlForCurrentPage()
+		{
+			return _currentPage.Key;
 		}
 
 		/// <summary>

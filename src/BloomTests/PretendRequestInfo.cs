@@ -1,4 +1,4 @@
-// Copyright (c) 2014 SIL International
+﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System.Collections.Specialized;
 using System.IO;
@@ -37,7 +37,7 @@ namespace Bloom.Api
 
 		public string LocalPathWithoutQuery { get; set; }
 
-		public string ContentType { get; set; }
+		public string ContentType { private get; set; }
 
 		/// <summary>
 		/// wrap so that it is easily consumed by our standard xml unit test stuff, which can't handled fragments
@@ -101,6 +101,7 @@ namespace Bloom.Api
 			return "";
 		}
 		public void SucceededDoNotNavigate(){}
+		public string DoNotCacheFolder { get; set; }
 
 		public string RawUrl { get; private set; }
 	}

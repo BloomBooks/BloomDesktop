@@ -741,6 +741,11 @@ namespace Bloom
 			UpdateDisplay();
 		}
 
+		public void SetEditDom(HtmlDom editDom)
+		{
+			_pageEditDom = editDom.RawDom;
+		}
+
 		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might
 		// contain references to files in the directory of the original HTML file it is derived from,
 		// 'cause that provides the information needed
