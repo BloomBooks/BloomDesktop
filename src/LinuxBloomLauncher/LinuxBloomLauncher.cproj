@@ -8,7 +8,6 @@
       <Compiler ctype="GccCompiler" />
     </Compiler>
     <Language>C</Language>
-    <Target>Bin</Target>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,5 +42,7 @@
   <Target Name="Clean" Condition="'$(OS)'!='Windows_NT'">
     <Exec Command="rm -rf $(OutputPath)" />
     <Exec Command="rm -f ../../output/$(Configuration)/$(OutputName)" />
+  </Target>
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" Condition="'$(OS)'!='Windows_NT'">
   </Target>
 </Project>
