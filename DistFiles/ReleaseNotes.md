@@ -14,6 +14,7 @@
     - We've created a "Template Starter" template that lets you make a book full of template pages that you and others can reuse.
 - Collection Setup
     - You can now change the UI language when Bloom runs for the first time. Previously, you couldn't change it until you'd made your first collection.
+    - Added new branding pack, ToMasewalTlahtol
 - Edit Tab
     - You can now enable automatic paragraph indent on styles.
     - You can now control spacing between paragraphs.
