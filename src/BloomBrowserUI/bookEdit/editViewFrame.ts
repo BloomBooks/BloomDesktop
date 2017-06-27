@@ -34,6 +34,9 @@ export function handleUndo(): void {
 export function switchContentPage(newSource: string) {
         let iframe = (<HTMLIFrameElement>document.getElementById('page'));
         iframe.src = newSource;
+        // I don't fully understand why the load is necessary; it seems that without it
+        // the old page content is still around and applyToolboxStateToPage() works on that
+        // instead of the new page.
         $(iframe).load(() =>
                 getToolboxFrameExports().applyToolboxStateToPage());
 }
@@ -45,6 +48,12 @@ export function showDialog(dialogContents: string, options: any): JQuery {
         var dialogElement = $(dialogContents).appendTo($('body'));
         dialogElement.dialog(options);
         return dialogElement;
+}
+
+// This allows closing a dialog opened in the outer frame window. Apparently a dialog must be closed by
+// code in the window that opened it.
+export function closeDialog(id: string) {
+        $('#' + id).dialog('close');
 }
 
 export function toolboxIsShowing() { return (<HTMLInputElement>$(document).find('#pure-toggle-right').get(0)).checked; }

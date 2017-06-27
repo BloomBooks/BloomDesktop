@@ -5,6 +5,7 @@ import * as jQuery from 'jquery';
 import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import axios = require('axios');
+import { getEditViewFrameExports } from '../bookEdit/js/bloomFrames';
 
 $(window).ready(() => {
     axios.get("/bloom/api/pageTemplates").then(result => {
@@ -175,16 +176,22 @@ class PageChooser {
             axios.post("/bloom/api/changeLayout", { pageId: id, templateBookPath: templateBookPath }).catch(error => {
                 // we seem to get unimportant errors here, possibly because the dialog gets closed before the post completes.
                 console.log(error);
-            });
+            }).then(() => this.closeup());
         } else {
             axios.post("/bloom/api/addPage", { templateBookPath: templateBookPath, pageId: id }).catch(error => {
                 console.log(error);
-            });
+            }).then(() => this.closeup());
         }
+    }
+    closeup(): void {
         // End the disabling of other panes for the modal dialog. The final argument is because in this
         // method the current window is the dialog, and it's the parent window's document that is being
         // monitored for this event.
         fireCSharpEvent("setModalStateEvent", "false", parent.window);
+        // this fails with a message saying the dialog isn't initialized. Apparently a dialog must be closed
+        // by code loaded into the window that opened it.
+        //$(parent.document.getElementById('addPageConfig')).dialog('close');
+        getEditViewFrameExports().closeDialog('addPageConfig');
     }
 
     continueCheckBoxChanged(): void {
