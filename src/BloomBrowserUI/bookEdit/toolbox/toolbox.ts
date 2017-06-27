@@ -161,21 +161,25 @@ export function restoreToolboxSettings() {
     });
 }
 
+export function applyToolboxStateToUpdatedPage() {
+    if (currentTool != null && toolbox.toolboxIsShowing) {
+        doWhenPageReady(() => currentTool.updateMarkup());
+    }
+}
 
-function restoreToolboxSettingsWhenPageReady(settings: string) {
+function doWhenPageReady(action: () => void) {
     var page = getPage();
     if (!page || page.length === 0) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
         // we need to try again later.
-        setTimeout(e => restoreToolboxSettingsWhenPageReady(settings), 100);
+        setTimeout(e => doWhenPageReady(action), 100);
         return;
     }
-    // Once we have a valid page, we can proceed to the next stage.
-    restoreToolboxSettingsWhenCkEditorReady(settings);
+    doWhenCkEditorReady(action);
 }
 
-function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
+function doWhenCkEditorReady(action: () => void) {
     if ((<any>getPageFrame().contentWindow).CKEDITOR) {
         var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR.instances;
         // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
@@ -189,26 +193,33 @@ function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
             if (instance == null) {
                 if (i === 0) {
                     // no instance at all...if one is later created, get us invoked.
-                    (<any>this.getPageFrame().contentWindow).CKEDITOR.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+                    (<any>this.getPageFrame().contentWindow).CKEDITOR.on('instanceReady', e => doWhenCkEditorReady(action));
                     return;
                 }
                 break; // if we get here all instances are ready
             }
             if (!instance.instanceReady) {
-                instance.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+                instance.on('instanceReady', e => doWhenCkEditorReady(action));
                 return;
             }
         }
     }
-    // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
-    var opts = settings;
-    var currentPanel = opts['current'] || '';
+    // OK, CKEditor is done (or page doesn't use it), we can finally do the action.
+    action();
+}
 
-    // Before we set stage/level, as it initializes them to 1.
-    setCurrentPanel(currentPanel);
+function restoreToolboxSettingsWhenPageReady(settings: string) {
+    doWhenPageReady(() => {
+        // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
+        var opts = settings;
+        var currentPanel = opts['current'] || '';
 
-    // Note: the bulk of restoring the settings (everything but which if any panel is active)
-    // is done when a tool becomes current.
+        // Before we set stage/level, as it initializes them to 1.
+        setCurrentPanel(currentPanel);
+
+        // Note: the bulk of restoring the settings (everything but which if any panel is active)
+        // is done when a tool becomes current.
+    });
 }
 
 // Remove any markup the toolbox is inserting (called before saving page)

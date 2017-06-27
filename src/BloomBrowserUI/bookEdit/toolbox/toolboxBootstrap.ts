@@ -1,6 +1,6 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import * as $ from 'jquery';
-import { getTheOneToolbox, restoreToolboxSettings, showOrHidePanel_click, removeToolboxMarkup } from './toolbox';
+import { getTheOneToolbox, restoreToolboxSettings, applyToolboxStateToUpdatedPage, showOrHidePanel_click, removeToolboxMarkup } from './toolbox';
 import { getTheOneReaderToolsModel } from './readers/readerToolsModel'
 import TalkingBookModel from './talkingBook/talkingBook';
 import DecodableReaderToolboxPanel from './readers/decodableReader/decodableReaderToolboxPanel';
@@ -26,6 +26,10 @@ export function canUndo(): boolean {
 
 export function undo() {
     getTheOneReaderToolsModel().undo();
+}
+
+export function applyToolboxStateToPage() {
+    applyToolboxStateToUpdatedPage();
 }
 
 

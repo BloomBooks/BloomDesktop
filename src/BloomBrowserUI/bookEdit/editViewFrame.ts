@@ -32,7 +32,10 @@ export function handleUndo(): void {
 }
 
 export function switchContentPage(newSource: string) {
-        (<HTMLIFrameElement>document.getElementById('page')).src = newSource;
+        let iframe = (<HTMLIFrameElement>document.getElementById('page'));
+        iframe.src = newSource;
+        $(iframe).load(() =>
+                getToolboxFrameExports().applyToolboxStateToPage());
 }
 
 // This function allows code in the toolbox (or other) frame to create a dialog with dynamic content in the root frame
