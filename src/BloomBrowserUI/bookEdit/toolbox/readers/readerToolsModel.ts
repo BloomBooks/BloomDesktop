@@ -8,19 +8,19 @@
 /// <reference path="readerTools.ts" />
 /// <reference path="../toolbox.ts" />
 /// <reference path="./libSynphony/synphony_lib.d.ts" />
-import {DirectoryWatcher} from "./directoryWatcher";
-import {resizeWordList} from "./readerTools";
+import { DirectoryWatcher } from "./directoryWatcher";
+import { resizeWordList } from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
-import {ToolBox} from "../toolbox";
+import { ToolBox } from "../toolbox";
 import "./libSynphony/jquery.text-markup.ts";
 import './jquery.div-columns.ts';
-import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
+import { ReaderStage, ReaderLevel, ReaderSettings } from './ReaderSettings';
 import * as _ from 'underscore';
-import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
+import { theOneLanguageDataInstance, theOneLibSynphony } from './libSynphony/synphony_lib';
 import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
-import {DataWord, TextFragment} from './libSynphony/bloomSynphonyExtensions';
+import { DataWord, TextFragment } from './libSynphony/bloomSynphonyExtensions';
 import axios = require('axios');
-import {EditableDivUtils} from '../../js/editableDivUtils';
+import { EditableDivUtils } from '../../js/editableDivUtils';
 
 var SortType = {
     alphabetic: "alphabetic",
@@ -783,23 +783,23 @@ export class ReaderToolsModel {
         return levels[this.levelNumber - 1].getMaxWordsPerPage();
     }
 
-  // Though I'm not using this now, it was hard-won, and instructive. So I'm leaving it here
-  // as an example for now in case we need to do this transformResponse thing.
-  //   getTextOfWholeBook(): void {
-  //       //review: on the server, this is actually a json string
-  //     axios.get<string>('/bloom/api/readers/textOfContentPages',
-  //     {
-  //       //when there are no content pages in the book, the server returns, properly, "{}"
-  //       //However the default transformResponse of axios eagerly does a JSON.Parse on everything,
-  //       //even if we say we only want text/plain and the server says it gave text/plain.  Sheesh.
-  //       //So we specify our own identity transformResponse
-  //         transformResponse:  (data: string) => <string>data }
-  //     ).then(result => {
-  //       //The return looks like {'12547c' : 'hello there', '898af87' : 'words of this page', etc.}
-  //       this.pageIDToText = JSON.parse(result.data);
-  //       this.doMarkup();
-  //     });
-  //   }
+    // Though I'm not using this now, it was hard-won, and instructive. So I'm leaving it here
+    // as an example for now in case we need to do this transformResponse thing.
+    //   getTextOfWholeBook(): void {
+    //       //review: on the server, this is actually a json string
+    //     axios.get<string>('/bloom/api/readers/textOfContentPages',
+    //     {
+    //       //when there are no content pages in the book, the server returns, properly, "{}"
+    //       //However the default transformResponse of axios eagerly does a JSON.Parse on everything,
+    //       //even if we say we only want text/plain and the server says it gave text/plain.  Sheesh.
+    //       //So we specify our own identity transformResponse
+    //         transformResponse:  (data: string) => <string>data }
+    //     ).then(result => {
+    //       //The return looks like {'12547c' : 'hello there', '898af87' : 'words of this page', etc.}
+    //       this.pageIDToText = JSON.parse(result.data);
+    //       this.doMarkup();
+    //     });
+    //   }
 
     getTextOfWholeBook(): void {
         axios.get<any[]>('/bloom/api/readers/io/textOfContentPages').then(result => {
@@ -887,27 +887,27 @@ export class ReaderToolsModel {
         return maxWords;
     }
 
-  averageWordsInSentence(pageStrings: string[]): number {
-    var sentenceCount = 0;
-    var wordCount = 0;
-    for (var i = 0; i < pageStrings.length; i++) {
-      var page = pageStrings[i];
-      var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
+    averageWordsInSentence(pageStrings: string[]): number {
+        var sentenceCount = 0;
+        var wordCount = 0;
+        for (var i = 0; i < pageStrings.length; i++) {
+            var page = pageStrings[i];
+            var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
 
-      // remove inter-sentence space
-      fragments = fragments.filter(function (frag) {
-        return frag.isSentence;
-      });
+            // remove inter-sentence space
+            fragments = fragments.filter(function (frag) {
+                return frag.isSentence;
+            });
 
-      for (var j = 0; j < fragments.length; j++) {
-        wordCount += fragments[j].words.length;
-        sentenceCount++;
-      }
-    }
-    if (sentenceCount == 0) {
-      return 0;
-    }
-    return Math.round(wordCount / sentenceCount);
+            for (var j = 0; j < fragments.length; j++) {
+                wordCount += fragments[j].words.length;
+                sentenceCount++;
+            }
+        }
+        if (sentenceCount == 0) {
+            return 0;
+        }
+        return Math.round(wordCount / sentenceCount);
         //return Math.round(10 * wordCount / sentenceCount) / 10; // for one decimal place
     }
 
@@ -934,9 +934,9 @@ export class ReaderToolsModel {
         this.synphony = val;
     }
 
-  //   getSynphony(): ReadersSynphonyWrapper {
-  //     return this.synphony;
-  //   }
+    //   getSynphony(): ReadersSynphonyWrapper {
+    //     return this.synphony;
+    //   }
 
     /**
      * This group of functions uses jquery (if loaded) to update the real model.
@@ -960,7 +960,7 @@ export class ReaderToolsModel {
      */
     addWordsFromFile(fileContents: string): void {
 
-    //reviewslog: at the moment, thes first two clauses just do the same things
+        //reviewslog: at the moment, thes first two clauses just do the same things
 
         // is this a Synphony data file?
         if (fileContents.substr(0, 12) === '{"LangName":' ||
@@ -1118,8 +1118,8 @@ export class ReaderToolsModel {
     }
 
     getToolboxWindow(): Window {
-            // ReaderToolsModel is only loaded into the toolbox, so the toolbox window is simply the current window.
-            //return window;
+        // ReaderToolsModel is only loaded into the toolbox, so the toolbox window is simply the current window.
+        //return window;
         return (<HTMLIFrameElement>document.getElementById('toolbox')).contentWindow;
     }
 
