@@ -643,6 +643,11 @@ namespace Bloom.Edit
 			return _currentlyDisplayedBook == _bookForToolboxContent;
 		}
 
+		public void ClearBookForToolboxContent()
+		{
+			_bookForToolboxContent = null;
+		}
+
 		public void SetupServerWithCurrentBookToolboxContents()
 		{
 			_server.ToolboxContent = ToolboxView.MakeToolboxContent(_currentlyDisplayedBook);
