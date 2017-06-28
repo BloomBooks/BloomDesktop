@@ -4,10 +4,23 @@
 - Remove Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
 - Allow user to choose what front/back matter fields to show, and in what languages
 
-## 4.0 (preliminary plan)
-- Publish Book to Android Bloom Reader.
-- Compress PDFs created by Bloom and use CMYK coloring to satisfy some printshops.
-- Add a new Zoom control in Edit Tab.
+## 4.0 (alpha)
+- Collection Tab
+    - When creating a new collection, Bloom now chooses the *primary* country of the language as a default.
+    - When choosing a language, Bloom no longer displays "alternative names* of languages, as some may be offensive.
+    - Added a custom Front/Back matter choice for SIL PNG
+    - Added a custom branding pack choice for ToMasewalTlahtol of Mexico.
+- Edit Tab
+    - We have sped up the time it takes to change pages.
+    - You can now add moveable text blocks on top of images. Use this for comic books or kids’ books that fill the page with an image and then put text on top of it. (not landed in alpha yet).
+    - We've added new zoom control in the upper left. We've removed CTRL-Mouse wheel zooming (sorry) because it appears that some people were doing it accidentally and then getting very confused.
+    - We removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
+- Publish Tab
+    - PDFs are now automatically compressed, so they are often a small fraction of their previous size
+    - When you save a PDF, you can now choose CMYK coloring to satisfy some print shops.
+    - Publish Book to Android Bloom Reader (planned for 4.0, but not in alpha yet).
+- Misc
+    - When Bloom is first run after your computer starts, there was a delay caused by .net. This could cause people to think Bloom wasn't running, so they would try and run it again. Bloom will now show a simple splash screen instantly to indicate that it is coming. (planned for 4.0, but not in alpha yet).
 
 ## 3.9 (beta)
 - Custom Templates

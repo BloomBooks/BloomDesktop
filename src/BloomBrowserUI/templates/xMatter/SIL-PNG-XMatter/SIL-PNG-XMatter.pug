@@ -1,0 +1,36 @@
+
+extends ../Traditional-XMatter/Traditional-XMatter.pug
+
+block originalContributionsLabel
+	//- by providing a lang attribute, we prevent Bloom from trying to find a translation, and that has the side effect of preserving the line break tags
+	label.bubble(lang='en')
+		| Written by Author(s) (if original work),
+		br
+		| Translated by Name(s) (if derivative work),
+		br
+		| Compiled by Name(s) (for anthology),
+		br
+		| Illustrated by Name(s) (if a picture story),
+		br
+		| in {lang}
+
+block versionAcknowledgmentsLabel
+	//- by providing a lang attribute, we prevent Bloom from trying to find a translation, and that has the side effect of preserving the line break tags
+	label.bubble(lang='en' data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+		| - Edition (Trial, 1st, 2nd, etc.)
+		br
+		| - Publication Date (month/year)
+		br
+		| - Number of copies
+		br
+		| - Funder (if applicable)
+		br
+		| - SIL PNG Sharing Library catalogue number (if applicable)
+		br
+		| - Illustrated by / Photos by (if not on title page)
+		br
+		| - Edited by (if applicable)
+		br
+		| - Compiled by (if applicable)
+		br
+		| - Name and location of printer
