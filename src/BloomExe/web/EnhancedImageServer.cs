@@ -119,17 +119,25 @@ namespace Bloom.Api
 		/// A marker is inserted into the generated urls if the input HtmlDom wants to use original images.
 		/// </summary>
 		/// <param name="dom"></param>
-		/// <param name="escapeUrlAsNeededForSrcAttribute">If this is true, the url will be inserted by JavaScript into
+		/// <param name="isCurrentPageContent">If this is true, the url will be inserted by JavaScript into
 		/// a src attr for an IFrame. We need to account for this because un-escaped quotation marks in the
-		/// URL can cause errors in JavaScript strings.</param>
+		/// URL can cause errors in JavaScript strings. Also, we want to use the same name each time
+		/// for current page content, so Open Page in Browser works even after changing pages.</param>
 		/// <returns></returns>
-		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool escapeUrlAsNeededForSrcAttribute = false, bool setAsCurrentPageForDebugging = false)
+		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false)
 		{
-			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".html");
+			var simulatedPageFileName = Path.ChangeExtension(isCurrentPageContent ? "currentPage" : Guid.NewGuid().ToString(), ".html");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
 			if (dom.BaseForRelativePaths != null)
 			{
 				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
+			}
+			if (File.Exists(pathToSimulatedPageFile))
+			{
+				// Just in case someone perversely calls a book "currentPage" we will use another name.
+				// (We want one that does NOT conflict with anything really in the folder.)
+				// We only allow one HTML file per folder so we shouldn't need multiple attempts.
+				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, "X" + simulatedPageFileName).Replace('\\', '/');
 			}
 			// FromLocalHost is smart about doing nothing if it is not a localhost url. In case it is, we
 			// want the OriginalImageMarker (if any) after the localhost stuff.
@@ -138,7 +146,7 @@ namespace Bloom.Api
 				pathToSimulatedPageFile = OriginalImageMarker + "/" + pathToSimulatedPageFile;
 			var url = pathToSimulatedPageFile.ToLocalhost();
 			var key = pathToSimulatedPageFile.Replace('\\', '/');
-			if (escapeUrlAsNeededForSrcAttribute)
+			if (isCurrentPageContent)
 			{
 				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript.
 				url = EscapeUrlQuotes(url);
