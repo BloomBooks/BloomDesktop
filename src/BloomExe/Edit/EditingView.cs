@@ -354,6 +354,7 @@ namespace Bloom.Edit
 				RemoveMessageEventListener("setModalStateEvent");
 				Application.Idle -= new EventHandler(VisibleNowAddSlowContents); //make sure
 				_browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
+				_model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
 			}
 		}
 
