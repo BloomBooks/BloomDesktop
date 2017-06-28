@@ -158,6 +158,10 @@ namespace Bloom
 			GeckoPreferences.User["network.http.pipelining.maxrequests"] = 200;
 			GeckoPreferences.User["network.http.pipelining.max-optimistic-requests"] = 200;
 
+			// Graphite support was turned off by default in Gecko45. Back on in 49, but we don't have that yet.
+			// We always want it, so may as well keep this permanently.
+			GeckoPreferences.User["gfx.font_rendering.graphite.enabled"] = true;
+
 			// This suppresses the normal zoom-whole-window behavior that Gecko normally does when using the mouse while
 			// while holding crtl. Code in bloomEditing.js provides a more controlled zoom of just the body.
 			GeckoPreferences.User["mousewheel.with_control.action"] = 0;
