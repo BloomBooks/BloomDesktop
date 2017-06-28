@@ -10,6 +10,7 @@ import * as $ from 'jquery';
 import '../../modified_libraries/gridly/jquery.gridly.js';
 import { SetImageElementUrl } from '../js/bloomImages';
 
+const timerName = "thumbnailInterval";
 var thumbnailTimerInterval = 200;
 const kSocketName = "webSocket";
 
@@ -27,7 +28,7 @@ $(window).ready(function () {
     });
 
     // start the thumbnail timer
-    var timerSetting = document.body.dataset['thumbnailInterval'];
+    var timerSetting = document.body.dataset[timerName];
     if (timerSetting)
         thumbnailTimerInterval = parseInt(timerSetting);//reviewslog: was timerSetting.value, but timerSetting is a string)
 
@@ -45,27 +46,33 @@ $(window).ready(function () {
     //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
     window[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
 
-    theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...").done(savingNotification =>
+    let localizedNotification = "";
+
+    let listenerFunction = event => {
+        var e = JSON.parse(event.data);
+        if (e.id === "saving") {
+            toastr.info(localizedNotification, "", {
+                positionClass: "toast-top-left",
+                preventDuplicates: true,
+                showDuration: 300,
+                hideDuration: 300,
+                timeOut: 1000,
+                extendedTimeOut: 1000,
+                showEasing: "swing",
+                showMethod: "fadeIn",
+                hideEasing: "linear",
+                hideMethod: "fadeOut",
+                messageClass: "toast-for-saved-message",
+                iconClass: ""
+            });
+        }
+    };
+
+    theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...").done(savingNotification => {
+        localizedNotification = savingNotification;
         // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-        (<WebSocket>window[kSocketName]).addEventListener("message", event => {
-            var e = JSON.parse(event.data);
-            if (e.id === "saving") {
-                toastr.info(savingNotification, "", {
-                    positionClass: "toast-top-left",
-                    preventDuplicates: true,
-                    showDuration: 300,
-                    hideDuration: 300,
-                    timeOut: 1000,
-                    extendedTimeOut: 1000,
-                    showEasing: "swing",
-                    showMethod: "fadeIn",
-                    hideEasing: "linear",
-                    hideMethod: "fadeOut",
-                    messageClass: "toast-for-saved-message",
-                    iconClass: ""
-                });
-            }
-        }));
+        (<WebSocket>window[kSocketName]).addEventListener("message", listenerFunction);
+    });
 });
 
 export function stopListeningForSave() {

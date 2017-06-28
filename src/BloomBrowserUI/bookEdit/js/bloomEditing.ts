@@ -797,6 +797,7 @@ export var pageSelectionChanging = function () {
     marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
 };
 
+// For usage, see editViewFrame.switchContentPage()
 export var pageUnloading = function () {
     theOneTextOverPictureManager.removeTextOverPictureListener();
 };
