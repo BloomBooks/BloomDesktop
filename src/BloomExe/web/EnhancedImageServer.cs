@@ -744,6 +744,15 @@ namespace Bloom.Api
 			{
 				if (_sampleTextsWatcher == null)
 				{
+					if (string.IsNullOrEmpty(CurrentCollectionSettings?.SettingsFilePath))
+					{
+						// We've had cases (BL-4744) where this is apparently called before CurrentCollectionSettings is
+						// established. I'm not sure how this can happen but if we haven't even established a current collection
+						// yet I think it's pretty safe to say its sample texts haven't changed since we last read them.
+						info.ContentType = "text/plain";
+						info.WriteCompleteOutput("no");
+						return true;
+					}
 					var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
 					if (!Directory.Exists(path))
 						Directory.CreateDirectory(path);
