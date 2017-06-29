@@ -33,6 +33,7 @@ override_dh_auto_build:
 	    tar xf node-v6.10.1-linux-x86.tar.xz && \
 	    export PATH="`pwd`/node-v6.10.1-linux-x86/bin:$$PATH"; \
 	fi && \
+	export HOME=/tmp && \
 	. ./environ && \
 		xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$(FULL_BUILD_NUMBER) build/Bloom.proj && \
 		xbuild /p:Configuration=$(BUILD) "Bloom.sln"
