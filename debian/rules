@@ -23,6 +23,7 @@ override_dh_auto_configure:
 
 override_dh_auto_build:
 	build/getDependencies-Linux.sh
+	export HOME=/tmp && \
 	. ./environ && \
 		xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$(FULL_BUILD_NUMBER) build/Bloom.proj && \
 		xbuild /p:Configuration=$(BUILD) "Bloom.sln"
