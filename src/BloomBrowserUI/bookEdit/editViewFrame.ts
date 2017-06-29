@@ -14,40 +14,41 @@ export { showAddPageDialog };
 
 //Called by c# using FrameExports.handleUndo()
 export function handleUndo(): void {
-        // First see if origami is active and knows about something we can undo.
-        var contentWindow = getPageFrameExports();
-        if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
-                (<any>contentWindow).origamiUndo();
-        }
-        // Undoing changes made by commands and dialogs in the toolbox can't be undone using
-        // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
-        var toolboxWindow = getToolboxFrameExports();
-        if (toolboxWindow && (<any>toolboxWindow).canUndo()) {
-                (<any>toolboxWindow).undo();
-        }
-        else if (contentWindow && contentWindow.ckeditorCanUndo()) {
-                contentWindow.ckeditorUndo();
-        }
-        // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
+    // First see if origami is active and knows about something we can undo.
+    var contentWindow = getPageFrameExports();
+    if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
+        (<any>contentWindow).origamiUndo();
+    }
+    // Undoing changes made by commands and dialogs in the toolbox can't be undone using
+    // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
+    var toolboxWindow = getToolboxFrameExports();
+    if (toolboxWindow && (<any>toolboxWindow).canUndo()) {
+        (<any>toolboxWindow).undo();
+    }
+    else if (contentWindow && contentWindow.ckeditorCanUndo()) {
+        contentWindow.ckeditorUndo();
+    }
+    // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
 }
 
 export function switchContentPage(newSource: string) {
-        let iframe = (<HTMLIFrameElement>document.getElementById('page'));
-        iframe.src = newSource;
-        // I don't fully understand why the load is necessary; it seems that without it
-        // the old page content is still around and applyToolboxStateToPage() works on that
-        // instead of the new page.
-        $(iframe).load(() =>
-                getToolboxFrameExports().applyToolboxStateToPage());
+    this.getPageFrameExports().pageUnloading();
+    let iframe = (<HTMLIFrameElement>document.getElementById('page'));
+    iframe.src = newSource;
+    // I don't fully understand why the load is necessary; it seems that without it
+    // the old page content is still around and applyToolboxStateToPage() works on that
+    // instead of the new page.
+    $(iframe).load(() =>
+        getToolboxFrameExports().applyToolboxStateToPage());
 }
 
 // This function allows code in the toolbox (or other) frame to create a dialog with dynamic content in the root frame
 // (so that it can be dragged anywhere in the gecko window). The dialog() function behaves strangely (e.g., draggable doesn't work)
 // if the jquery wrapper for the element is created in a different frame than the parent of the dialog element.
 export function showDialog(dialogContents: string, options: any): JQuery {
-        var dialogElement = $(dialogContents).appendTo($('body'));
-        dialogElement.dialog(options);
-        return dialogElement;
+    var dialogElement = $(dialogContents).appendTo($('body'));
+    dialogElement.dialog(options);
+    return dialogElement;
 }
 
 // This allows closing a dialog opened in the outer frame window. Apparently a dialog must be closed by
@@ -62,30 +63,30 @@ export function toolboxIsShowing() { return (<HTMLInputElement>$(document).find(
 // (The value passed to the task function will be the value from getToolboxFrameExports(). Unfortunately we
 // haven't yet managed to declare a type for that, so I can't easily specify it here.)
 export function doWhenToolboxLoaded(task: (toolboxFrameExports: any) => any) {
-        let toolboxWindow = getToolboxFrameExports();
-        if (toolboxWindow) {
-                task(toolboxWindow);
-        }
-        else {
-                setTimeout(() => {
-                        doWhenToolboxLoaded(task);
-                }, 10);
-        }
+    let toolboxWindow = getToolboxFrameExports();
+    if (toolboxWindow) {
+        task(toolboxWindow);
+    }
+    else {
+        setTimeout(() => {
+            doWhenToolboxLoaded(task);
+        }, 10);
+    }
 }
 
 //Called by c# using FrameExports.canUndo()
 export function canUndo(): string {
-        // See comments on handleUndo()
-        var contentWindow = getPageFrameExports();
-        if (contentWindow && (<any>contentWindow).origamiCanUndo()) { return 'yes'; }
-        var toolboxWindow = getToolboxFrameExports();
-        if (toolboxWindow && (<any>toolboxWindow).canUndo()) {
-                return 'yes';
-        }
-        if (contentWindow && contentWindow.ckeditorCanUndo()) {
-                return 'yes';
-        }
-        return "fail"; //go ask the browser
+    // See comments on handleUndo()
+    var contentWindow = getPageFrameExports();
+    if (contentWindow && (<any>contentWindow).origamiCanUndo()) { return 'yes'; }
+    var toolboxWindow = getToolboxFrameExports();
+    if (toolboxWindow && (<any>toolboxWindow).canUndo()) {
+        return 'yes';
+    }
+    if (contentWindow && contentWindow.ckeditorCanUndo()) {
+        return 'yes';
+    }
+    return "fail"; //go ask the browser
 }
 
 //noinspection JSUnusedGlobalSymbols

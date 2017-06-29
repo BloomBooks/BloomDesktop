@@ -57,6 +57,7 @@ enum Status {
     Active // Button now active (Play while playing; Record while held down)
 };
 
+const kSocketName = "webSocket";
 
 export default class AudioRecording {
     private recording: boolean;
@@ -119,11 +120,12 @@ export default class AudioRecording {
 
         this.changeStateAndSetExpected('record');
 
-        this.getWebSocket().onmessage = event => {
+        // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
+        this.getWebSocket().addEventListener("message", event => {
             var e = JSON.parse(event.data);
             if (e.id == "peakAudioLevel")
                 this.setstaticPeakLevel(e.payload);
-        }
+        });
     }
 
     public removeRecordingSetup() {
@@ -131,16 +133,17 @@ export default class AudioRecording {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
         page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
+        this.getWebSocket().removeEventListener("message");
     }
 
     private getWebSocket(): WebSocket {
-        if (typeof window.top["webSocket"] == "undefined") {
+        if (typeof window.top[kSocketName] == "undefined") {
             //currently we use a different port for this websocket, and it's the main port + 1
-            const websocketPort = parseInt(window.location.port) + 1;
+            let websocketPort = parseInt(window.location.port, 10) + 1;
             //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-            window.top["webSocket"] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
+            window.top[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
         }
-        return window.top["webSocket"];
+        return window.top[kSocketName];
     }
 
     // We only do recording in editable divs in the main content language.

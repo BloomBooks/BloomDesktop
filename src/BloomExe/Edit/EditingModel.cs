@@ -770,7 +770,7 @@ namespace Bloom.Edit
 		internal void AddStandardEventListeners()
 		{
 			AddMessageEventListener("saveToolboxSettingsEvent", SaveToolboxSettings);
-			AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
+			AddMessageEventListener("saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt);
 			AddMessageEventListener("setTopic", SetTopic);
 			AddMessageEventListener("finishSavingPage", FinishSavingPage);
 		}

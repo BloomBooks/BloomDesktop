@@ -5,7 +5,7 @@ import * as $ from "jquery";
 import * as JQuery from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import { cleanupImages, SetOverlayForImagesWithoutMetadata, SetupResizableElement, SetupImagesInContainer } from "./bloomImages";
-import { setupOrigami, cleanupOrigami } from "./origami"
+import { setupOrigami, cleanupOrigami } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -13,23 +13,22 @@ import BloomField from "../bloomField/BloomField";
 import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
+import { initializeTextOverPictureManager, theOneTextOverPictureManager } from "./textOverPicture";
+export { theOneTextOverPictureManager } from "./textOverPicture";
 import TopicChooser from "../TopicChooser/TopicChooser";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
-import "jquery.qtip.js"
-import "jquery.qtipSecondary.js"
-import "long-press/jquery.longpress.js"
+import "jquery.qtip.js";
+import "jquery.qtipSecondary.js";
+import "long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getEditViewFrameExports } from "./bloomFrames";
-import { EditableDivUtils } from './editableDivUtils';
-
 
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
 import axios = require("axios");
-
 
 /**
  * Fires an event for C# to handle
@@ -49,6 +48,7 @@ export function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
     }
     return jqueryNode.parent().height() - jqueryNode.height();
 }
+
 function isBrOrWhitespace(node) {
     return node && ((node.nodeType === 1 && node.nodeName.toLowerCase() === "br") ||
         (node.nodeType === 3 && /^\s*$/.test(node.nodeValue)));
@@ -233,9 +233,12 @@ function AddLanguageTags(container) {
             return;
         }
 
-        var whatToSay = theOneLocalizationManager.getText(key);
-        if (!whatToSay) {
-            whatToSay = key; //just show the code
+        var whatToSay = "";
+        if (key !== undefined) {
+            whatToSay = theOneLocalizationManager.getText(key);
+            if (!whatToSay) {
+                whatToSay = key; //just show the code
+            }
         }
 
         // Put whatToSay into data attribute for pickup by the css
@@ -277,6 +280,7 @@ function IsInTranslationMode() {
 function SetupElements(container) {
 
     SetupImagesInContainer(container);
+    initializeTextOverPictureManager();
 
     //add a marginBox if it's missing. We introduced it early in the first beta
     $(container).find(".bloom-page").each(function () {
@@ -597,6 +601,11 @@ function SetupElements(container) {
         }
     });
 
+    // make any added text-over-picture bubbles draggable and clickable
+    if (theOneTextOverPictureManager) {
+        theOneTextOverPictureManager.makeTextOverPictureBoxDraggableClickableAndResizable();
+    }
+
     // focus on the first editable field
     // HACK for BL-1139: except for some reason when the Reader tools are active this causes
     // quick typing on a newly loaded page to get the cursor messed up. So for the Reader tools, the
@@ -651,6 +660,8 @@ interface String {
 
 export function setZoom(newScale: string) {
     $("div#page-scaling-container").attr("style", "transform: scale(" + newScale + "); transform-origin: top left;");
+    // Save changes, so TextOverPicture draggables work correctly.
+    fireCSharpEditEvent("saveChangesAndRethinkPageEvent", "");
 }
 
 // ---------------------------------------------------------------------------------
@@ -700,67 +711,59 @@ export function bootstrap() {
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
     // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
     // but skip any element with class="bloom-userCannotModifyStyles"
-    $("div.bloom-page")
-        .find(".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true'],.bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']")
-        .each(function () {
+    var complicatedFind = ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true'],";
+    complicatedFind += ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']";
+    $("div.bloom-page").find(complicatedFind).each(function () {
+        if ($(this).hasClass("bloom-userCannotModifyStyles"))
+            return; // equivalent to 'continue'
 
-            if ($(this).hasClass("bloom-userCannotModifyStyles"))
-                return; // equivalent to 'continue'
+        if ($(this).css("cursor") === "not-allowed")
+            return;
 
-            if ($(this).css("cursor") === "not-allowed")
-                return;
+        var ckedit = CKEDITOR.inline(this);
 
-            var ckedit = CKEDITOR.inline(this);
+        // Record the div of the edit box for use later in positioning the format bar.
+        mapCkeditDiv[ckedit.id] = this;
 
-            // Record the div of the edit box for use later in positioning the format bar.
-            mapCkeditDiv[ckedit.id] = this;
+        // show or hide the toolbar when the text selection changes
+        ckedit.on("selectionCheck", function (evt) {
+            var editor = evt["editor"];
+            // Length of selected text is more reliable than comparing
+            // endpoints of the first range.  Mozilla can return multiple
+            // ranges with the first one being empty.
+            var selection = editor.getSelection();
+            var textSelected = selection.getSelectedText();
+            var show = (textSelected && textSelected.length > 0);
+            var bar = $("body").find("." + editor.id);
+            localizeCkeditorTooltips(bar);
+            show ? bar.show() : bar.hide();
 
-            // show or hide the toolbar when the text selection changes
-            ckedit.on("selectionCheck", function (evt) {
-                var editor = evt["editor"];
-                // Length of selected text is more reliable than comparing
-                // endpoints of the first range.  Mozilla can return multiple
-                // ranges with the first one being empty.
-                var selection = editor.getSelection();
-                var textSelected = selection.getSelectedText();
-                var show = (textSelected && textSelected.length > 0);
-                var bar = $("body").find("." + editor.id);
-                localizeCkeditorTooltips(bar);
-                show ? bar.show() : bar.hide();
-
-                // Move the format bar on the screen if needed.
-                // (Note that offsets are not defined if it's not visible.)
-                if (show) {
-                    var barTop = bar.offset().top;
-                    var div = mapCkeditDiv[editor.id];
-                    var rect = div.getBoundingClientRect();
-                    var parent = bar.scrollParent();
-                    var scrollTop = (parent) ? parent.scrollTop() : 0;
-                    var boxTop = rect.top + scrollTop;
-                    if (boxTop - barTop < 5) {
-                        var barLeft = bar.offset().left;
-                        var barHeight = bar.height();
-                        bar.offset({ top: boxTop - barHeight, left: barLeft });
-                    }
+            // Move the format bar on the screen if needed.
+            // (Note that offsets are not defined if it's not visible.)
+            if (show) {
+                var barTop = bar.offset().top;
+                var div = mapCkeditDiv[editor.id];
+                var rect = div.getBoundingClientRect();
+                var parent = bar.scrollParent();
+                var scrollTop = (parent) ? parent.scrollTop() : 0;
+                var boxTop = rect.top + scrollTop;
+                if (boxTop - barTop < 5) {
+                    var barLeft = bar.offset().left;
+                    var barHeight = bar.height();
+                    bar.offset({ top: boxTop - barHeight, left: barLeft });
                 }
-            });
-
-            // hide the toolbar when ckeditor starts
-            ckedit.on("instanceReady", function (evt) {
-                var editor = evt["editor"];
-                var bar = $("body").find("." + editor.id);
-                bar.hide();
-            });
-
-            BloomField.WireToCKEditor(this, ckedit);
+            }
         });
 
-    //this is some sample code for working on CommandAvailabilityPublisher websocket messages
-    //   var client = new WebSocket("ws://127.0.0.1:8189");
-    //   client.onmessage = function(event) {
-    //        var commandStatus = JSON.parse(event.data);
-    //        alert("DeleteCurrentPage Command "+ (commandStatus.deleteCurrentPage.enabled == true ? "Enabled" : "Disabled")) ;
-    //    }
+        // hide the toolbar when ckeditor starts
+        ckedit.on("instanceReady", function (evt) {
+            var editor = evt["editor"];
+            var bar = $("body").find("." + editor.id);
+            bar.hide();
+        });
+
+        BloomField.WireToCKEditor(this, ckedit);
+    });
 }
 
 function localizeCkeditorTooltips(bar: JQuery) {
@@ -785,12 +788,17 @@ function localizeCkeditorTooltips(bar: JQuery) {
 }
 
 // This is invoked from C# when we are about to change pages. It is mainly for origami,
-// but preparePageForEditingAfterOrigamiChangesEvent currently has the (very important)
+// but saveChangesAndRethinkPageEvent currently has the (very important)
 // side effect of saving the changes to the current page.
+// [GJM: But this doesn't call saveChangesAndRethinkPageEvent! I'm confused.]
 export var pageSelectionChanging = function () {
     var marginBox = $(".marginBox");
     marginBox.removeClass("origami-layout-mode");
     marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
+};
+
+export var pageUnloading = function () {
+    theOneTextOverPictureManager.removeTextOverPictureListener();
 };
 
 // This is invoked from C# when we are about to leave a page (often right after the previous
@@ -832,6 +840,3 @@ export function IsPageXMatter($target: JQuery): boolean {
     return typeof ($target.closest(".bloom-frontMatter")[0]) !== "undefined" ||
         typeof ($target.closest(".bloom-backMatter")[0]) !== "undefined";
 }
-
-
-

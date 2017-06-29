@@ -43,13 +43,14 @@ namespace Bloom.Edit
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
 		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
+		private BloomWebSocketServer _webSocketServer;
 
 		public delegate EditingView Factory(); //autofac uses this
 
-		public EditingView(EditingModel model, PageListView pageListView,
-			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand,
-			DuplicatePageCommand duplicatePageCommand,
-			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
+		public EditingView(EditingModel model, PageListView pageListView, CutCommand cutCommand, CopyCommand copyCommand,
+			PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
+			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent,
+			BloomWebSocketServer webSocketServer)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -59,6 +60,7 @@ namespace Bloom.Edit
 			_undoCommand = undoCommand;
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
+			_webSocketServer = webSocketServer;
 			InitializeComponent();
 			_browser1.Isolator = isolator;
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance; //save it
@@ -107,9 +109,43 @@ namespace Bloom.Edit
 #endif
 		}
 
+		/// <summary>
+		/// Might add a menu item to the Gecko context menu.
+		/// If the current book is LockedDown, we don't add any text over picture options.
+		/// If we are in a "bloom-imageContainer" div the menu item will be to add a text box to the image.
+		/// If we are in a "bloom-textOverPicture" div the menu item will be to delete a text box from the image.
+		/// Otherwise no menu item is added.
+		/// </summary>
 		private void SetupBrowserContextMenu()
 		{
-			// currently nothing to do.
+			// "return false" means we don't want to override other menu items that might be added
+			_browser1.ContextMenuProvider = args =>
+			{
+				// don't allow changes if locked down; I doubt args.TargetNode CAN be anything else, but just being safe.
+				if (_model.CurrentBook.LockedDown || !(args.TargetNode is GeckoHtmlElement))
+					return false;
+
+				var targetProxy = new ElementProxy((GeckoHtmlElement) args.TargetNode);
+				// Since at this point we don't have a way to keep TextOverPicture textboxes that the user adds to xMatter pages
+				// we won't give them the opportunity. If we later add that capability, besides removing this 'if', make sure that
+				// textboxes appear above cover images.
+				if (targetProxy.SelfOrAncestorHasClass("bloom-frontMatter") || targetProxy.SelfOrAncestorHasClass("bloom-backMatter"))
+				{
+					return false;
+				}
+				if (targetProxy.SelfOrAncestorHasClass("bloom-textOverPicture"))
+				{
+					var deleteMessage = LocalizationManager.GetString("EditTab.DeleteTextBoxFromImage", "Delete Text Box From Image");
+					args.ContextMenu.MenuItems.Add(deleteMessage, (sender, e) => deleteTextbox_Click());
+					return false; // we don't expect to need both Add and Delete in the same place
+				}
+				if (targetProxy.SelfOrAncestorHasClass("bloom-imageContainer"))
+				{
+					var addMessage = LocalizationManager.GetString("EditTab.AddTextBoxToImage", "Add Text Box To Image");
+					args.ContextMenu.MenuItems.Add(addMessage, (sender, e) => addTextbox_Click());
+				}
+				return false;
+			};
 		}
 
 		private void HandleControlKeyEvent(object keyData)
@@ -1247,9 +1283,21 @@ namespace Bloom.Edit
 			UpdateEditButtons();
 		}
 
+		private void addTextbox_Click()
+		{
+			var mousePoint = _browser1.ContextMenuLocation; // avoids compiler warning (CS1690) about marshal-by-reference class
+			_webSocketServer.Send("addTextBox", $"{mousePoint.X},{mousePoint.Y}");
+		}
+
 		private void _cutButton_Click(object sender, EventArgs e)
 		{
 			ExecuteCommandSafely(_cutCommand);
+		}
+
+		private void deleteTextbox_Click()
+		{
+			var mousePoint = _browser1.ContextMenuLocation; // avoids compiler warning (CS1690) about marshal-by-reference class
+			_webSocketServer.Send("deleteTextBox", $"{mousePoint.X},{mousePoint.Y}");
 		}
 
 		private void _undoButton_Click(object sender, EventArgs e)
