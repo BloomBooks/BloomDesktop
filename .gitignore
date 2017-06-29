@@ -69,6 +69,7 @@ Copy*.bat
 DistFiles/wkhtmltopdf/
 lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
+.nuget/nuget.exe
 LibChorus.*
 build/Palaso.BuildTasks.dll*
 build/SIL.BuildTasks*.dll*
