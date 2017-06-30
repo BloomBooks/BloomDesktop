@@ -1,5 +1,4 @@
 ﻿///<reference path="../../typings/axios/axios.d.ts"/>
-//ignore//<reference path="../../typings/es6-promise/es6-promise.d.ts"/>
 ///<reference path="./jquery.hasAttr.d.ts" />
 import * as $ from "jquery";
 import * as JQuery from "jquery";
