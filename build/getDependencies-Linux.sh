@@ -112,9 +112,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
 #     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [6] build: GeckofxHtmlToPdf-trusty64-continuous (GeckofxHtmlToPdfTrusty64)
+# [6] build: GeckofxHtmlToPdf-xenial64-continuous (GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous)
 #     project: GeckofxHtmlToPdf
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdfTrusty64
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
@@ -184,9 +184,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSh
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_YouTrackSharp/latest.lastSuccessful/bin/YouTrackSharp.pdb ../lib/dotnet/YouTrackSharp.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp40/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdfTrusty64/latest.lastSuccessful/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/GeckofxHtmlToPdf_GeckofxHtmlToPdfXenial64continuous/latest.lastSuccessful/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.0.0.0.0.nupkg ../lib/dotnet/icu48/icu.net.0.0.0.0.nupkg
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu48/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt281/latest.lastSuccessful/icu.net.dll.config ../lib/dotnet/icu48/icu.net.dll.config
@@ -203,6 +203,8 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt344/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.BuildTasks.dll ../build/SIL.BuildTasks.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/AWSSDK.Core.dll ../lib/dotnet/AWSSDK.Core.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/AWSSDK.S3.dll ../lib/dotnet/AWSSDK.S3.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/Commons.Xml.Relaxng.dll ../lib/dotnet/Commons.Xml.Relaxng.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/Enchant.Net.dll ../lib/dotnet/Enchant.Net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/Enchant.Net.dll.config ../lib/dotnet/Enchant.Net.dll.config
@@ -211,12 +213,13 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_Palaso
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/NDesk.DBus.dll ../lib/dotnet/NDesk.DBus.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/NDesk.DBus.dll.config ../lib/dotnet/NDesk.DBus.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/Newtonsoft.Json.dll ../lib/dotnet/Newtonsoft.Json.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/Palaso.BuildTasks.dll ../lib/dotnet/Palaso.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Archiving.dll ../lib/dotnet/SIL.Archiving.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Archiving.dll.config ../lib/dotnet/SIL.Archiving.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Archiving.dll.mdb ../lib/dotnet/SIL.Archiving.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.BuildTasks.AWS.dll ../lib/dotnet/SIL.BuildTasks.AWS.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.BuildTasks.dll ../lib/dotnet/SIL.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Core.Desktop.dll ../lib/dotnet/SIL.Core.Desktop.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Core.Desktop.dll.mdb ../lib/dotnet/SIL.Core.Desktop.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Core.Tests.dll ../lib/dotnet/SIL.Core.Tests.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Core.Tests.dll.mdb ../lib/dotnet/SIL.Core.Tests.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/Libpalaso_PalasoLinux64masterContinuous/latest.lastSuccessful/SIL.Core.dll ../lib/dotnet/SIL.Core.dll
