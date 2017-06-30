@@ -303,7 +303,8 @@ namespace Bloom.Api
 			}
 			//Firefox debugger, looking for a source map, was prefixing in this unexpected
 			//way.
-			localPath = localPath.Replace("output/browser/", "");
+			if(localPath.EndsWith("map"))
+				localPath = localPath.Replace("output/browser/", "");
 
 			return ProcessContent(info, localPath);
 		}
@@ -688,11 +689,11 @@ namespace Bloom.Api
 			info.ReplyWithFileContent(path);
 		}
 
-		private bool ProcessCssFile(IRequestInfo info, string localPath)
+		private bool ProcessCssFile(IRequestInfo info, string incomingPath)
 		{
 			// BL-2219: "OriginalImages" means we're generating a pdf and want full images,
 			// but it has nothing to do with css files and defeats the following 'if'
-			localPath = localPath.Replace(OriginalImageMarker + "/", "");
+			var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
 			// is this request the full path to a real file?
 			if (RobustFile.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
@@ -725,9 +726,16 @@ namespace Bloom.Api
 			if (string.IsNullOrEmpty(path))
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
-				var lastTry = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
-				if(RobustFile.Exists(lastTry)) path = lastTry;
+				var p = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
+				if(RobustFile.Exists(p)) path = p;
 			}
+			if (string.IsNullOrEmpty(path))
+			{
+				var p = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, incomingPath);
+				if (RobustFile.Exists(p))
+					path = p;
+			}
+
 
 			// return false if the file was not found
 			if (string.IsNullOrEmpty(path)) return false;

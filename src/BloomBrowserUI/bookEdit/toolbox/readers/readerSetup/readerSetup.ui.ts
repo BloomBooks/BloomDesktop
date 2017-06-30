@@ -901,7 +901,7 @@ function wordListChangedCallback() {
     requestWordsForSelectedStage();
 }
 
-import { getToolboxFrameExports } from '../../../js/bloomFrames.ts';
+import { getToolboxFrameExports } from '../../../js/bloomFrames';
 
 $(document).ready(function () {
     attachEventHandlers();
