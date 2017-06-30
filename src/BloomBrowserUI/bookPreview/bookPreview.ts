@@ -1,6 +1,6 @@
 import * as $ from 'jquery';
-import 'jquery.hasAttr.js'; //reviewSlog for CenterVerticallyInParent
-import '../lib/errorHandler';
+import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
+import "errorHandler";
 //import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
 import '../lib/jquery.myimgscale'; //scaleImage
 //import '../lib/jquery.i18n.custom.js';

@@ -30,6 +30,7 @@ namespace Bloom.Publish
 		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
 		private EpubView _epubPreviewControl;
+		private AndroidView _androidControl;
 		private NavigationIsolator _isolator;
 
 		public delegate PublishView Factory();//autofac uses this
@@ -277,6 +278,8 @@ namespace Bloom.Publish
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
 				else if (_epubRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
+				else if (_androidRadio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.Android;
 				else if (_model.PdfGenerationSucceeded)
 					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
 				else
@@ -380,7 +383,11 @@ namespace Bloom.Publish
 			{
 				Controls.Remove(_epubPreviewControl);
 			}
-			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB)
+			if (displayMode != PublishModel.DisplayModes.Android && _androidControl != null && Controls.Contains(_androidControl))
+			{
+				Controls.Remove(_androidControl);
+			}
+			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Android)
 				_pdfViewer.Visible = true;
 			switch (displayMode)
 			{
@@ -460,6 +467,26 @@ namespace Bloom.Publish
 
 						break;
 				}
+				case PublishModel.DisplayModes.Android:
+				{
+					_workingIndicator.Visible = false;
+					_printButton.Enabled = false;
+					_pdfViewer.Visible = false;
+					Cursor = Cursors.WaitCursor;
+					_androidControl = new AndroidView(_isolator);
+					_androidControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
+						_pdfViewer.Width, _pdfViewer.Height);
+					_androidControl.Dock = _pdfViewer.Dock;
+					_androidControl.Anchor = _pdfViewer.Anchor;
+					var saveBackGround = _androidControl.BackColor; // changed to match parent during next statement
+					Controls.Add(_androidControl);
+					_androidControl.BackColor = saveBackGround; // keep own color.
+																// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
+					_androidControl.BringToFront();
+					Cursor = Cursors.Default;
+
+					break;
+				}
 			}
 			UpdateSaveButton();
 		}
@@ -517,6 +544,10 @@ namespace Bloom.Publish
 				else if (_epubRadio.Checked)
 				{
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
+				}
+				else if (_androidRadio.Checked)
+				{
+					_model.DisplayMode = PublishModel.DisplayModes.Android;
 				}
 				else if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
 				{

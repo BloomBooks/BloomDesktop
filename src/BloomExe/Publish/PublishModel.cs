@@ -38,7 +38,8 @@ namespace Bloom.Publish
 			Upload,
 			EPUB,
 			Printing,
-			ResumeAfterPrint
+			ResumeAfterPrint,
+			Android
 		}
 
 		public enum BookletPortions

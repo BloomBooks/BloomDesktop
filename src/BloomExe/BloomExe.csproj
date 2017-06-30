@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -318,6 +318,12 @@
     <Compile Include="ElementProxy.cs" />
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\ElectronicPublishView.cs" />
+    <Compile Include="Publish\AndroidView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\AndroidView.Designer.cs">
+      <DependentUpon>AndroidView.cs</DependentUpon>
+    </Compile>
     <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
@@ -585,6 +591,7 @@
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
     <Compile Include="web\controllers\AddOrChangePageApi.cs" />
+    <Compile Include="web\controllers\PublishToAndroidAPI.cs" />
     <Compile Include="web\controllers\ImageApi.cs" />
     <Compile Include="web\controllers\PageTemplatesApi.cs" />
     <Compile Include="web\controllers\KeyboardingConfigApi.cs" />
@@ -814,6 +821,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\AndroidView.resx">
+      <DependentUpon>AndroidView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\EpubView.resx">
       <DependentUpon>EpubView.cs</DependentUpon>
@@ -1348,6 +1358,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
+    <None Include="Resources\android.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="desktopAndTaskBar.ico" />
