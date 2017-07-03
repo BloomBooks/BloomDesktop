@@ -76,6 +76,19 @@ class PageChooser {
         this._selectedGridItem = newsel;
         $(this._selectedGridItem).addClass("ui-selected");
 
+        // Scroll to show it (useful for original selection). So far this only scrolls DOWN
+        // to make sure we can see the BOTTOM of the clicked item; that's good enough for when
+        // we open the dialog and a far-down item is selected, and marginally helpful when we click
+        // an item partly scrolled off the bottom. There's no way currently to select an item
+        // that's entirely scrolled off the top, and it doesn't seem worth the complication
+        // to force a partly-visible one at the top to become wholly visible.
+        let container = $(".gridItemDisplay");
+        let positionOfTopOfSelected = $(this._selectedGridItem).offset().top + container.scrollTop();
+        let positionOfBottomOfSelected = $(this._selectedGridItem).height() + positionOfTopOfSelected;
+        if (container.height() + container.scrollTop() < positionOfBottomOfSelected) {
+            container.scrollTop(positionOfBottomOfSelected - container.height());
+        }
+
         // Display large preview
         var caption = $('#previewCaption');
         var defaultCaptionText = $(".gridItemCaption", this._selectedGridItem).text();
@@ -218,7 +231,7 @@ class PageChooser {
         if ($(this._templateBookUrls).length > 0) {
             // Remove original stub section
             $(".outerGroupContainer", document).empty();
-            this.loadNextPageGroup(this._templateBookUrls, groupHtml, gridItemHtml, this._defaultPageToSelect);
+            this.loadNextPageGroup(this._templateBookUrls, groupHtml, gridItemHtml, this._defaultPageToSelect, 0);
         }
         $("#addPageButton", document).button().click(() => {
             this.addPageClickHandler();
@@ -253,10 +266,11 @@ class PageChooser {
     // books get added in the order we want (which we couldn't control if we ask for them all
     // at once). Secondly, it ensures we get the most important template pages shown and ready
     // to use as quickly as possible.
-    loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect: string): void {
+    loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect: string, previousPagesCount: number): void {
         var order = queue.shift();
-        if (!order)
+        if (!order) {
             return; // no more to get
+        }
         axios.get("/bloom/" + order.templateBookPath).then(result => {
             var pageData = result.data;
 
@@ -276,7 +290,7 @@ class PageChooser {
                 console.log("Could not find any template pages in " + order.templateBookPath);
                 //don't add a group for books that don't have template pages; just move on.
                 // (This will always be true for a newly created template.)
-                this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect);
+                this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect, previousPagesCount);
                 return; // suppress adding this group.
             }
 
@@ -293,11 +307,10 @@ class PageChooser {
                 pages = pages.not('.bloom-page[id="5dcd48df-e9ab-4a07-afd4-6a24d0398386"]');
             }
             //console.log("loadPageFromGroup("+order.templateBookFolderUrl+")");
-            this.loadPageFromGroup(groupToAdd, pages, gridItemHTML, order.templateBookFolderUrl, defaultPageToSelect);
+            this.loadPageFromGroup(groupToAdd, pages, gridItemHTML, order.templateBookFolderUrl, defaultPageToSelect, previousPagesCount);
+            let pagesCountSoFar = previousPagesCount + $(pages).length;
 
-            this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
-
-            this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect);
+            this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect, pagesCountSoFar);
 
         }).catch(e => {
             //we don't really want to let one bad template keep us from showing others.
@@ -317,12 +330,12 @@ class PageChooser {
                 });
             $(".outerGroupContainer", document).append(groupToAdd);
 
-            this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect)
+            this.loadNextPageGroup(queue, groupHTML, gridItemHTML, defaultPageToSelect, previousPagesCount)
         });
     }
 
 
-    loadPageFromGroup(currentGroup, pageArray, gridItemTemplate, templateBookFolderUrl, defaultPageToSelect: string) {
+    loadPageFromGroup(currentGroup, pageArray, gridItemTemplate, templateBookFolderUrl, defaultPageToSelect: string, previousPagesCount: number) {
         if ($(pageArray).length < 1) {
             console.log("pageArray empty for " + templateBookFolderUrl);
             return 0;
@@ -330,8 +343,7 @@ class PageChooser {
 
         // Remove default template page
         $(".innerGroupContainer", currentGroup).empty();
-
-        var indexToSelect = -1;
+        var gotSelectedPage = false;
         // insert a template page for each page with the correct #id on the url
         $(pageArray).each((index, div) => {
 
@@ -349,8 +361,10 @@ class PageChooser {
             // that different templates could reuse the same guid for custom page. That's a problem probably should be
             // sorted out, but it's out "in the wild" in the Story Primer, so we have to have a fix that doesn't depend
             // on what templates the user has installed.
-            if (currentId === defaultPageToSelect && this._indexOfPageToSelect == 0)
-                this._indexOfPageToSelect = index;
+            if (currentId === defaultPageToSelect && this._indexOfPageToSelect == 0) {
+                this._indexOfPageToSelect = index + previousPagesCount;
+                gotSelectedPage = true;
+            }
 
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
@@ -373,6 +387,9 @@ class PageChooser {
                 this.thumbnailClickHandler(div, evt);
             }); // invisibleThumbCover click
         }); // each
+        if (gotSelectedPage) {
+            this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
+        }
     } // loadPageFromGroup
 
 
