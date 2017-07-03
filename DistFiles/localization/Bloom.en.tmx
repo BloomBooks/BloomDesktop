@@ -3495,6 +3495,11 @@
         <seg>There was a problem uploading your book.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Upload.GiveBack">
+      <tuv xml:lang="en">
+        <seg>It’s easy to “give back”</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Upload.IncompleteTranslation">
       <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
       <tuv xml:lang="en">
