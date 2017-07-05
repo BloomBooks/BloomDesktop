@@ -3,6 +3,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "./progressBox";
 import BloomButton from "./bloomButton";
+import HelpLink from "./helpLink";
+import { H1, H2, LocalizableElement } from "./l10n";
 
 interface ComponentProps { }
 
@@ -16,59 +18,65 @@ class AndroidPublishUI extends React.Component<ComponentProps, ComponentState> {
         this.state = { stateId: "ReadyToConnect" };
         let self = this;
     }
+
+    handleUpdateState(s: string): void {
+        this.setState({ stateId: s });
+    }
+
     render() {
         return (
             <div>
-                {/* TODO make a simple way for these kind of links to do the right thing.
-                    (Which is what? I assume find the the document and open in user's browser? */}
-                <a href="learnAboutDigitalPublishingOptions.html">
+                <H2 l10nkey="l">hello</H2>
+                <H1 l10nkey="foo">abc</H1>
+                <HelpLink l10nkey="publish.android.learnAboutDigitalPublishingOptions"
+                    l10ncomment="" helpId="learnAboutDigitalPublishingOptions">
                     Learn about your digital publishing options.
-                </a>
-                <h1>Step 1: Install Bloom Reader app on the Android device</h1>
-                <a href="howToGetBloomReaderOnDevice.html">
+                </HelpLink>
+                <H1 l10nkey="publish.android.stepInstall">
+                    Step 1: Install Bloom Reader app on the Android device</H1>
+                <HelpLink l10nkey="publish.android.howToGetBloomReaderOnDevice"
+                    helpId="howToGetBloomReaderOnDevice.html">
                     How to get the Bloom Reader app on your device.
-                </a>
+                </HelpLink>
                 <br />
-                <a href="learnAboutBloomReaderApp.html">
+                <HelpLink l10nkey="publish.android.learnAboutBloomReaderApp"
+                    helpId="learnAboutBloomReaderApp.html">
                     Learn more about the Bloom Reader app.
-                </a>
-                <h1>Step 2: Launch the Bloom Reader app on the device</h1>
-                <h1>Step 3: Connect this computer to the device</h1>
+                </HelpLink>
+                <H1 l10nkey="publish.android.stepLaunch">
+                    Step 2: Launch the Bloom Reader app on the device
+                </H1>
+                <H1 l10nkey="publish.android.stepConnect">
+                    Step 3: Connect this computer to the device
+                </H1>
 
-                {/* TODO: factor out these connect buttons to one class.
-                    Perhaps something like
-                    <StateButton clickEndpoint= "/bloom/api/publish/android/connectUsb" enabledWhen= {stateId==='ReadyToConnect'} /> */}
-                <button
-                    disabled={this.state.stateId !== "ReadyToConnect"}
-                    onClick={() => axios.get<string>("/bloom/api/publish/android/connectUsb").then((response) => {
-                        this.setState({ stateId: response.data });
-                    })}
-                >
-                    {/* TODO: Make localizable. Perhaps something like
-                        localize({id:'publish.android.connectWithUSB', comment:'button label' en:'Connect with USB cable'})
-                        Or a react component, like
-                        <String id='publish.android.connectWithUSB' comment='button label'>
-                            Connect with USB cable
-                        </String>
-                    */}
+                <BloomButton l10nkey="publish.android.connectUsb"
+                    l10ncomment="Button that tells Bloom to connect to an device using a USB cable"
+                    enabled={this.state.stateId !== "ReadyToConnect"}
+                    clickEndpoint="publish/android/connectUsb"
+                    onUpdateState={this.handleUpdateState}>
                     Connect with USB cable
-                </button>
+                </BloomButton>
                 <br />
-                <button
-                    disabled={this.state.stateId !== "ReadyToConnect"}
-                    onClick={() => axios.get<string>("/bloom/api/publish/android/connectWifi").then((response) => {
-                        this.setState({ stateId: response.data });
-                    })}
-                >
+                <BloomButton l10nkey="publish.android.connectWifi"
+                    l10ncomment="Button that tells Bloom to connect to an device using a USB cable"
+                    enabled={this.state.stateId !== "ReadyToConnect"}
+                    clickEndpoint="publish/android/connectWifi"
+                    onUpdateState={this.handleUpdateState}>
                     Connect with Wifi
-                </button>
-                <h1>Step 4: Send this book to the device.</h1>
-                <button
-                    {...(this.state.stateId === "ReadyToSend" ? {} : { disabled: true }) }
-                    onClick={() => axios.post("/bloom/api/publish/android/sendBook")}
-                >
+                </BloomButton>
+
+                <H1 l10nkey="publish.android.stepSend">
+                    Step 4: Send this book to the device.
+                </H1>
+                <BloomButton l10nkey="publish.android.sendBook"
+                    l10ncomment="Button that tells Bloom to connect to an device using a USB cable"
+                    enabled={this.state.stateId !== "ReadyToSend"}
+                    clickEndpoint="publish/android/connectWifi"
+                    onUpdateState={this.handleUpdateState}>
                     Send Book
-                </button>
+                    </BloomButton>
+
                 <h3>Progress</h3>
                 state: {this.state.stateId}
 
@@ -76,7 +84,6 @@ class AndroidPublishUI extends React.Component<ComponentProps, ComponentState> {
             </div>
         );
     }
-
 }
 
 ReactDOM.render(
