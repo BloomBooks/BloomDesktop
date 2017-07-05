@@ -37,6 +37,7 @@
     <Exec Command="mkdir -p $(OutputPath)" />
     <Exec Command="glib-compile-resources --target=resources.c --generate-source BloomLauncher.gresource.xml" />
     <Exec Command="g++ -Wall -g -o $(OutputPath)\$(OutputName) @(Compile) resources.c @(CompileFlags)" />
+    <Exec Command="mkdir -p ../../output/$(Configuration)" />
     <Exec Command="cp $(OutputPath)\$(OutputName) ../../output/$(Configuration)" />
   </Target>
   <Target Name="Clean" Condition="'$(OS)'!='Windows_NT'">
