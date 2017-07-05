@@ -1,15 +1,18 @@
 import axios = require("axios");
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { ILocalizationProps, LocalizableElement } from "./l10n";
 
-interface ComponentProps {
+interface ComponentProps extends ILocalizationProps {
     clickEndpoint: string;
+    onUpdateState: (string) => void;
+    enabled: boolean;
 }
 
 interface ComponentState {
 }
 
-export default class ProgressBox extends React.Component<ComponentProps, ComponentState> {
+export default class BloomButton extends LocalizableElement<ComponentProps, ComponentState> {
     constructor(props) {
         super(props);
         let self = this;
@@ -18,19 +21,13 @@ export default class ProgressBox extends React.Component<ComponentProps, Compone
     render() {
         return (
             <button
-            // onClick={() => axios.get<string>("/bloom/api/publish/" + clickEndpoint).then((response) => {
-            //     todo run our onStateChanged and let the parent subscribe to that. this.setState({ stateId: response.data });
-            // })}
+                onClick={() => axios.get<string>("/bloom/api/" + this.props.clickEndpoint).then((response) => {
+                    this.props.onUpdateState(response.data);
+                })}
+                disabled={!this.props.enabled}
             >
-                {/* TODO: Make localizable. Perhaps something like
-                        localize({id:'publish.android.connectWithUSB', comment:'button label' en:'Connect with USB cable'})
-                        Or a react component, like
-                        <String id='publish.android.connectWithUSB' comment='button label'>
-                            Connect with USB cable
-                        </String>
-                    */}
-                Some Text
-                </button>
+                {this.getLocalizedContent()}
+            </button>
         );
     }
 }
