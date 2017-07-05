@@ -27,8 +27,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		WebEssentials2015-Settings.json = WebEssentials2015-Settings.json
 	EndProjectSection
 EndProject
-Project("{2857B73E-F847-4B02-9238-064979017E93}") = "LinuxBloomLauncher", "src\LinuxBloomLauncher\LinuxBloomLauncher.cproj", "{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,18 +71,6 @@ Global
 		{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}.Release|x86.ActiveCfg = Release|x86
 		{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}.Release|x86.Build.0 = Release|x86
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Debug|x86.Build.0 = Debug|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Release|x86.ActiveCfg = Release|Any CPU
-		{6E2F50BB-FC1A-4F19-BD19-5B2457D3C411}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
