@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -214,6 +214,9 @@
     <Reference Include="PdfSharp">
       <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
     </Reference>
+    <Reference Include="PortableDevices">
+      <HintPath>..\..\lib\dotnet\PortableDevices.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
@@ -298,6 +301,7 @@
     <Compile Include="AboutMemory.Designer.cs">
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Communication\AndroidDeviceUsbConnection.cs" />
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="BookThumbNailer.cs" />
@@ -318,6 +322,7 @@
     <Compile Include="ElementProxy.cs" />
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\ElectronicPublishView.cs" />
+    <Compile Include="Publish\ReaderBookPublisher.cs" />
     <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
