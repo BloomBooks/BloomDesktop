@@ -11,13 +11,17 @@ namespace Bloom.Publish
 		public EventHandler Connected;
 
 		private readonly IProgress _progress;
-		private readonly AndroidDeviceUsbConnection _androidDeviceUsbConnection;
+		private readonly IAndroidDeviceUsbConnection _androidDeviceUsbConnection;
 		private bool _moreThanOneReported;
 
 		public ReaderBookPublisher(IProgress progress)
 		{
 			_progress = progress;
+#if !__MonoCS__
 			_androidDeviceUsbConnection = new AndroidDeviceUsbConnection();
+#else
+			_androidDeviceUsbConnection = new UnimplementedAndroidDeviceUsbConnection();
+#endif
 		}
 
 		/// <summary>

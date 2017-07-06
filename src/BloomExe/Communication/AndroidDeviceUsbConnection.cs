@@ -11,7 +11,7 @@ namespace Bloom.Communication
 	/// <summary>
 	/// Handles non-UI functions of connecting to an Android device via USB and working with the file system there
 	/// </summary>
-	class AndroidDeviceUsbConnection
+	class AndroidDeviceUsbConnection : IAndroidDeviceUsbConnection
 	{
 		public event EventHandler OneApplicableDeviceFound;
 		public event EventHandler<MoreThanOneApplicableDeviceFoundEventArgs> MoreThanOneApplicableDeviceFound;
@@ -141,15 +141,4 @@ namespace Bloom.Communication
 			return null;
 		}
 	}
-
-	class MoreThanOneApplicableDeviceFoundEventArgs
-	{
-		public MoreThanOneApplicableDeviceFoundEventArgs(List<string> deviceNames)
-		{
-			DeviceNames = deviceNames;
-		}
-
-		public List<string> DeviceNames { get; }
-	}
-}
 #endif
