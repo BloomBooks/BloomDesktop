@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import axios = require('axios');
+import axios from "axios";
 
 export class EditableDivUtils {
 
@@ -146,7 +146,7 @@ export class EditableDivUtils {
     }
 
     static pasteImageCredits() {
-        axios.get<any>('/bloom/api/image/imageCreditsForWholeBook').then(result => {
+        axios.get('/bloom/api/image/imageCreditsForWholeBook').then(result => {
             var data = result.data;
             if (!data)
                 return;     // nothing to insert: no images apparently...
