@@ -1,9 +1,8 @@
-﻿///<reference path="../../../typings/axios/axios.d.ts"/>
-import axios = require('axios');
+﻿import axios from "axios";
 
 $(document).ready(() => {
     // request our model and set the controls
-    axios.get<any>('/bloom/api/book/settings').then(result => {
+    axios.get("/bloom/api/book/settings").then(result => {
         var settings = result.data;
 
         // Only show this if we are editing a shell book. Otherwise, it's already not locked.

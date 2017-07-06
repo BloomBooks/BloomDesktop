@@ -1,6 +1,6 @@
 /// <reference path="../misc-types.d.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import axios = require("axios");
+import axios from "axios";
 
 /**
  * L10NSharp LocalizationManager for javascript.

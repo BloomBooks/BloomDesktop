@@ -3,7 +3,7 @@
 import { enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue } from './readerSetup.ui';
 import { ReaderStage, ReaderLevel, ReaderSettings } from '../ReaderSettings';
 import "../../../../lib/jquery.onSafe.js";
-import axios = require('axios');
+import axios from "axios";
 import * as _ from 'underscore';
 
 var previousMoreWords: string;
@@ -59,11 +59,11 @@ function loadReaderSetupData(jsonData: string): void {
     if (data.stages.length === 0) data.stages.push(new ReaderStage('1'));
     if (data.levels.length === 0) data.levels.push(new ReaderLevel('1'));
     if (!data.useAllowedWords) data.useAllowedWords = 0;
-  if (!data.sentencePunct) data.sentencePunct = "";
+    if (!data.sentencePunct) data.sentencePunct = "";
 
     // language tab
     (<HTMLInputElement>document.getElementById('dls_letters')).value = data.letters;
-  (<HTMLInputElement>document.getElementById('dls_sentence_punct')).value = data.sentencePunct;
+    (<HTMLInputElement>document.getElementById('dls_sentence_punct')).value = data.sentencePunct;
     setPreviousMoreWords(data.moreWords.replace(/ /g, '\n'));
     (<HTMLInputElement>document.getElementById('dls_more_words')).value = previousMoreWords;
     $('input[name="words-or-letters"][value="' + data.useAllowedWords + '"]').prop('checked', true);
@@ -125,7 +125,7 @@ export function beginSaveChangedSettings(): Promise<void> {
 function getChangedSettings(): ReaderSettings {
     var settings: ReaderSettings = new ReaderSettings();
     settings.letters = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value);
-  settings.sentencePunct = (<HTMLInputElement>document.getElementById('dls_sentence_punct')).value.trim();
+    settings.sentencePunct = (<HTMLInputElement>document.getElementById('dls_sentence_punct')).value.trim();
 
     // remove duplicates from the more words list
     var moreWords: string[] = _.uniq(((<HTMLInputElement>document.getElementById('dls_more_words')).value).split("\n"));

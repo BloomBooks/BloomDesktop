@@ -19,7 +19,7 @@ import * as _ from 'underscore';
 import { theOneLanguageDataInstance, theOneLibSynphony } from './libSynphony/synphony_lib';
 import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
 import { DataWord, TextFragment } from './libSynphony/bloomSynphonyExtensions';
-import axios = require('axios');
+import axios from "axios";
 import { EditableDivUtils } from '../../js/editableDivUtils';
 
 var SortType = {
@@ -802,9 +802,9 @@ export class ReaderToolsModel {
     //   }
 
     getTextOfWholeBook(): void {
-        axios.get<any[]>('/bloom/api/readers/io/textOfContentPages').then(result => {
+        axios.get('/bloom/api/readers/io/textOfContentPages').then(result => {
             //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
-            this.pageIDToText = result.data;
+            this.pageIDToText = result.data as any[];
             this.doMarkup();
         });
     }
@@ -1018,7 +1018,7 @@ export class ReaderToolsModel {
     beginGetAllSampleFiles(): Promise<void> {
         // The <any> works around a flaw in the declaration of axios.all in axios.d.ts.
         return (<any>axios).all(this.texts.map(fileName => {
-            return axios.get<string>('/bloom/api/readers/io/sampleFileContents', { params: { fileName: fileName } })
+            return axios.get('/bloom/api/readers/io/sampleFileContents', { params: { fileName: fileName } })
                 .then(result => {
                     // this same code runs both for simple word list text files, and for synphony .json files
                     // downstream here, code actually changes the json string back into an object, sigh. But
@@ -1198,7 +1198,7 @@ export class ReaderToolsModel {
             // we need to ensure that execution still passes through the "if all loaded" section of
             // the setAllowedWordsListList() method.
             if (stage.allowedWordsFile) {
-                axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
+                axios.get('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
                     .then(result => this.setAllowedWordsListList(result.data, index));
             } else {
                 this.setAllowedWordsListList(null, index);

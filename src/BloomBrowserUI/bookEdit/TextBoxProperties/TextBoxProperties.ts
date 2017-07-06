@@ -1,7 +1,7 @@
 /// <reference path="../../typings/select2/select2.d.ts" />
 import '../../node_modules/select2/dist/js/select2.js';
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
-import axios = require('axios');
+import axios from "axios";
 import { EditableDivUtils } from '../js/editableDivUtils';
 import BloomHintBubbles from '../js/BloomHintBubbles';
 
@@ -35,7 +35,7 @@ export default class TextBoxProperties {
         // Why do we use .off and .on? See comment in a nearly identical location in StyleEditor.ts
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '.formatButton', () => {
-            axios.get<string>('/bloom/bookEdit/TextBoxProperties/TextBoxProperties.html').then(result => {
+            axios.get('/bloom/bookEdit/TextBoxProperties/TextBoxProperties.html').then(result => {
                 var html = result.data;
                 propDlg.boxBeingEdited = targetBox;
 

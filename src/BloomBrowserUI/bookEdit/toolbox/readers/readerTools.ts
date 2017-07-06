@@ -11,7 +11,7 @@ import ReadersSynphonyWrapper from './ReadersSynphonyWrapper';
 import { ReaderStage, ReaderLevel, ReaderSettings } from './ReaderSettings';
 import { DataWord, clearWordCache } from './libSynphony/bloomSynphonyExtensions';
 import "../../../lib/jquery.onSafe";
-import axios = require('axios');
+import axios from "axios";
 import * as _ from 'underscore';
 
 interface textMarkup extends JQueryStatic {
@@ -170,8 +170,8 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
     }
     readerToolsInitialized = true;
 
-    axios.get<string>('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data));
-    axios.get<string>('/bloom/api/readers/io/readerToolSettings').then(settingsFileContent => {
+    axios.get('/bloom/api/collection/defaultFont').then(result => setDefaultFont(result.data));
+    axios.get('/bloom/api/readers/io/readerToolSettings').then(settingsFileContent => {
         initializeSynphony(settingsFileContent.data);
         result.resolve();
     });
@@ -204,7 +204,7 @@ function initializeSynphony(settingsFileContent: string): void {
     }
     else {
         // get the list of sample texts
-        axios.get<string>('/bloom/api/readers/ui/sampleTextsList').then(result => beginSetTextsList(result.data));
+        axios.get('/bloom/api/readers/ui/sampleTextsList').then(result => beginSetTextsList(result.data));
     }
 }
 
@@ -269,7 +269,7 @@ function beginRefreshEverything(settings: ReaderSettings): Promise<void> {
     }
     else {
         // reload the sample texts
-        return <any>axios.get<string>('/bloom/api/readers/io/sampleTextsList').then(result => beginSetTextsList(result.data));
+        return <any>axios.get('/bloom/api/readers/io/sampleTextsList').then(result => beginSetTextsList(result.data));
     }
 }
 

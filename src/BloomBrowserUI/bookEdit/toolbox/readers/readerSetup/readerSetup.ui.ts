@@ -4,7 +4,7 @@ import theOneLocalizationManager from '../../../../lib/localizationManager/local
 import '../../../../lib/jquery.onSafe.ts';
 import { beginSaveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords } from './readerSetup.io';
 import { DataWord } from '../libSynphony/bloomSynphonyExtensions';
-import axios = require('axios');
+import axios from "axios";
 import * as _ from 'underscore';
 
 var desiredGPCs: string[];
@@ -760,7 +760,7 @@ function attachEventHandlers(): void {
         });
 
         $('#setup-choose-allowed-words-file').onSafe('click', function () {
-            axios.get<string>('/bloom/api/readers/ui/chooseAllowedWordsListFile').then(result => {
+            axios.get('/bloom/api/readers/ui/chooseAllowedWordsListFile').then(result => {
                 var fileName = result.data;
                 if (fileName) setAllowedWordsFile(fileName);
 

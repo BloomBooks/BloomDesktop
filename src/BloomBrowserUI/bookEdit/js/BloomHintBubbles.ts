@@ -4,7 +4,7 @@
 /// <reference path="bloomQtipUtils.ts" />
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
-import axios = require('axios');
+import axios from "axios";
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import { IsPageXMatter } from '../js/bloomEditing';
 import bloomQtipUtils from './bloomQtipUtils';

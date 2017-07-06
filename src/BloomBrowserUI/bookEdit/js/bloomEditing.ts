@@ -1,5 +1,4 @@
-﻿///<reference path="../../typings/axios/axios.d.ts"/>
-///<reference path="./jquery.hasAttr.d.ts" />
+﻿///<reference path="./jquery.hasAttr.d.ts" />
 import * as $ from "jquery";
 import * as JQuery from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
@@ -27,7 +26,7 @@ import { getEditViewFrameExports } from "./bloomFrames";
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
-import axios = require("axios");
+import axios from "axios";
 
 /**
  * Fires an event for C# to handle
@@ -817,8 +816,9 @@ export var disconnectForGarbageCollection = function () {
     $("[style*='.background-image']").each(function () { $(this).remove(); });
 };
 
+
 export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
-    axios.get<boolean>("/bloom/api/keyboarding/useLongpress")
+    axios.get("/bloom/api/keyboarding/useLongpress")
         .then(response => {
             if (response.data) {
                 theOneLocalizationManager.asyncGetText(

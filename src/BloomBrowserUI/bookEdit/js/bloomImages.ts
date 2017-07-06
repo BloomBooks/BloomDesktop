@@ -1,6 +1,6 @@
 ﻿///<reference path="../../lib/jquery.myimgscale.d.ts" />
 import '../../lib/jquery.resize'; // makes jquery resize work on all elements
-import axios = require('axios');
+import axios from "axios";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
 
@@ -149,7 +149,7 @@ function SetImageTooltip(container, img) {
         container.title = "";
         return;
     }
-    axios.get<string>("/bloom/api/image/info", { params: { image: GetRawImageUrl(img) } }).then(result => {
+    axios.get("/bloom/api/image/info", { params: { image: GetRawImageUrl(img) } }).then(result => {
         var image: any = result.data;
         // This appears to be constant even on higher dpi screens.
         // (See http://www.w3.org/TR/css3-values/#absolute-lengths)
