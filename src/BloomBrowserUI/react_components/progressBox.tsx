@@ -1,14 +1,14 @@
-import axios = require("axios");
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-interface ComponentProps { }
 
 interface ComponentState {
     progress: string;
 }
 
-export default class ProgressBox extends React.Component<ComponentProps, ComponentState> {
+// Note that this component does not do localization; we expect the progres messages
+// to already be localized when they are sent over the websocket.
+export default class ProgressBox extends React.Component<{}, ComponentState> {
     constructor(props) {
         super(props);
         let self = this;
@@ -22,8 +22,8 @@ export default class ProgressBox extends React.Component<ComponentProps, Compone
         });
     }
 
-    readonly kSocketName = "webSocket";
-
+    //TODO: make box messages scroll to bottom whenever a new message arrives
+    // (or alternatively, when a new message arrives and the scroll was previously at the bottom).
     render() {
         return (
             <div id="progress" dangerouslySetInnerHTML={{ __html: this.state.progress }} />
@@ -31,11 +31,12 @@ export default class ProgressBox extends React.Component<ComponentProps, Compone
     }
 
     private getWebSocket(): WebSocket {
-        if (typeof window.top[this.kSocketName] === "undefined") {
+        let kSocketName = "webSocket";
+        if (typeof window.top[kSocketName] === "undefined") {
             // Enhance: ask the server for the socket so that we aren't assuming that it is the current port + 1
             let websocketPort = parseInt(window.location.port, 10) + 1;
-            window.top[this.kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
+            window.top[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
         }
-        return window.top[this.kSocketName];
+        return window.top[kSocketName];
     }
 }
