@@ -301,7 +301,7 @@
     <Compile Include="AboutMemory.Designer.cs">
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Communication\AndroidDeviceConnection.cs" />
+    <Compile Include="Communication\AndroidDeviceUsbConnection.cs" />
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="BookThumbNailer.cs" />

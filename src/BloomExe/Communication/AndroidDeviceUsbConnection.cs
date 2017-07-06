@@ -8,12 +8,12 @@ using PodcastUtilities.PortableDevices;
 namespace Bloom.Communication
 {
 	/// <summary>
-	/// Handles non-UI functions of connecting to an Android device and working with the file system there
+	/// Handles non-UI functions of connecting to an Android device via USB and working with the file system there
 	/// </summary>
-	class AndroidDeviceConnection
+	class AndroidDeviceUsbConnection
 	{
 		public event EventHandler OneApplicableDeviceFound;
-		public event EventHandler<List<string>> MoreThanOneApplicableDeviceFound;
+		public event EventHandler<MoreThanOneApplicableDeviceFoundEventArgs> MoreThanOneApplicableDeviceFound;
 
 		private const string kBloomFolderOnDevice = "Bloom";
 		private IDevice _device;
@@ -52,6 +52,9 @@ namespace Bloom.Communication
 
 		public void SendBook(string bloomdPath)
 		{
+			if (bloomdPath == null)
+				throw new ArgumentNullException(nameof(bloomdPath));
+
 			if (_device == null || _bloomFolderPath == null)
 				throw new InvalidOperationException("Must connect before calling SendBook");
 
@@ -114,14 +117,15 @@ namespace Bloom.Communication
 			{
 				_device = applicableDevices[0];
 				EventHandler handler = OneApplicableDeviceFound;
-				handler?.Invoke(this, null);
+				handler?.Invoke(this, new EventArgs());
+				return;
 			}
 
 			_bloomFolderPath = null;
 			if (applicableDevices.Count > 1)
 			{
-				EventHandler<List<string>> handler = MoreThanOneApplicableDeviceFound;
-				handler?.Invoke(this, applicableDevices.Select(d => d.Name).ToList());
+				EventHandler<MoreThanOneApplicableDeviceFoundEventArgs> handler = MoreThanOneApplicableDeviceFound;
+				handler?.Invoke(this, new MoreThanOneApplicableDeviceFoundEventArgs(applicableDevices.Select(d => d.Name).ToList()));
 			}
 		}
 
@@ -135,5 +139,15 @@ namespace Bloom.Communication
 			}
 			return null;
 		}
+	}
+
+	class MoreThanOneApplicableDeviceFoundEventArgs
+	{
+		public MoreThanOneApplicableDeviceFoundEventArgs(List<string> deviceNames)
+		{
+			DeviceNames = deviceNames;
+		}
+
+		public List<string> DeviceNames { get; }
 	}
 }
