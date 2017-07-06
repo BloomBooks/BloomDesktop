@@ -1,10 +1,9 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-///<reference path="../../typings/axios/axios.d.ts"/>
 
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import '../../lib/jquery.i18n.custom';
 import "../../lib/jquery.onSafe";
-import axios = require('axios');
+import axios from "axios";
 import { EditableDivUtils } from '../js/editableDivUtils';
 
 /**
@@ -149,7 +148,7 @@ export function showOrHidePanel_click(chkbox) {
 
 
 export function restoreToolboxSettings() {
-    axios.get<any>("/bloom/api/toolbox/settings").then(result => {
+    axios.get("/bloom/api/toolbox/settings").then(result => {
         savedSettings = result.data;
         var pageFrame = getPageFrame();
         if (pageFrame.contentWindow.document.readyState === 'loading') {
@@ -370,7 +369,7 @@ function beginAddPanel(checkBoxId: string, panelId: string): Promise<void> {
             'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
             'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html'
         }
-        return axios.get<any>("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
+        return axios.get("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
             loadToolboxPanel(result.data, panelId);
         });
     }

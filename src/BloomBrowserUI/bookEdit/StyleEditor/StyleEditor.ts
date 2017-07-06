@@ -15,7 +15,7 @@ import theOneLocalizationManager from '../../lib/localizationManager/localizatio
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
 import { GetDifferenceBetweenHeightAndParentHeight, IsPageXMatter } from '../js/bloomEditing';
 import '../../lib/jquery.alphanum';
-import axios = require('axios');
+import axios from "axios";
 import { EditableDivUtils } from '../js/editableDivUtils';
 
 declare function GetSettings(): any; //c# injects this
@@ -652,7 +652,7 @@ export default class StyleEditor {
         $(targetBox).on('click.formatButton', '#formatButton', function () {
             axios.all([
                 axios.get('/bloom/availableFontNames'),
-                axios.get<string>('/bloom/bookEdit/StyleEditor/StyleEditor.html')
+                axios.get('/bloom/bookEdit/StyleEditor/StyleEditor.html')
             ]).then(results => {
                 var fonts = results[0].data['fonts'];
                 var html = results[1].data;
