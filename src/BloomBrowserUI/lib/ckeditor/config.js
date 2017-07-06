@@ -52,7 +52,14 @@ CKEDITOR.editorConfig = function (config) {
 	// The current code (line above and below) should give us what we want in both situations, namely when we change
 	// the html via javascript, we can do whatever we want. When the user pastes, he is bounded by the following set.
 	// See http://docs.ckeditor.com/#!/api/CKEDITOR.config-cfg-pasteFilter for a description of this setting.
-	config.pasteFilter = 'h1 h2 h3 p blockquote table tr th td caption b bdi bdo br em i q span strong sub sup u; a[!href]';
+	//config.pasteFilter = 'h1 h2 h3 p blockquote table tr th td caption b bdi bdo br em i q span strong sub sup u; a[!href]';
+
+	// At least with ckeditor 4.5, the specific filter list above can cause some very strange things to happen in Bloom >= 3.8
+	// when pasting from Word. See http://issues.bloomlibrary.org/youtrack/issue/BL-4775 and friends.
+	// For 3.8, we'll simply disallow pasting of tags altogether because it is safe (though it removes functionality).
+	// For > 3.8, we plan to upgrade ckeditor and set this to 'semantic-content'. I don't know why setting this to
+	// 'semantic-content' doesn't work with ckeditor 4.5.
+	config.pasteFilter = 'plain-text';
 
 	//BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
 	//http://stackoverflow.com/a/23983357/723299
