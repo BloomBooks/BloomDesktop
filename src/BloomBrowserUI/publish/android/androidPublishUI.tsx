@@ -1,33 +1,37 @@
-import axios = require("axios");
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import ProgressBox from "./progressBox";
-import BloomButton from "./bloomButton";
-import HelpLink from "./helpLink";
-import { H1, H2, LocalizableElement } from "./l10n";
-
-interface ComponentProps { }
+import ProgressBox from "../../react_components/progressBox";
+import BloomButton from "../../react_components/bloomButton";
+import HelpLink from "../../react_components/helpLink";
+import { H1, H2, LocalizableElement, IUILanguageAwareProps } from "../../react_components/l10n";
 
 interface ComponentState {
     stateId: string;
 }
 
-class AndroidPublishUI extends React.Component<ComponentProps, ComponentState> {
+// This is a screen of controls that gives the user instructions and controls
+// for pushing a book to a connected Android device running Bloom Reader.
+class AndroidPublishUI extends React.Component<IUILanguageAwareProps, ComponentState> {
     constructor(props) {
         super(props);
         this.state = { stateId: "ReadyToConnect" };
-        let self = this;
+
+        // enhance: For some reason setting the callback to "this.handleUpdate" calls handleUpdate()
+        // with "this" set to the button, not this overal control.
+        // I don't quite have my head around this problem yet, but this oddity fixes it.
+        // See https://medium.com/@rjun07a/binding-callbacks-in-react-components-9133c0b396c6
+        this.handleUpdateState = this.handleUpdateState.bind(this);
     }
 
     handleUpdateState(s: string): void {
         this.setState({ stateId: s });
+        //console.log("this.state is " + JSON.stringify(this.state));
     }
 
     render() {
+        let self = this;
         return (
             <div>
-                <H2 l10nkey="l">hello</H2>
-                <H1 l10nkey="foo">abc</H1>
                 <HelpLink l10nkey="publish.android.learnAboutDigitalPublishingOptions"
                     l10ncomment="" helpId="learnAboutDigitalPublishingOptions">
                     Learn about your digital publishing options.
@@ -52,15 +56,15 @@ class AndroidPublishUI extends React.Component<ComponentProps, ComponentState> {
 
                 <BloomButton l10nkey="publish.android.connectUsb"
                     l10ncomment="Button that tells Bloom to connect to an device using a USB cable"
-                    enabled={this.state.stateId !== "ReadyToConnect"}
+                    enabled={this.state.stateId === "ReadyToConnect"}
                     clickEndpoint="publish/android/connectUsb"
-                    onUpdateState={this.handleUpdateState}>
+                    onUpdateState={self.handleUpdateState}>
                     Connect with USB cable
                 </BloomButton>
                 <br />
                 <BloomButton l10nkey="publish.android.connectWifi"
                     l10ncomment="Button that tells Bloom to connect to an device using a USB cable"
-                    enabled={this.state.stateId !== "ReadyToConnect"}
+                    enabled={this.state.stateId === "ReadyToConnect"}
                     clickEndpoint="publish/android/connectWifi"
                     onUpdateState={this.handleUpdateState}>
                     Connect with Wifi
@@ -71,7 +75,7 @@ class AndroidPublishUI extends React.Component<ComponentProps, ComponentState> {
                 </H1>
                 <BloomButton l10nkey="publish.android.sendBook"
                     l10ncomment="Button that tells Bloom to connect to an device using a USB cable"
-                    enabled={this.state.stateId !== "ReadyToSend"}
+                    enabled={this.state.stateId === "ReadyToSend"}
                     clickEndpoint="publish/android/connectWifi"
                     onUpdateState={this.handleUpdateState}>
                     Send Book
@@ -81,6 +85,7 @@ class AndroidPublishUI extends React.Component<ComponentProps, ComponentState> {
                 state: {this.state.stateId}
 
                 <ProgressBox />
+
             </div>
         );
     }
