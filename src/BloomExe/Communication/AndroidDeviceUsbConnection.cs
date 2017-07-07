@@ -141,4 +141,5 @@ namespace Bloom.Communication
 			return null;
 		}
 	}
+}
 #endif
