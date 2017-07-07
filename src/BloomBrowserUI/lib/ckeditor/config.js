@@ -27,7 +27,7 @@ CKEDITOR.editorConfig = function (config) {
 
 	// The default plugins included in the basic setup define some buttons that
 	// are not needed in a basic editor. They are removed here.
-	config.removeButtons = 'Cut,Copy,Paste,Undo,Redo,Anchor,Strike,Subscript,About';
+	config.removeButtons = 'Cut,Copy,Paste,Undo,Redo,Anchor,Strike,Subscript,About,NumberedList,BulletedList,Indent,Outdent,Link,Unlink';
 
 	// Dialog windows are also simplified.
 	config.removeDialogTabs = 'link:advanced';
@@ -47,12 +47,12 @@ CKEDITOR.editorConfig = function (config) {
 
 	// Filter out any html that might be dangerous.  Specifically, a div element might be copied from the same book and
 	// could introduce duplicate ids.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
-	// Note that the first attempt to fix BL-3899 set allowedContent rather than pasteFilter, but that caused 
+	// Note that the first attempt to fix BL-3899 set allowedContent rather than pasteFilter, but that caused
 	// http://issues.bloomlibrary.org/youtrack/issue/BL-3976.
 	// The current code (line above and below) should give us what we want in both situations, namely when we change
 	// the html via javascript, we can do whatever we want. When the user pastes, he is bounded by the following set.
 	// See http://docs.ckeditor.com/#!/api/CKEDITOR.config-cfg-pasteFilter for a description of this setting.
-	config.pasteFilter = 'h1 h2 h3 p blockquote table tr th td caption b bdi bdo br em i q span strong sub sup u; a[!href]';
+	config.pasteFilter = 'h1 h2 h3 p blockquote table tr th td caption b bdi bdo br em i q strong sub sup u; a[!href]';
 
 	//BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
 	//http://stackoverflow.com/a/23983357/723299
