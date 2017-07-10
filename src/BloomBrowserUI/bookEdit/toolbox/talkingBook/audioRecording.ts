@@ -47,7 +47,6 @@ import * as $ from 'jquery';
 import { theOneLibSynphony } from '../readers/libSynphony/synphony_lib';
 import { TextFragment } from '../readers/libSynphony/bloomSynphonyExtensions';
 import axios from 'axios';
-//import Axios from "axios";
 import * as toastr from 'toastr';
 
 enum Status {
