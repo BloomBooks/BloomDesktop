@@ -60,7 +60,7 @@ CKEDITOR.editorConfig = function (config) {
     // but by letting people paste things that cannot be duplicated by a user doing a translation, are
     // we leading people to expect formatting in Bloom that translators will not actually be able to replicate?
     // Therefore for now we're limiting pasting to things that a translator could also do:
-    config.pasteFilter = 'p b br em i strong sub u;';
+    config.pasteFilter = 'p b br em i strong sup u;';
 
     //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
     //http://stackoverflow.com/a/23983357/723299
