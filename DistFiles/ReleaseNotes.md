@@ -7,6 +7,8 @@
 - Collection Tab
     - When creating a new collection, Bloom now chooses the *primary* country of the language as a default.
     - When choosing a language, Bloom no longer displays "alternative names* of languages, as some may be offensive.
+    - Added a custom Front/Back matter choice for SIL PNG
+    - Added a custom branding pack choice for ToMasewalTlahtol of Mexico.
 - Edit Tab
     - We have sped up the time it takes to change pages.
     - You can now add moveable text blocks on top of images. Use this for comic books or kids’ books that fill the page with an image and then put text on top of it. (not landed in alpha yet).

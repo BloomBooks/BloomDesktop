@@ -43,7 +43,10 @@ mixin field-acknowledgments-localizedVersion
 		//- TODO: I want to change this to "Credit people involved in this translation, in {lang}", but many localizations
 		//- will then not be used at all, even their old versions which are better than nothing. How to upgrade the English
 		//- without losing all the rest?
-		+editable("N1").versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments", data-hint="Name of the translator, in {lang}")
+		block versionAcknowledgmentsLabel
+			label.bubble
+				| Name of the translator, in {lang}
+		+editable("N1").versionAcknowledgments.Credits-Page-style(data-book="versionAcknowledgments")
 
 mixin field-acknowledgments-originalVersion
 	+field-prototypeDeclaredExplicity("N1").originalAcknowledgments
@@ -166,9 +169,13 @@ mixin title-page-contents
 	+field-prototypeDeclaredExplicity("V,N1")#titlePageTitleBlock
 		label.bubble Book title in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
-	+field-prototypeDeclaredExplicity("N1")#originalContributions
-		label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()') The contributions made by writers, illustrators, editors, etc., in {lang}
-		+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
+	block originalContributions
+		+field-prototypeDeclaredExplicity("N1")#originalContributions
+			block originalContributionsLabel
+				//- if you modify this next line, modify it also in the SIL PNG custom xmatter
+				label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+					| The contributions made by writers, illustrators, editors, etc., in {lang}
+			+editable(kLanguageForPrototypeOnly).credits.bloom-copyFromOtherLanguageIfNecessary.Content-On-Title-Page-style(data-book='originalContributions')
 	+field-prototypeDeclaredExplicity("N1")#funding
 		label.bubble Use this to acknowledge any funding agencies.
 		+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
