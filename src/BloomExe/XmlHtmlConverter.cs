@@ -307,6 +307,13 @@ namespace Bloom
 			{
 				tidy.ShowWarnings = false;
 				tidy.Quiet = true;
+
+				// Removing comments is unfortunate, I can imagine cases where it would be helpful to be able to
+				// have comments. But currently our ckeditor instances are never "destroy()"ed, and are dumping
+				// e.g. 50 k of comment text into a single field, when you paste from MS Word. So we're
+				// going to dump all comments for now.
+				tidy.RemoveComments = true;
+
 				tidy.AddTidyMetaElement = false;
 				tidy.OutputXml = false;
 				tidy.OutputHtml = true;
