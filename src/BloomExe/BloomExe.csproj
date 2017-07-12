@@ -1265,6 +1265,8 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
 copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
 copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfMaker.exe.config"
+REM we don't know why this is needed... seems only to be needed on TC agent, not locally
+copy /Y "$(SolutionDir)packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\runtimes\win7-x86\native\vcruntime140.dll" $(OutDir)
     </PostBuildEvent>
     <PostBuildEvent Condition="'$(OS)'!='Windows_NT'">
 cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
