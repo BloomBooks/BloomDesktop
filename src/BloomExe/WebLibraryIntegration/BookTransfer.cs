@@ -350,11 +350,11 @@ namespace Bloom.WebLibraryIntegration
 			{
 				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
 				domForLocking = new HtmlDom(xmlDomFromHtmlFile);
-				wasLocked = Book.Book.HtmlHasLockedDownFlag(domForLocking);
+				wasLocked = domForLocking.RecordedAsLockedDown;
 				allowLocking = !metadata.IsSuitableForMakingShells;
 				if (allowLocking && !wasLocked)
 				{
-					Book.Book.RecordAsLockedDown(domForLocking, true);
+					domForLocking.RecordAsLockedDown(true);
 					XmlHtmlConverter.SaveDOMAsHtml5(domForLocking.RawDom, htmlFile);
 				}
 			}
@@ -458,7 +458,7 @@ namespace Bloom.WebLibraryIntegration
 			{
 				if (domForLocking != null && allowLocking && !wasLocked)
 				{
-					Book.Book.RecordAsLockedDown(domForLocking, false);
+					domForLocking.RecordAsLockedDown(false);
 					XmlHtmlConverter.SaveDOMAsHtml5(domForLocking.RawDom, htmlFile);
 				}
 
@@ -512,7 +512,7 @@ namespace Bloom.WebLibraryIntegration
 			var dom = new HtmlDom(xmlDomFromHtmlFile);
 			if (!BookMetaData.FromString(MetaDataText(destinationPath)).IsSuitableForMakingShells)
 			{
-				Book.Book.RecordAsLockedDown(dom, true);
+				dom.RecordAsLockedDown(true);
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
 			}
 

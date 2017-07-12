@@ -391,7 +391,7 @@ namespace BloomTests.Book
 		public void UpdateDomFromDataDiv_CopiesCopyrightAndOriginalCopyrightToMultipleDestinations()
 		{
 			// We could test other fields too, but these are enough to cover the two main methods that do the copying.
-			var html = @"<html><body>
+			var html = @"<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>
 							<div id='bloomDataDiv'>
 								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
 								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by-nc/4.0/</div>
@@ -617,6 +617,18 @@ namespace BloomTests.Book
 			AssertOriginalCopyrightAndLicense(dom, "Copyright © 2007, Foo Publishers", "http://creativecommons.org/licenses/by/4.0/", "You can do anything you want if your name is Fred.");
 		}
 
+		[Test]
+		public void GetOriginalCopyrightAndLicense_NotDerivativeBook_Empty()
+		{
+			var dom = new HtmlDom(
+				@" <div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='en'>A really really empty book</div>
+						<div data-book='copyright' lang='*'> Copyright © 2007, Some Old Publisher </div>
+					</div>");
+
+			Assert.That(GetEnglishOriginalCopyrightAndLicense(dom), Is.Null);
+		}
+
 		void AppendDataDivElement(XmlElement dataDiv, string dataBook, string lang, string val)
 		{
 			var newDiv = dataDiv.OwnerDocument.CreateElement("div");
@@ -632,6 +644,7 @@ namespace BloomTests.Book
 			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4585.
 			var dom = new HtmlDom(
 				@"<html>
+				  <head><meta name='lockedDownAsShell' content='true'></meta></head>
 				  <body>
 				    <div id='bloomDataDiv'>
 				      <div data-book='copyright' lang='*'>
@@ -676,7 +689,10 @@ namespace BloomTests.Book
 
 		private HtmlDom SetOriginalCopyrightAndLicense(string dataDivString)
 		{
-			var dom = new HtmlDom(dataDivString);
+			// All of the tests using this method require that the book is locked down (that is, a derivative that
+			// is expected to have original copyright and license information).
+			var html = "<html><head><meta name='lockedDownAsShell' content='true'></meta></head><body>" + dataDivString + "</body></html>";
+			var dom = new HtmlDom(html);
 			var bookData = new BookData(dom, _collectionSettings, null);
 			BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(dom, bookData, _collectionSettings);
 			return dom;

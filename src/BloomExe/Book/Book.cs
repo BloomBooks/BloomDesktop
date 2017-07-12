@@ -1248,32 +1248,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// This is how the book's LockedDown state will be reported in a vernacular collection.
 		/// </summary>
-		public bool RecordedAsLockedDown
-		{
-			get { return HtmlHasLockedDownFlag(OurHtmlDom); }
-			set
-			{
-				RecordAsLockedDown(OurHtmlDom, value);
-			}
-		}
-
-		public static bool HtmlHasLockedDownFlag(HtmlDom dom)
-		{
-			var node = dom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
-			return node.Count > 0;
-		}
-
-		public static void RecordAsLockedDown(HtmlDom dom, bool locked)
-		{
-			if (locked)
-			{
-				dom.UpdateMetaElement("lockedDownAsShell", "true");
-			}
-			else
-			{
-				dom.RemoveMetaElement("lockedDownAsShell");
-			}
-		}
+		public bool RecordedAsLockedDown => OurHtmlDom.RecordedAsLockedDown;
 
 //		/// <summary>
 //        /// Is this a shell we're translating? And if so, is this a shell-making project?
@@ -2321,7 +2296,7 @@ namespace Bloom.Book
 			if (isSuitable)
 			{
 				IsSuitableForMakingShells = true;
-				RecordedAsLockedDown = false;
+				OurHtmlDom.RecordAsLockedDown(false);
 				// Note that in Book.Save(), we set the PageTemplateSource(). We do that
 				// there instead of here so that it stays up to date if the user changes
 				// the template name.
@@ -2336,7 +2311,7 @@ namespace Bloom.Book
 				// a book that is not a template should be recorded as locked down (though because we're in
 				// a source collection it won't actually BE locked down).
 				if (CollectionSettings.IsSourceCollection)
-					RecordedAsLockedDown = true;
+					OurHtmlDom.RecordAsLockedDown(true);
 			}
 		}
 	}
