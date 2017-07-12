@@ -162,7 +162,7 @@ export function restoreToolboxSettings() {
 }
 
 export function applyToolboxStateToUpdatedPage() {
-    if (currentTool != null && toolbox.toolboxIsShowing) {
+    if (currentTool != null && toolbox.toolboxIsShowing()) {
         doWhenPageReady(() => currentTool.updateMarkup());
     }
 }
