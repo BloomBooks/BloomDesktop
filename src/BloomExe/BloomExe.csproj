@@ -1354,4 +1354,5 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
     <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
   </Target>
+  <Import Project="..\..\packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\build\net40\runtime.win7-x86.vcruntime140.targets" Condition="'$(OS)'=='Windows_NT'" />
 </Project>
