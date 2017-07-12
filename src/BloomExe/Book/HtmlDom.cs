@@ -163,7 +163,7 @@ namespace Bloom.Book
 			set
 			{
 				var path = value;
-				_baseForRelativePaths = path ?? string.Empty;
+				_baseForRelativePaths = path ?? String.Empty;
 				var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
 				if(head == null)
 					return;
@@ -237,7 +237,7 @@ namespace Bloom.Book
 			foreach(XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
 			{
 				var href = linkNode.GetAttribute("href");
-				if(string.IsNullOrEmpty(href))
+				if(String.IsNullOrEmpty(href))
 				{
 					continue;
 				}
@@ -453,7 +453,7 @@ namespace Bloom.Book
 			if(!HasMetaElement(oldName))
 				return;
 
-			if(!string.IsNullOrEmpty(read()))
+			if(!String.IsNullOrEmpty(read()))
 			{
 				RemoveMetaElement(oldName);
 				return;
@@ -651,7 +651,7 @@ namespace Bloom.Book
 
 			//preserve the data-page attribute of the old page, which will normally be empty or missing
 			var dataPageValue = page.GetAttribute("data-page");
-			if(string.IsNullOrEmpty(dataPageValue))
+			if(String.IsNullOrEmpty(dataPageValue))
 			{
 				newPage.RemoveAttribute("data-page");
 			}
@@ -748,7 +748,7 @@ namespace Bloom.Book
 				var lookFor = new Regex("\\." + style + "\\s*{");
 				if(lookFor.IsMatch(content))
 					continue; // style already defined
-				userStyles.InnerText += string.IsNullOrEmpty(content) ? defaultDefn : " " + defaultDefn;
+				userStyles.InnerText += String.IsNullOrEmpty(content) ? defaultDefn : " " + defaultDefn;
 			}
 		}
 
@@ -871,7 +871,7 @@ namespace Bloom.Book
 			// CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage()
 			Guard.AgainstNull(existingUserStyleNode, "existingUserStyleNode");
 
-			if (insertedPageUserStyleNode == null || insertedPageUserStyleNode.InnerXml == string.Empty)
+			if (insertedPageUserStyleNode == null || insertedPageUserStyleNode.InnerXml == String.Empty)
 				return Browser.WrapUserStyleInCdata(existingUserStyleNode.InnerText);
 
 			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
@@ -927,7 +927,7 @@ namespace Bloom.Book
 				string line;
 				while ((line = sr.ReadLine()) != null)
 				{
-					if (string.IsNullOrWhiteSpace(line))
+					if (String.IsNullOrWhiteSpace(line))
 					{
 						continue;
 					}
@@ -935,12 +935,12 @@ namespace Bloom.Book
 				}
 			}
 			// Handle possibility of multi-line style rules; side-effect: eliminates rules that don't START with a period (after trimming)
-			var completeRule = string.Empty;
+			var completeRule = String.Empty;
 			foreach (var nextLine in styleLines)
 			{
 				if (nextLine.StartsWith("."))
 				{
-					if (!string.IsNullOrEmpty(completeRule))
+					if (!String.IsNullOrEmpty(completeRule))
 					{
 						yield return completeRule;
 					}
@@ -948,7 +948,7 @@ namespace Bloom.Book
 				}
 				else
 				{
-					if (string.IsNullOrEmpty(completeRule))
+					if (String.IsNullOrEmpty(completeRule))
 					{
 						continue;
 					}
@@ -1052,7 +1052,7 @@ namespace Bloom.Book
 			var dataBookElements = RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book]");
 			return dataBookElements.Cast<XmlElement>()
 				.Select(node => node.GetOptionalStringAttribute("lang", null))
-				.Where(lang => !string.IsNullOrEmpty(lang) && (lang != "*" || lang != "z"))
+				.Where(lang => !String.IsNullOrEmpty(lang) && (lang != "*" || lang != "z"))
 				.Distinct()
 				.ToList();
 		}
@@ -1094,7 +1094,7 @@ namespace Bloom.Book
 				dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
 					writingSystemId)) as XmlElement;
 
-			if(string.IsNullOrEmpty(form))
+			if(String.IsNullOrEmpty(form))
 			{
 				if(null != node)
 					dataDiv.RemoveChild(node);
@@ -1253,7 +1253,7 @@ namespace Bloom.Book
 			// HtmlDom.GetImageElementUrl(element).UrlEncoded. If we just returned null, that has to be written
 			// as something that checks for null, like:
 			//  var url = HtmlDom.GetImageElementUrl(element). if(url!=null) url.UrlEncoded
-			return UrlPathString.CreateFromUnencodedString(string.Empty);
+			return UrlPathString.CreateFromUnencodedString(String.Empty);
 		}
 
 		/// <summary>
@@ -1268,7 +1268,7 @@ namespace Bloom.Book
 			}
 			else
 			{
-				imgOrDivWithBackgroundImage.SetAttribute("style", string.Format("background-image:url('{0}')", url.UrlEncoded));
+				imgOrDivWithBackgroundImage.SetAttribute("style", String.Format("background-image:url('{0}')", url.UrlEncoded));
 			}
 		}
 
@@ -1366,13 +1366,27 @@ namespace Bloom.Book
 		/// Reads the Generator meta tag.
 		/// </summary>
 		/// <returns> the version if it can find it, else version 0.0</returns>
-		public System.Version GetGeneratorVersion()
+		public Version GetGeneratorVersion()
 		{
 			var generator = GetMetaValue("Generator", "");
 			var match = Regex.Match(generator, "[0-9]+(\\.[0-9]+)+");
 			if (match.Success)
-				return new System.Version(match.Captures[0].Value);
-			return new System.Version(0, 0);
+				return new Version(match.Captures[0].Value);
+			return new Version(0, 0);
+		}
+
+		public bool RecordedAsLockedDown => SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']")).Count > 0;
+
+		public void RecordAsLockedDown(bool locked)
+		{
+			if (locked)
+			{
+				UpdateMetaElement("lockedDownAsShell", "true");
+			}
+			else
+			{
+				RemoveMetaElement("lockedDownAsShell");
+			}
 		}
 	}
 }
