@@ -152,6 +152,8 @@ namespace Bloom.Edit
 		private XmlElement _pageDivFromCopyPage;
 		private string _bookPathFromCopyPage;
 
+		internal BloomWebSocketServer EditModelSocketServer { get { return _webSocketServer; } }
+
 		/// <summary>
 		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
 		/// </summary>
