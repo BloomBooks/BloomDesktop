@@ -345,10 +345,10 @@ namespace Bloom.Book
 
 		internal static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, HtmlDom dom)
 		{
-			return GetOriginalCopyrightAndLicenseNotice(collectionSettings, GetOriginalMetadata(dom));
-		}
-		private static string GetOriginalCopyrightAndLicenseNotice(CollectionSettings collectionSettings, Metadata metadata)
-		{
+			// Can't have any original copyright in an original book we are now editing, only in derivatives.
+			if (!dom.RecordedAsLockedDown)
+				return null;
+			var metadata = GetOriginalMetadata(dom);
 			string idOfLanguageUsed;
 			var languagePriorityIds = collectionSettings.LicenseDescriptionLanguagePriorities;
 
