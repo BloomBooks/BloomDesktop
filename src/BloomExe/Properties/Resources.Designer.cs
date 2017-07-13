@@ -213,13 +213,13 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized string similar to {
         ///	urls:[
-        ///		{id:&quot;parse&quot;, url: &quot;https://api.parse.com/1/&quot;},
-        ///		{id:&quot;parseSandbox&quot;, url: &quot;http://bloomparseserverebsandbox-env.us-east-1.elasticbeanstalk.com/parse/&quot;},
+        ///		{id:&quot;parse&quot;, url: &quot;https://bloom-parse-server-production.azurewebsites.net/parse/&quot;},
+        ///		{id:&quot;parseSandbox&quot;, url: &quot;https://bloom-parse-server-develop.azurewebsites.net/parse/&quot;},
         ///		{id:&quot;librarySite&quot;, url: &quot;http://bloomlibrary.org&quot;},
         ///		{id:&quot;librarySiteSandbox&quot;, url: &quot;http://dev.bloomlibrary.org&quot;},
-        ///		{id:&quot;userSuggestions&quot;, url: &quot;http://bloombooks.uservoice.com/forums/153625-general&quot;},
-        ///		{id:&quot;issueTrackingSystem&quot;, url: &quot;https://silbloom.myjetbrains.com&quot;},
-        ///		{id:&quot;issueTrackingSystemBackend&quot;, url: &quot;http://issues.bloom [rest of string was truncated]&quot;;.
+        ///        {id:&quot;userSuggestions&quot;, url: &quot;https://community.software.sil.org/c/bloom/featurerequests&quot;},
+        ///        {id:&quot;support&quot;,&quot;url&quot;: &quot;https://community.software.sil.org/c/bloom&quot;},
+        ///		{id:&quot;issueTrackingSy [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string CurrentServiceUrls {
             get {
@@ -680,6 +680,16 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap sad16x16 {
+            get {
+                object obj = ResourceManager.GetObject("sad16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap sendreceiveToolbarButton {
             get {
                 object obj = ResourceManager.GetObject("sendreceiveToolbarButton", resourceCulture);
@@ -820,29 +830,19 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap uservoice16x16 {
-            get {
-                object obj = ResourceManager.GetObject("uservoice16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap uservoice16x161 {
-            get {
-                object obj = ResourceManager.GetObject("uservoice16x161", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap videos {
             get {
                 object obj = ResourceManager.GetObject("videos", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap weblink {
+            get {
+                object obj = ResourceManager.GetObject("weblink", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

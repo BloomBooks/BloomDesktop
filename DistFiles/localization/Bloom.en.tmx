@@ -2710,9 +2710,14 @@
         <seg>Key Bloom Concepts</seg>
       </tuv>
     </tu>
+    <tu tuid="HelpMenu.AskAQuestionMenuItem">
+      <tuv xml:lang="en">
+        <seg>Ask a Question (web)</seg>
+      </tuv>
+    </tu>
     <tu tuid="HelpMenu.MakeASuggestionMenuItem">
       <tuv xml:lang="en">
-        <seg>Make a Suggestion</seg>
+        <seg>Request a Feature (web)</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.RegistrationMenuItem">

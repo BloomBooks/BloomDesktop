@@ -20,6 +20,7 @@ namespace Bloom.web
 		LibrarySiteSandbox,
 		CheckForUpdates,
 		UserSuggestions,
+		Support,
 		IssueTrackingSystem,
 		IssueTrackingSystemBackend
 	}
