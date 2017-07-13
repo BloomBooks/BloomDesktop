@@ -17,6 +17,7 @@ using SIL.Reporting;
 using Gecko;
 using SIL.IO;
 using System.Drawing;
+using SIL.PlatformUtilities;
 
 namespace Bloom.Publish
 {
@@ -67,8 +68,10 @@ namespace Bloom.Publish
 													{
 														Activate();
 													}
-													else if (c.To!=this && IsMakingPdf)
-														_makePdfBackgroundWorker.CancelAsync();
+													else if (c.To != this)
+													{
+														Deactivate();
+													}
 												});
 
 			//TODO: find a way to call this just once, at the right time:
@@ -103,6 +106,9 @@ namespace Bloom.Publish
 			Controls.Add(_previewBox);
 			_previewBox.BringToFront();
 			_electronicPublishView = new ElectronicPublishView(_model);
+
+			// Currently, publish to Android will only work on Windows
+			_androidRadio.Visible = Platform.IsWindows;
 		}
 
 		public void SetStateOfNonUploadRadios(bool enable)
@@ -111,6 +117,14 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Enabled = enable;
 			_bookletCoverRadio.Enabled = enable;
 			_simpleAllPagesRadio.Enabled = enable;
+			_androidRadio.Enabled = enable;
+		}
+
+		private void Deactivate()
+		{
+			if (IsMakingPdf)
+				_makePdfBackgroundWorker.CancelAsync();
+			_androidControl?.Deactivate();
 		}
 
 		private void BackgroundColorsForLinux() {
@@ -136,6 +150,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
 			_epubRadio.AutoCheck = autoCheck;
+			_androidRadio.AutoCheck = autoCheck;
 		}
 
 		private void SetupLocalization()
@@ -145,6 +160,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_epubRadio, "PublishTab.EpubRadio");
+			LocalizeSuperToolTip(_androidRadio, "PublishTab.AndroidButton");
 		}
 
 		// Used by LocalizeSuperToolTip to remember original English keys
@@ -208,7 +224,8 @@ namespace Bloom.Publish
 
 		private void ClearRadioButtons()
 		{
-			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked = _simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = false;
+			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
+				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _androidRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf

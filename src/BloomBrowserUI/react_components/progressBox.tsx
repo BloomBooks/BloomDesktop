@@ -1,6 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
+interface ComponentProps {
+    webSocket: WebSocket;
+}
 
 interface ComponentState {
     progress: string;
@@ -8,13 +11,13 @@ interface ComponentState {
 
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
-export default class ProgressBox extends React.Component<{}, ComponentState> {
+export default class ProgressBox extends React.Component<ComponentProps, ComponentState> {
     constructor(props) {
         super(props);
         let self = this;
         this.state = { progress: "" };
         //get progress messages from c#
-        this.getWebSocket().addEventListener("message", event => {
+        props.webSocket.addEventListener("message", event => {
             var e = JSON.parse(event.data);
             if (e.id === "progress") {
                 self.setState({ progress: self.state.progress + "<br/>" + e.payload });
@@ -28,15 +31,5 @@ export default class ProgressBox extends React.Component<{}, ComponentState> {
         return (
             <div id="progress" dangerouslySetInnerHTML={{ __html: this.state.progress }} />
         );
-    }
-
-    private getWebSocket(): WebSocket {
-        let kSocketName = "webSocket";
-        if (typeof window.top[kSocketName] === "undefined") {
-            // Enhance: ask the server for the socket so that we aren't assuming that it is the current port + 1
-            let websocketPort = parseInt(window.location.port, 10) + 1;
-            window.top[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
-        }
-        return window.top[kSocketName];
     }
 }

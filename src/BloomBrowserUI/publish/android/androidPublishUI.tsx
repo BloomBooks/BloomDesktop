@@ -1,3 +1,4 @@
+import axios from "axios";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
@@ -12,6 +13,7 @@ interface IComponentState {
 // This is a screen of controls that gives the user instructions and controls
 // for pushing a book to a connected Android device running Bloom Reader.
 class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponentState> {
+    webSocket: WebSocket;
     constructor(props) {
         super(props);
         this.state = { stateId: "ReadyToConnect" };
@@ -21,6 +23,29 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         // I don't quite have my head around this problem yet, but this oddity fixes it.
         // See https://medium.com/@rjun07a/binding-callbacks-in-react-components-9133c0b396c6
         this.handleUpdateState = this.handleUpdateState.bind(this);
+
+        this.webSocket = this.getWebSocket();
+        this.webSocket.addEventListener("message", event => {
+            var e = JSON.parse(event.data);
+            if (e.id === "publish/android/state") {
+                this.handleUpdateState(e.payload);
+            }
+        });
+    }
+
+    public componentDidMount() {
+        window.addEventListener("beforeunload", this.componentCleanup);
+    }
+
+    // Apparently, we have to rely on the window event when closing or refreshing the page.
+    // componentWillUnmount will not get called in those cases.
+    public componentWillUnmount() {
+        this.componentCleanup();
+        window.removeEventListener("beforeunload", this.componentCleanup);
+    }
+
+    componentCleanup() {
+        axios.get("/bloom/api/publish/android/connectUsb/cancel");
     }
 
     handleUpdateState(s: string): void {
@@ -61,7 +86,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     onUpdateState={self.handleUpdateState}>
                     Connect with USB cable
                 </BloomButton>
-                <br />
+                {/*<br />
                 <br />
                 <BloomButton l10nKey="Publish.Android.ConnectWifi"
                     l10nComment="Button that tells Bloom to connect to a device using Wifi"
@@ -69,7 +94,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     clickEndpoint="publish/android/connectWifi"
                     onUpdateState={this.handleUpdateState}>
                     Connect with WiFi
-                </BloomButton>
+                </BloomButton>*/}
 
                 <H1 l10nKey="Publish.Android.StepSend">
                     Step 4: Send this book to the device
@@ -83,12 +108,22 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     </BloomButton>
 
                 <h3>Progress</h3>
-                state: {this.state.stateId}
+                {/*state: {this.state.stateId}*/}
 
-                <ProgressBox />
+                <ProgressBox webSocket={this.webSocket} />
 
             </div>
         );
+    }
+
+    private getWebSocket(): WebSocket {
+        let kSocketName = "webSocket";
+        if (typeof window.top[kSocketName] === "undefined") {
+            // Enhance: ask the server for the socket so that we aren't assuming that it is the current port + 1
+            let websocketPort = parseInt(window.location.port, 10) + 1;
+            window.top[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
+        }
+        return window.top[kSocketName];
     }
 }
 

@@ -8,7 +8,8 @@ namespace Bloom.Publish
 {
 	public class ReaderBookPublisher
 	{
-		public EventHandler Connected;
+		public event EventHandler Connected;
+		public event EventHandler ConnectionFailed;
 
 		private readonly IProgress _progress;
 		private readonly IAndroidDeviceUsbConnection _androidDeviceUsbConnection;
@@ -29,8 +30,6 @@ namespace Bloom.Publish
 		/// </summary>
 		public void Connect()
 		{
-			var unableToConnectMessage = L10NSharp.LocalizationManager.GetString("Publish.ReaderBookPublisher.UnableToConnect",
-				"Unable to connect to any Android device which has Bloom Reader.");
 			try
 			{
 				_progress.WriteMessage(L10NSharp.LocalizationManager.GetString("Publish.ReaderBookPublisher.LookingForDevice",
@@ -45,33 +44,47 @@ namespace Bloom.Publish
 				{
 					if (args.Error != null)
 					{
-						_androidDeviceUsbConnection.StopFindingDevice();
-						_progress.WriteError(unableToConnectMessage);
-						SIL.Reporting.Logger.WriteError(args.Error);
+						FailConnect(args.Error);
 					}
 				};
 				backgroundWorker.RunWorkerAsync();
 			}
 			catch (Exception e)
 			{
-				_androidDeviceUsbConnection.StopFindingDevice();
-				_progress.WriteError(unableToConnectMessage);
-				SIL.Reporting.Logger.WriteError(e);
+				FailConnect(e);
 			}
+		}
+
+		public void CancelConnect()
+		{
+			_androidDeviceUsbConnection.StopFindingDevice();
+		}
+
+		private void FailConnect(Exception e)
+		{
+			var unableToConnectMessage = L10NSharp.LocalizationManager.GetString("Publish.ReaderBookPublisher.UnableToConnect",
+				"Unable to connect to any Android device which has Bloom Reader.");
+			_androidDeviceUsbConnection.StopFindingDevice();
+			_progress.WriteError(unableToConnectMessage);
+			SIL.Reporting.Logger.WriteError(e);
+			ConnectionFailed?.Invoke(this, new EventArgs());
 		}
 
 		private void OneApplicableDeviceFound(object sender, EventArgs args)
 		{
+			_androidDeviceUsbConnection.OneApplicableDeviceFound -= OneApplicableDeviceFound;
+
 			_progress.WriteMessage(string.Format(L10NSharp.LocalizationManager.GetString(
 				"Publish.ReaderBookPublisher.Connected",
 				"Connected to {0}...", "{0} is a device name"), _androidDeviceUsbConnection.GetDeviceName()));
 
-			EventHandler handler = Connected;
-			handler?.Invoke(this, null);
+			Connected?.Invoke(this, new EventArgs());
 		}
 
 		private void MoreThanOneApplicableDeviceFound(object sender, MoreThanOneApplicableDeviceFoundEventArgs eventArgs)
 		{
+			_androidDeviceUsbConnection.MoreThanOneApplicableDeviceFound -= MoreThanOneApplicableDeviceFound;
+
 			if (_moreThanOneReported)
 				return;
 
