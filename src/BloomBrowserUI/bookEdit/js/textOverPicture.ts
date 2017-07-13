@@ -100,7 +100,7 @@ class TextOverPictureManager {
         }
     }
 
-    private makeTOPBoxDraggableAndClickable(thisTOPBox: JQuery, scale: number, TOPManager: TextOverPictureManager): void {
+    private makeTOPBoxDraggableAndClickable(thisTOPBox: JQuery, scale: number): void {
         var image = this.getImageContainer(thisTOPBox);
         var imagePos = image[0].getBoundingClientRect();
         var wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
@@ -111,14 +111,14 @@ class TextOverPictureManager {
             containment: [imagePos.left, imagePos.top,
             imagePos.left + imagePos.width - wrapperBoxRectangle.width,
             imagePos.top + imagePos.height - wrapperBoxRectangle.height],
-            drag: function (event, ui) {
+            drag: (event, ui) => {
                 ui.helper.children(".bloom-editable").blur();
                 ui.position.top = (ui.position.top / scale);
                 ui.position.left = (ui.position.left / scale);
             },
             handle: ".bloom-dragHandleTOP",
-            stop: function (event, ui) {
-                TOPManager.calculatePercentagesAndFixTextboxPosition(thisTOPBox);
+            stop: (event, ui) => {
+                this.calculatePercentagesAndFixTextboxPosition($(event.target));
             }
         });
 
@@ -132,17 +132,21 @@ class TextOverPictureManager {
     public makeTextOverPictureBoxDraggableClickableAndResizable() {
         // get all textOverPicture elements
         var textOverPictureElems = $("body").find(".bloom-textOverPicture");
-
-        textOverPictureElems.resizable();
-
         var scale = EditableDivUtils.getPageScale();
-        textOverPictureElems.each((i, textbox) => {
-            var thisTOPbox = $(textbox);
-            this.makeTOPBoxDraggableAndClickable(thisTOPbox, scale, this);
-            if (i === 0) {
-                thisTOPbox.find(".bloom-editable.bloom-visibility-code-on").first().focus();
+
+        textOverPictureElems.resizable({
+            // There was a problem where resizing a box messed up its draggable containment,
+            // so now after we resize we go back through making it draggable and clickable again.
+            stop: (event, ui) => {
+                this.makeTOPBoxDraggableAndClickable($(event.target), scale);
             }
         });
+
+        this.makeTOPBoxDraggableAndClickable(textOverPictureElems, scale);
+
+        if (textOverPictureElems.length > 0) {
+            textOverPictureElems.first().find(".bloom-editable.bloom-visibility-code-on").first().focus();
+        }
     }
 
     private calculatePercentagesAndFixTextboxPosition(wrapperBox: JQuery) {
