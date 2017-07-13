@@ -12,7 +12,7 @@
     - Added a custom branding pack choice for ToMasewalTlahtol of Mexico.
 - Edit Tab
     - We have sped up the time it takes to change pages.
-    - You can now add moveable text blocks on top of images. Use this for comic books or kids’ books that fill the page with an image and then put text on top of it. (not landed in alpha yet).
+    - You can now add moveable text blocks on top of images. Use this for comic books or kids’ books that fill the page with an image and then put text on top of it.
     - We've added new zoom control in the upper left. We've removed CTRL-Mouse wheel zooming (sorry) because it appears that some people were doing it accidentally and then getting very confused.
     - We removed Settings and Other Collection buttons from the Edit and Publish Tabs. They aren't really needed there, and we think that having them only available on the Collections Tab promotes and understanding of what it is they do.
 - Publish Tab
@@ -37,6 +37,9 @@
         - You can now control the what sides of a text box now have sides
         - We have moved borders and background shading from the text styles to the Text Box Formatting
     - You can now copy a page from one book and paste it into another. One use for this is for making template pages out of complex pages you've already created.
+    - Text on cover pages (the large boxes where you can type anything) is no longer copied into derived books.
+- Help
+    - Added/updated some links to point to our new community forum site.
 
 ## 3.8 (release)
 - Windows Installation
