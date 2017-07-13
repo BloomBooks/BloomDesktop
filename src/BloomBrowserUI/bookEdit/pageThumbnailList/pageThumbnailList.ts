@@ -14,6 +14,9 @@ const timerName = "thumbnailInterval";
 const kSocketName = "webSocket";
 
 var thumbnailTimerInterval = 200;
+let pageWindowSocket: WebSocket;
+var listenerFunction;
+
 $(window).ready(function () {
     $(".gridly").gridly({
         base: 35, // px
@@ -41,14 +44,15 @@ $(window).ready(function () {
         fireCSharpEvent("menuClicked", $(this).parent().parent().attr("id"));
     });
 
-    let websocketPort = parseInt(window.location.port, 10) + 1;
-
-    //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-    window[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
+    pageWindowSocket = getWebSocket();
 
     let localizedNotification = "";
 
-    let listenerFunction = event => {
+    // This function will be hooked up (after we set localizedNotification properly)
+    // to be called when C# sends messages through the web socket.
+    // We need a named function because it looks cleaner and we use it to remove the
+    // listener when we shut down.
+    listenerFunction = event => {
         var e = JSON.parse(event.data);
         if (e.id === "saving") {
             toastr.info(localizedNotification, "", {
@@ -71,16 +75,27 @@ $(window).ready(function () {
     theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...").done(savingNotification => {
         localizedNotification = savingNotification;
         // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-        (<WebSocket>window[kSocketName]).addEventListener("message", listenerFunction);
+        pageWindowSocket.addEventListener("message", listenerFunction);
     });
 });
 
 export function stopListeningForSave() {
-    (<WebSocket>window[kSocketName]).close();
+    pageWindowSocket = getWebSocket();
+    pageWindowSocket.removeEventListener("message", listenerFunction);
+    pageWindowSocket.close();
+}
+
+function getWebSocket(): WebSocket {
+    if (typeof window[kSocketName] === "undefined") {
+        //currently we use a different port for this websocket, and it's the main port + 1
+        let websocketPort = parseInt(window.location.port, 10) + 1;
+        //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
+        window[kSocketName] = new WebSocket("ws://127.0.0.1:" + websocketPort.toString());
+    }
+    return window[kSocketName];
 }
 
 function fireCSharpEvent(eventName, eventData) {
-
     var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
     top.document.dispatchEvent(event);
 }

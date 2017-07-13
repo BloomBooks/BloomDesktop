@@ -27,13 +27,10 @@ export default class TalkingBookModel implements ITabModel {
     }
 
     updateMarkup() {
-        // we might have switched pages and shutdown the listener, but if the tool isn't active, don't update.
-        if (AudioRecorder.theOneAudioRecorder) {
-            AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
-        }
+        AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
     }
 
-    name() { return 'talkingBook'; }
+    name() { return "talkingBook"; }
 
     hasRestoredSettings: boolean;
 
