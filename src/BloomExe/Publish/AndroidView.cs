@@ -19,7 +19,6 @@ namespace Bloom.Publish
 			Controls.Add(_browser);
 			// Has to be in front of the panel docked top for Fill to work.
 			_browser.BringToFront();
-			//TODO localization
 			BloomFileLocator.GetBrowserFile("gulpfile.js");
 			var path = BloomFileLocator.GetBrowserFile("publish","android","androidPublishUI.html");
 			_browser.Navigate(path.ToLocalhost(), false);

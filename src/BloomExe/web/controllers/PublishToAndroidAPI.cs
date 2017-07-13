@@ -1,24 +1,17 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Windows.Forms;
-using Bloom.Collection;
+﻿using Bloom.Collection;
 using Bloom.web;
-using Newtonsoft.Json;
-using SIL.IO;
-using SIL.Progress;
 
 namespace Bloom.Api
 {
 	/// <summary>
 	/// </summary>
-	class PublishToAndroidAPI
+	class PublishToAndroidApi
 	{
 		private const string kApiUrlPart = "publish/android/";
 		private readonly CollectionSettings _collectionSettings;
 		private readonly WebSocketProgress _progress;
 
-		public PublishToAndroidAPI(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer)
+		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer)
 		{
 			_collectionSettings = collectionSettings;
 			_progress = new WebSocketProgress(bloomWebSocketServer);

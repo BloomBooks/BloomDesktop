@@ -32,30 +32,30 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         let self = this;
         return (
             <div>
-                <HelpLink l10nkey="Publish.Android.LearnAboutDigitalPublishingOptions"
-                    l10ncomment="" helpId="learnAboutDigitalPublishingOptions">
+                <HelpLink l10nKey="Publish.Android.LearnAboutDigitalPublishingOptions"
+                    l10nComment="" helpId="learnAboutDigitalPublishingOptions">
                     Learn about your digital publishing options.
                 </HelpLink>
-                <H1 l10nkey="Publish.Android.StepInstall">
+                <H1 l10nKey="Publish.Android.StepInstall">
                     Step 1: Install the Bloom Reader app on the Android device</H1>
-                <HelpLink l10nkey="Publish.Android.howToGetBloomReaderOnDevice"
+                <HelpLink l10nKey="Publish.Android.HowToGetBloomReaderOnDevice"
                     helpId="howToGetBloomReaderOnDevice.html">
                     How to get the Bloom Reader app on your device.
                 </HelpLink>
                 <br />
-                <HelpLink l10nkey="Publish.Android.LearnAboutBloomReaderApp"
+                <HelpLink l10nKey="Publish.Android.LearnAboutBloomReaderApp"
                     helpId="learnAboutBloomReaderApp.html">
                     Learn more about the Bloom Reader app.
                 </HelpLink>
-                <H1 l10nkey="Publish.Android.StepLaunch">
+                <H1 l10nKey="Publish.Android.StepLaunch">
                     Step 2: Launch the Bloom Reader app on the device
                 </H1>
-                <H1 l10nkey="Publish.Android.StepConnect">
+                <H1 l10nKey="Publish.Android.StepConnect">
                     Step 3: Connect this computer to the device
                 </H1>
 
-                <BloomButton l10nkey="Publish.Android.ConnectUsb"
-                    l10ncomment="Button that tells Bloom to connect to a device using a USB cable"
+                <BloomButton l10nKey="Publish.Android.ConnectUsb"
+                    l10nComment="Button that tells Bloom to connect to a device using a USB cable"
                     enabled={this.state.stateId === "ReadyToConnect"}
                     clickEndpoint="publish/android/connectUsb"
                     onUpdateState={self.handleUpdateState}>
@@ -63,19 +63,19 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 </BloomButton>
                 <br />
                 <br />
-                <BloomButton l10nkey="Publish.Android.ConnectWifi"
-                    l10ncomment="Button that tells Bloom to connect to a device using a USB cable"
+                <BloomButton l10nKey="Publish.Android.ConnectWifi"
+                    l10nComment="Button that tells Bloom to connect to a device using Wifi"
                     enabled={this.state.stateId === "ReadyToConnect"}
                     clickEndpoint="publish/android/connectWifi"
                     onUpdateState={this.handleUpdateState}>
                     Connect with WiFi
                 </BloomButton>
 
-                <H1 l10nkey="Publish.Android.StepSend">
+                <H1 l10nKey="Publish.Android.StepSend">
                     Step 4: Send this book to the device
                 </H1>
-                <BloomButton l10nkey="Publish.Android.sendBook"
-                    l10ncomment="Button that tells Bloom to connect to an device using a USB cable"
+                <BloomButton l10nKey="Publish.Android.SendBook"
+                    l10nComment="Button that tells Bloom to send the book to the connected device"
                     enabled={this.state.stateId === "ReadyToSend"}
                     clickEndpoint="publish/android/sendBook"
                     onUpdateState={this.handleUpdateState}>

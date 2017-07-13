@@ -6,7 +6,7 @@ interface ComponentState {
     progress: string;
 }
 
-// Note that this component does not do localization; we expect the progres messages
+// Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
 export default class ProgressBox extends React.Component<{}, ComponentState> {
     constructor(props) {

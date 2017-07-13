@@ -12,8 +12,8 @@ export interface IUILanguageAwareProps {
 }
 
 export interface ILocalizationProps extends IUILanguageAwareProps {
-    l10nkey: string;
-    l10ncomment?: string;
+    l10nKey: string;
+    l10nComment?: string;
 }
 
 export interface ILocalizationState {
@@ -45,7 +45,7 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
     public componentDidMount() {
         let self = this;
         this.isComponentMounted = true;
-        theOneLocalizationManager.asyncGetText(this.props.l10nkey, this.getOriginalEnglishStringContent())
+        theOneLocalizationManager.asyncGetText(this.props.l10nKey, this.getOriginalEnglishStringContent())
             .done(function (result) {
                 // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
                 // after this component is no longer visible. See note on componentWillUnmount()
@@ -63,7 +63,7 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
 
     public getLocalizedContent(): JSX.Element {
         // if (l10nVerbose) { // enhance... I was playing with a "verbose" feature
-        //     return <span>{(this.state as any) + "[l10nkey=" + this.props.l10nkey + " uilang=" +
+        //     return <span>{(this.state as any) + "[l10nKey=" + this.props.l10nKey + " uilang=" +
         //            this.props.currentUILanguage + "]"} </span>;
         // } else {
         if (this.state.translation !== undefined) {
