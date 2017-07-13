@@ -100,7 +100,8 @@ class TextOverPictureManager {
         }
     }
 
-    private makeTOPBoxDraggableAndClickable(thisTOPBox: JQuery, scale: number, TOPManager: TextOverPictureManager): void {
+    private makeTOPBoxDraggableAndClickable(thisTOPBox: JQuery, scale: number): void {
+        var topMgr = this;
         var image = this.getImageContainer(thisTOPBox);
         var imagePos = image[0].getBoundingClientRect();
         var wrapperBoxRectangle = thisTOPBox[0].getBoundingClientRect();
@@ -118,7 +119,7 @@ class TextOverPictureManager {
             },
             handle: ".bloom-dragHandleTOP",
             stop: function (event, ui) {
-                TOPManager.calculatePercentagesAndFixTextboxPosition(thisTOPBox);
+                topMgr.calculatePercentagesAndFixTextboxPosition(thisTOPBox);
             }
         });
 
@@ -130,15 +131,22 @@ class TextOverPictureManager {
     // Make any added TextOverPictureManager textboxes draggable, clickable, and resizable.
     // Called by bloomEditing.ts.
     public makeTextOverPictureBoxDraggableClickableAndResizable() {
+        var topMgr = this;
         // get all textOverPicture elements
         var textOverPictureElems = $("body").find(".bloom-textOverPicture");
-
-        textOverPictureElems.resizable();
-
         var scale = EditableDivUtils.getPageScale();
+
+        textOverPictureElems.resizable({
+            // There was a problem where resizing a box messed up its draggable containment,
+            // so now after we resize we go back through making it draggable and clickable again.
+            stop: function (event, ui) {
+                topMgr.makeTOPBoxDraggableAndClickable($(this), scale);
+            }
+        });
+
         textOverPictureElems.each((i, textbox) => {
             var thisTOPbox = $(textbox);
-            this.makeTOPBoxDraggableAndClickable(thisTOPbox, scale, this);
+            this.makeTOPBoxDraggableAndClickable(thisTOPbox, scale);
             if (i === 0) {
                 thisTOPbox.find(".bloom-editable.bloom-visibility-code-on").first().focus();
             }
