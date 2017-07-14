@@ -32,7 +32,6 @@ namespace Bloom.Workspace
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
-		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
 		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
 #if CHORUS
 			private readonly ChorusSystem _chorusSystem;
@@ -74,7 +73,6 @@ namespace Bloom.Workspace
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							LocalizationChangedEvent localizationChangedEvent,
-							 FeedbackDialog.Factory feedbackDialogFactory,
 							ProblemReporterDialog.Factory problemReportDialogFactory,
 							//ChorusSystem chorusSystem,
 							LocalizationManager localizationManager
@@ -86,7 +84,6 @@ namespace Bloom.Workspace
 			_selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_localizationChangedEvent = localizationChangedEvent;
-			_feedbackDialogFactory = feedbackDialogFactory;
 			_problemReportDialogFactory = problemReportDialogFactory;
 			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
@@ -106,7 +103,6 @@ namespace Bloom.Workspace
 			_settingsLauncherHelper.ManageComponent(_showLogMenuItem);
 			_settingsLauncherHelper.ManageComponent(_releaseNotesMenuItem);
 			_settingsLauncherHelper.ManageComponent(_divider2);
-			_settingsLauncherHelper.ManageComponent(_divider3);
 			_settingsLauncherHelper.ManageComponent(_divider4);
 
 			OnSettingsProtectionChanged(this, null);//initial setup
@@ -570,10 +566,12 @@ namespace Bloom.Workspace
 
 		private void _makeASuggestionMenuItem_Click(object sender, EventArgs e)
 		{
-			using (var x = _feedbackDialogFactory())
-			{
-				x.Show();
-			}
+			Process.Start(UrlLookup.LookupUrl(UrlType.UserSuggestions));
+		}
+
+		private void _askAQuestionMenuItem_Click(object sender, EventArgs e)
+		{
+			Process.Start(UrlLookup.LookupUrl(UrlType.Support));
 		}
 
 		private void OnHelpButtonClick(object sender, MouseEventArgs e)

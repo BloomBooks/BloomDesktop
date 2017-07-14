@@ -690,6 +690,16 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap sad16x16 {
+            get {
+                object obj = ResourceManager.GetObject("sad16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap sendreceiveToolbarButton {
             get {
                 object obj = ResourceManager.GetObject("sendreceiveToolbarButton", resourceCulture);
@@ -830,29 +840,19 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap uservoice16x16 {
-            get {
-                object obj = ResourceManager.GetObject("uservoice16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap uservoice16x161 {
-            get {
-                object obj = ResourceManager.GetObject("uservoice16x161", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap videos {
             get {
                 object obj = ResourceManager.GetObject("videos", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap weblink {
+            get {
+                object obj = ResourceManager.GetObject("weblink", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

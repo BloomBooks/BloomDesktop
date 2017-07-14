@@ -638,12 +638,6 @@
     <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.Designer.cs">
       <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Workspace\FeedbackDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Workspace\FeedbackDialog.Designer.cs">
-      <DependentUpon>FeedbackDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="web\WebLibraryView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -881,9 +875,6 @@
     <EmbeddedResource Include="WebLibraryIntegration\OverwriteWarningDialog.resx">
       <DependentUpon>OverwriteWarningDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Workspace\FeedbackDialog.resx">
-      <DependentUpon>FeedbackDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="web\WebLibraryView.resx">
       <DependentUpon>WebLibraryView.cs</DependentUpon>
     </EmbeddedResource>
@@ -1053,9 +1044,6 @@
     <None Include="Resources\pagePlaceHolder.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\uservoice16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\construction.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1218,9 +1206,6 @@
     <None Include="Resources\delete-wordLarge.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\uservoice16x161.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\pdf16x16.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1368,6 +1353,8 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
+    <None Include="Resources\sad16x16.png" />
+    <None Include="Resources\weblink.png" />
     <None Include="Resources\android.png" />
   </ItemGroup>
   <ItemGroup>

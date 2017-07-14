@@ -36,6 +36,9 @@
         - You can now control the what sides of a text box now have sides
         - We have moved borders and background shading from the text styles to the Text Box Formatting
     - You can now copy a page from one book and paste it into another. One use for this is for making template pages out of complex pages you've already created.
+    - Text on cover pages (the large boxes where you can type anything) is no longer copied into derived books.
+- Help
+    - Added/updated some links to point to our new community forum site.
 
 ## 3.8 (release)
 - Windows Installation
