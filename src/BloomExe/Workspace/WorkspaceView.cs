@@ -98,12 +98,11 @@ namespace Bloom.Workspace
 			//_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
 			//NB: these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
 			_settingsLauncherHelper.ManageComponent(_keyBloomConceptsMenuItem);
-			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
+			_settingsLauncherHelper.ManageComponent(_requestAFeatureMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
 			_settingsLauncherHelper.ManageComponent(_showLogMenuItem);
 			_settingsLauncherHelper.ManageComponent(_releaseNotesMenuItem);
 			_settingsLauncherHelper.ManageComponent(_divider2);
-			_settingsLauncherHelper.ManageComponent(_divider4);
 
 			OnSettingsProtectionChanged(this, null);//initial setup
 			SettingsProtectionSettings.Default.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(OnSettingsProtectionChanged);
@@ -564,7 +563,7 @@ namespace Bloom.Workspace
 			}
 		}
 
-		private void _makeASuggestionMenuItem_Click(object sender, EventArgs e)
+		private void _requestAFeatureMenuItem_Click(object sender, EventArgs e)
 		{
 			Process.Start(UrlLookup.LookupUrl(UrlType.UserSuggestions));
 		}
@@ -934,7 +933,6 @@ namespace Bloom.Workspace
 
 
 		#endregion
-
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
