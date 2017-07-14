@@ -68,6 +68,7 @@ export default class AudioRecording {
     private idOfCurrentSentence: string;
     private awaitingNewRecording: boolean;
 
+    listenerFunction: (MessageEvent) => void;
 
     public initializeTalkingBookTool() {
         // I've sometimes observed events like click being handled repeatedly for a single click.
@@ -119,12 +120,14 @@ export default class AudioRecording {
 
         this.changeStateAndSetExpected('record');
 
-        // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-        this.getWebSocket().addEventListener("message", event => {
+        this.listenerFunction = event => {
             var e = JSON.parse(event.data);
             if (e.id == "peakAudioLevel")
                 this.setstaticPeakLevel(e.payload);
-        });
+        }
+
+        // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
+        this.getWebSocket().addEventListener("message", this.listenerFunction);
     }
 
     public removeRecordingSetup() {
@@ -132,7 +135,7 @@ export default class AudioRecording {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
         page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
-        this.getWebSocket().removeEventListener("message");
+        this.getWebSocket().removeEventListener("message", this.listenerFunction);
     }
 
     private getWebSocket(): WebSocket {
@@ -903,8 +906,13 @@ export default class AudioRecording {
         var ids = [];
         this.getAudioElements().each(function () { ids.push(this.id); });
         axios.get("/bloom/api/audio/enableListenButton?ids=" + ids).then(response => {
-            if (response.statusText == "OK")
+            if (response.statusText == "OK") {
                 this.setStatus('listen', Status.Enabled);
+            }
+        }).catch(response => {
+            // This handles the case where AudioRecording.HandleEnableListenButton() (in C#)
+            // sends back a request.Failed("no audio") and thereby avoids an uncaught js exception.
+            this.setStatus('listen', Status.Disabled);
         });
     }
 
