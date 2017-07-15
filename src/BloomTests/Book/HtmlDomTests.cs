@@ -774,5 +774,36 @@ namespace BloomTests.Book
 			}
 			Assert.That(countEmpty, Is.EqualTo(2));
 		}
+		//countPageButDoNotShowNumber
+			//bloom-startPageNumbering
+
+
+		[TestCase("first page", 1,
+			"<div id='ego' class='bloom-page numberedPage'/>" +
+			"<div class='bloom-page numberedPage'/>" +
+			"<div class='bloom-page numberedPage'/>")]
+		// REVIEW: should we be returning string so that we can say "cover", for example?
+		[TestCase("on a page that itself is not numbered", 0,
+			"<div id='ego' class='bloom-page'/>")]
+		[TestCase("first page is numbered, this is second numbered page", 2,
+			"<div class='bloom-page numberedPage'></div><div id='ego' class='bloom-page numberedPage'/>")]
+		[TestCase("first page is not numbered",
+			1, " <div class='bloom-page'/><div id='ego' class='bloom-page numberedPage'/>")]
+		[TestCase("previous page is countPageButDoNotShowNumber",
+			2, " <div class='bloom-page countPageButDoNotShowNumber'/><div id='ego' class='bloom-page numberedPage'/>")]
+		[TestCase("bloom-startPageNumbering restarts numbering", 1,
+			"<div class='bloom-page numberedPage'></div><div id='ego' class='bloom-page bloom-startPageNumbering'/>")]
+		[TestCase("the works", 2, "<div class='bloom-page'/>" +
+								"<div class='bloom-page numberedPage'/>" +
+								"<div class='bloom-page bloom-startPageNumbering'/>" +
+								"<div id='ego' class='bloom-page numberedPage'/>" +
+								"<div class='bloom-page numberedPage'/>" +
+								"<div class='bloom-page numberedPage'/>")]
+		public void GetPageNumberOfPage_ReturnsExpectedNumber(string description, int expected, string contents)
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body><div id='bloomDataDiv'></div>" + contents + "</body></html>");
+			var ego = dom.RawDom.SelectSingleNode("//div[@id='ego']") as XmlElement;
+			Assert.AreEqual(expected, dom.GetPageNumberOfPage(ego), "Failed " + description);
+		}
 	}
 }

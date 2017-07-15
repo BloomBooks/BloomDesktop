@@ -392,6 +392,11 @@ namespace Bloom.Book
 			element.SetAttribute("class", (classes + " " + className).Trim());
 		}
 
+		public static bool HasClass(XmlElement element, string className)
+		{
+			var classes = element.GetAttribute("class");
+			return classes.Contains(className);
+		}
 
 		/// <summary>
 		/// Applies the XSLT, and returns an XML dom
@@ -1387,6 +1392,43 @@ namespace Bloom.Book
 			{
 				RemoveMetaElement("lockedDownAsShell");
 			}
+		}
+
+		/// <summary>
+		/// Given a page or a child of a page, return the page
+		/// </summary>
+		private XmlElement GetPageDivOfElement(XmlElement element)
+		{
+			return element.SelectSingleNode("ancestor-or-self::div[contains(@class,'bloom-page')]") as XmlElement;
+		}
+
+		/// <summary>
+		/// Figure out what page number would be shown on the page
+		/// </summary>
+		public int GetPageNumberOfPage(XmlElement pageDiv )
+		{
+			var allPages = RawDom.SelectNodes("html/body/div[contains(@class,'bloom-page')]").Cast<XmlElement>();
+
+			var pageNumber = 0;
+			foreach(var p in allPages)
+			{
+				if(HtmlDom.HasClass(p, "numberedPage") || HtmlDom.HasClass(p, "countPageButDoNotShowNumber"))
+				{
+					++pageNumber;
+				}
+				if(HtmlDom.HasClass(p, "bloom-startPageNumbering"))
+				{
+					pageNumber=1;
+				}
+				if (p == pageDiv)
+					return pageNumber;
+			}
+			return -1;
+		}
+
+		public XmlElement FindPageById(string pageId)
+		{
+			return RawDom.SafeSelectNodes("//body/div[@id='" + pageId + "']").Cast<XmlElement>().FirstOrDefault();
 		}
 	}
 }

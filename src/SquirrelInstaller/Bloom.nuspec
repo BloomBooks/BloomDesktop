@@ -9,7 +9,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<description>{Bloom description and version provided by build script}</description>
     <releaseNotes>None</releaseNotes>
-    <copyright>Copyright SIL International 2016</copyright>
+    <copyright>Copyright SIL International 2017</copyright>
 	<iconUrl>https://s3.amazonaws.com/bloomlibrary.org/squirrel/BloomSetup.ico</iconUrl>
   </metadata>
 	<files>
