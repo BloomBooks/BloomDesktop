@@ -589,4 +589,26 @@ h2 {
     order: 2;
 }
 
+
+//Enhance: I think these could be computed, based on the current margin
+@OddPageNumberPosition: 57px;
+@EvenPageNumberPosition: 60px;
+
+.numberedPage{
+    &:after {
+        content: attr(data-page-number);
+        font-size: 14pt;
+        position: absolute;
+        bottom: 20px;
+    }
+    &.side-left:after { // side-___ maintained by c#
+        left: @OddPageNumberPosition;
+    }
+    &.side-right:after { // side-___ maintained by c#
+        right: @EvenPageNumberPosition;
+        text-align: right;
+    }
+}
+
+
 //... to be continued. We sandwich most other sheets between this one and the languageDisplay.css, which comes last-ish

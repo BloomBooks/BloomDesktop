@@ -14,7 +14,7 @@ BODY {
 
 /* this is handy for debugging page numbering in the thumbnail list
 .bloom-page::after {
-    content: counter(pageNumber);
+    content: attr(data-page-number);
     position: absolute;
     bottom: 7px;
     left: 10px;

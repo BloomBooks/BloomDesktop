@@ -29,7 +29,7 @@ namespace Bloom.Book
 
 			// add dictionary script to the page
 			XmlElement dictionaryScriptElement = pageDom.RawDom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
-			if (dictionaryScriptElement != null)
+			if(dictionaryScriptElement != null)
 				dictionaryScriptElement.ParentNode.RemoveChild(dictionaryScriptElement);
 
 			dictionaryScriptElement = pageDom.RawDom.CreateElement("script");
@@ -38,10 +38,10 @@ namespace Bloom.Book
 			var d = new Dictionary<string, string>();
 
 			d.Add(collectionSettings.Language1Iso639Code, collectionSettings.Language1Name);
-			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
+			if(!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
 				SafelyAddLanguage(d, collectionSettings.Language2Iso639Code,
 					collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code));
-			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			if(!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
 				SafelyAddLanguage(d, collectionSettings.Language3Iso639Code,
 					collectionSettings.GetLanguage3Name(collectionSettings.Language3Iso639Code));
 
@@ -87,14 +87,14 @@ namespace Bloom.Book
 				.Distinct()
 				.Where(lang => !mapOriginalToLocalized.ContainsKey(lang))
 				.ToList();
-			if (langs.Any())
+			if(langs.Any())
 			{
 				// We don't have a localization for these languages, but we can at least try to give them a name
 				var lookup = new LanguageLookupModel(); // < 1ms
 				foreach (var lang in langs) // may include things like empty string, z, *, but this is harmless as they are not language codes.
 				{
 					string match;
-					if (lookup.GetBestLanguageName(lang, out match)) // some better name found
+					if(lookup.GetBestLanguageName(lang, out match)) // some better name found
 						mapOriginalToLocalized[lang] = match;
 				}
 			}
@@ -103,7 +103,7 @@ namespace Bloom.Book
 		private static void CheckDynamicStrings()
 		{
 			// if the ui language changes, check for English
-			if (!_foundEnglish && (LocalizationManager.UILanguageId == "en"))
+			if(!_foundEnglish && (LocalizationManager.UILanguageId == "en"))
 			{
 				_foundEnglish = true;
 
@@ -140,7 +140,7 @@ namespace Bloom.Book
 		{
 			SafelyAddLanguage(d, "en", "English");
 			SafelyAddLanguage(d, "ha", "Hausa");
-			SafelyAddLanguage(d, "hi", "हिन्दी");//hindi
+			SafelyAddLanguage(d, "hi", "हिन्दी"); //hindi
 			SafelyAddLanguage(d, "es", "español");
 			SafelyAddLanguage(d, "fr", "français");
 			SafelyAddLanguage(d, "pt", "português");
@@ -148,7 +148,7 @@ namespace Bloom.Book
 			SafelyAddLanguage(d, "th", "ภาษาไทย"); //thai
 			SafelyAddLanguage(d, "tpi", "Tok Pisin");
 			SafelyAddLanguage(d, "id", "Bahasa Indonesia");
-			SafelyAddLanguage(d, "ar","العربية/عربي‎");//arabic
+			SafelyAddLanguage(d, "ar", "العربية/عربي‎"); //arabic
 			//    return { "en": "English", "vernacularLang": "en", "{V}": "English", "{N1}": "English", "{N2}": "", "ar": "العربية/عربي‎","id": "Bahasa Indonesia",
 			//"ha": "Hausa", "hi": "हिन्दी", "es": "español", "fr": "français", "pt": "português", "swa": "Swahili", "th": "ภาษาไทย", "tpi": "Tok Pisin", "TemplateBooks.PageLabel.Front Cover": "Front Cover", "*You may use this space for author/illustrator, or anything else.": "*You may use this space for author/illustrator, or anything else.", "Click to choose topic": "Click to choose topic", "EditTab.FormatDialog.FontSizeTip": "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\\nCurrent size is {2}pt.", "FrontMatter.Factory.Book title in {lang}": "Book title in {lang}", "FrontMatter.Factory.Click to choose topic": "Click to choose topic", "FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.": "International Standard Book Number. Leave blank if you don't have one of these.", "FrontMatter.Factory.Acknowledgments for translated version, in {lang}": "Acknowledgments for translated version, in {lang}", "FrontMatter.Factory.Use this to acknowledge any funding agencies.": "Use this to acknowledge any funding agencies.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover." };
 
@@ -156,7 +156,7 @@ namespace Bloom.Book
 
 		private static void SafelyAddLanguage(Dictionary<string, string> d, string key, string name)
 		{
-			if (!d.ContainsKey(key))
+			if(!d.ContainsKey(key))
 				d.Add(key, name);
 		}
 
@@ -188,7 +188,7 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.FundingAgenciesPrompt",
 				"Use this to acknowledge any funding agencies.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CopyrightPrompt",
-				"Click to Edit Copyright & License");	// pug files use & everywhere (BL-4120)
+				"Click to Edit Copyright & License"); // pug files use & everywhere (BL-4120)
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalAcknowledgmentsPrompt",
 				"Original (or Shell) Acknowledgments in {lang}");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TopicPrompt",
@@ -250,7 +250,7 @@ namespace Bloom.Book
 				? LocalizationManager.GetDynamicString("Bloom", key, defaultText)
 				: LocalizationManager.GetString(key, defaultText);
 
-			if (!dictionary.ContainsKey(key))
+			if(!dictionary.ContainsKey(key))
 			{
 				dictionary.Add(key, translation);
 			}
@@ -266,7 +266,7 @@ namespace Bloom.Book
 			//But that would require changes to all the templates to have that key somehow, in adition to or in place of the current English
 			//So for now, we're just keeping the real key on the c#/tmx side of things, and letting the javascript work by matching our defaultText to the English text in the html
 			var keyUsedInTheJavascriptDictionary = defaultText;
-			if (!dictionary.ContainsKey(keyUsedInTheJavascriptDictionary))
+			if(!dictionary.ContainsKey(keyUsedInTheJavascriptDictionary))
 			{
 				dictionary.Add(keyUsedInTheJavascriptDictionary, WebUtility.HtmlEncode(translation));
 			}
@@ -292,7 +292,7 @@ namespace Bloom.Book
 			var d = new Dictionary<string, string>();
 
 			//d.Add("urlOfUIFiles", "file:///" + fileLocator.LocateDirectory("ui", "ui files directory"));
-			if (!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
+			if(!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
 			{
 				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
 			}
@@ -301,11 +301,11 @@ namespace Bloom.Book
 			d.Add("isSourceCollection", collectionSettings.IsSourceCollection.ToString());
 
 			// BL-2357 To aid in smart ordering of source languages in source bubble
-			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
+			if(!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
 			{
 				d.Add("currentCollectionLanguage2", collectionSettings.Language2Iso639Code);
 			}
-			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			if(!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
 			{
 				d.Add("currentCollectionLanguage3", collectionSettings.Language3Iso639Code);
 			}
@@ -316,7 +316,7 @@ namespace Bloom.Book
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
 			var head = pageDom.RawDom.SelectSingleNode("//head");
-			if (existingElement != null)
+			if(existingElement != null)
 				head.ReplaceChild(element, existingElement);
 			else
 				head.InsertAfter(element, head.LastChild);
