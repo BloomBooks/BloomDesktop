@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -1438,20 +1439,46 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Updates the side-right and side-left classes of every page div in the supplied dom (be it the full book
-		/// or some subset (e.g. one page))
+		/// Updates the side-right and side-left classes of every page div in the supplied dom.
+		/// These will only be correct if the dom is the full book; from a dom made of one page,
+		/// we cannot determine if it is left or right, nor what page.
 		/// </summary>
-		/// <param name="languageIsRightToLeft"></param>
-		/// <param name="startingIndex">If this dom is only a subset of the book, then you need to provide this
-		/// to tell us what the first page index is, of this subset of the full dom.</param>
-		public void UpdateSideClassOfAllPages(bool languageIsRightToLeft, int startingIndex = 0)
+		public void UpdatePageNumberAndSideClassOfPages(string charactersForDigits, bool languageIsRightToLeft)
 		{
-			var i = startingIndex;
-			foreach(var pageDiv in GetPageElements())
+			var i = 0;
+			foreach (var pageDiv in GetPageElements())
 			{
 				UpdateSideClass(pageDiv, i, languageIsRightToLeft);
+				// enhance: we could optimize this since we are doing them all in sequence...
+				// we'd have to call this until we get a non-empty page number, but perhaps
+				// we could keep going through the back cover so long as the stylesheet
+				// ignores the numbers on those so no one will see them?
+				var number = GetPageNumberOfPage(pageDiv);
+				var numberInScript = number > 0 ? GetNumberStringRepresentation(number, charactersForDigits) : "";
+				pageDiv.SetAttribute("data-page-number", numberInScript);
 				i++;
 			}
+		}
+
+		/// <summary>
+		/// Simplified from https://stackoverflow.com/a/35099462/723299
+		/// If there are number systems that can't be represented by just exchanging digits, this won't work for them.
+		/// </summary>
+		private string GetNumberStringRepresentation(int postiveInteger, string charactersForDigits)
+		{
+			if(string.IsNullOrEmpty(charactersForDigits))
+				return postiveInteger.ToString(CultureInfo.InvariantCulture);
+
+			Debug.Assert(charactersForDigits.Length==10);
+
+			return String.Join("", postiveInteger.ToString(CultureInfo.InvariantCulture)
+				.Select(x =>
+				{
+					if ("1234567890".Contains(x.ToString()))
+						return charactersForDigits.Substring(x - '0', 1);
+					else
+						return x.ToString();
+				}));
 		}
 
 		private static void UpdateSideClass(XmlElement pageDiv, int indexOfPageZeroBased, bool languageIsRightToLeft)

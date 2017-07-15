@@ -133,5 +133,17 @@ namespace BloomTests.Collection
 			settings.Language3Iso639Code = lang3;
 			Assert.That(settings.LicenseDescriptionLanguagePriorities, Is.EqualTo(results));
 		}
+
+		[TestCase("", "2")] // default
+		[TestCase("Decimal", "2")]
+		[TestCase("Devanagari", "२")]
+		[TestCase("Khmer", "២")]
+		[TestCase("Cjk-Decimal", "二")]
+		public void CharactersForDigitsForPageNumbers_Tests(string numberStyleName, string digitForNumber2)
+		{
+			var settings = CreateCollectionSettings(_folder.Path, "test");
+			settings.PageNumberStyle = numberStyleName;
+			Assert.AreEqual(digitForNumber2, settings.CharactersForDigitsForPageNumbers.Substring(2,1));
+		}
 	}
 }

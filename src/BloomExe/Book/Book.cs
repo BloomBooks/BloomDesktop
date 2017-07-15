@@ -913,7 +913,7 @@ namespace Bloom.Book
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null,
 				val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 
-			bookDOM.UpdateSideClassOfAllPages(_collectionSettings.IsLanguage1Rtl);
+			bookDOM.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 
@@ -1648,12 +1648,15 @@ namespace Bloom.Book
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
 			BookStarter.SetupPage(newPageDiv, _collectionSettings, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
+
+
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
 			// If we're a template, make the new page a template one.
 			HtmlDom.MakePageWithTemplateStatus(IsSuitableForMakingShells, newPageDiv);
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
 
+			OrderOrNumberOfPagesChanged();
 			BuildPageCache();
 			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == newPageDiv);
 			Guard.AgainstNull(newPage,"could not find the page we just added");
@@ -1797,6 +1800,7 @@ namespace Bloom.Book
 
 			ClearPagesCache();
 			//_pagesCache.Remove(page);
+			OrderOrNumberOfPagesChanged();
 
 			var pageNode = FindPageDiv(page);
 		   pageNode.ParentNode.RemoveChild(pageNode);
@@ -1807,6 +1811,12 @@ namespace Bloom.Book
 				_pageListChangedEvent.Raise(null);
 
 			InvokeContentsChanged(null);
+		}
+
+		private void OrderOrNumberOfPagesChanged()
+		{
+			OurHtmlDom.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers,
+				_collectionSettings.IsLanguage1Rtl);
 		}
 
 		private void ClearPagesCache()
@@ -1943,7 +1953,7 @@ namespace Bloom.Book
 			{
 				body.InsertAfter(pageDiv, pages[indexOfItemAfterRelocation-1]);
 			}
-			OurHtmlDom.UpdateSideClassOfAllPages(_collectionSettings.IsLanguage1Rtl);
+			OrderOrNumberOfPagesChanged();
 			BuildPageCache();
 			Save();
 			InvokeContentsChanged(null);
