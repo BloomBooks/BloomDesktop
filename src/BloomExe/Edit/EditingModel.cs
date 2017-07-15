@@ -286,6 +286,13 @@ namespace Bloom.Edit
 			info.Cancel = !CurrentBook.RelocatePage(info.Page, info.IndexOfPageAfterMove);
 			if(!info.Cancel)
 			{
+				// Moving a page actually changes its html to have the new left/right side and page number,
+				// The Book takes care of that, but now we need to actually reload it from the dom.
+				////TODO this is not enough to actually re-load the dom; it just reloads our cached version of it
+				// RefreshDisplayOfCurrentPage();
+				// bug this give a 'page expired'
+				// _view.UpdatePageList(false);
+
 				Analytics.Track("Relocate Page");
 				Logger.WriteEvent("Relocate Page");
 			}

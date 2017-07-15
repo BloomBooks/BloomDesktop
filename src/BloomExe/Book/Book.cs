@@ -305,7 +305,9 @@ namespace Bloom.Book
 			AddJavaScriptForEditing(pageDom);
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _collectionSettings, _storage.GetFileLocator());
+			pageDom.UpdateSideClassOfAllPages(_collectionSettings.IsLanguage1Rtl, GetIndexOfPage(page));
 			UpdateMultilingualSettings(pageDom);
+
 			if (IsSuitableForMakingShells && !page.IsXMatter)
 			{
 				// We're editing a template page in a template book.
@@ -613,6 +615,12 @@ namespace Bloom.Book
 		}
 
 		// Reduce repetitive reloading of books when looking up the related "TemplateBook".
+		public int GetIndexOfPage(IPage page)
+		{
+			return GetPages().IndexOf(page);
+		}
+
+
 		string _cachedTemplateKey;
 		Book _cachedTemplateBook;
 
@@ -912,6 +920,8 @@ namespace Bloom.Book
 			// If there is nothing there the default of true will survive.
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null,
 				val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
+
+			bookDOM.UpdateSideClassOfAllPages(_collectionSettings.IsLanguage1Rtl);
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 
@@ -1941,6 +1951,7 @@ namespace Bloom.Book
 			{
 				body.InsertAfter(pageDiv, pages[indexOfItemAfterRelocation-1]);
 			}
+			OurHtmlDom.UpdateSideClassOfAllPages(_collectionSettings.IsLanguage1Rtl);
 			BuildPageCache();
 			Save();
 			InvokeContentsChanged(null);
