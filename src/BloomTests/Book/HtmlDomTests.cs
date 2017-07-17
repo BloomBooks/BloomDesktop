@@ -774,9 +774,6 @@ namespace BloomTests.Book
 			}
 			Assert.That(countEmpty, Is.EqualTo(2));
 		}
-		//countPageButDoNotShowNumber
-			//bloom-startPageNumbering
-
 
 		[TestCase("first page", 1,
 			"<div id='ego' class='bloom-page numberedPage'/>" +
@@ -793,6 +790,8 @@ namespace BloomTests.Book
 			2, " <div class='bloom-page countPageButDoNotShowNumber'/><div id='ego' class='bloom-page numberedPage'/>")]
 		[TestCase("bloom-startPageNumbering restarts numbering", 1,
 			"<div class='bloom-page numberedPage'></div><div id='ego' class='bloom-page bloom-startPageNumbering'/>")]
+		[TestCase("page not found for this item", -1,
+			"<div id='ego'/>")]
 		[TestCase("the works", 2, "<div class='bloom-page'/>" +
 								"<div class='bloom-page numberedPage'/>" +
 								"<div class='bloom-page bloom-startPageNumbering'/>" +

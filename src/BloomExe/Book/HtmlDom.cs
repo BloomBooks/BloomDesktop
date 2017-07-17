@@ -394,8 +394,7 @@ namespace Bloom.Book
 
 		public static bool HasClass(XmlElement element, string className)
 		{
-			var classes = element.GetAttribute("class");
-			return classes.Contains(className);
+			return GetClasses(element).Contains(className);
 		}
 
 		/// <summary>
