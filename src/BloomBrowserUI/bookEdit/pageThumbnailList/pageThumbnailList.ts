@@ -96,7 +96,7 @@ function getWebSocket(): WebSocket {
 }
 
 function fireCSharpEvent(eventName, eventData) {
-    var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
+    var event = new MessageEvent(eventName, { "bubbles": true, "cancelable": true, "data": eventData });
     top.document.dispatchEvent(event);
 }
 
@@ -104,7 +104,7 @@ function loadNextThumbnail() {
     // The "thumb-src" attribute is added to the img tags on the server while the page is being built. The value
     // of the "src" attribute is copied into it and then the "src" attribute is set to an empty string so the
     // images can be loaded here in a controlled manner so as not to overwhelm system memory.
-    var nextImg = jQuery('body').find('*[thumb-src]').first();
+    var nextImg = jQuery("body").find("*[thumb-src]").first();
 
     // stop processing if there are no more images
     if ((!nextImg) || (nextImg.length === 0)) return;
@@ -112,8 +112,8 @@ function loadNextThumbnail() {
     var img = nextImg[0];
 
     // adding this to the query string tells the server to generate a thumbnail from the image file
-    var src = img.getAttribute('thumb-src') + '?thumbnail=1';
-    img.removeAttribute('thumb-src');
+    var src = img.getAttribute("thumb-src") + "?thumbnail=1";
+    img.removeAttribute("thumb-src");
 
     SetImageElementUrl(img, src);
 
@@ -128,9 +128,9 @@ function loadNextThumbnail() {
 function reorder(elements) {
     var ids = "";
     elements.each(function () {
-        var id = $(this).attr('id');
+        var id = $(this).attr("id");
         if (id)
             ids += "," + id;
     });
     fireCSharpEvent("gridReordered", ids);
-};
+}
