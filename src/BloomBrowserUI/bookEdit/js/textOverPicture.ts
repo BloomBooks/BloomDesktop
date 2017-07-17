@@ -132,6 +132,9 @@ class TextOverPictureManager {
     public makeTextOverPictureBoxDraggableClickableAndResizable() {
         // get all textOverPicture elements
         var textOverPictureElems = $("body").find(".bloom-textOverPicture");
+        if (textOverPictureElems.length === 0) {
+            return; // if there aren't any, quit before we hurt ourselves!
+        }
         var scale = EditableDivUtils.getPageScale();
 
         textOverPictureElems.resizable({
