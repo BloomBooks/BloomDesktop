@@ -441,7 +441,15 @@ namespace Bloom
 			if(e.Message.StartsWith("[JavaScript Warning"))
 				return;
 			if (e.Message.StartsWith("[JavaScript Error"))
-				ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
+			{
+				// BL-4737 Don't report websocket errors, but do send them to the Debug console.
+				// I (gjm) have left off the last digit of the port number to make this more robust
+				// since the port number is window.location.port + 1.
+				if (!e.Message.Contains("ws://127.0.0.1:809"))
+				{
+					ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
+				}
+			}
 			Debug.WriteLine(e.Message);
 		}
 
