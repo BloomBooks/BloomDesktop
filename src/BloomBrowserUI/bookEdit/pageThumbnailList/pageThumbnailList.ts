@@ -14,7 +14,6 @@ const timerName = "thumbnailInterval";
 const kSocketName = "webSocket";
 
 var thumbnailTimerInterval = 200;
-let pageWindowSocket: WebSocket;
 var listenerFunction;
 
 $(window).ready(function () {
@@ -43,8 +42,6 @@ $(window).ready(function () {
         event.stopPropagation();
         fireCSharpEvent("menuClicked", $(this).parent().parent().attr("id"));
     });
-
-    pageWindowSocket = getWebSocket();
 
     let localizedNotification = "";
 
@@ -75,18 +72,25 @@ $(window).ready(function () {
     theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...").done(savingNotification => {
         localizedNotification = savingNotification;
         // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-        pageWindowSocket.addEventListener("message", listenerFunction);
+        var socket = getWebSocket();
+        if (socket) {
+            socket.addEventListener("message", listenerFunction);
+        }
     });
 });
 
 export function stopListeningForSave() {
-    pageWindowSocket = getWebSocket();
-    pageWindowSocket.removeEventListener("message", listenerFunction);
-    pageWindowSocket.close();
+    var socket = getWebSocket();
+    if (socket) {
+        socket.removeEventListener("message", listenerFunction);
+        socket.close();
+    }
 }
 
+// N.B. Apparently when the window is shutting down, it is still possible to return from this
+// function with window[kSocketName] undefined.
 function getWebSocket(): WebSocket {
-    if (typeof window[kSocketName] === "undefined") {
+    if (!window[kSocketName]) {
         //currently we use a different port for this websocket, and it's the main port + 1
         let websocketPort = parseInt(window.location.port, 10) + 1;
         //NB: testing shows that our webSocketServer does receive a close notification when this window goes away

@@ -29,16 +29,25 @@ class TextOverPictureManager {
         // or 2- by switching to using addEventListener("message", eventhandler), which I've done. Also, the
         // TextOverPictureManager's socket is now on the local window as opposed to window.top as in
         // audioRecording.ts.
-        this.getWebSocket().addEventListener("message", this.listenerFunction);
+        var socket = this.getWebSocket();
+        if (socket) {
+            socket.addEventListener("message", this.listenerFunction);
+        }
+
     }
 
     public removeTextOverPictureListener(): void {
-        this.getWebSocket().removeEventListener("message", this.listenerFunction);
-        this.getWebSocket().close();
+        var socket = this.getWebSocket();
+        if (socket) {
+            socket.removeEventListener("message", this.listenerFunction);
+            socket.close();
+        }
     }
 
+    // N.B. Apparently when the window is shutting down, it is still possible to return from this
+    // function with window[kSocketName] undefined.
     private getWebSocket(): WebSocket {
-        if (typeof window[kSocketName] === "undefined") {
+        if (!window[kSocketName]) {
             //currently we use a different port for this websocket, and it's the main port + 1
             let websocketPort = parseInt(window.location.port, 10) + 1;
             //NB: testing shows that our webSocketServer does receive a close notification when this window goes away

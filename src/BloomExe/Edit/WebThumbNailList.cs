@@ -59,7 +59,6 @@ namespace Bloom.Edit
 				_browser.TabIndex = 0;
 				_browser.VerticalScroll.Visible = false;
 				Controls.Add(_browser);
-				VisibleChanged += OnPaneVisibleChanged;
 			}
 
 			// set the thumbnail interval based on physical RAM
@@ -187,7 +186,7 @@ namespace Bloom.Edit
 				UpdateItems(_pages);
 		}
 
-		private void OnPaneVisibleChanged(object sender, EventArgs e)
+		private void OnPaneContentsChanging()
 		{
 			RemoveThumbnailListeners();
 			// We get confusing Javascript errors if the websocket made for the previous version of this page
@@ -202,7 +201,7 @@ namespace Bloom.Edit
 
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
-			RemoveThumbnailListeners();
+			OnPaneContentsChanging();
 			var result = new List<IPage>();
 			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
 			if (firstRealPage == null)
