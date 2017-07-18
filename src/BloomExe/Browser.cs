@@ -441,7 +441,13 @@ namespace Bloom
 			if(e.Message.StartsWith("[JavaScript Warning"))
 				return;
 			if (e.Message.StartsWith("[JavaScript Error"))
-				ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
+			{
+				// BL-4737 Don't report websocket errors, but do send them to the Debug console.
+				if (!e.Message.Contains("has terminated unexpectedly. Some data may have been transferred."))
+				{
+					ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
+				}
+			}
 			Debug.WriteLine(e.Message);
 		}
 
