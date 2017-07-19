@@ -27,7 +27,7 @@ namespace BloomTests
 		}
 
 		[Test]
-		public void SecondNavigation_OnSameBrowser_HappensWhenFirstRaisesNavigated()
+		public void SecondNavigation_OnSameBrowser_HappensAtOnce()
 		{
 			var browser = new BrowserStub();
 			string target = "http://any old web address";
@@ -36,10 +36,7 @@ namespace BloomTests
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			string target2 = "http://some other web address";
 			isolator.Navigate(browser, target2);
-			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded at once");
-
-			browser.NormalTermination();
-			Assert.That(browser.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded when first completed");
+			Assert.That(browser.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded at once");
 
 			browser.NormalTermination();
 			Assert.That(browser.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
@@ -116,18 +113,23 @@ namespace BloomTests
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
+
+			var browser2 = new BrowserStub();
 			string target2 = "http://some other web address";
-			isolator.Navigate(browser, target2);
+			isolator.Navigate(browser2, target2);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded at once");
+			Assert.That(browser2.NavigateTarget, Is.EqualTo(null), "Second navigation should not have proceeded at once");
 
 			browser.RaiseNavigated(this, new EventArgs()); // got the event notification, but still busy.
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded even on Navigated while browser still busy");
+			Assert.That(browser2.NavigateTarget, Is.EqualTo(null), "Second navigation should not have proceeded even on Navigated while browser still busy");
 
 			browser.NormalTermination();
-			Assert.That(browser.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded when first completed (and browser no longer busy)");
+			Assert.That(browser2.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded when first completed (and browser no longer busy)");
 
-			browser.NormalTermination();
+			browser2.NormalTermination();
 			Assert.That(browser.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
+			Assert.That(browser2.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
 		}
 
 		[Test]
@@ -157,17 +159,21 @@ namespace BloomTests
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
+			var browser2 = new BrowserStub();
 			string target2 = "http://some other web address";
-			isolator.Navigate(browser, target2);
+			isolator.Navigate(browser2, target2);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded at once");
+			Assert.That(browser2.NavigateTarget, Is.EqualTo(null), "Second navigation should not have proceeded at once");
 			browser.IsBusy = false; // finished but did not raise event.
 			var start = DateTime.Now;
 			while (DateTime.Now - start < new TimeSpan(0, 0,0, 0, 150))
 				Application.DoEvents(); // allow timer to tick.
-			Assert.That(() => browser.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded soon after first no longer busy");
+			Assert.That(() => browser2.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded soon after first no longer busy");
 
 			browser.NormalTermination();
+			browser2.NormalTermination();
 			Assert.That(browser.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
+			Assert.That(browser2.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
 		}
 
 		[Test]
@@ -206,15 +212,18 @@ namespace BloomTests
 			Assert.That(isolator.NavigateIfIdle(browser, target), Is.True);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 
+			var browser2 = new BrowserStub();
 			string target2 = "http://some other web address";
-			isolator.Navigate(browser, target2);
+			isolator.Navigate(browser2, target2);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded at once");
+			Assert.That(browser2.NavigateTarget, Is.EqualTo(null), "Second navigation should not have proceeded at once");
 
 			browser.NormalTermination();
-			Assert.That(browser.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded when first completed");
+			Assert.That(browser2.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded when first completed");
 
-			browser.NormalTermination();
+			browser2.NormalTermination();
 			Assert.That(browser.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
+			Assert.That(browser2.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
 		}
 
 		[Test]
@@ -324,7 +333,8 @@ namespace BloomTests
 
 		public void RemoveEventHandlers()
 		{
-			EventHandlerCount--;
+			// Removing handlers not present does nothing.
+			EventHandlerCount = Math.Max(EventHandlerCount-1, 0);
 		}
 	}
 }

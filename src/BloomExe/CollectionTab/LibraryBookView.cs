@@ -6,6 +6,7 @@ using Bloom.Book;
 using Bloom.MiscUI;
 //using Bloom.SendReceive;
 using Bloom.Api;
+using Bloom.Edit;
 using Gecko;
 using Gecko.DOM;
 
@@ -31,6 +32,7 @@ namespace Bloom.CollectionTab
 			CreateFromSourceBookCommand createFromSourceBookCommand,
 			EditBookCommand editBookCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
+			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 			NavigationIsolator isolator)
 		{
 			InitializeComponent();
@@ -42,14 +44,27 @@ namespace Bloom.CollectionTab
 			_editBookCommand = editBookCommand;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 
+			selectedTabAboutToChangeEvent.Subscribe(c =>
+			{
+				if (!(c.To is LibraryView))
+				{
+					// We're becoming invisible. Stop any work in progress to generate a preview
+					// (thus allowing other browsers, like the ones in the Edit view, to navigate
+					// to their destinations.)
+					HidePreview();
+				}
+			});
+
 			selectedTabChangedEvent.Subscribe(c =>
-												{
-													_visible = c.To is LibraryView;
-													if(_reshowPending)
-													{
-														ShowBook();
-													}
-												});
+			{
+				var wasVisible = _visible;
+				_visible = c.To is LibraryView;
+				if (_reshowPending || wasVisible != _visible)
+				{
+					ShowBook();
+				}
+			});
+
 			_editBookButton.Visible = false;
 		}
 
@@ -109,13 +124,9 @@ namespace Bloom.CollectionTab
 
 		private void ShowBook()
 		{
-			if (_bookSelection.CurrentSelection == null)
+			if (_bookSelection.CurrentSelection == null || !_visible)
 			{
-				Debug.WriteLine("LibraryBookView.ShowBook() currentselection is null");
-				_previewBrowser.Navigate("about:blank", false);
-				//_previewBrowser.Visible = false;
-				_splitContainerForPreviewAndAboutBrowsers.Visible = false;
-				BackColor = Color.FromArgb(64,64,64);
+				HidePreview();
 			}
 			else
 			{
@@ -126,7 +137,8 @@ namespace Bloom.CollectionTab
 				_readmeBrowser.Visible = false;
 				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
-				_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
+				if (!TroubleShooterDialog.SuppressBookPreview)
+					_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
 				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{
@@ -136,6 +148,20 @@ namespace Bloom.CollectionTab
 				}
 				_reshowPending = false;
 			}
+		}
+
+		private void HidePreview()
+		{
+			// When the user clicks the Edit button, the preview browser may still be busy loading images and otherwise
+			// working on the display of a long book. If we allow it to continue, our NavigationIsolator will
+			// not allow the newly visible browser in the EditView (or the other useful one in the WebThumbNailList)
+			// to start navigating to their pages. Thus, painting of the two current views is held up until we've
+			// generated not only the previously-visible part of the preview, but all the rest of it as well.
+			// So, we abort whatever is going on in the preview browser by pointing it at an empty page.
+			_previewBrowser.Navigate("about:blank", false);
+			//_previewBrowser.Visible = false;
+			_splitContainerForPreviewAndAboutBrowsers.Visible = false;
+			BackColor = Color.FromArgb(64, 64, 64);
 		}
 
 		private void OnAddToLibraryClick(object sender, EventArgs e)
