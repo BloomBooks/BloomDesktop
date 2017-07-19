@@ -5,16 +5,14 @@ import { ILocalizationProps, ILocalizationState, LocalizableElement } from "./l1
 
 interface ComponentProps extends ILocalizationProps {
     clickEndpoint: string;
-    onUpdateState: (string) => void;
     enabled: boolean;
 }
 
 interface ComponentState extends ILocalizationState {
 }
 
-// A button that takes a Bloom API endpoint to get() when clicked,
-// a callback to call with whatever data Bloom API call returned,
-// and a function to determine if this button should currently be enabled.
+// A button that takes a Bloom API endpoint to post() when clicked
+// and a bool to determine if this button should currently be enabled.
 export default class BloomButton extends LocalizableElement<ComponentProps, ComponentState> {
     constructor(props) {
         super(props);
@@ -22,9 +20,7 @@ export default class BloomButton extends LocalizableElement<ComponentProps, Comp
     render() {
         return (
             <button
-                onClick={() => axios.get("/bloom/api/" + this.props.clickEndpoint).then((response) => {
-                    this.props.onUpdateState(response.data);
-                })}
+                onClick={() => axios.post("/bloom/api/" + this.props.clickEndpoint)}
                 disabled={!this.props.enabled}
             >
                 {this.getLocalizedContent()}

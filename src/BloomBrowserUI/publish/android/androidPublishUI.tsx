@@ -45,7 +45,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
     }
 
     componentCleanup() {
-        axios.get("/bloom/api/publish/android/connectUsb/cancel");
+        axios.post("/bloom/api/publish/android/connectUsb/cancel");
     }
 
     handleUpdateState(s: string): void {
@@ -82,8 +82,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 <BloomButton l10nKey="Publish.Android.ConnectUsb"
                     l10nComment="Button that tells Bloom to connect to a device using a USB cable"
                     enabled={this.state.stateId === "ReadyToConnect"}
-                    clickEndpoint="publish/android/connectUsb"
-                    onUpdateState={self.handleUpdateState}>
+                    clickEndpoint="publish/android/connectUsb/start">
                     Connect with USB cable
                 </BloomButton>
                 {/*<br />
@@ -91,8 +90,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 <BloomButton l10nKey="Publish.Android.ConnectWifi"
                     l10nComment="Button that tells Bloom to connect to a device using Wifi"
                     enabled={this.state.stateId === "ReadyToConnect"}
-                    clickEndpoint="publish/android/connectWifi"
-                    onUpdateState={this.handleUpdateState}>
+                    clickEndpoint="publish/android/connectWifi/start">
                     Connect with WiFi
                 </BloomButton>*/}
 
@@ -102,20 +100,20 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 <BloomButton l10nKey="Publish.Android.SendBook"
                     l10nComment="Button that tells Bloom to send the book to the connected device"
                     enabled={this.state.stateId === "ReadyToSend"}
-                    clickEndpoint="publish/android/sendBook"
-                    onUpdateState={this.handleUpdateState}>
+                    clickEndpoint="publish/android/sendBook/start">
                     Send Book
                     </BloomButton>
 
                 <h3>Progress</h3>
                 {/*state: {this.state.stateId}*/}
 
-                <ProgressBox webSocket={this.webSocket} />
+                <ProgressBox />
 
             </div>
         );
     }
 
+    // Enhance: We want to extract this higher up. See http://issues.bloomlibrary.org/youtrack/issue/BL-4804
     private getWebSocket(): WebSocket {
         let kSocketName = "webSocket";
         if (typeof window.top[kSocketName] === "undefined") {

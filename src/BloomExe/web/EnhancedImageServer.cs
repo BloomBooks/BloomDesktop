@@ -91,7 +91,7 @@ namespace Bloom.Api
 		public string ToolboxContent { get; set; }
 		public bool AuthorMode { get; set; }
 
-		public Book.Book CurrentBook => _bookSelection.CurrentSelection;
+		public Book.Book CurrentBook => _bookSelection?.CurrentSelection;
 
 		/// <summary>
 		/// This code sets things up so that we can edit (or make a thumbnail of, etc.) one page of a book.

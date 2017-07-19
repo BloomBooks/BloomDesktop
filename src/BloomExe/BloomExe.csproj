@@ -324,7 +324,7 @@
     <Compile Include="ElementProxy.cs" />
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\ElectronicPublishView.cs" />
-    <Compile Include="Publish\ReaderBookPublisher.cs" />
+    <Compile Include="Publish\BloomReaderPublisher.cs" />
     <Compile Include="Publish\AndroidView.cs">
       <SubType>UserControl</SubType>
     </Compile>
