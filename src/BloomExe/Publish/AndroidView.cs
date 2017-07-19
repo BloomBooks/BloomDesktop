@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
 
 namespace Bloom.Publish
 {
@@ -19,10 +20,25 @@ namespace Bloom.Publish
 			Controls.Add(_browser);
 			// Has to be in front of the panel docked top for Fill to work.
 			_browser.BringToFront();
-			//TODO localization
 			BloomFileLocator.GetBrowserFile("gulpfile.js");
 			var path = BloomFileLocator.GetBrowserFile("publish","android","androidPublishUI.html");
 			_browser.Navigate(path.ToLocalhost(), false);
+
+			VisibleChanged += OnVisibleChanged;
+		}
+
+		private void OnVisibleChanged(object sender, EventArgs eventArgs)
+		{
+			if (!Visible)
+			{
+				Deactivate();
+			}
+		}
+
+		public void Deactivate()
+		{
+			// This is important so the react stuff can do its cleanup
+			_browser.WebBrowser.Navigate("about:blank");
 		}
 	}
 }

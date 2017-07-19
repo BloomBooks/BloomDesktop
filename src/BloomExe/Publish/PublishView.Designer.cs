@@ -2,12 +2,12 @@
 {
     partial class PublishView
     {
-        /// <summary> 
+        /// <summary>
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary> 
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -22,8 +22,8 @@
 
         #region Component Designer generated code
 
-        /// <summary> 
-        /// Required method for Designer support - do not modify 
+        /// <summary>
+        /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
@@ -70,16 +70,16 @@
 			this._menusToolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
-			// 
+			//
 			// _makePdfBackgroundWorker
-			// 
+			//
 			this._makePdfBackgroundWorker.WorkerSupportsCancellation = true;
 			this._makePdfBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this._makePdfBackgroundWorker_DoWork);
-			// 
+			//
 			// _workingIndicator
-			// 
-			this._workingIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+			//
+			this._workingIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._workingIndicator.BackColor = System.Drawing.Color.White;
 			this._workingIndicator.Controls.Add(this._topBarPanel);
@@ -87,9 +87,9 @@
 			this._workingIndicator.Name = "_workingIndicator";
 			this._workingIndicator.Size = new System.Drawing.Size(714, 567);
 			this._workingIndicator.TabIndex = 8;
-			// 
+			//
 			// _topBarPanel
-			// 
+			//
 			this._topBarPanel.AutoSize = true;
 			this._topBarPanel.Controls.Add(this._saveButton);
 			this._topBarPanel.Controls.Add(this._printButton);
@@ -97,9 +97,9 @@
 			this._topBarPanel.Name = "_topBarPanel";
 			this._topBarPanel.Size = new System.Drawing.Size(327, 74);
 			this._topBarPanel.TabIndex = 14;
-			// 
+			//
 			// _saveButton
-			// 
+			//
 			this._saveButton.AutoSize = true;
 			this._saveButton.BackColor = System.Drawing.Color.Transparent;
 			this._saveButton.FlatAppearance.BorderSize = 0;
@@ -118,9 +118,9 @@
 			this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._saveButton.UseVisualStyleBackColor = false;
 			this._saveButton.Click += new System.EventHandler(this.OnSave_Click);
-			// 
+			//
 			// _printButton
-			// 
+			//
 			this._printButton.AutoSize = true;
 			this._printButton.BackColor = System.Drawing.Color.Transparent;
 			this._printButton.FlatAppearance.BorderSize = 0;
@@ -139,9 +139,9 @@
 			this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._printButton.UseVisualStyleBackColor = false;
 			this._printButton.Click += new System.EventHandler(this.OnPrint_Click);
-			// 
+			//
 			// tableLayoutPanel1
-			// 
+			//
 			this.tableLayoutPanel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -171,9 +171,9 @@
 			this.tableLayoutPanel1.Size = new System.Drawing.Size(114, 591);
 			this.tableLayoutPanel1.TabIndex = 10;
 			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
-			// 
+			//
 			// _contextMenuStrip
-			// 
+			//
 			this._contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._openinBrowserMenuItem,
             this._openPDF});
@@ -183,9 +183,9 @@
 			this._L10NSharpExtender.SetLocalizingId(this._contextMenuStrip, "_contextMenuStrip._contextMenuStrip");
 			this._contextMenuStrip.Name = "_contextMenuStrip";
 			this._contextMenuStrip.Size = new System.Drawing.Size(432, 48);
-			// 
+			//
 			// _openinBrowserMenuItem
-			// 
+			//
 			this._L10NSharpExtender.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._openinBrowserMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
@@ -194,9 +194,9 @@
 			this._openinBrowserMenuItem.Size = new System.Drawing.Size(431, 22);
 			this._openinBrowserMenuItem.Text = "Open the HTML used to make this PDF, in Firefox (must be on path)";
 			this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
-			// 
+			//
 			// _openPDF
-			// 
+			//
 			this._L10NSharpExtender.SetLocalizableToolTip(this._openPDF, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._openPDF, null);
 			this._L10NSharpExtender.SetLocalizingId(this._openPDF, "PublishTab.OpenThePDFInTheSystemPDFViewer");
@@ -204,9 +204,9 @@
 			this._openPDF.Size = new System.Drawing.Size(431, 22);
 			this._openPDF.Text = "Open the PDF in the default system PDF viewer";
 			this._openPDF.Click += new System.EventHandler(this._openPDF_Click);
-			// 
+			//
 			// _menusToolStrip
-			// 
+			//
 			this._menusToolStrip.AutoSize = false;
 			this._menusToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this._menusToolStrip.CanOverflow = false;
@@ -223,9 +223,9 @@
 			this._menusToolStrip.Name = "_menusToolStrip";
 			this._menusToolStrip.Size = new System.Drawing.Size(100, 24);
 			this._menusToolStrip.TabIndex = 13;
-			// 
+			//
 			// _layoutChoices
-			// 
+			//
 			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
 			this._layoutChoices.ForeColor = System.Drawing.Color.White;
 			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -237,9 +237,9 @@
 			this._layoutChoices.Size = new System.Drawing.Size(62, 19);
 			this._layoutChoices.Text = "Options";
 			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
-			// 
+			//
 			// _bookletCoverRadio
-			// 
+			//
 			this._bookletCoverRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._bookletCoverRadio.Image = global::Bloom.Properties.Resources.coverOnly;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bookletCoverRadio, null);
@@ -266,9 +266,9 @@
 			this._bookletCoverRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._bookletCoverRadio.UseVisualStyleBackColor = true;
 			this._bookletCoverRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
+			//
 			// label1
-			// 
+			//
 			this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
@@ -277,9 +277,9 @@
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(108, 1);
 			this.label1.TabIndex = 17;
-			// 
+			//
 			// _bookletBodyRadio
-			// 
+			//
 			this._bookletBodyRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._bookletBodyRadio.Image = global::Bloom.Properties.Resources.insideBookletPages;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bookletBodyRadio, null);
@@ -306,9 +306,9 @@
 			this._bookletBodyRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._bookletBodyRadio.UseVisualStyleBackColor = true;
 			this._bookletBodyRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
+			//
 			// _simpleAllPagesRadio
-			// 
+			//
 			this._simpleAllPagesRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._simpleAllPagesRadio.Image = global::Bloom.Properties.Resources.simplePages;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._simpleAllPagesRadio, null);
@@ -333,9 +333,9 @@
 			this._simpleAllPagesRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._simpleAllPagesRadio.UseVisualStyleBackColor = true;
 			this._simpleAllPagesRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
+			//
 			// _epubRadio
-			// 
+			//
 			this._epubRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._epubRadio.Image = global::Bloom.Properties.Resources.epubPublishButton;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._epubRadio, null);
@@ -361,14 +361,14 @@
 			this._epubRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._epubRadio.UseVisualStyleBackColor = true;
 			this._epubRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
+			//
 			// _pdfViewer
-			// 
+			//
 			this._pdfViewer.BackColor = System.Drawing.Color.White;
 			this._pdfViewer.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._pdfViewer, null);
@@ -378,13 +378,13 @@
 			this._pdfViewer.Name = "_pdfViewer";
 			this._pdfViewer.Size = new System.Drawing.Size(719, 591);
 			this._pdfViewer.TabIndex = 16;
-			// 
+			//
 			// _superToolTip
-			// 
+			//
 			this._superToolTip.FadingInterval = 10;
-			// 
+			//
 			// _uploadRadio
-			// 
+			//
 			this._uploadRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._uploadRadio.Image = global::Bloom.Properties.Resources.upload;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadRadio, null);
@@ -410,22 +410,21 @@
 			this._uploadRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._uploadRadio.UseVisualStyleBackColor = true;
 			this._uploadRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
+			//
 			// _androidRadio
-			// 
+			//
 			this._androidRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._androidRadio.Image = global::Bloom.Properties.Resources.android;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._androidRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._androidRadio, null);
-			this._L10NSharpExtender.SetLocalizingId(this._androidRadio, "PublishTab.ButtonThatShowsUploadForm");
+			this._L10NSharpExtender.SetLocalizingId(this._androidRadio, "PublishTab.AndroidButton");
 			this._androidRadio.Location = new System.Drawing.Point(3, 415);
 			this._androidRadio.Name = "_androidRadio";
 			this._androidRadio.Size = new System.Drawing.Size(105, 71);
 			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo1.BodyText = "Upload to BloomLibrary.org, where others can download and localize into their own" +
-    " language.";
+			superToolTipInfo1.BodyText = "Publish to an Android device.";
 			superToolTipInfo1.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
 			superToolTipInfo1.ShowHeader = false;
 			superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
@@ -438,9 +437,9 @@
 			this._androidRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._androidRadio.UseVisualStyleBackColor = true;
 			this._androidRadio.CheckedChanged += new System.EventHandler(this.OnBookletRadioChanged);
-			// 
+			//
 			// PublishView
-			// 
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));

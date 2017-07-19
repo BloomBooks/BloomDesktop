@@ -324,7 +324,7 @@
     <Compile Include="ElementProxy.cs" />
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\ElectronicPublishView.cs" />
-    <Compile Include="Publish\ReaderBookPublisher.cs" />
+    <Compile Include="Publish\BloomReaderPublisher.cs" />
     <Compile Include="Publish\AndroidView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -598,7 +598,7 @@
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
     <Compile Include="web\controllers\AddOrChangePageApi.cs" />
-    <Compile Include="web\controllers\PublishToAndroidAPI.cs" />
+    <Compile Include="web\controllers\PublishToAndroidApi.cs" />
     <Compile Include="web\controllers\ImageApi.cs" />
     <Compile Include="web\controllers\PageTemplatesApi.cs" />
     <Compile Include="web\controllers\KeyboardingConfigApi.cs" />

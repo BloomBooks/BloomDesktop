@@ -1,55 +1,69 @@
 ﻿using System;
-using System.IO;
-using System.Threading;
-using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.Publish;
 using Bloom.web;
-using Newtonsoft.Json;
-using SIL.IO;
-using SIL.Progress;
 
 namespace Bloom.Api
 {
 	/// <summary>
+	/// Handles api request dealing with the publishing of books to an Android device
 	/// </summary>
-	class PublishToAndroidAPI
+	class PublishToAndroidApi
 	{
 		private const string kApiUrlPart = "publish/android/";
-		private readonly CollectionSettings _collectionSettings;
-		private readonly WebSocketProgress _progress;
+		private const string kWebsocketStateId = "publish/android/state";
+		private readonly BloomReaderPublisher _bloomReaderPublisher;
+		private readonly BloomWebSocketServer _webSocketServer;
 
-		public PublishToAndroidAPI(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer)
+		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer)
 		{
-			_collectionSettings = collectionSettings;
-			_progress = new WebSocketProgress(bloomWebSocketServer);
+			_webSocketServer = bloomWebSocketServer;
+			var progress = new WebSocketProgress(_webSocketServer);
+			_bloomReaderPublisher = new BloomReaderPublisher(progress);
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler(kApiUrlPart+"connectUsb", request =>
+			server.RegisterEndpointHandler(kApiUrlPart + "connectUsb/start", ConnectUsbStartHandler, true);
+			server.RegisterEndpointHandler(kApiUrlPart + "connectUsb/cancel", ConnectUsbCancelHandler, true);
+			// Not yet
+			//server.RegisterEndpointHandler(kApiUrlPart + "connectWifi/start", ConnectWiFiStartHandler, true);
+			server.RegisterEndpointHandler(kApiUrlPart + "sendBook/start", request =>
 			{
-				_progress.WriteMessage("Attempting Wifi connection...");
-				_progress.WriteMessage("Connected.");
-				request.ReplyWithText("ReadyToSend");
-			}, true);
-			server.RegisterEndpointHandler(kApiUrlPart + "connectWifi", request =>
-			{
-				for(int i=0;i<10;i++)
-					_progress.WriteMessage("I think I can.");
-				_progress.WriteMessage("I cannot.");
-				_progress.WriteError("Could not connect via network.");
-				request.ReplyWithText("ReadyToConnect");
-			}, true);
-			server.RegisterEndpointHandler(kApiUrlPart + "sendBook/enabled", request =>
-			{
-				request.ReplyWithText("false");
-			}, true);
-			server.RegisterEndpointHandler(kApiUrlPart + "sendBook", request =>
-			{
-				_progress.WriteMessage("Sending...");
-				_progress.WriteMessage("You should now see your book in Bloom Reader.");
+				_webSocketServer.Send(kWebsocketStateId, "Sending");
 				request.Succeeded();
+				if (_bloomReaderPublisher.SendBook(server.CurrentBook))
+					_webSocketServer.Send(kWebsocketStateId, "ReadyToSend");
+				else
+					_webSocketServer.Send(kWebsocketStateId, "ReadyToConnect");
 			}, true);
+		}
+
+		private void ConnectUsbStartHandler(ApiRequest request)
+		{
+			_webSocketServer.Send(kWebsocketStateId, "TryingToConnect");
+			_bloomReaderPublisher.Connected += OnConnected;
+			_bloomReaderPublisher.ConnectionFailed += OnConnectionFailed;
+			_bloomReaderPublisher.Connect();
+			request.SucceededDoNotNavigate();
+		}
+
+		private void ConnectUsbCancelHandler(ApiRequest request)
+		{
+			_bloomReaderPublisher.CancelConnect();
+			request.Succeeded();
+		}
+
+		private void OnConnectionFailed(object sender, EventArgs args)
+		{
+			_bloomReaderPublisher.ConnectionFailed -= OnConnectionFailed;
+			_webSocketServer.Send(kWebsocketStateId, "ReadyToConnect");
+		}
+
+		private void OnConnected(object sender, EventArgs args)
+		{
+			_bloomReaderPublisher.Connected -= OnConnected;
+			_webSocketServer.Send(kWebsocketStateId, "ReadyToSend");
 		}
 	}
 }

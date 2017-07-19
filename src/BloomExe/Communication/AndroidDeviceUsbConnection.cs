@@ -117,8 +117,7 @@ namespace Bloom.Communication
 			if (applicableDevices.Count == 1)
 			{
 				_device = applicableDevices[0];
-				EventHandler handler = OneApplicableDeviceFound;
-				handler?.Invoke(this, new EventArgs());
+				OneApplicableDeviceFound?.Invoke(this, new EventArgs());
 				return;
 			}
 
