@@ -32,6 +32,20 @@ namespace Bloom
 	/// browser has been disposed) if a new request is received. As a last resort, rather than freeze the program
 	/// or even the thumbnailing forever, if two seconds goes by and the browser is still busy doing one navigation
 	/// we give up and forget that one and allow others to proceed.
+	///
+	/// As of July 2017, we do not prevent a new navigation to the SAME browser from proceeding. We expect that a single
+	/// browser instance should be perfectly capable of interrupting the display of one url to start doing a new one...
+	/// this happens often in normal use of the full browser. Tom Hindle says that navigating to a new page should
+	/// automatically stop the browser from working on the old one. And it is important for performance to be able to
+	/// stop navigation like this; for example, when the book preview window is hidden (LibraryBookView.HidePreview)
+	/// we navigate its browser to about:blank to force it to stop work on the preview so that the isolator will allow
+	/// us to start working on the new, single-page-edit view in the EditingView's browser.
+	///
+	/// At one point (when baffled that the about:blank navigation failed, which it initially did because the isolator
+	/// would not allow it to happen until the preview was fully rendered) we used code like this to forcibly stop
+	/// the rendering of the old page:
+	/// ((nsIWebNavigation)browser.WebBrowserFocus).Stop((int) nsIWebNavigationConsts.STOP_ALL)
+	/// but this does not seem to be necessary now that the isolator is not delaying the about:blank navigation.
 	/// </summary>
 	public class NavigationIsolator
 	{
@@ -59,6 +73,11 @@ namespace Bloom
 			var task = new NavigationTask() { Browser = browser, Url = url };
 			if (_current == null)
 			{
+				StartTask(task);
+			}
+			else if (_current.Browser.Equals(browser))
+			{
+				Cleanup();
 				StartTask(task);
 			}
 			else if (!_current.Browser.IsBusy)
