@@ -127,19 +127,26 @@ export default class AudioRecording {
         }
 
         // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-        this.getWebSocket().addEventListener("message", this.listenerFunction);
+        var socket = this.getWebSocket();
+        if (socket) {
+            socket.addEventListener("message", this.listenerFunction);
+        }
     }
 
     public removeRecordingSetup() {
-        //alert('removeRecordingSetup');
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
         page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
-        this.getWebSocket().removeEventListener("message", this.listenerFunction);
+        var socket = this.getWebSocket();
+        if (socket) {
+            socket.removeEventListener("message", this.listenerFunction);
+        }
     }
 
+    // N.B. Apparently when the window is shutting down, it is still possible to return from this
+    // function with window[kSocketName] undefined.
     private getWebSocket(): WebSocket {
-        if (typeof window.top[kSocketName] == "undefined") {
+        if (!window.top[kSocketName]) {
             //currently we use a different port for this websocket, and it's the main port + 1
             let websocketPort = parseInt(window.location.port, 10) + 1;
             //NB: testing shows that our webSocketServer does receive a close notification when this window goes away

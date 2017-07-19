@@ -14,7 +14,6 @@ const timerName = "thumbnailInterval";
 const kSocketName = "webSocket";
 
 var thumbnailTimerInterval = 200;
-let pageWindowSocket: WebSocket;
 var listenerFunction;
 
 $(window).ready(function () {
@@ -43,8 +42,6 @@ $(window).ready(function () {
         event.stopPropagation();
         fireCSharpEvent("menuClicked", $(this).parent().parent().attr("id"));
     });
-
-    pageWindowSocket = getWebSocket();
 
     let localizedNotification = "";
 
@@ -75,18 +72,25 @@ $(window).ready(function () {
     theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...").done(savingNotification => {
         localizedNotification = savingNotification;
         // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-        pageWindowSocket.addEventListener("message", listenerFunction);
+        var socket = getWebSocket();
+        if (socket) {
+            socket.addEventListener("message", listenerFunction);
+        }
     });
 });
 
 export function stopListeningForSave() {
-    pageWindowSocket = getWebSocket();
-    pageWindowSocket.removeEventListener("message", listenerFunction);
-    pageWindowSocket.close();
+    var socket = getWebSocket();
+    if (socket) {
+        socket.removeEventListener("message", listenerFunction);
+        socket.close();
+    }
 }
 
+// N.B. Apparently when the window is shutting down, it is still possible to return from this
+// function with window[kSocketName] undefined.
 function getWebSocket(): WebSocket {
-    if (typeof window[kSocketName] === "undefined") {
+    if (!window[kSocketName]) {
         //currently we use a different port for this websocket, and it's the main port + 1
         let websocketPort = parseInt(window.location.port, 10) + 1;
         //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
@@ -96,7 +100,7 @@ function getWebSocket(): WebSocket {
 }
 
 function fireCSharpEvent(eventName, eventData) {
-    var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
+    var event = new MessageEvent(eventName, { "bubbles": true, "cancelable": true, "data": eventData });
     top.document.dispatchEvent(event);
 }
 
@@ -104,7 +108,7 @@ function loadNextThumbnail() {
     // The "thumb-src" attribute is added to the img tags on the server while the page is being built. The value
     // of the "src" attribute is copied into it and then the "src" attribute is set to an empty string so the
     // images can be loaded here in a controlled manner so as not to overwhelm system memory.
-    var nextImg = jQuery('body').find('*[thumb-src]').first();
+    var nextImg = jQuery("body").find("*[thumb-src]").first();
 
     // stop processing if there are no more images
     if ((!nextImg) || (nextImg.length === 0)) return;
@@ -112,8 +116,8 @@ function loadNextThumbnail() {
     var img = nextImg[0];
 
     // adding this to the query string tells the server to generate a thumbnail from the image file
-    var src = img.getAttribute('thumb-src') + '?thumbnail=1';
-    img.removeAttribute('thumb-src');
+    var src = img.getAttribute("thumb-src") + "?thumbnail=1";
+    img.removeAttribute("thumb-src");
 
     SetImageElementUrl(img, src);
 
@@ -128,9 +132,9 @@ function loadNextThumbnail() {
 function reorder(elements) {
     var ids = "";
     elements.each(function () {
-        var id = $(this).attr('id');
+        var id = $(this).attr("id");
         if (id)
             ids += "," + id;
     });
     fireCSharpEvent("gridReordered", ids);
-};
+}
