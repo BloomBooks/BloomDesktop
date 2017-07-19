@@ -306,6 +306,7 @@ namespace Bloom.Book
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _collectionSettings, _storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
+
 			if (IsSuitableForMakingShells && !page.IsXMatter)
 			{
 				// We're editing a template page in a template book.
@@ -612,7 +613,6 @@ namespace Bloom.Book
 			return pages[pageIndex];
 		}
 
-		// Reduce repetitive reloading of books when looking up the related "TemplateBook".
 		string _cachedTemplateKey;
 		Book _cachedTemplateBook;
 
@@ -912,6 +912,8 @@ namespace Bloom.Book
 			// If there is nothing there the default of true will survive.
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null,
 				val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
+
+			bookDOM.UpdateSideClassOfAllPages(_collectionSettings.IsLanguage1Rtl);
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 
@@ -1941,6 +1943,7 @@ namespace Bloom.Book
 			{
 				body.InsertAfter(pageDiv, pages[indexOfItemAfterRelocation-1]);
 			}
+			OurHtmlDom.UpdateSideClassOfAllPages(_collectionSettings.IsLanguage1Rtl);
 			BuildPageCache();
 			Save();
 			InvokeContentsChanged(null);

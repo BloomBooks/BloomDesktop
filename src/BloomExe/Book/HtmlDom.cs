@@ -1338,6 +1338,13 @@ namespace Bloom.Book
 				.OfType<XmlElement>();
 		}
 
+		private IEnumerable<XmlElement> GetPageElements()
+		{
+			return _dom.SafeSelectNodes(
+					"/html/body/div[contains(@class,'bloom-page')]")
+				.OfType<XmlElement>();
+		}
+
 		/// <summary>
 		/// Can switch a page from being a template page or back to a normal page.
 		/// </summary>
@@ -1428,6 +1435,30 @@ namespace Bloom.Book
 		public XmlElement FindPageById(string pageId)
 		{
 			return RawDom.SafeSelectNodes("//body/div[@id='" + pageId + "']").Cast<XmlElement>().FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Updates the side-right and side-left classes of every page div in the supplied dom (be it the full book
+		/// or some subset (e.g. one page))
+		/// </summary>
+		/// <param name="languageIsRightToLeft"></param>
+		/// <param name="startingIndex">If this dom is only a subset of the book, then you need to provide this
+		/// to tell us what the first page index is, of this subset of the full dom.</param>
+		public void UpdateSideClassOfAllPages(bool languageIsRightToLeft, int startingIndex = 0)
+		{
+			var i = startingIndex;
+			foreach(var pageDiv in GetPageElements())
+			{
+				UpdateSideClass(pageDiv, i, languageIsRightToLeft);
+				i++;
+			}
+		}
+
+		private static void UpdateSideClass(XmlElement pageDiv, int indexOfPageZeroBased, bool languageIsRightToLeft)
+		{
+			RemoveClassesBeginingWith(pageDiv, "side-");
+			var rightSideRemainder = languageIsRightToLeft ? 1 : 0;
+			AddClassIfMissing(pageDiv, indexOfPageZeroBased % 2 == rightSideRemainder ? "side-right" : "side-left");
 		}
 	}
 }

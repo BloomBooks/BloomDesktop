@@ -428,20 +428,17 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
     }
 }
 
-//Currently, in edit mode there is only one page in the html, so every
-//page looks like page 1 from the view of the css, so showing every page
-//as if it were odd is just confusing for the user.
-//Therefore we only turn on left-vs.right distinctions when when making PDF.
-.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
-    &.bloom-page:nth-of-type(odd){
+:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
+    &.side-left  // maintained by c#
+    {
         .marginBox{
-            /* shifted margin */
             left: @MarginOuter;
         }
     }
-    &.bloom-page:nth-of-type(even){
+
+    &.side-right // maintained by c#
+    {
         .marginBox{
-            /* shifted margin */
             left: @MarginInner;
         }
     }
@@ -456,27 +453,6 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
         /* balanced margin*/
         left: @MarginBalanced;
     }
-}
-
-//in right-to-left books, the way our pdf booklet maker works, it just reverses
-//the page order. In doing so, what use to be odd becomes even, and our margins
-//and page numbering logic needs to switch accordingly. Page numbering is
-//not part of the basePage.less.
-
-.rightToLeft.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
-  &.bloom-page:nth-of-type(odd) .marginBox  {
-      /* swap margins on right to left */
-      left: @MarginInner;
-  }
-  &.bloom-page:nth-of-type(even) .marginBox  {
-      /* swap margins on right to left */
-      left: @MarginOuter;
-  }
-}
-
-//in edit mode, just split the difference, centering the margin box
-body:not(.publishMode) .marginBox{
-  left: @MarginBalanced;
 }
 
 // pageDescription is for javascript to read, we never display it directly on the page
