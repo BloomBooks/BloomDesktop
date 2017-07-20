@@ -779,12 +779,12 @@
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.PasswordNotice">
-      <note>Don't forget to have the {0} and {1} in your translated string!</note>
+      <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
       <tuv xml:lang="en">
-        <seg>Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "factory password"</seg>
+        <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</seg>
       </tuv>
       <tuv xml:lang="ru">
-        <seg>Заводской пароль для этих настроек "{0}". Если вы забыли его, вы можете всегда найти его в интернете по запросу "заводской пароль" для "{1}"</seg>
+        <seg>Заводской пароль для этих настроек "{0}". Если вы забыли его, вы можете всегда найти его в интернете по запросу "{2}" для "{1}"</seg>
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.RequirePasswordCheckBox">

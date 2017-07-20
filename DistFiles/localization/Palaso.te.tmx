@@ -547,12 +547,12 @@
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.PasswordNotice">
-      <note>Don't forget to have the {0} and {1} in your translated string!</note>
+      <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
       <tuv xml:lang="en">
-        <seg>Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "factory password"</seg>
+        <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</seg>
       </tuv>
       <tuv xml:lang="te">
-        <seg>ఈ సెట్టింగులను కోసం కర్మాగారం పాస్వర్డ్ "{0}". మీరు మర్చిపోతే, మీరు ఎల్లప్పుడూ "{1}" మరియు "కర్మాగారాన్ని పాస్వర్డ్ను" కోసం గూగుల్ చేయవచ్చు</seg>
+        <seg>ఈ సెట్టింగులను కోసం కర్మాగారం పాస్వర్డ్ "{0}". మీరు మర్చిపోతే, మీరు ఎల్లప్పుడూ "{1}" మరియు "{2}" కోసం గూగుల్ చేయవచ్చు</seg>
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.RequirePasswordCheckBox">

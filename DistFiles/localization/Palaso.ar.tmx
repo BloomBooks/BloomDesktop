@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
    <header srclang="ar"
            adminlang="en"
@@ -856,13 +856,13 @@
          </tuv>
       </tu>
       <tu tuid="SettingsProtection.PasswordNotice">
-         <note>Don't forget to have the {0} and {1} in your translated string!</note>
-         <tuv xml:lang="en">
-            <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "factory password"</seg>
-         </tuv>
-         <tuv xml:lang="ar">
-            <seg>كلمة مرور المصنع لهذه الإعدادات هي "{0}". إذا نسيتها، فيمكنك دائمًا البحث عن "{1}" و"كلمة مرور المصنع" في Google</seg>
-         </tuv>
+        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
+        <tuv xml:lang="en">
+          <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</seg>
+        </tuv>
+        <tuv xml:lang="ar">
+            <seg>كلمة مرور المصنع لهذه الإعدادات هي "{0}". إذا نسيتها، فيمكنك دائمًا البحث عن "{1}" و"{2}" في Google</seg>
+        </tuv>
       </tu>
       <tu tuid="SettingsProtection.RequirePasswordCheckBox">
          <tuv xml:lang="en">

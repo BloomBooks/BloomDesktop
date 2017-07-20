@@ -824,13 +824,13 @@
          </tuv>
       </tu>
       <tu tuid="SettingsProtection.PasswordNotice">
-         <note>Don't forget to have the {0} and {1} in your translated string!</note>
-         <tuv xml:lang="en">
-            <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "factory password"</seg>
-         </tuv>
-         <tuv xml:lang="ne">
-            <seg>यी सेटिङहरूको फ्याक्ट्री पासवर्ड "{0}" हो। यसलाई बिर्सनुभएको खण्डमा, तपाईंले जुन सुकै बेला "{1}" र "फ्याक्ट्री पसवर्ड" लाई Google मा खोज्न सक्नुहुन्छ।</seg>
-         </tuv>
+        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
+        <tuv xml:lang="en">
+          <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</seg>
+        </tuv>
+        <tuv xml:lang="ne">
+          <seg>यी सेटिङहरूको फ्याक्ट्री पासवर्ड "{0}" हो। यसलाई बिर्सनुभएको खण्डमा, तपाईंले जुन सुकै बेला "{1}" र "{2}" लाई Google मा खोज्न सक्नुहुन्छ।</seg>
+        </tuv>
       </tu>
       <tu tuid="SettingsProtection.RequirePasswordCheckBox">
          <tuv xml:lang="en">

@@ -778,12 +778,12 @@
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.PasswordNotice">
-      <note>Don't forget to have the {0} and {1} in your translated string!</note>
+      <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
       <tuv xml:lang="en">
-        <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "factory password"</seg>
+        <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</seg>
       </tuv>
       <tuv xml:lang="zh-CN">
-        <seg>这些设置的出厂密码是"{0}"。如果忘记，可以用google搜索"{1}" 和 "出厂密码"。</seg>
+        <seg>这些设置的出厂密码是"{0}"。如果忘记，可以用google搜索"{1}" 和 "{2}"。</seg>
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.RequirePasswordCheckBox">
