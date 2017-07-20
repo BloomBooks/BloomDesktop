@@ -856,13 +856,13 @@
          </tuv>
       </tu>
       <tu tuid="SettingsProtection.PasswordNotice">
-         <note>Don't forget to have the {0} and {1} in your translated string!</note>
-         <tuv xml:lang="en">
-            <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "factory password"</seg>
-         </tuv>
-         <tuv xml:lang="bn">
-            <seg>এই সেটিংসসমূহের জন্য ফ্যাক্টরি পাসওয়ার্ডটি হল "{0}"।যদি আপনি এটি ভুলে যান, আপনি সবসময় "{1}" এবং "ফ্যাক্টরি পাসওয়ার্ড" ব্যবহার করে খুঁজতে পারেন।</seg>
-         </tuv>
+        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
+        <tuv xml:lang="en">
+          <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</seg>
+        </tuv>
+        <tuv xml:lang="bn">
+          <seg>এই সেটিংসসমূহের জন্য ফ্যাক্টরি পাসওয়ার্ডটি হল "{0}"।যদি আপনি এটি ভুলে যান, আপনি সবসময় "{1}" এবং "{2}" ব্যবহার করে খুঁজতে পারেন।</seg>
+        </tuv>
       </tu>
       <tu tuid="SettingsProtection.RequirePasswordCheckBox">
          <tuv xml:lang="en">

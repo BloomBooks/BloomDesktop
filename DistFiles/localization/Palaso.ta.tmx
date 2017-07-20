@@ -547,12 +547,12 @@
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.PasswordNotice">
-      <note>Don't forget to have the {0} and {1} in your translated string!</note>
+      <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
       <tuv xml:lang="en">
-        <seg>Factory password for these settings is "{0}".  If you forget it, you can always google for "{1}" and "factory password"</seg>
+        <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</seg>
       </tuv>
       <tuv xml:lang="ta">
-        <seg>இந்த அமைப்புகளை தொழிற்சாலை கடவுச்சொல்லை உள்ளது "{0}".  நீங்கள் அதை மறந்து, என்றால் நீங்கள் முடியும் எப்போதும் google "{1}" மற்றும் "தொழிற்சாலை கடவுச்சொல்"</seg>
+        <seg>இந்த அமைப்புகளை தொழிற்சாலை கடவுச்சொல்லை உள்ளது "{0}".  நீங்கள் அதை மறந்து, என்றால் நீங்கள் முடியும் எப்போதும் google "{1}" மற்றும் "{2}"</seg>
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.RequirePasswordCheckBox">

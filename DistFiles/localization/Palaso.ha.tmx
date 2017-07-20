@@ -830,13 +830,13 @@
          </tuv>
       </tu>
       <tu tuid="SettingsProtection.PasswordNotice">
-         <note>Don't forget to have the {0} and {1} in your translated string!</note>
-         <tuv xml:lang="en">
-            <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "factory password"</seg>
-         </tuv>
-         <tuv xml:lang="ha">
-            <seg>Kalmar Izinin Shiga ta Kamfani don yin wannan saitin ita ce "{0}". Idan ka manta ta, a kodayaushe za ka iya shiga yanar gizon matambayi ba ya bata don "{1}" da "Kalmar Izinin Shiga ta Kamfani"</seg>
-         </tuv>
+        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
+        <tuv xml:lang="en">
+          <seg>Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</seg>
+        </tuv>
+        <tuv xml:lang="ha">
+          <seg>Kalmar Izinin Shiga ta Kamfani don yin wannan saitin ita ce "{0}". Idan ka manta ta, a kodayaushe za ka iya shiga yanar gizon matambayi ba ya bata don "{1}" da "{2}"</seg>
+        </tuv>
       </tu>
       <tu tuid="SettingsProtection.RequirePasswordCheckBox">
          <tuv xml:lang="en">
