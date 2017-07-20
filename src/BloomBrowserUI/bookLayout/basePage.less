@@ -174,7 +174,7 @@ page be the full page, regardless of the contents.
 To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
 preview.css.
 
-Changes here generally require similar changes in EpubMaker.FixPictureSizes().
+Changes here generally require similar changes in EpubMaker.FixPictureSizes() and pageThumbnailList.less.
 */
 .bloom-page {
     &.Device16x9Portrait{
@@ -372,10 +372,14 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
     .Device16x9Landscape & {
         .SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
 
-        //make the top half take up the whole screen
-        .position-top{bottom: 0 !important;}
-        .position-bottom{display:none;}
+        //that makes the margin box actually have no margin. Which looks good for the image, but
+        //looks bad for the text. So here we re-introduce a margin... a bit of a hack
+        .bloom-editable{
+            margin-left: 10px;
+            width: ~"calc(100% - 20px)"; // 10px for the left, 10px for the right
+        }
     }
+
     .A3Landscape & {
         .SetMarginBox(@A3Landscape-Width, @A3Landscape-Height);
     }
