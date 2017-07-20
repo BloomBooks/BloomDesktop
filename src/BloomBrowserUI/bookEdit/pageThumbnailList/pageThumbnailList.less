@@ -101,6 +101,32 @@ BODY {
                 transform: scale(0.115);
             }
         }
+        &.Device16x9Portrait {
+            height: 67px;
+            width: 40px;
+            .bloom-page {
+                transform: scale(0.092);
+            }
+        }
+        &.Device16x9Landscape {
+            height: 43px;
+            width: 70px;
+            .bloom-page {
+                transform: scale(0.095);
+            }
+        }
+        &.A6Portrait {
+            .bloom-page {
+                transform: scale(0.11);
+            }
+        }
+        &.A6Landscape {
+            height: 51px;
+            width: 69px;
+            .bloom-page {
+                transform: scale(0.12);
+            }
+        }
 
         //http://stackoverflow.com/questions/17824060/ios-safari-runs-out-of-memory-with-webkit-transform
         transform-style: preserve-3d;
