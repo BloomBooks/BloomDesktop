@@ -31,6 +31,7 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TroubleShooterDialog));
 			this.label1 = new System.Windows.Forms.Label();
 			this.suppressPreviewCheckbox = new System.Windows.Forms.CheckBox();
+			this.makeEmptyPageThumbnailsCheckbox = new System.Windows.Forms.CheckBox();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -51,11 +52,22 @@
 			this.suppressPreviewCheckbox.Text = "Don\'t show a preview when a book is selected";
 			this.suppressPreviewCheckbox.UseVisualStyleBackColor = true;
 			// 
+			// makeEmptyPageThumbnailsCheckbox
+			// 
+			this.makeEmptyPageThumbnailsCheckbox.AutoSize = true;
+			this.makeEmptyPageThumbnailsCheckbox.Location = new System.Drawing.Point(12, 81);
+			this.makeEmptyPageThumbnailsCheckbox.Name = "makeEmptyPageThumbnailsCheckbox";
+			this.makeEmptyPageThumbnailsCheckbox.Size = new System.Drawing.Size(171, 17);
+			this.makeEmptyPageThumbnailsCheckbox.TabIndex = 2;
+			this.makeEmptyPageThumbnailsCheckbox.Text = "Don\'t show content in page list";
+			this.makeEmptyPageThumbnailsCheckbox.UseVisualStyleBackColor = true;
+			// 
 			// TroubleShooterDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(420, 261);
+			this.Controls.Add(this.makeEmptyPageThumbnailsCheckbox);
 			this.Controls.Add(this.suppressPreviewCheckbox);
 			this.Controls.Add(this.label1);
 			this.Name = "TroubleShooterDialog";
@@ -69,5 +81,6 @@
 
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.CheckBox suppressPreviewCheckbox;
+		private System.Windows.Forms.CheckBox makeEmptyPageThumbnailsCheckbox;
 	}
 }
