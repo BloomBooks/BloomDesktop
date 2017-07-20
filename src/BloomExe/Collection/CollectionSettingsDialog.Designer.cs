@@ -45,6 +45,8 @@ namespace Bloom.Collection
 			this._language1Name = new System.Windows.Forms.Label();
 			this._language1Label = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
+			this._numberStyleCombo = new System.Windows.Forms.ComboBox();
+			this.label3 = new System.Windows.Forms.Label();
 			this._brandingCombo = new System.Windows.Forms.ComboBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this._fontSettings3Link = new System.Windows.Forms.LinkLabel();
@@ -79,8 +81,7 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this.label3 = new System.Windows.Forms.Label();
-			this._numberStyleCombo = new System.Windows.Forms.ComboBox();
+			this.showTroubleShooterCheckBox = new System.Windows.Forms.CheckBox();
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
@@ -295,6 +296,33 @@ namespace Bloom.Collection
 			this.tabPage2.Text = "Book Making";
 			this.tabPage2.UseVisualStyleBackColor = true;
 			// 
+			// _numberStyleCombo
+			// 
+			this._numberStyleCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this._numberStyleCombo.FormattingEnabled = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._numberStyleCombo, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._numberStyleCombo, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._numberStyleCombo, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._numberStyleCombo, "CollectionSettingsDialog._numberStyleCombo");
+			this._numberStyleCombo.Location = new System.Drawing.Point(32, 302);
+			this._numberStyleCombo.Name = "_numberStyleCombo";
+			this._numberStyleCombo.Size = new System.Drawing.Size(189, 25);
+			this._numberStyleCombo.TabIndex = 35;
+			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this.label3, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.label3, null);
+			this._L10NSharpExtender.SetLocalizingId(this.label3, "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel" +
+        "");
+			this.label3.Location = new System.Drawing.Point(28, 280);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(149, 19);
+			this.label3.TabIndex = 34;
+			this.label3.Text = "Page Numbering Style";
+			// 
 			// _brandingCombo
 			// 
 			this._brandingCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -495,7 +523,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage3, "CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel");
 			this.tabPage3.Location = new System.Drawing.Point(4, 26);
 			this.tabPage3.Name = "tabPage3";
-			this.tabPage3.Size = new System.Drawing.Size(610, 392);
+			this.tabPage3.Size = new System.Drawing.Size(610, 426);
 			this.tabPage3.TabIndex = 2;
 			this.tabPage3.Text = "Project Information";
 			this.tabPage3.UseVisualStyleBackColor = true;
@@ -599,6 +627,7 @@ namespace Bloom.Collection
 			// 
 			// tabPage4
 			// 
+			this.tabPage4.Controls.Add(this.showTroubleShooterCheckBox);
 			this.tabPage4.Controls.Add(this._automaticallyUpdate);
 			this.tabPage4.Controls.Add(this._showExperimentCommands);
 			this.tabPage4.Controls.Add(this._showExperimentalTemplates);
@@ -608,7 +637,7 @@ namespace Bloom.Collection
 			this.tabPage4.Location = new System.Drawing.Point(4, 26);
 			this.tabPage4.Name = "tabPage4";
 			this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage4.Size = new System.Drawing.Size(610, 392);
+			this.tabPage4.Size = new System.Drawing.Size(610, 426);
 			this.tabPage4.TabIndex = 3;
 			this.tabPage4.Text = "Advanced Program Settings";
 			this.tabPage4.UseVisualStyleBackColor = true;
@@ -735,31 +764,20 @@ namespace Bloom.Collection
 			this._helpButton.UseVisualStyleBackColor = true;
 			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
 			// 
-			// label3
+			// showTroubleShooterCheckBox
 			// 
-			this.label3.AutoSize = true;
-			this.label3.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this.label3, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.label3, null);
-			this._L10NSharpExtender.SetLocalizingId(this.label3, "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel");
-			this.label3.Location = new System.Drawing.Point(28, 280);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(149, 19);
-			this.label3.TabIndex = 34;
-			this.label3.Text = "Page Numbering Style";
-			// 
-			// _numberStyleCombo
-			// 
-			this._numberStyleCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._numberStyleCombo.FormattingEnabled = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._numberStyleCombo, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._numberStyleCombo, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._numberStyleCombo, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._numberStyleCombo, "CollectionSettingsDialog._numberStyleCombo");
-			this._numberStyleCombo.Location = new System.Drawing.Point(32, 302);
-			this._numberStyleCombo.Name = "_numberStyleCombo";
-			this._numberStyleCombo.Size = new System.Drawing.Size(189, 25);
-			this._numberStyleCombo.TabIndex = 35;
+			this.showTroubleShooterCheckBox.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.showTroubleShooterCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.showTroubleShooterCheckBox, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this.showTroubleShooterCheckBox, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this.showTroubleShooterCheckBox, "showTroubleshooter");
+			this.showTroubleShooterCheckBox.Location = new System.Drawing.Point(50, 170);
+			this.showTroubleShooterCheckBox.Name = "showTroubleShooterCheckBox";
+			this.showTroubleShooterCheckBox.Size = new System.Drawing.Size(237, 23);
+			this.showTroubleShooterCheckBox.TabIndex = 6;
+			this.showTroubleShooterCheckBox.Text = "Show Performance Troubleshooter";
+			this.showTroubleShooterCheckBox.UseVisualStyleBackColor = true;
+			this.showTroubleShooterCheckBox.CheckedChanged += new System.EventHandler(this.showTroubleShooterCheckBox_CheckedChanged);
 			// 
 			// CollectionSettingsDialog
 			// 
@@ -850,5 +868,6 @@ namespace Bloom.Collection
 		private Label label2;
 		private ComboBox _numberStyleCombo;
 		private Label label3;
+		private CheckBox showTroubleShooterCheckBox;
 	}
 }

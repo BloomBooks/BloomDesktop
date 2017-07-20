@@ -11,6 +11,7 @@ using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
 using System.IO;
+using Bloom.MiscUI;
 
 namespace Bloom.Collection
 {
@@ -482,6 +483,18 @@ namespace Bloom.Collection
 		{
 			if (_brandingCombo.SelectedItem.ToString() != _collectionSettings.BrandingProjectName)
 				ChangeThatRequiresRestart();
+		}
+
+		private void showTroubleShooterCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			if (showTroubleShooterCheckBox.Checked)
+			{
+				TroubleShooterDialog.ShowTroubleShooter();
+			}
+			else
+			{
+				TroubleShooterDialog.HideTroubleShooter();
+			}
 		}
 	}
 }
