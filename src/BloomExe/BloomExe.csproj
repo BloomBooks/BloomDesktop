@@ -214,8 +214,8 @@
     <Reference Include="PdfSharp">
       <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
     </Reference>
-    <Reference Include="PortableDevices">
-      <HintPath>..\..\lib\dotnet\PortableDevices.dll</HintPath>
+    <Reference Include="PodcastUtilities.PortableDevices">
+      <HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
