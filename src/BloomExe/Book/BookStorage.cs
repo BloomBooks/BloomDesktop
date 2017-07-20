@@ -13,6 +13,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.web;
 using L10NSharp;
 using SIL.Code;
@@ -239,10 +240,16 @@ namespace Bloom.Book
 				Dom.UpdateMetaElement("BloomFormatVersion", kBloomFormatVersion);
 			}
 			MetaData.FormatVersion = kBloomFormatVersion;
+			var watch = Stopwatch.StartNew();
 			string tempPath = SaveHtml(Dom);
+			watch.Stop();
+			TroubleShooterDialog.Report($"Saving xml to html took {watch.ElapsedMilliseconds} milliseconds");
 
-
+			watch = Stopwatch.StartNew();
 			string errors = ValidateBook(Dom, tempPath);
+			watch.Stop();
+			TroubleShooterDialog.Report($"Validating book took {watch.ElapsedMilliseconds} milliseconds");
+
 			if (!string.IsNullOrEmpty(errors))
 			{
 				Logger.WriteEvent("Errors saving book {0}: {1}", PathToExistingHtml, errors);
@@ -804,7 +811,7 @@ namespace Bloom.Book
 				// probably not needed at runtime if !forSelectedBook, but one unit test relies on it having been done, and is very fast, so ok.
 				Dom.UpdatePageDivs();
 
-				// If the book isn't selected, then we're just here to do minimal things, hopefully quick things, to 
+				// If the book isn't selected, then we're just here to do minimal things, hopefully quick things, to
 				// show the title and thumbnail. Of course anything we *don't* do could effect the thumbnail. But
 				// let's wait and deal with that if it seems like a real problem. At the moment it seems to me that
 				// having to select the book to gets its thumbnail updated is a small price to pay.

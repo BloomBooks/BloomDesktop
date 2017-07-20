@@ -32,6 +32,7 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.suppressPreviewCheckbox = new System.Windows.Forms.CheckBox();
 			this.makeEmptyPageThumbnailsCheckbox = new System.Windows.Forms.CheckBox();
+			this.logboxPlaceholder = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -62,15 +63,28 @@
 			this.makeEmptyPageThumbnailsCheckbox.Text = "Don\'t show content in page list";
 			this.makeEmptyPageThumbnailsCheckbox.UseVisualStyleBackColor = true;
 			// 
+			// logboxPlaceholder
+			// 
+			this.logboxPlaceholder.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.logboxPlaceholder.Location = new System.Drawing.Point(12, 126);
+			this.logboxPlaceholder.Name = "logboxPlaceholder";
+			this.logboxPlaceholder.Size = new System.Drawing.Size(396, 126);
+			this.logboxPlaceholder.TabIndex = 4;
+			this.logboxPlaceholder.Text = "The log box will go here";
+			// 
 			// TroubleShooterDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(420, 261);
+			this.Controls.Add(this.logboxPlaceholder);
 			this.Controls.Add(this.makeEmptyPageThumbnailsCheckbox);
 			this.Controls.Add(this.suppressPreviewCheckbox);
 			this.Controls.Add(this.label1);
 			this.Name = "TroubleShooterDialog";
+			this.ShowIcon = false;
 			this.Text = "Trouble Shooter";
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -82,5 +96,6 @@
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.CheckBox suppressPreviewCheckbox;
 		private System.Windows.Forms.CheckBox makeEmptyPageThumbnailsCheckbox;
+		private System.Windows.Forms.Label logboxPlaceholder;
 	}
 }

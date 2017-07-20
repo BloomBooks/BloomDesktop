@@ -14,6 +14,7 @@ using Bloom.Properties;
 //using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
+using Bloom.MiscUI;
 using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
@@ -895,6 +896,7 @@ namespace Bloom.Edit
 		{
 			if (_domForCurrentPage != null)
 			{
+				var watch = Stopwatch.StartNew();
 				try
 				{
 					_webSocketServer.Send("saving", "");
@@ -906,6 +908,7 @@ namespace Bloom.Edit
 					{
 						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, "SaveNow called on wrong thread", null);
 						_view.Invoke((Action)(SaveNow));
+						watch.Stop();
 						return;
 					}
 					CheckForBL2634("beginning SaveNow");
@@ -960,6 +963,8 @@ namespace Bloom.Edit
 					_tasksToDoAfterSaving.RemoveAt(0);
 					task();
 				}
+				watch.Stop();
+				TroubleShooterDialog.Report($"Saving changes took {watch.ElapsedMilliseconds} milliseconds");
 			}
 		}
 
