@@ -1,0 +1,2531 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Bloom.dll" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+    <body>
+      <trans-unit id="BloomIntegrity.WindowTitle">
+        <source xml:lang="en">Bloom Problem</source>
+      </trans-unit>
+      <trans-unit id="BloomIntegrityDialog.ReportProblem">
+        <source xml:lang="en">Report Problem</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
+        <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
+        <source xml:lang="en">Bloom Pack Installation</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
+        <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstaller">
+        <source xml:lang="en">Bloom Pack Installer</source>
+        <note>Displayed as the message box title</note>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.CorruptBloomPack">
+        <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.DoesNotExist">
+        <source xml:lang="en">{0} does not exist</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack">
+        <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Extracting">
+        <source xml:lang="en">Extracting...</source>
+        <note>Shown while Bloom Packs are being installed</note>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
+        <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.NotInstalled">
+        <source xml:lang="en">The Bloom collection will not be installed.</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Opening">
+        <source xml:lang="en">Opening {0}...</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Replace">
+        <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder">
+        <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.UnableToReplace">
+        <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
+      </trans-unit>
+      <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true">
+        <source xml:lang="en">To select, use your mouse wheel or point at what you want, then release the key.</source>
+        <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
+      </trans-unit>
+      <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true">
+        <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
+      </trans-unit>
+      <trans-unit id="BookEditor.ForText" sil:dynamic="true">
+        <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
+      </trans-unit>
+      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
+        <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
+      </trans-unit>
+      <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
+        <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
+      </trans-unit>
+      <trans-unit id="BookStorage.CorruptBook">
+        <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
+      </trans-unit>
+      <trans-unit id="BookStorage.FolderMoved">
+        <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
+      </trans-unit>
+      <trans-unit id="Browser.CopyTroubleshootingInfo">
+        <source xml:lang="en">Copy Troubleshooting Information</source>
+      </trans-unit>
+      <trans-unit id="Browser.OpenPageInFirefox">
+        <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+        <source xml:lang="en">Advanced Program Settings</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
+        <source xml:lang="en">Automatically update Bloom</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+        <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+        <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
+        <source xml:lang="en">(Experimental) Show Send/Receive Controls</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+        <source xml:lang="en">Use Image Server to reduce memory usage with large images.</source>
+        <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
+        <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
+        <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+        <source xml:lang="en">Book Making</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
+        <source xml:lang="en">Branding</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+        <source xml:lang="en">Default Font for {0}</source>
+        <note>{0} is a language name.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+        <source xml:lang="en">Front/Back Matter Pack</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
+        <source xml:lang="en">Paper Saver</source>
+        <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
+        <source xml:lang="en">Traditional</source>
+        <note>Name of the default Front/Back Matter Pack</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
+        <source xml:lang="en">Arabic-Indic</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian">
+        <source xml:lang="en">Armenian</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali">
+        <source xml:lang="en">Bengali</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian">
+        <source xml:lang="en">Cambodian</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal">
+        <source xml:lang="en">Cjk-Decimal</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal">
+        <source xml:lang="en">Decimal</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari">
+        <source xml:lang="en">Devanagari</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian">
+        <source xml:lang="en">Georgian</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati">
+        <source xml:lang="en">Gujarati</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi">
+        <source xml:lang="en">Gurmukhi</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
+        <source xml:lang="en">Hebrew</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
+        <source xml:lang="en">Kannada</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer">
+        <source xml:lang="en">Khmer</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao">
+        <source xml:lang="en">Lao</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian">
+        <source xml:lang="en">Lower-Armenian</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam">
+        <source xml:lang="en">Malayalam</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian">
+        <source xml:lang="en">Mongolian</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar">
+        <source xml:lang="en">Myanmar</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya">
+        <source xml:lang="en">Oriya</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
+        <source xml:lang="en">Page Numbering Style</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian">
+        <source xml:lang="en">Persian</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil">
+        <source xml:lang="en">Tamil</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
+        <source xml:lang="en">Telugu</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai">
+        <source xml:lang="en">Thai</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan">
+        <source xml:lang="en">Tibetan</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian">
+        <source xml:lang="en">Upper-Armenian</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+        <source xml:lang="en">Right to Left Writing System</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
+        <source xml:lang="en">Special Script Settings</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+        <source xml:lang="en">Settings</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+        <source xml:lang="en">Change...</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+        <source xml:lang="en">Language 1</source>
+        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+        <source xml:lang="en">Language 2</source>
+        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+        <source xml:lang="en">Language 3</source>
+        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+        <source xml:lang="en">Languages</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+        <source xml:lang="en">Remove</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+        <source xml:lang="en">Set...</source>
+        <note>If there is no third language specified, the link changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+        <source xml:lang="en">Vernacular Language</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
+        <source xml:lang="en">Language 2 (e.g. National Language)</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label">
+        <source xml:lang="en">Language 3 (e.g. Regional Language)  (Optional)</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+        <source xml:lang="en">Bloom Collection Name</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
+        <source xml:lang="en">Country</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District">
+        <source xml:lang="en">District</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+        <source xml:lang="en">Project Information</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
+        <source xml:lang="en">Province</source>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.Restart">
+        <source xml:lang="en">Restart</source>
+        <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.RestartMessage">
+        <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
+        <source xml:lang="en">Make Reader Template Bloom Pack...</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AdminManagesUpdates">
+        <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
+        <source xml:lang="en">Advanced</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Applying">
+        <source xml:lang="en">Applying updates</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
+        <source xml:lang="en">Get more source books at BloomLibrary.org</source>
+        <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
+        <source xml:lang="en">Source Collection</source>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.DuplicateBook">
+        <source xml:lang="en">Duplicate Book</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.DeleteBook">
+        <source xml:lang="en">Delete Book</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage">
+        <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
+        <source xml:lang="en">Export to Word or LibreOffice...</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign">
+        <source xml:lang="en">Export to XML for InDesign...</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
+        <source xml:lang="en">Make Bloom Pack...</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
+        <source xml:lang="en">Update Book</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
+        <source xml:lang="en">Update Thumbnail</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourceHeading">
+        <source xml:lang="en">Sources For New Books</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourcesLockNotice">
+        <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
+        <source xml:lang="en">Books From BloomLibrary.org</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+        <source xml:lang="en">Do Updates of All Books</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+        <source xml:lang="en">Do Checks of All Books</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
+        <source xml:lang="en">Rescue Missing Images...</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.showHistory">
+        <source xml:lang="en">Collection History...</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.showNotes">
+        <source xml:lang="en">Collection Notes...</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionTabLabel">
+        <source xml:lang="en">Collections</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Collections">
+        <source xml:lang="en">Collections</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ConfiguringBookMessage">
+        <source xml:lang="en">Building...</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ConfirmRecycleDescription">
+        <source xml:lang="en">The book '{0}'</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
+        <source xml:lang="en">Open Folder on Disk</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.EditBookButton">
+        <source xml:lang="en">Edit this book</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Health" sil:dynamic="true">
+        <source xml:lang="en">Health</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
+        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBloomPackButton">
+        <source xml:lang="en">Make Bloom Pack</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
+        <source xml:lang="en">Make a book using this source</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
+        <source xml:lang="en">Create a book in my language using this source book</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+        <source xml:lang="en">More...</source>
+        <note>Brings up the localization dialog</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+        <source xml:lang="en">Other Collection</source>
+        <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_">
+        <source xml:lang="en">Open/Create/Get Collection</source>
+        <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem">
+        <source xml:lang="en">Open or Create Another Collection</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
+        <source xml:lang="en">Sample Shells</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SendReceive">
+        <source xml:lang="en">Send/Receive</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SettingsButton">
+        <source xml:lang="en">Settings</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
+        <source xml:lang="en">Source Collection</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+        <source xml:lang="en">Open Additional Collections Folder</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
+        <source xml:lang="en">Sources For New Shells</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
+        <source xml:lang="en">Templates</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.TitleMissing">
+        <source xml:lang="en">Title Missing</source>
+        <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UnableToCheckForUpdate">
+        <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
+        <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UpToDate">
+        <source xml:lang="en">Your Bloom is up to date.</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UpdateCheckInProgress">
+        <source xml:lang="en">Bloom is already working on checking for updates.</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UpdateFailed">
+        <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UpdateInstalled">
+        <source xml:lang="en">Update for {0} is ready.</source>
+        <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UpdateNow">
+        <source xml:lang="en">Update Now</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.UpdatesAvailable">
+        <source xml:lang="en">A new version of Bloom is available.</source>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Updating">
+        <source xml:lang="en">Downloading update to {0} ({1}kb).</source>
+      </trans-unit>
+      <trans-unit id="Common.BackButton">
+        <source xml:lang="en">Back</source>
+        <note>In a wizard, this button takes you to the previous step.</note>
+      </trans-unit>
+      <trans-unit id="Common.Cancel" sil:dynamic="true">
+        <source xml:lang="en">Cancel</source>
+      </trans-unit>
+      <trans-unit id="Common.CancelButton">
+        <source xml:lang="en">&amp;Cancel</source>
+      </trans-unit>
+      <trans-unit id="Common.Finish">
+        <source xml:lang="en">&amp;Finish</source>
+        <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
+      </trans-unit>
+      <trans-unit id="Common.Help" sil:dynamic="true">
+        <source xml:lang="en">Help</source>
+      </trans-unit>
+      <trans-unit id="Common.HelpButton">
+        <source xml:lang="en">&amp;Help</source>
+      </trans-unit>
+      <trans-unit id="Common.Loading" sil:dynamic="true">
+        <source xml:lang="en">Loading...</source>
+        <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
+      </trans-unit>
+      <trans-unit id="Common.Next">
+        <source xml:lang="en">&amp;Next</source>
+        <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+      </trans-unit>
+      <trans-unit id="Common.NextButton">
+        <source xml:lang="en">Next</source>
+        <note>In a wizard, this button takes you to the next step.</note>
+      </trans-unit>
+      <trans-unit id="Common.OK" sil:dynamic="true">
+        <source xml:lang="en">OK</source>
+      </trans-unit>
+      <trans-unit id="Common.OKButton">
+        <source xml:lang="en">&amp;OK</source>
+      </trans-unit>
+      <trans-unit id="Common.Optional">
+        <source xml:lang="en">optional</source>
+      </trans-unit>
+      <trans-unit id="Common.SeeWebPage">
+        <source xml:lang="en">See {0}.</source>
+        <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
+      </trans-unit>
+      <trans-unit id="Download.Completed">
+        <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
+      </trans-unit>
+      <trans-unit id="Download.CompletedCaption">
+        <source xml:lang="en">Download complete</source>
+      </trans-unit>
+      <trans-unit id="Download.CopyFailed">
+        <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</source>
+      </trans-unit>
+      <trans-unit id="Download.DownloadingDialogTitle">
+        <source xml:lang="en">Downloading book</source>
+      </trans-unit>
+      <trans-unit id="Download.GenericNetworkProblemNotice">
+        <source xml:lang="en">There was a problem downloading your book.</source>
+      </trans-unit>
+      <trans-unit id="Download.ProblemNotice">
+        <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
+      </trans-unit>
+      <trans-unit id="Download.TimeoutProblemNotice">
+        <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.AddPageButton">
+        <source xml:lang="en">Add Page</source>
+        <note>This is for the button that LAUNCHES the dialog, not the "Add this page" button that is IN the dialog.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.AddThisPageButton" sil:dynamic="true">
+        <source xml:lang="en">Add This Page</source>
+        <note>This is for the button inside the dialog</note>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutButton" sil:dynamic="true">
+        <source xml:lang="en">Use This Layout</source>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true">
+        <source xml:lang="en">Continue anyway</source>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
+        <source xml:lang="en">Choose Different Layout...</source>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true">
+        <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
+        <source xml:lang="en">(no template file found)</source>
+        <note>Seen when the book's main template page file is missing.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
+        <source xml:lang="en">Add Page...</source>
+      </trans-unit>
+      <trans-unit id="EditTab.AddTextBoxToImage" sil:dynamic="true">
+        <source xml:lang="en">Add Text Box To Image</source>
+      </trans-unit>
+      <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
+        <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true">
+        <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Bilingual">
+        <source xml:lang="en">Two Languages</source>
+        <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
+        <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CannotChangeCopyright">
+        <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CantPasteImageLocked">
+        <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.ChooseLayoutButton">
+        <source xml:lang="en">Choose Different Layout</source>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
+        <source xml:lang="en">Really Delete Page?</source>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton">
+        <source xml:lang="en">&amp;Delete</source>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
+        <source xml:lang="en">This page will be permanently removed.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.ContentLanguagesDropdown">
+        <source xml:lang="en">Multilingual Settings</source>
+      </trans-unit>
+      <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip">
+        <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyButton">
+        <source xml:lang="en">Copy</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyButton.ToolTip">
+        <source xml:lang="en">Copy (Ctrl+C)</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyButton.ToolTipWhenDisabled">
+        <source xml:lang="en">You need to select some text before you can copy it</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyImageIPMetadataQuestion">
+        <source xml:lang="en">Copy this information to all other pictures in this book?</source>
+        <note>get this after you edit the metadata of an image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyPage">
+        <source xml:lang="en">Copy Page</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true">
+        <source xml:lang="en">Change Layout</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
+        <source xml:lang="en"> or </source>
+        <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true">
+        <source xml:lang="en">Picture</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true">
+        <source xml:lang="en">Text</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
+        <source xml:lang="en">Text Box</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton">
+        <source xml:lang="en">Cut</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton.ToolTip">
+        <source xml:lang="en">Cut (Ctrl+X)</source>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton.ToolTipWhenDisabled">
+        <source xml:lang="en">You need to select some text before you can cut it</source>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton">
+        <source xml:lang="en">Remove\n  Page</source>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton.ToolTip">
+        <source xml:lang="en">Remove this page from the book</source>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton.ToolTipWhenDisabled">
+        <source xml:lang="en">This page cannot be removed</source>
+      </trans-unit>
+      <trans-unit id="EditTab.DeleteTextBoxFromImage" sil:dynamic="true">
+        <source xml:lang="en">Delete Text Box From Image</source>
+      </trans-unit>
+      <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
+        <source xml:lang="en">Bold</source>
+        <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.DirectFormatting.Italic" sil:dynamic="true">
+        <source xml:lang="en">Italic</source>
+        <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true">
+        <source xml:lang="en">Superscript</source>
+        <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.DirectFormatting.Underline" sil:dynamic="true">
+        <source xml:lang="en">Underline</source>
+        <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton">
+        <source xml:lang="en">Duplicate\n  Page</source>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton.ToolTip">
+        <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
+        <source xml:lang="en">This page cannot be duplicated</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Edit">
+        <source xml:lang="en">Edit</source>
+      </trans-unit>
+      <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true">
+        <source xml:lang="en">You cannot change these because this is not the original copy.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord">
+        <source xml:lang="en">Sight Word</source>
+      </trans-unit>
+      <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable">
+        <source xml:lang="en">This word is not decodable in this stage.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
+        <source xml:lang="en">This sentence is too long for this level.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
+        <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FontMissing">
+        <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
+        <source xml:lang="en">Alignment</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true">
+        <source xml:lang="en">That style already exists. Please choose another name.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the border and background</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true">
+        <source xml:lang="en">Characters</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true">
+        <source xml:lang="en">Create</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.CreateStyle" sil:dynamic="true">
+        <source xml:lang="en">Create a new style</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true">
+        <source xml:lang="en">Don't see what you need?</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true">
+        <source xml:lang="en">Emphasis</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
+        <source xml:lang="en">Font</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font face</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
+        <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font size</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Format" sil:dynamic="true">
+        <source xml:lang="en">Format</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
+        <source xml:lang="en">Indent</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between lines of text</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.NewStyle" sil:dynamic="true">
+        <source xml:lang="en">New style</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.ParagraphSpacing">
+        <source xml:lang="en">Space Between Paragraphs</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.ParagraphTab">
+        <source xml:lang="en">Paragraph</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true">
+        <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.ResetStyle" sil:dynamic="true">
+        <source xml:lang="en">Reset this style to default settings</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true">
+        <source xml:lang="en">Spacing</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true">
+        <source xml:lang="en">Style</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true">
+        <source xml:lang="en">Style Name</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
+        <source xml:lang="en">Extra Wide</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between words</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true">
+        <source xml:lang="en">Wide</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true">
+        <source xml:lang="en">Adjust formatting for style</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true">
+        <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true">
+        <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true">
+        <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
+        <source xml:lang="en">Book title in {lang}</source>
+        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
+        <source xml:lang="en">Name of the translator, in {lang}</source>
+        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
+        <source xml:lang="en">Click to Edit Copyright &amp; License</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
+        <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true">
+        <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true">
+        <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.ListSeparator">
+        <source xml:lang="en">, </source>
+        <note>This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true">
+        <source xml:lang="en">Name of Translator, in {lang}</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
+        <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true">
+        <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalHadNoCopyrightSentence">
+        <source xml:lang="en">Adapted from original without a copyright notice.</source>
+        <note>On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalLicenseSentence">
+        <source xml:lang="en">Licensed under {0}.</source>
+        <note>On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
+        <source xml:lang="en">Adapted from original, {0}.</source>
+        <note>On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.PasteImageCreditsLink" sil:dynamic="true">
+        <source xml:lang="en">Paste Image Credits</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.PasteMissingCredits" sil:dynamic="true">
+        <source xml:lang="en">Missing credits:</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
+        <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true">
+        <source xml:lang="en">Click to choose topic</source>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
+        <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
+      </trans-unit>
+      <trans-unit id="EditTab.HowToUnlockBook">
+        <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
+        <source xml:lang="en">Change Image</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
+        <source xml:lang="en">Copy Image</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
+        <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
+        <source xml:lang="en">Cut Image</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
+        <source xml:lang="en">Edit Image Credits, Copyright, and License</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
+        <source xml:lang="en">Paste Image</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true">
+        <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Instructions.DeleteAllowed">
+        <source xml:lang="en">Feel free to modify or delete this page.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.JpegWarningDialog.DoNotUse">
+        <source xml:lang="en">Cancel this import</source>
+      </trans-unit>
+      <trans-unit id="EditTab.JpegWarningDialog.Photograph">
+        <source xml:lang="en">Use the JPEG file</source>
+      </trans-unit>
+      <trans-unit id="EditTab.JpegWarningDialog.WarningText">
+        <source xml:lang="en">The file you’ve chosen is a “JPEG” file. JPEG files are perfect for photographs and color artwork. However, JPEG files are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</source>
+      </trans-unit>
+      <trans-unit id="EditTab.JpegWarningDialog.WindowTitle">
+        <source xml:lang="en">JPEG Warning</source>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutInPublishTabOnlyNotice">
+        <source xml:lang="en">This option is only available in the Publish tab.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutMode.ChangeLayout" sil:dynamic="true">
+        <source xml:lang="en">Change Layout</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Monolingual">
+        <source xml:lang="en">One Language</source>
+        <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NewBookName">
+        <source xml:lang="en">Book</source>
+        <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NoImageFoundOnClipboard">
+        <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.NoOtherLayouts">
+        <source xml:lang="en">There are no other layout options for this template.</source>
+        <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Overflow" sil:dynamic="true">
+        <source xml:lang="en">This box has more text than will fit</source>
+      </trans-unit>
+      <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true">
+        <source xml:lang="en">A container on this page is overflowing</source>
+        <note>This shows up in pages like the cover where sizing is very flexible. No one thing is too big, but not everything on the page will fit. To see it, put a lot of text on a cover page, until a red bar appears at the bottom; then hover over the bar. </note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.CantMoveXMatter">
+        <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.CantMoveXMatterCaption">
+        <source xml:lang="en">Invalid Move</source>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.Heading">
+        <source xml:lang="en">Pages</source>
+      </trans-unit>
+      <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip">
+        <source xml:lang="en">Choose a page size and orientation</source>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton">
+        <source xml:lang="en">Paste</source>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton.ToolTip">
+        <source xml:lang="en">Paste (Ctrl+V)</source>
+      </trans-unit>
+      <trans-unit id="EditTab.PastePage">
+        <source xml:lang="en">Paste Page</source>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton.ToolTipWhenDisabled">
+        <source xml:lang="en">There is nothing on the Clipboard that you can paste here.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Position" sil:dynamic="true">
+        <source xml:lang="en">Position</source>
+      </trans-unit>
+      <trans-unit id="EditTab.ReadOnlyInAuthorMode" sil:dynamic="true">
+        <source xml:lang="en">You cannot put anything in there while making an original book.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
+        <source xml:lang="en">Saving...</source>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.BorderToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the border and background</source>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.FontFaceToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font face</source>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.FontSizeToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font size</source>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.LineSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between lines of text</source>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.WordSpacingExtraWide" sil:dynamic="true">
+        <source xml:lang="en">Extra Wide</source>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.WordSpacingNormal" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.WordSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between words</source>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.WordSpacingWide" sil:dynamic="true">
+        <source xml:lang="en">Wide</source>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditorTip" sil:dynamic="true">
+        <source xml:lang="en">Adjust formatting for style</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TemplatePagesList.Heading">
+        <source xml:lang="en">Template Pages</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.HintBubbles">
+        <source xml:lang="en">Hint Bubbles</source>
+        <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.LanguageTab">
+        <source xml:lang="en">Language</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.Alignment" sil:dynamic="true">
+        <source xml:lang="en">Alignment</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.Background" sil:dynamic="true">
+        <source xml:lang="en">Background</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.BordersAndBackground" sil:dynamic="true">
+        <source xml:lang="en">Borders &amp; Background</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.BorderSides" sil:dynamic="true">
+        <source xml:lang="en">Border Sides</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.BorderStyle" sil:dynamic="true">
+        <source xml:lang="en">Border Style</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.IncludeLang">
+        <source xml:lang="en">Include the name of the language using {lang}. For example: "Enter color in {lang}".</source>
+        <note>Becomes visible when "Show on each" option is chosen in combo. Do NOT translate {lang}.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.LocalLanguage">
+        <source xml:lang="en">Local Language</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.NationalLanguage">
+        <source xml:lang="en">National Language</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.Normal">
+        <source xml:lang="en">Normal</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.NormalLabel">
+        <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.OtherLanguagesLabel">
+        <source xml:lang="en">Use one of these for simple text boxes that are always in only one language.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.RegionalLanguage">
+        <source xml:lang="en">Regional Language</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.WhatToPut">
+        <source xml:lang="en">What should authors put in this box?</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.ShowHintBubble">
+        <source xml:lang="en">Show the hint bubble</source>
+        <note>Label above pull-down menu with options, ShowOnGroup/ShowOnEach</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.ShowOnGroup">
+        <source xml:lang="en">Just once on the whole group</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.ShowOnEach">
+        <source xml:lang="en">On each language-field in the group</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.Title">
+        <source xml:lang="en">Text Box Properties</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.VerticalAlignment">
+        <source xml:lang="en">Vertical Alignment</source>
+        <note>Label above the set of options, Top/Center/Bottom</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ThumbnailCaptions.Picture On Bottom">
+        <source xml:lang="en">Picture On Bottom</source>
+      </trans-unit>
+      <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog">
+        <source xml:lang="en">Picture Intellectual Property Information</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader Tool</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
+        <source xml:lang="en">Bloom can handle only the first {0} words.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Allowed words in this stage</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles">
+        <source xml:lang="en">Text files</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
+        <source xml:lang="en">Letters: {0}</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage">
+        <source xml:lang="en">The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords">
+        <source xml:lang="en">New Decodable Words: {0}</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords">
+        <source xml:lang="en">New Sight Words: {0}</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage">
+        <source xml:lang="en">Stage {0}</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList">
+        <source xml:lang="en">Complete Word List</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Letters in this stage</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true">
+        <source xml:lang="en">Open a Letter and Word List File</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
+        <source xml:lang="en">Generate a letter and word list report</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Sample words in this stage</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true">
+        <source xml:lang="en">Set up Stages</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically">
+        <source xml:lang="en">Sort alphabetically</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByFrequency">
+        <source xml:lang="en">Sort by frequency</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByWordLength">
+        <source xml:lang="en">Sort by word length</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
+        <source xml:lang="en">of</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Words in this stage</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader Tool</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
+        <source xml:lang="en">Actual</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
+        <source xml:lang="en">avg per sentence</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true">
+        <source xml:lang="en">Choice of Topic</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true">
+        <source xml:lang="en">For this Level</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
+        <source xml:lang="en">Formatting</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true">
+        <source xml:lang="en">Illustration Support</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep in mind</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true">
+        <source xml:lang="en">Level</source>
+        <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
+        <source xml:lang="en">of</source>
+        <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
+        <source xml:lang="en">Max</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
+        <source xml:lang="en">per page</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerSentence" sil:dynamic="true">
+        <source xml:lang="en">longest sentence</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
+        <source xml:lang="en">Predictability</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true">
+        <source xml:lang="en">Set up Levels</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true">
+        <source xml:lang="en">This Book</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">This Page</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
+        <source xml:lang="en">total</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
+        <source xml:lang="en">unique</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true">
+        <source xml:lang="en">Vocabulary</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
+        <source xml:lang="en">Word Counts</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true">
+        <source xml:lang="en">More...</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Settings.IsTemplateBook" sil:dynamic="true">
+        <source xml:lang="en">This is a template book.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Settings.IsTemplateBookIntroductionText" sil:dynamic="true">
+        <source xml:lang="en">When you click "Add Page", you can choose from pages contained in template books. To make this a template book, tick this checkbox.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
+        <source xml:lang="en">Allow changes to this shellbook</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText" sil:dynamic="true">
+        <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBook.BadState">
+        <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
+        <note>This is very low priority for translation.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput">
+        <source xml:lang="en">No input device</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBook.NoMic">
+        <source xml:lang="en">This computer appears to have no sound recording device available. You will need one to record audio for a talking book.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBook.PleaseHoldMessage">
+        <source xml:lang="en">Please hold the button down until you have finished recording</source>
+        <note>Appears when the speak/record button is pressed very briefly</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true">
+        <source xml:lang="en">Back</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true">
+        <source xml:lang="en">4) Check</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
+        <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true">
+        <source xml:lang="en">Clear</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true">
+        <source xml:lang="en">Talking Book Tool</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true">
+        <source xml:lang="en">Listen to the whole page</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
+        <source xml:lang="en">2) Look at the highlighted sentence</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
+        <source xml:lang="en">5) Next</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
+        <source xml:lang="en">3) Speak</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
+        <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
+        <source xml:lang="en">longest sentence</source>
+      </trans-unit>
+      <trans-unit id="EditTab.Trilingual">
+        <source xml:lang="en">Three Languages</source>
+        <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton">
+        <source xml:lang="en">Undo</source>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton.ToolTip">
+        <source xml:lang="en">Undo (Ctrl+Z)</source>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton.ToolTipWhenDisabled">
+        <source xml:lang="en">There is nothing to undo</source>
+      </trans-unit>
+      <trans-unit id="Errors.BookProblem">
+        <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
+      </trans-unit>
+      <trans-unit id="Errors.BrokenBook">
+        <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.</source>
+      </trans-unit>
+      <trans-unit id="Errors.CannotAccessFile">
+        <source xml:lang="en">Cannot access {0}</source>
+        <note>displays as a "toast", {0} is the URL/filename</note>
+      </trans-unit>
+      <trans-unit id="Errors.CannotConnectToBloomServer">
+        <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</source>
+      </trans-unit>
+      <trans-unit id="Errors.DeniedAccess">
+        <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
+      </trans-unit>
+      <trans-unit id="Errors.ErrorSelecting">
+        <source xml:lang="en">There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
+      </trans-unit>
+      <trans-unit id="Errors.ErrorUpdating">
+        <source xml:lang="en">There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
+      </trans-unit>
+      <trans-unit id="Errors.NeedNewerVersion">
+        <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</source>
+        <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
+      </trans-unit>
+      <trans-unit id="Errors.ProblemDeletingFile">
+        <source xml:lang="en">Bloom had a problem deleting this file: {0}</source>
+      </trans-unit>
+      <trans-unit id="Errors.ProblemImportingPicture">
+        <source xml:lang="en">Bloom had a problem importing this picture.</source>
+      </trans-unit>
+      <trans-unit id="Errors.ReportThisProblemButton">
+        <source xml:lang="en">Report this problem to Bloom Support</source>
+      </trans-unit>
+      <trans-unit id="Errors.SomethingWentWrong">
+        <source xml:lang="en">Sorry, something went wrong.</source>
+      </trans-unit>
+      <trans-unit id="Errors.SpecifiedXMatterNotFound">
+        <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
+      </trans-unit>
+      <trans-unit id="Errors.XMatterNotFound">
+        <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
+      </trans-unit>
+      <trans-unit id="Errors.XMatterProblemLabel">
+        <source xml:lang="en">Front/Back Matter Problem</source>
+        <note>This shows in the 'toast' that pops up to notify the user of a non-fatal problem.</note>
+      </trans-unit>
+      <trans-unit id="Errors.XMatterSpecifiedByBookNotFound">
+        <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
+      </trans-unit>
+      <trans-unit id="Errors.ZoneAlarm">
+        <source xml:lang="en">Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
+        <source xml:lang="en">Building Reader Templates</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CheckForNewVersionMenuItem">
+        <source xml:lang="en">Check For New Version</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CreditsMenuItem">
+        <source xml:lang="en">About Bloom</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.DocumentationMenuItem">
+        <source xml:lang="en">Documentation</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.Help Menu" sil:dynamic="true">
+        <source xml:lang="en">Help</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.Help Menu_ToolTip_" sil:dynamic="true">
+        <source xml:lang="en">Get Help</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem">
+        <source xml:lang="en">Key Bloom Concepts</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.AskAQuestionMenuItem">
+        <source xml:lang="en">Ask a Question (web)</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
+        <source xml:lang="en">Request a Feature (web)</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.RegistrationMenuItem">
+        <source xml:lang="en">Registration</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ReleaseNotesMenuItem">
+        <source xml:lang="en">Release Notes...</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem">
+        <source xml:lang="en">Report a Problem...</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ShowEventLogMenuItem">
+        <source xml:lang="en">Show Event Log</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
+        <source xml:lang="en">Using Reader Templates </source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.WebSiteMenuItem">
+        <source xml:lang="en">Web Site</source>
+      </trans-unit>
+      <trans-unit id="HelpMenu.trainingVideos">
+        <source xml:lang="en">Training Videos</source>
+      </trans-unit>
+      <trans-unit id="InstallProblem.BloomPdfMaker">
+        <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
+      </trans-unit>
+      <trans-unit id="LameEncoder.Progress">
+        <source xml:lang="en">Converting to mp3</source>
+        <note>Appears in progress indicator</note>
+      </trans-unit>
+      <trans-unit id="LanguageFontDetails.RightToLeftCheck">
+        <source xml:lang="en">This script is right to left</source>
+      </trans-unit>
+      <trans-unit id="LanguageFontDetails.TallerLinesCheck">
+        <source xml:lang="en">This script requires taller lines</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true">
+        <source xml:lang="en">A3Landscape</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape SideBySide</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape SplitAcrossPages</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
+        <source xml:lang="en">A4Portrait</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true">
+        <source xml:lang="en">A5Landscape</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true">
+        <source xml:lang="en">A5Portrait</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Portrait BottomAlign" sil:dynamic="true">
+        <source xml:lang="en">A5Portrait BottomAlign</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true">
+        <source xml:lang="en">A6Landscape</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true">
+        <source xml:lang="en">A6Portrait</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
+        <source xml:lang="en">B5Portrait</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
+        <source xml:lang="en">Device16x9Landscape</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true">
+        <source xml:lang="en">Device16x9Portrait</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true">
+        <source xml:lang="en">HalfLetterPortrait</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.LetterLandscape" sil:dynamic="true">
+        <source xml:lang="en">LetterLandscape</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.LetterPortrait" sil:dynamic="true">
+        <source xml:lang="en">LetterPortrait</source>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.QuarterLetterLandscape" sil:dynamic="true">
+        <source xml:lang="en">QuarterLetterLandscape</source>
+      </trans-unit>
+      <trans-unit id="LicenseDialog.WindowTitle">
+        <source xml:lang="en">Bloom {0}</source>
+      </trans-unit>
+      <trans-unit id="LicenseDialog._acceptButton">
+        <source xml:lang="en">I accept the terms of the license agreement</source>
+      </trans-unit>
+      <trans-unit id="LoginDialog.AgreeToTerms">
+        <source xml:lang="en">I agree to the Bloom Library's Terms of Use</source>
+      </trans-unit>
+      <trans-unit id="LoginDialog.Email">
+        <source xml:lang="en">Email Address</source>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ForgotPassword">
+        <source xml:lang="en">Forgot Password</source>
+      </trans-unit>
+      <trans-unit id="LoginDialog.LoginButton">
+        <source xml:lang="en">&amp;Login</source>
+      </trans-unit>
+      <trans-unit id="LoginDialog.Password">
+        <source xml:lang="en">Password</source>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ShowPassword">
+        <source xml:lang="en">&amp;Show Password</source>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ShowTerms">
+        <source xml:lang="en">Show Terms of Use</source>
+      </trans-unit>
+      <trans-unit id="LoginDialog.WindowTitle">
+        <source xml:lang="en">Log in to BloomLibrary.org</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
+        <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
+        <source xml:lang="en">Choose the Main Language For This Collection</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
+        <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+        <source xml:lang="en">What would you like to call this collection?</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNameProblem">
+        <source xml:lang="en">Collection Name Problem</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt">
+        <source xml:lang="en">Collection will be created at: {0}</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.FinishPage">
+        <source xml:lang="en">Ready To Create New Collection</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.FinishPageContent">
+        <source xml:lang="en">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</source>
+        <note>{0} is the name of the new collection</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.FontAndScriptPage">
+        <source xml:lang="en">Font and Script</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
+        <source xml:lang="en">Choose the Collection Type</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
+        <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+        <source xml:lang="en">Source Collection</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make vernacular books with your shells.</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+        <source xml:lang="en">Vernacular/Local Language Collection</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+        <source xml:lang="en">A collection of books in a local language.</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage">
+        <source xml:lang="en">Give Language Location</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Country">
+        <source xml:lang="en">Country</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.District">
+        <source xml:lang="en">District</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+        <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Province">
+        <source xml:lang="en">Province</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.NewBookPattern">
+        <source xml:lang="en">{0} Books</source>
+        <note>The {0} is replaced by the name of the language.</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.NewCollectionWindowTitle">
+        <source xml:lang="en">Create New Bloom Collection</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ProjectName">
+        <source xml:lang="en">Project Name</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+        <source xml:lang="en">Unable to create a new collection using that name.</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage">
+        <source xml:lang="en">Welcome To Bloom!</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1">
+        <source xml:lang="en">You are almost ready to start making books.</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
+        <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
+        <source xml:lang="en">Click 'Next' to get started.</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InDropboxMessage">
+        <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage">
+        <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.Bloom Collections">
+        <source xml:lang="en">Bloom Collections</source>
+        <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
+        <source xml:lang="en">Browse for another collection on this computer</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
+        <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromInternet">
+        <source xml:lang="en">Copy from Internet</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
+        <source xml:lang="en">Copy from USB Drive</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection">
+        <source xml:lang="en">Create New Collection</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
+        <source xml:lang="en">Open/Create Collections</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink">
+        <source xml:lang="en">Read More</source>
+        <note>This opens the Chorus Help to learn more about send/receive.</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
+        <source xml:lang="en">Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</source>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_">
+        <source xml:lang="en">Change user interface language</source>
+      </trans-unit>
+      <trans-unit id="PageList.CantMoveWhenTranslating">
+        <source xml:lang="en">Pages can not be re-ordered when you are translating a book.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeEulaTitle">
+        <source xml:lang="en">Adobe Color Profile License Agreement</source>
+        <note>dialog title for license agreement</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
+        <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+        <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
+        <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.BodyOnlyRadio">
+        <source xml:lang="en">Booklet Insides</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
+        <source xml:lang="en">Upload</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.CoverOnlyRadio">
+        <source xml:lang="en">Booklet Cover</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.EpubButton">
+        <source xml:lang="en">ePUB</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
+        <source xml:lang="en">Don't Show This Again</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
+        <source xml:lang="en">InDesign XML Information</source>
+        <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.LessMemoryPdfMode">
+        <source xml:lang="en">Use less memory (slower)</source>
+        <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
+        <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.OnePagePerPaperRadio">
+        <source xml:lang="en">Simple</source>
+        <note>Instead of making a booklet, just make normal pages</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Options">
+        <source xml:lang="en">Options</source>
+        <note>menu header in the Publish tab</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
+        <source xml:lang="en">Size/Layout</source>
+        <note>Header for a region of the menu which lists various standard page layout sizes</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
+        <source xml:lang="en">Open the PDF in the default system PDF viewer</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
+        <source xml:lang="en">Replace Existing</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
+        <source xml:lang="en">Notice</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.BadPdf">
+        <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.Compress">
+        <source xml:lang="en">Compressing PDF</source>
+        <note>Message displayed in a progress report dialog box</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.CompressConvertColor">
+        <source xml:lang="en">Compressing PDF &amp; Converting Color to CMYK</source>
+        <note>Message displayed in a progress report dialog box</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.Creating">
+        <source xml:lang="en">Creating PDF ...</source>
+        <note>Message displayed in a progress report dialog box</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.DesktopPrinting">
+        <source xml:lang="en">PDF for Desktop Printing</source>
+        <note>displayed as file type for Save File dialog.  Don't use vertical bar (|) in this string!</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
+        <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
+        <note>Message briefly displayed to the user in a toast</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.Finished">
+        <source xml:lang="en">Finished making PDF from HTML</source>
+        <note>Message displayed in a progress report dialog box</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
+        <source xml:lang="en">Making PDF from HTML</source>
+        <note>Message displayed in a progress report dialog box, a partial step of "Creating PDF"</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.MakingPageOfPdf">
+        <source xml:lang="en">Making Page {0} of the PDF</source>
+        <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.Printshop">
+        <source xml:lang="en">PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)</source>
+        <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable.  Don't use vertical bar (|) in this string!</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.TryMoreMemory">
+        <source xml:lang="en">Try doing this on a computer with more memory</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.TryRestart">
+        <source xml:lang="en">Restart your computer and try this again right away</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.TrySmallerImages">
+        <source xml:lang="en">Replace large, high-resolution images in your document with lower-resolution ones</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfNotSaved">
+        <source xml:lang="en">PDF Not Saved</source>
+        <note>title for the message box</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfNotSavedWhy">
+        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
+        <note>explanation that file was not saved displayed in a message box</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PrintButton">
+        <source xml:lang="en">&amp;Print...</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.PrologToAdobeEula">
+        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
+        <note>Brief explanation of what this license is and why the user needs to agree to it</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Publish">
+        <source xml:lang="en">Publish</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.SaveButton">
+        <source xml:lang="en">&amp;Save PDF...</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.SaveEpub">
+        <source xml:lang="en">&amp;Save ePUB...</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.ShowCropMarks">
+        <source xml:lang="en">Crop Marks</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Acknowledgments">
+        <source xml:lang="en">Acknowledgments</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AdditionalRequests">
+        <source xml:lang="en">Additional Requests: </source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AllReserved">
+        <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.CcLink">
+        <source xml:lang="en">CC-BY-NC</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
+        <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you. If you upload it again, it will be replaced with your current version.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Copyright">
+        <source xml:lang="en">Copyright</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Credits">
+        <source xml:lang="en">credits</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ErrorUploading">
+        <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
+        <source xml:lang="en">One or more fields above need your attention before uploading.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
+        <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Gaurantee">
+        <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
+        <source xml:lang="en">There was a problem uploading your book.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.GiveBack">
+        <source xml:lang="en">It’s easy to “give back”</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.IncompleteTranslation">
+        <source xml:lang="en">(incomplete translation)</source>
+        <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Languages">
+        <source xml:lang="en">Languages</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.License">
+        <source xml:lang="en">Usage/License</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists">
+        <source xml:lang="en">Account Already Exists</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
+        <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed">
+        <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginFailed">
+        <source xml:lang="en">Login failed</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+        <source xml:lang="en">Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.MustAgreeTerms">
+        <source xml:lang="en">In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.Need Email">
+        <source xml:lang="en">Email Needed</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser">
+        <source xml:lang="en">We don't have a user on record with that email. Would you like to sign up?</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PasswordMismatch">
+        <source xml:lang="en">Password and user ID did not match</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms">
+        <source xml:lang="en">Please agree to terms of use</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail">
+        <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetConnectFailed">
+        <source xml:lang="en">Bloom could not connect to the server to reset your password. Please check your network connection.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetFailed">
+        <source xml:lang="en">Reset Password failed</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetPassword">
+        <source xml:lang="en">Resetting Password</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.SendingResetPassword">
+        <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.Signup">
+        <source xml:lang="en">Sign up for Bloom Library.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Template">
+        <source xml:lang="en">This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.
+
+Do you want to go ahead?</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.UnknownUser">
+        <source xml:lang="en">Unknown user</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.LoginFailure">
+        <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.LoginLink">
+        <source xml:lang="en">Log in to BloomLibrary.org</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Logout">
+        <source xml:lang="en">Log out of BloomLibrary.org</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.MakingPdf">
+        <source xml:lang="en">Making PDF Preview...</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.MakingThumbnail">
+        <source xml:lang="en">Making thumbnail image...</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.NoLangsFound">
+        <source xml:lang="en">(None found)</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.OldVersion">
+        <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.PleaseLogIn">
+        <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.PleaseSetThis">
+        <source xml:lang="en">Please set this from the edit tab</source>
+        <note>This shows next to the license, if the license has not yet been set.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignupLink">
+        <source xml:lang="en">Sign up for BloomLibrary.org</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Step1">
+        <source xml:lang="en">Step 1: Confirm Metadata</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Step2">
+        <source xml:lang="en">Step 2: Upload</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SuggestAssignCC">
+        <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SuggestChangeCC">
+        <source xml:lang="en">Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Summary">
+        <source xml:lang="en">Summary</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.TermsLink">
+        <source xml:lang="en">Show Terms of Use</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.TimeProblem">
+        <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Title">
+        <source xml:lang="en">Title</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadButton">
+        <source xml:lang="en">Upload Book</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadCompleteNotice">
+        <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadNotAllowed">
+        <source xml:lang="en">Upload Not Allowed</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadProblemNotice">
+        <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadProgress">
+        <source xml:lang="en">Upload Progress</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadSandbox">
+        <source xml:lang="en">Upload Book (to Sandbox)</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
+        <source xml:lang="en">Uploading book metadata</source>
+        <note>In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadingStatus">
+        <source xml:lang="en">Uploading {0}</source>
+      </trans-unit>
+      <trans-unit id="PublishView._saveButton">
+        <source xml:lang="en">Save stub</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
+        <source xml:lang="en">Add Level</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true">
+        <source xml:lang="en">Add Stage</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddTexts" sil:dynamic="true">
+        <source xml:lang="en">Please add texts to the Sample Texts folder.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AllowedWords" sil:dynamic="true">
+        <source xml:lang="en">allowed words</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AllowedWordsFile" sil:dynamic="true">
+        <source xml:lang="en">Allowed Words File</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AllowedWordsFileHeader" sil:dynamic="true">
+        <source xml:lang="en">Allowed Words File</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AverageHeader" sil:dynamic="true">
+        <source xml:lang="en">Avg</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true">
+        <source xml:lang="en">Book</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words per Book</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
+        <source xml:lang="en">Choose...</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true">
+        <source xml:lang="en">Click on letters to add them to this stage.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.CombinationHelp1" sil:dynamic="true">
+        <source xml:lang="en">Separate by spaces</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.CombinationHelp2" sil:dynamic="true">
+        <source xml:lang="en">E.g. "ai oo sh ng th ing"</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Combinations" sil:dynamic="true">
+        <source xml:lang="en">Letter Combinations (Graphemes)</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
+        <source xml:lang="en">Decodable Stages</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FileNeedsTxtExtension" sil:dynamic="true">
+        <source xml:lang="en">File needs .TXT extension</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">First,</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FormatNotSupported" sil:dynamic="true">
+        <source xml:lang="en">Cannot read this format</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true">
+        <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Language" sil:dynamic="true">
+        <source xml:lang="en">Language</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true">
+        <source xml:lang="en">List letters and word-forming characters in alphabetic order.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LetterHelp2" sil:dynamic="true">
+        <source xml:lang="en">Separate by spaces</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LetterHelp3" sil:dynamic="true">
+        <source xml:lang="en">E.g. "a b c d"</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true">
+        <source xml:lang="en">Letters and Letter Combinations</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
+        <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true">
+        <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp2" sil:dynamic="true">
+        <source xml:lang="en">Notice that the English list includes symbols that are used to make words, like ' in </source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true">
+        <source xml:lang="en">it's</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true">
+        <source xml:lang="en">.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
+        <source xml:lang="en">Level</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
+        <source xml:lang="en">Level&amp;nbsp;</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MatchingWords" sil:dynamic="true">
+        <source xml:lang="en">matching words</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Average Length of Sentences in Book</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Unique Words per Book</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MoreWords" sil:dynamic="true">
+        <source xml:lang="en">More Words</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.OpenSampleTexts" sil:dynamic="true">
+        <source xml:lang="en">Open the sample texts folder for this language.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
+        <source xml:lang="en">Page</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words on each Page</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true">
+        <source xml:lang="en">Powered by </source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true">
+        <source xml:lang="en">Punctuation</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
+        <source xml:lang="en">Remove Level {0}</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true">
+        <source xml:lang="en">Remove Stage {0}</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveWordList" sil:dynamic="true">
+        <source xml:lang="en">Remove from this stage</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReorderLevels" sil:dynamic="true">
+        <source xml:lang="en">Drag rows to reorder levels.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReorderStages" sil:dynamic="true">
+        <source xml:lang="en">Drag rows to reorder stages.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SampleTexts" sil:dynamic="true">
+        <source xml:lang="en">Word Lists and Sample Texts</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SampleWords" sil:dynamic="true">
+        <source xml:lang="en">Sample Words</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SearchEngine" sil:dynamic="true">
+        <source xml:lang="en">, the Search Engine for Literacy.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true">
+        <source xml:lang="en">Previous and New Letters</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true">
+        <source xml:lang="en">Sentence</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words in each Sentence</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
+        <source xml:lang="en">Special Sentence-Ending Punctuation</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
+        <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Set up Decodable Reader Tool</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Set up Leveled Reader Tool</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">set up the alphabet for this language.</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true">
+        <source xml:lang="en">What are sight words?</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
+        <source xml:lang="en">New Sight Words</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true">
+        <source xml:lang="en">Sight Words</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true">
+        <source xml:lang="en">Stage </source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
+        <source xml:lang="en">Stages</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
+        <source xml:lang="en">SynPhony</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
+        <source xml:lang="en">Things to remember for this level:</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true">
+        <source xml:lang="en">Unique</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words" sil:dynamic="true">
+        <source xml:lang="en">Words</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
+        <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage. There are two ways to give words to Bloom:</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true">
+        <source xml:lang="en">2) Place Text Files in Your</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true">
+        <source xml:lang="en">Sample Texts Folder</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.TypeWordsHere" sil:dynamic="true">
+        <source xml:lang="en">1) Type Words Here</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.UseAllowedWords" sil:dynamic="true">
+        <source xml:lang="en">We are using lists of allowed words to define stages</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.UseLetters" sil:dynamic="true">
+        <source xml:lang="en">We are using letters with sight words to define stages</source>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+        <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
+        <source xml:lang="en">The following books will be made into templates:</source>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+        <source xml:lang="en">Save Bloom Pack</source>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
+        <source xml:lang="en">Make Reader Template Bloom Pack</source>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Email">
+        <source xml:lang="en">Email Address</source>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.FirstName">
+        <source xml:lang="en">First Name</source>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Heading">
+        <source xml:lang="en">Please take a minute to register {0}</source>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.HowAreYouUsing">
+        <source xml:lang="en">How are you using {0}?</source>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.IAmStuckLabel">
+        <source xml:lang="en">I'm stuck, I'll finish this later.</source>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Organization">
+        <source xml:lang="en">Organization</source>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.RegisterButton">
+        <source xml:lang="en">&amp;Register</source>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Surname">
+        <source xml:lang="en">Surname</source>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.WindowTitle">
+        <source xml:lang="en">Register {0}</source>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Close">
+        <source xml:lang="en">Close</source>
+        <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
+        <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Email">
+        <source xml:lang="en">Email</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.IncludeBookButton">
+        <source xml:lang="en">Include Book '{0}'</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.IncludeScreenshotButton">
+        <source xml:lang="en">Include this screenshot</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Name">
+        <source xml:lang="en">Name</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Retry">
+        <source xml:lang="en">Retry</source>
+        <note>Shown if there was an error submitting the report. Lets the user try submitting it again.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.SeeDetails">
+        <source xml:lang="en">See what else will be submitted</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.SubmitButton">
+        <source xml:lang="en">&amp;Submit</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Submitting">
+        <source xml:lang="en">Submitting to server...</source>
+        <note>This is shown while Bloom is sending the problem report to our server.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Success">
+        <source xml:lang="en">We received your report, thanks for taking the time to help make Bloom better!</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.WhatsTheProblem">
+        <source xml:lang="en">What seems to be the problem?</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.WindowTitle">
+        <source xml:lang="en">Report A Problem</source>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Zipping">
+        <source xml:lang="en">Zipping up book...</source>
+        <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.linkLabel1">
+        <source xml:lang="en">Will not be private</source>
+      </trans-unit>
+      <trans-unit id="SamplePrintNotification.IGetIt">
+        <source xml:lang="en">I get it. Do not show this again.</source>
+      </trans-unit>
+      <trans-unit id="SamplePrintNotification.PleaseNotice">
+        <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
+      </trans-unit>
+      <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing">
+        <source xml:lang="en">Default line spacing</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
+        <source xml:lang="en">Arithmetic</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
+        <source xml:lang="en">Basic Book</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true">
+        <source xml:lang="en">Big Book</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
+        <source xml:lang="en">Picture Dictionary</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true">
+        <source xml:lang="en">Vaccinations</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
+        <source xml:lang="en">Template Starter</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true">
+        <source xml:lang="en">Wall Calendar</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
+        <source xml:lang="en">A blank page that allows you to add items.</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true">
+        <source xml:lang="en">This page was automatically inserted because the following page is marked as part of a two page spread.</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Picture &amp; Word" sil:dynamic="true">
+        <source xml:lang="en">Page with a picture on top and a large, centered word below.</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
+        <source xml:lang="en">1</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.1 Problem" sil:dynamic="true">
+        <source xml:lang="en">1 Problem</source>
+        <note>This label indicates a page with one arithmetic problem on it.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.10" sil:dynamic="true">
+        <source xml:lang="en">10</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.11" sil:dynamic="true">
+        <source xml:lang="en">11</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.12" sil:dynamic="true">
+        <source xml:lang="en">12</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.13" sil:dynamic="true">
+        <source xml:lang="en">13</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.14" sil:dynamic="true">
+        <source xml:lang="en">14</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.15" sil:dynamic="true">
+        <source xml:lang="en">15</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.16" sil:dynamic="true">
+        <source xml:lang="en">16</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.17" sil:dynamic="true">
+        <source xml:lang="en">17</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.18" sil:dynamic="true">
+        <source xml:lang="en">18</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.19" sil:dynamic="true">
+        <source xml:lang="en">19</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.2" sil:dynamic="true">
+        <source xml:lang="en">2</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.2 Problems" sil:dynamic="true">
+        <source xml:lang="en">2 Problems</source>
+        <note>This label indicates a page with two arithmetic problems on it.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.20" sil:dynamic="true">
+        <source xml:lang="en">20</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.21" sil:dynamic="true">
+        <source xml:lang="en">21</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.3" sil:dynamic="true">
+        <source xml:lang="en">3</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.3 Problems" sil:dynamic="true">
+        <source xml:lang="en">3 Problems</source>
+        <note>This label indicates a page with three arithmetic problems on it.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true">
+        <source xml:lang="en">4</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.4 Problems" sil:dynamic="true">
+        <source xml:lang="en">4 Problems</source>
+        <note>This label indicates a page with four arithmetic problems on it.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.5" sil:dynamic="true">
+        <source xml:lang="en">5</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true">
+        <source xml:lang="en">6</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.7" sil:dynamic="true">
+        <source xml:lang="en">7</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.8" sil:dynamic="true">
+        <source xml:lang="en">8</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.9" sil:dynamic="true">
+        <source xml:lang="en">9</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.About" sil:dynamic="true">
+        <source xml:lang="en">About</source>
+        <note>Caption of 2nd page in books made from Template Starter</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true">
+        <source xml:lang="en">Alphabet</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Image</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Picture</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
+        <source xml:lang="en">Credits Page</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
+        <source xml:lang="en">Custom</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true">
+        <source xml:lang="en">Day 1</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 2" sil:dynamic="true">
+        <source xml:lang="en">Day 2</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 3" sil:dynamic="true">
+        <source xml:lang="en">Day 3</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 4" sil:dynamic="true">
+        <source xml:lang="en">Day 4</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true">
+        <source xml:lang="en">Day 5a</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 5b" sil:dynamic="true">
+        <source xml:lang="en">Day 5b</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Factory" sil:dynamic="true">
+        <source xml:lang="en">Factory</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Flyleaf" sil:dynamic="true">
+        <source xml:lang="en">Flyleaf</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Front Cover</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true">
+        <source xml:lang="en">Front/Back Matter</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image For Thumbnail" sil:dynamic="true">
+        <source xml:lang="en">Image For Thumbnail</source>
+        <note>Caption of first page in books made from Template Starter</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
+        <source xml:lang="en">Image On Bottom</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">Image in Middle</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Back Cover</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Front Cover</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true">
+        <source xml:lang="en">Instructions</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true">
+        <source xml:lang="en">Just Text</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true">
+        <source xml:lang="en">Just a Picture</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
+        <source xml:lang="en">Just an Image</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Outside Back Cover</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
+        <source xml:lang="en">Paper Saver</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true">
+        <source xml:lang="en">Picture &amp; Word</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
+        <source xml:lang="en">Picture in Middle</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
+        <source xml:lang="en">Picture on Bottom</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
+        <source xml:lang="en">SIL-Cameroon</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Super Paper Saver" sil:dynamic="true">
+        <source xml:lang="en">Super Paper Saver</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true">
+        <source xml:lang="en">This Page Is Intentionally Blank</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
+        <source xml:lang="en">Title Page</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true">
+        <source xml:lang="en">Traditional</source>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
+        <source xml:lang="en">Setup</source>
+        <note>This is the dialog used to set up the wall calendar</note>
+      </trans-unit>
+      <trans-unit id="Topics.Agriculture" sil:dynamic="true">
+        <source xml:lang="en">Agriculture</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Animal Stories" sil:dynamic="true">
+        <source xml:lang="en">Animal Stories</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Business" sil:dynamic="true">
+        <source xml:lang="en">Business</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Community Living" sil:dynamic="true">
+        <source xml:lang="en">Community Living</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Culture" sil:dynamic="true">
+        <source xml:lang="en">Culture</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Dictionary" sil:dynamic="true">
+        <source xml:lang="en">Dictionary</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Environment" sil:dynamic="true">
+        <source xml:lang="en">Environment</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Fiction" sil:dynamic="true">
+        <source xml:lang="en">Fiction</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Health" sil:dynamic="true">
+        <source xml:lang="en">Health</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.How To" sil:dynamic="true">
+        <source xml:lang="en">How To</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Math" sil:dynamic="true">
+        <source xml:lang="en">Math</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.NoTopic" sil:dynamic="true">
+        <source xml:lang="en">No Topic</source>
+      </trans-unit>
+      <trans-unit id="Topics.Non Fiction" sil:dynamic="true">
+        <source xml:lang="en">Non Fiction</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Personal Development" sil:dynamic="true">
+        <source xml:lang="en">Personal Development</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Primer" sil:dynamic="true">
+        <source xml:lang="en">Primer</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Science" sil:dynamic="true">
+        <source xml:lang="en">Science</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Spiritual" sil:dynamic="true">
+        <source xml:lang="en">Spiritual</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Story Book" sil:dynamic="true">
+        <source xml:lang="en">Story Book</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Tradition" sil:dynamic="true">
+        <source xml:lang="en">Tradition</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Traditional Story" sil:dynamic="true">
+        <source xml:lang="en">Traditional Story</source>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="WebServer.Warning.NoImageFile">
+        <source xml:lang="en">Cannot Find Image File</source>
+        <note>displays as a "toast"</note>
+      </trans-unit>
+      <trans-unit id="WebServer.Warning.NoFile">
+        <source xml:lang="en">Cannot Find File</source>
+        <note>displays as a "toast"</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

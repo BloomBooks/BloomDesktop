@@ -1,0 +1,1856 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Bloom.dll" source-language="en" target-language="ta" datatype="plaintext" product-version="3.0.53.0" sil:hard-linebreak-replacement="\n">
+    <body>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader Tool</source>
+        <target xml:lang="ta">Decodable படிப்பான் கருவி</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader Tool</source>
+        <target xml:lang="ta">மறுக்கும் படிப்பான் கருவி</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="ta">மேலும்...</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
+        <source xml:lang="en">Bloom Pack Installation</source>
+        <target xml:lang="ta">Bloom தொகுப்பு நிறுவல்</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
+        <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
+        <target xml:lang="ta">இந்த {0} தொகுப்பு தற்போது இந்தக் கணினியில் பயன்படுத்த தயார்.</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack">
+        <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
+        <target xml:lang="ta">Bloom தொடங்கப்பட முடியவில்லை அந்த Bloom கட்டை நிறுவு</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Extracting">
+        <source xml:lang="en">Extracting...</source>
+        <target xml:lang="ta">இதிலிருந்து பகுதி நகலெடுக்கிறது...</target>
+        <note>Shown while BloomPacks are being installed</note>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
+        <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
+        <target xml:lang="ta">Bloom ஏற்கனவே இயங்குகிறது, ஆனால் அடுத்த முறை நீங்கள் Bloom இயக்க up until உள்ளடக்கங்களை காண்பிக்க இருக்கும்</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Opening">
+        <source xml:lang="en">Opening {0}...</source>
+        <target xml:lang="ta">திறக்கிறது {0}...</target>
+      </trans-unit>
+      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
+        <source xml:lang="en">This formatting is for all {0} text in boxes with '{1}' style</source>
+        <target xml:lang="ta">அனைத்து {0} உரை பெட்டிகளிலும் '{1}' பாணியுடன் உள்ளது இந்த வடிவமைத்தல்</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+        <source xml:lang="en">Advanced Program Settings</source>
+        <target xml:lang="ta">மேம்பட்ட நிரல் அமைப்புகள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+        <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
+        <target xml:lang="ta">பசோதனை கட்டளைகள் (எ.கா. ஏற்றுமதி XML-InDesign) காண்பி</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+        <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
+        <target xml:lang="ta">பசோதனை வார்ப்புருக்கள் (எ.கா. படம் அகராதி) காண்பி</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+        <source xml:lang="en">Use Image Server to reduce memory usage with large images.</source>
+        <target xml:lang="ta">நினைவக பயன்பாடு கொண்ட பெரிய படிமங்கள் குறைக்க உருவம் சேவையகம் பயன்படுத்து.</target>
+        <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
+        <source xml:lang="en">(Experimental) Show Send/Receive Controls</source>
+        <target xml:lang="ta">(பசோதனை) அனுப்பு/பெறு கட்டுப்பாடுகள் காண்பி</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+        <source xml:lang="en">Book Making</source>
+        <target xml:lang="ta">புத்தகத்தை வெளியிடுகிறார்</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+        <source xml:lang="en">Default Font for {0}</source>
+        <target xml:lang="ta">இயல்புநிலை எழுத்துருவை {0}</target>
+        <note>{0} is a language name.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+        <source xml:lang="en">Front/Back Matter Pack</source>
+        <target xml:lang="ta">முன்/பின் விவகாரத்தை கட்டு</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+        <source xml:lang="en">Right to Left Writing System</source>
+        <target xml:lang="ta">வலமிருந்து இடமாக எழுதும் முறைமை</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="ta">அமைப்புகள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+        <source xml:lang="en">Change...</source>
+        <target xml:lang="ta">மாற்று...</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+        <source xml:lang="en">Language 1</source>
+        <target xml:lang="ta">மொழி 1</target>
+        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+        <source xml:lang="en">Language 2</source>
+        <target xml:lang="ta">மொழி 2</target>
+        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+        <source xml:lang="en">Language 3</source>
+        <target xml:lang="ta">மொழி 3</target>
+        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="ta">மொழிகள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+        <source xml:lang="en">Set...</source>
+        <target xml:lang="ta">அமை...</target>
+        <note>If there is no third language specified, the link changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+        <source xml:lang="en">Vernacular Language</source>
+        <target xml:lang="ta">நாட்டு(அ)மாவட்ட மொழி</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
+        <source xml:lang="en">Language 2 (e.g. National Language)</source>
+        <target xml:lang="ta">மொழி 2 (எ.கா. தேசிய மொழி)</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label">
+        <source xml:lang="en">Language 3 (e.g. Regional Language)   (Optional)</source>
+        <target xml:lang="ta">மொழி 3 (எ.கா. பிராந்திய மொழி) (விருப்ப)</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+        <source xml:lang="en">Remove</source>
+        <target xml:lang="ta">நீக்கு</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+        <source xml:lang="en">Bloom Collection Name</source>
+        <target xml:lang="ta">Bloom தொகுப்பு பெயர்</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="ta">நாடு</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="ta">மாவட்ட</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+        <source xml:lang="en">Project Information</source>
+        <target xml:lang="ta">திட்டம் தகவல்</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="ta">மாகாணம்</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.Restart">
+        <source xml:lang="en">Restart</source>
+        <target xml:lang="ta">மறுதொடக்கம்</target>
+        <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.RestartMessage">
+        <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
+        <target xml:lang="ta">Bloom இருக்கும் மூடிய பின் மறுபடி திறந்து புதிய அமைப்புகளுடன் இந்த திட்டம்.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage">
+        <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</source>
+        <target xml:lang="ta">Bloom இந்த HTML ஆவணத்தை உங்கள் சொற்செயலி நிரலில் (இயல்பாக சொல் அல்லது மையம் Office) திறக்கும் இப்போது. நீங்கள் உரை மற்றும் இந்த புத்தகத்தில் படிமங்கள் வேலை இருக்கும், ஆனால் இந்த நிரல்களை உருவமைப்பு, எனவே வேண்டாம் எதிர்பார்க்கும் அதிகம் பரப்பவும் கொண்டு மிக நன்றாக இயல்பாக வேண்டாம்.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
+        <source xml:lang="en">Update Book</source>
+        <target xml:lang="ta">புத்தகம் புதுப்பி</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
+        <source xml:lang="en">Update Thumbnail</source>
+        <target xml:lang="ta">சிறு உருவம் புதுப்பித்தல்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.DeleteBook">
+        <source xml:lang="en">Delete Book</source>
+        <target xml:lang="ta">புத்தகம் நீக்கு</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
+        <source xml:lang="en">Export to Word or LibreOffice...</source>
+        <target xml:lang="ta">சொல் அல்லது மையம் Office ஏற்றுமதி...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign">
+        <source xml:lang="en">Export to XML for InDesign...</source>
+        <target xml:lang="ta">ஏற்றுமதி செய் XML-InDesign...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
+        <source xml:lang="en">Books From BloomLibrary.org</source>
+        <target xml:lang="ta">BloomLibrary.org நூல்களுக்கு</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+        <source xml:lang="en">Do Updates of All Books</source>
+        <target xml:lang="ta">அனைத்து புத்தகங்களை புதுப்பித்தல்கள் வேண்டாம்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+        <source xml:lang="en">Do Checks of All Books</source>
+        <target xml:lang="ta">அனைத்து புத்தகங்களை காசோலைகளை வேண்டாம்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
+        <source xml:lang="en">Rescue Missing Images...</source>
+        <target xml:lang="ta">காணாமல் போன படிமங்கள் மீட்க...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.showHistory">
+        <source xml:lang="en">Collection History...</source>
+        <target xml:lang="ta">தொகுப்பு வரலாறு...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.showNotes">
+        <source xml:lang="en">Collection Notes...</source>
+        <target xml:lang="ta">தொகுப்பு குறிப்புகள்...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionTabLabel">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="ta">தொகுப்புகள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Collections">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="ta">தொகுப்புகள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ConfirmRecycleDescription">
+        <source xml:lang="en">The book '{0}'</source>
+        <target xml:lang="ta">அந்த புத்தகம் '{0}'</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
+        <source xml:lang="en">Open Folder on Disk</source>
+        <target xml:lang="ta">வட்டில் கோப்புறை திற</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Health" sil:dynamic="true">
+        <source xml:lang="en">Health</source>
+        <target xml:lang="ta">சுகாதார</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
+        <source xml:lang="en">Make a book using this source</source>
+        <target xml:lang="ta">இந்த மூல பயன்படுத்தி ஒரு புத்தகம் உருவாக்கு</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+        <source xml:lang="en">Other Collection</source>
+        <target xml:lang="ta">மற்ற தொகுப்பு</target>
+        <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
+        <source xml:lang="en">Sample Shells</source>
+        <target xml:lang="ta">மாதிரி உதிரிபாகங்கள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SendReceive">
+        <source xml:lang="en">Send/Receive</source>
+        <target xml:lang="ta">அனுப்பு/பெறு</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SettingsButton">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="ta">அமைப்புகள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="ta">மூல தொகுப்பை</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+        <source xml:lang="en">Open Additional Collections Folder</source>
+        <target xml:lang="ta">கோப்புறை திற கூடுதல் தொகுப்புகள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
+        <source xml:lang="en">Templates</source>
+        <target xml:lang="ta">வார்ப்புருக்கள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.EditBookButton">
+        <source xml:lang="en">Edit this book</source>
+        <target xml:lang="ta">இந்த புத்தகம் திருத்து</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBloomPackButton">
+        <source xml:lang="en">Make Bloom Pack</source>
+        <target xml:lang="ta">Bloom கட்டு அமை</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
+        <source xml:lang="en">Make Reader Template BloomPack...</source>
+        <target xml:lang="ta">படிப்பவர் வார்ப்புரு BloomPack அமை...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
+        <source xml:lang="en">Advanced</source>
+        <target xml:lang="ta">மேம்பட்ட</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
+        <source xml:lang="en">Get more source books at BloomLibrary.org</source>
+        <target xml:lang="ta">At BloomLibrary.org புத்தகங்கள் மூலம் பெற</target>
+        <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="ta">மூல தொகுப்பை</target>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourceHeading">
+        <source xml:lang="en">Sources For New Books</source>
+        <target xml:lang="ta">புதிய புத்தகங்கள் வட்டாரங்கள்</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourcesLockNotice">
+        <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
+        <target xml:lang="ta">இந்தத் தொகுப்பில் பூட்டப்பட்டுள்ளது, எனவே புதிய புத்தகங்கள் சேர்க்க/நீக்க முடியாது.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
+        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
+        <target xml:lang="ta">மூல தொகுப்பை இது, Bloom இல்லை காலகட்டத்தில் எந்த தற்போதுள்ள உதிரிபாகங்கள் இவ்வாறு புதிய உதிரிபாகங்கள் வட்டாரங்கள். ஒரு மொழி ஒரு கூடு சேர்க்க வேண்டுமானால், அதற்கு பதிலாக வேண்டும் கூடு கொண்ட அல்லாமல் அதன் நகல் ஈட்டும் தொகுப்பு திருத்து. மேலும், சுவர் காலண்டரை தற்போது பயன்படுத்த முடியாது ஒரு புதிய கூடு ஏற்படுத்த.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="ta">மேலும்...</target>
+        <note>Brings up the localization dialog</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
+        <source xml:lang="en">Sources For New Shells</source>
+        <target xml:lang="ta">புதிய உதிரிபாகங்கள் வட்டாரங்கள்</target>
+      </trans-unit>
+      <trans-unit id="Common.BackButton">
+        <source xml:lang="en">Back</source>
+        <target xml:lang="ta">பின்</target>
+        <note>In a wizard, this button takes you to the previous step.</note>
+      </trans-unit>
+      <trans-unit id="Common.Cancel" sil:dynamic="true">
+        <source xml:lang="en">Cancel</source>
+        <target xml:lang="ta">ரத்து செய்</target>
+      </trans-unit>
+      <trans-unit id="Common.CancelButton">
+        <source xml:lang="en">&amp;Cancel</source>
+        <target xml:lang="ta">ரத்து செய்</target>
+      </trans-unit>
+      <trans-unit id="Common.Finish">
+        <source xml:lang="en">&amp;Finish</source>
+        <target xml:lang="ta">பூர்த்தி செய்</target>
+        <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
+      </trans-unit>
+      <trans-unit id="Common.HelpButton">
+        <source xml:lang="en">&amp;Help</source>
+        <target xml:lang="ta">உதவி</target>
+      </trans-unit>
+      <trans-unit id="Common.Next">
+        <source xml:lang="en">&amp;Next</source>
+        <target xml:lang="ta">அடுத்த</target>
+        <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+      </trans-unit>
+      <trans-unit id="Common.NextButton">
+        <source xml:lang="en">Next</source>
+        <target xml:lang="ta">அடுத்த</target>
+        <note>In a wizard, this button takes you to the next step.</note>
+      </trans-unit>
+      <trans-unit id="Common.OK" sil:dynamic="true">
+        <source xml:lang="en">OK</source>
+        <target xml:lang="ta">சரி</target>
+      </trans-unit>
+      <trans-unit id="Common.OKButton">
+        <source xml:lang="en">&amp;OK</source>
+        <target xml:lang="ta">சரி</target>
+      </trans-unit>
+      <trans-unit id="Common.Optional">
+        <source xml:lang="en">optional</source>
+        <target xml:lang="ta">விருப்ப</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ConfiguringBookMessage">
+        <source xml:lang="en">Building...</source>
+        <target xml:lang="ta">கட்டிடம்...</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Letters in this stage</source>
+        <target xml:lang="ta">இந்த நிலையில் உள்ள எழுத்துக்கள்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true">
+        <source xml:lang="en">Open a Letter and Word List File</source>
+        <target xml:lang="ta">ஒரு எழுத்து மற்றும் சொல் பட்டியல் கோப்பை திறக்க</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true">
+        <source xml:lang="en">Set up Stages</source>
+        <target xml:lang="ta">கட்டத்தில் அமை</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
+        <source xml:lang="en">Stage </source>
+        <target xml:lang="ta">நிலை</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
+        <source xml:lang="en">of</source>
+        <target xml:lang="ta">நிலை இருந்த</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Words in this stage</source>
+        <target xml:lang="ta">இந்த நிலையில் வார்த்தைகளை</target>
+      </trans-unit>
+      <trans-unit id="Download.Completed">
+        <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</source>
+        <target xml:lang="ta">உங்கள் பதிவிறக்கம் ({0}) நிறைவடைந்தது. உங்கள் தொகுப்புகள், 'புத்தகங்கள் Bloom நூலகத்தில் இருந்து' பிரிவு அது நீங்கள் காண முடியும். நீங்கள் ஏதோ செய்கிறது மத்தியை இருக்க வேண்டாம் தான், என்றால் Bloom தேர்ந்தெடுத்து கொள்கிறேன் உங்களுக்காக.</target>
+      </trans-unit>
+      <trans-unit id="Download.CompletedCaption">
+        <source xml:lang="en">Download complete</source>
+        <target xml:lang="ta">பதிவிறக்கம் நிறைவடைந்தது</target>
+      </trans-unit>
+      <trans-unit id="Download.DownloadingDialogTitle">
+        <source xml:lang="en">Downloading book</source>
+        <target xml:lang="ta">புத்தகம் பதிவிறக்குகிறது</target>
+      </trans-unit>
+      <trans-unit id="Download.GenericNetworkProblemNotice">
+        <source xml:lang="en">There was a problem downloading your book.</source>
+        <target xml:lang="ta">உங்கள் புத்தகம் பதிவிறக்கம் சிக்கல் ஏற்பட்டுள்ளது.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
+        <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
+        <target xml:lang="ta">நீங்கள் எங்கோ புத்தகத்தை பற்றி மேலும் தகவல் வைக்க, இருந்தால், பின் முகப்பு உள் இது இந்த பக்கம் பயன்படுத்தலாம்.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true">
+        <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</source>
+        <target xml:lang="ta">நீங்கள் எங்கோ புத்தகத்தை பற்றி மேலும் தகவல் வைக்க, இருந்தால் மாறி பின் முகப்பு இது இந்த பக்கம் பயன்படுத்தலாம்.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
+        <source xml:lang="en">Open the Html used to make this PDF, in Firefox (must be on path)</source>
+        <target xml:lang="ta">திற, Html பயன்படும் இந்த PDF, Chrome (இருக்க வேண்டும் பாதை) செய்யவும்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CannotChangeCopyright">
+        <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
+        <target xml:lang="ta">மன்னிக்கவும், பதிப்புரிமை மற்றும் இந்த புத்தகம் உரிமம் மாற்ற முடியாது.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CantPasteImageLocked">
+        <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
+        <target xml:lang="ta">மன்னிக்கவும், இந்த புத்தகம் பூட்டப்பட்டுள்ளது கீழே அதனால் படிமங்கள் மாற்ற முடியாது.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
+        <source xml:lang="en">Really Delete Page?</source>
+        <target xml:lang="ta">உண்மையிலேயே பக்கத்தை நீக்கு?</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton">
+        <source xml:lang="en">&amp;Delete</source>
+        <target xml:lang="ta">நீக்கு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
+        <source xml:lang="en">This page will be permanently removed.</source>
+        <target xml:lang="ta">இப்பக்கம் கடைசியாக நிரந்தரமாக நீக்கப்படும்.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Edit">
+        <source xml:lang="en">Edit</source>
+        <target xml:lang="ta">திருத்து</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FontMissing">
+        <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
+        <target xml:lang="ta">நடப்பு தேர்ந்தெடுத்த எழுத்துரு என்பது '{0}', ஆனால் அது நிறுவப்படவில்லை இந்தக் கணினியில். மற்ற சில எழுத்துரு பயன்படுத்தப்படும்.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true">
+        <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
+        <target xml:lang="ta">போது நீங்கள் ஒரு மூல புத்தகம் குறித்து, எழுத்தாளர்கள், illustrators, அரசியல்வாதிகளாகவும், ஆகிய செய்த பங்களிப்புகள் பதிவிட இந்த பெட்டியை பயன்படுத்தவும்.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true">
+        <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
+        <target xml:lang="ta">ஒரு புத்தகத்தில் இருந்து ஒரு கூடு மேற்கொள்ளும்போது, இந்தப் பெட்டியைப் பயன்படுத்தி மொழிபெயர்ப்பு யார் இட்டு கூறுங்கள்.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
+        <source xml:lang="en">Book title in {lang}</source>
+        <target xml:lang="ta">புத்தக தலைப்பு உள்ள {lang}</target>
+        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
+        <source xml:lang="en">Click to Edit Copyright &amp; License</source>
+        <target xml:lang="ta">பதிப்புரிமை &amp; உரிமம் திருத்து கிளிக் செய்யவும்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
+        <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
+        <target xml:lang="ta">இதனை பயன்படுத்த எந்த நல்கை வழங்குவதற்கான.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true">
+        <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
+        <target xml:lang="ta">சர்வதேச நிலையான புத்தக எண். இல்லையெனில் இவற்றுள் வெறுமையாக விடவும்.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
+        <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
+        <target xml:lang="ta">அசல் (அல்லது கூடு) ஒப்புகை உள்ள {lang}</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true">
+        <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
+        <target xml:lang="ta">எழுத்தாளர்கள், விளக்கமளிப்பவரான, அரசியல்வாதிகளாகவும், முதலிய, {lang} செய்த பங்களிப்புகள்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true">
+        <source xml:lang="en">Click to choose topic</source>
+        <target xml:lang="ta">தலைப்பை தேர்வு செய்ய கிளிக் செய்யவும்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
+        <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
+        <target xml:lang="ta"> விளக்கமளிப்பவரான மொழிபெயர்ப்பதற்கு பதிப்பிற்கு, {lang}</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
+        <source xml:lang="en">Change Image</source>
+        <target xml:lang="ta">உருவத்தை மாற்று!!</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
+        <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
+        <target xml:lang="ta">உருவம் வரைவுகள் , பதிப்புரிமை, &amp; உரிமம் திருத்து</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
+        <source xml:lang="en">Paste Image</source>
+        <target xml:lang="ta">உருவம் ஒட்டு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutMode.ChangeLayout" sil:dynamic="true">
+        <source xml:lang="en">Change Layout</source>
+        <target xml:lang="ta">வடிவமைப்பை மாற்று</target>
+      </trans-unit>
+      <trans-unit id="EditTab.NoImageFoundOnClipboard">
+        <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
+        <target xml:lang="ta">ஒரு உருவத்தை நீங்கள் ஒட்டலாம், முன் வேறு நிரலில் இருந்து ஒரு இழு உங்கள் 'கிளிப்போர்டு', நகலெடு.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.Heading">
+        <source xml:lang="en">Pages</source>
+        <target xml:lang="ta">பக்கங்கள்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip">
+        <source xml:lang="en">Choose a page size and orientation</source>
+        <target xml:lang="ta">ஒரு பக்க அளவு மற்றும் திசையை தேர்ந்தெடு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the border and background</source>
+        <target xml:lang="ta">கரை மற்றும் பின்னணி மாற்ற</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font face</source>
+        <target xml:lang="ta">எழுத்துரு முகத்தை மாற்ற</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
+        <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
+        <target xml:lang="ta">அனைத்து பெட்டிகளை சுமந்து பாணி '{0}' மற்றும் மொழி '{1}' உரை அளவை மாற்றும்.\n{2} தமிழகத்தில் நடப்பு அளவு உள்ளது.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font size</source>
+        <target xml:lang="ta">எழுத்துரு அளவை மாற்ற</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between lines of text</source>
+        <target xml:lang="ta">உரையின் வரிகள் இடையே இடைவெளி மாற்ற</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
+        <source xml:lang="en">Extra Wide</source>
+        <target xml:lang="ta">கூடுதல் உலகத்தின்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+        <target xml:lang="ta">சராசரி</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between words</source>
+        <target xml:lang="ta">சொற்களை இடையே இடைவெளி மாற்ற</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true">
+        <source xml:lang="en">Wide</source>
+        <target xml:lang="ta">அகலம்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true">
+        <source xml:lang="en">Adjust formatting for style</source>
+        <target xml:lang="ta">பாணி வடிவமைப்பு சரிசெய்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.TemplatePagesList.Heading">
+        <source xml:lang="en">Template Pages</source>
+        <target xml:lang="ta">வார்ப்புரு பக்கங்கள்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
+        <source xml:lang="en">1</source>
+        <target xml:lang="ta">1</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.2" sil:dynamic="true">
+        <source xml:lang="en">2</source>
+        <target xml:lang="ta">2</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.3" sil:dynamic="true">
+        <source xml:lang="en">3</source>
+        <target xml:lang="ta">3</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true">
+        <source xml:lang="en">4</source>
+        <target xml:lang="ta">4</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.5" sil:dynamic="true">
+        <source xml:lang="en">5</source>
+        <target xml:lang="ta">5</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true">
+        <source xml:lang="en">6</source>
+        <target xml:lang="ta">6</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.7" sil:dynamic="true">
+        <source xml:lang="en">7</source>
+        <target xml:lang="ta">7</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.8" sil:dynamic="true">
+        <source xml:lang="en">8</source>
+        <target xml:lang="ta">8</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.9" sil:dynamic="true">
+        <source xml:lang="en">9</source>
+        <target xml:lang="ta">9</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true">
+        <source xml:lang="en">Alphabet</source>
+        <target xml:lang="ta">அகர வரிசை</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Image</source>
+        <target xml:lang="ta">அடிப்படை உரை &amp; உருவம்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Picture</source>
+        <target xml:lang="ta">அடிப்படை உரை &amp; படம்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
+        <source xml:lang="en">Credits Page</source>
+        <target xml:lang="ta">வரைவு பக்கம்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="ta">விருப்பம்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true">
+        <source xml:lang="en">Day 1</source>
+        <target xml:lang="ta">நாள் 1</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 2" sil:dynamic="true">
+        <source xml:lang="en">Day 2</source>
+        <target xml:lang="ta">நாள் 2</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 3" sil:dynamic="true">
+        <source xml:lang="en">Day 3</source>
+        <target xml:lang="ta">நாள் 3</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 4" sil:dynamic="true">
+        <source xml:lang="en">Day 4</source>
+        <target xml:lang="ta">நாள் 4</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true">
+        <source xml:lang="en">Day 5a</source>
+        <target xml:lang="ta">நாள் 5a</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 5b" sil:dynamic="true">
+        <source xml:lang="en">Day 5b</source>
+        <target xml:lang="ta">நாள் 5b</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Front Cover</source>
+        <target xml:lang="ta">முன்னணி முகப்பு</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
+        <source xml:lang="en">Image On Bottom</source>
+        <target xml:lang="ta">கீழ் பிம்பத்தை</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">Image in Middle</source>
+        <target xml:lang="ta">நடு பிம்பத்தை</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Back Cover</source>
+        <target xml:lang="ta">உள்ளே பின் முகப்பு</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Front Cover</source>
+        <target xml:lang="ta">உள்ளே முன்னணி முகப்பு</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true">
+        <source xml:lang="en">Instructions</source>
+        <target xml:lang="ta">நெறிமுறைகள்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true">
+        <source xml:lang="en">Just Text</source>
+        <target xml:lang="ta">வெறும் உரை</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true">
+        <source xml:lang="en">Just a Picture</source>
+        <target xml:lang="ta">ஒரு படத்தை வெறும்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
+        <source xml:lang="en">Just an Image</source>
+        <target xml:lang="ta">ஒரு உருவத்தை மட்டும்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Outside Back Cover</source>
+        <target xml:lang="ta">வெளியே பின் முகப்பு</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true">
+        <source xml:lang="en">Picture &amp; Word</source>
+        <target xml:lang="ta">படம் &amp; சொல்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
+        <source xml:lang="en">Picture on Bottom</source>
+        <target xml:lang="ta">கீழே உள்ள படம்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
+        <source xml:lang="en">Picture in Middle</source>
+        <target xml:lang="ta">மத்தியில் உள்ள படத்தை</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true">
+        <source xml:lang="en">This Page Is Intentionally Blank</source>
+        <target xml:lang="ta">இப்பக்கம் கடைசியாக தெரிந்தே வெற்றாக இருக்கிறது</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
+        <source xml:lang="en">Title Page</source>
+        <target xml:lang="ta">தலைப்பு பக்கம்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ContentLanguagesDropdown">
+        <source xml:lang="en">Multilingual Settings</source>
+        <target xml:lang="ta">பன்மொழி அமைப்புகள்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyButton">
+        <source xml:lang="en">Copy</source>
+        <target xml:lang="ta">நகல்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton">
+        <source xml:lang="en">Cut</source>
+        <target xml:lang="ta">வெட்டு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton.ToolTip">
+        <source xml:lang="en">Cut (Ctrl-x)</source>
+        <target xml:lang="ta">(Ctrl-x) வெட்டு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton.ToolTipWhenDisabled">
+        <source xml:lang="en">You need to select some text before you can cut it</source>
+        <target xml:lang="ta">நீங்கள் நீங்கள் அதை வெட்ட முடியும் முன் சில உரையை தேர்ந்தெடுக்க வேண்டும்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton">
+        <source xml:lang="en">Remove\n  Page</source>
+        <target xml:lang="ta">நீக்கு \nபக்கம்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton.ToolTip">
+        <source xml:lang="en">Remove this page from the book</source>
+        <target xml:lang="ta">இப்பக்கம் கடைசியாக புத்தகத்தில் இருந்து அகற்று</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton.ToolTipWhenDisabled">
+        <source xml:lang="en">This page cannot be removed</source>
+        <target xml:lang="ta">இப்பக்கம் கடைசியாக நீக்க முடியாது</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton">
+        <source xml:lang="en">Duplicate\n   Page</source>
+        <target xml:lang="ta">நகல் பக்கம்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton.ToolTip">
+        <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
+        <target xml:lang="ta">இதை, பிரதி இது ஒரு புதிய பக்கத்தை செருகு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
+        <source xml:lang="en">This page cannot be duplicated</source>
+        <target xml:lang="ta">இப்பக்கம் கடைசியாக படியெடுக்க இயலாது</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton">
+        <source xml:lang="en">Paste</source>
+        <target xml:lang="ta">ஒட்டு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton.ToolTip">
+        <source xml:lang="en">Paste (Ctrl+v)</source>
+        <target xml:lang="ta">ஒட்டு (Ctrl + v)</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton.ToolTipWhenDisabled">
+        <source xml:lang="en">There is nothing on the Clipboard that you can paste here.</source>
+        <target xml:lang="ta">எதுவும் இல்லை என்று நீங்கள் இங்கே ஒட்டலாம் கிளிப்போர்டில்.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton">
+        <source xml:lang="en">Undo</source>
+        <target xml:lang="ta">செயல்தவிர்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton.ToolTip">
+        <source xml:lang="en">Undo (Ctrl+z)</source>
+        <target xml:lang="ta">(Ctrl + z) செயல்தவிர்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Bilingual">
+        <source xml:lang="en">Two Languages</source>
+        <target xml:lang="ta">இரண்டு மொழிகள்</target>
+        <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyImageIPMetadataQuestion">
+        <source xml:lang="en">Copy this information to all other pictures in this book?</source>
+        <target xml:lang="ta">அனைத்து மற்ற படங்கள் இந்த புத்தகத்தில் இந்த தகவலை நகலெடுக்க?</target>
+        <note>get this after you edit the metadata of an image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutInPublishTabOnlyNotice">
+        <source xml:lang="en">This option is only available in the Publish tab.</source>
+        <target xml:lang="ta">இந்த விருப்பம் கிடைக்கத்தக்கதாய் மட்டும் வெளியிடு தாவலில்.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Monolingual">
+        <source xml:lang="en">One Language</source>
+        <target xml:lang="ta">ஒரு மொழி</target>
+        <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NoOtherLayouts">
+        <source xml:lang="en">There are no other layout options for this template.</source>
+        <target xml:lang="ta">மற்ற வடிவமைப்பு விருப்பங்கள் இல்லை இந்த வார்ப்புருவிற்கு உள்ளன.</target>
+        <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog">
+        <source xml:lang="en">Picture Intellectual Property Information</source>
+        <target xml:lang="ta">படம் அறிவுசார் தகவல்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Trilingual">
+        <source xml:lang="en">Three Languages</source>
+        <target xml:lang="ta">மூன்று மொழிகள்</target>
+        <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
+        <source xml:lang="en">Building Reader Templates</source>
+        <target xml:lang="ta">கட்டிடம் படிப்பவர் வார்ப்புருக்கள்</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.Help Menu">
+        <source xml:lang="en">Help</source>
+        <target xml:lang="ta">உதவி</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
+        <source xml:lang="en">Using Reader Templates </source>
+        <target xml:lang="ta">படிப்பவர் வார்ப்புருக்கள் பயன்படுத்தி</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
+        <source xml:lang="en">Make a Suggestion</source>
+        <target xml:lang="ta">கருத்தளிக்க</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.WebSiteMenuItem">
+        <source xml:lang="en">Web Site</source>
+        <target xml:lang="ta">வலை தளம்</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CheckForNewVersionMenuItem">
+        <source xml:lang="en">Check For New Version</source>
+        <target xml:lang="ta">பார் புதிய பதிப்பு</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CreditsMenuItem">
+        <source xml:lang="en">About Bloom</source>
+        <target xml:lang="ta">Bloom பற்றி</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.DocumentationMenuItem">
+        <source xml:lang="en">Documentation</source>
+        <target xml:lang="ta">ஆவணப்படுத்தல்</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.RegistrationMenuItem">
+        <source xml:lang="en">Registration</source>
+        <target xml:lang="ta">பதிவு</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ReleaseNotesMenuItem">
+        <source xml:lang="en">Release Notes...</source>
+        <target xml:lang="ta">வெளியீட்டு அறிக்கை...</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ShowEventLogMenuItem">
+        <source xml:lang="en">Show Event Log</source>
+        <target xml:lang="ta">நிகழ்வு பதிவை காண்பி</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
+        <source xml:lang="en">InDesign XML Information</source>
+        <target xml:lang="ta">இண்டிசைன் XML தகவல்</target>
+        <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
+        <source xml:lang="en">Don't Show This Again</source>
+        <target xml:lang="ta">இதனை மீண்டும் காண்பிக்க வேண்டாம்</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape</source>
+        <target xml:lang="ta">A4நிலைபரப்பு </target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape SideBySide</source>
+        <target xml:lang="ta">A4நிலைபரப்பு அருகருகே</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape SplitAcrossPages</source>
+        <target xml:lang="ta">A4நிலைபரப்பு பக்கங்கள் முழுவதும் பிரிந்தது</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
+        <source xml:lang="en">A4Portrait</source>
+        <target xml:lang="ta">A4 உருவப்படம்</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true">
+        <source xml:lang="en">A5Landscape</source>
+        <target xml:lang="ta">A5Landscape</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true">
+        <source xml:lang="en">A5Portrait</source>
+        <target xml:lang="ta">A5 உருவப்படம்</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Portrait BottomAlign" sil:dynamic="true">
+        <source xml:lang="en">A5Portrait BottomAlign</source>
+        <target xml:lang="ta">A5 உருவப்படம் கீழே சீரமை</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
+        <source xml:lang="en">B5Portrait</source>
+        <target xml:lang="ta">B5 உருவப்படம்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
+        <source xml:lang="en">Actual</source>
+        <target xml:lang="ta">சரியான</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true">
+        <source xml:lang="en">Choice of Topic</source>
+        <target xml:lang="ta">தலைப்பை இடம்பெயர</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true">
+        <source xml:lang="en">For this Level</source>
+        <target xml:lang="ta">இந்த நிலை</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
+        <source xml:lang="en">Formatting</source>
+        <target xml:lang="ta">வடிவமைத்தல்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true">
+        <source xml:lang="en">Illustration support</source>
+        <target xml:lang="ta">சித்திரம் ஆதரவு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep in mind</source>
+        <target xml:lang="ta">மனதில் வைத்துக்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="ta">நிலை</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
+        <source xml:lang="en"> of </source>
+        <target xml:lang="ta">உடைய</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
+        <source xml:lang="en">Max</source>
+        <target xml:lang="ta">மேக்ஸ்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
+        <source xml:lang="en">per page</source>
+        <target xml:lang="ta">ஒரு பக்கத்திற்கு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
+        <source xml:lang="en">longest sentence</source>
+        <target xml:lang="ta">ஒரு வாக்கியத்தை</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
+        <source xml:lang="en">Predictability</source>
+        <target xml:lang="ta">கணிப்பது</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true">
+        <source xml:lang="en">Set up Levels</source>
+        <target xml:lang="ta">நிலைகள் அமை</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true">
+        <source xml:lang="en">This Book</source>
+        <target xml:lang="ta">இந்த புத்தகம்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">This Page</source>
+        <target xml:lang="ta">இப்பக்கம் கடைசியாக</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
+        <source xml:lang="en">total</source>
+        <target xml:lang="ta">மொத்த</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
+        <source xml:lang="en">unique</source>
+        <target xml:lang="ta">பிரத்யேக</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true">
+        <source xml:lang="en">Vocabulary</source>
+        <target xml:lang="ta">சொல்லகராதி</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
+        <source xml:lang="en">Word Counts</source>
+        <target xml:lang="ta">சொல் எண்ணிக்கை</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.AgreeToTerms">
+        <source xml:lang="en">I agree to the Bloom Library's Terms of Use</source>
+        <target xml:lang="ta">நான் உடன்படுகிறேன் என்பதைக் Bloom நூலகத்தில் பயன்படுத்தும் விதிகள்</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.Email">
+        <source xml:lang="en">Email Address</source>
+        <target xml:lang="ta">மின்னஞ்சல் முகவரி</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ForgotPassword">
+        <source xml:lang="en">Forgot Password</source>
+        <target xml:lang="ta">கடவுச்சொல் மறந்து</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.LoginButton">
+        <source xml:lang="en">&amp;Login</source>
+        <target xml:lang="ta">உள்நுழைவு</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.Password">
+        <source xml:lang="en">Password</source>
+        <target xml:lang="ta">கடவுச்சொல்</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ShowTerms">
+        <source xml:lang="en">Show Terms of Use</source>
+        <target xml:lang="ta">விதிமுறைகள் காண்பி</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.WindowTitle">
+        <source xml:lang="en">Log in to BloomLibrary.org</source>
+        <target xml:lang="ta">புகுபதிகை செய்ய BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ShowPassword">
+        <source xml:lang="en">&amp;Show Password</source>
+        <target xml:lang="ta">கடவுச்சொல் காண்பி</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
+        <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
+        <target xml:lang="ta">அந்த பெயர், &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;இல் தொகுப்பு ஏற்கனவே உள்ளது.\nதயவுசெய்து தனித்துவ பெயர் எடுக்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
+        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <target xml:lang="ta">இந்த சேகரிப்பிற்கான முக்கிய மொழியை தேர்வு செய்யவும்</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
+        <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
+        <target xml:lang="ta">உதாரணங்கள்: "உடல் புத்தகங்கள்", "PNG விலங்கு கதைகள்"</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+        <source xml:lang="en">What would you like to call this collection?</source>
+        <target xml:lang="ta">என்ன விரும்புகிறீர்கள் இந்தத் தொகுப்பில் அழைப்பு?</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNameProblem">
+        <source xml:lang="en">Collection Name Problem</source>
+        <target xml:lang="ta">தொகுப்பு பெயர் கோளாறு</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt">
+        <source xml:lang="en">Collection will be created at: {0}</source>
+        <target xml:lang="ta">தொகுப்பு உருவாக்கப்படும்: {0}</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.FinishPage">
+        <source xml:lang="en">Ready To Create New Collection</source>
+        <target xml:lang="ta">புதிய தொகுப்பு உருவாக்க தயாராக</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
+        <source xml:lang="en">Choose the Collection Type</source>
+        <target xml:lang="ta">தொகுப்பு வகை தேர்ந்தெடுக்கவும்</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="ta">மூல தொகுப்பை</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</source>
+        <target xml:lang="ta">ஒன்று அல்லது மேற்பட்ட மொழிகளில் விரிந்த இண்டர்நெட் கூடு அல்லது வார்ப்புரு தொகுப்பை புத்தகங்களில். நீங்கள் செய்ய BloomLibrary.org இந்த உதிரிபாகங்கள் பதிவேற்றும் மற்றும் optionally எனவே அவர்கள் உடன் உங்கள் உதிரிபாகங்கள் vernacular புத்தகங்கள் எளிதாக மற்றவர்களுக்கு அளிக்க ஒரு BloomPack ஏற்படுத்து முடியும் இருக்கும்.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+        <source xml:lang="en">Vernacular/Local Language Collection</source>
+        <target xml:lang="ta">நாட்டு(அ)மாவட்ட/உள்ளூர் மொழி தொகுப்பு</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+        <source xml:lang="en">A collection of books in a local language.</source>
+        <target xml:lang="ta">உள்ளூர் மொழி ஒரு வசூல்.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage">
+        <source xml:lang="en">Give Language Location</source>
+        <target xml:lang="ta">மொழி இருப்பிடத்தை அளிக்கவும்</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="ta">நாடு</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="ta">மாவட்ட</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+        <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
+        <target xml:lang="ta">விருப்ப உள்ளன. Bloom இருக்கும் இடத்தில் அவற்றை நீங்கள் உருவாக்க புத்தகங்களை தலைப்பு பக்கத்தில் வலது இடங்களில்.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="ta">மாகாணம்</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.NewBookPattern">
+        <source xml:lang="en">{0} Books</source>
+        <target xml:lang="ta">{0} புத்தகங்கள்</target>
+        <note>The {0} is replaced by the name of the language.</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.NewCollectionWindowTitle">
+        <source xml:lang="en">Create New Bloom Collection</source>
+        <target xml:lang="ta">புதிய Bloom தொகுப்பை உருவாக்க</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ProjectName">
+        <source xml:lang="en">Project Name</source>
+        <target xml:lang="ta">திட்டப்பணி பெயர்</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+        <source xml:lang="en">Unable to create a new collection using that name.</source>
+        <target xml:lang="ta">அந்த பெயரை பயன்படுத்தி ஒரு புதிய தொகுப்பை உருவாக்க இயலவில்லை.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage">
+        <source xml:lang="en">Welcome To Bloom!</source>
+        <target xml:lang="ta">Bloom வருக!</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1">
+        <source xml:lang="en">You are almost ready to start making books.</source>
+        <target xml:lang="ta">புத்தகங்கள் ஈட்டும் தொடங்க ஏறக்குறைய தயாராக உள்ளீர்கள்.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
+        <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. So the first thing we need to do is make one for you.</source>
+        <target xml:lang="ta">எளிய மற்றும் ஒருங்கிணைக்கப்பட்ட விஷயங்களை வைத்துக், வகையில் Bloom ஒன்று அல்லது மேற்பட்ட &lt;i&gt;தொகுப்புகள்&lt;/i&gt;நீங்கள் செய்யவும் அனைத்து புத்தகங்கள் உருளும். எனவே நாம் மேற்கொள்ள முதல் விஷயம் உள்ளது ஒன்று உங்களுக்காக செய்யவும்.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
+        <source xml:lang="en">Click 'Next' to get started.</source>
+        <target xml:lang="ta">தொடங்குவதற்கு 'அடுத்து' கிளிக் செய்யவும்.</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.Bloom Collections">
+        <source xml:lang="en">Bloom Collections</source>
+        <target xml:lang="ta">Bloom தொகுப்புகள்</target>
+        <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
+        <source xml:lang="en">Browse for another collection on this computer</source>
+        <target xml:lang="ta">இந்தக் கணினியில் மற்றொரு தொகுப்பு உலாவு</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
+        <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
+        <target xml:lang="ta">உள்பகுதி பிணையத்தில் கோரஸ் மையமாக இருந்து நகலெடு</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromInternet">
+        <source xml:lang="en">Copy from Internet</source>
+        <target xml:lang="ta">இணைய இருந்து நகலெடு</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
+        <source xml:lang="en">Copy from USB Drive</source>
+        <target xml:lang="ta">USB இயக்ககத்தில் இருந்து நகலெடு</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection">
+        <source xml:lang="en">Create New Collection</source>
+        <target xml:lang="ta">புதிய தொகுப்பு உருவாக்க</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
+        <source xml:lang="en">Open/Create Collections</source>
+        <target xml:lang="ta">திற/உருவாக்க தொகுப்புகள்</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink">
+        <source xml:lang="en">Read More</source>
+        <target xml:lang="ta">மேலும் படிக்க</target>
+        <note>This opens the Chorus Help to learn more about send/receive.</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
+        <source xml:lang="en">Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</source>
+        <target xml:lang="ta">செய்துள்ளது வேறொருவர் பயன்படுத்த அனுப்பு/பெறு ஒரு தொகுப்பை உங்களுடன் பகிர?\nபயன்பாடு இந்த சிவப்பு பொத்தான்கள் அவர்களின் தொகுப்பு உங்கள் கணினியில் நகலெடுக்க ஒன்றை.\nபின்னர், அவர்களுடன் மீண்டும் உங்கள் பணி பகிர அனுப்பு/பெறு பயன்படுத்தவும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
+        <source xml:lang="en">Replace Existing</source>
+        <target xml:lang="ta">தற்போதுள்ள மாற்றிடு</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
+        <source xml:lang="en">Notice</source>
+        <target xml:lang="ta">அறிவிப்பு</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.CantMoveXMatter">
+        <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are</source>
+        <target xml:lang="ta">அந்த மாற்றம் அனுமதிக்கப்படாது. அவை முன்னணியில் விவகாரம் மற்றும் பின் விவகாரத்தை பக்கங்கள் இருங்கள்</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.CantMoveXMatterCaption">
+        <source xml:lang="en">Invalid Move</source>
+        <target xml:lang="ta">செல்லுபடியாகா நகர்த்தல்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
+        <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
+        <target xml:lang="ta">தயவுசெய்து உங்கள் நிறைவடைந்த புத்தக Bloom காண்பிக்க முடியும் என்று அடோப் ரீடர் நிறுவ. அதன்பின் வரை நீங்கள் இன்னும் PDF புத்தகம் சேமிக்க மற்றும் சில மற்ற நிரலில் திறக்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+        <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
+        <target xml:lang="ta">புதுப்புது தான்... கொடுத்த பிழை காண்பி முயலும் போது அடோப் ரீடர் அந்த PDF. நீங்கள் இன்னும் முயற்சி செய்யலாம், PDF புத்தகம் சேமிக்கிறது.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
+        <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
+        <target xml:lang="ta">பலமின்மை செய்தி. Bloom கண்டறிய உங்கள் நிறைவடைந்த புத்தக Bloom காண்பிக்க முடியாது அதனால் இங்கே காட்ட அடோப் ரீடர் பெற முடியும்.\nதயவுசெய்து நிறுவல்நீக்கம் உங்கள் தற்போதுள்ள பதிப்பில் 'அடோப் ரீடர்' மற்றும் 'அடோப் ரீடர்' நிறுவ (re).\nநீங்கள் நிலையான என்று பெற, வரை நீங்கள் இன்னும் PDF புத்தகம் சேமிக்க மற்றும் சில மற்ற நிரலில் திறக்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.BodyOnlyRadio">
+        <source xml:lang="en">Booklet Insides</source>
+        <target xml:lang="ta">கையேடு உட்பக்கம்	</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
+        <target xml:lang="ta">உள்ளே இருந்து ஒரு கையேடு ஏற்படுத்து புத்தகத்தின் பக்கங்கள்.
+ பக்கங்கள் வைக்கப்பட்டிருப்பதை மற்றும் அதனால் போது நீங்கள் அதை fold, நீங்கள் ஒரு கையேடு அவகாசம் இருக்கும் reordered இருக்கும்.(-999)</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
+        <source xml:lang="en">Upload</source>
+        <target xml:lang="ta">பதிவேற்றும்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
+        <target xml:lang="ta">BloomLibrary.org, எங்கே மற்றவர்கள் முடியும் தகவலிறக்கம் செய்து தங்கள் சொந்த மொழி-ஐ மொழிமாற்றம் இதில் பதிவேற்றும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.CoverOnlyRadio">
+        <source xml:lang="en">Booklet Cover</source>
+        <target xml:lang="ta">கையேடு முகப்பு</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
+        <target xml:lang="ta">அணி வெறும் ஒரு PDF உருவாக்கு மற்றும் (இரு தரப்பும்), பின், அச்சிடும் வண்ண காகிதம்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OnePagePerPaperRadio">
+        <source xml:lang="en">Simple</source>
+        <target xml:lang="ta">எளிய</target>
+        <note>Instead of making a booklet, just make normal pages</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
+        <target xml:lang="ta">புத்தகத்தின் ஒரு காகித வலைப்பின்னலின் ஒரு பக்கம் ஒவ்வொரு பக்கத்தின் ஒரு PDF செய்யவும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
+        <source xml:lang="en">Open the PDF in the default system pdf viewer</source>
+        <target xml:lang="ta">இயல்புநிலை முறைமை pdf காட்டி, PDF திறக்கவும்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PrintButton">
+        <source xml:lang="en">&amp;Print...</source>
+        <target xml:lang="ta">அச்சிடு...</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Publish">
+        <source xml:lang="en">Publish</source>
+        <target xml:lang="ta">பிரசுரி</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.SaveButton">
+        <source xml:lang="en">&amp;Save PDF...</source>
+        <target xml:lang="ta">PDF சேமி...</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.ShowCropMarks">
+        <source xml:lang="en">Crop Marks</source>
+        <target xml:lang="ta">பயிர் குறிகளை</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Acknowledgments">
+        <source xml:lang="en">Acknowledgments</source>
+        <target xml:lang="ta">ஒப்புக்கொள்ளுதல்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AdditionalRequests">
+        <source xml:lang="en">AdditionalRequests: </source>
+        <target xml:lang="ta">கூடுதல் கோரிக்கைகள்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AllReserved">
+        <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
+        <target xml:lang="ta">அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை (தொடர்பு எந்த அனுமதிகள் பதிப்புரிமை கொண்டிருப்பவர்கள்.)</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
+        <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
+        <target xml:lang="ta">BloomLibrary.org ஏற்கனவே ஒரு முந்தைய பதிப்பில் இருந்து நீங்கள் இந்த புத்தகம் உள்ளது.  நீங்கள் பதிவேற்றும் அது மீண்டும், இருந்தால் அது மாற்றப்படும் உங்கள் நடப்பு பதிப்புடன்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Copyright">
+        <source xml:lang="en">Copyright</source>
+        <target xml:lang="ta">பதிப்புரிமை</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Credits">
+        <source xml:lang="en">credits</source>
+        <target xml:lang="ta">வரவுகளை</target>
+      </trans-unit>
+      <trans-unit id="Download.ProblemNotice">
+        <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
+        <target xml:lang="ta">உங்கள் புத்தகம் பதிவிறக்கம் சிக்கல் ஏற்பட்டுள்ளது. Bloom மறுதொடக்கம் செய்யவும் அல்லது தொழில்நுட்ப உதவி பெற வேண்டும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ErrorUploading">
+        <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
+        <target xml:lang="ta">மன்னிக்கவும், வெட்டுதல் {0} சிக்கல். சில விவரங்கள் பின்பற்றவும். தொழில்நுட்ப உதவி வேண்டும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
+        <source xml:lang="en">One or more fields above need your attention before uploading</source>
+        <target xml:lang="ta">ஒன்று அல்லது மேற்பட்ட புலங்கள் மேலே வெட்டுதல் முன் உங்கள் கவனம் தேவை</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
+        <source xml:lang="en">Sorry, "{0}" was not successfully uploaded</source>
+        <target xml:lang="ta">மன்னிக்கவும், "{0}" வெற்றிகரமாக பணியிடத்தில் தகவலிறக்கம் செய்யப்படவில்லை</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Gaurantee">
+        <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</source>
+        <target xml:lang="ta">வெட்டுதல், மூலம் நீங்கள் உங்கள் ஒப்பந்தம், Bloom நூலகத்தில் பயன்படுத்தும் விதிகள் உறுதிசெய் மற்றும் அது விவரிக்கும் உரிமைகளையும்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
+        <source xml:lang="en">There was a problem uploading your book.</source>
+        <target xml:lang="ta">உங்கள் புத்தகம் வெட்டுதல் சிக்கல் ஏற்பட்டுள்ளது.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Languages">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="ta">மொழிகள்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.License">
+        <source xml:lang="en">Usage/License</source>
+        <target xml:lang="ta">பயன்பாட்டு/உரிமம்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists">
+        <source xml:lang="en">Account Already Exists</source>
+        <target xml:lang="ta">கணக்கு ஏற்கனவே உள்ளது</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
+        <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</source>
+        <target xml:lang="ta">நாங்கள் முடியாது நீங்கள் உடன் உள்நுழைய அந்த முகவரி, ஏனென்றால் நாங்கள் ஏற்கனவே அந்த முகவரி கொண்ட கணக்கு.  அதற்கு பதிலாக உள்நுழைய விரும்புகிறீர்களா?</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed">
+        <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
+        <target xml:lang="ta">Bloom இணைக்க முடியவில்லை சரிபார்க்க உங்கள் உள்நுழைதலை சேவையகம். உங்கள் வலையமைப்பு இணைப்பை சரிபார்க்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginFailed">
+        <source xml:lang="en">Login failed</source>
+        <target xml:lang="ta">உள்நுழைதல் தோல்வியுற்றது</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+        <source xml:lang="en">Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</source>
+        <target xml:lang="ta">Bloom இணைக்க முடியவில்லை உங்கள் உள்நுழைவு அல்லது signup நிறைவுசெய்ய சேவகன். இது உங்கள் இணைய இணைப்பு, நமது சேவையகம் அல்லது சில உபகரணங்கள் சிக்கல் between உள்ளே இருக்கும் முடியவில்லை.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.MustAgreeTerms">
+        <source xml:lang="en">In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</source>
+        <target xml:lang="ta">உள்நுழைய ஒரு BloomLibrary.org கணக்கு, வகையில் என்று ஒப்புக்கொள்கிறீர்கள் பயன்படுத்தும் BloomLibrary விதிகள் காட்டும் பெட்டியை நீங்கள் சரிபார்க்க வேண்டும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.Need Email">
+        <source xml:lang="en">Email Needed</source>
+        <target xml:lang="ta">மின்னஞ்சல் தேவை</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser">
+        <source xml:lang="en">We don't have a user on record with that email. Would you like to sign up?</source>
+        <target xml:lang="ta">உடன் ஆகியவற்றை ஆதாரங்களுடன் ஒரு பயனர் எங்களிடம் வேண்டாம். நீங்கள் உள்நுழைய விரும்புகிறீர்களா?</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PasswordMismatch">
+        <source xml:lang="en">Password and user ID did not match</source>
+        <target xml:lang="ta">கடவுச்சொல் மற்றும் பயனர் ID பொருந்தவில்லை</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms">
+        <source xml:lang="en">Please agree to terms of use</source>
+        <target xml:lang="ta">தயவுசெய்து விதிமுறைகள் ஏற்றுக்கொள்ள</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail">
+        <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
+        <target xml:lang="ta">ஒரு செல்லத்தக்க மின்னஞ்சல் முகவரியை உள்ளிடவும். நாங்கள் உங்களுக்கு ஒரு மின்னஞ்சல் இந்த முகவரிக்கு அனுப்பு எனவே உங்கள் கடவுச்சொல் மீட்டமை.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetConnectFailed">
+        <source xml:lang="en">Bloom could not connect to the server to reset your password. Please check your network connection.</source>
+        <target xml:lang="ta">Bloom இணைக்க முடியவில்லை உங்கள் கடவுச்சொல்லை மீட்டமைக்க சேவகன். உங்கள் வலையமைப்பு இணைப்பை சரிபார்க்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetFailed">
+        <source xml:lang="en">Reset Password failed</source>
+        <target xml:lang="ta">கடவுச்சொல் மீட்டமை தோல்வியுற்றது</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetPassword">
+        <source xml:lang="en">Resetting Password</source>
+        <target xml:lang="ta">கடவுச்சொல் மீட்டமைத்தல்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.SendingResetPassword">
+        <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password</source>
+        <target xml:lang="ta">நாம் அனுப்பும் ஒரு மின்னஞ்சல் உங்கள் கடவுச்சொல்லை மீட்டமைக்க வழிமுறைகளை கொண்டு {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.Signup">
+        <source xml:lang="en">Sign up for Bloom Library.</source>
+        <target xml:lang="ta">உள்நுழைய Bloom நூலகம்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.UnknownUser">
+        <source xml:lang="en">Unknown user</source>
+        <target xml:lang="ta">அறியாத பயனீட்டாளர்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.LoginFailure">
+        <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
+        <target xml:lang="ta">Bloom முடியவில்லை இல்லை புகுபதிகை செய்ய உங்கள் சேமிக்கப்பட்ட நம்பிக்கைச்சான்றை பயன்படுத்தி BloomLibrary.org. உங்கள் வலையமைப்பு இணைப்பை சரிபார்க்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Logout">
+        <source xml:lang="en">Log out of BloomLibrary.org</source>
+        <target xml:lang="ta">வெளியே BloomLibrary.org உள்நுழையவும்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.MakingPdf">
+        <source xml:lang="en">Making PDF Preview...</source>
+        <target xml:lang="ta">PDF முன்னோட்டம் ஈட்டும்...</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.MakingThumbnail">
+        <source xml:lang="en">Making thumbnail image...</source>
+        <target xml:lang="ta">சிறு உருவம் ஈட்டும்...</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.OldVersion">
+        <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
+        <target xml:lang="ta">மன்னிக்கவும், இந்த பதிப்பு Bloom டெஸ்க்டாப் இணக்கமாக இல்லை BloomLibrary.org தற்போதைய பதிப்பு. தயவுகூர்ந்து புதிய பதிப்பிற்கு மேம்படுத்தி மேம்படுத்தல்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.PleaseLogIn">
+        <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
+        <target xml:lang="ta">புகுபதிகை செய்ய BloomLibrary.org (அல்லது உள்நுழைய) வெட்டுதல் முன்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.PleaseSetThis">
+        <source xml:lang="en">Please set this from the edit tab</source>
+        <target xml:lang="ta">தயவுசெய்து திருத்து தாவலில் இருந்து இது அமை</target>
+        <note>This shows next to the license, if the license has not yet been set.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Step1">
+        <source xml:lang="en">Step 1: Confirm Metadata</source>
+        <target xml:lang="ta">படி 1: மீத்தரவு உறுதிசெய்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Step2">
+        <source xml:lang="en">Step 2: Upload</source>
+        <target xml:lang="ta">படி 2: பதிவேற்றும்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SuggestAssignCC">
+        <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
+        <target xml:lang="ta">ஆலோசனை: ஆக்கப்பூர்வ செய்தியாக உரிமம் Assigning எளிதாக்குகிறது தெளிவாகக் ஒவ்வொருவரிடமும் சில அனுமதிகள் வழங்க உங்களுக்காக.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SuggestChangeCC">
+        <source xml:lang="en">Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</source>
+        <target xml:lang="ta">ஆலோசனை: ஆக்கப்பூர்வ செய்தியாக உரிமங்கள் எளிதாக்கு பெரிதும் மற்றவர்களின் பயன்பாட்டுக்கு உங்கள் புத்தகம் என்றால் அவர்கள் மொழியில் உங்கள் விருப்பம் உரிமம் பேசியும் இல்லை.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Summary">
+        <source xml:lang="en">Summary</source>
+        <target xml:lang="ta">சுருக்கம்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.TermsLink">
+        <source xml:lang="en">Show Terms of Use</source>
+        <target xml:lang="ta">விதிமுறைகள் காண்பி</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Title">
+        <source xml:lang="en">Title</source>
+        <target xml:lang="ta">தலைப்பு</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadButton">
+        <source xml:lang="en">Upload Book</source>
+        <target xml:lang="ta">புத்தகம் பதிவேற்றும்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadCompleteNotice">
+        <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
+        <target xml:lang="ta">வாழ்த்துக்கள், "{0}" இருக்கும் பட்சத்தில் இப்போது BloomLibrary.org ({1})</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadNotAllowed">
+        <source xml:lang="en">Upload Not Allowed</source>
+        <target xml:lang="ta">பதிவேற்றும் அனுமதிக்கப்படாது</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadProblemNotice">
+        <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
+        <target xml:lang="ta">உங்கள் புத்தகம் வெட்டுதல் சிக்கல் ஏற்பட்டுள்ளது. Bloom மறுதொடக்கம் செய்யவும் அல்லது தொழில்நுட்ப உதவி பெற வேண்டும்.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadProgress">
+        <source xml:lang="en">Upload Progress</source>
+        <target xml:lang="ta">பதிவேற்றும் முன்னேற்றம்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadSandbox">
+        <source xml:lang="en">Upload Book (to Sandbox)</source>
+        <target xml:lang="ta">பதிவேற்றும் புத்தகத்தை ( மணல் பெட்டி)</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
+        <source xml:lang="en">Uploading book metadata</source>
+        <target xml:lang="ta">புத்தகம் மீத்தரவு வெட்டுதல்</target>
+        <note>In this step, Bloom is uploading things like title, languages, &amp; topic tags to the bloomlibrary.org database.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadingStatus">
+        <source xml:lang="en">Uploading {0}</source>
+        <target xml:lang="ta">{0} வெட்டுதல்</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.CcLink">
+        <source xml:lang="en">CC-BY-NC</source>
+        <target xml:lang="ta">நகல்-மூலம்-என்.சி</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.LoginLink">
+        <source xml:lang="en">Log in to BloomLibrary.org</source>
+        <target xml:lang="ta">புகுபதிகை செய்ய BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignupLink">
+        <source xml:lang="en">Sign up for BloomLibrary.org</source>
+        <target xml:lang="ta">BloomLibrary.org பதிவாக்க</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
+        <source xml:lang="en">Add Level</source>
+        <target xml:lang="ta">மட்டம் சேர்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true">
+        <source xml:lang="en">Add Stage</source>
+        <target xml:lang="ta">மேடை சேர்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddTexts" sil:dynamic="true">
+        <source xml:lang="en">Please add texts to the Sample Texts folder.</source>
+        <target xml:lang="ta">தயவுசெய்து உரைகள் மாதிரி உரைகள் கோப்புறை சேர்.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true">
+        <source xml:lang="en">Book</source>
+        <target xml:lang="ta">புத்தகம்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words per Book</source>
+        <target xml:lang="ta">ஒரு புத்தகம் அதிகபட்ச சொற்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true">
+        <source xml:lang="en">Click on letters to add them to this stage.</source>
+        <target xml:lang="ta">இந்த நிலையில் அவற்றை சேர்க்க கடிதங்கள் click செய்யவும்.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.CombinationHelp1" sil:dynamic="true">
+        <source xml:lang="en">Separate by spaces</source>
+        <target xml:lang="ta">இடைவெளிகளை மூலம் தனி</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.CombinationHelp2" sil:dynamic="true">
+        <source xml:lang="en">E.g. "ai oo sh ng th ing"</source>
+        <target xml:lang="ta">எ.கா "ai ஊவிடம் sh ng th அலுவலகங்களான"</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Combinations" sil:dynamic="true">
+        <source xml:lang="en">Letter Combinations (Graphemes)</source>
+        <target xml:lang="ta">கடிதம் சேர்க்கைகளை (வரிவடிவ எழுத்து)</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
+        <source xml:lang="en">Decodable Stages</source>
+        <target xml:lang="ta">Decodable தொடங்குகிறது</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">First,</source>
+        <target xml:lang="ta">முதல்,</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FormatNotSupported" sil:dynamic="true">
+        <source xml:lang="en">Cannot read this format</source>
+        <target xml:lang="ta">இந்த வடிவமைப்பை படிக்க முடியவில்லை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true">
+        <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
+        <target xml:lang="ta">ஏற்றுமதி மற்றும் மாதிரி texts பயன்படுத்த கோப்புகளை மாற்றுவதற்கு உதவி</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Language" sil:dynamic="true">
+        <source xml:lang="en">Language</source>
+        <target xml:lang="ta">மொழி</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true">
+        <source xml:lang="en">List letters and word-forming characters in alphabetic order.</source>
+        <target xml:lang="ta">கடிதங்கள் மற்றும் அகரவரிசை வரிசையில் வார்த்தை-அமைக்க கேரக்டர்கள் பட்டியல்.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LetterHelp2" sil:dynamic="true">
+        <source xml:lang="en">Separate by spaces</source>
+        <target xml:lang="ta">இடைவெளிகளை மூலம் தனி</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LetterHelp3" sil:dynamic="true">
+        <source xml:lang="en">E.g. "a b c d"</source>
+        <target xml:lang="ta">எ.கா. "a b c d"</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="ta">கடிதங்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true">
+        <source xml:lang="en">Letters and Letter Combinations</source>
+        <target xml:lang="ta">கடிதங்கள் மற்றும் எழுத்து சேர்க்கைகளை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
+        <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
+        <target xml:lang="ta">உதவும் decodable படிப்பான்கள், Bloom கடிதங்கள் மற்றும் நீங்கள் கற்பித்தல் இருக்கும் எழுத்து சேர்க்கைகளை தேவைப்படுகிறது.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true">
+        <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
+        <target xml:lang="ta">ஒவ்வொரு எழுத்து அல்லது எழுத்து இரண்டும் கொண்ட ஒரு இடம் தனி. உதாரணமாக, இங்கே என்பது என்ன நாங்கள் இருக்கலாம் பயன்படுத்த ஆங்கில மொழி:</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp2" sil:dynamic="true">
+        <source xml:lang="en">Notice that the English list includes symbols that are used to make words, like ' in </source>
+        <target xml:lang="ta">ஆங்கில பட்டியலில் அடங்கும் போன்ற சொற்கள், தயாரிக்க பயன்படுத்தப்படும் சின்னங்கள் கவனிக்கவும் ' உள்ள</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true">
+        <source xml:lang="en">it's</source>
+        <target xml:lang="ta">அது</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true">
+        <source xml:lang="en">.</source>
+        <target xml:lang="ta">.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
+        <source xml:lang="en">Level</source>
+        <target xml:lang="ta">நிலை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="ta">நிலை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="ta">படிப்பவர் நிலைகள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MatchingWords" sil:dynamic="true">
+        <source xml:lang="en">matching words</source>
+        <target xml:lang="ta">பொருத்தமான சொற்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Unique Words per Book</source>
+        <target xml:lang="ta">ஒரு புத்தகம் அதிகபட்ச பிரத்யேக சொற்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MoreWords" sil:dynamic="true">
+        <source xml:lang="en">More Words</source>
+        <target xml:lang="ta">மேலும் சொற்களை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.OpenSampleTexts" sil:dynamic="true">
+        <source xml:lang="en">Open the sample texts folder for this language.</source>
+        <target xml:lang="ta">இந்த மொழிக்கான மாதிரி உரை கோப்புறையை திறக்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
+        <source xml:lang="en">Page</source>
+        <target xml:lang="ta">கடைசியாக</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words on each Page</source>
+        <target xml:lang="ta">ஒவ்வொரு பக்கத்திலும் அதிகபட்ச சொற்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true">
+        <source xml:lang="en">Powered by </source>
+        <target xml:lang="ta">இதனால் இயங்குகிறது</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="ta">படிப்பவர் நிலைகள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
+        <source xml:lang="en">Remove Level {0}</source>
+        <target xml:lang="ta">நிலை {0} நீக்கு</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true">
+        <source xml:lang="en">Remove Stage {0}</source>
+        <target xml:lang="ta">மேடை {0} நீக்கு</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReorderLevels" sil:dynamic="true">
+        <source xml:lang="en">Drag rows to reorder levels.</source>
+        <target xml:lang="ta">நிலைகள் மறு வரிசையாக்க இழுத்து வேண்டிய வரிசைகளை இழுக்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReorderStages" sil:dynamic="true">
+        <source xml:lang="en">Drag rows to reorder stages.</source>
+        <target xml:lang="ta">கட்டத்தில் மறு வரிசையாக்க இழுத்து வேண்டிய வரிசைகளை இழுக்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SampleTexts" sil:dynamic="true">
+        <source xml:lang="en">Word Lists and Sample Texts</source>
+        <target xml:lang="ta">சொல் பட்டியல்கள் மற்றும் மாதிரி உரைகள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SearchEngine" sil:dynamic="true">
+        <source xml:lang="en">, the Search Engine for Literacy.</source>
+        <target xml:lang="ta">, எழுத்தறிவு தேடு பொறி.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true">
+        <source xml:lang="en">Previous and New Letters</source>
+        <target xml:lang="ta">முந்தைய மற்றும் புதிய எழுத்துக்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true">
+        <source xml:lang="en">Sentence</source>
+        <target xml:lang="ta">தண்டனை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words in each Sentence</source>
+        <target xml:lang="ta">ஒவ்வொரு வரியின் அதிகபட்ச வார்த்தைகளை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Set up Decodable Reader Tool</source>
+        <target xml:lang="ta">Decodable படிப்பான் கருவி அமை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Set up Leveled Reader Tool</source>
+        <target xml:lang="ta">மறுக்கும் படிப்பான் கருவி அமை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">set up the alphabet for this language.</source>
+        <target xml:lang="ta">இந்த மொழிக்கான அகர வரிசை அமைக்கவும்.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true">
+        <source xml:lang="en">What are sight words?</source>
+        <target xml:lang="ta">கண்பார்வையில் சொற்கள் என்றால் என்ன?</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
+        <source xml:lang="en">New Sight Words</source>
+        <target xml:lang="ta">புதிய பயனுள்ளதாகக் சொற்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true">
+        <source xml:lang="en">Sight Words</source>
+        <target xml:lang="ta">கண்பார்வையில் சொற்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+        <target xml:lang="ta">நிலை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true">
+        <source xml:lang="en">Stage </source>
+        <target xml:lang="ta">நிலை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
+        <source xml:lang="en">Stages</source>
+        <target xml:lang="ta">நிலைகளில்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
+        <source xml:lang="en">SynPhony</source>
+        <target xml:lang="ta">SynPhony</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
+        <source xml:lang="en">Things to remember for this level:</source>
+        <target xml:lang="ta">இந்த நிலை நினைவில் விஷயங்கள்:</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true">
+        <source xml:lang="en">Unique</source>
+        <target xml:lang="ta">பிரத்யேக</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words" sil:dynamic="true">
+        <source xml:lang="en">Words</source>
+        <target xml:lang="ta">சொற்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
+        <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</source>
+        <target xml:lang="ta">உதவும் decodable படிப்பான்கள், தற்போதைய நிலையில் க்குள் பொருத்த சொற்களை Bloom ஆலோசனை செய்யலாம்.  Bloom சொற்களை கொடுக்க இரண்டு வழிகள் இருக்கின்றன:</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true">
+        <source xml:lang="en">2) Place Text Files in Your</source>
+        <target xml:lang="ta">2) உள்ள இடம் உரை கோப்புகள் உங்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true">
+        <source xml:lang="en">Sample Text Folder</source>
+        <target xml:lang="ta">மாதிரி உரை கோப்புறை</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.TypeWordsHere" sil:dynamic="true">
+        <source xml:lang="en">1) Type Words Here</source>
+        <target xml:lang="ta">1) வகை சொற்களை இங்கு</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="ta">கடிதங்கள்</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+        <source xml:lang="en">In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</source>
+        <target xml:lang="ta">மேலும், இந்த BloomPack தொடர்வோம் "{0}" மொழி உங்கள் சமீபத்திய decodable மற்றும் மறுக்கும் படிப்பவர் அமைப்புகளை. இந்த BloomPack உள்ள அமைப்புகள் மாற்றப்பட்டது அவர்களின் தற்போதைய decodable மற்றும் மறுக்கும் படிப்பவர் அமைப்புகள் யார் யார் பின் "{0}" தொகுப்பை திறக்கும், இந்த BloomPack திறக்கும் வேண்டிவரும். அவர்கள் கிடைக்கும் சொற்களை நடப்பு தொகுப்பை decodable படிப்பான்கள் பயன்படுத்தும்.</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
+        <source xml:lang="en">The following books will be made into templates:</source>
+        <target xml:lang="ta">வார்ப்புருக்கள்-ஐ பின்வரும் புத்தகங்கள் வெளியிடப்படும்:</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+        <source xml:lang="en">Save BloomPack</source>
+        <target xml:lang="ta">BloomPack சேமி</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
+        <source xml:lang="en">Make Reader Template BloomPack</source>
+        <target xml:lang="ta">படிப்பவர் வார்ப்புரு BloomPack உருவாக்கு</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Email">
+        <source xml:lang="en">Email Address</source>
+        <target xml:lang="ta">மின்னஞ்சல் முகவரி</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.FirstName">
+        <source xml:lang="en">First Name</source>
+        <target xml:lang="ta">முதல் பெயர்</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Heading">
+        <source xml:lang="en">Please take a minute to register {0}</source>
+        <target xml:lang="ta">தயவுசெய்து {0} பதிவு செய்ய ஒரு நிமிடம் எடுத்துக்</target>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.HowAreYouUsing">
+        <source xml:lang="en">How are you using {0}?</source>
+        <target xml:lang="ta">எப்படி நீங்கள் பயன்படுத்தும் {0}?</target>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.IAmStuckLabel">
+        <source xml:lang="en">I'm stuck, I'll finish this later.</source>
+        <target xml:lang="ta">நான் நின்றுபோனது இருக்கிறேன், நான் இருக்கும் முடி இது பின்னர்.</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Organization">
+        <source xml:lang="en">Organization</source>
+        <target xml:lang="ta">அமைப்பு</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.RegisterButton">
+        <source xml:lang="en">&amp;Register</source>
+        <target xml:lang="ta">பதிவுசெய்</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Surname">
+        <source xml:lang="en">Surname</source>
+        <target xml:lang="ta">துணைப்பெயர்</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.WindowTitle">
+        <source xml:lang="en">Register {0}</source>
+        <target xml:lang="ta">{0} பதிவு</target>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
+        <source xml:lang="en">Basic Book</source>
+        <target xml:lang="ta">அடிப்படை புத்தகம்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true">
+        <source xml:lang="en">Big Book</source>
+        <target xml:lang="ta">பெரிய புத்தகம்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader</source>
+        <target xml:lang="ta">Decodable படிப்பான்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader</source>
+        <target xml:lang="ta">மறுக்கும் படிப்பான்</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
+        <source xml:lang="en">Picture Dictionary</source>
+        <target xml:lang="ta">படம் அகராதி</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true">
+        <source xml:lang="en">Wall Calendar</source>
+        <target xml:lang="ta">சுவரில் நாள்காட்டி</target>
+      </trans-unit>
+      <trans-unit id="Topics.Agriculture" sil:dynamic="true">
+        <source xml:lang="en">Agriculture</source>
+        <target xml:lang="ta">விவசாயம்</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Animal Stories" sil:dynamic="true">
+        <source xml:lang="en">Animal Stories</source>
+        <target xml:lang="ta">விலங்கு கதைகள்</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Business" sil:dynamic="true">
+        <source xml:lang="en">Business</source>
+        <target xml:lang="ta">வியாபாரம்</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Community Living" sil:dynamic="true">
+        <source xml:lang="en">Community Living</source>
+        <target xml:lang="ta">சமூக வாழும்</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Culture" sil:dynamic="true">
+        <source xml:lang="en">Culture</source>
+        <target xml:lang="ta">பண்பாடு</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Dictionary" sil:dynamic="true">
+        <source xml:lang="en">Dictionary</source>
+        <target xml:lang="ta">அகராதி</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Environment" sil:dynamic="true">
+        <source xml:lang="en">Environment</source>
+        <target xml:lang="ta">சூழல்</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Fiction" sil:dynamic="true">
+        <source xml:lang="en">Fiction</source>
+        <target xml:lang="ta">புனைவு</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Health" sil:dynamic="true">
+        <source xml:lang="en">Health</source>
+        <target xml:lang="ta">சுகாதார</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.How To" sil:dynamic="true">
+        <source xml:lang="en">How To</source>
+        <target xml:lang="ta">இது எப்படி</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Math" sil:dynamic="true">
+        <source xml:lang="en">Math</source>
+        <target xml:lang="ta">கணக்கு</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Non Fiction" sil:dynamic="true">
+        <source xml:lang="en">Non Fiction</source>
+        <target xml:lang="ta">அல்லாத கீழேயுள்ளது</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Personal Development" sil:dynamic="true">
+        <source xml:lang="en">Personal Development</source>
+        <target xml:lang="ta">சுய முன்னேற்றம்</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Primer" sil:dynamic="true">
+        <source xml:lang="en">Primer</source>
+        <target xml:lang="ta">நடத்திய</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Science" sil:dynamic="true">
+        <source xml:lang="en">Science</source>
+        <target xml:lang="ta">அறிவியல்</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Spiritual" sil:dynamic="true">
+        <source xml:lang="en">Spiritual</source>
+        <target xml:lang="ta">துறவி</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Tradition" sil:dynamic="true">
+        <source xml:lang="en">Tradition</source>
+        <target xml:lang="ta">பாரம்பரியம்</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Traditional Story" sil:dynamic="true">
+        <source xml:lang="en">Traditional Story</source>
+        <target xml:lang="ta">பாரம்பரிய கதை</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
+        <source xml:lang="en">Setup</source>
+        <target xml:lang="ta">அமைவு</target>
+        <note>This is the dialog used to set up the wall calendar</note>
+      </trans-unit>
+      <trans-unit id="You may use this space for author/illustrator, or anything else." sil:dynamic="true">
+        <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
+        <target xml:lang="ta">எழுத்தாளர்/illustrator, அல்லது வேறு எதுவும் இந்த இடம் உபயோகித்து.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

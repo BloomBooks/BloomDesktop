@@ -1,0 +1,2014 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Bloom.dll" source-language="en" target-language="lo" datatype="plaintext" product-version="3.0.100.0" sil:hard-linebreak-replacement="\n">
+    <body>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader Tool</source>
+        <target xml:lang="lo">ເຄື່ອງມື  Decodable Reader  </target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader Tool</source>
+        <target xml:lang="lo">ເຄື່ອງມື Leveled Reader</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="lo">ເພີ່ມເຕີມ …</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
+        <source xml:lang="en">Possibly this is an old BloomPack created before BloomPacks could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
+        <target xml:lang="lo">ຖ້າເປັນໄປໄດ້ນີ້ແມ່ນມີBloomPackອາຍຸ ສ້າງຂຶ້ນກ່ອນ BloomPacks ສາມາດຈັດຮູບແບບຕົວຫນັງສື ພິເສດໃນຊື່ໄຟລ໌. ທ່ານອາດຈະສາມາດໄດ້ຮັບການນັກປະພັນໄດ້ເພື່ອສ້າງໃຫມ່ການນໍາໃຊ້ສະບັບປະຈຸບັນ. ຖ້າຫາກວ່າເປັນໄປບໍ່ໄດ້ຜູ້ຊ່ຽວຊານດ້ານວິຊາການອາດຈະສາມາດທີ່ຈະສ້ອມແປງສິ່ງ.</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
+        <source xml:lang="en">Bloom Pack Installation</source>
+        <target xml:lang="lo">ການຕິດຕັ້ງ Bloom Pack</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
+        <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
+        <target xml:lang="lo">ໃນປັດຈຸບັນ{0} Collectionຄວາມພ້ອມທີ່ຈະນໍາໃຊ້ໃນຄອມພິວເຕີນີ້.</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstaller">
+        <source xml:lang="en">Bloom Pack Installer</source>
+        <target xml:lang="lo">Bloom Pack Installer</target>
+        <note>Displayed as the message box title</note>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.DoesNotExist">
+        <source xml:lang="en">{0} does not exist</source>
+        <target xml:lang="lo">{0} ບໍ່ມີ</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack">
+        <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
+        <target xml:lang="lo">Bloomບໍ່ສາມາດທີ່ຈະຕິດຕັ້ງທີ່BloomPack</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Extracting">
+        <source xml:lang="en">Extracting...</source>
+        <target xml:lang="lo">ພາວະຖົດຖອຍ….</target>
+        <note>Shown while BloomPacks are being installed</note>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
+        <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
+        <target xml:lang="lo">Bloom ຍັງແລ່ນ, ແຕ່ວ່າເນື້ອໃນຈະບໍ່ປາກົດຈົນກ່ວາທີ່ໃຊ້ເວລາຕໍ່ໄປທ່ານແລ່ນBloom </target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.NotInstalled">
+        <source xml:lang="en">The Bloom collection will not be installed.</source>
+        <target xml:lang="lo">Bloom Collectionຈະບໍ່ໄດ້ຮັບການຕິດຕັ້ງ</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Opening">
+        <source xml:lang="en">Opening {0}...</source>
+        <target xml:lang="lo">ເປີດ {0}….</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Replace">
+        <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
+        <target xml:lang="lo">ຄອມພິວເຕີນີ້ມີ Bloom Collection ແລ້ວ '{0}'. ທ່ານຕ້ອງການເພື່ອທົດແທນການມັນມີຫນຶ່ງຈາBloom Pack ນີ້ບໍ່?</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder">
+        <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the zip file.</source>
+        <target xml:lang="lo">Bloom Packs ຄວນຈະມີພຽງແຕ່ເປັນການເກັບກໍາຂໍ້ມູນໂຟເດີດຽວຢູ່ໃນລະດັບດ້ານເທິງຂອງໄຟຫັດໄປສະນີ.</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.UnableToReplace">
+        <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
+        <target xml:lang="lo">"Bloom ແມ່ນບໍ່ສາມາດທີ່ຈະເອົາສໍາເນົາຂອງທີ່ມີຢູ່ '{0}'. \nອອກຈາກ Bloom ວ່າມັນແມ່ນແລ່ນແລະພະຍາຍາມອີກເທື່ອຫນຶ່ງ. ຖ້າບໍ່ດັ່ງນັ້ນ, ພະຍາຍາມອີກເທື່ອຫນຶ່ງຫລັງຈາກທີ່ຄອມພິວເຕີຂອງທ່ານ."</target>
+      </trans-unit>
+      <trans-unit id="BookEditor.ForText" sil:dynamic="true">
+        <source xml:lang="en">This formatting is for all text boxes with '{0}' style</source>
+        <target xml:lang="lo">ຕົວແບບນີ້ແມ່ນມີຈຸດປະສົງສໍາລັບການທີ່ທັງຫມົດກ່ອງຂໍ້ຄວາມທີ່ມີ '{0}' ແບບ</target>
+      </trans-unit>
+      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
+        <source xml:lang="en">This formatting is for all {0} text in boxes with '{1}' style</source>
+        <target xml:lang="lo">ຮູບແບບການແມ່ນສໍາລັບຂໍ້ຄວາມທັງຫມົດໃນປ່ອງທີ່ມີ {0} {1} 'ແບບ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+        <source xml:lang="en">Advanced Program Settings</source>
+        <target xml:lang="lo">ການຕັ້ງຄ່າຄໍາຮ້ອງສະຫມັກຂັ້ນສູງ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+        <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
+        <target xml:lang="lo">ໃນຄໍາສັ່ງເພື່ອທົດສອບ (ຕົວຢ່າງເຊັ່ນສົ່ງອອກໄປ InDesign ໃນ XML).</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+        <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
+        <target xml:lang="lo">ຜົນການທົດລອງສະແດງໃຫ້ເຫັນແມ່ແບບ (ຕົວຢ່າງເຊັ່ນ: ປະທານຸກົມຮູບພາບ).</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+        <source xml:lang="en">Use Image Server to reduce memory usage with large images.</source>
+        <target xml:lang="lo">ກະລຸນາໃຊ້ Image Serverປະຕິບັດການຮູບພາບຂະຫນາດໃຫຍ່, ນີ້ສາມາດຫຼຸດຜ່ອນຄວາມຈໍາໄດ້.</target>
+        <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
+        <source xml:lang="en">(Experimental) Show Send/Receive Controls</source>
+        <target xml:lang="lo">(ທົດສອບ) ສະແດງໃຫ້ເຫັນການສົ່ງ / ຮັບການຄວບຄຸມ.</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+        <source xml:lang="en">Book Making</source>
+        <target xml:lang="lo">ການຜະລິດປື້ມບັນ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+        <source xml:lang="en">Default Font for {0}</source>
+        <target xml:lang="lo">ຕົວອັກສອນໄວ້ໃນຕອນຕົ້ນສໍາລັບ {0}.</target>
+        <note>{0} is a language name.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+        <source xml:lang="en">Front/Back Matter Pack</source>
+        <target xml:lang="lo">ຫນ້າ / ກັບຄືນໄປບ່ອນ Matter Pack</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+        <source xml:lang="en">Right to Left Writing System</source>
+        <target xml:lang="lo">ຂວາຫາຊ້າຍລະບົບການຂຽນ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="lo">ການຕັ້ງຄ່າ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+        <source xml:lang="en">Change...</source>
+        <target xml:lang="lo">ການປ່ຽນແປງ ...</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+        <source xml:lang="en">Language 1</source>
+        <target xml:lang="lo">ພາສາ 1</target>
+        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+        <source xml:lang="en">Language 2</source>
+        <target xml:lang="lo">ພາສາ 2 </target>
+        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+        <source xml:lang="en">Language 3</source>
+        <target xml:lang="lo">ພາສາ 3</target>
+        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="lo">ພາສາ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+        <source xml:lang="en">Set...</source>
+        <target xml:lang="lo">ການສ້າງຕັ້ງຂອງ ...</target>
+        <note>If there is no third language specified, the link changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+        <source xml:lang="en">Vernacular Language</source>
+        <target xml:lang="lo">ພາສາທ້ອງຖິ່ນ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
+        <source xml:lang="en">Language 2 (e.g. National Language)</source>
+        <target xml:lang="lo">ພາສາ 2 (ຕົວຢ່າງ: ພາສາແຫ່ງຊາດ).</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label">
+        <source xml:lang="en">Language 3 (e.g. Regional Language)   (Optional)</source>
+        <target xml:lang="lo">ພາສາ 3 (ສໍາລັບການຍົກຕົວຢ່າງ, ພາສາຂອງພູມິພາກ) (ຖ້າມີ).</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+        <source xml:lang="en">Remove</source>
+        <target xml:lang="lo">ລົບ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+        <source xml:lang="en">Bloom Collection Name</source>
+        <target xml:lang="lo">ຊື່ຂອງ Bloom Collection</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="lo">ປະເທດ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="lo">District</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+        <source xml:lang="en">Project Information</source>
+        <target xml:lang="lo">ຂໍ້ມູນໂຄງການ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="lo">ຈັງຫວັດ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.Restart">
+        <source xml:lang="en">Restart</source>
+        <target xml:lang="lo">ເປັນການເລີ່ມຕົ້ນໃຫມ່</target>
+        <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.RestartMessage">
+        <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
+        <target xml:lang="lo">Bloom ຖືກປິດ, ຫຼັງຈາກນັ້ນເປີດໂຄງການເພື່ອການຕັ້ງຄ່າໃຫມ່.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage">
+        <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</source>
+        <target xml:lang="lo">Bloom ແມ່ນ HTML ທີ່ເປີດແປນ (Word ຫຼື LibreOffice) ໃນໂຮງງານຜະລິດຄໍາຂອງທ່ານ. ສັງເກດວ່າທ່ານສາມາດຈັດການກັບການທັງຫມົດຂອງຫນັງສືຫຼືຮູບພາບ. ແຕ່ບໍ່ຈໍາເປັນຈະສາມາດເພື່ອຊ່ວຍປະຢັດຮູບແບບ.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
+        <source xml:lang="en">Update Book</source>
+        <target xml:lang="lo">ປັບຂໍ້ມູນຫຼ້າສຸດ ປື້ມບັນ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
+        <source xml:lang="en">Update Thumbnail</source>
+        <target xml:lang="lo">ປັບຂໍ້ມູນຫຼ້າສຸດ Thumbnail</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.DeleteBook">
+        <source xml:lang="en">Delete Book</source>
+        <target xml:lang="lo">ລົບປື້ມບັນ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
+        <source xml:lang="en">Export to Word or LibreOffice...</source>
+        <target xml:lang="lo">ການສົ່ງອອກໄປ Word ຫຼື LibreOffice ...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign">
+        <source xml:lang="en">Export to XML for InDesign...</source>
+        <target xml:lang="lo">ການສົ່ງອອກໃນຮູບແບບ XML ສໍາລັບ InDesign ...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
+        <source xml:lang="en">Books From BloomLibrary.org</source>
+        <target xml:lang="lo">ປື້ມບັນທຶກຂອງ BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+        <source xml:lang="en">Do Updates of All Books</source>
+        <target xml:lang="lo">ການປັບປຸງປື້ມບັນ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+        <source xml:lang="en">Do Checks of All Books</source>
+        <target xml:lang="lo">ກວດສອບປື້ມບັນທັງຫມົດ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
+        <source xml:lang="en">Rescue Missing Images...</source>
+        <target xml:lang="lo">ປົກປັກຮັກສາການສູນເສຍ ...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.showHistory">
+        <source xml:lang="en">Collection History...</source>
+        <target xml:lang="lo">ການເກັບປະຫວັດສາດ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.showNotes">
+        <source xml:lang="en">Collection Notes...</source>
+        <target xml:lang="lo">ການບັນທຶກການເກັບ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionTabLabel">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="lo">Collections</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Collections">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="lo">Collections</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ConfirmRecycleDescription">
+        <source xml:lang="en">The book '{0}'</source>
+        <target xml:lang="lo">{0} ປື້ມບັນ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
+        <source xml:lang="en">Open Folder on Disk</source>
+        <target xml:lang="lo">ເປີດໂຟເດີໃນ Disk</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Health" sil:dynamic="true">
+        <source xml:lang="en">Health</source>
+        <target xml:lang="lo">ສຸຂະພາບ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
+        <source xml:lang="en">Make a book using this source</source>
+        <target xml:lang="lo">ເຮັດປື້ມບັນໄດ້ນໍາໃຊ້ແຫລ່ງນີ້</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+        <source xml:lang="en">Other Collection</source>
+        <target xml:lang="lo">Collection ອື່ນ ໆ</target>
+        <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
+        <source xml:lang="en">Sample Shells</source>
+        <target xml:lang="lo">Shells ຕົວຢ່າງ </target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SendReceive">
+        <source xml:lang="en">Send/Receive</source>
+        <target xml:lang="lo">ສົ່ງ / ຮັບ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SettingsButton">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="lo">ການຕັ້ງຄ່າ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="lo">ແຫຼ່ງCollection </target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+        <source xml:lang="en">Open Additional Collections Folder</source>
+        <target xml:lang="lo">ເປີດໂຟນເດີ Collection ອື່ນ ໆ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
+        <source xml:lang="en">Templates</source>
+        <target xml:lang="lo">ແມ່ແບບ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.EditBookButton">
+        <source xml:lang="en">Edit this book</source>
+        <target xml:lang="lo">ເພື່ອແກ້ໄຂບັນຫານີ້</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBloomPackButton">
+        <source xml:lang="en">Make Bloom Pack</source>
+        <target xml:lang="lo">ເຮັດ Bloom Pack</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
+        <source xml:lang="en">Make Reader Template Bloom Pack...</source>
+        <target xml:lang="lo">ເຮັດສັງລວມຕົ້ນແບບ  Bloom Pack …</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
+        <source xml:lang="en">Advanced</source>
+        <target xml:lang="lo">ຄວາມຄືບຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
+        <source xml:lang="en">Get more source books at BloomLibrary.org</source>
+        <target xml:lang="lo">ໄດ້ຮັບຫນັງສືອື່ນໆ. ທີ່ BloomLibrary.org</target>
+        <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="lo">Source Collection</target>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourceHeading">
+        <source xml:lang="en">Sources For New Books</source>
+        <target xml:lang="lo">ແຫຼ່ງສໍາລັບການປື້ມບັນໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourcesLockNotice">
+        <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
+        <target xml:lang="lo">ການເກັບກໍານີ້ແມ່ນມີຊາຍແດນຕິດ, ທ່ານບໍ່ສາມາດເພີ່ມຫຼືເອົາຫນັງສື.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
+        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
+        <target xml:lang="lo">ເນື່ອງຈາກວ່ານີ້ແມ່ນແຫຼ່ງຂໍ້ມູນທີ່ collection, Bloom ບໍ່ໄດ້ສະເຫນີໄຍທີ່ມີຢູ່ເປັນແຫລ່ງສໍາລັບ Shell ໃຫມ່ເປັນຢ່າງໃດ. ຖ້າຫາກທ່ານຕ້ອງການທີ່ຈະເພີ່ມພາສາເພື່ອ shell, collection ແທນທີ່ຈະທ່ານຈໍາເປັນຕ້ອງໄດ້ແກ້ໄຂຫອຍໄດ້, ແທນທີ່ຈະກ່ວາການເຮັດສໍາເນົາຂອງມັນ. ນອກຈາກນີ້ຍັງ Wall calendar ແມ່ນບໍ່ໄດ້ປະຈຸບັນຈະຖືກນໍາໃຊ້ເພື່ອເຮັດShell ໃຫມ່.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="lo">ອື່ນ ໆ</target>
+        <note>Brings up the localization dialog</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem">
+        <source xml:lang="en">Open or Create Another Collection</source>
+        <target xml:lang="lo">ເປີດຫລື ສ້າງCollection ອີກປະການຫນຶ່ງ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
+        <source xml:lang="en">Sources For New Shells</source>
+        <target xml:lang="lo">ແຫຼ່ງຂໍ້ມູນສໍາລັບ Shells ໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="Common.BackButton">
+        <source xml:lang="en">Back</source>
+        <target xml:lang="lo">ຄືນ</target>
+        <note>In a wizard, this button takes you to the previous step.</note>
+      </trans-unit>
+      <trans-unit id="Common.Cancel" sil:dynamic="true">
+        <source xml:lang="en">Cancel</source>
+        <target xml:lang="lo">ຍົກເລີກ</target>
+      </trans-unit>
+      <trans-unit id="Common.CancelButton">
+        <source xml:lang="en">&amp;Cancel</source>
+        <target xml:lang="lo">&amp;ຍົກເລີກ</target>
+      </trans-unit>
+      <trans-unit id="Common.Finish">
+        <source xml:lang="en">&amp;Finish</source>
+        <target xml:lang="lo">&amp;ສໍາເລັດຮູບ</target>
+        <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
+      </trans-unit>
+      <trans-unit id="Common.HelpButton">
+        <source xml:lang="en">&amp;Help</source>
+        <target xml:lang="lo">&amp;ການຊ່ວຍເຫຼືອ</target>
+      </trans-unit>
+      <trans-unit id="Common.Next">
+        <source xml:lang="en">&amp;Next</source>
+        <target xml:lang="lo">&amp;ຕໍ່ໄປ</target>
+        <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+      </trans-unit>
+      <trans-unit id="Common.NextButton">
+        <source xml:lang="en">Next</source>
+        <target xml:lang="lo">ຕໍ່ໄປ </target>
+        <note>In a wizard, this button takes you to the next step.</note>
+      </trans-unit>
+      <trans-unit id="Common.OK" sil:dynamic="true">
+        <source xml:lang="en">OK</source>
+        <target xml:lang="lo">ຕັ້ງຄ່າ </target>
+      </trans-unit>
+      <trans-unit id="Common.OKButton">
+        <source xml:lang="en">&amp;OK</source>
+        <target xml:lang="lo">&amp;ຕັ້ງຄ່າ </target>
+      </trans-unit>
+      <trans-unit id="Common.Optional">
+        <source xml:lang="en">optional</source>
+        <target xml:lang="lo">ທີ່ບໍ່ຈໍາເປັນ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ConfiguringBookMessage">
+        <source xml:lang="en">Building...</source>
+        <target xml:lang="lo">ການກໍ່ສ້າງ ...</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Letters in this stage</source>
+        <target xml:lang="lo">ອັກສອນໃນຂັ້ນຕອນຂອງການນີ້</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true">
+        <source xml:lang="en">Open a Letter and Word List File</source>
+        <target xml:lang="lo">ເປີດຈົດຫມາຍແລະລາຍຊື່ພຣະຄໍາໄຟລ໌</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true">
+        <source xml:lang="en">Set up Stages</source>
+        <target xml:lang="lo">ໄລຍະການຈັດຕັ້ງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+        <target xml:lang="lo">ໄລຍະທີ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
+        <source xml:lang="en">of</source>
+        <target xml:lang="lo">ຂອງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Words in this stage</source>
+        <target xml:lang="lo">ຄໍາສັບຕ່າງໆໃນຂັ້ນຕອນນີ້</target>
+      </trans-unit>
+      <trans-unit id="Download.Completed">
+        <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</source>
+        <target xml:lang="lo">{0} ດາວໂຫຼດຂອງທ່ານສໍາເລັດ. ທ່ານສາມາດເບິ່ງ 'ຫນັງສືຈາກພາກ BloomLibrary.org 'ພົບເຫັນຢູ່ໃນການເກັບກໍາໄດ້. ຖ້າວ່າທ່ານບໍ່ແກ້ໄຂມັນ, Bloomຈະໄດ້ຮັບການຄັດເລືອກສໍາລັບທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="Download.CompletedCaption">
+        <source xml:lang="en">Download complete</source>
+        <target xml:lang="lo">ດາວນ໌ໂຫລດສະບັບສົມບູນ</target>
+      </trans-unit>
+      <trans-unit id="Download.DownloadingDialogTitle">
+        <source xml:lang="en">Downloading book</source>
+        <target xml:lang="lo">ການດາວໂຫລດປື້ມບັນ</target>
+      </trans-unit>
+      <trans-unit id="Download.GenericNetworkProblemNotice">
+        <source xml:lang="en">There was a problem downloading your book.</source>
+        <target xml:lang="lo">ການດາວໂຫລດປື້ມບັນມີບັນຫາ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
+        <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
+        <target xml:lang="lo">ຖ້າຫາກວ່າທ່ານຕ້ອງການເພື່ອເຮັດໃຫ້ຂໍ້ມູນຂ່າວສານເພີ່ມເຕີມກ່ຽວກັບປື້ມຫົວນີ້. ທ່ານສາມາດໃຊ້ຫນ້ານີ້ເປັນການພາຍໃນຂອງການປົກຫຸ້ມຂອງກັບຄືນໄປບ່ອນ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true">
+        <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</source>
+        <target xml:lang="lo">ຖ້າຫາກວ່າທ່ານຕ້ອງການເພື່ອເຮັດໃຫ້ຂໍ້ມູນຂ່າວສານເພີ່ມເຕີມກ່ຽວກັບປື້ມຫົວນີ້. ທ່ານສາມາດໃຊ້ຫນ້ານີ້, ຊຶ່ງເປັນນອກຂອງການປົກຫຸ້ມຂອງກັບຄືນໄປບ່ອນ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.TextBoxProperties.Background" sil:dynamic="true">
+        <source xml:lang="en">Background</source>
+        <target xml:lang="lo">ພື້ນຫຼັງ </target>
+      </trans-unit>
+      <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
+        <source xml:lang="en">Open the Html used to make this PDF, in Firefox (must be on path)</source>
+        <target xml:lang="lo">ເປີດ Html ທີ່ນໍາໃຊ້ເພື່ອເຮັດໃຫ້ PDF ນີ້, ໃນ Chrome (ຕ້ອງເປັນໄປຕາມເສັ້ນທາງ)</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CannotChangeCopyright">
+        <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
+        <target xml:lang="lo">ຂໍອະໄພ, ລິຂະສິດແລະໃບອະນຸຍາດສໍາລັບການນີ້ບໍ່ສາມາດໄດ້ຮັບການປ່ຽນແປງ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CantPasteImageLocked">
+        <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
+        <target xml:lang="lo">ຂໍອະໄພ, ປື້ມບັນນີ້ແມ່ນມີຊາຍແດນຕິດລົງດັ່ງນັ້ນຮູບພາບຕ່າງໆທີ່ບໍ່ສາມາດໄດ້ຮັບການປ່ຽນແປງ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
+        <source xml:lang="en">Really Delete Page?</source>
+        <target xml:lang="lo">ຕົກລົງຈະໄດ້ຮັບການໂຍກຍ້າຍອອກຢ່າງຖາວອນຫຼືບໍ່?</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton">
+        <source xml:lang="en">&amp;Delete</source>
+        <target xml:lang="lo">&amp;ລົບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
+        <source xml:lang="en">This page will be permanently removed.</source>
+        <target xml:lang="lo">ຫນ້ານີ້ຈະໄດ້ຮັບການໂຍກຍ້າຍອອກຢ່າງຖາວອນ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true">
+        <source xml:lang="en">Change Layout</source>
+        <target xml:lang="lo">ການປ່ຽນແປງການຈັດຫນ້າ  </target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
+        <source xml:lang="en">or</source>
+        <target xml:lang="lo">ຫຼື</target>
+        <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true">
+        <source xml:lang="en">Picture</source>
+        <target xml:lang="lo">ຮູບພາບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true">
+        <source xml:lang="en">Text</source>
+        <target xml:lang="lo">ຂໍ້ຄວາມ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
+        <source xml:lang="en">Text Box</source>
+        <target xml:lang="lo">ກ່ອງຂໍ້ຄວາມ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Edit">
+        <source xml:lang="en">Edit</source>
+        <target xml:lang="lo">ດັດແກ້  </target>
+      </trans-unit>
+      <trans-unit id="EditTab.FontMissing">
+        <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
+        <target xml:lang="lo">ຕົວຫນັງສືເລືອກເປັນ '{0}', ແຕ່ວ່າມັນບໍ່ໄດ້ຖືກຕິດຕັ້ງຢູ່ໃນຄອມພິວເຕີນີ້. ບາງຕົວຫນັງສືອື່ນໆໄດ້ຖືກນໍາໃຊ້.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true">
+        <source xml:lang="en">That style already exists. Please choose another name.</source>
+        <target xml:lang="lo">ແບບທີ່ມີຢູ່ແລ້ວ. ກະລຸນາເລືອກເອົາຊື່ອື່ນ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the border and background</source>
+        <target xml:lang="lo">ການປ່ຽນແປງຂອງຊາຍແດນແລະຄວາມເປັນມາ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true">
+        <source xml:lang="en">Characters</source>
+        <target xml:lang="lo">ຕົວອັກສອນ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true">
+        <source xml:lang="en">Create</source>
+        <target xml:lang="lo">ສ້າງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.CreateStyle" sil:dynamic="true">
+        <source xml:lang="en">Create a new style</source>
+        <target xml:lang="lo">ສ້າງເປັນແບບໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true">
+        <source xml:lang="en">Don't see what you need?</source>
+        <target xml:lang="lo">ບໍ່ໄດ້ໄປເບິ່ງສິ່ງທີ່ທ່ານຕ້ອງການ?</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true">
+        <source xml:lang="en">Emphasis</source>
+        <target xml:lang="lo">ເນັ້ນຫນັກໃສ່</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
+        <source xml:lang="en">Font</source>
+        <target xml:lang="lo">ຮູບແບບຕົວຫນັງສື  </target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font face</source>
+        <target xml:lang="lo">ການປ່ຽນແປງຂະຫນາດຮູບແບບຕົວຫນັງສື  </target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
+        <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
+        <target xml:lang="lo">ການປ່ຽນແປງຂະຫນາດຕົວອັກສອນທີ່ສໍາລັບຄໍເຕົ້າໄຂ່ທີ່ທັງຫມົດ '{0}' ແລະພາສາ '{1}'. \n ເປັນສິ່ງທີ່ຂະຫນາດປະຈຸບັນ {2}  ຈຸດ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font size</source>
+        <target xml:lang="lo">ການປ່ຽນແປງສະຖານລະຫວ່າງສາຍຂອງຂໍ້ຄວາມ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Format" sil:dynamic="true">
+        <source xml:lang="en">Format</source>
+        <target xml:lang="lo">ຮູບແບບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between lines of text</source>
+        <target xml:lang="lo">ການປ່ຽນແປງສະຖານລະຫວ່າງສາຍຂອງຂໍ້ຄວາມ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.NewStyle" sil:dynamic="true">
+        <source xml:lang="en">New style</source>
+        <target xml:lang="lo">ແບບໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true">
+        <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
+        <target xml:lang="lo">ກະລຸນາໃຊ້ລັກສະນະຂອງຕົວອັກສອນເທົ່ານັ້ນ. ຈໍານວນຢູ່ໃນຕອນທ້າຍແມ່ນແລ້ວງາມ, ໃນ "part2".</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true">
+        <source xml:lang="en">Spacing</source>
+        <target xml:lang="lo">ໄລຍະຫ່າງຕົວຫນັງສື</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true">
+        <source xml:lang="en">Style</source>
+        <target xml:lang="lo">ແບບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true">
+        <source xml:lang="en">Style Name</source>
+        <target xml:lang="lo">ຊື່ແບບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
+        <source xml:lang="en">Extra Wide</source>
+        <target xml:lang="lo">ກ້ວາງພິເສດ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+        <target xml:lang="lo">ຕາມປົກກະຕິ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between words</source>
+        <target xml:lang="lo">ມີການປ່ຽນແປງໄລຍະຫ່າງລະຫວ່າງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true">
+        <source xml:lang="en">Wide</source>
+        <target xml:lang="lo">ກ້ວາງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true">
+        <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
+        <target xml:lang="lo">ເມື່ອໃດທີ່ທ່ານໄດ້ເຮັດໄດ້ ປື້ມບັນຕົ້ນສະບັບການນໍາໃຊ້ຫ້ອງການໃນການບັນທຶກການປະກອບສ່ວນເຮັດໄດ້ໂດຍນັກຂຽນ, ປະກອບຮູບແຕ້ມ, ບັນນາທິການ, ແລະອື່ນໆ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true">
+        <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
+        <target xml:lang="lo">ໃນເວລາທີ່ທ່ານເຮັດໃຫ້ປື້ມບັນອອກຂອງຫອຍໄດ້, ໃຫ້ນໍາໃຊ້ພາກສະຫນາມນີ້ຈະບອກວ່າຜູ້ທີ່ໄດ້ແປ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
+        <source xml:lang="en">Book title in {lang}</source>
+        <target xml:lang="lo">ຊື່ປື້ມບັນຢູ່ໃນ {lang} </target>
+        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
+        <source xml:lang="en">Click to Edit Copyright &amp; License</source>
+        <target xml:lang="lo">ຄລິກທີ່ນີ້ເພື່ອແກ້ໄຂການລິຂະສິດແລະໃບອະນຸຍາດ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
+        <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
+        <target xml:lang="lo">ການນໍາໃຊ້ເພື່ອໃຫ້ໄດ້ຮັບການສະຫນອງທຶນໃດຫນຶ່ງ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true">
+        <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
+        <target xml:lang="lo">ຈໍານວນຫນັງສືມາດຕະຖານສາກົນ. ອອກຈາກເປົ່າຖ້າຫາກວ່າທ່ານບໍ່ຕ້ອງການຂອງເຫຼົ່ານີ້.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
+        <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
+        <target xml:lang="lo">ຕົ້ນສະບັບ (ຫຼື Shell) ໃນ {lang}</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true">
+        <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
+        <target xml:lang="lo">ການປະກອບສ່ວນເຮັດໄດ້ໂດຍ writers, ປະກອບຮູບແຕ້ມບັນນາທິການ, ແລະອື່ນໆ.,.ໃນ {lang}</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true">
+        <source xml:lang="en">Click to choose topic</source>
+        <target xml:lang="lo">ຄລິກທີ່ນີ້ເພື່ອເລືອກເອົາເລື້ຶອງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
+        <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
+        <target xml:lang="lo">ການຢັ້ງຢືນສໍາລັບການສະບັບທ້ອງຖິ່ນ, , ໃນ {lang}</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
+        <source xml:lang="en">Change Image</source>
+        <target xml:lang="lo">ການປ່ຽນແປງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
+        <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
+        <target xml:lang="lo">ການປ່ອຍສິນເຊື່ອຮູບພາບດັດແກ້, ລິຂະສິດແລະອະນຸຍາດ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
+        <source xml:lang="en">Paste Image</source>
+        <target xml:lang="lo">ວາງຮູບພາບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.NoImageFoundOnClipboard">
+        <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
+        <target xml:lang="lo">ກ່ອນທີ່ທ່ານຈະສາມາດວາງການຄັດລອກໄປທີ່ clipboard 'ຈາກຄໍາຮ້ອງສະຫມັກຂອງທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.Heading">
+        <source xml:lang="en">Pages</source>
+        <target xml:lang="lo">ຫລາຍຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip">
+        <source xml:lang="en">Choose a page size and orientation</source>
+        <target xml:lang="lo">ເລືອກຂະຫນາດຫນ້າແລະປະຖົມນິເທດ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Position" sil:dynamic="true">
+        <source xml:lang="en">Position</source>
+        <target xml:lang="lo">ທີ່ຕັ້ງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.BorderToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the border and background</source>
+        <target xml:lang="lo">ການປ່ຽນແປງຂອງຊາຍແດນແລະຄວາມເປັນມາ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.FontFaceToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font face</source>
+        <target xml:lang="lo">ການປ່ຽນແປງຫນ້າຂອງຮູບແບບຕົວຫນັງສື  </target>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.FontSizeToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font size</source>
+        <target xml:lang="lo">ການປ່ຽນແປງຂະຫນາດຮູບແບບຕົວຫນັງສື  </target>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.LineSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between lines of text</source>
+        <target xml:lang="lo">ການປ່ຽນແປງສະຖານລະຫວ່າງສາຍຂອງຂໍ້ຄວາມ.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.WordSpacingExtraWide" sil:dynamic="true">
+        <source xml:lang="en">Extra Wide</source>
+        <target xml:lang="lo">ກ້ວາງພິເສດ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.WordSpacingNormal" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+        <target xml:lang="lo">ຕາມປົກກະຕິ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.WordSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between words</source>
+        <target xml:lang="lo">ມີການປ່ຽນແປງໄລຍະຫ່າງລະຫວ່າງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditor.WordSpacingWide" sil:dynamic="true">
+        <source xml:lang="en">Wide</source>
+        <target xml:lang="lo">ກ້ວາງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.StyleEditorTip" sil:dynamic="true">
+        <source xml:lang="en">Adjust formatting for style</source>
+        <target xml:lang="lo">ການປັບການຈັດຮູບແບບສໍາລັບການລົງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.TemplatePagesList.Heading">
+        <source xml:lang="en">Template Pages</source>
+        <target xml:lang="lo">ເພດແມ່ແບບ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
+        <source xml:lang="en">1</source>
+        <target xml:lang="lo">1</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.2" sil:dynamic="true">
+        <source xml:lang="en">2</source>
+        <target xml:lang="lo">2</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.3" sil:dynamic="true">
+        <source xml:lang="en">3</source>
+        <target xml:lang="lo">3</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true">
+        <source xml:lang="en">4</source>
+        <target xml:lang="lo">4</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.5" sil:dynamic="true">
+        <source xml:lang="en">5</source>
+        <target xml:lang="lo">5</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true">
+        <source xml:lang="en">6</source>
+        <target xml:lang="lo">6</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.7" sil:dynamic="true">
+        <source xml:lang="en">7</source>
+        <target xml:lang="lo">7</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.8" sil:dynamic="true">
+        <source xml:lang="en">8</source>
+        <target xml:lang="lo">8</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.9" sil:dynamic="true">
+        <source xml:lang="en">9</source>
+        <target xml:lang="lo">9</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true">
+        <source xml:lang="en">Alphabet</source>
+        <target xml:lang="lo">ລັກສະນະ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Image</source>
+        <target xml:lang="lo">ຂໍ້ພື້ນຖານແລະຮູບພາບ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Picture</source>
+        <target xml:lang="lo">ຂໍ້ຄວາມແລະຮູບພາບ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
+        <source xml:lang="en">Credits Page</source>
+        <target xml:lang="lo">ຫນ້າຈຸດ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="lo">ປະເພນີ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true">
+        <source xml:lang="en">Day 1</source>
+        <target xml:lang="lo">ວັນທີ່ 1</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 2" sil:dynamic="true">
+        <source xml:lang="en">Day 2</source>
+        <target xml:lang="lo">ວັນທີ່ 2</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 3" sil:dynamic="true">
+        <source xml:lang="en">Day 3</source>
+        <target xml:lang="lo">ວັນທີ່ 3</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 4" sil:dynamic="true">
+        <source xml:lang="en">Day 4</source>
+        <target xml:lang="lo">ວັນທີ່ 4</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true">
+        <source xml:lang="en">Day 5a</source>
+        <target xml:lang="lo">ວັນທີ່ 5a</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 5b" sil:dynamic="true">
+        <source xml:lang="en">Day 5b</source>
+        <target xml:lang="lo">ວັນທີ່ 5b</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Front Cover</source>
+        <target xml:lang="lo">ປົກຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
+        <source xml:lang="en">Image On Bottom</source>
+        <target xml:lang="lo">ຮູບພາບກ່ຽວກັບທາງລຸ່ມ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">Image in Middle</source>
+        <target xml:lang="lo">ຮູບພາບໃນກາງ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Back Cover</source>
+        <target xml:lang="lo">ພາຍໃນການປົກຫຸ້ມຂອງກັບຄືນໄປບ່ອນ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Front Cover</source>
+        <target xml:lang="lo">ພາຍໃນປົກຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true">
+        <source xml:lang="en">Instructions</source>
+        <target xml:lang="lo">ແນະນໍາ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true">
+        <source xml:lang="en">Just Text</source>
+        <target xml:lang="lo">ພຽງແຕ່ຂໍ້ຄວາມ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true">
+        <source xml:lang="en">Just a Picture</source>
+        <target xml:lang="lo">ພຽງແຕ່ຮູບພາບ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
+        <source xml:lang="en">Just an Image</source>
+        <target xml:lang="lo">ພຽງແຕ່ຮູບພາບ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Outside Back Cover</source>
+        <target xml:lang="lo">ນອກກັບຄືນໄປບ່ອນກວມເອົາ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true">
+        <source xml:lang="en">Picture &amp; Word</source>
+        <target xml:lang="lo">ຮູບພາບແລະຄໍາ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
+        <source xml:lang="en">Picture on Bottom</source>
+        <target xml:lang="lo">ຮູບພາບກ່ຽວກັບຮ່າງ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
+        <source xml:lang="en">Picture in Middle</source>
+        <target xml:lang="lo">ຮູບພາບໃນກາງ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true">
+        <source xml:lang="en">This Page Is Intentionally Blank</source>
+        <target xml:lang="lo">ຫນ້ານີ້ແມ່ນບໍ່ມີເຈດຕະນາ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
+        <source xml:lang="en">Title Page</source>
+        <target xml:lang="lo">ຫົວຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ContentLanguagesDropdown">
+        <source xml:lang="en">Multilingual Settings</source>
+        <target xml:lang="lo">ການຕັ້ງຄ່າພາສາ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyButton">
+        <source xml:lang="en">Copy</source>
+        <target xml:lang="lo">ກ່າຍ  </target>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton">
+        <source xml:lang="en">Cut</source>
+        <target xml:lang="lo">ຕັດ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton">
+        <source xml:lang="en">Remove\n  Page</source>
+        <target xml:lang="lo">ດຶງອອກຈາກ\n ຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton">
+        <source xml:lang="en">Duplicate\n   Page</source>
+        <target xml:lang="lo">ກົດ\n ຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton">
+        <source xml:lang="en">Paste</source>
+        <target xml:lang="lo">ວາງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton">
+        <source xml:lang="en">Undo</source>
+        <target xml:lang="lo">ການແກ້ໄຂ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Bilingual">
+        <source xml:lang="en">Two Languages</source>
+        <target xml:lang="lo">ສອງພາສາ</target>
+        <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyImageIPMetadataQuestion">
+        <source xml:lang="en">Copy this information to all other pictures in this book?</source>
+        <target xml:lang="lo">ກ່າຍຂໍ້ມູນກັບຮູບພາບອື່ນໆທີ່ຢູ່ໃນຫນັງສືເຫຼັ້ມນີ້ໄດ້ຫຼືບໍ່?</target>
+        <note>get this after you edit the metadata of an image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutInPublishTabOnlyNotice">
+        <source xml:lang="en">This option is only available in the Publish tab.</source>
+        <target xml:lang="lo">ຕົວເລືອກນີ້ແມ່ນມີພຽງແຕ່ມີຢູ່ໃນ ເຜີຍແຜ່ tab</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Monolingual">
+        <source xml:lang="en">One Language</source>
+        <target xml:lang="lo">ຫນຶ່ງພາສາ</target>
+        <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NoOtherLayouts">
+        <source xml:lang="en">There are no other layout options for this template.</source>
+        <target xml:lang="lo">ບໍ່ມີທາງເລືອກອື່ນສໍາລັບແມ່ແບບນີ້.</target>
+        <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog">
+        <source xml:lang="en">Picture Intellectual Property Information</source>
+        <target xml:lang="lo">ຮູບພາບຂອງຊັບສິນທາງປັນຍາ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Trilingual">
+        <source xml:lang="en">Three Languages</source>
+        <target xml:lang="lo">ສາມພາສາ</target>
+        <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
+        <source xml:lang="en">Building Reader Templates</source>
+        <target xml:lang="lo">ການເຮັດຜູ້ອ່ານແມ່ແບບ</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.Help Menu">
+        <source xml:lang="en">Help</source>
+        <target xml:lang="lo">ຊ່ວຍເຫຼືອ</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
+        <source xml:lang="en">Using Reader Templates </source>
+        <target xml:lang="lo">ການນໍາໃຊ້ ຜູ້ອ່ານແມ່ແບບ</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
+        <source xml:lang="en">Make a Suggestion</source>
+        <target xml:lang="lo">ໃຫ້ຄໍາແນະນໍາ</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.WebSiteMenuItem">
+        <source xml:lang="en">Web Site</source>
+        <target xml:lang="lo">ເວັບໄຊທ໌</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CheckForNewVersionMenuItem">
+        <source xml:lang="en">Check For New Version</source>
+        <target xml:lang="lo">ກວດສອບການອອກສະບັບໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CreditsMenuItem">
+        <source xml:lang="en">About Bloom</source>
+        <target xml:lang="lo">ກ່ຽວກັບ Bloom</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.DocumentationMenuItem">
+        <source xml:lang="en">Documentation</source>
+        <target xml:lang="lo">ເອກະສານ</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem">
+        <source xml:lang="en">Key Bloom Concepts</source>
+        <target xml:lang="lo">ແນວຄວາມຄິດຕົ້ນຕໍຂອງBloom</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.RegistrationMenuItem">
+        <source xml:lang="en">Registration</source>
+        <target xml:lang="lo">ການລົງທະບຽນ</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ReleaseNotesMenuItem">
+        <source xml:lang="en">Release Notes...</source>
+        <target xml:lang="lo">Release ຫມາຍເຫດ ..</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem">
+        <source xml:lang="en">Report a Problem...</source>
+        <target xml:lang="lo">ລາຍງານບັນຫາ ...</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ShowEventLogMenuItem">
+        <source xml:lang="en">Show Event Log</source>
+        <target xml:lang="lo">ສະແດງໃຫ້ເຫັນເຫດການເຂົ້າສູ່ລະບົບ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
+        <source xml:lang="en">InDesign XML Information</source>
+        <target xml:lang="lo">InDesign XML ຂໍ້ມູນຂ່າວສານ</target>
+        <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
+        <source xml:lang="en">Don't Show This Again</source>
+        <target xml:lang="lo">ບໍ່ສະແດງໃຫ້ເຫັນອີກເທື່ອຫນຶ່ງນີ້</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape</source>
+        <target xml:lang="lo">A4 ແນວຕັ້ງ  </target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape SideBySide</source>
+        <target xml:lang="lo">A4 ແນວຕັ້ງ  ຂ້າງໂດຍຂ້າງ</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape SplitAcrossPages</source>
+        <target xml:lang="lo">A4 ແນວຕັ້ງ  ແບ່ງປັນທົ່ວຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
+        <source xml:lang="en">A4Portrait</source>
+        <target xml:lang="lo">A4 ທິດທາງແນວຕັ້ງ  </target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true">
+        <source xml:lang="en">A5Landscape</source>
+        <target xml:lang="lo">A5 ແນວຕັ້ງ  </target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true">
+        <source xml:lang="en">A5Portrait</source>
+        <target xml:lang="lo">A5 ທິດທາງແນວຕັ້ງ  </target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Portrait BottomAlign" sil:dynamic="true">
+        <source xml:lang="en">A5Portrait BottomAlign</source>
+        <target xml:lang="lo">A5 ທິດທາງແນວຕັ້ງ  ສອດຄ່ອງຕໍ່ໄປນີ້</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
+        <source xml:lang="en">B5Portrait</source>
+        <target xml:lang="lo">B5 ທິດທາງແນວຕັ້ງ  </target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
+        <source xml:lang="en">Actual</source>
+        <target xml:lang="lo">ທີ່ແທ້ຈິງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true">
+        <source xml:lang="en">Choice of Topic</source>
+        <target xml:lang="lo">ທາງເລືອກຂອງຂໍ້ຄວາມ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true">
+        <source xml:lang="en">For this Level</source>
+        <target xml:lang="lo">ສໍາລັບລະດັບນີ້</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
+        <source xml:lang="en">Formatting</source>
+        <target xml:lang="lo">ການຈັດຮູບແບບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true">
+        <source xml:lang="en">Illustration Support</source>
+        <target xml:lang="lo">ສະຫນັບສະຫນູນປະກອບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep in mind</source>
+        <target xml:lang="lo">ຈືຂໍ້ມູນການ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="lo">ລະດັບການ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
+        <source xml:lang="en"> of </source>
+        <target xml:lang="lo">ຂອງ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
+        <source xml:lang="en">Max</source>
+        <target xml:lang="lo">ສູງສຸດທີ່ເຄຍ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
+        <source xml:lang="en">per page</source>
+        <target xml:lang="lo">ຕໍ່ຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
+        <source xml:lang="en">longest sentence</source>
+        <target xml:lang="lo">ຕໍ່ປະໂຫຍກ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
+        <source xml:lang="en">Predictability</source>
+        <target xml:lang="lo">ການຄາດຄະເນ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true">
+        <source xml:lang="en">Set up Levels</source>
+        <target xml:lang="lo">ຕັ້ງຄ່າລະດັບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true">
+        <source xml:lang="en">This Book</source>
+        <target xml:lang="lo">ປື້ມບັນນີ້</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">This Page</source>
+        <target xml:lang="lo">ຫນ້ານີ້</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
+        <source xml:lang="en">total</source>
+        <target xml:lang="lo">ຈໍານວນທັງຫມົດ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
+        <source xml:lang="en">unique</source>
+        <target xml:lang="lo">ເປັນເອກະລັກ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true">
+        <source xml:lang="en">Vocabulary</source>
+        <target xml:lang="lo">ຄໍາສັບ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
+        <source xml:lang="en">Word Counts</source>
+        <target xml:lang="lo">ການນັບຄໍາສັບ</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.AgreeToTerms">
+        <source xml:lang="en">I agree to the Bloom Library's Terms of Use</source>
+        <target xml:lang="lo">ຂ້າພະເຈົ້າຕົກລົງເຫັນດີກັບເງື່ອນໄຂຂອງການນໍາໃຊ້ຫ້ອງສະຫມຸດBloomໄດ້.</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.Email">
+        <source xml:lang="en">Email Address</source>
+        <target xml:lang="lo">ທີ່ຢູ່ອີເມວ</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ForgotPassword">
+        <source xml:lang="en">Forgot Password</source>
+        <target xml:lang="lo">ລືມລະຫັດຜ່ານ</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.LoginButton">
+        <source xml:lang="en">&amp;Login</source>
+        <target xml:lang="lo">&amp;ການເຂົ້າເຖິງ</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.Password">
+        <source xml:lang="en">Password</source>
+        <target xml:lang="lo">ລະຫັດຜ່ານ</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ShowTerms">
+        <source xml:lang="en">Show Terms of Use</source>
+        <target xml:lang="lo">ເງື່ອນໄຂການສະແດງໃຫ້ເຫັນຂອງການນໍາໃຊ້</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.WindowTitle">
+        <source xml:lang="en">Log in to BloomLibrary.org</source>
+        <target xml:lang="lo">ການເຂົ້າເຖິງ BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ShowPassword">
+        <source xml:lang="en">&amp;Show Password</source>
+        <target xml:lang="lo">&amp;ສະແດງ ລະຫັດຜ່ານ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
+        <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
+        <target xml:lang="lo">ແລ້ວມີການເກັບກໍາທີ່ມີຊື່ວ່າໄດ້ທີ່ &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\n ກະລຸນາເລືອກເອົາຊື່ເປັນເອກະລັກ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
+        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <target xml:lang="lo">ເລືອກພາສາຂອງທ່ານສໍາລັບການເກັບກໍານີ້.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
+        <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
+        <target xml:lang="lo">ຕົວຢ່າງ: "ປື້ມບັນສຸຂະພາບ","ເລື່ອງຂອງສັດ"</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+        <source xml:lang="en">What would you like to call this collection?</source>
+        <target xml:lang="lo">ສໍາລັບການເກັບກໍາຂໍ້ມູນນີ້, ທ່ານຈະໃຫ້ຊື່</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNameProblem">
+        <source xml:lang="en">Collection Name Problem</source>
+        <target xml:lang="lo"> ບັນຫາທີ່ມີຊື່ Collection</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt">
+        <source xml:lang="en">Collection will be created at: {0}</source>
+        <target xml:lang="lo">Collectionສ້າງຕັ້ງຂື້ນໃນ: {0}</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.FinishPage">
+        <source xml:lang="en">Ready To Create New Collection</source>
+        <target xml:lang="lo">ພ້ອມທີ່ຈະສ້າງCollectionໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
+        <source xml:lang="en">Choose the Collection Type</source>
+        <target xml:lang="lo">ເລືອກປະເພດCollection</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="lo">ແຫຼ່ງCollection </target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a Bloom Pack to give to others so that they can make vernacular books with your shells.</source>
+        <target xml:lang="lo">Collection ຂອງຫນັງສືໃນຫນຶ່ງຫອຍຫຼືແມ່ຫຼືພາສາຂອງການສື່ສານກວ້າງໄດ້. ທ່ານຈະສາມາດທີ່ຈະອັບໂຫລດໄຍເຫຼົ່ານີ້. BloomLibrary.org ດອກໄມ້ແລະເລືອກທີ່ຈະເຮັດ Bloom ໃຫ້ປະຊາຊົນອື່ນໆເພື່ອໃຫ້ເຂົາເຈົ້າສາມາດເຮັດໃຫ້ແກະສໍາລັບພາສາກໍາເນີດຂອງທ່ານໄດ້.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+        <source xml:lang="en">Vernacular/Local Language Collection</source>
+        <target xml:lang="lo">ທ້ອງຖິ່ນ / ພາສາທ້ອງຖິ່ນ Collection</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+        <source xml:lang="en">A collection of books in a local language.</source>
+        <target xml:lang="lo">Collection ເກັບກໍາຂໍ້ມູນຂອງຫນັງສືໃນພາສາທ້ອງຖິ່ນ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage">
+        <source xml:lang="en">Give Language Location</source>
+        <target xml:lang="lo">ໃຫ້ພາສາທີ່ຢູ່</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="lo">ປະເທດ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="lo">District</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+        <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
+        <target xml:lang="lo">ເຫຼົ່ານີ້ແມ່ນມີທາງເລືອກອື່ນ Bloom ຈະຈັດວາງໃຫ້ເຂົາເຈົ້າໃນສະຖານທີ່ສິດທິໃນການໃນຫນ້າຫົວຂໍ້ຂອງຫນັງສືທີ່ທ່ານສ້າງ.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="lo">ຈັງຫວັດ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.NewBookPattern">
+        <source xml:lang="en">{0} Books</source>
+        <target xml:lang="lo">{0} ຫນັງສື</target>
+        <note>The {0} is replaced by the name of the language.</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.NewCollectionWindowTitle">
+        <source xml:lang="en">Create New Bloom Collection</source>
+        <target xml:lang="lo">ເຮັດ Bloom Collection ໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ProjectName">
+        <source xml:lang="en">Project Name</source>
+        <target xml:lang="lo">ຊື່ໂຄງການ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+        <source xml:lang="en">Unable to create a new collection using that name.</source>
+        <target xml:lang="lo">"ບໍ່ສາມາດທີ່ຈະສ້າງBloomໃຫມ່\nການນໍາໃຊ້ຊື່ວ່າ."</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage">
+        <source xml:lang="en">Welcome To Bloom!</source>
+        <target xml:lang="lo">ຍິນດີຕ້ອນຮັບ Bloom!</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1">
+        <source xml:lang="en">You are almost ready to start making books.</source>
+        <target xml:lang="lo">ທ່ານມີເກືອບພ້ອມທີ່ຈະເລີ່ມຕົ້ນການເຮັດຫນັງສື.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
+        <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. So the first thing we need to do is make one for you.</source>
+        <target xml:lang="lo">ໃນຄໍາສັ່ງທີ່ຈະຮັກສາສິ່ງທີ່ງ່າຍດາຍແລະການຈັດຕັ້ງ, Bloom ເຮັດໃຫ້ປື້ມທັງຫມົດທີ່ທ່ານເຮັດໃນຫນຶ່ງຫຼືຫຼາຍກວ່າ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
+        <source xml:lang="en">Click 'Next' to get started.</source>
+        <target xml:lang="lo">ຄຼິກ 'ຕໍ່ໄປ' ຈະໄດ້ຮັບການເລີ່ມຕົ້ນ.</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.Bloom Collections">
+        <source xml:lang="en">Bloom Collections</source>
+        <target xml:lang="lo">Bloom Collections</target>
+        <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
+        <source xml:lang="en">Browse for another collection on this computer</source>
+        <target xml:lang="lo">ເອີ້ນເບິ່ງCollectionອື່ນກ່ຽວກັບຄອມພິວເຕີນີ້</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
+        <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
+        <target xml:lang="lo">ຄັດລອກຈາກ Chorus Hub ກ່ຽວກັບການເຄືອຂ່າຍທ້ອງຖິ່ນ</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromInternet">
+        <source xml:lang="en">Copy from Internet</source>
+        <target xml:lang="lo">ກ່າຍຈາກອິນເຕີເນັດ</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
+        <source xml:lang="en">Copy from USB Drive</source>
+        <target xml:lang="lo">ກ່າຍຈາກ Drive USB</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection">
+        <source xml:lang="en">Create New Collection</source>
+        <target xml:lang="lo">ສ້າງCollectionໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
+        <source xml:lang="en">Open/Create Collections</source>
+        <target xml:lang="lo">ເປີດ / ສ້າງ Collections</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink">
+        <source xml:lang="en">Read More</source>
+        <target xml:lang="lo">ອ່ານເພີ່ມເຕີມ</target>
+        <note>This opens the Chorus Help to learn more about send/receive.</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
+        <source xml:lang="en">Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</source>
+        <target xml:lang="lo">"ໄດ້ຜູ້ອື່ນນໍາໃຊ້ສົ່ງ / ຮັບທີ່ຈະແບ່ງປັນການເກັບກໍາຂອງທ່ານ? \n ການນໍາໃຊ້ຫນຶ່ງຂອງປຸ່ມສີແດງນີ້ເພື່ອສໍາເນົາເອົາການເກັບກໍາຂອງເຂົາເຈົ້າກັບຄອມພິວເຕີຂອງທ່ານ.\n\n ຕໍ່ມາ, ການນໍາໃຊ້ສົ່ງ / ຮັບການແບ່ງປັນວຽກງານຂອງທ່ານກັບຄືນໄປບ່ອນທີ່ມີໃຫ້ເຂົາເຈົ້າ."</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
+        <source xml:lang="en">Replace Existing</source>
+        <target xml:lang="lo">ແທນທີ່ທີ່ມີຢູ່</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
+        <source xml:lang="en">Notice</source>
+        <target xml:lang="lo">ແຈ້ງການ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.CantMoveXMatter">
+        <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are</source>
+        <target xml:lang="lo">ການປ່ຽນແປງທີ່ບໍ່ໄດ້ຮັບອະນຸຍາດ. ເລື່ອງຫນ້າແລະຫນ້າເວັບທີ່ວ່າກັບຄືນໄປບ່ອນຕ້ອງຍັງມີບ່ອນທີ່ພວກເຂົາເຈົ້າມີ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.CantMoveXMatterCaption">
+        <source xml:lang="en">Invalid Move</source>
+        <target xml:lang="lo">ຍ້າຍທີ່ບໍ່ຖືກຕ້ອງ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.BadPdf">
+        <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
+        <target xml:lang="lo">"Bloom ມີບັນຫາເຮັດໃຫ້ PDF ຂອງຫນັງສືນີ້ໄດ້.\nທ່ານອາດຈະຕ້ອງການການຊ່ວຍເຫຼືອດ້ານວິຊາການຫຼືການຕິດຕໍ່ກັບການພັດທະນາ. ແຕ່ໃນທີ່ນີ້ມີບາງສິ່ງບາງຢ່າງທີ່ທ່ານສາມາດພະຍາຍາມ:"</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.TryMoreMemory">
+        <source xml:lang="en">Try doing this on a computer with more memory</source>
+        <target xml:lang="lo">ພະຍາຍາມດໍາເນີນການນີ້ກ່ຽວກັບຄອມພິວເຕີທີ່ memory ຫຼາຍ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.TryRestart">
+        <source xml:lang="en">Restart your computer and try this again right away</source>
+        <target xml:lang="lo">ເປີດຄອມພິວເຕີຂອງທ່ານໃຫມ່ແລະພະຍາຍາມອີກເທື່ອຫນຶ່ງໃນທັນທີ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.TrySmallerImages">
+        <source xml:lang="en">Replace large, high-resolution images in your document with lower-resolution ones</source>
+        <target xml:lang="lo">ການປ່ຽນແທນຂະຫນາດໃຫຍ່, ຮູບພາບສູງການແກ້ໄຂໃນເອກະສານຂອງທ່ານກັບຄົນທີ່ຄວາມລະອຽດຕ່ໍາ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
+        <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
+        <target xml:lang="lo">ກະລຸນາຕິດຕັ້ງ Adobe Reader ດັ່ງນັ້ນດອກໄມ້ສາມາດສະແດງໃຫ້ເຫັນຫນັງສືສໍາເລັດຂອງທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+        <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
+        <target xml:lang="lo">ວ່າເປັນ แปลก ... Adobe Reader ໃຫ້ຄວາມຜິດພາດໃນເວລາທີ່ພະຍາຍາມເພື່ອສະແດງໃຫ້ເຫັນ PDF ວ່າ. ທ່ານຍັງສາມາດພະຍາຍາມປະຢັດ ປື້ມບັນPDF ໄດ້. ໄດ້.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
+        <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
+        <target xml:lang="lo">ຂໍອະໄພ. Bloom ບໍ່ສາມາດໄດ້ຮັບການສະແດງໃຫ້ເຫັນ Adobe Reader, Bloom ທີ່ນີ້, ດັ່ງນັ້ນທ່ານບໍ່ສາມາດເບິ່ງຫນັງສືຂອງທ່ານແມ່ນສໍາເລັດສົມບູນ. \nກະລຸນາຖອນການຕິດຕັ້ງສະບັບຂອງທ່ານຄືການເປັນ 'Adobe Reader ແລະ (ຕິດຕັ້ງອີກເທື່ອຫນຶ່ງ) ຕິດຕັ້ງ' Adobe Reader'. \nເວັ້ນເສຍແຕ່ວ່າທ່ານໄດ້ຮັບການແກ້ໄຂ, ທ່ານຍັງສາມາດຊ່ວຍປະຢັດ ປື້ມບັນPDF ແລະເປີດໂຄງການ ອື່ນໆ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.BodyOnlyRadio">
+        <source xml:lang="en">Booklet Insides</source>
+        <target xml:lang="lo">ຂໍ້ມູນພາຍໃນປຶ້ມຄູ່ມື</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
+        <target xml:lang="lo">ເຮັດປຶ້ມຄູ່ມືຈາກຫນ້າທີ່ພາຍໃນຂອງຫນັງສືໄດ້. ຫນ້າຈະໄດ້ຮັບການວາງອອກແລະ ປ່ຽນແປງຄໍາສັ່ງຂອງດັ່ງນັ້ນໃນເວລາທີ່ທ່ານເທົ່າມັນ, ທ່ານຈະມີປຶ້ມຄູ່ມືໄດ້. \ n</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
+        <source xml:lang="en">Upload</source>
+        <target xml:lang="lo">ການອັບໂຫລດ </target>
+      </trans-unit>
+      <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
+        <target xml:lang="lo">ການອັບໂຫລດ BloomLibrary.org, ບ່ອນທີ່ຜູ້ອື່ນສາມາດດາວໂຫລດແລະຫັນເຂົ້າໄປໃນພາສາຂອງເຂົາເຈົ້າເອງ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.CoverOnlyRadio">
+        <source xml:lang="en">Booklet Cover</source>
+        <target xml:lang="lo">ປົກຫຸ້ມຂອງປື້ມຄູ່ມື</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
+        <target xml:lang="lo">ເຮັດ PDF ເປັນພຽງແຕ່ທາງຫນ້າແລະທາງຫລັງ. (ທັງສອງຝ່າຍ), ດັ່ງນັ້ນທ່ານສາມາດພິມອອກໃນເຈ້ຍສີ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OnePagePerPaperRadio">
+        <source xml:lang="en">Simple</source>
+        <target xml:lang="lo">ງ່າຍ </target>
+        <note>Instead of making a booklet, just make normal pages</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
+        <target xml:lang="lo">ການເຮັດໃຫ້ໄຟລ໌ PDF ຂອງຫນ້າຂອງປຶ້ມນີ້, ຫນຶ່ງຫນ້າຕໍ່ເອກະສານຂອງເຈ້ຍທຸກ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
+        <source xml:lang="en">Open the PDF in the default system pdf viewer</source>
+        <target xml:lang="lo">ເປີດ PDF ໃນຕອນຕົ້ນ viewer pdf ລະບົບ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PrintButton">
+        <source xml:lang="en">&amp;Print...</source>
+        <target xml:lang="lo">&amp;Print...</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Publish">
+        <source xml:lang="en">Publish</source>
+        <target xml:lang="lo">ເຜີຍແຜ່</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.SaveButton">
+        <source xml:lang="en">&amp;Save PDF...</source>
+        <target xml:lang="lo">&amp;ບັນທຶກ PDF...</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.ShowCropMarks">
+        <source xml:lang="en">Crop Marks</source>
+        <target xml:lang="lo">Crop Marks</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Acknowledgments">
+        <source xml:lang="en">Acknowledgments</source>
+        <target xml:lang="lo">ການຮັບຮູ້</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AdditionalRequests">
+        <source xml:lang="en">AdditionalRequests: </source>
+        <target xml:lang="lo">ຂໍເພີ່ມເຕີມ:</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AllReserved">
+        <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
+        <target xml:lang="lo">All rights reserved (Contact the Copyright holder for any permissions.)</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
+        <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
+        <target xml:lang="lo">BloomLibrary.org ແລ້ວມີສະບັບທີ່ຜ່ານມາຂອງຫນັງສືຈາກທ່ານນີ້. ຖ້າຫາກວ່າທ່ານອັບໂຫລດມັນອີກເທື່ອຫນຶ່ງ, ມັນຈະໄດ້ຮັບການທົດແທນທີ່ມີສະບັບປະຈຸບັນຂອງທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Copyright">
+        <source xml:lang="en">Copyright</source>
+        <target xml:lang="lo">ລິຂະສິດ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Credits">
+        <source xml:lang="en">credits</source>
+        <target xml:lang="lo">ສິນເຊື່ອ</target>
+      </trans-unit>
+      <trans-unit id="Download.ProblemNotice">
+        <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
+        <target xml:lang="lo">ມີບັນຫາໃນການດາວໂຫລດຫນັງສືຂອງທ່ານ. ທ່ານອາດຈະມີການເລີ່ມຕົ້ນໃຫມ່ Bloom ຫຼືໄດ້ຮັບການຊ່ວຍເຫຼືອຈາກ technical help.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ErrorUploading">
+        <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
+        <target xml:lang="lo">ຂໍອະໄພ, ມີບັນຫາ ການອັບໂຫລດບັນຫາ {0}. ທ່ານອາດຈະຕ້ອງການການຊ່ວຍເຫຼືອຈາກ technical help.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
+        <source xml:lang="en">One or more fields above need your attention before uploading</source>
+        <target xml:lang="lo">ກະລຸນາກວດເບິ່ງຂໍ້ມູນແມ່ນຖືກຕ້ອງຂ້າງເທິງກ່ອນອັບໂຫຼດ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
+        <source xml:lang="en">Sorry, "{0}" was not successfully uploaded</source>
+        <target xml:lang="lo">ຂໍອະໄພ, "{0}" ບໍ່ໄດ້ອັບໂຫລດສົບຜົນສໍາເລັດ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Gaurantee">
+        <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</source>
+        <target xml:lang="lo">ໂດຍການອັບໂຫລດທ່ານຢືນຢັນຂໍ້ຕົກລົງຂອງທ່ານທີ່ມີເງື່ອນໄຂ BloomLibrary ຂອງການນໍາໃຊ້ແລະໃຫ້ສິດທິໃນການມັນອະທິບາຍ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
+        <source xml:lang="en">There was a problem uploading your book.</source>
+        <target xml:lang="lo">ບໍ່ມີບັນຫາການອັບໂຫຼດປຶ້ມຂອງທ່ານໄດ້.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Languages">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="lo">ພາສາ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.License">
+        <source xml:lang="en">Usage/License</source>
+        <target xml:lang="lo">ການນໍາໃຊ້ / ໃບອະນຸຍາດ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists">
+        <source xml:lang="en">Account Already Exists</source>
+        <target xml:lang="lo">ບັນຊີຢູ່ແລ້ວ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
+        <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</source>
+        <target xml:lang="lo">"ພວກເຮົາບໍ່ສາມາດເຂົ້າເຖິງທ່ານທີ່ມີທີ່ຢູ່ທີ່, ເນື່ອງຈາກວ່າພວກເຮົາມີບັນຊີແລ້ວທີ່ມີທີ່ຢູ່ທີ່ໄດ້. ທ່ານຕ້ອງການທີ່ຈະເຂົ້າສູ່ລະບົບແທນທີ່ບໍ່?\n"</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed">
+        <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
+        <target xml:lang="lo">Bloom ບໍ່ສາມາດເຊື່ອມຕໍ່ກັບ Server ເພື່ອກວດພິສູດເຂົ້າສູ່ລະບົບຂອງທ່ານ. ກະລຸນາກວດສອບການເຊື່ອມຕໍ່ເຄືອຂ່າຍຂອງທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginFailed">
+        <source xml:lang="en">Login failed</source>
+        <target xml:lang="lo">ການເຂົ້າສູ່ລະບົບບໍ່ສໍາເລັດ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+        <source xml:lang="en">Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</source>
+        <target xml:lang="lo">Bloom ບໍ່ສາມາດເຊື່ອມຕໍ່ກັບ Server ໃຫ້ສໍາເລັດການລົງທະບຽນຂອງທ່ານ. ນີ້ອາດຈະແມ່ນບັນຫາທີ່ມີການເຊື່ອມຕໍ່ອິນເຕີເນັດ, ເຄື່ອງແມ່ຂ່າຍຂອງພວກເຮົາ, ຫຼືອຸປະກອນຢູ່ໃນລະຫວ່າງບາງ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.MustAgreeTerms">
+        <source xml:lang="en">In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</source>
+        <target xml:lang="lo">ໃນຄໍາສັ່ງທີ່ຈະເຂົ້າເຖິງສໍາລັບບັນຊີ BloomLibrary.org, ທ່ານຕ້ອງຫມາຍເອົາຫ້ອງດັ່ງກ່າວຊີ້ໃຫ້ເຫັນວ່າທ່ານຕົກລົງເຫັນດີກັບເງື່ອນໄຂການ BloomLibrary ຂອງການນໍາໃຊ້.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.Need Email">
+        <source xml:lang="en">Email Needed</source>
+        <target xml:lang="lo">ທີ່ຢູ່ອີເມວຈໍາເປັນ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser">
+        <source xml:lang="en">We don't have a user on record with that email. Would you like to sign up?</source>
+        <target xml:lang="lo">ພວກເຮົາບໍ່ມີໃຊ້ໃນການບັນທຶກທີ່ມີອີເມລ໌ທີ່ເປັນ. ທ່ານຕ້ອງການທີ່ຈະເຂົ້າເຖິງຫຼືບໍ່</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PasswordMismatch">
+        <source xml:lang="en">Password and user ID did not match</source>
+        <target xml:lang="lo">ລະຫັດຜ່ານແລະ ID ຜູ້ໃຊ້ ບໍ່ກົງກັບ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms">
+        <source xml:lang="en">Please agree to terms of use</source>
+        <target xml:lang="lo">ກະລຸນາຕົກລົງເຫັນດີກັບຂໍ້ກໍານົດຂອງການນໍາໃຊ້</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail">
+        <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
+        <target xml:lang="lo">ກະລຸນາໃສ່ທີ່ຢູ່ອີເມວທີ່ຖືກຕ້ອງ. ພວກເຮົາຈະສົ່ງອີເມວໄປຫາທີ່ຢູ່ນີ້ສະນັ້ນທ່ານສາມາດປັບລະຫັດຜ່ານຂອງທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetConnectFailed">
+        <source xml:lang="en">Bloom could not connect to the server to reset your password. Please check your network connection.</source>
+        <target xml:lang="lo">Bloom ບໍ່ສາມາດເຊື່ອມຕໍ່ກັບ Server ໃນການປັບລະຫັດຜ່ານຂອງທ່ານ. ກະລຸນາກວດສອບການເຊື່ອມຕໍ່ເຄືອຂ່າຍຂອງທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetFailed">
+        <source xml:lang="en">Reset Password failed</source>
+        <target xml:lang="lo">ລະຫັດຜ່ານເຮັດໃຫມ່ບໍ່ສໍາເລັດ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetPassword">
+        <source xml:lang="en">Resetting Password</source>
+        <target xml:lang="lo">ລະຫັດຜ່ານເຮັດໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.SendingResetPassword">
+        <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password</source>
+        <target xml:lang="lo">ພວກເຮົາຈະສົ່ງ email ໄປ {0} ທີ່ມີຄໍາແນະນໍາສໍາລັບການຕັ້ງຄ່າລະຫັດຜ່ານຂອງທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.Signup">
+        <source xml:lang="en">Sign up for Bloom Library.</source>
+        <target xml:lang="lo">ຂຽນເຂົ້າເຖິງສໍາລັບ BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.UnknownUser">
+        <source xml:lang="en">Unknown user</source>
+        <target xml:lang="lo">ຜູ້ທີ່ບໍ່ຮູ້ຈັກ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.LoginFailure">
+        <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
+        <target xml:lang="lo">Bloom ບໍ່ສາມາດເຂົ້າໃນການນໍາໃຊ້ BloomLibrary.org ຂໍ້ມູນທີ່ບັນທຶກໄວ້.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Logout">
+        <source xml:lang="en">Log out of BloomLibrary.org</source>
+        <target xml:lang="lo">ອອກຈາກ BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.MakingPdf">
+        <source xml:lang="en">Making PDF Preview...</source>
+        <target xml:lang="lo">ການເຮັດ PDF Preview…</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.MakingThumbnail">
+        <source xml:lang="en">Making thumbnail image...</source>
+        <target xml:lang="lo">ການເຮັດຮູບຂະຫນາດຫຍໍ້</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.OldVersion">
+        <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
+        <target xml:lang="lo">ຂໍອະໄພ, ສະບັບຂອງ Bloom Desktop ນີ້ແມ່ນບໍ່ເຫມາະສົມກັບສະບັບປະຈຸບັນຂອງ BloomLibrary.org. ກະລຸນາຍົກລະດັບເພື່ອສະບັບໃຫມ່ໄດ້.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.PleaseLogIn">
+        <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
+        <target xml:lang="lo">ກະລຸນາໃສ່ BloomLibrary.org (ຫຼືລົງທະບຽນ) ກ່ອນທີ່ຈະອັບໂຫລດ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.PleaseSetThis">
+        <source xml:lang="en">Please set this from the edit tab</source>
+        <target xml:lang="lo">ກະລຸນາທີ່ກໍານົດໄວ້ນີ້ ບັນນາທິການ</target>
+        <note>This shows next to the license, if the license has not yet been set.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Step1">
+        <source xml:lang="en">Step 1: Confirm Metadata</source>
+        <target xml:lang="lo">Step 1: ຢືນຢັນ Metadata</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Step2">
+        <source xml:lang="en">Step 2: Upload</source>
+        <target xml:lang="lo">Step 2: ການອັບໂຫລດ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SuggestAssignCC">
+        <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
+        <target xml:lang="lo">ຄໍາແນະນໍາ: ໃບອະນຸຍາດການມອບຫມາຍແມ່ນງ່າຍທີ່ຈະຮັບຮູ້ມັນ. ທ່ານສາມາດໃຫ້ບາງສິ່ງບາງຢ່າງເພື່ອທຸກຄົນ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SuggestChangeCC">
+        <source xml:lang="en">Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</source>
+        <target xml:lang="lo">ຄໍາແນະນໍາ: ໃບອະນຸຍາດແມ່ນທີ່ງ່າຍທີ່ຈະຈື່ຈໍາ ເຮັດໃຫ້ມັນງ່າຍຂຶ້ນຫຼາຍສໍາລັບການປະຊາຊົນອື່ນໆທີ່ຈະນໍາໃຊ້ປຶ້ມຂອງທ່ານ, ເຖິງແມ່ນວ່າຖ້າຫາກວ່າພວກເຂົາເຈົ້າແມ່ນບໍ່ຊໍານານໃນພາສາຂອງໃບອະນຸຍາດທີ່ກໍາຫນົດຂອງທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Summary">
+        <source xml:lang="en">Summary</source>
+        <target xml:lang="lo">ສະຫລຸບຄວາມ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.TermsLink">
+        <source xml:lang="en">Show Terms of Use</source>
+        <target xml:lang="lo">ເງື່ອນໄຂການເບິ່ງແລະເງື່ອນໄຂ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Title">
+        <source xml:lang="en">Title</source>
+        <target xml:lang="lo">ຫົວຂໍ້  </target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadButton">
+        <source xml:lang="en">Upload Book</source>
+        <target xml:lang="lo">ການອັບໂຫລດປື້ມບັນ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadCompleteNotice">
+        <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
+        <target xml:lang="lo">ຊົມເຊີຍ, "{0}" ໃນປັດຈຸບັນທີ່ມີຢູ່ໃນ  BloomLibrary.org ({1})</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadNotAllowed">
+        <source xml:lang="en">Upload Not Allowed</source>
+        <target xml:lang="lo">ອັບໂຫລດບໍ່ອະນຸຍາດ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadProblemNotice">
+        <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
+        <target xml:lang="lo">ມີບັນຫາການອັບໂຫຼດປຶ້ມຂອງທ່ານ. ທ່ານອາດຈະຈໍາເປັນຕ້ອງ ເປີດໃຫມ່ Bloom ຫຼືໄດ້ຮັບການຊ່ວຍເຫຼືອດ້ານວິຊາການ.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadProgress">
+        <source xml:lang="en">Upload Progress</source>
+        <target xml:lang="lo">ການອັບໂຫຼດຄວາມຄືບຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadSandbox">
+        <source xml:lang="en">Upload Book (to Sandbox)</source>
+        <target xml:lang="lo">ການອັບໂຫຼດປື້ມບັນ </target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
+        <source xml:lang="en">Uploading book metadata</source>
+        <target xml:lang="lo">ການອັບໂຫລດMetadataປຶ້ມ</target>
+        <note>In this step, Bloom is uploading things like title, languages, &amp; topic tags to the bloomlibrary.org database.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadingStatus">
+        <source xml:lang="en">Uploading {0}</source>
+        <target xml:lang="lo">ການອັບໂຫລດ {0}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.CcLink">
+        <source xml:lang="en">CC-BY-NC</source>
+        <target xml:lang="lo">CC-BY-NC</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.LoginLink">
+        <source xml:lang="en">Log in to BloomLibrary.org</source>
+        <target xml:lang="lo">ເຂົ້າສູ່ລະບົບ BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignupLink">
+        <source xml:lang="en">Sign up for BloomLibrary.org</source>
+        <target xml:lang="lo">ຂຽນເຂົ້າເຖິງສໍາລັບ BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
+        <source xml:lang="en">Add Level</source>
+        <target xml:lang="lo">ເພີ່ມລະດັບ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true">
+        <source xml:lang="en">Add Stage</source>
+        <target xml:lang="lo">ເພີ່ມຂັ້ນຕອນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true">
+        <source xml:lang="en">Book</source>
+        <target xml:lang="lo">ປື້ມບັນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words per Book</source>
+        <target xml:lang="lo">ຈໍານວນສູງສຸດຂອງຄໍາສັບຕ່າງໆຕໍ່ຫນັງສື</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true">
+        <source xml:lang="en">Click on letters to add them to this stage.</source>
+        <target xml:lang="lo">ໃຫ້ຄລິກໃສ່ຕົວອັກສອນທີ່ຈະເພີ່ມໃນຂັ້ນຕອນນີ້</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
+        <source xml:lang="en">Decodable Stages</source>
+        <target xml:lang="lo">ຂັ້ນຕອນ Decodable</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FileNeedsTxtExtension" sil:dynamic="true">
+        <source xml:lang="en">File needs .txt extension</source>
+        <target xml:lang="lo">ໄຟລ໌ຕ້ອງການຂະຫຍາຍ. Txt</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">First,</source>
+        <target xml:lang="lo">ຫນຶ່ງ,</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FormatNotSupported" sil:dynamic="true">
+        <source xml:lang="en">Cannot read this format</source>
+        <target xml:lang="lo">ບໍ່ສາມາດອ່ານຮູບແບບນີ້</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true">
+        <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
+        <target xml:lang="lo">ຊ່ວຍເຫຼືອການສົ່ງອອກແລະການແປງໄຟລ໌ທີ່ຈະນໍາໃຊ້ເປັນຕົວຢ່າງຂໍ້ຄວາມ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="lo">ຕົວອັກສອນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true">
+        <source xml:lang="en">Letters and Letter Combinations</source>
+        <target xml:lang="lo">ຕົວອັກສອນແລະການປະສົມຕົວອັກສອນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
+        <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
+        <target xml:lang="lo">ເພື່ອຊ່ວຍໃຫ້ທ່ານ decodable readers, Bloom ທີ່ຈະຮູ້ວ່າຕົວອັກສອນແລະການປະສົມຈົດຫມາຍທີ່ທ່ານຈະໄດ້ຮັບການສິດສອນ.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true">
+        <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
+        <target xml:lang="lo">ແຍກຕ່າງຫາກຈົດຫມາຍບຸກຄົນຫຼືການປະສົມຈົດຫມາຍສະບັບທີ່ </target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp2" sil:dynamic="true">
+        <source xml:lang="en">Notice that the English list includes symbols that are used to make words, like ' in </source>
+        <target xml:lang="lo">ສັງເກດເຫັນວ່າບັນຊີລາຍການປະກອບມີການນໍາໃຊ້ພາສາອັງກິດໃນໂລກ.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true">
+        <source xml:lang="en">it's</source>
+        <target xml:lang="lo">ມັນເປັນການ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true">
+        <source xml:lang="en">.</source>
+        <target xml:lang="lo">.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
+        <source xml:lang="en">Level</source>
+        <target xml:lang="lo">ລະດັບ </target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="lo">ລະດັບ </target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="lo">ລະດັບ Reader</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MatchingWords" sil:dynamic="true">
+        <source xml:lang="en">matching words</source>
+        <target xml:lang="lo">ຄໍາທີ່ຄ້ອງກັນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Unique Words per Book</source>
+        <target xml:lang="lo">ຈໍາເປັນເອກະລັກ ນວນສູງສຸດຕໍ່ບັນຊີ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
+        <source xml:lang="en">Page</source>
+        <target xml:lang="lo">ຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words on each Page</source>
+        <target xml:lang="lo">ຈໍານວນສູງສຸດໃນແຕ່ລະຫນ້າ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true">
+        <source xml:lang="en">Powered by </source>
+        <target xml:lang="lo">Powered ໂດຍ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="lo">ລະດັບ Reader</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
+        <source xml:lang="en">Remove Level {0}</source>
+        <target xml:lang="lo">ລົບລະດັບ {0}</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true">
+        <source xml:lang="en">Remove Stage {0}</source>
+        <target xml:lang="lo">ລົບລໍາດັບ {0}</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReorderLevels" sil:dynamic="true">
+        <source xml:lang="en">Drag rows to reorder levels.</source>
+        <target xml:lang="lo">ການດຶງແຖວເກັດລະດັບໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReorderStages" sil:dynamic="true">
+        <source xml:lang="en">Drag rows to reorder stages.</source>
+        <target xml:lang="lo">ການດຶງແຖວເກັດລໍາດັບໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SearchEngine" sil:dynamic="true">
+        <source xml:lang="en">, the Search Engine for Literacy.</source>
+        <target xml:lang="lo">, Search Engine ສໍາລັບ ການສອນອ່ານຂຽນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true">
+        <source xml:lang="en">Previous and New Letters</source>
+        <target xml:lang="lo">ທີ່ຜ່ານມາແລະໃຫມ່ອັກສອນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true">
+        <source xml:lang="en">Sentence</source>
+        <target xml:lang="lo">ປະໂຍກທີ່</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words in each Sentence</source>
+        <target xml:lang="lo">ຄໍາສັບຕ່າງໆໃນປະໂຫຍກແຕ່ລະຄົນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Set up Decodable Reader Tool</source>
+        <target xml:lang="lo">ຕິດຕັ້ງ Decodable Reader Tool</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Set up Leveled Reader Tool</source>
+        <target xml:lang="lo">ຕິດຕັ້ງ Leveled Reader Tool</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">set up the alphabet for this language.</source>
+        <target xml:lang="lo">ການຕິດຕັ້ງຕົວອັກສອນທີ່ສໍາລັບພາສານີ້.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
+        <source xml:lang="en">New Sight Words</source>
+        <target xml:lang="lo">ຄໍາສັບຮູບພາບໃຫມ່</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true">
+        <source xml:lang="en">Sight Words</source>
+        <target xml:lang="lo">ຄໍາສັບຮູບພາບ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+        <target xml:lang="lo">ຂັ້ນຕອນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true">
+        <source xml:lang="en">Stage </source>
+        <target xml:lang="lo">ຂັ້ນຕອນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
+        <source xml:lang="en">Stages</source>
+        <target xml:lang="lo">ຂັ້ນຕອນຈໍານວນຫຼາຍ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
+        <source xml:lang="en">SynPhony</source>
+        <target xml:lang="lo">SynPhony</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
+        <source xml:lang="en">Things to remember for this level:</source>
+        <target xml:lang="lo">ສິ່ງທີ່ຄວນຈໍາສໍາລັບໃນລະດັບນີ້:</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true">
+        <source xml:lang="en">Unique</source>
+        <target xml:lang="lo">ເປັນເອກະລັກ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words" sil:dynamic="true">
+        <source xml:lang="en">Words</source>
+        <target xml:lang="lo">ຄໍາສັບຕ່າງໆ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
+        <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</source>
+        <target xml:lang="lo">ເພື່ອຊ່ວຍໃຫ້ທ່ານເຮັດແນວໃດ decodable, Bloom ສາມາດແນະນໍາທີ່ເຫມາະສົມພາຍໃນຂັ້ນຕອນປະຈຸບັນ. ມີສອງວິທີການເພື່ອເຮັດໃຫ້ Bloom ແມ່ນ:</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true">
+        <source xml:lang="en">2) Place Text Files in Your</source>
+        <target xml:lang="lo">2) ການຈັດວາງໄຟລ໌ໃນຂໍ້ຄວາມຂອງທ່ານ.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true">
+        <source xml:lang="en">Sample Texts Folder</source>
+        <target xml:lang="lo">Folder ຕົວຢ່າງຂໍ້ຄວາມ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.TypeWordsHere" sil:dynamic="true">
+        <source xml:lang="en">1) Type Words Here</source>
+        <target xml:lang="lo">1) ປະເພດຄໍາສັບຕ່າງໆຕໍ່ໄປນີ້</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="lo">ອັກສອນ</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+        <source xml:lang="en">In addition, this BloomPack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this BloomPack , who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</source>
+        <target xml:lang="lo">ນອກຈາກນີ້, BloomPack ນີ້ຈະປະຕິບັດການຕັ້ງຄ່າຫຼ້າສຸດ decodable ແລະ leveled reader ຂອງທ່ານສໍາລັບ  \"{0}\" ພາສາ. ຜູ້ທີ່ໄດ້ເປີດ BloomPack ນີ້, ມັນຈະເປີດຂຶ້ນ \ "{0} \" ການເກັບກໍາ, ການຕັ້ງຄ່າໃນປະຈຸບັນອ່ານບົດທີ່ decodable ແລະ leveled reader ແທນທີ່ດ້ວຍການຕັ້ງຄ່າໃນ BloomPack ໄດ້. ພວກເຂົາເຈົ້າແມ່ນໄດ້ຮັບຍັງໄດ້ກໍານົດໄວ້ໃນປະຈຸບັນຂອງຄໍາສັບຕ່າງໆທີ່ນໍາໃຊ້ decodable readers.</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
+        <source xml:lang="en">The following books will be made into templates:</source>
+        <target xml:lang="lo">ແມ່ແບບ</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+        <source xml:lang="en">Save Bloom Pack</source>
+        <target xml:lang="lo">ບັນທຶກ Bloom Pack</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
+        <source xml:lang="en">Make Reader Template Bloom Pack</source>
+        <target xml:lang="lo">ເຮັດແມ່ແບບ Bloom Pack …</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Email">
+        <source xml:lang="en">Email Address</source>
+        <target xml:lang="lo">ທີ່ຢູ່ອີເມວ</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.FirstName">
+        <source xml:lang="en">First Name</source>
+        <target xml:lang="lo">ຊື່ທໍາອິດ</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Heading">
+        <source xml:lang="en">Please take a minute to register {0}</source>
+        <target xml:lang="lo">ກະລຸນາໃຊ້ເວລານາທີທີ່ຈະລົງທະບຽນ {0}</target>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.HowAreYouUsing">
+        <source xml:lang="en">How are you using {0}?</source>
+        <target xml:lang="lo">ທ່ານການນໍາໃຊ້ {0} ວິທີການ?</target>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.IAmStuckLabel">
+        <source xml:lang="en">I'm stuck, I'll finish this later.</source>
+        <target xml:lang="lo">ຂ້ອຍຈະສໍາເລັດຮູບພາຍຫລັງນີ້</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Organization">
+        <source xml:lang="en">Organization</source>
+        <target xml:lang="lo">ອົງການຈັດຕັ້ງ</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.RegisterButton">
+        <source xml:lang="en">&amp;Register</source>
+        <target xml:lang="lo">&amp;ລົງທະບຽນ</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Surname">
+        <source xml:lang="en">Surname</source>
+        <target xml:lang="lo">ນາມສະກຸນ</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.WindowTitle">
+        <source xml:lang="en">Register {0}</source>
+        <target xml:lang="lo">ລົງທະບຽນ {0}</target>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Close">
+        <source xml:lang="en">Close</source>
+        <target xml:lang="lo">ປິດ</target>
+        <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
+        <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
+        <target xml:lang="lo">Bloom ບໍ່ສາມາດສົ່ງບົດລາຍງານຂອງທ່ານໂດຍກົງກັບ Server ຂອງພວກເຮົາ. ກະລຸນາພະຍາຍາມອີກເທື່ອຫນຶ່ງຫຼື ອີແມລ  {0} to {1}.</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Email">
+        <source xml:lang="en">Email</source>
+        <target xml:lang="lo">ອີແມລ </target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.IncludeBookButton">
+        <source xml:lang="en">Include Book '{0}'</source>
+        <target xml:lang="lo">ປະກອບມີປຶ້ມ '{0}'</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.IncludeScreenshotButton">
+        <source xml:lang="en">Include this screenshot</source>
+        <target xml:lang="lo">ລວມພາບຫນ້າຈໍນີ້</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Name">
+        <source xml:lang="en">Name</source>
+        <target xml:lang="lo">ຊື່</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Retry">
+        <source xml:lang="en">Retry</source>
+        <target xml:lang="lo">ລອງໃຫມ່</target>
+        <note>Shown if there was an error submitting the report. Lets the user try submitting it again.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.SeeDetails">
+        <source xml:lang="en">See what else will be submitted</source>
+        <target xml:lang="lo">ແມ່ນຫຍັງທີ່ຈະສົ່ງ.</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.SubmitButton">
+        <source xml:lang="en">&amp;Submit</source>
+        <target xml:lang="lo">&amp;ສົ່ງ</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Submitting">
+        <source xml:lang="en">Submitting to server...</source>
+        <target xml:lang="lo">ສົ່ງກັບ Server…..</target>
+        <note>This is shown while Bloom is sending the problem report to our server.</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Success">
+        <source xml:lang="en">We received your report, thanks for taking the time to help make Bloom better!</source>
+        <target xml:lang="lo">ພວກເຮົາໄດ້ຮັບບົດລາຍງານຂອງທ່ານ, ຂໍຂອບໃຈສໍາລັບການກິນທີ່ໃຊ້ເວລາເພື່ອຊ່ວຍເຮັດໃຫ້ Bloomດີກວ່າ</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.WhatsTheProblem">
+        <source xml:lang="en">What seems to be the problem?</source>
+        <target xml:lang="lo">ແມ່ນຫຍັງຄືບັນຫາ?</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.WindowTitle">
+        <source xml:lang="en">Report A Problem</source>
+        <target xml:lang="lo">ລາຍງານບັນຫາ</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Zipping">
+        <source xml:lang="en">Zipping up book...</source>
+        <target xml:lang="lo">ຊິບຫນັງສື ...</target>
+        <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
+        <source xml:lang="en">Basic Book</source>
+        <target xml:lang="lo">ຫນັງສືພື້ນຖານ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true">
+        <source xml:lang="en">Big Book</source>
+        <target xml:lang="lo">ປື້ມບັນຂະຫນາດໃຫຍ່</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader</source>
+        <target xml:lang="lo">Decodable Reader</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader</source>
+        <target xml:lang="lo">Leveled Reader</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
+        <source xml:lang="en">Picture Dictionary</source>
+        <target xml:lang="lo">ວັດຈະນານຸກົມຮູບພາບ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true">
+        <source xml:lang="en">Wall Calendar</source>
+        <target xml:lang="lo">ປະຕິທິນຜະນັງ</target>
+      </trans-unit>
+      <trans-unit id="Topics.Agriculture" sil:dynamic="true">
+        <source xml:lang="en">Agriculture</source>
+        <target xml:lang="lo">ການກະສິກໍາ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Animal Stories" sil:dynamic="true">
+        <source xml:lang="en">Animal Stories</source>
+        <target xml:lang="lo">ນິທານທີ່ເປັນສັດ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Business" sil:dynamic="true">
+        <source xml:lang="en">Business</source>
+        <target xml:lang="lo">ທຸລະກິດ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Community Living" sil:dynamic="true">
+        <source xml:lang="en">Community Living</source>
+        <target xml:lang="lo">ດໍາລົງຊີວິດຂອງຊຸມຊົນ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Culture" sil:dynamic="true">
+        <source xml:lang="en">Culture</source>
+        <target xml:lang="lo">ວັດທະນະທໍາ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Dictionary" sil:dynamic="true">
+        <source xml:lang="en">Dictionary</source>
+        <target xml:lang="lo">ວັດຈະນານຸກົມ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Environment" sil:dynamic="true">
+        <source xml:lang="en">Environment</source>
+        <target xml:lang="lo">ສະພາບແວດລ້ອມ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Fiction" sil:dynamic="true">
+        <source xml:lang="en">Fiction</source>
+        <target xml:lang="lo">ເລື່ອງອ່ານສໍາລັບຄວາມສຸກ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Health" sil:dynamic="true">
+        <source xml:lang="en">Health</source>
+        <target xml:lang="lo">ສຸຂະພາບ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.How To" sil:dynamic="true">
+        <source xml:lang="en">How To</source>
+        <target xml:lang="lo">ສຸຂະພາບ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Math" sil:dynamic="true">
+        <source xml:lang="en">Math</source>
+        <target xml:lang="lo">ຄະນິດສາດ </target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.NoTopic" sil:dynamic="true">
+        <source xml:lang="en">No Topic</source>
+        <target xml:lang="lo">ຫົວຂໍ້ທີ່ບໍ່ມີ</target>
+      </trans-unit>
+      <trans-unit id="Topics.Non Fiction" sil:dynamic="true">
+        <source xml:lang="en">Non Fiction</source>
+        <target xml:lang="lo">ບໍ່ແມ່ນເລື່ອງອ່ານສໍາລັບຄວາມສຸກ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Personal Development" sil:dynamic="true">
+        <source xml:lang="en">Personal Development</source>
+        <target xml:lang="lo">ການພັດທະນາສ່ວນບຸກຄົນ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Primer" sil:dynamic="true">
+        <source xml:lang="en">Primer</source>
+        <target xml:lang="lo">Primer</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Science" sil:dynamic="true">
+        <source xml:lang="en">Science</source>
+        <target xml:lang="lo">ວິທະຍາສາດ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Spiritual" sil:dynamic="true">
+        <source xml:lang="en">Spiritual</source>
+        <target xml:lang="lo">ທາງວິນຍານ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Story Book" sil:dynamic="true">
+        <source xml:lang="en">Story Book</source>
+        <target xml:lang="lo">ປື້ມບັນ Story</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Tradition" sil:dynamic="true">
+        <source xml:lang="en">Tradition</source>
+        <target xml:lang="lo">ປະເພນີ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Traditional Story" sil:dynamic="true">
+        <source xml:lang="en">Traditional Story</source>
+        <target xml:lang="lo">ເລື່ອງປະເພນີ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
+        <source xml:lang="en">Setup</source>
+        <target xml:lang="lo">ການຕິດຕັ້ງ</target>
+        <note>This is the dialog used to set up the wall calendar</note>
+      </trans-unit>
+      <trans-unit id="You may use this space for author/illustrator, or anything else." sil:dynamic="true">
+        <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
+        <target xml:lang="lo">ທ່ານອາດຈະນໍາໃຊ້ພື້ນທີ່ນີ້ສໍາລັບນັກປະພັນ  /ບຸກຄົນແຕ້ມຮູບໄດ້, ຫຼືຫຍັງອີກແດ່.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
