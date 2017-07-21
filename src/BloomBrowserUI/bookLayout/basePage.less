@@ -174,7 +174,7 @@ page be the full page, regardless of the contents.
 To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
 preview.css.
 
-Changes here generally require similar changes in EpubMaker.FixPictureSizes().
+Changes here generally require similar changes in EpubMaker.FixPictureSizes() and pageThumbnailList.less.
 */
 .bloom-page {
     &.Device16x9Portrait{
@@ -188,6 +188,12 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
         max-width: @Device16x9Landscape-Width;
         min-height: @Device16x9Landscape-Height;
         max-height: @Device16x9Landscape-Height;
+    }
+    &.PictureStoryLandscape{
+        min-width: @PictureStoryLandscape-Width;
+        max-width: @PictureStoryLandscape-Width;
+        min-height: @PictureStoryLandscape-Height;
+        max-height: @PictureStoryLandscape-Height;
     }
     &.A5Portrait {
         min-width: @A5Portrait-Width;
@@ -318,13 +324,13 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
     top: @MarginTop;
 }
 
-.Device16x9Landscape{
+.Device16x9Landscape, .PictureStoryLandscape{
     //TODO: This is only for videos
     background-color: black;
     img{ background-color: white; } // so that transparent images show
 }
 
-.Device16x9Landscape, .Device16x9Portrait{
+.Device16x9Landscape, .Device16x9Portrait, .PictureStoryLandscape{
     .origami-toggle{display:none}
     .pageLabel{display:none}
 
@@ -356,26 +362,31 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
         }
         top:0;
         left:0 !important;
-    }
-
-    .Device16x9Portrait & {
-        .SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
 
         //that makes the margin box actually have no margin. Which looks good for the image, but
         //looks bad for the text. So here we re-introduce a margin... a bit of a hack
         .bloom-editable{
-            margin-left: 10px;
-            width: ~"calc(100% - 20px)"; // 10px for the left, 10px for the right
+            margin-left: @DeviceMargin;
+            width: calc(~"100% - "(@DeviceMargin*2)); // 10px for the left, 10px for the right
         }
+    }
+
+    .Device16x9Portrait & {
+        .SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
     }
 
     .Device16x9Landscape & {
         .SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
-
-        //make the top half take up the whole screen
-        .position-top{bottom: 0 !important;}
-        .position-bottom{display:none;}
     }
+
+    .PictureStoryLandscape & {
+        .SetMarginBoxDevice(@PictureStoryLandscape-Width, @PictureStoryLandscape-Height);
+
+        // make the top half take up the whole screen
+        .position-top{ bottom: 0 !important; }
+        .position-bottom{ display: none; }
+    }
+
     .A3Landscape & {
         .SetMarginBox(@A3Landscape-Width, @A3Landscape-Height);
     }
