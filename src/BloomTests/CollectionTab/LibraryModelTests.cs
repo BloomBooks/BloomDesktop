@@ -8,6 +8,7 @@ using Bloom.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
+using SIL.Reporting;
 using SIL.TestUtilities;
 
 namespace BloomTests.CollectionTab
@@ -23,6 +24,7 @@ namespace BloomTests.CollectionTab
 		[SetUp]
 		public void Setup()
 		{
+			ErrorReport.IsOkToInteractWithUser = false;
 			_folder = new TemporaryFolder("LibraryModelTests");
 			_collection = new TemporaryFolder(_folder, "FakeCollection");
 			MakeFakeCssFile();
@@ -203,6 +205,31 @@ namespace BloomTests.CollectionTab
 			// check for the lockFormatting meta tag
 			Assert.That(outputText, Is.Not.Null.And.Not.Empty);
 			Assert.IsTrue(outputText.Contains("<meta name=\"lockFormatting\" content=\"true\">"));
+		}
+
+		[Test]
+		public void OpenFolderOnDisk_CatchCOMError()
+		{
+			var srcBookPath = MakeBook();
+			_testLibraryModel.ThrowCOMError = true;
+
+			// SUT
+			using (new ErrorReport.NonFatalErrorReportExpected())
+			{
+				_testLibraryModel.OpenFolderOnDisk(srcBookPath);
+			}
+		}
+
+		[Test]
+		public void OpenFolderOnDisk_NoCOMError()
+		{
+			var srcBookPath = MakeBook();
+
+			// SUT
+			using (new ErrorReport.NoNonFatalErrorReportExpected())
+			{
+				_testLibraryModel.OpenFolderOnDisk(srcBookPath);
+			}
 		}
 	}
 }

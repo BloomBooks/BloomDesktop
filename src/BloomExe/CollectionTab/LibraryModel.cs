@@ -177,7 +177,33 @@ namespace Bloom.CollectionTab
 
 		public void OpenFolderOnDisk()
 		{
-			PathUtilities.SelectFileInExplorer(_bookSelection.CurrentSelection.FolderPath);
+			OpenFolderOnDisk(_bookSelection.CurrentSelection.FolderPath);
+		}
+
+		/// <summary>
+		/// This version is testable.
+		/// </summary>
+		/// <param name="path"></param>
+		internal void OpenFolderOnDisk(string path)
+		{
+			try
+			{
+				SelectFileInExplorer(path);
+			}
+			catch (System.Runtime.InteropServices.COMException e)
+			{
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					"Bloom ran into an error while trying to open that book. (Sorry!) We suggest closing and reopening Bloom.");
+			}
+		}
+
+		/// <summary>
+		/// For testing. Overridden in tests by a version that throws COMExceptions as needed.
+		/// </summary>
+		/// <param name="path"></param>
+		internal virtual void SelectFileInExplorer(string path)
+		{
+			PathUtilities.SelectFileInExplorer(path);
 		}
 
 		public void BringBookUpToDate()
