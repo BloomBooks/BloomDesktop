@@ -10,6 +10,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
+using Bloom.MiscUI;
 using Gecko;
 using SIL.Windows.Forms.Reporting;
 using SIL.Xml;
@@ -237,13 +238,29 @@ namespace Bloom.Edit
 				if (pageElement == null)
 					continue; // or crash? How can this happen?
 				result.Add(page);
-				var pageElementForThumbnail = pageDoc.ImportNode(pageElement, true) as XmlElement;
+				XmlElement pageElementForThumbnail = null;
+				var pageClasses = pageElement.GetStringAttribute("class").Split(new[] { ' ' });
+				var cssClass = pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
+				if (!TroubleShooterDialog.MakeEmptyPageThumbnails)
+				{
+					pageElementForThumbnail = pageDoc.ImportNode(pageElement, true) as XmlElement;
 
-				// BL-1112: Reduce size of images in page thumbnails.
-				// We are setting the src to empty so that we can use JavaScript to request the thumbnails
-				// in a controlled manner that should reduce the likelihood of not receiving the image quickly
-				// enough and displaying the alt text rather than the image.
-				DelayAllImageNodes(pageElementForThumbnail);
+					// BL-1112: Reduce size of images in page thumbnails.
+					// We are setting the src to empty so that we can use JavaScript to request the thumbnails
+					// in a controlled manner that should reduce the likelihood of not receiving the image quickly
+					// enough and displaying the alt text rather than the image.
+					DelayAllImageNodes(pageElementForThumbnail);
+				}
+				else
+				{
+					// Just make a minimal placeholder to get the white border.
+					pageElementForThumbnail = pageDoc.CreateElement("div");
+					var pageClass = "bloom-page";
+					// The page needs to have one of the classes like A4Portrait or it will have zero size and vanish.
+					if (!string.IsNullOrEmpty(cssClass))
+						pageClass += " " + cssClass;
+					pageElementForThumbnail.SetAttribute("class", pageClass);
+				}
 
 				var cellDiv = pageDoc.CreateElement("div");
 				cellDiv.SetAttribute("class", ClassForGridItem);
@@ -266,8 +283,6 @@ namespace Bloom.Edit
 					moment, we assign appropriate sizes, by hand. We rely on c# code to add these
 					classes, since we can't write a rule in css3 that peeks into a child attribute.
 				*/
-				var pageClasses = pageElementForThumbnail.GetStringAttribute("class").Split(new[] {' '});
-				var cssClass = pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
 				if (!string.IsNullOrEmpty(cssClass))
 					pageContainer.SetAttribute("class", "pageContainer " + cssClass);
 
@@ -511,6 +526,8 @@ namespace Bloom.Edit
 				UpdateItems(_pages);
 				return;
 			}
+			if (TroubleShooterDialog.MakeEmptyPageThumbnails)
+				return; // no new content needed.
 			var targetClass = "bloom-page";
 			var gridElt = GetGridElementForPage(page);
 			var pageContainerElt = GetFirstChildWithClass(gridElt, PageContainerClass) as GeckoElement;

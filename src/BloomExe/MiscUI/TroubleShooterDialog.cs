@@ -44,5 +44,7 @@ namespace Bloom.MiscUI
 		public static TroubleShooterDialog TheOneInstance; // might be disposed if the user closes it
 
 		public static bool SuppressBookPreview => TheOneInstance?.suppressPreviewCheckbox.Checked??false;
+
+		public static bool MakeEmptyPageThumbnails => TheOneInstance?.makeEmptyPageThumbnailsCheckbox.Checked ?? false;
 	}
 }
