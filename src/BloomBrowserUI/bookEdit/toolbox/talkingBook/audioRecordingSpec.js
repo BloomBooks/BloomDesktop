@@ -77,21 +77,46 @@ describe("audio recording tests", function() {
         expect(spans.last().attr('class')).toBe('audio-sentence');
         expect(spans.first().next().attr('class')).toBe('audio-sentence');
     });
-    //reviewSlog: this is broken because it now emits more spaces.
-   /* it("handles leading space and <br>", function() {
-        var div = $("<div>\
-            <br class=''></br>\
-            <br></br>\
-            Long dispela taim i gat wanpela bikpela taun i gat planti manmeri. Nem bilong dispela taun em Nineveh.</div>");
+
+    // We can get something like this when we paste from Word
+    it("ignores empty spans", function () {
+        var div = $('<div>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
         expect(spans.length).toBe(2);
-        // I'm not sure why we get this leading space in the first span; somehow that's how stuff currently comes
-        // out of the libsynphony.stringToSentences code. It doesn't seem to cause a problem in Bloom.
-        expect(spans[0].innerHTML).toBe('            Long dispela taim i gat wanpela bikpela taun i gat planti manmeri.');
-        expect(spans[1].innerHTML).toBe('Nem bilong dispela taun em Nineveh.');
-        // Again, I'm a bit surprised that it works out to so much leading space, but it looks right in the running program.
-        expect(div.text()).toBe('                                    Long dispela taim i gat wanpela bikpela taun i gat planti manmeri. Nem bilong dispela taun em Nineveh.');
-    });*/
+        expect(spans[0].innerHTML).toBe('This is the first sentence.');
+        expect(spans[1].innerHTML).toBe(' ');
+        expect(spans.first().attr('class')).toBe('audio-sentence');
+        expect(spans.last().attr('class')).not.toContain('audio-sentence');
+    });
+
+    // We can get something like this when we paste from Word
+    it("ignores empty span and <br>", function () {
+        var p = $('<p><span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C">&nbsp;</span><br></p>');
+        var recording = new AudioRecording();
+        recording.makeSentenceSpans(p);
+        var spans = p.find("span");
+        expect(spans.length).toBe(1);
+        expect(spans[0].innerHTML).toBe('&nbsp;');
+        expect(spans.first().attr('class')).not.toContain('audio-sentence');
+    });
+
+    //reviewSlog: this is broken because it now emits more spaces.
+    /* it("handles leading space and <br>", function() {
+         var div = $("<div>\
+             <br class=''></br>\
+             <br></br>\
+             Long dispela taim i gat wanpela bikpela taun i gat planti manmeri. Nem bilong dispela taun em Nineveh.</div>");
+         var recording = new AudioRecording();
+         recording.makeSentenceSpans(div);
+         var spans = div.find("span");
+         expect(spans.length).toBe(2);
+         // I'm not sure why we get this leading space in the first span; somehow that's how stuff currently comes
+         // out of the libsynphony.stringToSentences code. It doesn't seem to cause a problem in Bloom.
+         expect(spans[0].innerHTML).toBe('            Long dispela taim i gat wanpela bikpela taun i gat planti manmeri.');
+         expect(spans[1].innerHTML).toBe('Nem bilong dispela taun em Nineveh.');
+         // Again, I'm a bit surprised that it works out to so much leading space, but it looks right in the running program.
+         expect(div.text()).toBe('                                    Long dispela taim i gat wanpela bikpela taun i gat planti manmeri. Nem bilong dispela taun em Nineveh.');
+     });*/
 });

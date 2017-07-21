@@ -851,7 +851,27 @@ export default class AudioRecording {
         var test = fragment.text.replace(/<br *[^>]*\/?>/g, " ");
         // and some may contain only nbsp
         test = test.replace("&nbsp;", " ");
-        return !test.match(/^\s*$/);
+        if (this.isWhiteSpace(test))
+            return false;
+        if (this.isEmptyHtml(test))
+            return false;
+        return true;
+    }
+
+    private isEmptyHtml(possibleHtml: string): Boolean {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(possibleHtml, "text/xml");
+        if (doc && doc.firstChild) {
+            var content = doc.firstChild.textContent;
+            return this.isWhiteSpace(content);
+        }
+        return false;
+    }
+
+    private isWhiteSpace(test: string): Boolean {
+        if (test.match(/^\s*$/))
+            return true;
+        return false;
     }
 
     private fireCSharpEvent(eventName, eventData): void {
