@@ -358,9 +358,9 @@ namespace Bloom
 			Debug.Assert(!InvokeRequired);
 			base.OnLoad(e);
 
-			if(DesignMode)
+			if (DesignMode)
 			{
-				this.BackColor=Color.DarkGray;
+				this.BackColor = Color.DarkGray;
 				return;
 			}
 
@@ -383,7 +383,7 @@ namespace Bloom
 			_browserIsReadyToNavigate = true;
 
 			UpdateDisplay();
-			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
+			_browser.Navigated += CleanupAfterNavigation; //there's also a "document completed"
 			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
 			_browser.ConsoleMessage += OnConsoleMessage;
@@ -410,8 +410,45 @@ namespace Bloom
 
 			_browser.FrameEventsPropagateToMainWindow = true; // we want clicks in iframes to propagate all the way up to C#
 
+			AddMessageEventListener("timingNotification", ReceiveTimingNotification);
+
 			RaiseGeckoReady();
-	   }
+		}
+
+		static Dictionary<string, List<Action>> _timingNotificationRequests = new Dictionary<string, List<Action>>();
+
+		/// <summary>
+		/// Allows some C# to receive a notification when Javascript (on any page) raises the timingNotification event,
+		/// typically by calling fireCSharpEditEvent('timingNotification', id), where id corresponds to the string
+		/// passed to this method.
+		/// fireCSharpEditEvent is usually implemented as
+		/// top.document.dispatchEvent(new MessageEvent(eventName, {"bubbles": true, "cancelable": true, "data": eventData });
+		/// When that event is raised all the Actions queued for it are invoked once (and then forgotten).
+		/// Thus, the expectation is that the caller is wanting to know about one single instance of the
+		/// event occurring. There is therefore no need to clean up as with an event handler.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="action"></param>
+		public static void RequestTimingNotification(string id, Action action)
+		{
+			List<Action> list;
+			if (!_timingNotificationRequests.TryGetValue(id, out list))
+			{
+				list = new List<Action>();
+				_timingNotificationRequests[id] = list;
+			}
+			list.Add(action);
+		}
+
+		private void ReceiveTimingNotification(string id)
+		{
+			List<Action> list;
+			if (!_timingNotificationRequests.TryGetValue(id, out list))
+				return;
+			foreach (var action in list)
+				action();
+			_timingNotificationRequests.Remove(id);
+		}
 
 		private void OnJavascriptError(object sender, JavascriptErrorEventArgs e)
 		{

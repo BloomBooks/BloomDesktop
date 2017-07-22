@@ -110,15 +110,33 @@ namespace Bloom.Edit
 			}
 		}
 
-	   private void InvokePageSelectedChanged(IPage page)
+		private void InvokePageSelectedChanged(IPage page)
 		{
 			EventHandler handler = PageSelectedChanged;
-			if (handler != null && /*REVIEW */ page!=null )
+
+			// We're not really sure which of the two times will be shorter,
+			// since there is SOME stuff that happens in C# after telling the browser
+			// to navigate to the new page. This counts how many of the two reports have
+			// been sent, so we can stop the watch when we're done with it.
+			int reportsSent = 0;
+
+			if (handler != null && /*REVIEW */ page != null)
 			{
+				var stopwatch = Stopwatch.StartNew();
+				Browser.RequestTimingNotification("editPagePainted", () =>
+				{
+					var paintTime = stopwatch.ElapsedMilliseconds;
+					if (reportsSent++ >= 2)
+						stopwatch.Stop();
+					TroubleShooterDialog.Report($"page change to paint complete took {paintTime} milliseconds");
+				});
 				handler(page, null);
+				var time = stopwatch.ElapsedMilliseconds;
+				if (reportsSent++ >= 2)
+					stopwatch.Stop();
+				TroubleShooterDialog.Report($"C# part of page change took {time} milliseconds");
 			}
 		}
-
 
 		public bool CanSelect { get; set; }
 		public bool PreferPageNumbers { get; set; }

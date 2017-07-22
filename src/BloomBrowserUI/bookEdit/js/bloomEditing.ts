@@ -270,6 +270,14 @@ function IsInTranslationMode() {
     }
 }
 
+window.onload = () => {
+    // onload means we have all the parts, and waiting for one more animation frame
+    // seems to mean it has actually been painted.
+    window.requestAnimationFrame(() => {
+        fireCSharpEditEvent("timingNotification", "editPagePainted");
+    })
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
