@@ -5,401 +5,496 @@
       <trans-unit id="AboutDialog.AboutDialogWindowTitle">
         <source xml:lang="en">About</source>
         <target xml:lang="es">Acerca de</target>
+        <note>ID: AboutDialog.AboutDialogWindowTitle</note>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
         <target xml:lang="es">No hay actualizaciones</target>
+        <note>ID: AboutDialog.NoUpdates</note>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
         <target xml:lang="es">Buscar actualizaciones</target>
+        <note>ID: AboutDialog._checkForUpdates</note>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel">
         <source xml:lang="en">Release Notes</source>
         <target xml:lang="es">Notas de la versión</target>
+        <note>ID: AboutDialog._releaseNotesLabel</note>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <target xml:lang="es">Otra copia del programa ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</target>
+        <note>ID: Application.AlreadyRunning.General</note>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.Specific">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that {0}, restart your computer.</source>
         <target xml:lang="es">Otra copia de {0} ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</target>
+        <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <target xml:lang="es">Hubo un problema al iniciar el programa que puede que tenga que reiniciar el equipo.</target>
+        <note>ID: Application.ProblemStarting.General</note>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <target xml:lang="es">Hubo un problema al iniciar {0} que puede que tenga que reiniciar el equipo.</target>
+        <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.General">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <target xml:lang="es">Esperando a otra aplicación para finalizar...</target>
+        <note>ID: Application.WaitingFinish.General</note>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <target xml:lang="es">Esperando a otra {0} para finalizar</target>
+        <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <target xml:lang="es">&amp;Cancelar</target>
+        <note>ID: Common.CancelButton</note>
       </trans-unit>
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <target xml:lang="es">No</target>
+        <note>ID: Common.No</note>
       </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <target xml:lang="es">Aceptar</target>
+        <note>ID: Common.OKButton</note>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
         <target xml:lang="es">Si</target>
+        <note>ID: Common.Yes</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <target xml:lang="es">{0} se moverá a la papelera de reciclaje.</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Param 0 is a description of the things being deleted (e.g., "The selected files"</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <target xml:lang="es">{0} se moverá a la papelera de reciclaje.</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Param 0 is a file name</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
         <source xml:lang="en">Confirm Delete</source>
         <target xml:lang="es">Confirmar eliminación</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
         <source xml:lang="en">&amp;Cancel</source>
         <target xml:lang="es">&amp;Cancelar</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <target xml:lang="es">Eliminar</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading">
         <source xml:lang="en">Art Of Reading</source>
         <target xml:lang="es">Art Of Reading (Arte de la lectura)</target>
+        <note>ID: ImageToolbox.ArtOfReading</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera">
         <source xml:lang="en">Camera</source>
         <target xml:lang="es">Camera</target>
+        <note>ID: ImageToolbox.Camera</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata">
         <source xml:lang="en">Use {0}</source>
         <target xml:lang="es">Usar {0}</target>
+        <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop">
         <source xml:lang="en">Crop</source>
         <target xml:lang="es">Recortar</target>
+        <note>ID: ImageToolbox.Crop</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink">
         <source xml:lang="en">Edit...</source>
         <target xml:lang="es">Editar...</target>
+        <note>ID: ImageToolbox.EditMetadataLink</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms">
         <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
         <target xml:lang="es">Esta es la galería de "Art of Reading" (Arte de la lectura). En el cuadro anterior, escriba lo que está buscando, a continuación, pulse ENTER. Puede escribir palabras en inglés e indonesio.</target>
+        <note>ID: ImageToolbox.EnterSearchTerms</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton">
         <source xml:lang="en">File</source>
         <target xml:lang="es">Archivo</target>
+        <note>ID: ImageToolbox.FileButton</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <target xml:lang="es">Lo siento, algo salió mal al tratar de obtener la ilustración.</target>
+        <note>ID: ImageToolbox.GenericGettingImageProblem</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <target xml:lang="es">Lo siento, algo salió mal con el cuadro de herramientas de ilustraciones</target>
+        <note>ID: ImageToolbox.GenericProblem</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture">
         <source xml:lang="en">Get Picture</source>
         <target xml:lang="es">Obtener ilustración</target>
+        <note>ID: ImageToolbox.GetPicture</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
         <target xml:lang="es">Cuadro de herramientas de ilustraciones</target>
+        <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
         <target xml:lang="es">No se encontraron ilustraciones que coincidan</target>
+        <note>ID: ImageToolbox.NoMatchingImages</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles">
         <source xml:lang="en">picture files</source>
         <target xml:lang="es">archivos de ilustraciones</target>
+        <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
         <source xml:lang="en">Problem Getting Image</source>
         <target xml:lang="es">Problema obteniendo la ilustración</target>
+        <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <target xml:lang="es">Lo sentimos, hubo un problema al cargar la ilustración.</target>
+        <note>ID: ImageToolbox.ProblemLoadingImage</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <target xml:lang="es">La ilustración no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
+        <note>ID: ImageToolbox.PromptForMissingMetadata</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner">
         <source xml:lang="en">Scanner</source>
         <target xml:lang="es">Escáner</target>
+        <note>ID: ImageToolbox.Scanner</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink">
         <source xml:lang="en">Set up metadata...</source>
         <target xml:lang="es">Configurar metadatos...</target>
+        <note>ID: ImageToolbox.SetUpMetadataLink</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader">
         <source xml:lang="en">Other Names</source>
         <target xml:lang="es">Otros nombres</target>
+        <note>ID: LanguageLookup.AlternateNamesHeader</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <target xml:lang="es">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no enumerado", que será seleccionado ahora.</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
         <source xml:lang="en">Ethnologue.com</source>
         <target xml:lang="es">Ethnologue.com</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <target xml:lang="es">Acerca de códigos de idioma 639-3 &amp; Cómo solicitar nuevos</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
         <source xml:lang="en">About The ISO Language Registry</source>
         <target xml:lang="es">Acerca del registro de idiomas ISO</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader">
         <source xml:lang="en">Code</source>
         <target xml:lang="es">Código</target>
+        <note>ID: LanguageLookup.CodeHeader</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount">
         <source xml:lang="en">{0} Countries</source>
         <target xml:lang="es">{0} Países</target>
+        <note>ID: LanguageLookup.CountryCount</note>
         <note>Shown when there are multiple countries and it is just confusing to list them all.</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryHeader">
         <source xml:lang="en">Country</source>
         <target xml:lang="es">País</target>
+        <note>ID: LanguageLookup.CountryHeader</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <target xml:lang="es">Puede cambiar cómo se mostrarán aquí el nombre del idioma:</target>
+        <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle">
         <source xml:lang="en">Lookup Language Code...</source>
         <target xml:lang="es">Búsqueda del código del idioma...</target>
+        <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader">
         <source xml:lang="en">Name</source>
         <target xml:lang="es">Nombre</target>
+        <note>ID: LanguageLookup.PrimaryNameHeader</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.UnlistedLanguage">
         <source xml:lang="en">Unlisted Language</source>
         <target xml:lang="es">Idioma no enumerado</target>
+        <note>ID: LanguageLookup.UnlistedLanguage</note>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink">
         <source xml:lang="en">Can't find your language?</source>
         <target xml:lang="es">¿No encuentra su idioma?</target>
+        <note>ID: LanguageLookup._cannotFindLanguageLink</note>
       </trans-unit>
       <trans-unit id="MemoryWarning">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <target xml:lang="es">Desafortunadamente, {0} está empezando a quedarse sin memoria, y pronto puede ralentizar o si experimenta otros problemas. Le recomendamos que cierre y reinicie.</target>
+        <note>ID: MemoryWarning</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Creator">
         <source xml:lang="en">Creator: {0}</source>
         <target xml:lang="es">Creador: {0}</target>
+        <note>ID: MetadataDisplay.Creator</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel">
         <source xml:lang="en">Creator</source>
         <target xml:lang="es">Creador</target>
+        <note>ID: MetadataDisplay.CreatorLabel</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.LicenseInfo">
         <source xml:lang="en">License Info</source>
         <target xml:lang="es">Información de la licencia</target>
+        <note>ID: MetadataDisplay.LicenseInfo</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <target xml:lang="es">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc...</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <target xml:lang="es">Puede hacer uso comercial de esta obra.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <target xml:lang="es">Puede adaptar y añadir a este trabajo.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <target xml:lang="es">Usted puede adaptar y añadir a este trabajo, pero usted puede distribuir el trabajo resultante sólo bajo licencia igual o similar a ésta.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <target xml:lang="es">No puede hacer cambios o ampliar este trabajo sin permiso.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <target xml:lang="es">No puede utilizar esta obra para fines comerciales.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <target xml:lang="es">Para obtener permiso para la reutilización, comunicarse con el titular de los derechos de autor.</target>
+        <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.NoLicense">
         <source xml:lang="en">No license specified</source>
         <target xml:lang="es">Ninguna licencia especificada</target>
+        <note>ID: MetadataDisplay.NoLicense</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <target xml:lang="es">¿Permite usos comerciales de su trabajo?</target>
+        <note>ID: MetadataEditor.AllowCommercialUse</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives">
         <source xml:lang="en">Allow modifications of your work?</source>
         <target xml:lang="es">¿Permite modificaciones de su trabajo?</target>
+        <note>ID: MetadataEditor.AllowDerivatives</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder">
         <source xml:lang="en">Copyright Holder</source>
         <target xml:lang="es">Titular de derechos de autor</target>
+        <note>ID: MetadataEditor.CopyrightHolder</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons">
         <source xml:lang="en">Creative Commons</source>
         <target xml:lang="es">Creative Commons</target>
+        <note>ID: MetadataEditor.CreativeCommons</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel">
         <source xml:lang="en">Creator</source>
         <target xml:lang="es">Creador</target>
+        <note>ID: MetadataEditor.CreatorLabel</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense">
         <source xml:lang="en">Custom</source>
         <target xml:lang="es">Personalizado</target>
+        <note>ID: MetadataEditor.CustomLicense</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit">
         <source xml:lang="en">Copyright &amp; License</source>
         <target xml:lang="es">Derechos de autor &amp; licencia</target>
+        <note>ID: MetadataEditor.TitleNoCredit</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit">
         <source xml:lang="en">Credit, Copyright, &amp; License</source>
         <target xml:lang="es">Crédito, derechos de autor &amp; licencia</target>
+        <note>ID: MetadataEditor.TitleWithCredit</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <target xml:lang="es">Póngase en contacto con el titular del copyright para los permisos</target>
+        <note>ID: MetadataEditor.UnknownLicense</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <target xml:lang="es">Sí, mientras otros comparten por igual</target>
+        <note>ID: MetadataEditor.YesShareAlike</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel">
         <source xml:lang="en">Additional Requests</source>
         <target xml:lang="es">Solicitudes adicionales</target>
+        <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1">
         <source xml:lang="en">more info</source>
         <target xml:lang="es">más información</target>
+        <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
         <source xml:lang="en">Not Enforceable</source>
         <target xml:lang="es">No aplicable</target>
+        <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <target xml:lang="es">Esto puede también ocultar otros botones que no sean necesarios por parte del usuario no avanzado.</target>
+        <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <target xml:lang="es">El botón se mostrará cuando se mantiene presionada juntos las teclas Ctrl y Mayús.</target>
+        <note>ID: SettingsProtection.CtrlShiftHint</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel">
         <source xml:lang="en">Settings...</source>
         <target xml:lang="es">Protección de configuración...</target>
+        <note>ID: SettingsProtection.LauncherButtonLabel</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <target xml:lang="es">Ocultar el botón que abre la configuración.</target>
+        <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword">
         <source xml:lang="en">Factory Password</source>
         <target xml:lang="es">Contraseña de fábrica</target>
+        <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <target xml:lang="es">Para evitar modificaciones accidentales que podrían causar esta herramienta de dejar de funcionar, estas configuraciones han sido bloqueadas.</target>
+        <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle">
         <source xml:lang="en">Settings Protection Password</source>
         <target xml:lang="es">Contraseña para protección de la configuración</target>
+        <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
         <source xml:lang="en">Show Characters</source>
         <target xml:lang="es">Mostrar caracteres</target>
+        <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
         <target xml:lang="es">Contraseña de fábrica para estos ajustes es "{0}".  Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}"</target>
+        <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <target xml:lang="es">Requiere la contraseña de fábrica para entrar en la configuración.</target>
+        <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
         <source xml:lang="en">Settings Protection</source>
         <target xml:lang="es">Protección de configuración</target>
+        <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <target xml:lang="es">Si el teclado que necesita no está en la lista, haga clic en el enlace apropiado abajo para configurarlo</target>
+        <note>ID: WSKeyboardControl.KeyboardNotListed</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink">
         <source xml:lang="en">Windows keyboard settings</source>
         <target xml:lang="es">Configuración de teclado de Windows</target>
+        <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
         <source xml:lang="en">Available keyboards</source>
         <target xml:lang="es">Teclados disponibles</target>
+        <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
         <source xml:lang="en">Previously used keyboards</source>
         <target xml:lang="es">Teclados utilizado anteriormente</target>
+        <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
         <source xml:lang="en">Keyman Configuration</source>
         <target xml:lang="es">Configuración de Keyman</target>
+        <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <target xml:lang="es">Keyman 5.0 o posterior no está instalado.</target>
+        <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <target xml:lang="es">Seleccione el teclado con la cual escribir texto {0}</target>
+        <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <target xml:lang="es">Área de prueba (utilice esta zona para escribir algo para probar el teclado.)</target>
+        <note>ID: WSKeyboardControl.TestAreaCaption</note>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
         <target xml:lang="es">ADVERTENCIA</target>
+        <note>ID: Warning</note>
       </trans-unit>
     </body>
   </file>

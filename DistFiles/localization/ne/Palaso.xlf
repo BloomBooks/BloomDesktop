@@ -5,468 +5,579 @@
       <trans-unit id="AboutDialog.AboutDialogWindowTitle">
         <source xml:lang="en">About</source>
         <target xml:lang="ne">बारेमा</target>
+        <note>ID: AboutDialog.AboutDialogWindowTitle</note>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
         <target xml:lang="ne">कुनै अद्यावधिक छैन</target>
+        <note>ID: AboutDialog.NoUpdates</note>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
         <target xml:lang="ne">अद्यावधिकहरू जाँच्नुहोस्</target>
+        <note>ID: AboutDialog._checkForUpdates</note>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel">
         <source xml:lang="en">Release Notes</source>
         <target xml:lang="ne">रिलिज नोटहरू</target>
+        <note>ID: AboutDialog._releaseNotesLabel</note>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <target xml:lang="ne">यो अनुप्रयोगको अर्को प्रति पहिले देखि नै चलिरहेको छ। तपाईंले यसलाई फेला पार्न सक्नुभएन भने, आफ्नो कम्प्युटर पुन:सुरु गर्नुहोस्।</target>
+        <note>ID: Application.AlreadyRunning.General</note>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.Specific">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <target xml:lang="ne">{0} को अर्को प्रति पहिले देखि नै चलिरहेको छ। यदि तपाईंले {0} को अर्को प्रति फेला पार्न सक्नुभएन भने, आफ्नो कम्प्युटर पुन:सुरु गर्नुहोस्।</target>
+        <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <target xml:lang="ne">यो अनुप्रयोग खोल्दा समस्या आयो जसको कारण तपाईंले आफ्नो कम्प्युटर पुन:सुरु गर्न आवश्यक हुन सक्छ।</target>
+        <note>ID: Application.ProblemStarting.General</note>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <target xml:lang="ne">{0} खोल्दा समस्या आयो जसको कारण तपाईंले आफ्नो कम्प्युटर पुन:सुरु गर्न आवश्यक हुन सक्छ।</target>
+        <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.General">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <target xml:lang="ne">अर्को अनुप्रयोगले काम सकाउने प्रतीक्षा गर्नु</target>
+        <note>ID: Application.WaitingFinish.General</note>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <target xml:lang="ne">{0} काम सकाउने प्रतीक्षा गर्नु...</target>
+        <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <target xml:lang="ne">&amp;रद्द गर्नुहोस्</target>
+        <note>ID: Common.CancelButton</note>
       </trans-unit>
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <target xml:lang="ne">होइन</target>
+        <note>ID: Common.No</note>
       </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <target xml:lang="ne">&amp;ठीक छ</target>
+        <note>ID: Common.OKButton</note>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
         <target xml:lang="ne">हो</target>
+        <note>ID: Common.Yes</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <target xml:lang="ne">{0} लाई रद्दी टोकरीमा सारिनेछ।</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files"</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <target xml:lang="ne">{0} लाई रद्दी टोकरीमा सारिनेछ।</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Parameter {0} is a file name</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
         <source xml:lang="en">Confirm Delete</source>
         <target xml:lang="ne"> मेटाउने निश्चित गर्नुहोस </target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
         <source xml:lang="en">&amp;Cancel</source>
         <target xml:lang="ne">&amp;रद्द गर्नुहोस्</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <target xml:lang="ne">&amp;मेट्नुहोस्</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to {1}</source>
         <target xml:lang="ne">लगभग {1} सँग नाम मिल्ने {0} तस्विरहरू फेला परे</target>
+        <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading">
         <source xml:lang="en">Art Of Reading</source>
         <target xml:lang="ne">पढ्ने कला</target>
+        <note>ID: ImageToolbox.ArtOfReading</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera">
         <source xml:lang="en">Camera</source>
         <target xml:lang="ne">क्यामेरा</target>
+        <note>ID: ImageToolbox.Camera</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata">
         <source xml:lang="en">Use {0}</source>
         <target xml:lang="ne">{0} प्रयोग गर्नुहोस्</target>
+        <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop">
         <source xml:lang="en">Crop</source>
         <target xml:lang="ne">काटछाँट गर्नुहोस्</target>
+        <note>ID: ImageToolbox.Crop</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.DownloadArtOfReading">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <target xml:lang="ne">पढ्ने कला (Art Of Reading) को स्थापनाकर्ता डाउनलोड गर्नुहोस्</target>
+        <note>ID: ImageToolbox.DownloadArtOfReading</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink">
         <source xml:lang="en">Edit...</source>
         <target xml:lang="ne">सम्पादन गर्नुहोस्...</target>
+        <note>ID: ImageToolbox.EditMetadataLink</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms">
         <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
         <target xml:lang="ne">यो 'पढ्ने कला' को सङ्ग्रह हो।माथिको बाकसमा आफूले खोज्न चाहेको कुरा टाइप गर्नुहोस् र ENTER थिच्नुहोस्। तपाईंले अङ्ग्रेजी र इन्डोनेसियाली भाषामा शब्दहरू टाइप गर्न सक्नुहुन्छ।</target>
+        <note>ID: ImageToolbox.EnterSearchTerms</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton">
         <source xml:lang="en">File</source>
         <target xml:lang="ne">फाइल</target>
+        <note>ID: ImageToolbox.FileButton</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <target xml:lang="ne">माफ गर्नुहोस्, तस्‍विर प्राप्त गर्ने क्रममा केही गडबडी भयो।</target>
+        <note>ID: ImageToolbox.GenericGettingImageProblem</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <target xml:lang="ne">माफ गर्नुहोस्, तस्‍विरको उपकरण पेटीमा केही गडबड भयो।</target>
+        <note>ID: ImageToolbox.GenericProblem</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture">
         <source xml:lang="en">Get Picture</source>
         <target xml:lang="ne">तस्बिर प्राप्त गर्नुहोस्</target>
+        <note>ID: ImageToolbox.GetPicture</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
         <target xml:lang="ne">तस्‍विरको उपकरण पेटी</target>
+        <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <target xml:lang="ne">पढ्ने कलाको प्याकेज स्थापना गर्नुहोस् (यो एकदमै सुस्त हुन सक्छ)</target>
+        <note>ID: ImageToolbox.InstallArtOfReading</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages">
         <source xml:lang="en">Found {0} images</source>
         <target xml:lang="ne">{0} तस्बिरहरू फेला परे</target>
+        <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
         <target xml:lang="ne">के तपाईंलाई अरबिक, बङ्गाली, चिनियाँ, अङ्ग्रेजी, फ्रेन्च, इन्डोनेसियाली, हिन्दी, पर्चुगाली, स्पेनिश, थाई वा स्वाहिली भाषामा खोजी गर्न सकिने यस सङ्ग्रहको एउटा नयाँ संस्करण उपलब्ध छ भन्ने कुरा थाहा छ ? यसलाई तपाईंले निःशुल्क रूपमा डाउनलोड गर्न सक्नुहुन्छ।</target>
+        <note>ID: ImageToolbox.NewMultilingual</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <target xml:lang="ne">यो कम्प्युटरमा अहिले सम्म 'पढ्ने कला' को सङ्ग्रह स्थापना गरिएको छ जस्तो देखिदैन </target>
+        <note>ID: ImageToolbox.NoArtOfReading</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
         <target xml:lang="ne">कुनै मिल्दो तस्‍विर फेला परेन</target>
+        <note>ID: ImageToolbox.NoMatchingImages</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles">
         <source xml:lang="en">picture files</source>
         <target xml:lang="ne">तस्बिर फाइलहरू</target>
+        <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
         <source xml:lang="en">Problem Getting Image</source>
         <target xml:lang="ne">तस्‍विर प्राप्त गर्नमा समस्या भयो</target>
+        <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <target xml:lang="ne">माफ गर्नुहोस्, तस्‍विर लोड गर्नमा समस्या भयो।</target>
+        <note>ID: ImageToolbox.ProblemLoadingImage</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <target xml:lang="ne">यो तस्बिरमा निम्न विवरणहरू छैनन्:\n\nयसलाई कसले सिर्जना गरेको हो?\nयसलाई कसले प्रयोग गर्न सक्छ?</target>
+        <note>ID: ImageToolbox.PromptForMissingMetadata</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner">
         <source xml:lang="en">Scanner</source>
         <target xml:lang="ne">स्क्यानर</target>
+        <note>ID: ImageToolbox.Scanner</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchArtOfReading">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <target xml:lang="ne">पढ्ने कलाको सङ्ग्रह खोज्नुहोस्</target>
+        <note>ID: ImageToolbox.SearchArtOfReading</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage">
         <source xml:lang="en">The search box is currently set to {0}</source>
         <target xml:lang="ne">खोज बाकसलाई हाल {0} मा सेट गरिएको छ</target>
+        <note>ID: ImageToolbox.SearchLanguage</note>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink">
         <source xml:lang="en">Set up metadata...</source>
         <target xml:lang="ne">मेटाडाटा सेट अप गर्नुहोस्...</target>
+        <note>ID: ImageToolbox.SetUpMetadataLink</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.AlternateNamesHeader">
         <source xml:lang="en">Other Names</source>
         <target xml:lang="ne">अन्य नामहरू</target>
+        <note>ID: LanguageLookup.AlternateNamesHeader</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <target xml:lang="ne">यो सूचीमा ethnologue.com मा भएका सम्पूर्ण वैकल्पिक नामहरू सहित सम्पूर्ण ISO-639 भाषाहरू समावेश हुनुपर्छ।\n\nआवश्यक भएमा, "असूचीकृत भाषा" नामक विकल्प प्रयोग गर्नुहोस्, जुन अहिले तपाईंको लागि चयन गरिनेछ।</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
         <source xml:lang="en">Ethnologue.com</source>
         <target xml:lang="ne">Ethnologue.com</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <target xml:lang="ne">भाषाका 639-3 कोडहरूको बारेमा र नयाँ कोडहरूको लागि कसरी आवेदन दिने</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
         <source xml:lang="en">About The ISO Language Registry</source>
         <target xml:lang="ne">ISO भाषा रेजिस्ट्रीको बारेमा</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader">
         <source xml:lang="en">Code</source>
         <target xml:lang="ne">कोड</target>
+        <note>ID: LanguageLookup.CodeHeader</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryCount">
         <source xml:lang="en">{0} Countries</source>
         <target xml:lang="ne">{0} देशहरू</target>
+        <note>ID: LanguageLookup.CountryCount</note>
         <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CountryHeader">
         <source xml:lang="en">Country</source>
         <target xml:lang="ne">देश</target>
+        <note>ID: LanguageLookup.CountryHeader</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <target xml:lang="ne">तपाईंले यहाँ भाषाको नाम प्रदर्शन हुने तरिका परिवर्तन गर्न सक्नुहुन्छ:</target>
+        <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle">
         <source xml:lang="en">Lookup Language Code...</source>
         <target xml:lang="ne">भाषाको कोड खोज्नुहोस्...</target>
+        <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader">
         <source xml:lang="en">Name</source>
         <target xml:lang="ne">नाम</target>
+        <note>ID: LanguageLookup.PrimaryNameHeader</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
         <source xml:lang="en">Show regional dialects</source>
         <target xml:lang="ne">क्षेत्रीय भाषाहरू देखाउनुहोस्</target>
+        <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.UnlistedLanguage">
         <source xml:lang="en">Unlisted Language</source>
         <target xml:lang="ne">असूचीकृत भाषा</target>
+        <note>ID: LanguageLookup.UnlistedLanguage</note>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink">
         <source xml:lang="en">Can't find your language?</source>
         <target xml:lang="ne">आफ्नो भाषा फेला पार्न सक्नुभएन?</target>
+        <note>ID: LanguageLookup._cannotFindLanguageLink</note>
       </trans-unit>
       <trans-unit id="MemoryWarning">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <target xml:lang="ne">दुर्भाग्यवश, {0} मा मेमोरी अपुग हुन थालेको छ, र यो छिटै सुस्त हुन वा यसमा अन्य समस्याहरू आउन सक्छ। हामी तपाईंलाई यसलाई बन्द गरेर पुनः आफूलाई पायक पर्ने समयमा सुरू गर्न सिफारिस गर्दछौं।</target>
+        <note>ID: MemoryWarning</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Creator">
         <source xml:lang="en">Creator: {0}</source>
         <target xml:lang="ne">सर्जक: {0}</target>
+        <note>ID: MetadataDisplay.Creator</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.CreatorLabel">
         <source xml:lang="en">Creator</source>
         <target xml:lang="ne">सर्जक</target>
+        <note>ID: MetadataDisplay.CreatorLabel</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.LicenseInfo">
         <source xml:lang="en">License Info</source>
         <target xml:lang="ne">इजाजतपत्र सम्बन्धी जानकारी</target>
+        <note>ID: MetadataDisplay.LicenseInfo</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <target xml:lang="ne">तपाईंले लेखक, चित्रकार, इत्यादिको प्रतिलिपि अधिकार सूचना र नाम राख्नुपर्छ।</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <target xml:lang="ne">तपाईंले यस रचनालाई व्यापारिक प्रयोजनका लागि प्रयोग गर्न पाउनुहुन्छ।</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <target xml:lang="ne">तपाईंले यस रचनालाई समायोज गर्न वा यसमा आफ्नो तर्फबाट थपथाप गर्न पाउनुहुन्छ।</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <target xml:lang="ne">तपाईंले यस रचनालाई समायोज गर्न वा यसमा आफ्नो तर्फबाट थपथाप गर्न पाउनुहुन्छ, तर परिणामी रचनालाई त्‍यसको मूल इजाजतपत्र वा सो सरहको इजाजतपत्र अन्तर्गत मात्र वितरण गर्न पाउनुहुन्छ।</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <target xml:lang="ne">तपाईंले अनुमति नलिइकन यस रचनामा परिवर्तनहरू गर्न वा यसलाई आधार स्रोतको रूपमा प्रयोग गर्न पाउनुहुन्न।</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <target xml:lang="ne">तपाईंले यो रचनालाई व्यापारिक प्रयोजनका लागि प्रयोग गर्न पाउनुहुन्न।</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <target xml:lang="ne">पुनः प्रयोग गर्ने अनुमति लिन, प्रतिलिपि अघिकार धारकसंग  सम्पर्क गर्नुहोस्।</target>
+        <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
       </trans-unit>
       <trans-unit id="MetadataDisplay.NoLicense">
         <source xml:lang="en">No license specified</source>
         <target xml:lang="ne">कुनै इजाजतपत्र तोकिएको छैन</target>
+        <note>ID: MetadataDisplay.NoLicense</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <target xml:lang="ne">आफ्नो रचनालाई व्यापारिक प्रयोजनका लागि अनुमति दिने?</target>
+        <note>ID: MetadataEditor.AllowCommercialUse</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives">
         <source xml:lang="en">Allow modifications of your work?</source>
         <target xml:lang="ne">आफ्नो रचना परिमार्जन गर्न अनुमति दिने?</target>
+        <note>ID: MetadataEditor.AllowDerivatives</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder">
         <source xml:lang="en">Copyright Holder</source>
         <target xml:lang="ne">प्रतिलिपि अधिकार धारक</target>
+        <note>ID: MetadataEditor.CopyrightHolder</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons">
         <source xml:lang="en">Creative Commons</source>
         <target xml:lang="ne">Creative Commons</target>
+        <note>ID: MetadataEditor.CreativeCommons</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel">
         <source xml:lang="en">Creator</source>
         <target xml:lang="ne">सर्जक</target>
+        <note>ID: MetadataEditor.CreatorLabel</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense">
         <source xml:lang="en">Custom</source>
         <target xml:lang="ne">कस्टम</target>
+        <note>ID: MetadataEditor.CustomLicense</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit">
         <source xml:lang="en">Copyright and License</source>
         <target xml:lang="ne">प्रतिलिपि अधिकार र इजाजतपत्र</target>
+        <note>ID: MetadataEditor.TitleNoCredit</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <target xml:lang="ne">श्रेय, प्रतिलिपि अधिकार र इजाजतपत्र</target>
+        <note>ID: MetadataEditor.TitleWithCredit</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <target xml:lang="ne">कुनै पनि अनुमति लिन प्रतिलिपि अधिकार धारकसंग सम्पर्क गर्नुहोस्</target>
+        <note>ID: MetadataEditor.UnknownLicense</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <target xml:lang="ne">हुन्छ, अरूले पनि समान रूपमा आदान-प्रदान गर्छन् भने</target>
+        <note>ID: MetadataEditor.YesShareAlike</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel">
         <source xml:lang="en">Additional Requests</source>
         <target xml:lang="ne">अतिरिक्त अनुरोधहरू</target>
+        <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1">
         <source xml:lang="en">more info</source>
         <target xml:lang="ne">थप जानकारी</target>
+        <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
         <source xml:lang="en">Not Enforceable</source>
         <target xml:lang="ne">लागूयोग्य छैन</target>
+        <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <target xml:lang="ne">यसले प्रारम्भिक प्रयोगकर्ताहरूका लागि आवश्यक नरहेको अन्य बटनहरू पनि लुकाउन सक्छ।</target>
+        <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <target xml:lang="ne">तपाईंले Ctrl र Shift कुञ्जीहरूलाई एकैपटक थिचेर थामिराख्दा यो बटन देखा पर्नेछ।</target>
+        <note>ID: SettingsProtection.CtrlShiftHint</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel">
         <source xml:lang="en">Settings...</source>
         <target xml:lang="ne">सेटिङहरू...</target>
+        <note>ID: SettingsProtection.LauncherButtonLabel</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <target xml:lang="ne">सेटिङहरू खोल्ने बटन लुकाउनुहोस्।</target>
+        <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword">
         <source xml:lang="en">Factory Password</source>
         <target xml:lang="ne">फ्याक्ट्री पासवर्ड</target>
+        <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <target xml:lang="ne">यस उपकरणलाई निष्क्रिय बनाउन सक्ने अप्रत्याशित परिवर्तनहरू हुन नदिन यी सेटिङहरूलाई लक गरिएका छन्।</target>
+        <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle">
         <source xml:lang="en">Settings Protection Password</source>
         <target xml:lang="ne">सेटिङ सुरक्षाको पासवर्ड</target>
+        <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
         <source xml:lang="en">Show Characters</source>
         <target xml:lang="ne">वर्णहरू देखाउनुहोस्</target>
+        <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
         <target xml:lang="ne">यी सेटिङहरूको फ्याक्ट्री पासवर्ड "{0}" हो। यसलाई बिर्सनुभएको खण्डमा, तपाईंले जुन सुकै बेला "{1}" र "{2}" लाई Google मा खोज्न सक्नुहुन्छ।</target>
+        <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <target xml:lang="ne">सेटिङहरूमा जान फ्याक्टी पासवर्ड प्रविष्ट गर्न आवश्यक हुने बनाउनुहोस्।</target>
+        <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
         <source xml:lang="en">Settings Protection</source>
         <target xml:lang="ne">सेटिङहरूको सुरक्षा</target>
+        <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
       </trans-unit>
       <trans-unit id="WSFontControl.Font">
         <source xml:lang="en">&amp;Font:</source>
         <target xml:lang="ne">&amp;फन्ट:</target>
+        <note>ID: WSFontControl.Font</note>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <target xml:lang="ne">(चयन गरिएको फन्ट यो यन्त्रमा उपलब्ध छैन। पूर्वनिर्धारित फन्ट प्रयोग गरिनेछ।)</target>
+        <note>ID: WSFontControl.FontNotAvailable</note>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <target xml:lang="ne">यो &amp;दायाँ देखि बायाँतिर लेख्ने प्रणाली हो।</target>
+        <note>ID: WSFontControl.RightToLeftWS</note>
       </trans-unit>
       <trans-unit id="WSFontControl.Size">
         <source xml:lang="en">&amp;Size:</source>
         <target xml:lang="ne">&amp;आकार:</target>
+        <note>ID: WSFontControl.Size</note>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea">
         <source xml:lang="en">&amp;Test Area:</source>
         <target xml:lang="ne">&amp;परीक्षण क्षेत्र:</target>
+        <note>ID: WSFontControl.TestArea</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <target xml:lang="ne">तपाईंलाई चाहिएको किबोर्ड सूचीकृत छैन भने, किबोर्ड सेट अप गर्न तल उपयुक्त स्राेतमा क्लिक गर्नुहोस्</target>
+        <note>ID: WSKeyboardControl.KeyboardNotListed</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardSettingsLink">
         <source xml:lang="en">Windows keyboard settings</source>
         <target xml:lang="ne">Windows किबोर्ड सेटिङहरू</target>
+        <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
         <source xml:lang="en">Available keyboards</source>
         <target xml:lang="ne">उपलब्ध किबोर्डहरू</target>
+        <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
         <source xml:lang="en">Previously used keyboards</source>
         <target xml:lang="ne">पहिले प्रयोग गरिएका किबोर्डहरू</target>
+        <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
         <source xml:lang="en">Keyman Configuration</source>
         <target xml:lang="ne">Keyman को कन्फिगरेसन</target>
+        <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <target xml:lang="ne">Keyman 5.0 वा सोभन्दा पछिल्लो संस्करण स्थापना गरिएको छैन।</target>
+        <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <target xml:lang="ne">{0} पाठ टाइप गर्ने &amp;किबोर्ड चयन गर्नुहोस्</target>
+        <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <target xml:lang="ne">&amp;परीक्षण क्षेत्र (आफ्नो किबोर्डको परीक्षण गर्न केही कुरा टाइप गर्न यो क्षेत्र प्रयोग गर्नुहोस्।)</target>
+        <note>ID: WSKeyboardControl.TestAreaCaption</note>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
         <target xml:lang="ne">चेतावनी</target>
+        <note>ID: Warning</note>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <target xml:lang="ne">SLDR मा जडान गर्न सकिएन</target>
+        <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <target xml:lang="ne">यो भाषाको बारेमा नवीनतम जानकारी प्राप्त गर्न यो अनुप्रयोगले SIL Locale Data Repository माथि पहुँच गर्न सकेन। तपाईंले यो लेखन प्रणाली सिर्जना गर्नुभयो भने, पूर्वनिर्धारित सेटिङहरू गलत वा पुराना हुन सक्छन्। तपाईं निश्चित रूपमा नयाँ लेखन प्रणाली सिर्जना गर्न चाहनुहुन्छ?</target>
+        <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
       </trans-unit>
     </body>
   </file>
