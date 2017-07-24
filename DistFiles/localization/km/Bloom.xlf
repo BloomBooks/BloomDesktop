@@ -1,0 +1,638 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Bloom.dll" source-language="en" target-language="km" datatype="plaintext" product-version="3.0.000.0" sil:hard-linebreak-replacement="\n">
+    <body>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader Tool</source>
+        <target xml:lang="km">ឧបករណ៍អ្នកអានដែលអាចចាត់តាមអក្សរ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader Tool</source>
+        <target xml:lang="km">ឧបករណ៍អ្នកអានតាមកម្រិត</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="km">ថែមទៀត…</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+        <source xml:lang="en">Advanced Program Settings</source>
+        <target xml:lang="km">ការកំណត់កម្មវិធីកម្រិតខ្ពស់</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+        <source xml:lang="en">Book Making</source>
+        <target xml:lang="km">ការបង្កើតសៀវភៅ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+        <source xml:lang="en">Default Font for {0}</source>
+        <target xml:lang="km">ហ្វុនដើមសម្រាប់ {0}</target>
+        <note>{0} is a language name.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+        <source xml:lang="en">Right to Left Writing System</source>
+        <target xml:lang="km">ប្រព័ន្ធសរសេរពីស្តាំទៅឆ្វេង</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="km">ការកំណត់</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+        <source xml:lang="en">Language 1</source>
+        <target xml:lang="km">ភាសាទី 1</target>
+        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+        <source xml:lang="en">Language 2</source>
+        <target xml:lang="km">ភាសាទី 2</target>
+        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+        <source xml:lang="en">Language 3</source>
+        <target xml:lang="km">ភាសាទី 3</target>
+        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="km">ភាសា</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+        <source xml:lang="en">Vernacular Language</source>
+        <target xml:lang="km">ភាសាត្រាប់</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+        <source xml:lang="en">Remove</source>
+        <target xml:lang="km">ដកចេញ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+        <source xml:lang="en">Bloom Collection Name</source>
+        <target xml:lang="km">ឈ្មោះកូឡិកសិន Bloom</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="km">ប្រទេស</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="km">ឌីស្ទ្រីក</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+        <source xml:lang="en">Project Information</source>
+        <target xml:lang="km">ព័ត៌មានគម្រោង</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="km">ខេត្ត</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.Restart">
+        <source xml:lang="en">Restart</source>
+        <target xml:lang="km">ចាប់ផ្តើមឡើងវិញ</target>
+        <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.deleteBook">
+        <source xml:lang="en">Delete Book</source>
+        <target xml:lang="km">លុបចោលសៀវភៅ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionTabLabel">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="km">កូឡិកសិន</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Collections">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="km">កូឡិកសិន</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
+        <source xml:lang="en">Make a book using this source</source>
+        <target xml:lang="km">ធ្វើសៀវភៅដោយប្រើប្រភពនេះ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+        <source xml:lang="en">Other Collection</source>
+        <target xml:lang="km">កូឡិកសិនដទៃទៀត</target>
+        <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
+        <source xml:lang="en">Sample Shells</source>
+        <target xml:lang="km">Shells គំរូ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SettingsButton">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="km">ការកំណត់</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="km">បណ្តុំប្រភព</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+        <source xml:lang="en">Open Additional Collections Folder</source>
+        <target xml:lang="km">បើកហ្វូលឌ័រកូឡិកសិនបន្ថែម</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
+        <source xml:lang="en">Templates</source>
+        <target xml:lang="km">ឯកសារគំរូ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.EditBookButton">
+        <source xml:lang="en">Edit this book</source>
+        <target xml:lang="km">កែសៀវភៅនេះ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
+        <source xml:lang="en">Make Reader Template Bloom Pack...</source>
+        <target xml:lang="km">ធ្វើកញ្ចប់ Bloom ឯកសារគំរូសម្រាប់អ្នកអាន…</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="km">បណ្តុំប្រភព</target>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourceHeading">
+        <source xml:lang="en">Sources For New Books</source>
+        <target xml:lang="km">ប្រភពនានាសម្រាប់សៀវភៅថ្មី</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="km">ថែមទៀត…</target>
+        <note>Brings up the localization dialog</note>
+      </trans-unit>
+      <trans-unit id="Common.Cancel" sil:dynamic="true">
+        <source xml:lang="en">Cancel</source>
+        <target xml:lang="km">លុបចោល</target>
+      </trans-unit>
+      <trans-unit id="Common.CancelButton">
+        <source xml:lang="en">&amp;Cancel</source>
+        <target xml:lang="km">&amp;លុបចោល</target>
+      </trans-unit>
+      <trans-unit id="Common.Next">
+        <source xml:lang="en">&amp;Next</source>
+        <target xml:lang="km">&amp;បន្ទាប់</target>
+        <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+      </trans-unit>
+      <trans-unit id="Common.NextButton">
+        <source xml:lang="en">Next</source>
+        <target xml:lang="km">បន្ទាប់</target>
+        <note>In a wizard, this button takes you to the next step.</note>
+      </trans-unit>
+      <trans-unit id="Common.OK">
+        <source xml:lang="en">OK</source>
+        <target xml:lang="km">អូខេ</target>
+      </trans-unit>
+      <trans-unit id="Common.OKButton">
+        <source xml:lang="en">&amp;OK</source>
+        <target xml:lang="km">&amp;អូខេ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Letters in this stage</source>
+        <target xml:lang="km">អក្សរក្នុងដំណាក់កាលនេះ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true">
+        <source xml:lang="en">Open a Letter and Word List File</source>
+        <target xml:lang="km">បើកឯកសារជាអក្សរ និងបញ្ជីពាក្យ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true">
+        <source xml:lang="en">Set up Stages</source>
+        <target xml:lang="km">បង្កើត ដំណាក់កាលផ្សេងៗ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+        <target xml:lang="km">ដំណាក់កាល</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Words in this stage</source>
+        <target xml:lang="km">ចំនួនពាក្យក្នុងដំណាក់កាលនេះ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
+        <source xml:lang="en">This page will be permanently removed.</source>
+        <target xml:lang="km">ទំព័រនេះ នឹងត្រូវលុបចោលជាអចិន្ត្រៃយ៍</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true">
+        <source xml:lang="en">Text</source>
+        <target xml:lang="km">អត្ថបទ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
+        <source xml:lang="en">Text Box</source>
+        <target xml:lang="km">ប្រអប់អត្ថបទ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Edit">
+        <source xml:lang="en">Edit</source>
+        <target xml:lang="km">កែ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true">
+        <source xml:lang="en">Characters</source>
+        <target xml:lang="km">អក្សរ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true">
+        <source xml:lang="en">Create</source>
+        <target xml:lang="km">បង្កើត</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
+        <source xml:lang="en">Font</source>
+        <target xml:lang="km">ហ្វុន</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true">
+        <source xml:lang="en">Spacing</source>
+        <target xml:lang="km">គម្លាត</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true">
+        <source xml:lang="en">Style</source>
+        <target xml:lang="km">ស្តាល</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true">
+        <source xml:lang="en">Style Name</source>
+        <target xml:lang="km">ឈ្មោះស្តាល</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
+        <source xml:lang="en">Extra Wide</source>
+        <target xml:lang="km">ទូលាយខ្លាំង</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+        <target xml:lang="km">ធម្មតា</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true">
+        <source xml:lang="en">Wide</source>
+        <target xml:lang="km">ទូលាយ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
+        <source xml:lang="en">Book title in {lang}</source>
+        <target xml:lang="km">ចំណងជើងសៀវភៅជាភាសា {lang}</target>
+        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
+        <source xml:lang="en">Change Image</source>
+        <target xml:lang="km">ប្តូររូបភាព</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
+        <source xml:lang="en">Paste Image</source>
+        <target xml:lang="km">រូបភាពបិត</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.Heading">
+        <source xml:lang="en">Pages</source>
+        <target xml:lang="km">ទំព័រ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.TemplatePagesList.Heading">
+        <source xml:lang="en">Template Pages</source>
+        <target xml:lang="km">ទំព័រឯកសារគំរូ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true">
+        <source xml:lang="en">Alphabet</source>
+        <target xml:lang="km">អក្ខក្រម</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Image</source>
+        <target xml:lang="km">អត្ថបទ និងរូបភាពមូលដ្ឋាន</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Picture</source>
+        <target xml:lang="km">អត្ថបទ និងរូបភាពមូលដ្ឋាន</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
+        <source xml:lang="en">Credits Page</source>
+        <target xml:lang="km">ទំព័រ ក្រេឌីត</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="km">បង្កើត</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Front Cover</source>
+        <target xml:lang="km">គម្របមុខ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
+        <source xml:lang="en">Image On Bottom</source>
+        <target xml:lang="km">រូបភាពខាងក្រោម</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">Image in Middle</source>
+        <target xml:lang="km">រូបភាពចំកណ្តាល</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Back Cover</source>
+        <target xml:lang="km">គម្របក្រោយខាងក្នុង</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true">
+        <source xml:lang="en">Just Text</source>
+        <target xml:lang="km">គ្រាន់តែអត្ថបទ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true">
+        <source xml:lang="en">Just a Picture</source>
+        <target xml:lang="km">គ្រាន់តែជារូបភាព</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
+        <source xml:lang="en">Just an Image</source>
+        <target xml:lang="km">គ្រាន់តែជារូបភាព</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Outside Back Cover</source>
+        <target xml:lang="km">គម្របក្រោយខាងក្រៅ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
+        <source xml:lang="en">Picture on Bottom</source>
+        <target xml:lang="km">រូបភាពខាងក្រោម</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
+        <source xml:lang="en">Picture in Middle</source>
+        <target xml:lang="km">រូបភាពចំកណ្តាល</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
+        <source xml:lang="en">Title Page</source>
+        <target xml:lang="km">ទំព័រចំណងជើង</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyButton">
+        <source xml:lang="en">Copy</source>
+        <target xml:lang="km">ចម្លង</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton">
+        <source xml:lang="en">Cut</source>
+        <target xml:lang="km">កាត់</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton">
+        <source xml:lang="en">Remove\n  Page</source>
+        <target xml:lang="km">ដកចេញទំព័រ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton">
+        <source xml:lang="en">Duplicate\n   Page</source>
+        <target xml:lang="km">ទំព័រជាន់គ្នា</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton">
+        <source xml:lang="en">Paste</source>
+        <target xml:lang="km">បិត</target>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton">
+        <source xml:lang="en">Undo</source>
+        <target xml:lang="km">បកក្រោយ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Bilingual">
+        <source xml:lang="en">Two Languages</source>
+        <target xml:lang="km">ពីរភាសា</target>
+        <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Monolingual">
+        <source xml:lang="en">One Language</source>
+        <target xml:lang="km">ភាសាមួយ</target>
+        <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Trilingual">
+        <source xml:lang="en">Three Languages</source>
+        <target xml:lang="km">បីភាសា</target>
+        <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
+        <source xml:lang="en">Building Reader Templates</source>
+        <target xml:lang="km">ការបង្កើតឯកសារគំរូសម្រាប់អ្នកអាន</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.Help Menu">
+        <source xml:lang="en">Help</source>
+        <target xml:lang="km">ជំនួយ</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
+        <source xml:lang="en">Using Reader Templates </source>
+        <target xml:lang="km">ការប្រើឯកសារគំរូសម្រាប់អ្នកអាន</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CheckForNewVersionMenuItem">
+        <source xml:lang="en">Check For New Version</source>
+        <target xml:lang="km">ពិនិត្យរកមើលកំណែថ្មី</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CreditsMenuItem">
+        <source xml:lang="en">About Bloom</source>
+        <target xml:lang="km">អំពី Bloom</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
+        <source xml:lang="en">Don't Show This Again</source>
+        <target xml:lang="km">កុំបង្ហាញសារនេះម្តងទៀត</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
+        <source xml:lang="en">Actual</source>
+        <target xml:lang="km">ពិតប្រាកដ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true">
+        <source xml:lang="en">For this Level</source>
+        <target xml:lang="km">សម្រាប់កម្រិតនេះ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep in mind</source>
+        <target xml:lang="km">ទុកក្នុងចិត្ត</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="km">កម្រិត</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
+        <source xml:lang="en">Max</source>
+        <target xml:lang="km">អតិ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
+        <source xml:lang="en">per page</source>
+        <target xml:lang="km">ក្នុងមួយទំព័រ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
+        <source xml:lang="en">longest sentence</source>
+        <target xml:lang="km">ក្នុងមួយប្រយោគ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
+        <source xml:lang="en">Predictability</source>
+        <target xml:lang="km">ភាពព្យាករណ៍បាន</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true">
+        <source xml:lang="en">Set up Levels</source>
+        <target xml:lang="km">បង្កើត កម្រិតផ្សេងៗ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true">
+        <source xml:lang="en">This Book</source>
+        <target xml:lang="km">សៀវភៅនេះ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">This Page</source>
+        <target xml:lang="km">ទំព័រនេះ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
+        <source xml:lang="en">total</source>
+        <target xml:lang="km">សរុប</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
+        <source xml:lang="en">unique</source>
+        <target xml:lang="km">មានតែមួយ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true">
+        <source xml:lang="en">Vocabulary</source>
+        <target xml:lang="km">វាក្យស័ព្ទ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
+        <source xml:lang="en">Word Counts</source>
+        <target xml:lang="km">ចំនួនពាក្យ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="km">បណ្តុំប្រភព</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+        <source xml:lang="en">Vernacular/Local Language Collection</source>
+        <target xml:lang="km">កូឡិកសិនត្រាប់ភាសា</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="km">ប្រទេស</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="km">ឌីស្ទ្រីក</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="km">ខេត្ត</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ProjectName">
+        <source xml:lang="en">Project Name</source>
+        <target xml:lang="km">ឈ្មោះគម្រោង</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage">
+        <source xml:lang="en">Welcome To Bloom!</source>
+        <target xml:lang="km">Bloom សូមស្វាគមន៍</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection">
+        <source xml:lang="en">Create New Collection</source>
+        <target xml:lang="km">បង្កើត កូឡិកសិនថ្មី</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Publish">
+        <source xml:lang="en">Publish</source>
+        <target xml:lang="km">បោះពុម្ព</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Languages">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="km">ភាសា</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms">
+        <source xml:lang="en">Please agree to terms of use</source>
+        <target xml:lang="km">សូមយល់ស្របលក្ខខណ្ឌប្រើប្រាស់</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Title">
+        <source xml:lang="en">Title</source>
+        <target xml:lang="km">ចំណងជើង</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
+        <source xml:lang="en">Add Level</source>
+        <target xml:lang="km">បន្ថែម កម្រិត</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true">
+        <source xml:lang="en">Add Stage</source>
+        <target xml:lang="km">បន្ថែម ដំណាក់កាល</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true">
+        <source xml:lang="en">Book</source>
+        <target xml:lang="km">សៀវភៅ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
+        <source xml:lang="en">Decodable Stages</source>
+        <target xml:lang="km">ដំណាក់កាលដែលអាចចាត់តាមអក្សរ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="km">អក្សរ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true">
+        <source xml:lang="en">Letters and Letter Combinations</source>
+        <target xml:lang="km">អក្សរ និងអក្សរផ្សំ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
+        <source xml:lang="en">Level</source>
+        <target xml:lang="km">កម្រិត</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="km">កម្រិត</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="km">កម្រិតអ្នកអាន</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
+        <source xml:lang="en">Page</source>
+        <target xml:lang="km">ទំព័រ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="km">កម្រិតអ្នកអាន</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
+        <source xml:lang="en">Remove Level {0}</source>
+        <target xml:lang="km">ដកចេញកម្រិត {0}</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true">
+        <source xml:lang="en">Remove Stage {0}</source>
+        <target xml:lang="km">ដកចេញ ដំណាក់កាល {0}</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true">
+        <source xml:lang="en">Previous and New Letters</source>
+        <target xml:lang="km">អក្សរមុន និងថ្មី</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true">
+        <source xml:lang="en">Sentence</source>
+        <target xml:lang="km">ប្រយោគ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">set up the alphabet for this language.</source>
+        <target xml:lang="km">បង្កើតអក្ខក្រមសម្រាប់ភាសានេះ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
+        <source xml:lang="en">New Sight Words</source>
+        <target xml:lang="km">ពាក្យជារូបថ្មី</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true">
+        <source xml:lang="en">Sight Words</source>
+        <target xml:lang="km">ពាក្យរូបភាព</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+        <target xml:lang="km">ដំណាក់កាល</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true">
+        <source xml:lang="en">Stage </source>
+        <target xml:lang="km">ដំណាក់កាល</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
+        <source xml:lang="en">Stages</source>
+        <target xml:lang="km">ដំណាក់កាលនានា</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
+        <source xml:lang="en">Things to remember for this level:</source>
+        <target xml:lang="km">រឿងត្រូវចងចាំសម្រាប់កម្រិតនេះ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true">
+        <source xml:lang="en">Unique</source>
+        <target xml:lang="km">មានតែមួយ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true">
+        <source xml:lang="en">Sample Texts Folder</source>
+        <target xml:lang="km">ហ្វូលឌ័រអត្ថបទគំរូ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="km">អក្សរ</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+        <source xml:lang="en">Save Bloom Pack</source>
+        <target xml:lang="km">រក្សាទុកកញ្ចប់ Bloom</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
+        <source xml:lang="en">Make Reader Template Bloom Pack</source>
+        <target xml:lang="km">ធ្វើកញ្ចប់ Bloom ឯកសារគំរូសម្រាប់អ្នកអាន</target>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Close">
+        <source xml:lang="en">Close</source>
+        <target xml:lang="km">បិទ</target>
+        <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
+        <source xml:lang="en">Basic Book</source>
+        <target xml:lang="km">សៀវភៅមូលដ្ឋាន</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true">
+        <source xml:lang="en">Big Book</source>
+        <target xml:lang="km">សៀវភៅធំ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader</source>
+        <target xml:lang="km">អ្នកអានដែលអាចចាត់តាមអក្សរ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader</source>
+        <target xml:lang="km">អ្នកអានតាមកម្រិត</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

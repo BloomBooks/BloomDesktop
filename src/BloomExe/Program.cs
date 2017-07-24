@@ -77,6 +77,8 @@ namespace Bloom
 		{
 			Logger.Init();
 			CheckForCorruptUserConfig();
+			// We use crowdin for localizing, and they require a directory per language setup.
+			LocalizationManager.UseLanguageCodeFolders = true;
 
 			// Bloom has several command line scenarios, without a coherent system for them.
 			// The following is how we will do things from now on, and things can be moved
@@ -958,8 +960,9 @@ namespace Bloom
 				// support multiple variants for a single language like zh-CN or zh-Hans, at which point both might be in the
 				// list and we'd want the best match. In the meantime we want zh-Hans to find zh-CN. See BL-3691.)
 				string localeMatchingLanguage = null;
-				foreach  (var lang in LocalizationManager.GetAvailableUILanguageTags(installedStringFileFolder, "Bloom"))
+				foreach  (var ci in LocalizationManager.GetUILanguages(true))
 				{
+					var lang = ci.IetfLanguageTag;
 					if (lang == UserInterfaceCulture.IetfLanguageTag)
 						return UserInterfaceCulture.IetfLanguageTag;
 					if (localeMatchingLanguage == null && lang.StartsWith(UserInterfaceCulture.TwoLetterISOLanguageName))

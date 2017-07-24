@@ -1,0 +1,1855 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Bloom.dll" source-language="en" target-language="te" datatype="plaintext" product-version="3.0.53.0" sil:hard-linebreak-replacement="\n">
+    <body>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader Tool</source>
+        <target xml:lang="te">డికోడాబల్ రీడర్ </target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader Tool</source>
+        <target xml:lang="te">తనపై రీడర్ సాధనం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="te">మరింత</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
+        <source xml:lang="en">Bloom Pack Installation</source>
+        <target xml:lang="te">బ్లూమ్ ప్యాక్ సంస్థాపన</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
+        <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
+        <target xml:lang="te">సేకరణ ఇప్పుడు ఈ కంప్యూటర్లో ఉపయోగించడానికి సిద్ధంగా ఉంది</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack">
+        <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
+        <target xml:lang="te">ఆ  వర్ధిల్లు ప్యాక్ ఇన్స్టాల్ పొందలేదు</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Extracting">
+        <source xml:lang="en">Extracting...</source>
+        <target xml:lang="te">రాబట్టే</target>
+        <note>Shown while BloomPacks are being installed</note>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
+        <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
+        <target xml:lang="te">బ్లూమ్ ఇప్పటికే నడుస్తున్న, కానీ కంటెంట్ మీ తదుపరి టర్న్ వరకు ప్రదర్శించబడతాయి లేదు వికసించిన</target>
+      </trans-unit>
+      <trans-unit id="BloomPackInstallDialog.Opening">
+        <source xml:lang="en">Opening {0}...</source>
+        <target xml:lang="te">ప్రారంభ</target>
+      </trans-unit>
+      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
+        <source xml:lang="en">This formatting is for all {0} text in boxes with '{1}' style</source>
+        <target xml:lang="te">ఈ ఫార్మాటింగ్ '{1}' శైలి తో బాక్సులను అన్ని {0} టెక్స్ట్ ఉంది</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+        <source xml:lang="en">Advanced Program Settings</source>
+        <target xml:lang="te">ఆధునిక కార్యక్రమం సెట్టింగ్</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+        <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
+        <target xml:lang="te">ప్రయోగాత్మక ఆదేశాలను చూపించు (ఉదాహరణకు. InDesign ఎగుమతి XML)</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+        <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
+        <target xml:lang="te">ప్రయోగాత్మక టెంప్లేట్లు చూపించు (ఉదాహరణకు. చిత్రాన్ని నిఘంటువు)</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+        <source xml:lang="en">Use Image Server to reduce memory usage with large images.</source>
+        <target xml:lang="te">పెద్ద చిత్రాలు మెమొరీ వినియోగాన్ని తగ్గించడానికి చిత్రాన్ని సర్వర్ ఉపయోగించడానికి</target>
+        <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
+        <source xml:lang="en">(Experimental) Show Send/Receive Controls</source>
+        <target xml:lang="te">షో పంపండి / అందుకుంటారు నియంత్రణలు</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+        <source xml:lang="en">Book Making</source>
+        <target xml:lang="te">పందెపులెక్కలు</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+        <source xml:lang="en">Default Font for {0}</source>
+        <target xml:lang="te">డిఫాల్ట్ ఫాంట్ {0}</target>
+        <note>{0} is a language name.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+        <source xml:lang="en">Front/Back Matter Pack</source>
+        <target xml:lang="te">ముందు / వెనుక ఉన్నా ప్యాక్</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+        <source xml:lang="en">Right to Left Writing System</source>
+        <target xml:lang="te">కుడి ఎడమ వ్రాసే వ్యవస్థ</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="te">సెట్టింగులు</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+        <source xml:lang="en">Change...</source>
+        <target xml:lang="te">మార్పు</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+        <source xml:lang="en">Language 1</source>
+        <target xml:lang="te">భాష 1</target>
+        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+        <source xml:lang="en">Language 2</source>
+        <target xml:lang="te">భాష 2</target>
+        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+        <source xml:lang="en">Language 3</source>
+        <target xml:lang="te">భాష 3</target>
+        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="te">భాషలు</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+        <source xml:lang="en">Set...</source>
+        <target xml:lang="te">సెట్</target>
+        <note>If there is no third language specified, the link changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+        <source xml:lang="en">Vernacular Language</source>
+        <target xml:lang="te">వ్యవహారిక భాషలో</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
+        <source xml:lang="en">Language 2 (e.g. National Language)</source>
+        <target xml:lang="te">భాష 2 (ఉదాహరణకు: జాతీయ భాష)</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label">
+        <source xml:lang="en">Language 3 (e.g. Regional Language)   (Optional)</source>
+        <target xml:lang="te">భాష 3 (ఉదాహరణకు: ప్రాంతీయ భాష) (ఐచ్ఛిక)</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+        <source xml:lang="en">Remove</source>
+        <target xml:lang="te">తొలగించడానికి</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+        <source xml:lang="en">Bloom Collection Name</source>
+        <target xml:lang="te">వర్ధిల్లు సేకరణ పేర్లు</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="te">దేశం</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="te">జిల్లా</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+        <source xml:lang="en">Project Information</source>
+        <target xml:lang="te">ప్రాజెక్ట్ సమాచారం</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="te">రాష్ట్రభాగము</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.Restart">
+        <source xml:lang="en">Restart</source>
+        <target xml:lang="te">పునఃప్రారంభమైన</target>
+        <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.RestartMessage">
+        <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
+        <target xml:lang="te">బ్లూమ్ మూసివేసి, కొత్త సెట్టింగులు ఈ ప్రాజెక్ట్ ఓపెన్ ఉన్నాము.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage">
+        <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</source>
+        <target xml:lang="te">వర్ధిల్లు ఇప్పుడు ఈ HTML పత్రం తెరుచుకోవడం</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
+        <source xml:lang="en">Update Book</source>
+        <target xml:lang="te">నవీకరణ పుస్తకం</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
+        <source xml:lang="en">Update Thumbnail</source>
+        <target xml:lang="te">నవీకరణ సూక్ష్మచిత్రం</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.DeleteBook">
+        <source xml:lang="en">Delete Book</source>
+        <target xml:lang="te">పుస్తకం తొలగించండి</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
+        <source xml:lang="en">Export to Word or LibreOffice...</source>
+        <target xml:lang="te">పదం లేదా లిబ్రేఆఫీస్ ఎగుమతి</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign">
+        <source xml:lang="en">Export to XML for InDesign...</source>
+        <target xml:lang="te">InDesign కోసం XML ఎగుమతి</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
+        <source xml:lang="en">Books From BloomLibrary.org</source>
+        <target xml:lang="te">ఈ నుండి పుస్తకాలు వర్ధిల్లు వికసించిన లైబ్రరీ. ఆర్గ్</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+        <source xml:lang="en">Do Updates of All Books</source>
+        <target xml:lang="te">అన్ని పుస్తకాల నవీకరణలను చేయండి</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+        <source xml:lang="en">Do Checks of All Books</source>
+        <target xml:lang="te">అన్ని పుస్తకాలు చెక్కుల చేయండి</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
+        <source xml:lang="en">Rescue Missing Images...</source>
+        <target xml:lang="te">రెస్క్యూ తప్పిపోయిన చిత్రాలు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.showHistory">
+        <source xml:lang="en">Collection History...</source>
+        <target xml:lang="te">సేకరణ చరిత్ర</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionMenu.showNotes">
+        <source xml:lang="en">Collection Notes...</source>
+        <target xml:lang="te">సేకరణ గమనికలు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionTabLabel">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="te">సేకరణలు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Collections">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="te">సేకరణలు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ConfirmRecycleDescription">
+        <source xml:lang="en">The book '{0}'</source>
+        <target xml:lang="te">పుస్తకం '{0}'</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
+        <source xml:lang="en">Open Folder on Disk</source>
+        <target xml:lang="te">డిస్కులో ఫోల్డర్ను తెరువు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Health" sil:dynamic="true">
+        <source xml:lang="en">Health</source>
+        <target xml:lang="te">ఆరోగ్యం</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
+        <source xml:lang="en">Make a book using this source</source>
+        <target xml:lang="te">ఈ సోర్స్ ఉపయోగించి ఒక పుస్తకం తయారు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+        <source xml:lang="en">Other Collection</source>
+        <target xml:lang="te">ఇతర సేకరణ</target>
+        <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
+        <source xml:lang="en">Sample Shells</source>
+        <target xml:lang="te">నమూనా గుండ్లు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SendReceive">
+        <source xml:lang="en">Send/Receive</source>
+        <target xml:lang="te">పంపడానికి / అందుకోవడానికి</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SettingsButton">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="te">సెట్టింగులు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="te">మూలం సేకరణ</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+        <source xml:lang="en">Open Additional Collections Folder</source>
+        <target xml:lang="te">ఓపెన్ అదనపు సేకరణలు ఫోల్డర్</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
+        <source xml:lang="en">Templates</source>
+        <target xml:lang="te">టెంప్లేట్లు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.EditBookButton">
+        <source xml:lang="en">Edit this book</source>
+        <target xml:lang="te">ఈ పుస్తకం సంకలనం</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBloomPackButton">
+        <source xml:lang="en">Make Bloom Pack</source>
+        <target xml:lang="te">బ్లూమ్ తిరిగి తయారు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
+        <source xml:lang="en">Make Reader Template BloomPack...</source>
+        <target xml:lang="te">రీడర్ టెంప్లేట్ బ్లూమ్ ప్యాక్ చేయి ...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
+        <source xml:lang="en">Advanced</source>
+        <target xml:lang="te">అధునాతన</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
+        <source xml:lang="en">Get more source books at BloomLibrary.org</source>
+        <target xml:lang="te">మరింత ఆధార పుస్తకం పొందండివికసించిన లైబ్రరీ వద్ద</target>
+        <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="te">మూలం సేకరణ</target>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourceHeading">
+        <source xml:lang="en">Sources For New Books</source>
+        <target xml:lang="te">కొత్త పుస్తకాల కోసం వర్గాలు</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourcesLockNotice">
+        <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
+        <target xml:lang="te">ఈ సేకరణ లాక్ ఉంది, </target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
+        <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
+        <target xml:lang="te">ఈ సోర్స్ సేకరణ ఎందుకంటే, వికసించిన కొత్త గుండ్లు కోసం మూలాలుగా ఇప్పటికే ఉన్న ఏదైనా గుండ్లు అందించటం లేదు.మీరు బదులుగా, షెల్ భాషను జోడించడానికి అనుకుంటే మీరు షెల్ containging సేకరణ సవరించాల్సిన అవసరంఅంతేకానీ ఒక కాపీని తయారు కంటే. అలాగే ప్రస్తుతం గోడ క్యాలెండర్ ఒక కొత్త షెల్ చేయడానికి ఉపయోగిస్తారు సాధ్యం కాదు.</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="te">మరింత</target>
+        <note>Brings up the localization dialog</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
+        <source xml:lang="en">Sources For New Shells</source>
+        <target xml:lang="te">కొత్త గుండ్లు కోసం వర్గాలు</target>
+      </trans-unit>
+      <trans-unit id="Common.BackButton">
+        <source xml:lang="en">Back</source>
+        <target xml:lang="te">తిరిగి</target>
+        <note>In a wizard, this button takes you to the previous step.</note>
+      </trans-unit>
+      <trans-unit id="Common.Cancel" sil:dynamic="true">
+        <source xml:lang="en">Cancel</source>
+        <target xml:lang="te">రద్దు</target>
+      </trans-unit>
+      <trans-unit id="Common.CancelButton">
+        <source xml:lang="en">&amp;Cancel</source>
+        <target xml:lang="te">రద్దు</target>
+      </trans-unit>
+      <trans-unit id="Common.Finish">
+        <source xml:lang="en">&amp;Finish</source>
+        <target xml:lang="te">ముగింపు</target>
+        <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
+      </trans-unit>
+      <trans-unit id="Common.HelpButton">
+        <source xml:lang="en">&amp;Help</source>
+        <target xml:lang="te">&amp;సహాయం</target>
+      </trans-unit>
+      <trans-unit id="Common.Next">
+        <source xml:lang="en">&amp;Next</source>
+        <target xml:lang="te">తదుపరి</target>
+        <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+      </trans-unit>
+      <trans-unit id="Common.NextButton">
+        <source xml:lang="en">Next</source>
+        <target xml:lang="te">తదుపరి</target>
+        <note>In a wizard, this button takes you to the next step.</note>
+      </trans-unit>
+      <trans-unit id="Common.OK" sil:dynamic="true">
+        <source xml:lang="en">OK</source>
+        <target xml:lang="te">సరే</target>
+      </trans-unit>
+      <trans-unit id="Common.OKButton">
+        <source xml:lang="en">&amp;OK</source>
+        <target xml:lang="te">సరే</target>
+      </trans-unit>
+      <trans-unit id="Common.Optional">
+        <source xml:lang="en">optional</source>
+        <target xml:lang="te">ఐచ్ఛిక</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ConfiguringBookMessage">
+        <source xml:lang="en">Building...</source>
+        <target xml:lang="te">భవనం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Letters in this stage</source>
+        <target xml:lang="te">ఈ దశలో లెటర్స్.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true">
+        <source xml:lang="en">Open a Letter and Word List File</source>
+        <target xml:lang="te">ఒక అక్షరం మరియు పద జాబితా ఫైలు తెరువు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true">
+        <source xml:lang="en">Set up Stages</source>
+        <target xml:lang="te">సెటప్ దశల్లో</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+        <target xml:lang="te">వేదిక</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
+        <source xml:lang="en">of</source>
+        <target xml:lang="te">యొక్క</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Words in this stage</source>
+        <target xml:lang="te">ఈ దశలో పదాలు.</target>
+      </trans-unit>
+      <trans-unit id="Download.Completed">
+        <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</source>
+        <target xml:lang="te">మీ డౌన్లోడ్ ({0}) పూర్తయింది. మీరు మీ సేకరణలు 'పుస్తకాలు బ్లూమ్ లైబ్రరీ నుండి' విభాగంలో ఇది చూడగలరు మీరు ఏదో చేయడం మధ్యలో అనిపించడం లేదు ఉంటే.బూమ్ మీరు దానిని ఎంచుకోవచ్చు</target>
+      </trans-unit>
+      <trans-unit id="Download.CompletedCaption">
+        <source xml:lang="en">Download complete</source>
+        <target xml:lang="te">పూర్తి డౌన్లోడ్</target>
+      </trans-unit>
+      <trans-unit id="Download.DownloadingDialogTitle">
+        <source xml:lang="en">Downloading book</source>
+        <target xml:lang="te">డౌన్లోడ్ పుస్తకం</target>
+      </trans-unit>
+      <trans-unit id="Download.GenericNetworkProblemNotice">
+        <source xml:lang="en">There was a problem downloading your book.</source>
+        <target xml:lang="te">మీ పుస్తకాన్ని డౌన్లోడ్ సమస్య ఉంది</target>
+      </trans-unit>
+      <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
+        <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
+        <target xml:lang="te">మీరు పుస్తకం గురించి మరింత సమాచారం ఉంచాలి ఎక్కడో అవసరం ఉంటే, మీరు ఈ పేజీని ఉపయోగించవచ్చు,,ఇది తిరిగి కవర్ లోపలి ఉంది</target>
+      </trans-unit>
+      <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true">
+        <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</source>
+        <target xml:lang="te">మీరు పుస్తకం గురించి మరింత సమాచారం ఉంచాలి somwhere అవసరం ఉంటే, మీరు ఈ పేజీని ఉపయోగించవచ్చుతిరిగి కవర్ బయట ఇది</target>
+      </trans-unit>
+      <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
+        <source xml:lang="en">Open the Html used to make this PDF, in Firefox (must be on path)</source>
+        <target xml:lang="te">క్షమించండి, ఈ పుస్తకం కాపీరైట్ మరియు లైసెన్స్ మారలేదు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CannotChangeCopyright">
+        <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
+        <target xml:lang="te">చిత్రాలు మారలేదు కాబట్టి క్షమించాలి, ఈ పుస్తకం డౌన్ లాక్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CantPasteImageLocked">
+        <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
+        <target xml:lang="te">ఈ పేజీ శాశ్వతంగా తొలగించబడుతుంది</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
+        <source xml:lang="en">Really Delete Page?</source>
+        <target xml:lang="te">నిజంగా పేజీ తొలగించండి?</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton">
+        <source xml:lang="en">&amp;Delete</source>
+        <target xml:lang="te">తొలగించండి</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
+        <source xml:lang="en">This page will be permanently removed.</source>
+        <target xml:lang="te">ఈ పేజీ శాశ్వతంగా తొలగించబడుతుంది</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Edit">
+        <source xml:lang="en">Edit</source>
+        <target xml:lang="te">మార్చు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FontMissing">
+        <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
+        <target xml:lang="te">ప్రస్తుత ఎంపిక ఫాంట్ '{0}' ఉంది, కానీ అది ఈ కంప్యూటర్లో ఇన్స్టాల్ కాలేదు. కొన్ని ఇతర font ఉపయోగించబడుతుంది.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true">
+        <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
+        <target xml:lang="te">మీరు ఒక అసలు పుస్తకం తయారు చేసినప్పుడు, మొదలైనవి రచయితలు, చిత్రకారులు, సంపాదకులు, చేసిన రచనలు రికార్డ్ చేయడానికి ఈ పెట్టెను ఉపయోగించండి,</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true">
+        <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
+        <target xml:lang="te">మీరు ఒక షెల్ నుండి ఒక పుస్తకం తయారు చేసినప్పుడు, అనువాద చేసింది ఎవరు చెప్పడానికి ఈ పెట్టెను ఉపయోగించండి.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
+        <source xml:lang="en">Book title in {lang}</source>
+        <target xml:lang="te">భాషలో పుస్తకం శీర్షిక</target>
+        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
+        <source xml:lang="en">Click to Edit Copyright &amp; License</source>
+        <target xml:lang="te">కాపీరైట్ &amp; లైసెన్స్ సవరించడానికి క్లిక్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
+        <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
+        <target xml:lang="te">ఏ ఫండింగ్ ఏజెన్సీలు గుర్తించి ఈ ఉపయోగించడానికి</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true">
+        <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
+        <target xml:lang="te">అంతర్జాతీయ ప్రామాణిక పుస్తకం సంఖ్య. మీరు ఈ ఒక లేదు లేకపోతే వదిలివేయండి.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
+        <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
+        <target xml:lang="te">ఒరిజినల్ (లేదా shell) {భాషను} లో రసీదులు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true">
+        <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
+        <target xml:lang="te">{భాషను}, మొదలైనవి రచయితలు, చిత్రకారులు, సంపాదకులు, చేసిన రచనలు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true">
+        <source xml:lang="en">Click to choose topic</source>
+        <target xml:lang="te">విషయం ఎంచుకోవడానికి క్లిక్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
+        <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
+        <target xml:lang="te">అనువాదం వెర్షన్ (భాష) కోసం అందినట్లు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
+        <source xml:lang="en">Change Image</source>
+        <target xml:lang="te">మార్పు చిత్రం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
+        <source xml:lang="en">Edit Image Credits, Copyright, &amp; License</source>
+        <target xml:lang="te">మార్చు చిత్రం క్రెడిట్స్ కాపీరైట్ &amp; లైసెన్సు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
+        <source xml:lang="en">Paste Image</source>
+        <target xml:lang="te">పేస్ట్ చిత్రం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutMode.ChangeLayout" sil:dynamic="true">
+        <source xml:lang="en">Change Layout</source>
+        <target xml:lang="te">లేఅవుట్ను మార్చడం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.NoImageFoundOnClipboard">
+        <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
+        <target xml:lang="te">మీరు చిత్రం పేస్ట్ ముందు, మరొక కార్యక్రమం నుండి మీ 'క్లిప్బోర్డ్కు' పై ఒక కాపీ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.Heading">
+        <source xml:lang="en">Pages</source>
+        <target xml:lang="te">పేజీలు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip">
+        <source xml:lang="en">Choose a page size and orientation</source>
+        <target xml:lang="te">ఒక పేజీ పరిమాణం మరియు దిశను ఎంపిక</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the border and background</source>
+        <target xml:lang="te">సరిహద్దు మరియు నేపథ్య మార్చడానికి</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font face</source>
+        <target xml:lang="te">ఫాంట్ ముఖం మార్చండి</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
+        <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
+        <target xml:lang="te">శైలి '{0}' మరియు భాష '{1}'. \ N ప్రస్తుత పరిమాణం {2} pt మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మార్పులు.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the font size</source>
+        <target xml:lang="te">ఫాంట్ పరిమాణాన్ని మార్చు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between lines of text</source>
+        <target xml:lang="te">టెక్స్ట్ యొక్క పంక్తులు మధ్య ఖాళీలో మార్పులు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
+        <source xml:lang="en">Extra Wide</source>
+        <target xml:lang="te">విస్తృత అదనపు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+        <target xml:lang="te">సాధారణ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
+        <source xml:lang="en">Change the spacing between words</source>
+        <target xml:lang="te">పదాల మధ్య ఖాళీలో మార్పులు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true">
+        <source xml:lang="en">Wide</source>
+        <target xml:lang="te">వైడ్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true">
+        <source xml:lang="en">Adjust formatting for style</source>
+        <target xml:lang="te">శైలి ఫార్మాటింగ్ సర్దుబాటు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.TemplatePagesList.Heading">
+        <source xml:lang="en">Template Pages</source>
+        <target xml:lang="te">టెంప్లేట్ పేజీలు</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
+        <source xml:lang="en">1</source>
+        <target xml:lang="te">1</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.2" sil:dynamic="true">
+        <source xml:lang="en">2</source>
+        <target xml:lang="te">2</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.3" sil:dynamic="true">
+        <source xml:lang="en">3</source>
+        <target xml:lang="te">3</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true">
+        <source xml:lang="en">4</source>
+        <target xml:lang="te">4</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.5" sil:dynamic="true">
+        <source xml:lang="en">5</source>
+        <target xml:lang="te">5</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true">
+        <source xml:lang="en">6</source>
+        <target xml:lang="te">6</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.7" sil:dynamic="true">
+        <source xml:lang="en">7</source>
+        <target xml:lang="te">7</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.8" sil:dynamic="true">
+        <source xml:lang="en">8</source>
+        <target xml:lang="te">8</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.9" sil:dynamic="true">
+        <source xml:lang="en">9</source>
+        <target xml:lang="te">9</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true">
+        <source xml:lang="en">Alphabet</source>
+        <target xml:lang="te">అక్షరమాల</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Image</source>
+        <target xml:lang="te">ప్రాథమిక పాఠం &amp; చిత్రం</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Picture</source>
+        <target xml:lang="te">ప్రాథమిక పాఠం &amp; చిత్రాన్ని</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
+        <source xml:lang="en">Credits Page</source>
+        <target xml:lang="te">క్రెడిట్స్ పేజీ</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="te">కస్టమ్</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true">
+        <source xml:lang="en">Day 1</source>
+        <target xml:lang="te">రోజు 1</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 2" sil:dynamic="true">
+        <source xml:lang="en">Day 2</source>
+        <target xml:lang="te">రోజు 2</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 3" sil:dynamic="true">
+        <source xml:lang="en">Day 3</source>
+        <target xml:lang="te">రోజు 3</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 4" sil:dynamic="true">
+        <source xml:lang="en">Day 4</source>
+        <target xml:lang="te">రోజు 4</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true">
+        <source xml:lang="en">Day 5a</source>
+        <target xml:lang="te">రోజు 5a</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Day 5b" sil:dynamic="true">
+        <source xml:lang="en">Day 5b</source>
+        <target xml:lang="te">రోజు 5b</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Front Cover</source>
+        <target xml:lang="te">ముందు కవర్</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
+        <source xml:lang="en">Image On Bottom</source>
+        <target xml:lang="te">అడుగున చిత్రం</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">Image in Middle</source>
+        <target xml:lang="te">మధ్యలో చిత్రం</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Back Cover</source>
+        <target xml:lang="te">తిరిగి కవర్ లోపల</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Front Cover</source>
+        <target xml:lang="te">ముందు కవర్ లోపల</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true">
+        <source xml:lang="en">Instructions</source>
+        <target xml:lang="te">సూచనలను</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true">
+        <source xml:lang="en">Just Text</source>
+        <target xml:lang="te">కేవలం టెక్స్ట్</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true">
+        <source xml:lang="en">Just a Picture</source>
+        <target xml:lang="te">కేవలం ఒక చిత్రాన్ని</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
+        <source xml:lang="en">Just an Image</source>
+        <target xml:lang="te">కేవలం ఒక చిత్రం</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Outside Back Cover</source>
+        <target xml:lang="te">తిరిగి కవర్ బయట</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true">
+        <source xml:lang="en">Picture &amp; Word</source>
+        <target xml:lang="te">చిత్రాన్ని &amp; పదం</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
+        <source xml:lang="en">Picture on Bottom</source>
+        <target xml:lang="te">అడుగున చిత్రాన్ని</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
+        <source xml:lang="en">Picture in Middle</source>
+        <target xml:lang="te">మధ్యలో చిత్రంలో</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true">
+        <source xml:lang="en">This Page Is Intentionally Blank</source>
+        <target xml:lang="te">ఈ పేజీని ఉద్దేశపూర్వకంగా ఖాళీగా ఉంది</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
+        <source xml:lang="en">Title Page</source>
+        <target xml:lang="te">టైటిల్ పేజీ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.ContentLanguagesDropdown">
+        <source xml:lang="en">Multilingual Settings</source>
+        <target xml:lang="te">బహుభాషా సెట్టింగులు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyButton">
+        <source xml:lang="en">Copy</source>
+        <target xml:lang="te">ప్రతిని</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton">
+        <source xml:lang="en">Cut</source>
+        <target xml:lang="te">కట్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton.ToolTip">
+        <source xml:lang="en">Cut (Ctrl-x)</source>
+        <target xml:lang="te">కట్ (Ctrl + x)</target>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton.ToolTipWhenDisabled">
+        <source xml:lang="en">You need to select some text before you can cut it</source>
+        <target xml:lang="te">మీరు కట్ ముందు మీరు కొంత టెక్స్ట్ ఎంచుకోండి అవసరం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton">
+        <source xml:lang="en">Remove\n  Page</source>
+        <target xml:lang="te">తొలగించడానికి \n పేజీ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton.ToolTip">
+        <source xml:lang="en">Remove this page from the book</source>
+        <target xml:lang="te">పుస్తకం నుండి ఈ పేజీని తొలగించండి</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton.ToolTipWhenDisabled">
+        <source xml:lang="en">This page cannot be removed</source>
+        <target xml:lang="te">ఈ పేజీ తొలగించడం సాధ్యం కాదు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton">
+        <source xml:lang="en">Duplicate\n   Page</source>
+        <target xml:lang="te">నకిలీ \n పేజీ</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton.ToolTip">
+        <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
+        <target xml:lang="te">ఈ ఒక నకిలీ ఉంది దీనిలో ఒక కొత్త పేజీ ఇన్సర్ట్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
+        <source xml:lang="en">This page cannot be duplicated</source>
+        <target xml:lang="te">ఈ పేజీకి నకలు ఉండకూడదు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton">
+        <source xml:lang="en">Paste</source>
+        <target xml:lang="te">పేస్ట్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton.ToolTip">
+        <source xml:lang="en">Paste (Ctrl+v)</source>
+        <target xml:lang="te">అతికించండి (Ctrl + z)</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton.ToolTipWhenDisabled">
+        <source xml:lang="en">There is nothing on the Clipboard that you can paste here.</source>
+        <target xml:lang="te">మీరు ఇక్కడ అతికించండి క్లిప్బోర్డ్కు న ఏమీ లేదు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton">
+        <source xml:lang="en">Undo</source>
+        <target xml:lang="te">దిద్దుబాటు రద్దుచెయ్యి</target>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton.ToolTip">
+        <source xml:lang="en">Undo (Ctrl+z)</source>
+        <target xml:lang="te">నాశనము చేసినది (Ctrl+z)</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Bilingual">
+        <source xml:lang="en">Two Languages</source>
+        <target xml:lang="te">రెండు భాషలు</target>
+        <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyImageIPMetadataQuestion">
+        <source xml:lang="en">Copy this information to all other pictures in this book?</source>
+        <target xml:lang="te">ఈ పుస్తకం లో అన్ని ఇతర చిత్రాలు ఈ సమాచారాన్ని కాపీ?</target>
+        <note>get this after you edit the metadata of an image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutInPublishTabOnlyNotice">
+        <source xml:lang="en">This option is only available in the Publish tab.</source>
+        <target xml:lang="te">ఈ ఐచ్చికము మాత్రమే ప్రచురించవచ్చు టాబ్ లో ఉంది.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Monolingual">
+        <source xml:lang="en">One Language</source>
+        <target xml:lang="te">ఒకే భాష</target>
+        <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.NoOtherLayouts">
+        <source xml:lang="en">There are no other layout options for this template.</source>
+        <target xml:lang="te">ఈ టెంప్లేట్ కోసం ఏ ఇతర లేఅవుట్ ఎంపికలు ఉన్నాయి</target>
+        <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog">
+        <source xml:lang="en">Picture Intellectual Property Information</source>
+        <target xml:lang="te">మేధో ఆస్తి సమాచారం చిత్రం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Trilingual">
+        <source xml:lang="en">Three Languages</source>
+        <target xml:lang="te">మూడు భాషా</target>
+        <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
+        <source xml:lang="en">Building Reader Templates</source>
+        <target xml:lang="te">భవనం రీడర్ టెంప్లేట్లు</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.Help Menu">
+        <source xml:lang="en">Help</source>
+        <target xml:lang="te">సహాయం</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
+        <source xml:lang="en">Using Reader Templates </source>
+        <target xml:lang="te">రీడర్ టెంప్లేట్ ఉపయోగించి</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
+        <source xml:lang="en">Make a Suggestion</source>
+        <target xml:lang="te">ఒక సలహా</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.WebSiteMenuItem">
+        <source xml:lang="en">Web Site</source>
+        <target xml:lang="te">వెబ్ సైట్</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CheckForNewVersionMenuItem">
+        <source xml:lang="en">Check For New Version</source>
+        <target xml:lang="te">కొత్త వెర్షన్ను తనిఖీ</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CreditsMenuItem">
+        <source xml:lang="en">About Bloom</source>
+        <target xml:lang="te">వర్ధిల్లు గురించి</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.DocumentationMenuItem">
+        <source xml:lang="en">Documentation</source>
+        <target xml:lang="te">డాక్యుమెంటేషన్</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.RegistrationMenuItem">
+        <source xml:lang="en">Registration</source>
+        <target xml:lang="te">నమోదు</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ReleaseNotesMenuItem">
+        <source xml:lang="en">Release Notes...</source>
+        <target xml:lang="te">విడుదల గమనికలు</target>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ShowEventLogMenuItem">
+        <source xml:lang="en">Show Event Log</source>
+        <target xml:lang="te">షో ఈవెంట్ లాగ్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
+        <source xml:lang="en">InDesign XML Information</source>
+        <target xml:lang="te">InDesign XML సమాచారం</target>
+        <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
+        <source xml:lang="en">Don't Show This Again</source>
+        <target xml:lang="te">మళ్ళీ ఈ చూపవద్దు</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape</source>
+        <target xml:lang="te">A4ప్రకృతి దృశ్యం</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape SideBySide</source>
+        <target xml:lang="te">A4ఇరువర్గాలు భూభాగం వైపు</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
+        <source xml:lang="en">A4Landscape SplitAcrossPages</source>
+        <target xml:lang="te">A4పేజీలు అంతటా భూభాగం స్ప్లిట్</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
+        <source xml:lang="en">A4Portrait</source>
+        <target xml:lang="te">A4చిత్తరువు</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true">
+        <source xml:lang="en">A5Landscape</source>
+        <target xml:lang="te">A5 భూభాగం</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true">
+        <source xml:lang="en">A5Portrait</source>
+        <target xml:lang="te">A5చిత్తరువు</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.A5Portrait BottomAlign" sil:dynamic="true">
+        <source xml:lang="en">A5Portrait BottomAlign</source>
+        <target xml:lang="te">A5చిత్తరువు క్రిందికి సమలేఖనం</target>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
+        <source xml:lang="en">B5Portrait</source>
+        <target xml:lang="te">B5చిత్తరువు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
+        <source xml:lang="en">Actual</source>
+        <target xml:lang="te">అసలు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true">
+        <source xml:lang="en">Choice of Topic</source>
+        <target xml:lang="te">విషయం యొక్క ఎంపిక</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true">
+        <source xml:lang="en">For this Level</source>
+        <target xml:lang="te">ఈ స్థాయి కోసం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
+        <source xml:lang="en">Formatting</source>
+        <target xml:lang="te">ఫార్మాటింగ్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true">
+        <source xml:lang="en">Illustration support</source>
+        <target xml:lang="te">ఇలస్ట్రేషన్ మద్దతు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep in mind</source>
+        <target xml:lang="te">గుర్తుంచుకోండి</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="te">స్థాయి</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
+        <source xml:lang="en"> of </source>
+        <target xml:lang="te">ఆఫ్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
+        <source xml:lang="en">Max</source>
+        <target xml:lang="te">మాక్స్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
+        <source xml:lang="en">per page</source>
+        <target xml:lang="te">పేజీకి</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
+        <source xml:lang="en">longest sentence</source>
+        <target xml:lang="te">వాక్యం పెర్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
+        <source xml:lang="en">Predictability</source>
+        <target xml:lang="te">అంచనాను</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true">
+        <source xml:lang="en">Set up Levels</source>
+        <target xml:lang="te">అప్ సెట్ స్థాయిలు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true">
+        <source xml:lang="en">This Book</source>
+        <target xml:lang="te">ఈ బుక్</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">This Page</source>
+        <target xml:lang="te">ఈ పేజీని</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
+        <source xml:lang="en">total</source>
+        <target xml:lang="te">మొత్తం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
+        <source xml:lang="en">unique</source>
+        <target xml:lang="te">ప్రత్యేక</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true">
+        <source xml:lang="en">Vocabulary</source>
+        <target xml:lang="te">పదజాలం</target>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
+        <source xml:lang="en">Word Counts</source>
+        <target xml:lang="te">పద కౌంట్స్</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.AgreeToTerms">
+        <source xml:lang="en">I agree to the Bloom Library's Terms of Use</source>
+        <target xml:lang="te">నేను వికసించిన లైబ్రరీ యొక్క నిబంధనలను అంగీకరిస్తున్నారు</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.Email">
+        <source xml:lang="en">Email Address</source>
+        <target xml:lang="te">ఇమెయిల్ చిరునామా</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ForgotPassword">
+        <source xml:lang="en">Forgot Password</source>
+        <target xml:lang="te">పాస్వర్డ్ మరచిపోయాను</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.LoginButton">
+        <source xml:lang="en">&amp;Login</source>
+        <target xml:lang="te">&amp;లాగిన్</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.Password">
+        <source xml:lang="en">Password</source>
+        <target xml:lang="te">పాస్వర్డ్</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ShowTerms">
+        <source xml:lang="en">Show Terms of Use</source>
+        <target xml:lang="te">ఉపయోగం షో నిబంధనలు</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.WindowTitle">
+        <source xml:lang="en">Log in to BloomLibrary.org</source>
+        <target xml:lang="te">bloomlibrary.org లాగిన్</target>
+      </trans-unit>
+      <trans-unit id="LoginDialog.ShowPassword">
+        <source xml:lang="en">&amp;Show Password</source>
+        <target xml:lang="te">షో పాస్వర్డ్ను</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
+        <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
+        <target xml:lang="te">ఆ పేరు తో ఒక సేకరణ ఇప్పటికే ఉంది, at &lt;a href='file;//{0}'&gt;{0}&lt;/a&gt;.\n Please pick a unique name.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
+        <source xml:lang="en">Choose the Main Language For This Collection</source>
+        <target xml:lang="te">ఈ సేకరణ ప్రధాన భాషను ఎంచుకోండి</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
+        <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
+        <target xml:lang="te">ఉదాహరణలు: "ఆరోగ్య పుస్తకాలు". "PNG జంతువుల కథలను"</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+        <source xml:lang="en">What would you like to call this collection?</source>
+        <target xml:lang="te">మీరు ఈ సేకరణ కాల్ ఏమి చేయాలనుకుంటున్నారు?</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionNameProblem">
+        <source xml:lang="en">Collection Name Problem</source>
+        <target xml:lang="te">సేకరణ పేరును సమస్య</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt">
+        <source xml:lang="en">Collection will be created at: {0}</source>
+        <target xml:lang="te">సేకరణ రూపొందించినవారు ఉంటుంది {0}</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.FinishPage">
+        <source xml:lang="en">Ready To Create New Collection</source>
+        <target xml:lang="te">ఒక కొత్త సేకరణ సృష్టించడానికి సిద్ధంగా</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
+        <source xml:lang="en">Choose the Collection Type</source>
+        <target xml:lang="te">సేకరణ రకం ఎంచుకోండి</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="te">మూలం సేకరణ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</source>
+        <target xml:lang="te">విస్తృత కమ్యూనికేషన్ ఒకటి లేదా ఎక్కువ భాషలలో షెల్ లేదా టెంప్లేట్ పుస్తకాల సేకరణ. మీరు BloomLibrary.org ఈ గుండ్లు అప్లోడ్ మరియు వైకల్పికంగా వారు మీ పెంకులు తో వ్యావహారికంలో పుస్తకాలు చేయవచ్చు తద్వారా ఇతరులకు ఇవ్వాలని ఒక BloomPack తయారు చేయగలరు.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+        <source xml:lang="en">Vernacular/Local Language Collection</source>
+        <target xml:lang="te">వ్యావహారికంలో / స్థానిక భాష సేకరణ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+        <source xml:lang="en">A collection of books in a local language.</source>
+        <target xml:lang="te">స్థానిక భాషలో పుస్తకాల సేకరణ</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage">
+        <source xml:lang="en">Give Language Location</source>
+        <target xml:lang="te">భాష నగర ఇస్తుంది</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="te">దేశం</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="te">జిల్లా</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+        <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
+        <target xml:lang="te">ఈ వైకల్పికం. బ్లూమ్ మీరు సృష్టించడానికి పుస్తకాల టైటిల్ పేజీలో కుడి ప్రదేశాల్లో వాటిని ఉంచండి</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="te">రాష్ట్రభాగము</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.NewBookPattern">
+        <source xml:lang="en">{0} Books</source>
+        <target xml:lang="te">{0}పుస్తకాలు</target>
+        <note>The {0} is replaced by the name of the language.</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.NewCollectionWindowTitle">
+        <source xml:lang="en">Create New Bloom Collection</source>
+        <target xml:lang="te">కొత్త వికసించిన సేకరణ సృష్టించడానికి</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ProjectName">
+        <source xml:lang="en">Project Name</source>
+        <target xml:lang="te">ప్రాజెక్ట్ పేరు</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+        <source xml:lang="en">Unable to create a new collection using that name.</source>
+        <target xml:lang="te">పేర్లు ఉపయోగించి ఒక కొత్త సేకరణ సృష్టించడానికి చేయలేక</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage">
+        <source xml:lang="en">Welcome To Bloom!</source>
+        <target xml:lang="te">బ్లూమ్ కు స్వాగతం</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1">
+        <source xml:lang="en">You are almost ready to start making books.</source>
+        <target xml:lang="te">మీరు పుస్తకాలు మేకింగ్ ప్రారంభించడానికి దాదాపు సిద్ధంగా ఉన్నాయి</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
+        <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. So the first thing we need to do is make one for you.</source>
+        <target xml:lang="te">సాధారణ మరియు వ్యవస్థీకృత విషయాలను చేయడానికి.బ్లూమ్ మీరు ఒకటి లేదా ఎక్కువ చేసే అన్ని పుస్తకాలు ఉంచుతుంది &lt;i&gt; సేకరణలు &lt;/ i&gt;కాబట్టి మేము చెయ్యాల్సిన మొదటి విషయం మీరు ఒక చేయడానికి ఉంది.</target>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
+        <source xml:lang="en">Click 'Next' to get started.</source>
+        <target xml:lang="te">'తదుపరి' క్లిక్ ప్రారంభించడానికి</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.Bloom Collections">
+        <source xml:lang="en">Bloom Collections</source>
+        <target xml:lang="te">బ్లూమ్ సేకరణలు</target>
+        <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
+        <source xml:lang="en">Browse for another collection on this computer</source>
+        <target xml:lang="te">ఈ కంప్యూటర్లో ఏ ఇతర సేకరణలు బ్రౌజ్</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
+        <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
+        <target xml:lang="te">లోకల్ నెట్వర్క్లో chors స్థావరంలో కాపీ</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromInternet">
+        <source xml:lang="en">Copy from Internet</source>
+        <target xml:lang="te">ఇంటర్నెట్ నుండి కాపీ</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
+        <source xml:lang="en">Copy from USB Drive</source>
+        <target xml:lang="te">USB డ్రైవ్ నుండి కాపీ</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection">
+        <source xml:lang="en">Create New Collection</source>
+        <target xml:lang="te">కొత్త సేకరణ సృష్టించడానికి</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
+        <source xml:lang="en">Open/Create Collections</source>
+        <target xml:lang="te">ఓపెన్ / సృష్టించడానికి సేకరణలు</target>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink">
+        <source xml:lang="en">Read More</source>
+        <target xml:lang="te">మరింత చదవండి</target>
+        <note>This opens the Chorus Help to learn more about send/receive.</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
+        <source xml:lang="en">Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</source>
+        <target xml:lang="te">ఎవరైనా else మీరు ఒక సేకరణ భాగస్వామ్యం పంపు / recieve ఉపయోగించింది?\n మీ కంప్యూటర్లో వారి సేకరణకు కాపీ ఈ ఎరుపు బటన్లు ఒకటి ఉపయోగించండి.\n తరువాత, వారితో తిరిగి మీ పని భాగస్వామ్యం స్వీకరించండి / పంపండి ఉపయోగించండి.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
+        <source xml:lang="en">Replace Existing</source>
+        <target xml:lang="te">ఇప్పటికే భర్తీ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
+        <source xml:lang="en">Notice</source>
+        <target xml:lang="te">నోటీసు</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.CantMoveXMatter">
+        <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are</source>
+        <target xml:lang="te">ఆ మార్పు అనుమతి లేదు. వారు ఎక్కడ ఫ్రంట్ పదార్థం మరియు తిరిగి మేటర్ పేజీలు కొనసాగించాలి.</target>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.CantMoveXMatterCaption">
+        <source xml:lang="en">Invalid Move</source>
+        <target xml:lang="te">చెల్లని తరలింపు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
+        <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
+        <target xml:lang="te">బ్లూమ్ మీ పూర్తి పుస్తకం చూపవచ్చు కనుక Adobe Reader ని వ్యవస్థాపించాలా దయచేసి. అప్పటి వరకు, మీరు ఇప్పటికీ PDF పుస్తకం సేవ్ చేయవచ్చు మరియు కొన్ని ఇతర ప్రోగ్రామ్ లో తెరవండి.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+        <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
+        <target xml:lang="te">ఆ వింత ఉంది. ఆ PDF చూపించడానికి ప్రయత్నించే సమయంలో .. అడోబ్ రీడర్ ఒక లోపం ఇచ్చింది. మీరు ఇప్పటికీ PDF పుస్తకం పొదుపు ప్రయత్నించవచ్చు.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
+        <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
+        <target xml:lang="te">విచారంగా వార్తలు. బ్లూమ్, ఇక్కడ చూపడానికి అడోబ్ రీడర్ పొందలేకపోతున్నాము ఉందికాబట్టి బ్లూమ్ మీ పూర్తి పుస్తకం చూపించదు. \ n'అడోబ్ రీడర్' మీ ఇప్పటికే ఉన్న వెర్షన్ను అన్ఇన్స్టాల్ మరియు 'అడోబ్ రీడర్' మళ్ళీ ఇన్స్టాల్ చెయ్యండి. \n మీరు స్థిర వచ్చేవరకు, మీరు ఇప్పటికీ PDF పుస్తకం సేవ్ మరియు కొన్ని ఇతర ప్రోగ్రామ్ లో ఓపెన్ చేయవచ్చు.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.BodyOnlyRadio">
+        <source xml:lang="en">Booklet Insides</source>
+        <target xml:lang="te">బుక్లెట్ insides</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
+        <target xml:lang="te">పుస్తకం లోపల పేజీల నుండి ఒక బుక్లెట్ తయారు. పేజీలు నిర్మించబడ్డాయి మరియు మీరు అది భాగాల్లో ఉన్నప్పుడు, మీరు ఒక బుక్లెట్ ఉంటుంది కాబట్టి స్పందించవచ్చు చేయబడుతుంది. \ n</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
+        <source xml:lang="en">Upload</source>
+        <target xml:lang="te">అప్లోడ్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
+        <target xml:lang="te">బ్లూమ్ లైబ్రరీ అప్లోడ్. ఇతరులు డౌన్లోడ్ మరియు వారి సొంత భాషలోకి స్థానీకరణ ఇక్కడ ఆర్గ్,</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.CoverOnlyRadio">
+        <source xml:lang="en">Booklet Cover</source>
+        <target xml:lang="te">బుక్లెట్ కవర్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
+        <target xml:lang="te">కేవలం ముందు మరియు వెనుక (రెండు వైపులా) ఒక PDF చేయడానికి, కాబట్టి మీరు రంగు కాగితం మీద ముద్రించవచ్చు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OnePagePerPaperRadio">
+        <source xml:lang="en">Simple</source>
+        <target xml:lang="te">సాధారణ</target>
+        <note>Instead of making a booklet, just make normal pages</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
+        <target xml:lang="te">పుస్తకం ప్రతి పేజీ ఒక PDF కాగితం ముక్క చొప్పున ఒక పేజీ తయారు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
+        <source xml:lang="en">Open the PDF in the default system pdf viewer</source>
+        <target xml:lang="te">డిఫాల్ట్ వ్యవస్థ PDF వ్యూయర్ PDF తెరువు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PrintButton">
+        <source xml:lang="en">&amp;Print...</source>
+        <target xml:lang="te">&amp;ముద్రణ</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Publish">
+        <source xml:lang="en">Publish</source>
+        <target xml:lang="te">ప్రచురిస్తున్నాను</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.SaveButton">
+        <source xml:lang="en">&amp;Save PDF...</source>
+        <target xml:lang="te">&amp;సేవ్ PDF</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.ShowCropMarks">
+        <source xml:lang="en">Crop Marks</source>
+        <target xml:lang="te">పంట మార్కులు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Acknowledgments">
+        <source xml:lang="en">Acknowledgments</source>
+        <target xml:lang="te">ముందరి</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AdditionalRequests">
+        <source xml:lang="en">AdditionalRequests: </source>
+        <target xml:lang="te">అదనపు విన్నపాలు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AllReserved">
+        <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
+        <target xml:lang="te">అన్ని హక్కులు రిజర్వు  (ఏ అనుమతులు కోసం కాపీ కుడి హోల్డర్ సంప్రదించండి)</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
+        <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
+        <target xml:lang="te">బ్లూమ్ library.org alrady మీరు ఈ పుస్తకం ఒక మునుపటి వెర్షన్ ఉంది. మీరు మళ్ళీ దాన్ని అప్లోడ్ చేస్తే, అది మీ ప్రస్తుత వెర్షన్ తో భర్తీ చేయనున్నారు.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Copyright">
+        <source xml:lang="en">Copyright</source>
+        <target xml:lang="te">కాపీరైట్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Credits">
+        <source xml:lang="en">credits</source>
+        <target xml:lang="te">క్రెడిట్స్</target>
+      </trans-unit>
+      <trans-unit id="Download.ProblemNotice">
+        <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
+        <target xml:lang="te">మీ పుస్తకం డౌన్లోడ్ చేస్తున్నప్పుడు సమస్య సంభవించింది. మీరు వికసించిన పునఃప్రారంభించుము లేదా సాంకేతిక సహాయాన్ని పొందడానికి అవసరం కావచ్చు.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ErrorUploading">
+        <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
+        <target xml:lang="te">క్షమించండి, సమస్య అప్లోడ్ ఉంది {0}, కొన్ని వివరాలు అనుసరించండి. మీరు సాంకేతిక సహాయం అవసరం కావచ్చు.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
+        <source xml:lang="en">One or more fields above need your attention before uploading</source>
+        <target xml:lang="te">ఒకటి లేదా ఎక్కువ ఖాళీలను పైన అప్లోడ్ ముందు మీ శ్రద్ధ అవసరం</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
+        <source xml:lang="en">Sorry, "{0}" was not successfully uploaded</source>
+        <target xml:lang="te">క్షమించండి, {0} విజయవంతంగా అప్లోడ్ చేయలేదు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Gaurantee">
+        <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</source>
+        <target xml:lang="te">అప్ లోడ్ చేసి ఉపయోగ బ్లూమ్ లైబ్రరీ పదాలతో మీ అంగీకారాన్ని నిర్ధారించండి మరియు వివరిస్తుంది హక్కులను మంజూరు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
+        <source xml:lang="en">There was a problem uploading your book.</source>
+        <target xml:lang="te">మీ పుస్తకం అప్లోడ్ సమస్య ఉంది</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Languages">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="te">భాషలు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.License">
+        <source xml:lang="en">Usage/License</source>
+        <target xml:lang="te">వాడుక / లైసెన్స్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists">
+        <source xml:lang="en">Account Already Exists</source>
+        <target xml:lang="te">ఖాతా ఇప్పటికే ఉనికిలో</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
+        <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</source>
+        <target xml:lang="te">మేము ఇప్పటికే ఆ చిరునామాతో ఒక ఖాతాను కలిగి ఎందుకంటే మేము, ఆ చిరునామాతో మీరు సైన్ అప్ చేయలేరు. మీరు బదులుగా లాగిన్ అనుకుంటున్నారా?</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed">
+        <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
+        <target xml:lang="te">బ్లూమ్ మీ లాగిన్ ధ్రువీకరించడం సర్వర్కు కనెక్ట్ చేయడం సాధ్యం కాలేదు. మీ నెట్వర్క్ కనెక్షన్ను తనిఖీ చేయండి.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginFailed">
+        <source xml:lang="en">Login failed</source>
+        <target xml:lang="te">లాగిన్ విఫలమైంది</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+        <source xml:lang="en">Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</source>
+        <target xml:lang="te">బ్లూమ్ మీ లాగిన్ ధ్రువీకరించడం లేదా సైన్ అప్ సర్వర్కు కనెక్ట్ చేయడం సాధ్యం కాలేదు. మీ ఇంటర్నెట్ కనెక్షన్, మా సర్వర్, లేదా మధ్య కొన్ని పరికరాలు ఒక సమస్య కావచ్చు.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.MustAgreeTerms">
+        <source xml:lang="en">In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</source>
+        <target xml:lang="te">ఒక బ్లూమ్ library.org ఖాతా కోసం సైన్ అప్ చేయడానికి, మీరు ఉపయోగించవచ్చు బ్లూమ్స్ లైబ్రరీ పరంగా ఓ అంగీకరిస్తున్నారు సూచిస్తూ బాక్స్ తనిఖీ చెయ్యాలి.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.Need Email">
+        <source xml:lang="en">Email Needed</source>
+        <target xml:lang="te">ఇమెయిల్ అవసరమైన</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser">
+        <source xml:lang="en">We don't have a user on record with that email. Would you like to sign up?</source>
+        <target xml:lang="te">మేము ఇమెయిల్ తో రికార్డు యూజర్ కలిగి లేదు. మీరు సైన్ అప్ అనుకుంటున్నారా?</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PasswordMismatch">
+        <source xml:lang="en">Password and user ID did not match</source>
+        <target xml:lang="te">పాస్వర్డ్ మరియు యూజర్ ID సరిపోలడం లేదు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms">
+        <source xml:lang="en">Please agree to terms of use</source>
+        <target xml:lang="te">ఉపయోగాలు నిబంధనలకు అంగీకరించకుంటే దయచేసి</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail">
+        <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
+        <target xml:lang="te">ఒక చెల్లుబాటు అయ్యే ఇమెయిల్ చిరునామా ఎంటర్ చెయ్యండి. మీరు మీ పాస్వర్డ్ను రీసెట్ చేయవచ్చు కాబట్టి మేము ఈ చిరునామాకు ఒక ఇమెయిల్ పంపుతుంది.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetConnectFailed">
+        <source xml:lang="en">Bloom could not connect to the server to reset your password. Please check your network connection.</source>
+        <target xml:lang="te">బ్లూమ్ మీ పాస్వర్డ్ను రీసెట్ సర్వర్కు కనెక్ట్ చేయడం సాధ్యం కాలేదు. మీ నెట్వర్క్ కనెక్షన్ను తనిఖీ చెయ్యండి.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetFailed">
+        <source xml:lang="en">Reset Password failed</source>
+        <target xml:lang="te">పాస్వర్డ్ రీసెట్ విఫలమైంది</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.ResetPassword">
+        <source xml:lang="en">Resetting Password</source>
+        <target xml:lang="te">రీసెట్ పాస్వర్డ్ను</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.SendingResetPassword">
+        <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password</source>
+        <target xml:lang="te">మేము మీ పాస్వర్డ్ను రీసెట్ చేయడానికి ఎలా సూచనలతో {0} కు ఒక ఇమెయిల్ పంపుతున్నారు.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.Signup">
+        <source xml:lang="en">Sign up for Bloom Library.</source>
+        <target xml:lang="te">బ్లూమ్ లైబ్రరీ కోసం సైన్ అప్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.UnknownUser">
+        <source xml:lang="en">Unknown user</source>
+        <target xml:lang="te">తెలియని వినియోగదారు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.LoginFailure">
+        <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
+        <target xml:lang="te">బ్లూమ్ మీ సేవ్ ఆధారాలను ఉపయోగించి బ్లూమ్ లైబ్రరీ .org లోకి లాగిన్ కాలేదు. మీ నెట్వర్క్ కనెక్షన్ను తనిఖీ చెయ్యండి.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Logout">
+        <source xml:lang="en">Log out of BloomLibrary.org</source>
+        <target xml:lang="te">BLOOMLibrary నుండి లాగ్ అవుట్. ఆర్గ్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.MakingPdf">
+        <source xml:lang="en">Making PDF Preview...</source>
+        <target xml:lang="te">PDF సమీక్ష మేకింగ్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.MakingThumbnail">
+        <source xml:lang="en">Making thumbnail image...</source>
+        <target xml:lang="te">సూక్ష్మచిత్రం చిత్రం మేకింగ్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.OldVersion">
+        <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
+        <target xml:lang="te">క్షమించండి, బ్లూమ్ డెస్క్టాప్ యొక్క ఈ వెర్షన్ బ్లూమ్ library.org ప్రస్తుత వెర్షన్ అనుకూలత లేదు.ఒక కొత్త వెర్షన్కు దయచేసి అప్గ్రేడ్ చేయండి</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.PleaseLogIn">
+        <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
+        <target xml:lang="te">దయచేసి లాగిన్ బ్లూమ్ Library.org</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.PleaseSetThis">
+        <source xml:lang="en">Please set this from the edit tab</source>
+        <target xml:lang="te">మార్చు టాబ్ నుండి ఈ సెట్ చెయ్యండి</target>
+        <note>This shows next to the license, if the license has not yet been set.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Step1">
+        <source xml:lang="en">Step 1: Confirm Metadata</source>
+        <target xml:lang="te">స్టెప్ 1 మెటా డేటా నిర్ధారించండి</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Step2">
+        <source xml:lang="en">Step 2: Upload</source>
+        <target xml:lang="te">స్టెప్ 2 అప్లోడ్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SuggestAssignCC">
+        <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
+        <target xml:lang="te">సలహా: ఒక సృజనాత్మక కామన్స్ లైసెన్సు కేటాయించడం సులభం మీరు స్పష్టంగా అందరికీ నిర్దిష్ట అనుమతి మంజూరు చేస్తుంది.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SuggestChangeCC">
+        <source xml:lang="en">Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</source>
+        <target xml:lang="te">సలహా: క్రియేటివ్ కామన్స్ లైసెన్సు వారు మీ కస్టమ్ లైసెన్సు యొక్క భాషలో నిష్ణాతులు కానప్పటికీ, ఇతరులు మీ పుస్తకం ఉపయోగించడానికి కోసం అది చాలా సులభం.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Summary">
+        <source xml:lang="en">Summary</source>
+        <target xml:lang="te">సారాంశం</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.TermsLink">
+        <source xml:lang="en">Show Terms of Use</source>
+        <target xml:lang="te">ఉపయోగం షో నిబంధనలు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Title">
+        <source xml:lang="en">Title</source>
+        <target xml:lang="te">టైటిల్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadButton">
+        <source xml:lang="en">Upload Book</source>
+        <target xml:lang="te">పుస్తకం అప్లోడ్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadCompleteNotice">
+        <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
+        <target xml:lang="te">అభినందనలు, "{0}" బ్లూమ్ లైబ్రరీ లో ఇప్పుడు అందుబాటులో ఉంది. ఆర్గ్ {1}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadNotAllowed">
+        <source xml:lang="en">Upload Not Allowed</source>
+        <target xml:lang="te">అప్లోడ్ అనుమతి లేదు</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadProblemNotice">
+        <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
+        <target xml:lang="te">మీ పుస్తకం అప్లోడ్ సమస్య ఉంది, మీరు వికసించిన పునఃప్రారంభించుము లేదా సాంకేతిక సహాయాన్ని పొందడానికి అవసరం కావచ్చు.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadProgress">
+        <source xml:lang="en">Upload Progress</source>
+        <target xml:lang="te">పురోగతి అప్లోడ్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadSandbox">
+        <source xml:lang="en">Upload Book (to Sandbox)</source>
+        <target xml:lang="te">పురోగతి అప్లోడ్ (to sand box ) </target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
+        <source xml:lang="en">Uploading book metadata</source>
+        <target xml:lang="te">అప్లోడ్ పుస్తకం మెటాడేటా</target>
+        <note>In this step, Bloom is uploading things like title, languages, &amp; topic tags to the bloomlibrary.org database.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadingStatus">
+        <source xml:lang="en">Uploading {0}</source>
+        <target xml:lang="te">అప్లోడ్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.CcLink">
+        <source xml:lang="en">CC-BY-NC</source>
+        <target xml:lang="te">CC-BY-NC</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.LoginLink">
+        <source xml:lang="en">Log in to BloomLibrary.org</source>
+        <target xml:lang="te">BLOOMLibrary .org లాగిన్</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignupLink">
+        <source xml:lang="en">Sign up for BloomLibrary.org</source>
+        <target xml:lang="te">బ్లూమ్ లైబ్రరీ కోసం సైన్ అప్</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
+        <source xml:lang="en">Add Level</source>
+        <target xml:lang="te">స్థాయి జోడించండి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true">
+        <source xml:lang="en">Add Stage</source>
+        <target xml:lang="te">రంగస్థల జోడించండి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddTexts" sil:dynamic="true">
+        <source xml:lang="en">Please add texts to the Sample Texts folder.</source>
+        <target xml:lang="te">దయచేసి నమూనా పాఠాలు ఫోల్డర్ పాఠాలు జోడించండి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true">
+        <source xml:lang="en">Book</source>
+        <target xml:lang="te">పుస్తకం</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words per Book</source>
+        <target xml:lang="te">పుస్తకం ప్రకారం గరిష్ట పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true">
+        <source xml:lang="en">Click on letters to add them to this stage.</source>
+        <target xml:lang="te">ఈ దశలో వాటిని జోడించడానికి అక్షరాల మీద క్లిక్</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.CombinationHelp1" sil:dynamic="true">
+        <source xml:lang="en">Separate by spaces</source>
+        <target xml:lang="te">sapces ద్వారా ప్రత్యేక</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.CombinationHelp2" sil:dynamic="true">
+        <source xml:lang="en">E.g. "ai oo sh ng th ing"</source>
+        <target xml:lang="te">ఉదాహరణకు: "ai oo sh ng th ing"</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Combinations" sil:dynamic="true">
+        <source xml:lang="en">Letter Combinations (Graphemes)</source>
+        <target xml:lang="te">అక్షర కలయికలు (Graphemes)</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
+        <source xml:lang="en">Decodable Stages</source>
+        <target xml:lang="te">దానిని decodable దశల్లో</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">First,</source>
+        <target xml:lang="te">మొదటి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.FormatNotSupported" sil:dynamic="true">
+        <source xml:lang="en">Cannot read this format</source>
+        <target xml:lang="te">ఈ ఫార్మాట్ చదువలేదు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true">
+        <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
+        <target xml:lang="te">నమూనా పాఠాలు ఉపయోగించడానికి ఫైళ్లు ఎగుమతి, మార్చడానికి సహాయం</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Language" sil:dynamic="true">
+        <source xml:lang="en">Language</source>
+        <target xml:lang="te">భాష</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true">
+        <source xml:lang="en">List letters and word-forming characters in alphabetic order.</source>
+        <target xml:lang="te">జాబితా అక్షరాలు మరియు అక్షర క్రమంలో పదం ఏర్పాటు అక్షరాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LetterHelp2" sil:dynamic="true">
+        <source xml:lang="en">Separate by spaces</source>
+        <target xml:lang="te">ఖాళీలతో వేరు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LetterHelp3" sil:dynamic="true">
+        <source xml:lang="en">E.g. "a b c d"</source>
+        <target xml:lang="te">ఉదాహరణకు: "a b c d" </target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="te">అక్షరాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true">
+        <source xml:lang="en">Letters and Letter Combinations</source>
+        <target xml:lang="te">అక్షరాలు మరియు అక్షరాలు కలయికలు.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
+        <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
+        <target xml:lang="te">మీరు దానిని decodable పాఠకులు మీకు సహాయం చేయడానికి, వికసించిన అక్షరాలు మరియు మీరు బోధించే ఉంటుంది అక్షరాలు కాంబినేషన్ తెలుసుకోవాలి.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true">
+        <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
+        <target xml:lang="te">ఒక ఖాళీ తో ప్రతి అక్షరం లేదా లేఖ కలయిక విభజించండి. ఉదాహరణకు, ఇక్కడ, మేము ఆంగ్ల భాష కోసం ఉపయోగించుకునే ఏమిటి.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp2" sil:dynamic="true">
+        <source xml:lang="en">Notice that the English list includes symbols that are used to make words, like ' in </source>
+        <target xml:lang="te">ఇంగ్లీష్ జాబితాలో వంటి, పదాలను తయారు ఉపయోగిస్తారు చిహ్నాలు కలిగి గమనించండి.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true">
+        <source xml:lang="en">it's</source>
+        <target xml:lang="te">ఇది</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true">
+        <source xml:lang="en">.</source>
+        <target xml:lang="te">.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
+        <source xml:lang="en">Level</source>
+        <target xml:lang="te">స్థాయి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="te">స్థాయి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="te">రీడర్ స్థాయిలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MatchingWords" sil:dynamic="true">
+        <source xml:lang="en">matching words</source>
+        <target xml:lang="te">మ్యాచింగ్ పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Unique Words per Book</source>
+        <target xml:lang="te">పుస్తకం ప్రకారం గరిష్ట ఏకైక పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.MoreWords" sil:dynamic="true">
+        <source xml:lang="en">More Words</source>
+        <target xml:lang="te">మరింత పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.OpenSampleTexts" sil:dynamic="true">
+        <source xml:lang="en">Open the sample texts folder for this language.</source>
+        <target xml:lang="te">ఈ భాషలో మాదిరి వచనం ఫోల్డర్ తెరవడానికి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
+        <source xml:lang="en">Page</source>
+        <target xml:lang="te">పేజీ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words on each Page</source>
+        <target xml:lang="te">ప్రతి పేజీలో గరిష్ట పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true">
+        <source xml:lang="en">Powered by </source>
+        <target xml:lang="te">ద్వారా ఆధారితం</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="te">రీడర్ స్థాయిలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
+        <source xml:lang="en">Remove Level {0}</source>
+        <target xml:lang="te">స్థాయి తొలగించడానికి {0}</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true">
+        <source xml:lang="en">Remove Stage {0}</source>
+        <target xml:lang="te">రంగస్థల తొలగించడానికి {0}</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReorderLevels" sil:dynamic="true">
+        <source xml:lang="en">Drag rows to reorder levels.</source>
+        <target xml:lang="te">స్థాయిలు క్రమాన్ని వరుసలు లాగండి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReorderStages" sil:dynamic="true">
+        <source xml:lang="en">Drag rows to reorder stages.</source>
+        <target xml:lang="te">దశల్లో క్రమాన్ని వరుసలు లాగండి</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SampleTexts" sil:dynamic="true">
+        <source xml:lang="en">Word Lists and Sample Texts</source>
+        <target xml:lang="te">పద జాబితాలను మరియు నమూనా పాఠాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SearchEngine" sil:dynamic="true">
+        <source xml:lang="en">, the Search Engine for Literacy.</source>
+        <target xml:lang="te">అక్షరాస్యత కోసం శోధన ఇంజిన్</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true">
+        <source xml:lang="en">Previous and New Letters</source>
+        <target xml:lang="te">ప్రివ్యూ మరియు కొత్త అక్షరాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true">
+        <source xml:lang="en">Sentence</source>
+        <target xml:lang="te">వాక్యం</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true">
+        <source xml:lang="en">Maximum Words in each Sentence</source>
+        <target xml:lang="te">ప్రతి వాక్యం లో గరిష్ట పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Set up Decodable Reader Tool</source>
+        <target xml:lang="te">దానిని decodable రీడర్ టూల్ అప్ సెట్</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Set up Leveled Reader Tool</source>
+        <target xml:lang="te">సెటప్ రీడర్ టూల్ సమం.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">set up the alphabet for this language.</source>
+        <target xml:lang="te">ఈ భాషలో సెటప్ వర్ణమాల</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true">
+        <source xml:lang="en">What are sight words?</source>
+        <target xml:lang="te">దృష్టి పదాలు ఏవి?</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
+        <source xml:lang="en">New Sight Words</source>
+        <target xml:lang="te">కొత్త దృష్టి పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true">
+        <source xml:lang="en">Sight Words</source>
+        <target xml:lang="te">దృష్టి పదాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+        <target xml:lang="te">వేదిక</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true">
+        <source xml:lang="en">Stage </source>
+        <target xml:lang="te">వేదిక</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
+        <source xml:lang="en">Stages</source>
+        <target xml:lang="te">దశల్లో</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
+        <source xml:lang="en">SynPhony</source>
+        <target xml:lang="te">SynPhony</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
+        <source xml:lang="en">Things to remember for this level:</source>
+        <target xml:lang="te">విషయాలు ఈ స్థాయి గుర్తుంచుకోవడానికి:</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true">
+        <source xml:lang="en">Unique</source>
+        <target xml:lang="te">ఏకైక</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words" sil:dynamic="true">
+        <source xml:lang="en">Words</source>
+        <target xml:lang="te">పదాలు.</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
+        <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</source>
+        <target xml:lang="te">మీరు దానిని decodable పాఠకులు మీకు సహాయం చేయడానికి, బ్లూమ్ ప్రస్తుత దశలో తగిన పదాలు సూచించగలరు. వర్ధిల్లు పదాలు ఇవ్వాలని రెండు మార్గం ఉన్నాయి:</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true">
+        <source xml:lang="en">2) Place Text Files in Your</source>
+        <target xml:lang="te">2) ప్లేస్ టెక్స్ట్ ఫైళ్లు మీ</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true">
+        <source xml:lang="en">Sample Text Folder</source>
+        <target xml:lang="te">మాదిరి వచనం ఫోల్డర్</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.TypeWordsHere" sil:dynamic="true">
+        <source xml:lang="en">1) Type Words Here</source>
+        <target xml:lang="te">1) ఇక్కడ టైప్</target>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="te">అక్షరాలు</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+        <source xml:lang="en">In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</source>
+        <target xml:lang="te">అదనంగా, ఈ BloomPack "{0}" భాష కోసం మీ తాజా దానిని decodable మరియు తనపై రీడర్ సెట్టింగులు, అప్పుడు ఒక "{0}" సేకరణ తెరుస్తుంది ఎవరు ఈ BloomPack ప్రారంభ ఎవరైనా, తమ ప్రస్తుత దానిని decodable మరియు తనపై రీడర్ అమరికలు settings భర్తీ ఉంటుంది ఉంటాను ఈ BloomPack సెట్టింగులు ద్వారా భర్తీ. వారు కూడా దానిని decodable పాఠకులు ఉపయోగం కోసం పదాల ప్రస్తుత సెట్ పొందుతారు.</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
+        <source xml:lang="en">The following books will be made into templates:</source>
+        <target xml:lang="te">తరువాతి పుస్తకాలను టెంప్లేట్లు తయారు చేస్తుంది.</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+        <source xml:lang="en">Save BloomPack</source>
+        <target xml:lang="te">సేవ్ BloomPack</target>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
+        <source xml:lang="en">Make Reader Template BloomPack</source>
+        <target xml:lang="te">రీడర్ మూస BloomPack చేయండి</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Email">
+        <source xml:lang="en">Email Address</source>
+        <target xml:lang="te">ఇమెయిల్ చిరునామా</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.FirstName">
+        <source xml:lang="en">First Name</source>
+        <target xml:lang="te">మొదటి పేరు</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Heading">
+        <source xml:lang="en">Please take a minute to register {0}</source>
+        <target xml:lang="te">నమోదు ఒక నిమిషం దయచేసి{0}</target>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.HowAreYouUsing">
+        <source xml:lang="en">How are you using {0}?</source>
+        <target xml:lang="te">మీరు ఎలా ఉపయోగిస్తున్నారు(0)?</target>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.IAmStuckLabel">
+        <source xml:lang="en">I'm stuck, I'll finish this later.</source>
+        <target xml:lang="te">నేను కూరుకుపోయి, నేను తరువాత ఈ పూర్తి</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Organization">
+        <source xml:lang="en">Organization</source>
+        <target xml:lang="te">సంస్థ</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.RegisterButton">
+        <source xml:lang="en">&amp;Register</source>
+        <target xml:lang="te">&amp;నమోదు</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.Surname">
+        <source xml:lang="en">Surname</source>
+        <target xml:lang="te">ఇంటిపేరు</target>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.WindowTitle">
+        <source xml:lang="en">Register {0}</source>
+        <target xml:lang="te">నమోదు {0}</target>
+        <note>Place a {0} where the name of the program goes.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
+        <source xml:lang="en">Basic Book</source>
+        <target xml:lang="te">ప్రాథమిక పుస్తకం</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true">
+        <source xml:lang="en">Big Book</source>
+        <target xml:lang="te">పెద్ద పుస్తకం</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader</source>
+        <target xml:lang="te">దానిని decodable రీడర్</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader</source>
+        <target xml:lang="te">తనపై వచ్చిన రీడర్</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
+        <source xml:lang="en">Picture Dictionary</source>
+        <target xml:lang="te">చిత్రాన్ని నిఘంటువు</target>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true">
+        <source xml:lang="en">Wall Calendar</source>
+        <target xml:lang="te">గోడ క్యాలెండర్</target>
+      </trans-unit>
+      <trans-unit id="Topics.Agriculture" sil:dynamic="true">
+        <source xml:lang="en">Agriculture</source>
+        <target xml:lang="te">వ్యవసాయం</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Animal Stories" sil:dynamic="true">
+        <source xml:lang="en">Animal Stories</source>
+        <target xml:lang="te">జంతు కథలు</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Business" sil:dynamic="true">
+        <source xml:lang="en">Business</source>
+        <target xml:lang="te">వ్యాపార</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Community Living" sil:dynamic="true">
+        <source xml:lang="en">Community Living</source>
+        <target xml:lang="te">కమ్యూనిటీ దేశం</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Culture" sil:dynamic="true">
+        <source xml:lang="en">Culture</source>
+        <target xml:lang="te">సంస్కృతి</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Dictionary" sil:dynamic="true">
+        <source xml:lang="en">Dictionary</source>
+        <target xml:lang="te">నిఘంటువు</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Environment" sil:dynamic="true">
+        <source xml:lang="en">Environment</source>
+        <target xml:lang="te">వాతావరణంలో</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Fiction" sil:dynamic="true">
+        <source xml:lang="en">Fiction</source>
+        <target xml:lang="te">కట్టుకథ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Health" sil:dynamic="true">
+        <source xml:lang="en">Health</source>
+        <target xml:lang="te">ఆరోగ్య</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.How To" sil:dynamic="true">
+        <source xml:lang="en">How To</source>
+        <target xml:lang="te">ఎలా</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Math" sil:dynamic="true">
+        <source xml:lang="en">Math</source>
+        <target xml:lang="te">గణిత</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Non Fiction" sil:dynamic="true">
+        <source xml:lang="en">Non Fiction</source>
+        <target xml:lang="te">నాన్ ఫిక్షన్</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Personal Development" sil:dynamic="true">
+        <source xml:lang="en">Personal Development</source>
+        <target xml:lang="te">వ్యక్తిగత అభివృద్ధి</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Primer" sil:dynamic="true">
+        <source xml:lang="en">Primer</source>
+        <target xml:lang="te">ప్రైమర్</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Science" sil:dynamic="true">
+        <source xml:lang="en">Science</source>
+        <target xml:lang="te">విజ్ఞానము</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Spiritual" sil:dynamic="true">
+        <source xml:lang="en">Spiritual</source>
+        <target xml:lang="te">ఆధ్యాత్మికం</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Tradition" sil:dynamic="true">
+        <source xml:lang="en">Tradition</source>
+        <target xml:lang="te">సంప్రదాయం</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="Topics.Traditional Story" sil:dynamic="true">
+        <source xml:lang="en">Traditional Story</source>
+        <target xml:lang="te">సంప్రదాయ కథ</target>
+        <note>shows in the topics chooser in the edit tab</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
+        <source xml:lang="en">Setup</source>
+        <target xml:lang="te">సెటప్</target>
+        <note>This is the dialog used to set up the wall calendar</note>
+      </trans-unit>
+      <trans-unit id="You may use this space for author/illustrator, or anything else." sil:dynamic="true">
+        <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
+        <target xml:lang="te">రచయిత / చిత్రకారుడు, లేదా మరేదైనా కోసం ఈ స్థలం ఉపయోగించవచ్చు.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
