@@ -59,7 +59,7 @@ namespace Bloom.Collection
 				{ "Khmer", "km-KH"},
 				{ "Cjk-Decimal", "〇一二三四五六七八九"},// haven't found a culture for this
 				{ "Decimal", "" },
-				{ "Devanagari", "hi-IN"},
+				{ "Devanagari", "०१२३४५६७८९"}, // "hi-IN"}, was apparently failing on TeamCity Windows 7 agent
 				{ "Georgian", "ka-GE"},
 				{ "Gujarati", "gu-IN"},
 				{ "Gurmukhi", "pa-IN"},
