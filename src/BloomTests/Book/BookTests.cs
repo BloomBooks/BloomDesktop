@@ -423,7 +423,7 @@ namespace BloomTests.Book
 			var existingPage = book.GetPages().First();
 			Mock<IPage> templatePage = CreateTemplatePage("<div class='bloom-page'  data-page='extra' >hello</div>");
 			book.InsertPageAfter(existingPage, templatePage.Object);
-			Assert.AreEqual("bloom-page A5Portrait", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
+			Assert.IsTrue(GetPageFromBookDom(book, 1).GetStringAttribute("class").Contains("bloom-page A5Portrait"));
 		}
 
 		[Test]
@@ -641,7 +641,7 @@ namespace BloomTests.Book
 
 		   book.InsertPageAfter(existingPage, templatePage.Object);
 			AssertPageCount(book, 4);
-			Assert.AreEqual("bloom-page somekind A5Portrait", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
+			Assert.IsTrue(GetPageFromBookDom(book, 1).GetStringAttribute("class").Contains("bloom-page somekind A5Portrait"));
 		}
 
 		private XmlNode GetPageFromBookDom(Bloom.Book.Book book, int pageNumber0Based)
