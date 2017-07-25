@@ -560,7 +560,6 @@ namespace Bloom.Edit
 			}
 		}
 
-
 		private void RememberSourceTabChoice(GeckoHtmlElement target)
 		{
 			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
@@ -569,7 +568,6 @@ namespace Bloom.Edit
 			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
-
 		private void OnEditImageMetdata(DomEventArgs ge)
 		{
 			var imageElement = GetImageNode(ge);
@@ -577,31 +575,19 @@ namespace Bloom.Edit
 				return;
 			string fileName = HtmlDom.GetImageElementUrl(imageElement).NotEncoded;
 
-			//enhance: this all could be done without loading the image into memory
-			//could just deal with the metadata
-			//e.g., var metadata = Metadata.FromFile(path)
-			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
-			PalasoImage imageInfo = null;
-			try
+			var imageInfo = ImageUpdater.GetImageInfoSafelyFromFilePath(_model.CurrentBook.FolderPath, fileName);
+			if (imageInfo == null)
 			{
-				imageInfo = PalasoImage.FromFileRobustly(path);
-			}
-			catch(TagLib.CorruptFileException e)
-			{
-				ErrorReport.NotifyUserOfProblem(e,
-					"Bloom ran into a problem while trying to read the metadata portion of this image, " + path);
-				return;
+				return; // exception handled in ImageUpdater
 			}
 
 			using(imageInfo)
 			{
-				var hasMetadata = !(imageInfo.Metadata == null || imageInfo.Metadata.IsEmpty);
-				if(hasMetadata)
+				if(ImageUpdater.ImageHasMetadata(imageInfo))
 				{
 					// If we have metadata with an official collectionUri or we are translating a shell
 					// just give a summary of the metadata
-					var looksOfficial = !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
-					if(looksOfficial || !_model.CanEditCopyrightAndLicense)
+					if(ImageUpdater.ImageIsFromOfficialCollection(imageInfo.Metadata) || !_model.CanEditCopyrightAndLicense)
 					{
 						MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
 						return;
