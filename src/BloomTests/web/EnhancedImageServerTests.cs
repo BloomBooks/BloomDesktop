@@ -33,6 +33,7 @@ namespace BloomTests.web
 		{
 			Logger.Init();
 			_folder = new TemporaryFolder("ImageServerTests");
+			LocalizationManager.UseLanguageCodeFolders = true;
 			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
 			LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom", null, "", new string[] { });
 
