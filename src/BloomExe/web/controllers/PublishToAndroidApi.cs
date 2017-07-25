@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Net;
-using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using Bloom.Collection;
 using Bloom.Publish;
 using Bloom.web;
@@ -20,13 +17,14 @@ namespace Bloom.Api
 		private readonly BloomReaderPublisher _bloomReaderPublisher;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private WiFiAdvertiser _advertiser;
-		private UDPListener m_listener;
+		private BloomReaderUDPListener m_listener;
+		private WebSocketProgress _progress;
 
 		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer)
 		{
 			_webSocketServer = bloomWebSocketServer;
-			var progress = new WebSocketProgress(_webSocketServer);
-			_bloomReaderPublisher = new BloomReaderPublisher(progress);
+			_progress = new WebSocketProgress(_webSocketServer);
+			_bloomReaderPublisher = new BloomReaderPublisher(_progress);
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -34,8 +32,6 @@ namespace Bloom.Api
 			server.RegisterEndpointHandler(kApiUrlPart + "connectUsb/start", ConnectUsbStartHandler, true);
 			server.RegisterEndpointHandler(kApiUrlPart + "connectWiFi/start", request => ConnectWiFiStartHandler(server, request), true);
 			server.RegisterEndpointHandler(kApiUrlPart + "connect/cancel", ConnectCancelHandler, true);
-			// Not yet
-			//server.RegisterEndpointHandler(kApiUrlPart + "connectWifi/start", ConnectWiFiStartHandler, true);
 			server.RegisterEndpointHandler(kApiUrlPart + "sendBook/start", request =>
 			{
 				_webSocketServer.Send(kWebsocketStateId, "Sending");
@@ -64,14 +60,15 @@ namespace Bloom.Api
 			// It requires a firewall hole allowing Bloom to receive messages on _portToListen.
 			// We initialize it before starting the Advertiser to avoid any chance of a race condition
 			// where a BloomReader manages to request an advertised book before we start the listener.
-			m_listener = new UDPListener();
+			m_listener = new BloomReaderUDPListener();
 			m_listener.NewMessageReceived += (sender, args) =>
 			{
 				var androidIpAddress = Encoding.UTF8.GetString(args.data);
 				SendBookTo(server.CurrentBook, androidIpAddress);
 			};
-			_advertiser = new WiFiAdvertiser();
+			_advertiser = new WiFiAdvertiser(_progress);
 			_advertiser.BookTitle = server.CurrentBook.Title;
+			_advertiser.TitleLanguage = server.CurrentBook.CollectionSettings.Language1Iso639Code;
 			// Review: not sure this is what we want for a version. Basically, it allows the Android (by saving it) to avoid downloading
 			// a book that is exactly what it has already...with the risk that it might miss binary changes to images, if nothing changes
 			// in the HTML. However, this doesn't prevent overwriting a newer book with an older one. Another option would be to
@@ -84,7 +81,7 @@ namespace Bloom.Api
 
 		private void SendBookTo(Book.Book book, string androidIpAddress)
 		{
-			_bloomReaderPublisher.SendBookToWiFi(book, androidIpAddress);
+			_bloomReaderPublisher.SendBookToClientOnLocalSubNet(book, androidIpAddress);
 		}
 
 		private void ConnectCancelHandler(ApiRequest request)
@@ -115,87 +112,6 @@ namespace Bloom.Api
 		{
 			_bloomReaderPublisher.Connected -= OnConnected;
 			_webSocketServer.Send(kWebsocketStateId, "ReadyToSend");
-		}
-	}
-
-	/// <summary>
-	/// Helper class to listen for a single packet from the Android. Construct an instance to start
-	/// listening (on another thread); hook NewMessageReceived to receive a packet each time a client sends it.
-	/// </summary>
-	class UDPListener
-	{
-		// must match BloomReader.NewBookListenerService.desktopPort
-		// and be different from WiFiAdvertiser.Port and port in BloomReaderPublisher.SendBookToWiFi
-		private int _portToListen = 5915;
-		Thread _ListeningThread;
-		public event EventHandler<MyMessageArgs> NewMessageReceived;
-		UdpClient _listener = null;
-		private bool _listening;
-
-		//constructor: starts listening.
-		public UDPListener()
-		{
-			_ListeningThread = new Thread(ListenForUDPPackages);
-			_ListeningThread.IsBackground = true;
-			_ListeningThread.Start();
-			_listening = true;
-		}
-
-		/// <summary>
-		/// Run on a background thread; returns only when done listening.
-		/// </summary>
-		public void ListenForUDPPackages()
-		{
-			try
-			{
-				_listener = new UdpClient(_portToListen);
-			}
-			catch (SocketException e)
-			{
-				//do nothing
-			}
-
-			if (_listener != null)
-			{
-				IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, 0);
-
-				while (_listening)
-				{
-					try
-					{
-						byte[] bytes = _listener.Receive(ref groupEP); // waits for packet from Android.
-
-						//raise event
-						NewMessageReceived?.Invoke(this, new MyMessageArgs(bytes));
-					}
-					catch (Exception e)
-					{
-						Console.WriteLine(e.ToString());
-					}
-				}
-			}
-
-		}
-		public void StopListener()
-		{
-			if (_listening)
-			{
-				_listening = false;
-				_listener.Close(); // forcibly end communication
-			}
-		}
-	}
-
-	/// <summary>
-	/// Helper class to hold the data we got from the Android, for the NewMessageReceived event of UDPListener
-	/// </summary>
-	class MyMessageArgs : EventArgs
-	{
-		public byte[] data { get; set; }
-
-		public MyMessageArgs(byte[] newData)
-		{
-			data = newData;
 		}
 	}
 }
