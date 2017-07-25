@@ -1,8 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
+using System.Net;
 using Bloom.Book;
 using Bloom.Communication;
+using L10NSharp;
 using SIL.Progress;
+using SIL.Reporting;
 
 namespace Bloom.Publish
 {
@@ -32,7 +36,7 @@ namespace Bloom.Publish
 		{
 			try
 			{
-				_progress.WriteMessage(L10NSharp.LocalizationManager.GetString("Publish.BloomReaderPublisher.LookingForDevice",
+				_progress.WriteMessage(LocalizationManager.GetString("Publish.BloomReaderPublisher.LookingForDevice",
 					"Looking for an Android device connected by USB cable and set up for MTP..."));
 
 				_androidDeviceUsbConnection.OneApplicableDeviceFound += OneApplicableDeviceFound;
@@ -62,11 +66,11 @@ namespace Bloom.Publish
 
 		private void FailConnect(Exception e)
 		{
-			var unableToConnectMessage = L10NSharp.LocalizationManager.GetString("Publish.BloomReaderPublisher.UnableToConnect",
+			var unableToConnectMessage = LocalizationManager.GetString("Publish.BloomReaderPublisher.UnableToConnect",
 				"Unable to connect to any Android device which has Bloom Reader.");
 			_androidDeviceUsbConnection.StopFindingDevice();
 			_progress.WriteError(unableToConnectMessage);
-			SIL.Reporting.Logger.WriteError(e);
+			Logger.WriteError(e);
 			ConnectionFailed?.Invoke(this, new EventArgs());
 		}
 
@@ -74,7 +78,7 @@ namespace Bloom.Publish
 		{
 			_androidDeviceUsbConnection.OneApplicableDeviceFound -= OneApplicableDeviceFound;
 
-			_progress.WriteMessage(string.Format(L10NSharp.LocalizationManager.GetString(
+			_progress.WriteMessage(String.Format(LocalizationManager.GetString(
 				"Publish.BloomReaderPublisher.Connected",
 				"Connected to {0}...", "{0} is a device name"), _androidDeviceUsbConnection.GetDeviceName()));
 
@@ -90,7 +94,7 @@ namespace Bloom.Publish
 
 			_moreThanOneReported = true;
 
-			_progress.WriteWarning(L10NSharp.LocalizationManager.GetString("Publish.BloomReaderPublisher.MoreThanOne",
+			_progress.WriteWarning(LocalizationManager.GetString("Publish.BloomReaderPublisher.MoreThanOne",
 				"The following connected devices all have Bloom Reader installed. Please connect only one of these devices."));
 			foreach (var deviceName in eventArgs.DeviceNames)
 			{
@@ -105,31 +109,31 @@ namespace Bloom.Publish
 		/// <returns>true if book was sent successfully</returns>
 		public bool SendBook(Book.Book book)
 		{
-			string generalFailureMessage = L10NSharp.LocalizationManager.GetString("Publish.BloomReaderPublisher.FailureToSend",
+			string generalFailureMessage = LocalizationManager.GetString("Publish.BloomReaderPublisher.FailureToSend",
 				"An error occurred and the book was not sent to your Android device.");
 			try
 			{
 				var bookTitle = book.Title;
-				_progress.WriteMessage(string.Format(L10NSharp.LocalizationManager.GetString("Publish.BloomReaderPublisher.LookingForExisting",
+				_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.LookingForExisting",
 					"Looking for an existing \"{0}\"...", "{0} is a book title"), bookTitle));
 				var bookExistsOnDevice =
 					_androidDeviceUsbConnection.BookExists(bookTitle + BookCompressor.ExtensionForDeviceBloomBook);
 
-				_progress.WriteMessage(string.Format(L10NSharp.LocalizationManager.GetString("Publish.BloomReaderPublisher.PackagingBook",
+				_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.PackagingBook",
 					"Packaging \"{0}\" for use with Bloom Reader...", "{0} is a book title"), bookTitle));
 				var bloomdPath = BookCompressor.CompressBookForDevice(book);
 
 				if (bookExistsOnDevice)
-					_progress.WriteMessage(string.Format(L10NSharp.LocalizationManager.GetString("Publish.BloomReaderPublisher.ReplacingBook",
+					_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.ReplacingBook",
 						"Replacing existing \"{0}\"...", "{0} is a book title"), bookTitle));
 				else
-					_progress.WriteMessage(string.Format(L10NSharp.LocalizationManager.GetString("Publish.BloomReaderPublisher.SendingBook",
+					_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.SendingBook",
 						"Sending \"{0}\" to your Android device...", "{0} is a book title"), bookTitle));
 				_androidDeviceUsbConnection.SendBook(bloomdPath);
 
 				if (_androidDeviceUsbConnection.BookExists(bookTitle + BookCompressor.ExtensionForDeviceBloomBook))
 				{
-					_progress.WriteMessage(string.Format(L10NSharp.LocalizationManager.GetString(
+					_progress.WriteMessage(String.Format(LocalizationManager.GetString(
 						"Publish.BloomReaderPublisher.BookSent",
 						"You can now read \"{0}\" in Bloom Reader!", "{0} is a book title"), bookTitle));
 					return true;
@@ -140,9 +144,38 @@ namespace Bloom.Publish
 			catch (Exception e)
 			{
 				_progress.WriteError(generalFailureMessage);
-				SIL.Reporting.Logger.WriteError(e);
+				Logger.WriteError(e);
 				return false;
 			}
 		}
+
+		/// <summary>
+		/// Send the book to a client over local network, typically WiFi (at least on Android end).
+		/// This is currently called on the UDPListener thread.
+		/// Enhance: if we spin off another thread to do the transfer, especially if we create the file
+		/// and read it into memory once and share the content, we can probably serve multiple
+		/// requesting devices much faster. Currently, we are only handling one request at a time,
+		/// since we don't return to the listening loop until we finish this request.
+		/// Haven't tested what will happen if the user switches away from the Android tab while a transfer
+		/// is in progress. I _think_ the thread will continue and complete the request. Quitting Bloom
+		/// is likely to leave the transfer incomplete.
+		/// </summary>
+		/// <param name="book"></param>
+		/// <param name="androidIpAddress"></param>
+		public void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress)
+		{
+			var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
+			_progress.WriteMessage($"Sending {book.Title} to android {androidIpAddress}");
+			var bloomdPath = BookCompressor.CompressBookForDevice(book);
+			using (WebClient myClient = new WebClient())
+			{
+				myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(book.Title) +
+					BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdPath));
+				myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] {0});
+			}
+			_progress.WriteMessage($"Sent {book.Title} to android {androidIpAddress}");
+		}
+
+		public const string ProtocolVersion = "1.0";
 	}
 }
