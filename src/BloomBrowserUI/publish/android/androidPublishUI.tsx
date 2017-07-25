@@ -45,7 +45,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
     }
 
     componentCleanup() {
-        axios.post("/bloom/api/publish/android/connectUsb/cancel");
+        axios.post("/bloom/api/publish/android/connect/cancel");
     }
 
     handleUpdateState(s: string): void {
@@ -85,14 +85,12 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     clickEndpoint="publish/android/connectUsb/start">
                     Connect with USB cable
                 </BloomButton>
-                {/*<br />
-                <br />
                 <BloomButton l10nKey="Publish.Android.ConnectWifi"
                     l10nComment="Button that tells Bloom to connect to a device using Wifi"
                     enabled={this.state.stateId === "ReadyToConnect"}
                     clickEndpoint="publish/android/connectWifi/start">
                     Connect with WiFi
-                </BloomButton>*/}
+                </BloomButton>
 
                 <H1 l10nKey="Publish.Android.StepSend">
                     Step 4: Send this book to the device

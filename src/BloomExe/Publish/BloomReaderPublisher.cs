@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
+using System.Net;
 using Bloom.Book;
 using Bloom.Communication;
 using SIL.Progress;
@@ -143,6 +145,17 @@ namespace Bloom.Publish
 				SIL.Reporting.Logger.WriteError(e);
 				return false;
 			}
+		}
+
+		public void SendBookToWiFi(Book.Book book, string androidIpAddress)
+		{
+			var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
+			_progress.WriteMessage($"Sending {book.Title} to android {androidIpAddress}");
+			var bloomdPath = BookCompressor.CompressBookForDevice(book);
+			WebClient myClient = new WebClient();
+			myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(book.Title) + BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdPath));
+			myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] { 0 });
+			_progress.WriteMessage($"Sent {book.Title} to android {androidIpAddress}");
 		}
 	}
 }
