@@ -337,6 +337,7 @@
     <Compile Include="Publish\AndroidView.Designer.cs">
       <DependentUpon>AndroidView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\WiFiAdvertiser.cs" />
     <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
