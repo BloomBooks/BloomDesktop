@@ -177,7 +177,15 @@ namespace Bloom.CollectionTab
 
 		public void OpenFolderOnDisk()
 		{
-			PathUtilities.SelectFileInExplorer(_bookSelection.CurrentSelection.FolderPath);
+			try
+			{
+				PathUtilities.SelectFileInExplorer(_bookSelection.CurrentSelection.FolderPath);
+			}
+			catch (System.Runtime.InteropServices.COMException e)
+			{
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					"Bloom had a problem asking your operating system to show that folder. Sorry!");
+			}
 		}
 
 		public void BringBookUpToDate()

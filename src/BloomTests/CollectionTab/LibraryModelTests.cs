@@ -8,6 +8,7 @@ using Bloom.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
+using SIL.Reporting;
 using SIL.TestUtilities;
 
 namespace BloomTests.CollectionTab
@@ -23,6 +24,7 @@ namespace BloomTests.CollectionTab
 		[SetUp]
 		public void Setup()
 		{
+			ErrorReport.IsOkToInteractWithUser = false;
 			_folder = new TemporaryFolder("LibraryModelTests");
 			_collection = new TemporaryFolder(_folder, "FakeCollection");
 			MakeFakeCssFile();
