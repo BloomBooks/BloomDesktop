@@ -598,8 +598,12 @@ namespace Bloom.Edit
 		{
 			Logger.WriteMinorEvent("changing page selection");
 			Analytics.Track("Select Page");//not "edit page" because at the moment we don't have the capability of detecting that.
+
 			// Trace memory usage in case it may be useful
-			MemoryManagement.CheckMemory(false, "switched page in edit", true);
+			// First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
+			// If we seem to have a problem do it again forcing the GC and possibly warning the user.
+			if (MemoryManagement.CheckMemory(false, "switched page in edit", false, false))
+				MemoryManagement.CheckMemory(false, "switched page in edit", true);
 
 			if (_view != null)
 			{
@@ -622,8 +626,6 @@ namespace Bloom.Edit
 				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 			}
-
-			GC.Collect();//i put this in while looking for memory leaks, feel free to remove it.
 		}
 
 		public void RefreshDisplayOfCurrentPage()
