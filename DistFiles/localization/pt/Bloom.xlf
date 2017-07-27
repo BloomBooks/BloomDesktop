@@ -207,7 +207,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="pt-PT" state="needs-translation">Arabic-Indic</target>
+        <target xml:lang="pt-PT" state="translated">Arábico-Oriental</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian">
         <source xml:lang="en">Armenian</source>
