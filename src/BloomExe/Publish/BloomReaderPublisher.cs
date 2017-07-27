@@ -165,7 +165,7 @@ namespace Bloom.Publish
 		public void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress)
 		{
 			var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
-			_progress.WriteMessage($"Sending {book.Title} to android {androidIpAddress}");
+			_progress.WriteMessage($"Sending \"{book.Title}\" to device {androidIpAddress}");
 			var bloomdPath = BookCompressor.CompressBookForDevice(book);
 			using (WebClient myClient = new WebClient())
 			{
@@ -173,7 +173,7 @@ namespace Bloom.Publish
 					BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdPath));
 				myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] {0});
 			}
-			_progress.WriteMessage($"Sent {book.Title} to android {androidIpAddress}");
+			_progress.WriteMessage($"Finished sending \"{book.Title}\" to device {androidIpAddress}");
 		}
 
 		public const string ProtocolVersion = "1.0";

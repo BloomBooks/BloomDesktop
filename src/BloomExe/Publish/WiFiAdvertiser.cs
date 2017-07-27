@@ -60,6 +60,7 @@ namespace Bloom.Publish
 
 		private void Work()
 		{
+			Progress.WriteStatus("Advertising book to Bloom Readers on local network...");
 			try
 			{
 				while (true)
@@ -71,6 +72,7 @@ namespace Bloom.Publish
 			}
 			catch (ThreadAbortException)
 			{
+				Progress.WriteStatus("Stopped Advertising.");
 				//Progress.WriteVerbose("Advertiser Thread Aborting (that's normal)");
 				_client.Close();
 			}

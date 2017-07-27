@@ -56,6 +56,9 @@ namespace Bloom.Api
 		{
 			if (_advertiser != null)
 				return; // repeat clicks do nothing.
+
+			_webSocketServer.Send(kWebsocketStateId, "ServingOnWifi"); // this will change, I suspect, but at least it keeps you from clicking repeatedly
+
 			// This listens for a BloomReader to request a book.
 			// It requires a firewall hole allowing Bloom to receive messages on _portToListen.
 			// We initialize it before starting the Advertiser to avoid any chance of a race condition
@@ -76,7 +79,7 @@ namespace Bloom.Api
 			_advertiser.BookVersion = Convert.ToBase64String(SHA256Managed.Create().ComputeHash(Encoding.UTF8.GetBytes(server.CurrentBook.RawDom.OuterXml)));
 			_advertiser.Start();
 
-			request.Succeeded();
+			request.SucceededDoNotNavigate();
 		}
 
 		private void SendBookTo(Book.Book book, string androidIpAddress)
