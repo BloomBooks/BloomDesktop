@@ -853,17 +853,21 @@ export default class AudioRecording {
         test = test.replace("&nbsp;", " ");
         if (this.isWhiteSpace(test))
             return false;
-        if (this.isEmptyHtml(test))
-            return false;
-        return true;
+        return this.isTextOrHtmlWithText(test);
     }
 
-    private isEmptyHtml(possibleHtml: string): Boolean {
+    private isTextOrHtmlWithText(textOrHtml: string): Boolean {
         var parser = new DOMParser();
-        var doc = parser.parseFromString(possibleHtml, "text/xml");
-        if (doc && doc.firstChild) {
-            var content = doc.firstChild.textContent;
-            return this.isWhiteSpace(content);
+        var doc = parser.parseFromString(textOrHtml, "text/html");
+        if (doc && doc.documentElement) { //paranoia
+            // on error, parseFromString returns a document with a parseerror element
+            // rather than throwing an exception, so check for that
+            if (doc.getElementsByTagName('parsererror').length > 0) {
+                return false;
+            }
+            // textContent is the aggregation of the text nodes of all children
+            var content = doc.documentElement.textContent;
+            return !this.isWhiteSpace(content);
         }
         return false;
     }
