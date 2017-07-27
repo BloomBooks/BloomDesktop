@@ -79,7 +79,7 @@ describe("audio recording tests", function() {
     });
 
     // We can get something like this when we paste from Word
-    it("ignores empty spans", function () {
+    it("ignores empty span", function () {
         var div = $('<div>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></div>');
         var recording = new AudioRecording();
         recording.makeSentenceSpans(div);

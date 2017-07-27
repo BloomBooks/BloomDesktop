@@ -422,10 +422,10 @@ function doKeypressMarkup(): void {
             // actually go back to where it was: it gets shifted to the right.
             const bookmarks = ckeditorSelection.createBookmarks(true);
 
-        // For some reason, we have cases, mostly (always?) on paste, where
-        // ckeditor is inserting tons of comments which are messing with our parsing
-        // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
-        removeCommentsFromEditableHtml(editableDiv);
+            // For some reason, we have cases, mostly (always?) on paste, where
+            // ckeditor is inserting tons of comments which are messing with our parsing
+            // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
+            removeCommentsFromEditableHtml(editableDiv);
 
             currentTool.updateMarkup();
 
@@ -442,8 +442,10 @@ function doKeypressMarkup(): void {
     }, 500);
 }
 
-function removeCommentsFromEditableHtml(editable: HTMLElement) {
-    editable.innerHTML = editable.innerHTML.replace(/<!--.*?-->/g, "");
+// exported for testing
+export function removeCommentsFromEditableHtml(editable: HTMLElement) {
+    // [\s\S] is a hack representing every character (including newline)
+    editable.innerHTML = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
 }
 
 var resizeTimer;
