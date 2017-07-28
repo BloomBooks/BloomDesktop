@@ -147,10 +147,7 @@
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
-        <target xml:lang="pt-PT" state="translated">Desculpe, os modelos de leitor não permitem alterações de formatação.</target>
-        <alt-trans>
-          <target xml:lang="pt-PT">Desculpa, os modelos de leitor não permitem alterações de formatação.</target>
-        </alt-trans>
+        <target xml:lang="pt-PT" state="translated">Desculpa, os modelos de leitor não permitem alterações de formatação.</target>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
@@ -241,7 +238,10 @@
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="pt-PT" state="translated">Isto melhorará a saída impressa para a maioria dos idiomas. Se sua idioma é um dos poucos que precisam "Andika", pode trocar volta em configurações: Elaboração de Livros.</target>
+        <target xml:lang="pt-PT" state="translated">Isto melhorará a saída impressa para a maioria dos idiomas. Se a sua língua é uma das poucas que precisa da "Andika", você pode selecioná-la novamente em configurações: Elaboração de Livros.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Isto melhorará a saída impressa para a maioria dos idiomas. Se sua idioma é um dos poucos que precisam "Andika", pode trocar volta em configurações: Elaboração de Livros.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
         <source xml:lang="en">Book Making</source>
@@ -332,7 +332,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="pt-PT" state="translated">Hebreico</target>
+        <target xml:lang="pt-PT" state="translated">Hebraico</target>
         <alt-trans>
           <target xml:lang="pt-PT">Hebreu</target>
         </alt-trans>
@@ -605,10 +605,7 @@
       <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
         <source xml:lang="en">Update Thumbnail</source>
         <note>ID: CollectionTab.BookMenu.UpdateThumbnail</note>
-        <target xml:lang="pt-PT" state="translated">Atualizar o modelo</target>
-        <alt-trans>
-          <target xml:lang="pt-PT">Atualizar a miniatura</target>
-        </alt-trans>
+        <target xml:lang="pt-PT" state="translated">Atualizar a miniatura</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourceHeading">
         <source xml:lang="en">Sources For New Books</source>
@@ -912,7 +909,10 @@
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
-        <target xml:lang="pt-PT" state="translated">Seu download ({0}) é completa. Vê-lo na seção de 'Livros de BloomLibrary.org' de suas coleções.</target>
+        <target xml:lang="pt-PT" state="translated">Seu download ({0}) está completo. Verifique na seção de 'Livros da BloomLibrary.org' de suas coleções.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Seu download ({0}) é completa. Vê-lo na seção de 'Livros de BloomLibrary.org' de suas coleções.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.CompletedCaption">
         <source xml:lang="en">Download complete</source>
@@ -922,7 +922,10 @@
       <trans-unit id="Download.CopyFailed">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</source>
         <note>ID: Download.CopyFailed</note>
-        <target xml:lang="pt-PT" state="translated">Bloom baixei o livro mas tive problemas tornar-lo disponível em Bloom. Por favor, reinicie o seu computador e tente novamente. Se você receber essa mensagem novamente, por favor clique no botão 'Detalhes' e relatar o problema para os programadores de Bloom.</target>
+        <target xml:lang="pt-PT" state="translated">Bloom baixou o livro, mas teve problemas em torná-lo disponível no Bloom. Por favor, reinicie o seu computador e tente novamente. Se você receber essa mensagem novamente, por favor, clique no botão 'Detalhes' e relate o problema para os desenvolvedores do programa.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bloom baixei o livro mas tive problemas tornar-lo disponível em Bloom. Por favor, reinicie o seu computador e tente novamente. Se você receber essa mensagem novamente, por favor clique no botão 'Detalhes' e relatar o problema para os programadores de Bloom.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.DownloadingDialogTitle">
         <source xml:lang="en">Downloading book</source>
