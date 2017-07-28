@@ -940,12 +940,18 @@
       <trans-unit id="Download.ProblemNotice">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: Download.ProblemNotice</note>
-        <target xml:lang="pt-PT" state="translated">Houve um problema, baixando o seu livro. Você pode precisar reiniciar o Bloom ou obter ajuda técnica.</target>
+        <target xml:lang="pt-PT" state="translated">Houve um problema baixando o seu livro. Reinicie o Bloom ou obtenha ajuda técnica.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Houve um problema, baixando o seu livro. Você pode precisar reiniciar o Bloom ou obter ajuda técnica.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.TimeoutProblemNotice">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.TimeoutProblemNotice</note>
-        <target xml:lang="pt-PT" state="translated">Houve um problema de baixar o livro: algo demorou demais. Você pode tentar novamente, ou escrever-nos para issues@BloomLibrary.org, se você não pode fazer o download de sua localização.</target>
+        <target xml:lang="pt-PT" state="translated">Houve um problema ao baixar o livro: algo demorou demais. Tente novamente, ou escreva para issues@BloomLibrary.org, caso não consiga fazer o download de sua localização.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Houve um problema de baixar o livro: algo demorou demais. Você pode tentar novamente, ou escrever-nos para issues@BloomLibrary.org, se você não pode fazer o download de sua localização.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddPageButton">
         <source xml:lang="en">Add Page</source>
@@ -972,12 +978,18 @@
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
         <source xml:lang="en">Choose Different Layout...</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
-        <target xml:lang="pt-PT" state="translated">Escolha configuração diferente...</target>
+        <target xml:lang="pt-PT" state="translated">Escolha uma configuração diferente...</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Escolha configuração diferente...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true">
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
-        <target xml:lang="pt-PT" state="translated">Convertendo para este configuração irá causar algum conteúdo ser perdido.</target>
+        <target xml:lang="pt-PT" state="translated">Converter para esta configuração irá causar a perda de conteúdo.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Convertendo para este configuração irá causar algum conteúdo ser perdido.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">(no template file found)</source>
@@ -1012,7 +1024,10 @@
         <source xml:lang="en">Two Languages</source>
         <note>ID: EditTab.Bilingual</note>
         <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
-        <target xml:lang="pt-PT" state="translated">Duas idiomas</target>
+        <target xml:lang="pt-PT" state="translated">Duas línguas</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Duas idiomas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
@@ -1022,12 +1037,18 @@
       <trans-unit id="EditTab.CannotChangeCopyright">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
         <note>ID: EditTab.CannotChangeCopyright</note>
-        <target xml:lang="pt-PT" state="translated">Desculpa, o direito de autor e licença para este livro não podem ser alterados.</target>
+        <target xml:lang="pt-PT" state="translated">Desculpe, os direitos autorais e licença para este livro não podem ser alterados.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Desculpa, o direito de autor e licença para este livro não podem ser alterados.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CantPasteImageLocked">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
-        <target xml:lang="pt-PT" state="translated">Desculpa, este livro está fechado para que imagens não podem ser alteradas.</target>
+        <target xml:lang="pt-PT" state="translated">Desculpe, este livro está bloqueado para que imagens não possam ser alteradas.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Desculpa, este livro está fechado para que imagens não podem ser alteradas.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ChooseLayoutButton">
         <source xml:lang="en">Choose Different Layout</source>
