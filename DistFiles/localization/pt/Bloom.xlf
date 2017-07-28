@@ -1138,7 +1138,7 @@
       <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true">
         <source xml:lang="en">Emphasis</source>
         <note>ID: EditTab.FormatDialog.Emphasis</note>
-        <target xml:lang="pt-PT" state="needs-translation">Emphasis</target>
+        <target xml:lang="pt-PT" state="translated">Estilo</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
         <source xml:lang="en">Font</source>
@@ -1168,7 +1168,7 @@
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
-        <target xml:lang="pt-PT" state="needs-translation">Indent</target>
+        <target xml:lang="pt-PT" state="translated">Recuar/Indentar</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between lines of text</source>
@@ -1183,12 +1183,12 @@
       <trans-unit id="EditTab.FormatDialog.ParagraphSpacing">
         <source xml:lang="en">Space Between Paragraphs</source>
         <note>ID: EditTab.FormatDialog.ParagraphSpacing</note>
-        <target xml:lang="pt-PT" state="needs-translation">Space Between Paragraphs</target>
+        <target xml:lang="pt-PT" state="translated">Espaçamento entre linhas</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphTab">
         <source xml:lang="en">Paragraph</source>
         <note>ID: EditTab.FormatDialog.ParagraphTab</note>
-        <target xml:lang="pt-PT" state="needs-translation">Paragraph</target>
+        <target xml:lang="pt-PT" state="translated">Parágrafo</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true">
         <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
@@ -1203,7 +1203,7 @@
       <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true">
         <source xml:lang="en">Spacing</source>
         <note>ID: EditTab.FormatDialog.Spacing</note>
-        <target xml:lang="pt-PT" state="needs-translation">Spacing</target>
+        <target xml:lang="pt-PT" state="translated">Espaçamento</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true">
         <source xml:lang="en">Style</source>
@@ -1223,7 +1223,7 @@
       <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.WordSpacingNormal</note>
-        <target xml:lang="pt-PT" state="needs-translation">Normal</target>
+        <target xml:lang="pt-PT" state="translated">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between words</source>
@@ -1291,7 +1291,7 @@
         <source xml:lang="en">, </source>
         <note>ID: EditTab.FrontMatter.ListSeparator</note>
         <note>This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.</note>
-        <target xml:lang="pt-PT" state="needs-translation">, </target>
+        <target xml:lang="pt-PT" state="translated">, </target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true">
         <source xml:lang="en">Name of Translator, in {lang}</source>
@@ -1543,7 +1543,7 @@
       <trans-unit id="EditTab.StyleEditor.WordSpacingNormal" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.StyleEditor.WordSpacingNormal</note>
-        <target xml:lang="pt-PT" state="needs-translation">Normal</target>
+        <target xml:lang="pt-PT" state="translated">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.WordSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between words</source>
@@ -1620,7 +1620,7 @@
       <trans-unit id="EditTab.TextBoxProperties.Normal">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.TextBoxProperties.Normal</note>
-        <target xml:lang="pt-PT" state="needs-translation">Normal</target>
+        <target xml:lang="pt-PT" state="translated">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NormalLabel">
         <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
@@ -1874,7 +1874,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
         <source xml:lang="en">total</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Total</note>
-        <target xml:lang="pt-PT" state="needs-translation">total</target>
+        <target xml:lang="pt-PT" state="translated">total</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
         <source xml:lang="en">unique</source>
