@@ -464,12 +464,18 @@
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
         <note>If there is no third language specified, the link changes to this.</note>
-        <target xml:lang="pt-PT" state="translated">Fixar...</target>
+        <target xml:lang="pt-PT" state="translated">Definir...</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Fixar...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
         <source xml:lang="en">Vernacular Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="pt-PT" state="translated">Idioma vernácula</target>
+        <target xml:lang="pt-PT" state="translated">Língua vernácula</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Idioma vernácula</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
@@ -515,7 +521,10 @@
       <trans-unit id="CollectionSettingsDialog.RestartMessage">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
-        <target xml:lang="pt-PT" state="translated">Bloom vai fechar e reabrir este projeto com as novas configurações.</target>
+        <target xml:lang="pt-PT" state="translated">Bloom irá fechar e reabrir este projeto com as novas configurações.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bloom vai fechar e reabrir este projeto com as novas configurações.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
@@ -525,7 +534,10 @@
       <trans-unit id="CollectionTab.AdminManagesUpdates">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
         <note>ID: CollectionTab.AdminManagesUpdates</note>
-        <target xml:lang="pt-PT" state="translated">O administrador de sistema gerencia atualizações de Bloom para este computador.</target>
+        <target xml:lang="pt-PT" state="translated">O seu administrador de sistema gerencia as atualizações do Bloom para este computador.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">O administrador de sistema gerencia atualizações de Bloom para este computador.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
         <source xml:lang="en">Advanced</source>
@@ -541,7 +553,10 @@
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-        <target xml:lang="pt-PT" state="translated">Obter mais de livros de fonte (origem) em BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="translated">Obter mais livros fonte em BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Obter mais de livros de fonte (origem) em BloomLibrary.org</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
         <source xml:lang="en">Source Collection</source>
