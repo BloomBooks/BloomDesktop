@@ -5,12 +5,21 @@
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
-        <target xml:lang="pt-PT" state="translated">Problema de Bloom</target>
+        <target xml:lang="pt-PT" state="translated">Problema do Bloom</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Problema d0 Bloom</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="pt-PT">Problema de Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomIntegrityDialog.ReportProblem">
         <source xml:lang="en">Report Problem</source>
         <note>ID: BloomIntegrityDialog.ReportProblem</note>
-        <target xml:lang="pt-PT" state="translated">Reportar problema</target>
+        <target xml:lang="pt-PT" state="translated">Reportar Problema</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Reportar problema</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
@@ -227,12 +236,12 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal">
         <source xml:lang="en">Cjk-Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal</note>
-        <target xml:lang="pt-PT" state="needs-translation">Cjk-Decimal</target>
+        <target xml:lang="pt-PT" state="translated">Cjk-Decimal</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal">
         <source xml:lang="en">Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal</note>
-        <target xml:lang="pt-PT" state="needs-translation">Decimal</target>
+        <target xml:lang="pt-PT" state="translated">Decimal</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari">
         <source xml:lang="en">Devanagari</source>
@@ -247,7 +256,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="pt-PT" state="needs-translation">Gujarati</target>
+        <target xml:lang="pt-PT" state="translated">Gujarati</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi">
         <source xml:lang="en">Gurmukhi</source>
@@ -2734,13 +2743,13 @@
         <source xml:lang="en">PDF Not Saved</source>
         <note>ID: PublishTab.PdfNotSaved</note>
         <note>title for the message box</note>
-        <target xml:lang="pt-PT" state="needs-translation">PDF Not Saved</target>
+        <target xml:lang="pt-PT" state="translated">PDF não salvo</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
-        <target xml:lang="pt-PT" state="needs-translation">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</target>
+        <target xml:lang="pt-PT" state="translated">O arquivo em PDF não foi salvo porque você optou por não permitir gerar um "PDF para impressão".</target>
       </trans-unit>
       <trans-unit id="PublishTab.PrintButton">
         <source xml:lang="en">&amp;Print...</source>
@@ -2751,7 +2760,7 @@
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</target>
+        <target xml:lang="pt-PT" state="translated">Bloom usa os perfis de cores da Adobe para converter arquivos em PDF usando cores de RGB para cores CMYK. Isto é parte da preparação para gerar um "PDF para impressão". Você deve concordar com a seguinte licença para realizar em tarefa em Bloom.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Publish">
         <source xml:lang="en">Publish</source>
@@ -2836,7 +2845,7 @@
       <trans-unit id="PublishTab.Upload.GiveBack">
         <source xml:lang="en">It’s easy to “give back”</source>
         <note>ID: PublishTab.Upload.GiveBack</note>
-        <target xml:lang="pt-PT" state="needs-translation">It’s easy to “give back”</target>
+        <target xml:lang="pt-PT" state="translated">É fácil "retribuir"</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.IncompleteTranslation">
         <source xml:lang="en">(incomplete translation)</source>
