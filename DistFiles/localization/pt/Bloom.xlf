@@ -697,7 +697,10 @@
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="pt-PT" state="translated">Porque esta é uma coleção de fonte, Bloom não está oferecendo Shells existentes como fontes para os novos Shells. Se você quiser adicionar um idioma a um Shell, em vez você precisa editar a coleção que contém o shell, ao invés de fazer uma cópia dele. Além disso, o calendário atualmente não pode ser usado para fazer um novo Shell.</target>
+        <target xml:lang="pt-PT" state="translated">Uma vez que esta é uma coleção de fonte, Bloom não está oferecendo Shells existentes como fontes para os novos Shells. Se você quiser adicionar um idioma a um Shell, você precisa editar a coleção que contém o shell, ao invés de fazer uma cópia dele. Além disso, o atual calendário não pode ser usado para fazer um novo Shell.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Porque esta é uma coleção de fonte, Bloom não está oferecendo Shells existentes como fontes para os novos Shells. Se você quiser adicionar um idioma a um Shell, em vez você precisa editar a coleção que contém o shell, ao invés de fazer uma cópia dele. Além disso, o calendário atualmente não pode ser usado para fazer um novo Shell.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton">
         <source xml:lang="en">Make Bloom Pack</source>
@@ -787,7 +790,10 @@
       <trans-unit id="CollectionTab.UpToDate">
         <source xml:lang="en">Your Bloom is up to date.</source>
         <note>ID: CollectionTab.UpToDate</note>
-        <target xml:lang="pt-PT" state="translated">Sua Bloom é até à data.</target>
+        <target xml:lang="pt-PT" state="translated">Seu Bloom está atualizado.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Sua Bloom é até à data.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateCheckInProgress">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
@@ -797,7 +803,10 @@
       <trans-unit id="CollectionTab.UpdateFailed">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
         <note>ID: CollectionTab.UpdateFailed</note>
-        <target xml:lang="pt-PT" state="translated">Uma nova versão parece estar disponível, não foi possível instalá-lo.</target>
+        <target xml:lang="pt-PT" state="translated">Uma nova versão parece estar disponível, mas não foi possível instalá-lo.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Uma nova versão parece estar disponível, não foi possível instalá-lo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateInstalled">
         <source xml:lang="en">Update for {0} is ready.</source>
@@ -862,7 +871,10 @@
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Seguinte</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Próximo</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">&amp;Seguinte</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.NextButton">
         <source xml:lang="en">Next</source>
