@@ -139,20 +139,26 @@
       <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
-        <target xml:lang="pt-PT" state="translated">Esta formatação é para todas as caixas de texto {0} com estilo '{1}'.</target>
+        <target xml:lang="pt-PT" state="translated">Esta formatação é para todas as caixas de texto de {0} com estilo '{1}'.</target>
         <alt-trans>
-          <target xml:lang="pt-PT">Esta formatação é para todas as caixas de texto de {0} com estilo '{1}'.</target>
+          <target xml:lang="pt-PT">Esta formatação é para todas as caixas de texto {0} com estilo '{1}'.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
-        <target xml:lang="pt-PT" state="translated">Desculpa, os modelos de leitor não permitem alterações de formatação.</target>
+        <target xml:lang="pt-PT" state="translated">Desculpe, os modelos de leitor não permitem alterações de formatação.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Desculpa, os modelos de leitor não permitem alterações de formatação.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
         <target xml:lang="pt-PT" state="translated">Bloom tinha um problema ao ler este livro e se recuperou restaurando um backup recente. Por favor verifique os alterações recentes neste livro. Se isso acontece sem nenhum motivo aparente, por favor clique em detalhes abaixo e informe-nos.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bloom teve um problema ao ler este livro. Foi restaurado um backup recente. Por favor, verifique os alterações recentes neste livro. Se isso acontecer sem nenhum motivo aparente, por favor, clique em Detalhes abaixo e informe-nos.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
@@ -165,12 +171,18 @@
       <trans-unit id="Browser.CopyTroubleshootingInfo">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="pt-PT" state="translated">Copiar informações sobre solução de problemas</target>
+        <target xml:lang="pt-PT" state="translated">Copiar informações para solução de problemas</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Copiar informações sobre solução de problemas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Browser.OpenPageInFirefox">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
-        <target xml:lang="pt-PT" state="translated">Abrir uma página no Firefox (que deve ficar na variável de ambiente PATH)</target>
+        <target xml:lang="pt-PT" state="translated">Abrir a página no Firefox (que deve ficar na variável de ambiente PATH)</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Abrir uma página no Firefox (que deve ficar na variável de ambiente PATH)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -180,7 +192,10 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
         <source xml:lang="en">Automatically update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
-        <target xml:lang="pt-PT" state="translated">Atualizar Automaticamente</target>
+        <target xml:lang="pt-PT" state="translated">Atualizar Automaticamente o Bloom</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Atualizar Automaticamente</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
         <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
@@ -195,7 +210,10 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
         <source xml:lang="en">(Experimental) Show Send/Receive Controls</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive</note>
-        <target xml:lang="pt-PT" state="translated">(Experimental) Mostrar Controles Enviar/Receber</target>
+        <target xml:lang="pt-PT" state="translated">(Experimental) Mostrar Controles de Enviar/Receber</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">(Experimental) Mostrar Controles Enviar/Receber</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
         <source xml:lang="en">Use Image Server to reduce memory usage with large images.</source>
@@ -206,7 +224,10 @@
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
-        <target xml:lang="pt-PT" state="translated">Bloom esta trocando a fonte padrão de"{0}" para o novo "Andika novo básico".</target>
+        <target xml:lang="pt-PT" state="translated">Bloom esta trocando a fonte padrão de "{0}" para o novo "Andika New Basic".</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bloom esta trocando a fonte padrão de"{0}" para o novo "Andika novo básico".</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
@@ -216,7 +237,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="pt-PT" state="translated">Elaboração de livros</target>
+        <target xml:lang="pt-PT" state="translated">Criação de livros</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Elaboração de livros</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
         <source xml:lang="en">Branding</source>
