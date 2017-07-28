@@ -18,7 +18,10 @@
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
-        <target xml:lang="pt-PT" state="translated">Possivelmente, este é um Bloom Pack antigo criado antes que os Bloom Packs poderiam lidar com caracteres especiais em os nomes de arquivo. Talvez você possa pedir ao autor para recriá-lo usando uma versão atual. Se isso não for possível, talvez um especialista técnico poderá repará-lo.</target>
+        <target xml:lang="pt-PT" state="translated">Possivelmente, este é um Bloom Pack antigo criado antes dos Bloom Packs poderem lidar com caracteres especiais nos nomes de arquivo. Caso seja possível, peça ao autor para recriá-lo usando uma versão atual. Se isso não for possível, talvez um técnico possa repará-lo.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Possivelmente, este é um Bloom Pack antigo criado antes que os Bloom Packs poderiam lidar com caracteres especiais em os nomes de arquivo. Talvez você possa pedir ao autor para recriá-lo usando uma versão atual. Se isso não for possível, talvez um especialista técnico poderá repará-lo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
         <source xml:lang="en">Bloom Pack Installation</source>
@@ -28,7 +31,10 @@
       <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstalled</note>
-        <target xml:lang="pt-PT" state="translated">O coleção {0} agora está pronta para uso neste computador.</target>
+        <target xml:lang="pt-PT" state="translated">O coleção {0} está pronta para uso neste computador.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">O coleção {0} agora está pronta para uso neste computador.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstaller">
         <source xml:lang="en">Bloom Pack Installer</source>
@@ -39,7 +45,10 @@
       <trans-unit id="BloomPackInstallDialog.CorruptBloomPack">
         <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
         <note>ID: BloomPackInstallDialog.CorruptBloomPack</note>
-        <target xml:lang="pt-PT" state="translated">Este Bloom Pack parece ser incompleto ou corrompido.</target>
+        <target xml:lang="pt-PT" state="translated">Este Bloom Pack parece estar incompleto ou corrompido.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Este Bloom Pack parece ser incompleto ou corrompido.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.DoesNotExist">
         <source xml:lang="en">{0} does not exist</source>
