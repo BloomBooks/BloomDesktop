@@ -421,6 +421,12 @@ function doKeypressMarkup(): void {
             // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
             // actually go back to where it was: it gets shifted to the right.
             const bookmarks = ckeditorSelection.createBookmarks(true);
+
+            // For some reason, we have cases, mostly (always?) on paste, where
+            // ckeditor is inserting tons of comments which are messing with our parsing
+            // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
+            removeCommentsFromEditableHtml(editableDiv);
+
             currentTool.updateMarkup();
 
             //set the selection to wherever our bookmark node ended up
@@ -434,6 +440,12 @@ function doKeypressMarkup(): void {
         keypressTimer = null;
 
     }, 500);
+}
+
+// exported for testing
+export function removeCommentsFromEditableHtml(editable: HTMLElement) {
+    // [\s\S] is a hack representing every character (including newline)
+    editable.innerHTML = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
 }
 
 var resizeTimer;
@@ -519,4 +531,4 @@ $(document).ready(function () {
 
 $(parent.window.document).ready(function () {
     $(parent.window.document).find('#pure-toggle-right').change(function () { showToolboxChanged(!this.checked); });
-})
+});
