@@ -2707,25 +2707,25 @@
         <source xml:lang="en">Finished making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.Finished</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="pt-PT" state="needs-translation">Finished making PDF from HTML</target>
+        <target xml:lang="pt-PT" state="translated">Conversão do arquivo em HTML para PDF concluída</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>
         <note>Message displayed in a progress report dialog box, a partial step of "Creating PDF"</note>
-        <target xml:lang="pt-PT" state="needs-translation">Making PDF from HTML</target>
+        <target xml:lang="pt-PT" state="translated">Convertendo arquivo de HTML para PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingPageOfPdf">
         <source xml:lang="en">Making Page {0} of the PDF</source>
         <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
-        <target xml:lang="pt-PT" state="needs-translation">Making Page {0} of the PDF</target>
+        <target xml:lang="pt-PT" state="translated">Criando página {0} do PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Printshop">
         <source xml:lang="en">PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.Printshop</note>
         <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable.  Don't use vertical bar (|) in this string!</note>
-        <target xml:lang="pt-PT" state="needs-translation">PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)</target>
+        <target xml:lang="pt-PT" state="translated">PDF para gráfica (CMYK - US Web Coated (SWOP) v2)</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.TryMoreMemory">
         <source xml:lang="en">Try doing this on a computer with more memory</source>
@@ -3240,12 +3240,12 @@ Deseja continuar?</target>
       <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true">
         <source xml:lang="en">it's</source>
         <note>ID: ReaderSetup.Letters.LetterHelp3</note>
-        <target xml:lang="pt-PT" state="needs-translation">it's</target>
+        <target xml:lang="pt-PT" state="translated">it's</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true">
         <source xml:lang="en">.</source>
         <note>ID: ReaderSetup.Letters.LetterHelp4</note>
-        <target xml:lang="pt-PT" state="needs-translation">.</target>
+        <target xml:lang="pt-PT" state="translated">.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
         <source xml:lang="en">Level</source>
@@ -3425,7 +3425,7 @@ Deseja continuar?</target>
       <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
         <source xml:lang="en">SynPhony</source>
         <note>ID: ReaderSetup.Synphony</note>
-        <target xml:lang="pt-PT" state="needs-translation">SynPhony</target>
+        <target xml:lang="pt-PT" state="translated">SynPhony</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
         <source xml:lang="en">Things to remember for this level:</source>
@@ -3702,7 +3702,7 @@ Deseja continuar?</target>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
         <source xml:lang="en">1</source>
         <note>ID: TemplateBooks.PageLabel.1</note>
-        <target xml:lang="pt-PT" state="needs-translation">1</target>
+        <target xml:lang="pt-PT" state="translated">1</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1 Problem" sil:dynamic="true">
         <source xml:lang="en">1 Problem</source>
