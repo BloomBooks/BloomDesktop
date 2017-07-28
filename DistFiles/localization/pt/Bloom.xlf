@@ -332,7 +332,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="pt-PT" state="translated">Hebreu</target>
+        <target xml:lang="pt-PT" state="translated">Hebreico</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Hebreu</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
         <source xml:lang="en">Kannada</source>
@@ -880,7 +883,10 @@
         <source xml:lang="en">Next</source>
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
-        <target xml:lang="pt-PT" state="translated">Seguinte</target>
+        <target xml:lang="pt-PT" state="translated">Próximo</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Seguinte</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.OK" sil:dynamic="true">
         <source xml:lang="en">OK</source>
