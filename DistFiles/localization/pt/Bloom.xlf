@@ -602,7 +602,10 @@
       <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
         <source xml:lang="en">Update Thumbnail</source>
         <note>ID: CollectionTab.BookMenu.UpdateThumbnail</note>
-        <target xml:lang="pt-PT" state="translated">Atualizar a miniatura</target>
+        <target xml:lang="pt-PT" state="translated">Atualizar o modelo</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Atualizar a miniatura</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourceHeading">
         <source xml:lang="en">Sources For New Books</source>
@@ -612,12 +615,18 @@
       <trans-unit id="CollectionTab.BookSourcesLockNotice">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
         <note>ID: CollectionTab.BookSourcesLockNotice</note>
-        <target xml:lang="pt-PT" state="translated">Esta coleção está trancada, então novos livros não podem ser adicionado/removido.</target>
+        <target xml:lang="pt-PT" state="translated">Esta coleção está bloqueada. Novos livros não podem ser adicionado/removido.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Esta coleção está trancada, então novos livros não podem ser adicionado/removido.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
-        <target xml:lang="pt-PT" state="translated">Livros de BloomLibrary.org</target>
+        <target xml:lang="pt-PT" state="translated">Livros da BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Livros de BloomLibrary.org</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
         <source xml:lang="en">Do Updates of All Books</source>
@@ -637,12 +646,18 @@
       <trans-unit id="CollectionTab.CollectionMenu.showHistory">
         <source xml:lang="en">Collection History...</source>
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>
-        <target xml:lang="pt-PT" state="translated">Historia da Coleção...</target>
+        <target xml:lang="pt-PT" state="translated">Histórico da Coleção...</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Historia da Coleção...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.showNotes">
         <source xml:lang="en">Collection Notes...</source>
         <note>ID: CollectionTab.CollectionMenu.showNotes</note>
-        <target xml:lang="pt-PT" state="translated">Notas Sobre Coleção...</target>
+        <target xml:lang="pt-PT" state="translated">Notas Sobre a Coleção...</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Notas Sobre Coleção...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionTabLabel">
         <source xml:lang="en">Collections</source>
