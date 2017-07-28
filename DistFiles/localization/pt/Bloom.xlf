@@ -106,7 +106,10 @@
       <trans-unit id="BloomPackInstallDialog.UnableToReplace">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
-        <target xml:lang="pt-PT" state="translated">Bloom não foi capaz de remover a cópia existente do '{0}'. Feche o Bloom se estiver em execução &amp; e tente novamente. Caso contrário, reinicie o computador e tente novamente.</target>
+        <target xml:lang="pt-PT" state="translated">Bloom não foi capaz de remover a cópia existente do '{0}'. Feche o Bloom se estiver em execução e tente novamente. Caso contrário, reinicie o computador e tente novamente.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bloom não foi capaz de remover a cópia existente do '{0}'. Feche o Bloom se estiver em execução &amp; e tente novamente. Caso contrário, reinicie o computador e tente novamente.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pt-PT">Bloom não foi capaz de remover a cópia existente do '{0}'. Pare Bloom se estiver em execução e tente novamente. Caso contrário, tente novamente depois de reiniciar seu computador.</target>
         </alt-trans>
@@ -136,7 +139,10 @@
       <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
-        <target xml:lang="pt-PT" state="translated">Esta formatação é para todas as caixas de texto de {0} com estilo '{1}'.</target>
+        <target xml:lang="pt-PT" state="translated">Esta formatação é para todas as caixas de texto {0} com estilo '{1}'.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Esta formatação é para todas as caixas de texto de {0} com estilo '{1}'.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
@@ -151,7 +157,10 @@
       <trans-unit id="BookStorage.FolderMoved">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="pt-PT" state="translated">Parece que alguma parte do caminho da pasta para este livro tenha sido movido ou renomeado. Como resultado, não é possível salvar suas alterações nesta página e terá que sair agora. Se você não renomeou ou movido arquivos, por favor clique em Detalhes abaixo e relata o problema para os programadores.</target>
+        <target xml:lang="pt-PT" state="translated">Parece que alguma parte do caminho da pasta para este livro tenha sido movido ou renomeado. Como resultado, o Bloom não conseguiu salvar suas alterações nesta página e terá que sair agora. Se você não renomeou ou moveu items, por favor clique em Detalhes e relate o problema para os programadores.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Parece que alguma parte do caminho da pasta para este livro tenha sido movido ou renomeado. Como resultado, não é possível salvar suas alterações nesta página e terá que sair agora. Se você não renomeou ou movido arquivos, por favor clique em Detalhes abaixo e relata o problema para os programadores.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Browser.CopyTroubleshootingInfo">
         <source xml:lang="en">Copy Troubleshooting Information</source>
