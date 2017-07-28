@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<!-- This makes defaults for various properties unless they are set from the command line or TeamCity parameter settings.
 	Typically command line includes /p:BUILD_NUMBER=3.1.22.0 (all 4 digits required).
 	May include something like /p:channel=Alpha.-->
@@ -221,7 +221,7 @@
 		<!-- This is the command that actually runs Squirrel. Usually the exe invoked here is called Squirrel. However, we're building our own
 		version, and it's easiest to go with the exe name that the Squirrel build process actually produces.
 		The relaseDir here is a shared drive for all the build agents (though for now we only use one, because only it has the signing data). -->
-		<Exec Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu'"/>
+		<Exec Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu' --framework-version=net461"/>
 
 		<Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
 			  DestinationFiles="$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"
