@@ -163,7 +163,10 @@
       <trans-unit id="BookStorage.FolderMoved">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="pt-PT" state="translated">Parece que alguma parte do caminho da pasta para este livro tenha sido movido ou renomeado. Como resultado, o Bloom não conseguiu salvar suas alterações nesta página e terá que sair agora. Se você não renomeou ou moveu items, por favor clique em Detalhes e relate o problema para os programadores.</target>
+        <target xml:lang="pt-PT" state="translated">Parece que alguma parte do caminho da pasta deste livro foi movido ou renomeado. Como resultado, o Bloom não conseguiu salvar suas alterações nesta página e terá de ser fechado. Se você não renomeou ou moveu items, por favor, clique em Detalhes e relate o problema aos desenvolvedores.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Parece que alguma parte do caminho da pasta para este livro tenha sido movido ou renomeado. Como resultado, o Bloom não conseguiu salvar suas alterações nesta página e terá que sair agora. Se você não renomeou ou moveu items, por favor clique em Detalhes e relate o problema para os programadores.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pt-PT">Parece que alguma parte do caminho da pasta para este livro tenha sido movido ou renomeado. Como resultado, não é possível salvar suas alterações nesta página e terá que sair agora. Se você não renomeou ou movido arquivos, por favor clique em Detalhes abaixo e relata o problema para os programadores.</target>
         </alt-trans>
@@ -171,17 +174,17 @@
       <trans-unit id="Browser.CopyTroubleshootingInfo">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="pt-PT" state="translated">Copiar informações para solução de problemas</target>
+        <target xml:lang="pt-PT" state="translated">Copiar informações sobre solução de problemas</target>
         <alt-trans>
-          <target xml:lang="pt-PT">Copiar informações sobre solução de problemas</target>
+          <target xml:lang="pt-PT">Copiar informações para solução de problemas</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="Browser.OpenPageInFirefox">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
-        <target xml:lang="pt-PT" state="translated">Abrir a página no Firefox (que deve ficar na variável de ambiente PATH)</target>
+        <target xml:lang="pt-PT" state="translated">Abrir uma página no Firefox (que deve ficar na variável de ambiente PATH)</target>
         <alt-trans>
-          <target xml:lang="pt-PT">Abrir uma página no Firefox (que deve ficar na variável de ambiente PATH)</target>
+          <target xml:lang="pt-PT">Abrir a página no Firefox (que deve ficar na variável de ambiente PATH)</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -192,27 +195,33 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
         <source xml:lang="en">Automatically update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
-        <target xml:lang="pt-PT" state="translated">Atualizar Automaticamente o Bloom</target>
+        <target xml:lang="pt-PT" state="translated">Atualizar Automaticamente</target>
         <alt-trans>
-          <target xml:lang="pt-PT">Atualizar Automaticamente</target>
+          <target xml:lang="pt-PT">Atualizar Automaticamente o Bloom</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
         <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
         <target xml:lang="pt-PT" state="translated">Mostrar comandos experimentais (por exemplo, exportar XML para o InDesign)</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Mostrar comandos experimentais (ex: exportar XML para o InDesign)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
         <target xml:lang="pt-PT" state="translated">Mostrar modelos experimentais (por exemplo, dicionário de imagens)</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Mostrar modelos experimentais (ex: dicionário de imagens)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
         <source xml:lang="en">(Experimental) Show Send/Receive Controls</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive</note>
-        <target xml:lang="pt-PT" state="translated">(Experimental) Mostrar Controles de Enviar/Receber</target>
+        <target xml:lang="pt-PT" state="translated">(Experimental) Mostrar Controles Enviar/Receber</target>
         <alt-trans>
-          <target xml:lang="pt-PT">(Experimental) Mostrar Controles Enviar/Receber</target>
+          <target xml:lang="pt-PT">(Experimental) Mostrar Controles de Enviar/Receber</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
@@ -418,7 +427,10 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
-        <target xml:lang="pt-PT" state="translated">Cambiar...</target>
+        <target xml:lang="pt-PT" state="translated">Alterar...</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Cambiar...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
         <source xml:lang="en">Language 1</source>
