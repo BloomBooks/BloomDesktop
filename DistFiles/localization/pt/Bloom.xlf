@@ -69,12 +69,18 @@
       <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
-        <target xml:lang="pt-PT" state="translated">Bloom já está funcionando, mas o conteúdo não será exibido até a próxima vez que você executar Bloom</target>
+        <target xml:lang="pt-PT" state="translated">Bloom já está funcionando, mas seu conteúdo não será exibido até a próxima vez que você executar-lo</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bloom já está funcionando, mas o conteúdo não será exibido até a próxima vez que você executar Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.NotInstalled">
         <source xml:lang="en">The Bloom collection will not be installed.</source>
         <note>ID: BloomPackInstallDialog.NotInstalled</note>
-        <target xml:lang="pt-PT" state="translated">A coleção de Bloom não será instalada.</target>
+        <target xml:lang="pt-PT" state="translated">A coleção do Bloom não será instalada.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">A coleção de Bloom não será instalada.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Opening">
         <source xml:lang="en">Opening {0}...</source>
@@ -84,28 +90,43 @@
       <trans-unit id="BloomPackInstallDialog.Replace">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
         <note>ID: BloomPackInstallDialog.Replace</note>
-        <target xml:lang="pt-PT" state="translated">Este computador já tem uma coleção de Bloom chamada '{0}'. Você quer substituí-lo com uma coleção deste Bloom Pack?</target>
+        <target xml:lang="pt-PT" state="translated">Este computador já tem uma coleção do Bloom chamada '{0}'. Você quer substituí-lo pela coleção deste Bloom Pack?</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Este computador já tem uma coleção de Bloom chamada '{0}'. Você quer substituí-lo com uma coleção deste Bloom Pack?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder">
         <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
         <note>ID: BloomPackInstallDialog.SingleCollectionFolder</note>
-        <target xml:lang="pt-PT" state="translated">Os Bloom Packs devem ter apenas uma única pasta de coleção no nível superior da Arquivo ZIP.</target>
+        <target xml:lang="pt-PT" state="translated">Os Bloom Packs devem ter apenas uma única pasta de coleção no nível superior do arquivo .ZIP.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Os Bloom Packs devem ter apenas uma única pasta de coleção no nível superior da Arquivo ZIP.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.UnableToReplace">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
-        <target xml:lang="pt-PT" state="translated">Bloom não foi capaz de remover a cópia existente do '{0}'. Pare Bloom se estiver em execução e tente novamente. Caso contrário, tente novamente depois de reiniciar seu computador.</target>
+        <target xml:lang="pt-PT" state="translated">Bloom não foi capaz de remover a cópia existente do '{0}'. Feche o Bloom se estiver em execução &amp; e tente novamente. Caso contrário, reinicie o computador e tente novamente.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bloom não foi capaz de remover a cópia existente do '{0}'. Pare Bloom se estiver em execução e tente novamente. Caso contrário, tente novamente depois de reiniciar seu computador.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, then release the key.</source>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
-        <target xml:lang="pt-PT" state="translated">Para selecionar, use a roda do rato (mouse) ou apontar para o que você quer e em seguida solte a chave.</target>
+        <target xml:lang="pt-PT" state="translated">Para selecionar, use a botão central do mouse ou aponte para o que você quer e em seguida solte a tecla.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Para selecionar, use a roda do rato (mouse) ou apontar para o que você quer e em seguida solte a chave.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true">
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.DefaultForText</note>
-        <target xml:lang="pt-PT" state="translated">Esta formatação é o padrão para todas as caixas de texto com estilo '{0}'.</target>
+        <target xml:lang="pt-PT" state="translated">Esta formatação é padrão para todas as caixas de texto com estilo '{0}'.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Esta formatação é o padrão para todas as caixas de texto com estilo '{0}'.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.ForText" sil:dynamic="true">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
