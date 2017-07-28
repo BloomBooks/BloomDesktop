@@ -1078,7 +1078,10 @@
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown.ToolTip</note>
-        <target xml:lang="pt-PT" state="translated">Escolha o idioma para fazer a isto um livro bilingue ou trilingue</target>
+        <target xml:lang="pt-PT" state="translated">Escolha a língua para fazer este um livro bilíngue ou trilíngue</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Escolha o idioma para fazer a isto um livro bilingue ou trilingue</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton">
         <source xml:lang="en">Copy</source>
@@ -1093,7 +1096,10 @@
       <trans-unit id="EditTab.CopyButton.ToolTipWhenDisabled">
         <source xml:lang="en">You need to select some text before you can copy it</source>
         <note>ID: EditTab.CopyButton.ToolTipWhenDisabled</note>
-        <target xml:lang="pt-PT" state="translated">Você precisa selecionar algum texto antes que você pode copiá-lo</target>
+        <target xml:lang="pt-PT" state="translated">É preciso selecionar algum texto antes de poder copiá-lo</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Você precisa selecionar algum texto antes que você pode copiá-lo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CopyImageIPMetadataQuestion">
         <source xml:lang="en">Copy this information to all other pictures in this book?</source>
@@ -1109,7 +1115,10 @@
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true">
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
-        <target xml:lang="pt-PT" state="translated">Cambiar Cofiguração (layout)</target>
+        <target xml:lang="pt-PT" state="translated">Alterar Cofiguração (layout)</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Cambiar Cofiguração (layout)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
         <source xml:lang="en"> or </source>
@@ -1145,7 +1154,10 @@
       <trans-unit id="EditTab.CutButton.ToolTipWhenDisabled">
         <source xml:lang="en">You need to select some text before you can cut it</source>
         <note>ID: EditTab.CutButton.ToolTipWhenDisabled</note>
-        <target xml:lang="pt-PT" state="translated">Você precisa selecionar algum texto antes de você pode cortá-la</target>
+        <target xml:lang="pt-PT" state="translated">Você precisa selecionar algum texto antes de poder recortá-la</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Você precisa selecionar algum texto antes de você pode cortá-la</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton">
         <source xml:lang="en">Remove\n  Page</source>
@@ -1171,7 +1183,10 @@
         <source xml:lang="en">Bold</source>
         <note>ID: EditTab.DirectFormatting.Bold</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="pt-PT" state="translated">Bold (realce)</target>
+        <target xml:lang="pt-PT" state="translated">Negrito</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bold (realce)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Italic" sil:dynamic="true">
         <source xml:lang="en">Italic</source>
