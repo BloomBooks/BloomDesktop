@@ -261,7 +261,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi">
         <source xml:lang="en">Gurmukhi</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
-        <target xml:lang="pt-PT" state="needs-translation">Gurmukhi</target>
+        <target xml:lang="pt-PT" state="translated">Gurmukhi</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
         <source xml:lang="en">Hebrew</source>
@@ -271,12 +271,12 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
         <source xml:lang="en">Kannada</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada</note>
-        <target xml:lang="pt-PT" state="needs-translation">Kannada</target>
+        <target xml:lang="pt-PT" state="translated">Kannada</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer">
         <source xml:lang="en">Khmer</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
-        <target xml:lang="pt-PT" state="needs-translation">Khmer</target>
+        <target xml:lang="pt-PT" state="translated">Khmer</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao">
         <source xml:lang="en">Lao</source>
@@ -301,12 +301,12 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar">
         <source xml:lang="en">Myanmar</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
-        <target xml:lang="pt-PT" state="needs-translation">Myanmar</target>
+        <target xml:lang="pt-PT" state="translated">Myanmar</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya">
         <source xml:lang="en">Oriya</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
-        <target xml:lang="pt-PT" state="needs-translation">Oriya</target>
+        <target xml:lang="pt-PT" state="translated">Oriya</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
         <source xml:lang="en">Page Numbering Style</source>
@@ -326,7 +326,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
         <source xml:lang="en">Telugu</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
-        <target xml:lang="pt-PT" state="needs-translation">Telugu</target>
+        <target xml:lang="pt-PT" state="translated">Telugu</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai">
         <source xml:lang="en">Thai</source>
@@ -774,12 +774,12 @@
       <trans-unit id="Common.OK" sil:dynamic="true">
         <source xml:lang="en">OK</source>
         <note>ID: Common.OK</note>
-        <target xml:lang="pt-PT" state="needs-translation">OK</target>
+        <target xml:lang="pt-PT" state="translated">OK</target>
       </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="pt-PT" state="needs-translation">&amp;OK</target>
+        <target xml:lang="pt-PT" state="translated">&amp;OK</target>
       </trans-unit>
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
@@ -873,7 +873,10 @@
       <trans-unit id="EditTab.AddTextBoxToImage" sil:dynamic="true">
         <source xml:lang="en">Add Text Box To Image</source>
         <note>ID: EditTab.AddTextBoxToImage</note>
-        <target xml:lang="pt-PT" state="needs-translation">Add Text Box To Image</target>
+        <target xml:lang="pt-PT" state="translated">Adicionar Caixa de Texto a Imagem</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Adicionar caixa de texto a imagem</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
@@ -1021,7 +1024,7 @@
       <trans-unit id="EditTab.DeleteTextBoxFromImage" sil:dynamic="true">
         <source xml:lang="en">Delete Text Box From Image</source>
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
-        <target xml:lang="pt-PT" state="needs-translation">Delete Text Box From Image</target>
+        <target xml:lang="pt-PT" state="translated">Deletar Caixa de Texto da Imagem</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
         <source xml:lang="en">Bold</source>
@@ -1100,7 +1103,7 @@
       <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.FormatDialog.Alignment</note>
-        <target xml:lang="pt-PT" state="needs-translation">Alignment</target>
+        <target xml:lang="pt-PT" state="translated">Alinhamento</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true">
         <source xml:lang="en">That style already exists. Please choose another name.</source>
@@ -1140,7 +1143,7 @@
       <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
         <source xml:lang="en">Font</source>
         <note>ID: EditTab.FormatDialog.Font</note>
-        <target xml:lang="pt-PT" state="needs-translation">Font</target>
+        <target xml:lang="pt-PT" state="translated">Fonte</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font face</source>
@@ -1150,7 +1153,7 @@
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
-        <target xml:lang="pt-PT" state="needs-translation">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</target>
+        <target xml:lang="pt-PT" state="translated">Alterar o tamanho do texto para todas as caixas com o estilo '{0}' e idioma '{1}'. \nTamanho atual é {2}pt.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font size</source>
