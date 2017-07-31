@@ -863,7 +863,31 @@ export default class AudioRecording {
         var test = fragment.text.replace(/<br *[^>]*\/?>/g, " ");
         // and some may contain only nbsp
         test = test.replace("&nbsp;", " ");
-        return !test.match(/^\s*$/);
+        if (this.isWhiteSpace(test))
+            return false;
+        return this.isTextOrHtmlWithText(test);
+    }
+
+    private isTextOrHtmlWithText(textOrHtml: string): Boolean {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(textOrHtml, "text/html");
+        if (doc && doc.documentElement) { //paranoia
+            // on error, parseFromString returns a document with a parseerror element
+            // rather than throwing an exception, so check for that
+            if (doc.getElementsByTagName('parsererror').length > 0) {
+                return false;
+            }
+            // textContent is the aggregation of the text nodes of all children
+            var content = doc.documentElement.textContent;
+            return !this.isWhiteSpace(content);
+        }
+        return false;
+    }
+
+    private isWhiteSpace(test: string): Boolean {
+        if (test.match(/^\s*$/))
+            return true;
+        return false;
     }
 
     private fireCSharpEvent(eventName, eventData): void {
