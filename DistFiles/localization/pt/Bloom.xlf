@@ -2301,7 +2301,10 @@
       <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
         <source xml:lang="en">Request a Feature (web)</source>
         <note>ID: HelpMenu.MakeASuggestionMenuItem</note>
-        <target xml:lang="pt-PT" state="translated">Fazer uma sugestão</target>
+        <target xml:lang="pt-PT" state="translated">Fazer uma sugestão (rede)</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Fazer uma sugestão</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.RegistrationMenuItem">
         <source xml:lang="en">Registration</source>
@@ -3546,7 +3549,7 @@ Deseja continuar?</target>
       <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
         <source xml:lang="en">set up the alphabet for this language.</source>
         <note>ID: ReaderSetup.SetupAlphabet</note>
-        <target xml:lang="pt-PT" state="translated">Configurar o alfabeto para este idioma.</target>
+        <target xml:lang="pt-PT" state="translated">configurar o alfabeto para este idioma.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true">
         <source xml:lang="en">What are sight words?</source>
