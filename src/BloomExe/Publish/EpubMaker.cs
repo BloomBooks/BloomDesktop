@@ -9,6 +9,7 @@ using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using BloomTemp;
@@ -68,7 +69,6 @@ namespace Bloom.Publish
 	public class EpubMaker : IDisposable
 	{
 		public const string kEPUBExportFolder = "ePUB export";
-		public const string kApiBrandingImage = "/bloom/api/branding/image";
 
 		public Book.Book Book
 		{
@@ -595,7 +595,7 @@ namespace Bloom.Publish
 				return null;
 			// Images are always directly in the folder
 			var srcPath = Path.Combine(Book.FolderPath, filename);
-			if (srcPath == kApiBrandingImage)
+			if (srcPath == BrandingApi.kApiBrandingImage)
 			{
 				isBrandingFile = true;
 				return FindBrandingImageIfPossible(url.NotEncoded);

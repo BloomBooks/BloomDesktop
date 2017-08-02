@@ -294,8 +294,8 @@ namespace Bloom.Book
 		/// something like "A blank page that allows to create custom items"; once
 		/// you modify that page, the description stops being accurate.
 		/// Now, I can think of scenarios where you'd want to keep description.
-		/// E.g. you have an alphabet chart, you add that to another template where hey, 
-		/// it's still an alphabet chart. This is a judgment call, which is worse. 
+		/// E.g. you have an alphabet chart, you add that to another template where hey,
+		/// it's still an alphabet chart. This is a judgment call, which is worse.
 		/// I'm judging that it's worse to have an out-of-date description than a missing one.
 		/// </remarks>
 		private static void ClearAwayPageDescription(XmlNode pageDiv)
@@ -372,7 +372,7 @@ namespace Bloom.Book
 
 				var helper = new XMatterHelper(storage.Dom, _collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation);
+				helper.InjectXMatter(data.WritingSystemAliases, sizeAndOrientation, _collectionSettings.BrandingProjectName, storage.FolderPath);
 				//TranslationGroupManager.PrepareDataBookTranslationGroups(storage.Dom,languages);
 			}
 		}

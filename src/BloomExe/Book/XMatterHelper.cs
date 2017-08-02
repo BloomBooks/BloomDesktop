@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Bloom.Api;
 using Bloom.Collection;
+using Bloom.Publish;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
@@ -121,7 +123,13 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument XMatterDom { get; set; }
 
-		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout)
+		// for testing. Real code should supply the bookFolderPath argument.
+		internal void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout)
+		{
+			InjectXMatter(writingSystemCodes, layout, null, null);
+		}
+
+		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout, string branding, string bookFolderPath)
 		{
 			//don't want to pollute shells with this content
 			if (!string.IsNullOrEmpty(FolderPathForCopyingXMatterFiles))
@@ -148,6 +156,8 @@ namespace Bloom.Book
 				var newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as XmlElement;
 				//give a new id, else thumbnail caches get messed up becuase every book has, for example, the same id for the cover.
 				newPageDiv.SetAttribute("id", Guid.NewGuid().ToString());
+
+				CleanupBrandingImages(newPageDiv, branding, bookFolderPath);
 
 				if (IsBackMatterPage(xmatterPage))
 				{
@@ -185,6 +195,27 @@ namespace Bloom.Book
 				}
 			}
 			InjectFlyleafIfNeeded(layout);
+		}
+
+		private void CleanupBrandingImages(XmlElement newPageDiv, string branding, string bookFolderPath)
+		{
+			if (branding == null)
+				return; // in testing.
+			var prefix = BrandingApi.kApiBrandingImage + "?id=";
+			foreach (XmlElement imageElt in newPageDiv.SafeSelectNodes("//img"))
+			{
+				var src = imageElt.Attributes["src"]?.Value;
+				if (src == null || !src.StartsWith(prefix))
+					continue;
+				var fileName = src.Substring(prefix.Length);
+				var pathToRealImage = BrandingApi.FindBrandingImageFileIfPossible(branding, fileName);
+				if (!string.IsNullOrEmpty(pathToRealImage))
+				{
+					fileName = Path.GetFileName(pathToRealImage); // May have changed extension
+					RobustFile.Copy(pathToRealImage, Path.Combine(bookFolderPath, fileName), true);
+				}
+				imageElt.SetAttribute("src", fileName);
+			}
 		}
 
 

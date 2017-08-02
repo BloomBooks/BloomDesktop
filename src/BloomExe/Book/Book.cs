@@ -999,7 +999,7 @@ namespace Bloom.Book
 			// this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
 			// still requiring it to be a valid layout.
 			layout = Layout.FromDomAndChoices(bookDOM, layout, _storage.GetFileLocator());
-			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
+			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, _collectionSettings.BrandingProjectName, _storage.FolderPath);
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
 			TranslationGroupManager.PrepareDataBookTranslationGroups(RawDom, dataBookLangs);
