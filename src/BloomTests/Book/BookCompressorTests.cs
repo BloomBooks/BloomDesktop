@@ -30,6 +30,30 @@ namespace BloomTests.Book
 			Assert.AreEqual(bookDirInfo.EnumerateFiles().Count(), zip.Count);
 		}
 
+		[Test]
+		public void CompressBookForDevice_OmitsUnwantedFiles()
+		{
+			var testBook = CreateBook();
+			var bookDirInfo = new DirectoryInfo(testBook.FolderPath);
+			// before we add the ones we want excluded note the number. Something in the compression process, probably
+			// in BringBookUpToDate, adds one more file, I think license.png.
+			// Then, testing that we do NOT eliminate thumbnail.png, which we eventually want for the reader book chooser UI.
+			var expectedCount = bookDirInfo.EnumerateFiles().Count() + 2;
+			// This unwanted file has to be real; just putting some text in it leads to out-of-memory failues when Bloom
+			// tries to make its background transparent.
+			File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(testBook.FolderPath, "thumbnail.png"));
+			File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(testBook.FolderPath, "thumbnail-256.png"));
+			File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(testBook.FolderPath, "thumbnail-70.png"));
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "book.BloomBookOrder"), @"This is unwanted");
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "book.pdf"), @"This is unwanted");
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "previewMode.css"), @"This is unwanted");
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "meta.json"), @"This is unwanted");
+
+			ZipFile zip = new ZipFile(BookCompressor.CompressBookForDevice(testBook));
+			Assert.True(zip.Count > 0);
+			Assert.AreEqual(expectedCount, zip.Count);
+		}
+
 		// re-use the images from another test (added LakePendOreille.jpg for these tests)
 		private const string _pathToTestImages = "src/BloomTests/ImageProcessing/images";
 

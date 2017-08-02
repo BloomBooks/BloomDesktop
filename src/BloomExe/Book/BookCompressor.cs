@@ -95,7 +95,18 @@ namespace Bloom.Book
 			{
 				if (ExcludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 					continue; // BL-2246: skip putting this one into the BloomPack
-				if (Path.GetFileName(filePath).StartsWith(BookStorage.PrefixForCorruptHtmFiles))
+				var fileName = Path.GetFileName(filePath).ToLowerInvariant();
+				if (fileName.StartsWith(BookStorage.PrefixForCorruptHtmFiles))
+					continue;
+				// Various stuff we keep in the book folder that is useful for editing or bloom library
+				// or displaying collections but not needed by the reader. The most important is probably
+				// eliminating the pdf, which can be very large. Note that we do NOT eliminate the
+				// basic thumbnail.png, as we want eventually to extract that to use in the Reader UI.
+				if (fileName=="thumbnail-70.png" || fileName=="thumbnail-256.png"
+					|| fileName == "meta.json" || fileName == "previewmode.css")
+					continue;
+				var extension = Path.GetExtension(fileName);
+				if (extension == ".pdf" || extension == ".bloombookorder")
 					continue;
 
 				FileInfo fi = new FileInfo(filePath);
@@ -114,11 +125,6 @@ namespace Bloom.Book
 				if (forReaderTools && (bookFile == filePath))
 				{
 					modifiedContent = Encoding.UTF8.GetBytes(GetBookReplacedWithTemplate(filePath));
-					newEntry.Size = modifiedContent.Length;
-				}
-				else if (forReaderTools && (Path.GetFileName(filePath)=="meta.json"))
-				{
-					modifiedContent = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(filePath));
 					newEntry.Size = modifiedContent.Length;
 				}
 				else if (reduceImages && ImageFileExtensions.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
