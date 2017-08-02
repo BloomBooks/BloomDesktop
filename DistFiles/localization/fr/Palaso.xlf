@@ -70,10 +70,10 @@
         <note>ID: Common.No</note>
         <target xml:lang="fr">Non</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="fr" state="translated">&amp;OK</target>
+        <target xml:lang="fr">&amp;OK</target>
       </trans-unit>
       <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
@@ -252,11 +252,11 @@
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
         <target xml:lang="fr">Cette liste doit inclure toutes les langues ISO-639, y compris les noms alternatifs figurant sur ethnologue.com.\n\nSi nécessaire utilisez l'option "langue non inscrite", qui sera sélectionnée par défaut.</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue" approved="yes">
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="fr" state="translated">Ethnologue.com</target>
+        <target xml:lang="fr">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
@@ -396,10 +396,10 @@
         <note>ID: MetadataEditor.CopyrightHolder</note>
         <target xml:lang="fr">Détenteur des droits</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CreativeCommons">
+      <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="fr" state="needs-translation">Creative Commons</target>
+        <target xml:lang="fr">Creative Commons</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
         <source xml:lang="en">Intergovernmental Version</source>
@@ -528,7 +528,10 @@
       <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="fr">Il s'agit d'un système d'écriture de droite à gauche.</target>
+        <target xml:lang="fr">Il s'agit d'un système d'écriture de d&amp;roite à gauche.</target>
+        <alt-trans>
+          <target xml:lang="fr">Il s'agit d'un système d'écriture de droite à gauche.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
