@@ -127,7 +127,7 @@
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Use {0}</target>
+        <target xml:lang="pt-PT" state="translated">Use {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop">
         <source xml:lang="en">Crop</source>
@@ -256,7 +256,7 @@
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="pt-PT" state="needs-translation">Ethnologue.com</target>
+        <target xml:lang="pt-PT" state="translated">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
@@ -399,7 +399,7 @@
       <trans-unit id="MetadataEditor.CreativeCommons">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="pt-PT" state="needs-translation">Creative Commons</target>
+        <target xml:lang="pt-PT" state="translated">Creative Commons</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
