@@ -762,15 +762,15 @@
         <note>In a wizard, this button takes you to the next step.</note>
         <target xml:lang="fr">Suivant</target>
       </trans-unit>
-      <trans-unit id="Common.OK" sil:dynamic="true">
+      <trans-unit id="Common.OK" sil:dynamic="true" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: Common.OK</note>
-        <target xml:lang="fr" state="needs-translation">OK</target>
+        <target xml:lang="fr">OK</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="fr" state="needs-translation">&amp;OK</target>
+        <target xml:lang="fr">&amp;OK</target>
       </trans-unit>
       <trans-unit id="Common.Optional" approved="yes">
         <source xml:lang="en">optional</source>
