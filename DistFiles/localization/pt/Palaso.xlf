@@ -498,7 +498,7 @@
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <target xml:lang="pt-PT" state="translated">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e "{2}" no Google</target>
+        <target xml:lang="pt-PT" state="translated">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e "{2}" no Google.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -579,9 +579,6 @@
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
         <target xml:lang="pt-PT" state="translated">Área de &amp;teste (Use esta área para digitar algo para testar o teclado.)</target>
-        <alt-trans>
-          <target xml:lang="pt-PT">&amp;Área de teste (Use esta área para digitar algo para testar o teclado.)</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
