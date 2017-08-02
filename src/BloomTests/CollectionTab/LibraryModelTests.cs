@@ -42,6 +42,7 @@ namespace BloomTests.CollectionTab
 			var f = new TemporaryFolder(_collection, "unittest-" + Guid.NewGuid());
 			File.WriteAllText(Path.Combine(f.Path, "one.htm"), "test");
 			File.WriteAllText(Path.Combine(f.Path, "one.css"), "test");
+			File.WriteAllText(Path.Combine(f.Path, "meta.json"), new BookMetaData().Json);
 			return f.Path;
 		}
 

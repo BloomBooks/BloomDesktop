@@ -23,7 +23,7 @@ namespace Bloom.Book
 		internal static readonly string[] ImageFileExtensions = new[] { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
 		// these files (if encountered) won't be included the compressed version
-		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav" };
+		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder" };
 
 		public static string CompressBookForDevice(Book book)
 		{
@@ -41,7 +41,7 @@ namespace Bloom.Book
 
 			using (var tempFile = TempFile.WithFilenameInTempFolder(book.Title + ExtensionForDeviceBloomBook))
 			{
-				CompressDirectory(tempFile.Path, bookFolderPath, "", reduceImages:true);
+				CompressDirectory(tempFile.Path, bookFolderPath, "", reduceImages:true, omitMetaJson: true);
 
 				// todo: if the code remains as is such that the caller just gets a path, it will be responsible
 				// for ensuring we aren't leaving temp files hanging around. But it might be better to eventually have this
@@ -52,7 +52,7 @@ namespace Bloom.Book
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false)
+			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
 			{
@@ -62,7 +62,7 @@ namespace Bloom.Book
 
 					var rootName = Path.GetFileName(directoryToCompress);
 					int dirNameOffset = directoryToCompress.Length - rootName.Length;
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, omitMetaJson);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -81,10 +81,11 @@ namespace Bloom.Book
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
+		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
 		/// <para> name="reduceImages">If true, image files are reduced in size to no larger than 300x300 before saving</para>
 		/// <remarks>Protected for testing purposes</remarks>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			bool forReaderTools, bool excludeAudio, bool reduceImages)
+			bool forReaderTools, bool excludeAudio, bool reduceImages, bool omitMetaJson = false)
 		{
 			if (excludeAudio && Path.GetFileName(directoryToCompress).ToLowerInvariant() == "audio")
 				return;
@@ -95,7 +96,17 @@ namespace Bloom.Book
 			{
 				if (ExcludedFileExtensionsLowerCase.Contains(Path.GetExtension(filePath.ToLowerInvariant())))
 					continue; // BL-2246: skip putting this one into the BloomPack
-				if (Path.GetFileName(filePath).StartsWith(BookStorage.PrefixForCorruptHtmFiles))
+				var fileName = Path.GetFileName(filePath).ToLowerInvariant();
+				if (fileName.StartsWith(BookStorage.PrefixForCorruptHtmFiles))
+					continue;
+				// Various stuff we keep in the book folder that is useful for editing or bloom library
+				// or displaying collections but not needed by the reader. The most important is probably
+				// eliminating the pdf, which can be very large. Note that we do NOT eliminate the
+				// basic thumbnail.png, as we want eventually to extract that to use in the Reader UI.
+				if (fileName=="thumbnail-70.png" || fileName=="thumbnail-256.png"
+					|| fileName == "previewmode.css")
+					continue;
+				if (fileName == "meta.json" && omitMetaJson)
 					continue;
 
 				FileInfo fi = new FileInfo(filePath);
@@ -116,7 +127,7 @@ namespace Bloom.Book
 					modifiedContent = Encoding.UTF8.GetBytes(GetBookReplacedWithTemplate(filePath));
 					newEntry.Size = modifiedContent.Length;
 				}
-				else if (forReaderTools && (Path.GetFileName(filePath)=="meta.json"))
+				else if (forReaderTools && (Path.GetFileName(filePath) == "meta.json"))
 				{
 					modifiedContent = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(filePath));
 					newEntry.Size = modifiedContent.Length;
