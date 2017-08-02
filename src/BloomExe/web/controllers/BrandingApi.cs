@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Bloom.Collection;
 using Newtonsoft.Json;
@@ -7,7 +8,16 @@ using SIL.IO;
 namespace Bloom.Api
 {
 	/// <summary>
-	/// Supports branding (e.g. logos) needed by projects
+	/// Supports branding (e.g. logos) needed by projects.
+	/// Currently we don't allow the image server to see these requests, which always occur in xmatter.
+	/// Instead, as part of the process of bringing xmatter up to date, we change the image src attributes
+	/// to point to the svg or png file which we copy into the book folder.
+	/// This process (in XMatterHelper.CleanupBrandingImages()) allows the books to look right when
+	/// opened in a browser and also in BloomReader. (It would also help with making Epubs, though that
+	/// code is already written to handle branding.)
+	/// Keeping this class active (a) because most of its logic is used by CleanupBrandingImages(),
+	/// and (b) as a safety net, in case there's some way an api/branding url still gets presented
+	/// to the image server.
 	/// </summary>
 	class BrandingApi
 	{
@@ -23,11 +33,12 @@ namespace Bloom.Api
 		{
 			server.RegisterEndpointHandler(kBrandingImageUrlPart, request =>
 			{
+				Debug.Fail("Books should no longer have branding api urls");
 				var fileName = request.RequiredFileNameOrPath("id");
 				var path = FindBrandingImageFileIfPossible(_collectionSettings.BrandingProjectName, fileName.NotEncoded);
 
 				// And this is perfectly normal, to not have a branding image at all, for a particular page:
-				if (string.IsNullOrEmpty(path))
+				if (String.IsNullOrEmpty(path))
 				{
 					request.Failed("");
 					// the HTML will need to be able to handle this invisibly... see http://stackoverflow.com/questions/22051573/how-to-hide-image-broken-icon-using-only-css-html-without-js
@@ -51,7 +62,7 @@ namespace Bloom.Api
 			var path = BloomFileLocator.GetOptionalBrandingFile(branding, filename);
 
 			// ... but if there is no SVG, we can actually send back a PNG instead, and that works fine:
-			if(string.IsNullOrEmpty(path))
+			if(String.IsNullOrEmpty(path))
 				path = BloomFileLocator.GetOptionalBrandingFile(branding, Path.ChangeExtension(filename, "png"));
 
 			return path;
@@ -75,7 +86,7 @@ namespace Bloom.Api
 			try
 			{
 				var settingsPath = BloomFileLocator.GetOptionalBrandingFile(brandingNameOrFolderPath, "settings.json");
-				if(!string.IsNullOrEmpty(settingsPath))
+				if(!String.IsNullOrEmpty(settingsPath))
 				{
 					var content = RobustFile.ReadAllText(settingsPath);
 					var settings = JsonConvert.DeserializeObject<Settings>(content);
@@ -94,5 +105,7 @@ namespace Bloom.Api
 			}
 			return null;
 		}
+
+		public const string kApiBrandingImage = "/bloom/api/branding/image";
 	}
 }
