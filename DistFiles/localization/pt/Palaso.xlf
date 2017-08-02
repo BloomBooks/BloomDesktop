@@ -63,7 +63,7 @@
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="pt-PT" state="translated">&amp; Cancelar</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Cancelar</target>
       </trans-unit>
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
@@ -73,7 +73,7 @@
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="pt-PT" state="needs-translation">&amp;OK</target>
+        <target xml:lang="pt-PT" state="translated">&amp;OK</target>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
@@ -100,12 +100,12 @@
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="pt-PT" state="translated">&amp; Cancelar</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Cancelar</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="pt-PT" state="translated">&amp; Deletar</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Deletar</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to {1}</source>
@@ -518,7 +518,7 @@
       <trans-unit id="WSFontControl.Font">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="pt-PT" state="translated">&amp; Fonte:</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Fonte:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
@@ -528,17 +528,17 @@
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="pt-PT" state="translated">Este é um &amp;sistema de escrita direito para esquerda.</target>
+        <target xml:lang="pt-PT" state="translated">Este é um sistema de escrita di&amp;reito para esquerda.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Size">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="pt-PT" state="translated">&amp; Tamanho:</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Tamanho:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Área de teste:</target>
+        <target xml:lang="pt-PT" state="translated">Área de &amp;teste:</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
@@ -578,7 +578,10 @@
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Área de teste (Use esta área para digitar algo para testar o teclado.)</target>
+        <target xml:lang="pt-PT" state="translated">Área de &amp;teste (Use esta área para digitar algo para testar o teclado.)</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">&amp;Área de teste (Use esta área para digitar algo para testar o teclado.)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
