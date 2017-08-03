@@ -79,18 +79,20 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     Step 3: Connect this computer to the device
                 </H1>
 
-                <BloomButton l10nKey="Publish.Android.ConnectUsb"
-                    l10nComment="Button that tells Bloom to connect to a device using a USB cable"
-                    enabled={this.state.stateId === "ReadyToConnect"}
-                    clickEndpoint="publish/android/connectUsb/start">
-                    Connect with USB cable
+                <div id="connect-buttons">
+                    <BloomButton l10nKey="Publish.Android.ConnectUsb"
+                        l10nComment="Button that tells Bloom to connect to a device using a USB cable"
+                        enabled={this.state.stateId === "ReadyToConnect"}
+                        clickEndpoint="publish/android/connectUsb/start">
+                        Connect with USB cable
                 </BloomButton>
-                <BloomButton l10nKey="Publish.Android.ConnectWifi"
-                    l10nComment="Button that tells Bloom to connect to a device using Wifi"
-                    enabled={this.state.stateId === "ReadyToConnect"}
-                    clickEndpoint="publish/android/connectWifi/start">
-                    Connect with WiFi
+                    <BloomButton l10nKey="Publish.Android.ConnectWifi"
+                        l10nComment="Button that tells Bloom to connect to a device using Wifi"
+                        enabled={this.state.stateId === "ReadyToConnect"}
+                        clickEndpoint="publish/android/connectWifi/start">
+                        Connect with WiFi
                 </BloomButton>
+                </div>
 
                 <H1 l10nKey="Publish.Android.StepSend">
                     Step 4: Send this book to the device
@@ -106,7 +108,6 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 {/*state: {this.state.stateId}*/}
 
                 <ProgressBox />
-
             </div>
         );
     }

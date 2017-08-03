@@ -7,11 +7,38 @@ h1 {
   font-weight: bold;
 }
 
+html {
+  height: 100%;
+  margin: 0;
+}
+
 body {
-  margin: 3em;
+  margin: 0;
   background-color: #f0f0f0;
   font-family: "Segoe UI", "Sans";
   font-size: 10pt;
+  height: 100%;
+}
+
+// The div at the root of our react view (right below body). It's given this ID in our
+// skeleton HTML file (androidPublishUI.html).
+#AndroidPublishUI {
+  height: 100%
+}
+
+// This is the div that react inserts and which becomes the real parent of all the content.
+// We make it flex so that we can make the progress panel grow to fill the available space.
+#AndroidPublishUI > [data-reactroot] {
+  height: 100%;
+  display:flex;
+  flex-direction: column;
+  align-items:flex-start; // stops buttons (and anything else) stretching to fill width.
+  padding: 3em;
+  box-sizing: border-box;
+}
+
+#connect-buttons {
+  display: inline;
 }
 
 button {
@@ -22,9 +49,21 @@ button {
 }
 
 #progress {
-    height: 100px;
+    min-height: 100px;
     width: 100%;
     border: solid thin darkgray;
     overflow-x: auto;
     overflow-y: scroll;
+    // the only thing that can grow, it gets all the spare height.
+    // This looks like a simple trick, but it's hard to make it work right.
+    // All containers must have some forced height (currently 100%).
+    // Also they must have no margin; otherwise, the box height is the full window
+    // height (100%) without the margin, and then the margin is added as part of the
+    // total content height, so that is now MORE than the window height, and
+    // the outer window gets a scroll bar.
+    // Any parent box that has vertical padding or border also needs box-sizing: border=box;
+    // otherwise, the padding and border are also considered outside the 100% and
+    // we get an outer scroll-bar.
+    flex:1;
+    box-sizing: border-box;
 }
