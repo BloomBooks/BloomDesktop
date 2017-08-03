@@ -2,6 +2,7 @@
 using System.Xml;
 using Bloom;
 using Bloom.Book;
+using BloomTemp;
 using NUnit.Framework;
 
 using SIL.IO;
@@ -90,6 +91,37 @@ namespace BloomTests.Book
 			helper.InjectXMatter( _dataSet.WritingSystemAliases, Layout.A5Portrait);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/span[@lang='en']", 1);
 			//NB: it's not this class's job to actually fill in the value (e.g. English, in this case). Just to set it up so that a future process will do that.
+		}
+
+		[Test]
+		public void InjectXMatter_BrandingApi_ChangesSrcAndCopiesFile()
+		{
+			using (var tempFolder = new TemporaryFolder("InjectXMatter_BrandingApi_ChangesSrcAndCopiesFile"))
+			{
+				var bookFolder = Path.Combine(tempFolder.FolderPath, "book");
+				Directory.CreateDirectory(bookFolder);
+				var srcFolder = Path.Combine(tempFolder.FolderPath, "source");
+				Directory.CreateDirectory(srcFolder);
+				var srcImagePath = Path.Combine(srcFolder, "another-image.png");
+				File.WriteAllText(srcImagePath, "some nonsense");
+				var frontMatterDom = new XmlDocument();
+				frontMatterDom.LoadXml(@"<html><head> <link href='file://blahblah\\a5portrait.css' type='text/css' /></head><body>
+						 <div class='bloom-page cover coverColor bloom-frontMatter' data-page='required'>
+						 <img class='branding branding-wide' src='/bloom/api/branding/image?id=back-cover-outside.svg' type='image/svg'/>
+						 <img class='branding branding-wide' src='/bloom/api/branding/image?id=" + Path.ChangeExtension(srcImagePath, "svg") + @"' type='image/svg'/>
+						 <img class='branding branding-wide' src='/bloom/api/branding/image?id=some nonexistent file.svg' type='image/svg'/>
+						</div></body></html>");
+				var helper = CreatePaperSaverHelper();
+				helper.XMatterDom = frontMatterDom;
+
+				helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, "Default", bookFolder);
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg']", 1);
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='another-image.png']", 1);
+				// Can't find this file, so just leave in case user sometime supplies it?
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='some nonexistent file.svg']", 1);
+				Assert.That(File.Exists(Path.Combine(bookFolder, "back-cover-outside.svg")));
+				Assert.That(File.Exists(Path.Combine(bookFolder, "another-image.png")));
+			}
 		}
 
 		[Test]
