@@ -106,3 +106,13 @@ export class H3 extends LocalizableElement<ILocalizationProps, ILocalizationStat
     }
 }
 
+export class P extends LocalizableElement<ILocalizationProps, ILocalizationState> {
+    render() {
+        return (
+            <p className={this.props.hidden ? "hidden" : ""}>
+                {this.getLocalizedContent()}
+            </p>
+        );
+    }
+}
+
