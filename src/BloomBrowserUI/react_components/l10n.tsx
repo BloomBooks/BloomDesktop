@@ -8,6 +8,7 @@ import theOneLocalizationManager from "../lib/localizationManager/localizationMa
 // but has children that need to be localized.
 export interface IUILanguageAwareProps {
     currentUILanguage?: string;
+    hidden?: boolean;
     //l10nVerbose?: boolean
 }
 
@@ -78,7 +79,7 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
 export class H1 extends LocalizableElement<ILocalizationProps, ILocalizationState> {
     render() {
         return (
-            <h1>
+            <h1 className={this.props.hidden ? "hidden" : ""}>
                 {this.getLocalizedContent()}
             </h1>
         );
@@ -88,7 +89,7 @@ export class H1 extends LocalizableElement<ILocalizationProps, ILocalizationStat
 export class H2 extends LocalizableElement<ILocalizationProps, ILocalizationState> {
     render() {
         return (
-            <h2>
+            <h2 className={this.props.hidden ? "hidden" : ""}>
                 {this.getLocalizedContent()}
             </h2>
         );
@@ -98,7 +99,7 @@ export class H2 extends LocalizableElement<ILocalizationProps, ILocalizationStat
 export class H3 extends LocalizableElement<ILocalizationProps, ILocalizationState> {
     render() {
         return (
-            <h3>
+            <h3 className={this.props.hidden ? "hidden" : ""}>
                 {this.getLocalizedContent()}
             </h3>
         );

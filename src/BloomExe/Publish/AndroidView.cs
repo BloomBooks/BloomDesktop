@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using SIL.PlatformUtilities;
 
 namespace Bloom.Publish
 {
@@ -22,9 +23,14 @@ namespace Bloom.Publish
 			_browser.BringToFront();
 			BloomFileLocator.GetBrowserFile("gulpfile.js");
 			var path = BloomFileLocator.GetBrowserFile("publish","android","androidPublishUI.html");
-			_browser.Navigate(path.ToLocalhost(), false);
+			_browser.Navigate(path.ToLocalhost() + GetUrlParams(), false);
 
 			VisibleChanged += OnVisibleChanged;
+		}
+
+		private string GetUrlParams()
+		{
+			return $"?isLinux={Platform.IsLinux}";
 		}
 
 		private void OnVisibleChanged(object sender, EventArgs eventArgs)

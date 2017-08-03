@@ -14,8 +14,11 @@ interface IComponentState {
 // for pushing a book to a connected Android device running Bloom Reader.
 class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponentState> {
     webSocket: WebSocket;
+    isLinux: boolean;
     constructor(props) {
         super(props);
+
+        this.isLinux = this.getIsLinuxFromUrl();
         this.state = { stateId: "ReadyToConnect" };
 
         // enhance: For some reason setting the callback to "this.handleUpdate" calls handleUpdate()
@@ -53,6 +56,14 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         //console.log("this.state is " + JSON.stringify(this.state));
     }
 
+    getIsLinuxFromUrl(): boolean {
+        let searchString = window.location.search;
+        let i = searchString.indexOf("isLinux=");
+        if (i >= 0) {
+            return searchString.substr(i + "isLinux=".length, 4) === "true";
+        }
+    }
+
     render() {
         let self = this;
         return (
@@ -83,26 +94,29 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     <BloomButton l10nKey="Publish.Android.ConnectUsb"
                         l10nComment="Button that tells Bloom to connect to a device using a USB cable"
                         enabled={this.state.stateId === "ReadyToConnect"}
-                        clickEndpoint="publish/android/connectUsb/start">
+                        clickEndpoint="publish/android/connectUsb/start"
+                        hidden={this.isLinux}>
                         Connect with USB cable
-                </BloomButton>
+                    </BloomButton>
                     <BloomButton l10nKey="Publish.Android.ConnectWifi"
                         l10nComment="Button that tells Bloom to connect to a device using Wifi"
                         enabled={this.state.stateId === "ReadyToConnect"}
                         clickEndpoint="publish/android/connectWifi/start">
                         Connect with WiFi
-                </BloomButton>
+                    </BloomButton>
                 </div>
 
-                <H1 l10nKey="Publish.Android.StepSend">
+                <H1 l10nKey="Publish.Android.StepSend"
+                    hidden={this.isLinux}>
                     Step 4: Send this book to the device
                 </H1>
                 <BloomButton l10nKey="Publish.Android.SendBook"
                     l10nComment="Button that tells Bloom to send the book to the connected device"
                     enabled={this.state.stateId === "ReadyToSend"}
-                    clickEndpoint="publish/android/sendBook/start">
+                    clickEndpoint="publish/android/sendBook/start"
+                    hidden={this.isLinux}>
                     Send Book
-                    </BloomButton>
+                </BloomButton>
 
                 <h3>Progress</h3>
                 {/*state: {this.state.stateId}*/}
