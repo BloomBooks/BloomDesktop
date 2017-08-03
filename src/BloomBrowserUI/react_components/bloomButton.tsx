@@ -19,7 +19,7 @@ export default class BloomButton extends LocalizableElement<ComponentProps, Comp
     }
     render() {
         return (
-            <button
+            <button className={this.props.hidden ? "hidden" : ""}
                 onClick={() => axios.post("/bloom/api/" + this.props.clickEndpoint)}
                 disabled={!this.props.enabled}
             >

@@ -106,9 +106,6 @@ namespace Bloom.Publish
 			Controls.Add(_previewBox);
 			_previewBox.BringToFront();
 			_electronicPublishView = new ElectronicPublishView(_model);
-
-			// Currently, publish to Android will only work on Windows
-			_androidRadio.Visible = Platform.IsWindows;
 		}
 
 		public void SetStateOfNonUploadRadios(bool enable)
