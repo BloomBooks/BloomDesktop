@@ -18,6 +18,12 @@ export default class ProgressBox extends React.Component<{}, ComponentState> {
             var e = JSON.parse(event.data);
             if (e.id === "progress") {
                 self.setState({ progress: self.state.progress + "<br/>" + e.payload });
+                // Scroll the window to the bottom. Must be done AFTER painting once, so we
+                // get a real current scroll height.
+                window.requestAnimationFrame(() => {
+                    let progressDiv = document.getElementById("progress");
+                    progressDiv.scrollTop = progressDiv.scrollHeight;
+                });
             }
         });
     }
