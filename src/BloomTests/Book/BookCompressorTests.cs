@@ -39,6 +39,7 @@ namespace BloomTests.Book
 			// interesting files.
 			var expectedFiles = Directory.GetFiles(testBook.FolderPath).ToList();
 			expectedFiles.Add("license.png"); // Something in the compression process adds this.
+			expectedFiles.Add("back-cover-outside.svg"); // Something in the compression process adds this.
 			expectedFiles.Add("thumbnail.png"); // We should NOT eliminate thumbnail.png, which we eventually want for the reader book chooser UI.
 
 			// This unwanted file has to be real; just putting some text in it leads to out-of-memory failues when Bloom
