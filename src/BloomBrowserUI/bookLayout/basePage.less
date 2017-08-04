@@ -1,5 +1,6 @@
 @import "../templates/common-mixins.less";
 @import "basePage-sharedRules.less";
+@import "device.less";
 @import "textOverPicture.less";
 
 .Browser-Reset() {
@@ -177,24 +178,9 @@ preview.css.
 Changes here generally require similar changes in EpubMaker.FixPictureSizes() and pageThumbnailList.less.
 */
 .bloom-page {
-    &.Device16x9Portrait{
-        min-width: @Device16x9Portrait-Width;
-        max-width: @Device16x9Portrait-Width;
-        min-height: @Device16x9Portrait-Height;
-        max-height: @Device16x9Portrait-Height;
-    }
-    &.Device16x9Landscape{
-        min-width: @Device16x9Landscape-Width;
-        max-width: @Device16x9Landscape-Width;
-        min-height: @Device16x9Landscape-Height;
-        max-height: @Device16x9Landscape-Height;
-    }
-    &.PictureStoryLandscape{
-        min-width: @PictureStoryLandscape-Width;
-        max-width: @PictureStoryLandscape-Width;
-        min-height: @PictureStoryLandscape-Height;
-        max-height: @PictureStoryLandscape-Height;
-    }
+    // See device.less for all css involving the following layouts:
+    //   Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape
+
     &.A5Portrait {
         min-width: @A5Portrait-Width;
         max-width: @A5Portrait-Width;
@@ -324,69 +310,16 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     top: @MarginTop;
 }
 
-.Device16x9Landscape, .PictureStoryLandscape{
-    //TODO: This is only for videos
-    background-color: black;
-    img{ background-color: white; } // so that transparent images show
-}
-
-.Device16x9Landscape, .Device16x9Portrait, .PictureStoryLandscape{
-    .origami-toggle{display:none}
-    .pageLabel{display:none}
-
-    .marginBox {
-        .split-pane.horizontal-percent > .split-pane-component.position-top{
-            margin-bottom: 0;
-        }
-
-        .bloom-imageContainer{
-            //the basePage.css has a "- 3px" that leaves the bottom of the screen unused
-            height: calc(100%) !important;
-        }
+// Mixin for setting .marginBox margins.
+.SetMarginBox(@PageWidth, @PageHeight) {
+    height: @PageHeight - (@MarginTop + @MarginBottom);
+    width: @PageWidth - ( @MarginOuter + @MarginInner );
+    IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+        max-width: @PageWidth - ( @MarginOuter + @MarginInner );
     }
 }
 
 .marginBox {
-    .SetMarginBox(@PageWidth, @PageHeight) {
-        height: @PageHeight - (@MarginTop + @MarginBottom);
-        width: @PageWidth - ( @MarginOuter + @MarginInner );
-        IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-            max-width: @PageWidth - ( @MarginOuter + @MarginInner );
-        }
-    }
-    .SetMarginBoxDevice(@PageWidth, @PageHeight) {
-        height: @PageHeight ;
-        width: @PageWidth;
-        IMG {
-            max-width: @PageWidth ;
-        }
-        top:0;
-        left:0 !important;
-
-        //that makes the margin box actually have no margin. Which looks good for the image, but
-        //looks bad for the text. So here we re-introduce a margin... a bit of a hack
-        .bloom-editable{
-            margin-left: @DeviceMargin;
-            width: calc(~"100% - "(@DeviceMargin*2)); // 10px for the left, 10px for the right
-        }
-    }
-
-    .Device16x9Portrait & {
-        .SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
-    }
-
-    .Device16x9Landscape & {
-        .SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
-    }
-
-    .PictureStoryLandscape & {
-        .SetMarginBoxDevice(@PictureStoryLandscape-Width, @PictureStoryLandscape-Height);
-
-        // make the top half take up the whole screen
-        .position-top{ bottom: 0 !important; }
-        .position-bottom{ display: none; }
-    }
-
     .A3Landscape & {
         .SetMarginBox(@A3Landscape-Width, @A3Landscape-Height);
     }
