@@ -4,7 +4,7 @@ import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
 import BloomButton from "../../react_components/bloomButton";
 import HelpLink from "../../react_components/helpLink";
-import { H1, H2, LocalizableElement, IUILanguageAwareProps } from "../../react_components/l10n";
+import { H1, H2, LocalizableElement, IUILanguageAwareProps, P } from "../../react_components/l10n";
 
 interface IComponentState {
     stateId: string;
@@ -107,16 +107,22 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 </div>
 
                 <H1 l10nKey="Publish.Android.StepSend"
-                    hidden={this.isLinux}>
+                    hidden={this.isLinux && this.state.stateId !== "ServingOnWifi"}>
                     Step 4: Send this book to the device
                 </H1>
                 <BloomButton l10nKey="Publish.Android.SendBook"
                     l10nComment="Button that tells Bloom to send the book to the connected device"
                     enabled={this.state.stateId === "ReadyToSend"}
                     clickEndpoint="publish/android/sendBook/start"
-                    hidden={this.isLinux}>
+                    hidden={this.isLinux || this.state.stateId === "ServingOnWifi"}>
                     Send Book
                 </BloomButton>
+                <P l10nKey="Publish.Android.ReceiveOnDevice"
+                    hidden={this.state.stateId !== "ServingOnWifi"}>
+                    To start a transfer, run Bloom Reader, tap the three-lines icon in the top left of the screen, and choose "Get Books from Desktop."
+                    You can do this on as many devices as you like.
+                    Make sure each device is connected to the same network as this computer.
+                </P>
 
                 <h3>Progress</h3>
                 {/*state: {this.state.stateId}*/}
