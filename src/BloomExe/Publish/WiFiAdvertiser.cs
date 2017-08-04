@@ -99,6 +99,7 @@ namespace Bloom.Publish
 				advertisement.Version = BookVersion;
 				advertisement.Language = TitleLanguage;
 				advertisement.ProtocolVersion = BloomReaderPublisher.ProtocolVersion;
+				advertisement.Sender = System.Environment.MachineName;
 
 				_sendBytes = Encoding.UTF8.GetBytes(advertisement.ToString());
 				//EventLog.WriteEntry("Application", "Serving at http://" + _currentIpAddress + ":" + ChorusHubOptions.MercurialPort, EventLogEntryType.Information);
