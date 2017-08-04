@@ -9,9 +9,7 @@ using SIL.IO;
 using SIL.Progress;
 using System.Drawing;
 using System;
-using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
-using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.Book
 {
@@ -20,7 +18,7 @@ namespace Bloom.Book
 		public const string ExtensionForDeviceBloomBook = ".bloomd";
 
 		// these image files may need to be reduced before being stored in the compressed output file
-		internal static readonly string[] ImageFileExtensions = new[] { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
+		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
 		// these files (if encountered) won't be included the compressed version
 		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder" };
@@ -81,6 +79,7 @@ namespace Bloom.Book
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
+		/// <param name="reduceImages">If true, images will be compressed before being added to the zip file</param>
 		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
 		/// <para> name="reduceImages">If true, image files are reduced in size to no larger than 300x300 before saving</para>
 		/// <remarks>Protected for testing purposes</remarks>
@@ -229,8 +228,8 @@ namespace Bloom.Book
 			return text;
 		}
 
-		const int kMaxWidth = 300;
-		const int kMaxHeight = 300;
+		private const int kMaxWidth = 300;
+		private const int kMaxHeight = 300;
 
 		/// <summary>
 		/// For electronic books, we want to minimize the actual size of images since they'll
