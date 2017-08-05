@@ -1,9 +1,12 @@
 ﻿using System.IO;
 using System.Linq;
+using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
+using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 
 namespace BloomTests.Book
@@ -57,6 +60,67 @@ namespace BloomTests.Book
 			foreach (var file in expectedFiles)
 			{
 				Assert.That(zip.FindEntry(Path.GetFileName(file), true), Is.Not.Null);
+			}
+		}
+
+		[Test]
+		public void CompressBookForDevice_RemovesImgElementsWithMissingSrc()
+		{
+			var testBook = CreateBook();
+			// This requires a real book file (which a mocked book usually doesn't have).
+			var imgsToRemove =
+				"<img class='branding branding-wide' src='back-cover-outside-wide.svg' type='image/svg' onerror='this.style.display='none''></img><img src = 'nonsence.svg'/><img src=\"rubbish\"> </img  >";
+			var htmlTemplate = @"<!DOCTYPE html>
+<html>
+<body>
+    <div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+        <div class='pageLabel' lang='en'>
+            Outside Back Cover
+        </div>
+        <div class='pageDescription' lang='en'></div>
+
+        <div class='marginBox'>
+        <div class='bloom-translationGroup' data-default-languages='N1'>
+            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr' contenteditable='true' data-book='outsideBackCover'>
+                <label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
+            </div>
+
+            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de' contenteditable='true' data-book='outsideBackCover'></div>
+
+            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf' contenteditable='true' data-book='outsideBackCover'></div>
+        </div>{0} <img class='branding' src='back-cover-outside.svg' type='image/svg' onerror='this.style.display='none''></img></div>
+    </div>
+</body>
+</html>";
+			var htmlOriginal = string.Format(htmlTemplate, imgsToRemove);
+			var htmlExpected = string.Format(htmlTemplate, "");
+			var bookFileName = Path.GetFileName(testBook.FolderPath) + ".htm";
+			var bookPath = Path.Combine(testBook.FolderPath, bookFileName);
+			File.WriteAllText(bookPath, htmlOriginal);
+			// Simulate the typical situation where we have the regular but not the wide svg
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "back-cover-outside.svg"), @"this is a fake for testing");
+			ZipFile zip = new ZipFile(BookCompressor.CompressBookForDevice(testBook));
+			// Technically this is too strong. We'd be happy with any equivalent HTML file, e.g., whitespace could
+			// have changed. But this is the easiest to test and works with the current implementation.
+			Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
+		}
+
+		private string GetEntryContents(ZipFile zip, string name)
+		{
+			var buffer = new byte[4096];
+
+			var ze = (from ZipEntry entry in zip select entry).FirstOrDefault(n => n.Name.EndsWith(name));
+			Assert.That(ze, Is.Not.Null);
+
+			using (var instream = zip.GetInputStream(ze))
+			using (var writer = new MemoryStream())
+			{
+				ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
+				writer.Position = 0;
+				using (var reader = new StreamReader(writer))
+				{
+					return reader.ReadToEnd();
+				}
 			}
 		}
 

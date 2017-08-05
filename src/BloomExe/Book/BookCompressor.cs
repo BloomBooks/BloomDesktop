@@ -136,6 +136,11 @@ namespace Bloom.Book
 					modifiedContent = GetBytesOfReducedImage(filePath);
 					newEntry.Size = modifiedContent.Length;
 				}
+				else if (reduceImages && (bookFile == filePath))
+				{
+					modifiedContent = StripImagesWithMissingSrc(bookFile);
+					newEntry.Size = modifiedContent.Length;
+				}
 				else
 				{
 					newEntry.Size = fi.Length;
@@ -173,6 +178,35 @@ namespace Bloom.Book
 
 				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
 			}
+		}
+
+		private static byte[] StripImagesWithMissingSrc(string bookFile)
+		{
+			// Suspect this is faster than reading the whole thing into a DOM and using xpath.
+			// That might be marginally more robust, but I think this is good enough.
+			// The main purpose of this is to remove stubs put in to support optional branding files.
+			// The javascript that hides the element if the file is not found doesn't work in the reader.
+			var content = File.ReadAllText(bookFile, Encoding.UTF8);
+			// Note that whitespace is not valid in places like < img> or <img / > or < / img>.
+			// I expect tidy will make sure we really don't have any, so I'm not checking for it in
+			// those spots.
+			var regex = new Regex("<img[^>]*src\\s*=\\s*(['\"])(.*?)\\1[^>]*(/>|>\\s*</img\\s*>)");
+			var match = regex.Match(content);
+			var folderPath = Path.GetDirectoryName(bookFile);
+			while (match.Success)
+			{
+				var file = match.Groups[2].Value;
+				if (!File.Exists(Path.Combine(folderPath, file)))
+				{
+					content = content.Substring(0, match.Index) + content.Substring(match.Index + match.Length);
+					match = regex.Match(content, match.Index);
+				}
+				else
+				{
+					match = regex.Match(content, match.Index + match.Length);
+				}
+			}
+			return Encoding.UTF8.GetBytes(content);
 		}
 
 		private static string GetMetaJsonModfiedForTemplate(string path)
