@@ -80,12 +80,6 @@ export class ToolBox {
             */
 
             $(container).find('.bloom-editable').keydown(function (event) {
-                if (event.ctrlKey) {
-                    // this is check is a workaround for BL-3490, but when doKeypressMarkup() get's fixed, it should be removed
-                    // because as is, we're not updating markup when you paste in text
-                    console.log("Skipping markup on paste because of faulty insertion logic. See BL-3490");
-                    return;
-                }
                 //don't do markup on cursor keys
                 if (event.keyCode >= 37 && event.keyCode <= 40) {
                     // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
@@ -93,7 +87,7 @@ export class ToolBox {
                     console.log("skipping markup on arrow key");
                     return;
                 }
-                doKeypressMarkup();
+                handleKeydown();
             });
         }
     }
@@ -358,14 +352,14 @@ function beginAddPanel(checkBoxId: string, panelId: string): Promise<void> {
             'leveledReaderTool': 'readers/leveledReader/leveledReaderToolboxPanel.html',
             'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
             'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html'
-        }
+        };
         return axios.get<any>("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
             loadToolboxPanel(result.data, panelId);
         });
     }
 }
 
-function doKeypressMarkup(): void {
+function handleKeydown(): void {
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
     // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
@@ -382,18 +376,13 @@ function doKeypressMarkup(): void {
     keypressTimer = setTimeout(function () {
 
         // This happens 500ms after the user stops typing.
-        var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById('page');
+        var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById("page");
         if (!page) return; // unit testing?
-
-        //don't need to do any of this if there is no tool that will be adding markup anyway.
-        if (!currentTool || !toolbox.toolboxIsShowing()) {
-            return;
-        }
 
         var selection: Selection = page.contentWindow.getSelection();
         var current: Node = selection.anchorNode;
-        var active = <HTMLDivElement>$(selection.anchorNode).closest('div').get(0);
-        if (!active || selection.rangeCount > 1 || (selection.rangeCount == 1 && !selection.getRangeAt(0).collapsed)) {
+        var active = <HTMLDivElement>$(selection.anchorNode).closest("div").get(0);
+        if (!active || selection.rangeCount > 1 || (selection.rangeCount === 1 && !selection.getRangeAt(0).collapsed)) {
             return; // don't even try to adjust markup while there is some complex selection
         }
 
@@ -427,7 +416,10 @@ function doKeypressMarkup(): void {
             // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
             removeCommentsFromEditableHtml(editableDiv);
 
-            currentTool.updateMarkup();
+            // If there's no tool active, we don't need to update the markup.
+            if (currentTool && toolbox.toolboxIsShowing()) {
+                currentTool.updateMarkup();
+            }
 
             //set the selection to wherever our bookmark node ended up
             //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
