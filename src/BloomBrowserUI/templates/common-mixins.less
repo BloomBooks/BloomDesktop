@@ -28,10 +28,16 @@
 
 @defaultLineHeight: 1.5em;//no units! No em!!!! em makes children inside have a lineheight that matches the font of the overall box, regardless of the thing's font-size. See https://developer.mozilla.org/en-US/docs/Web/CSS/line-height
 
+// N.B. New formats must also work something out in pageThumbnailList.less.
 @Device16x9Portrait-Width: 100mm;
 @Device16x9Portrait-Height: @Device16x9Portrait-Width * 16 / 9;
 @Device16x9Landscape-Height: @Device16x9Portrait-Width;
 @Device16x9Landscape-Width: @Device16x9Portrait-Height;
+@DeviceMargin: 10px;
+@DeviceBottomMargin: 30px; // leave room for page number
+
+@PictureStoryLandscape-Height: @Device16x9Landscape-Height;
+@PictureStoryLandscape-Width: @Device16x9Landscape-Width;
 
 @A4Portrait-Height: 297mm;
 @A4Portrait-Width: 210mm;
@@ -87,3 +93,8 @@
 @ExtraSpaceForBinding: 10mm;
 @MarginInner: @MarginOuter + @ExtraSpaceForBinding;
 @MarginBalanced: (@MarginOuter + @MarginInner) / 2.0; // for when we want the same left and right margins
+
+@imageContainerZIndex: 1000;
+@textOverPictureZIndex: @imageContainerZIndex + 1;
+@formatButtonZIndex: @textOverPictureZIndex + 1;
+@dragHandleZIndex: @textOverPictureZIndex + 1;

@@ -1,10 +1,9 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-///<reference path="../../typings/axios/axios.d.ts"/>
 
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import '../../lib/jquery.i18n.custom';
 import "../../lib/jquery.onSafe";
-import axios = require('axios');
+import axios from "axios";
 import { EditableDivUtils } from '../js/editableDivUtils';
 
 /**
@@ -80,12 +79,6 @@ export class ToolBox {
             */
 
             $(container).find('.bloom-editable').keydown(function (event) {
-                if (event.ctrlKey) {
-                    // this is check is a workaround for BL-3490, but when doKeypressMarkup() get's fixed, it should be removed
-                    // because as is, we're not updating markup when you paste in text
-                    console.log("Skipping markup on paste because of faulty insertion logic. See BL-3490");
-                    return;
-                }
                 //don't do markup on cursor keys
                 if (event.keyCode >= 37 && event.keyCode <= 40) {
                     // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
@@ -93,7 +86,7 @@ export class ToolBox {
                     console.log("skipping markup on arrow key");
                     return;
                 }
-                doKeypressMarkup();
+                handleKeydown();
             });
         }
     }
@@ -149,7 +142,7 @@ export function showOrHidePanel_click(chkbox) {
 
 
 export function restoreToolboxSettings() {
-    axios.get<any>("/bloom/api/toolbox/settings").then(result => {
+    axios.get("/bloom/api/toolbox/settings").then(result => {
         savedSettings = result.data;
         var pageFrame = getPageFrame();
         if (pageFrame.contentWindow.document.readyState === 'loading') {
@@ -161,21 +154,25 @@ export function restoreToolboxSettings() {
     });
 }
 
+export function applyToolboxStateToUpdatedPage() {
+    if (currentTool != null && toolbox.toolboxIsShowing()) {
+        doWhenPageReady(() => currentTool.updateMarkup());
+    }
+}
 
-function restoreToolboxSettingsWhenPageReady(settings: string) {
+function doWhenPageReady(action: () => void) {
     var page = getPage();
     if (!page || page.length === 0) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
         // we need to try again later.
-        setTimeout(e => restoreToolboxSettingsWhenPageReady(settings), 100);
+        setTimeout(e => doWhenPageReady(action), 100);
         return;
     }
-    // Once we have a valid page, we can proceed to the next stage.
-    restoreToolboxSettingsWhenCkEditorReady(settings);
+    doWhenCkEditorReady(action);
 }
 
-function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
+function doWhenCkEditorReady(action: () => void) {
     if ((<any>getPageFrame().contentWindow).CKEDITOR) {
         var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR.instances;
         // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
@@ -189,26 +186,33 @@ function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
             if (instance == null) {
                 if (i === 0) {
                     // no instance at all...if one is later created, get us invoked.
-                    (<any>this.getPageFrame().contentWindow).CKEDITOR.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+                    (<any>this.getPageFrame().contentWindow).CKEDITOR.on('instanceReady', e => doWhenCkEditorReady(action));
                     return;
                 }
                 break; // if we get here all instances are ready
             }
             if (!instance.instanceReady) {
-                instance.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+                instance.on('instanceReady', e => doWhenCkEditorReady(action));
                 return;
             }
         }
     }
-    // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
-    var opts = settings;
-    var currentPanel = opts['current'] || '';
+    // OK, CKEditor is done (or page doesn't use it), we can finally do the action.
+    action();
+}
 
-    // Before we set stage/level, as it initializes them to 1.
-    setCurrentPanel(currentPanel);
+function restoreToolboxSettingsWhenPageReady(settings: string) {
+    doWhenPageReady(() => {
+        // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
+        var opts = settings;
+        var currentPanel = opts['current'] || '';
 
-    // Note: the bulk of restoring the settings (everything but which if any panel is active)
-    // is done when a tool becomes current.
+        // Before we set stage/level, as it initializes them to 1.
+        setCurrentPanel(currentPanel);
+
+        // Note: the bulk of restoring the settings (everything but which if any panel is active)
+        // is done when a tool becomes current.
+    });
 }
 
 // Remove any markup the toolbox is inserting (called before saving page)
@@ -358,14 +362,14 @@ function beginAddPanel(checkBoxId: string, panelId: string): Promise<void> {
             'leveledReaderTool': 'readers/leveledReader/leveledReaderToolboxPanel.html',
             'bookSettingsTool': 'bookSettings/bookSettingsToolboxPanel.html',
             'toolboxSettingsTool': 'toolboxSettingsTool/toolboxSettingsToolboxPanel.html'
-        }
-        return axios.get<any>("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
+        };
+        return axios.get("/bloom/bookEdit/toolbox/" + subpath[panelId]).then(result => {
             loadToolboxPanel(result.data, panelId);
         });
     }
 }
 
-function doKeypressMarkup(): void {
+function handleKeydown(): void {
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
     // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
@@ -382,18 +386,13 @@ function doKeypressMarkup(): void {
     keypressTimer = setTimeout(function () {
 
         // This happens 500ms after the user stops typing.
-        var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById('page');
+        var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById("page");
         if (!page) return; // unit testing?
-
-        //don't need to do any of this if there is no tool that will be adding markup anyway.
-        if (!currentTool || !toolbox.toolboxIsShowing()) {
-            return;
-        }
 
         var selection: Selection = page.contentWindow.getSelection();
         var current: Node = selection.anchorNode;
-        var active = <HTMLDivElement>$(selection.anchorNode).closest('div').get(0);
-        if (!active || selection.rangeCount > 1 || (selection.rangeCount == 1 && !selection.getRangeAt(0).collapsed)) {
+        var active = <HTMLDivElement>$(selection.anchorNode).closest("div").get(0);
+        if (!active || selection.rangeCount > 1 || (selection.rangeCount === 1 && !selection.getRangeAt(0).collapsed)) {
             return; // don't even try to adjust markup while there is some complex selection
         }
 
@@ -427,7 +426,10 @@ function doKeypressMarkup(): void {
             // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
             removeCommentsFromEditableHtml(editableDiv);
 
-            currentTool.updateMarkup();
+            // If there's no tool active, we don't need to update the markup.
+            if (currentTool && toolbox.toolboxIsShowing()) {
+                currentTool.updateMarkup();
+            }
 
             //set the selection to wherever our bookmark node ended up
             //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,

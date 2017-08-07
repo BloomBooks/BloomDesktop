@@ -11,6 +11,7 @@ using SIL.Extensions;
 using SIL.WritingSystems;
 using System.Collections.Generic;
 using System.IO;
+using Bloom.MiscUI;
 
 namespace Bloom.Collection
 {
@@ -24,6 +25,7 @@ namespace Bloom.Collection
 		private readonly PageRefreshEvent _pageRefreshEvent;
 		private bool _restartRequired;
 		private bool _loaded;
+		private List<string> _styleNames = new List<string>();
 
 		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent)
 		{
@@ -192,7 +194,10 @@ namespace Bloom.Collection
 			}
 			if (_numberStyleCombo.SelectedItem != null)
 			{
-				_collectionSettings.PageNumberStyle = CollectionSettings.PageNumberStyleKeys[_numberStyleCombo.SelectedIndex]; // this must be the non-localized version
+				// have to do this lookup because we need the non-localized version of the name, and
+				// we can't get at the original dictionary by index
+				var styleName = _styleNames[_numberStyleCombo.SelectedIndex];
+				_collectionSettings.PageNumberStyle = styleName;
 			}
 			if (_brandingCombo.SelectedItem != null)
 			{
@@ -314,11 +319,12 @@ namespace Bloom.Collection
 			}
 		}
 
-
 		private void LoadPageNumberStyleCombo()
 		{
-			foreach (var styleKey in CollectionSettings.PageNumberStyleKeys)
+			_styleNames.Clear();
+			foreach (var styleKey in CollectionSettings.CssNumberStylesToCultureOrDigits.Keys)
 			{
+				_styleNames.Add(styleKey);
 				var localizedStyle =
 					LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.PageNumberingStyle." + styleKey, styleKey);
 				_numberStyleCombo.Items.Add(localizedStyle);
@@ -482,6 +488,18 @@ namespace Bloom.Collection
 		{
 			if (_brandingCombo.SelectedItem.ToString() != _collectionSettings.BrandingProjectName)
 				ChangeThatRequiresRestart();
+		}
+
+		private void showTroubleShooterCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			if (showTroubleShooterCheckBox.Checked)
+			{
+				TroubleShooterDialog.ShowTroubleShooter();
+			}
+			else
+			{
+				TroubleShooterDialog.HideTroubleShooter();
+			}
 		}
 	}
 }

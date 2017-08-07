@@ -104,7 +104,7 @@ function layoutToggleClickHandler() {
     } else {
         marginBox.removeClass('origami-layout-mode');
         marginBox.find('.textBox-identifier').remove();
-        fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
+        fireCSharpEditEvent("saveChangesAndRethinkPageEvent", "");
         origamiUndoStack.length = origamiUndoIndex = 0;
         $('html').off('keydown.origami');
     }

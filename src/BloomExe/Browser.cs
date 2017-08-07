@@ -20,6 +20,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using L10NSharp;
+using SIL.Xml;
 
 namespace Bloom
 {
@@ -37,11 +38,15 @@ namespace Bloom
 		private IDisposable _dependentContent;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
-		private  UndoCommand _undoCommand;
-		private  CutCommand _cutCommand;
+		private UndoCommand _undoCommand;
+		private CutCommand _cutCommand;
 		private bool _disposed;
 		public event EventHandler OnBrowserClick;
 		public static event EventHandler XulRunnerShutdown;
+		// We need some way to pass the cursor location in the Browser context to the EditingView command handlers
+		// for Add/Delete TextOverPicture textboxes. These will store the cursor location when the context menu is
+		// generated.
+		internal Point ContextMenuLocation;
 
 		private static int XulRunnerVersion
 		{
@@ -184,7 +189,7 @@ namespace Bloom
 		/// </summary>
 		public NavigationIsolator Isolator { get; set; }
 
-		public void SetEditingCommands( CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
+		public void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
 			_cutCommand = cutCommand;
 			_copyCommand = copyCommand;
@@ -239,8 +244,6 @@ namespace Bloom
 				var isTextSelection = IsThereACurrentTextSelection();
 				_cutCommand.Enabled = _browser != null && isTextSelection;
 				_copyCommand.Enabled = _browser != null && isTextSelection;
-				//_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
-				//_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
 				_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
 				if (_pasteCommand.Enabled)
 				{
@@ -355,9 +358,9 @@ namespace Bloom
 			Debug.Assert(!InvokeRequired);
 			base.OnLoad(e);
 
-			if(DesignMode)
+			if (DesignMode)
 			{
-				this.BackColor=Color.DarkGray;
+				this.BackColor = Color.DarkGray;
 				return;
 			}
 
@@ -380,7 +383,7 @@ namespace Bloom
 			_browserIsReadyToNavigate = true;
 
 			UpdateDisplay();
-			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
+			_browser.Navigated += CleanupAfterNavigation; //there's also a "document completed"
 			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
 			_browser.ConsoleMessage += OnConsoleMessage;
@@ -407,8 +410,45 @@ namespace Bloom
 
 			_browser.FrameEventsPropagateToMainWindow = true; // we want clicks in iframes to propagate all the way up to C#
 
+			AddMessageEventListener("timingNotification", ReceiveTimingNotification);
+
 			RaiseGeckoReady();
-	   }
+		}
+
+		static Dictionary<string, List<Action>> _timingNotificationRequests = new Dictionary<string, List<Action>>();
+
+		/// <summary>
+		/// Allows some C# to receive a notification when Javascript (on any page) raises the timingNotification event,
+		/// typically by calling fireCSharpEditEvent('timingNotification', id), where id corresponds to the string
+		/// passed to this method.
+		/// fireCSharpEditEvent is usually implemented as
+		/// top.document.dispatchEvent(new MessageEvent(eventName, {"bubbles": true, "cancelable": true, "data": eventData });
+		/// When that event is raised all the Actions queued for it are invoked once (and then forgotten).
+		/// Thus, the expectation is that the caller is wanting to know about one single instance of the
+		/// event occurring. There is therefore no need to clean up as with an event handler.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="action"></param>
+		public static void RequestTimingNotification(string id, Action action)
+		{
+			List<Action> list;
+			if (!_timingNotificationRequests.TryGetValue(id, out list))
+			{
+				list = new List<Action>();
+				_timingNotificationRequests[id] = list;
+			}
+			list.Add(action);
+		}
+
+		private void ReceiveTimingNotification(string id)
+		{
+			List<Action> list;
+			if (!_timingNotificationRequests.TryGetValue(id, out list))
+				return;
+			foreach (var action in list)
+				action();
+			_timingNotificationRequests.Remove(id);
+		}
 
 		private void OnJavascriptError(object sender, JavascriptErrorEventArgs e)
 		{
@@ -438,7 +478,13 @@ namespace Bloom
 			if(e.Message.StartsWith("[JavaScript Warning"))
 				return;
 			if (e.Message.StartsWith("[JavaScript Error"))
-				ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
+			{
+				// BL-4737 Don't report websocket errors, but do send them to the Debug console.
+				if (!e.Message.Contains("has terminated unexpectedly. Some data may have been transferred."))
+				{
+					ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
+				}
+			}
 			Debug.WriteLine(e.Message);
 		}
 
@@ -504,6 +550,7 @@ namespace Bloom
 		{
 			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
+			ContextMenuLocation = PointToClient(Cursor.Position);
 			if (ContextMenuProvider != null)
 			{
 				var replacesStdMenu = ContextMenuProvider(e);
@@ -515,7 +562,7 @@ namespace Bloom
 					return; // only the provider's items
 			}
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", OnOpenPageInStylizer);
-			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
+			m.Enabled = !String.IsNullOrEmpty(GetPathToStylizer());
 
 			if(FFMenuItem == null)
 				AddOpenPageInFFItem(e);
@@ -743,6 +790,11 @@ namespace Bloom
 				SetNewDependent(TempFile.TrackExisting(url));
 			}
 			UpdateDisplay();
+		}
+
+		public void SetEditDom(HtmlDom editDom)
+		{
+			_pageEditDom = editDom.RawDom;
 		}
 
 		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might
@@ -1067,7 +1119,7 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			// Review JohnT: does this require integration with the NavigationIsolator?
-			if (_browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
+			if (_browser != null && _browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
 			{
 				try
 				{

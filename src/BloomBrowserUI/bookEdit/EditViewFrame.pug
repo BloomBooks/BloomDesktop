@@ -20,27 +20,6 @@ html
 		script(src='/bloom/editTabRootBundle.js')
 		//script(src='/bloom/pageChooserBundle.js')
 		script.
-			//$().ready(function () {
-			document.addEventListener('DOMContentLoaded', function() {
-				//setting the src's in code here had the effect of waiting until we have the (obsolete) interIFrameChannel ready for them to use.
-				// May no longer be necessary.
-				//enhance: we could instead bootstrap them here, along with that channel as a parameter, after all three documents are ready
-				// we could do $('iframe').load(function() {.....}) and increment a count and when the count is == number of iframes, then do the bootstraping
-
-				document.getElementById('toolbox').src = '/bloom/toolboxContent';
-				//we need the toolbox to be all loaded before loading the page, because
-				//the page has code that assumes it's there. On different machines/browsers, this
-				//happens with different timing, so we made this tolerant... See BL-3559
-				var loadPageWhenToolboxIsSetup = function () {
-					var toolbox = document.getElementById('toolbox').contentWindow;
-					if (toolbox.FrameExports) {
-						document.getElementById('page').src = '{simulatedPageFileInBookFolder}';
-					} else {
-						window.setTimeout(loadPageWhenToolboxIsSetup,10);
-					}
-				}
-				loadPageWhenToolboxIsSetup();
-			});
 		style.
 			html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
 			iframe { border: 0 none;} /* apparently Gecko gives this a default 2 px wide. */
@@ -70,12 +49,12 @@ html
 				span.pure-toggle-icon
 			nav.pure-drawer(data-position="right")
 				#right
-					iframe#toolbox(width='100%', height='100%', src='') .
+					iframe#toolbox(width='100%', height='100%', src='/bloom/toolboxContent') .
 						| Your browser does not support iframes.
 			div.pure-pusher-container
 				div.pure-pusher
 					#frameWrap
 						#left
-							iframe#page(width='100%', height='100%', src='') .
+							iframe#page(width='100%', height='100%', src='{simulatedPageFileInBookFolder}') .
 								| Your browser does not support iframes.
 				label.pure-overlay(for="pure-toggle-right" data-overlay="right")

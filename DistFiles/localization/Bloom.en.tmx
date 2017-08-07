@@ -1172,6 +1172,12 @@
         <seg>Add Page...</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.AddTextBoxToImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Text Box To Image</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1326,6 +1332,12 @@
     <tu tuid="EditTab.DeletePageButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>This page cannot be removed</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DeleteTextBoxFromImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Delete Text Box From Image</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.DirectFormatting.Bold">
@@ -2475,13 +2487,6 @@
         <seg>Make an e-book that can play recordings while highlighting sentences.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.Toolbox.Zoom.Reset">
-      <prop type="x-dynamic">true</prop>
-      <note>This is for the button that changes the page zoom back to 100%</note>
-      <tuv xml:lang="en">
-        <seg>Reset Zoom</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.Toolbox._bookSelection.LongestSentence">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -3173,6 +3178,12 @@
         <seg>Pages can not be re-ordered when you are translating a book.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.AdobeEulaTitle">
+      <note>dialog title for license agreement</note>
+      <tuv xml:lang="en">
+        <seg>Adobe Color Profile License Agreement</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
       <tuv xml:lang="en">
         <seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
@@ -3273,6 +3284,18 @@
         <seg>Make a PDF of every page of the book, one page per piece of paper.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Options">
+      <note>menu header in the Publish tab</note>
+      <tuv xml:lang="en">
+        <seg>Options</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OptionsMenu.SizeLayout">
+      <note>Header for a region of the menu which lists various standard page layout sizes</note>
+      <tuv xml:lang="en">
+        <seg>Size/Layout</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
       <tuv xml:lang="en">
         <seg>Open the PDF in the default system PDF viewer</seg>
@@ -3291,6 +3314,60 @@
     <tu tuid="PublishTab.PdfMaker.BadPdf">
       <tuv xml:lang="en">
         <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.Compress">
+      <note>Message displayed in a progress report dialog box</note>
+      <tuv xml:lang="en">
+        <seg>Compressing PDF</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.CompressConvertColor">
+      <note>Message displayed in a progress report dialog box</note>
+      <tuv xml:lang="en">
+        <seg>Compressing PDF &amp; Converting Color to CMYK</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.Creating">
+      <note>Message displayed in a progress report dialog box</note>
+      <tuv xml:lang="en">
+        <seg>Creating PDF ...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.DesktopPrinting">
+      <note>displayed as file type for Save File dialog.  Don't use vertical bar (|) in this string!</note>
+      <tuv xml:lang="en">
+        <seg>PDF for Desktop Printing</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.ErrorProcessing">
+      <note>Message briefly displayed to the user in a toast</note>
+      <tuv xml:lang="en">
+        <seg>Error creating, compressing, or recoloring the PDF file</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.Finished">
+      <note>Message displayed in a progress report dialog box</note>
+      <tuv xml:lang="en">
+        <seg>Finished making PDF from HTML</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.MakingFromHtml">
+      <note>Message displayed in a progress report dialog box, a partial step of "Creating PDF"</note>
+      <tuv xml:lang="en">
+        <seg>Making PDF from HTML</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.MakingPageOfPdf">
+      <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
+      <tuv xml:lang="en">
+        <seg>Making Page {0} of the PDF</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMaker.Printshop">
+      <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable.  Don't use vertical bar (|) in this string!</note>
+      <tuv xml:lang="en">
+        <seg>PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
@@ -3320,9 +3397,27 @@
         <seg>Making PDF...</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.PdfNotSaved">
+      <note>title for the message box</note>
+      <tuv xml:lang="en">
+        <seg>PDF Not Saved</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfNotSavedWhy">
+      <note>explanation that file was not saved displayed in a message box</note>
+      <tuv xml:lang="en">
+        <seg>The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.PrintButton">
       <tuv xml:lang="en">
         <seg>&amp;Print...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PrologToAdobeEula">
+      <note>Brief explanation of what this license is and why the user needs to agree to it</note>
+      <tuv xml:lang="en">
+        <seg>Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Publish">
@@ -3403,6 +3498,11 @@
     <tu tuid="PublishTab.Upload.GenericUploadProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem uploading your book.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.GiveBack">
+      <tuv xml:lang="en">
+        <seg>It’s easy to “give back”</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.IncompleteTranslation">

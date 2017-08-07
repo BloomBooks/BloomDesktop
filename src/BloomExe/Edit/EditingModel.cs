@@ -14,6 +14,7 @@ using Bloom.Properties;
 //using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
+using Bloom.MiscUI;
 using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
@@ -42,6 +43,7 @@ namespace Bloom.Edit
 		private SimulatedPageFile _currentPage;
 		public bool Visible;
 		private Book.Book _currentlyDisplayedBook;
+		private Book.Book _bookForToolboxContent;
 		private EditingView _view;
 		private List<ContentLanguage> _contentLanguages;
 		private IPage _previouslySelectedPage;
@@ -150,6 +152,8 @@ namespace Bloom.Edit
 		private Form _oldActiveForm;
 		private XmlElement _pageDivFromCopyPage;
 		private string _bookPathFromCopyPage;
+
+		internal BloomWebSocketServer EditModelSocketServer { get { return _webSocketServer; } }
 
 		/// <summary>
 		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
@@ -283,6 +287,10 @@ namespace Bloom.Edit
 			info.Cancel = !CurrentBook.RelocatePage(info.Page, info.IndexOfPageAfterMove);
 			if(!info.Cancel)
 			{
+				// Moving a page actually changes its html to have the new left/right side and page number,
+				// The Book takes care of that, but now we need to actually reload it from the dom.
+				RefreshDisplayOfCurrentPage();
+
 				Analytics.Track("Relocate Page");
 				Logger.WriteEvent("Relocate Page");
 			}
@@ -576,7 +584,7 @@ namespace Bloom.Edit
 		// completed saving it.
 		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
 		{
-			CheckForBL2364("start of page selection changing--should have old IDs");
+			CheckForBL2634("start of page selection changing--should have old IDs");
 			if (_view != null && !_inProcessOfDeleting && !_inProcessOfLoading)
 			{
 				_view.ChangingPages = true;
@@ -590,8 +598,12 @@ namespace Bloom.Edit
 		{
 			Logger.WriteMinorEvent("changing page selection");
 			Analytics.Track("Select Page");//not "edit page" because at the moment we don't have the capability of detecting that.
+
 			// Trace memory usage in case it may be useful
-			MemoryManagement.CheckMemory(false, "switched page in edit", true);
+			// First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
+			// If we seem to have a problem do it again forcing the GC and possibly warning the user.
+			if (MemoryManagement.CheckMemory(false, "switched page in edit", false, false))
+				MemoryManagement.CheckMemory(false, "switched page in edit", true);
 
 			if (_view != null)
 			{
@@ -614,8 +626,6 @@ namespace Bloom.Edit
 				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 			}
-
-			GC.Collect();//i put this in while looking for memory leaks, feel free to remove it.
 		}
 
 		public void RefreshDisplayOfCurrentPage()
@@ -626,24 +636,32 @@ namespace Bloom.Edit
 		public void SetupServerWithCurrentPageIframeContents()
 		{
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
-			CheckForBL2364("setup");
+			CheckForBL2634("setup");
 			SetupPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
-			CheckForBL2364("made tags safe");
+			CheckForBL2634("made tags safe");
 			if (_currentPage != null)
 				_currentPage.Dispose();
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
-			CheckForBL2364("made simulated page");
-
-			// Enhance JohnT: Can we somehow have a much simpler toolbox content until the user displays it?
-			//if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
-				_server.ToolboxContent = ToolboxView.MakeToolboxContent(_currentlyDisplayedBook);
-			//else
-			//	_server.ToolboxContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
-
+			CheckForBL2634("made simulated page");
 			_server.AuthorMode = CanAddPages;
 		}
 
+		public bool AreToolboxAndOuterFrameCurrent()
+		{
+			return _currentlyDisplayedBook == _bookForToolboxContent;
+		}
+
+		public void ClearBookForToolboxContent()
+		{
+			_bookForToolboxContent = null;
+		}
+
+		public void SetupServerWithCurrentBookToolboxContents()
+		{
+			_server.ToolboxContent = ToolboxView.MakeToolboxContent(_currentlyDisplayedBook);
+			_bookForToolboxContent = _currentlyDisplayedBook;
+		}
 		/// <summary>
 		/// Insert a div into the body that contains the .bloom-page div and set a style on this new div that will
 		/// zoom/scale the page content to the extent the user currently prefers.  This style cannot go on the body
@@ -664,7 +682,7 @@ namespace Bloom.Edit
 				var outerDiv = InsertContainingScalingDiv(body, pageDiv);
 				outerDiv.SetAttribute("style", string.Format("transform: scale({0}); transform-origin: left top;", pageZoom));
 			}
-			CheckForBL2364("set page zoom");
+			CheckForBL2634("set page zoom");
 		}
 
 		XmlElement InsertContainingScalingDiv(XmlElement body, XmlElement pageDiv)
@@ -687,6 +705,11 @@ namespace Bloom.Edit
 		public HtmlDom GetXmlDocumentForCurrentPage()
 		{
 			return _domForCurrentPage;
+		}
+
+		public string GetUrlForCurrentPage()
+		{
+			return _currentPage.Key;
 		}
 
 		/// <summary>
@@ -756,7 +779,7 @@ namespace Bloom.Edit
 		internal void AddStandardEventListeners()
 		{
 			AddMessageEventListener("saveToolboxSettingsEvent", SaveToolboxSettings);
-			AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
+			AddMessageEventListener("saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt);
 			AddMessageEventListener("setTopic", SetTopic);
 			AddMessageEventListener("finishSavingPage", FinishSavingPage);
 		}
@@ -875,6 +898,7 @@ namespace Bloom.Edit
 		{
 			if (_domForCurrentPage != null)
 			{
+				var watch = Stopwatch.StartNew();
 				try
 				{
 					_webSocketServer.Send("saving", "");
@@ -886,9 +910,10 @@ namespace Bloom.Edit
 					{
 						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, "SaveNow called on wrong thread", null);
 						_view.Invoke((Action)(SaveNow));
+						watch.Stop();
 						return;
 					}
-					CheckForBL2364("beginning SaveNow");
+					CheckForBL2634("beginning SaveNow");
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
@@ -925,10 +950,10 @@ namespace Bloom.Edit
 						Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
 						throw err;
 					}
-					CheckForBL2364("save");
+					CheckForBL2634("save");
 					//OK, looks safe, time to save.
 					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
-					CheckForBL2364("finished save");
+					CheckForBL2634("finished save");
 				}
 				finally
 				{
@@ -940,59 +965,22 @@ namespace Bloom.Edit
 					_tasksToDoAfterSaving.RemoveAt(0);
 					task();
 				}
+				watch.Stop();
+				TroubleShooterDialog.Report($"Saving changes took {watch.ElapsedMilliseconds} milliseconds");
 			}
 		}
 
 		/// <summary>
 		/// Save anything we want to persist from page to page but which is not part of the book from the page's current state.
-		/// Currently this is just the zoom level.
+		/// Currently there is nothing (once used to persist zoom level set with control wheel).
 		/// </summary>
 		void SavePageFrameState()
 		{
-			var body = _view.GetPageBody();
-			Debug.Assert(body!=null, "(Debug Only) no body when doing SavePageFrameState()" );
-
-			// not worth crashing over a timing problem that means we don't save zoom state
-			if (body == null)
-				return; // BL-3075, not sure how this can happen but it has. Possibly the view is in some state like about:null which has no body.
-
-			var pageDiv = body.FindFirstChildInTree<GeckoElement>(IsPageScalingDiv);
-			if (pageDiv == null)
-				return;		// shouldn't happen, but ignore.
-
-			var styleAttr = pageDiv.Attributes["style"];
-			if (styleAttr != null)
-			{
-				var style = styleAttr.NodeValue;
-				var match = Regex.Match(style, "scale\\(([0-9.]*)");
-				if (match.Success)
-				{
-					var pageZoom = match.Groups[1].Value;
-					if (pageZoom != Settings.Default.PageZoom)
-					{
-						Settings.Default.PageZoom = pageZoom;
-						Settings.Default.Save();
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Test whether the given element is the div inserted for page zooming/scaling.
-		/// </summary>
-		private bool IsPageScalingDiv(GeckoElement e)
-		{
-			if (e.NodeName.ToLowerInvariant() != "div")
-				return false;
-			var idAttr = e.Attributes["id"];
-			if (idAttr == null)
-				return false;
-			return idAttr.NodeValue == PageScalingDivId;
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
 		// to save is not in the book we're trying to save it into.
-		internal void CheckForBL2364(string when)
+		internal void CheckForBL2634(string when)
 		{
 			try
 			{
@@ -1007,12 +995,12 @@ namespace Bloom.Edit
 					// This code is aimed at finding out a little more about the circumstances.
 					try
 					{
-						Logger.WriteEvent("BL2364 failure: pageDiv is {0}", _domForCurrentPage.RawDom.OuterXml);
-						Logger.WriteEvent("BL2364 failure: selection div is {0}", _pageSelection.CurrentSelection.GetDivNodeForThisPage().OuterXml);
+						Logger.WriteEvent("BL2634 failure: pageDiv is {0}", _domForCurrentPage.RawDom.OuterXml);
+						Logger.WriteEvent("BL2634 failure: selection div is {0}", _pageSelection.CurrentSelection.GetDivNodeForThisPage().OuterXml);
 					}
 					catch (Exception)
 					{
-						Logger.WriteEvent("Bl2364: failed to write XML of DOM and selection");
+						Logger.WriteEvent("Bl2634: failed to write XML of DOM and selection");
 					}
 					throw new ApplicationException(
 						string.Format(
@@ -1022,7 +1010,7 @@ namespace Bloom.Edit
 				// By comparing this with the stacks dumped when the check fails, we can hopefully tell whether the DOM or
 				// the Current Selection ID somehow changed, which may help partition the space we need to look in to
 				// solve the problem.
-				Logger.WriteMinorEvent(String.Format("CheckForBl2364({0}: both ids are " + _pageSelection.CurrentSelection.Id, when));
+				Logger.WriteMinorEvent(String.Format("CheckForBl2634({0}: both ids are " + _pageSelection.CurrentSelection.Id, when));
 			}
 			catch (Exception err)
 			{

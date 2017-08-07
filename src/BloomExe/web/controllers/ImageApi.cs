@@ -28,13 +28,17 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("image/info", HandleImageInfo);
-			server.RegisterEndpointHandler("image/imageCreditsForWholeBook", HandleCopyImageCreditsForWholeBook);
+			// These are both just retrieving information about files, apart from using _bookSelection.CurrentSelection.FolderPath.
+			server.RegisterEndpointHandler("image/info", HandleImageInfo, false);
+			server.RegisterEndpointHandler("image/imageCreditsForWholeBook", HandleCopyImageCreditsForWholeBook, false);
 		}
 
 		private void HandleCopyImageCreditsForWholeBook(ApiRequest request)
 		{
+			// This method is called on a fileserver thread. To minimize the chance that the current selection somehow
+			// changes while it is running, we capture the things that depend on it in variables right at the start.
 			var names = BookStorage.GetImagePathsRelativeToBook(_bookSelection.CurrentSelection.RawDom.DocumentElement);
+			var currentSelectionFolderPath = _bookSelection.CurrentSelection.FolderPath;
 			IEnumerable<string> langs = null;
 			if (request.CurrentCollectionSettings != null)
 				langs = request.CurrentCollectionSettings.LicenseDescriptionLanguagePriorities;
@@ -44,7 +48,7 @@ namespace Bloom.web.controllers
 			var missingCredits = new List<string>();
 			foreach (var name in names)
 			{
-				var path = _bookSelection.CurrentSelection.FolderPath.CombineForPath(name);
+				var path = currentSelectionFolderPath.CombineForPath(name);
 				if (RobustFile.Exists(path))
 				{
 					var meta = Metadata.FromFile(path);

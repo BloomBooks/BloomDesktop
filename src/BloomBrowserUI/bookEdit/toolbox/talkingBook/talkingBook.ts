@@ -30,7 +30,7 @@ export default class TalkingBookModel implements ITabModel {
         AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
     }
 
-    name() { return 'talkingBook'; }
+    name() { return "talkingBook"; }
 
     hasRestoredSettings: boolean;
 

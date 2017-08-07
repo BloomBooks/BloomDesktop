@@ -144,8 +144,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Interop.Acrobat">
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
@@ -157,9 +157,6 @@
     </Reference>
     <Reference Include="L10NSharp">
       <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="LibChorus">
-      <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="MarkdownDeep, Version=1.5.4615.26275, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MarkdownDeep.NET.1.5\lib\.NetFramework 3.5\MarkdownDeep.dll</HintPath>
@@ -217,6 +214,9 @@
     <Reference Include="PdfSharp">
       <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
     </Reference>
+    <Reference Include="PodcastUtilities.PortableDevices">
+      <HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
@@ -228,6 +228,9 @@
     </Reference>
     <Reference Include="SIL.Core">
       <HintPath>..\..\lib\dotnet\SIL.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Core.Desktop">
+      <HintPath>..\..\lib\dotnet\SIL.Core.Desktop.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Media">
       <HintPath>..\..\lib\dotnet\SIL.Media.dll</HintPath>
@@ -298,9 +301,11 @@
     <Compile Include="AboutMemory.Designer.cs">
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Communication\AndroidDeviceUsbConnection.cs" />
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="BookThumbNailer.cs" />
+    <Compile Include="Book\BookCompressor.cs" />
     <Compile Include="Book\BookCopyrightAndLicense.cs" />
     <Compile Include="Book\BookInfo.cs" />
     <Compile Include="Book\BookServer.cs" />
@@ -308,6 +313,8 @@
     <Compile Include="CLI\DownloadBookCommand.cs" />
     <Compile Include="CLI\GetUsedFontsCommand.cs" />
     <Compile Include="CLI\HydrateBookCommand.cs" />
+    <Compile Include="Communication\IAndroidDeviceUsbConnection.cs" />
+    <Compile Include="Communication\UnimplementedAndroidDeviceUsbConnection.cs" />
     <Compile Include="Edit\BookSettingsTool.cs" />
     <Compile Include="Edit\ToolboxTool.cs" />
     <Compile Include="Edit\DecodableReaderTool.cs" />
@@ -315,8 +322,22 @@
     <Compile Include="Edit\TalkingBookTool.cs" />
     <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
+    <Compile Include="MiscUI\TroubleShooterDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiscUI\TroubleShooterDialog.Designer.cs">
+      <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\ElectronicPublishView.cs" />
+    <Compile Include="Publish\BloomReaderPublisher.cs" />
+    <Compile Include="Publish\AndroidView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\AndroidView.Designer.cs">
+      <DependentUpon>AndroidView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\WiFiAdvertiser.cs" />
     <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
@@ -475,6 +496,7 @@
     <Compile Include="Publish\PdfViewer.Designer.cs">
       <DependentUpon>PdfViewer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\ProcessPdfWithGhostscript.cs" />
     <Compile Include="Publish\SamplePrintNotification.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -583,6 +605,9 @@
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
     <Compile Include="web\controllers\AddOrChangePageApi.cs" />
+    <Compile Include="web\controllers\BloomReaderUDPListener.cs" />
+    <Compile Include="web\controllers\AndroidMessageArgs.cs" />
+    <Compile Include="web\controllers\PublishToAndroidApi.cs" />
     <Compile Include="web\controllers\ImageApi.cs" />
     <Compile Include="web\controllers\PageTemplatesApi.cs" />
     <Compile Include="web\controllers\KeyboardingConfigApi.cs" />
@@ -594,6 +619,7 @@
     <Compile Include="web\ReadersApi.cs" />
     <Compile Include="web\controllers\ExternalLinkController.cs" />
     <Compile Include="web\UrlLookup.cs" />
+    <Compile Include="web\WebSocketProgress.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -726,6 +752,7 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="SourceCollectionsList.cs" />
+    <Compile Include="Workspace\IZoomManager.cs" />
     <Compile Include="Workspace\TabStrip.cs" />
     <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
@@ -797,6 +824,9 @@
     <EmbeddedResource Include="MiscUI\ToastNotifier.resx">
       <DependentUpon>ToastNotifier.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\TroubleShooterDialog.resx">
+      <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Publish\AdobeReaderControl.resx">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -805,6 +835,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\AndroidView.resx">
+      <DependentUpon>AndroidView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\EpubView.resx">
       <DependentUpon>EpubView.cs</DependentUpon>
@@ -913,6 +946,9 @@
       <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Workspace\ZoomControl.resx">
+      <DependentUpon>ZoomControl.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
@@ -941,6 +977,12 @@
     </Compile>
     <Compile Include="CollectionTab\LibraryBookView.Designer.cs">
       <DependentUpon>LibraryBookView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Workspace\ZoomControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Workspace\ZoomControl.Designer.cs">
+      <DependentUpon>ZoomControl.cs</DependentUpon>
     </Compile>
     <Compile Include="XmlHtmlConverter.cs" />
     <Compile Include="web\IRequestInfo.cs" />
@@ -1231,6 +1273,8 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
 copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
 copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfMaker.exe.config"
+REM we don't know why this is needed... seems only to be needed on TC agent, not locally
+copy /Y "$(SolutionDir)packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\runtimes\win7-x86\native\vcruntime140.dll" $(OutDir)
     </PostBuildEvent>
     <PostBuildEvent Condition="'$(OS)'!='Windows_NT'">
 cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
@@ -1323,6 +1367,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\xul.dll" />
     <None Include="Resources\sad16x16.png" />
     <None Include="Resources\weblink.png" />
+    <None Include="Resources\android.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="desktopAndTaskBar.ico" />
@@ -1333,6 +1378,10 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <ItemGroup>
     <Analyzer Include="..\..\packages\AWSSDK.S3.3.3.1\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <IccFiles Include="..\..\DistFiles\ColorProfiles\CMYK\USWebCoatedSWOP.icc" />
+    <IccFiles Include="..\..\DistFiles\ColorProfiles\RGB\AdobeRGB1998.icc" />
+  </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(GeckoBrowserAdapter)" DestinationFolder="$(OutDir)" />
@@ -1340,5 +1389,13 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
     <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
+  </Target>
+  <Import Project="..\..\packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\build\net40\runtime.win7-x86.vcruntime140.targets" Condition="'$(OS)'=='Windows_NT' and Exists('..\..\packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\build\net40\runtime.win7-x86.vcruntime140.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition="'$(OS)'=='Windows_NT'">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\build\net40\runtime.win7-x86.vcruntime140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\build\net40\runtime.win7-x86.vcruntime140.targets'))" />
   </Target>
 </Project>

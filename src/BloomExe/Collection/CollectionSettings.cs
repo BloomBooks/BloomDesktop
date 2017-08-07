@@ -37,13 +37,45 @@ namespace Bloom.Collection
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
 
-		public static readonly string[] PageNumberStyleKeys =
-		{
-			"Decimal", "Arabic-Indic", "Armenian", "Upper-Armenian", "Lower-Armenian", "Bengali",
-			"Cambodian", "Khmer", "Cjk-Decimal", "Devanagari", "Georgian", "Gujarati", "Gurmukhi",
-			"Hebrew", "Kannada", "Lao", "Malayalam", "Mongolian", "Myanmar", "Oriya", "Persian",
-			"Tamil", "Telugu", "Thai", "Tibetan"
-		};
+		public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
+			new Dictionary<string, string>()
+			{
+				// Initially, Bloom used CSS for page numbering and css counter styles for
+				// controlling the script the page numbers are drawn in. For various reasons
+				// we then switched to having code keep the page number in data-page-number,
+				// so we can't make use of that CSS feature anymore but want to keep the same
+				// list and keep working for users of previous versions.
+				// In this dictionary, we're pairing css counting styles (the key) with either
+				// a Microsoft culture that happens to implement it or, if that can't be found,
+				// then the 10 digits of used by the script. As a side benefit, this will allow us to support
+				// other number systems, if people request them (so long as they can be represented by just
+				// replacing digits).
+				{ "Arabic-Indic", "ar-SA"}, // not certain that this is correct one
+				{ "Armenian", "hy-AM"},
+				{ "Upper-Armenian", "hy-AM"},
+				//{ "Lower-Armenian", ""},//haven't found the culture or list of number for this
+				{ "Bengali", "bn-BD"},
+				{ "Cambodian", "km-KH"},
+				{ "Khmer", "km-KH"},
+				{ "Cjk-Decimal", "〇一二三四五六七八九"},// haven't found a culture for this
+				{ "Decimal", "" },
+				{ "Devanagari", "०१२३४५६७८९"}, // "hi-IN"}, was apparently failing on TeamCity Windows 7 agent
+				{ "Georgian", "ka-GE"},
+				{ "Gujarati", "gu-IN"},
+				{ "Gurmukhi", "pa-IN"},
+				{ "Hebrew", "he-IL"},
+				{ "Kannada", "kn-IN"},
+				{ "Lao", "lo-LA"},
+				{ "Malayalam", "ml-IN"},
+				{ "Mongolian", "mn-Mong-MN"},
+				{ "Myanmar", "my-MM"},
+				{ "Oriya", "୦୧୨୩୪୫୬୭୮୯"}, // haven't found a culture for this
+				{ "Persian", "fa-IR"},
+				{ "Tamil", "ta-IN"},
+				{ "Telugu", "te-IN"},
+				{ "Thai", "th-TH"},
+				{ "Tibetan", "bo-CN"}
+			};
 
 		/// <summary>
 		/// for moq in unit tests only
@@ -348,7 +380,6 @@ namespace Bloom.Collection
 				{
 					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight);
 				}
-				AddNumberingStyleCssRule(sb, PageNumberStyle);
 				RobustFile.WriteAllText(path, sb.ToString());
 			}
 			catch (Exception error)
@@ -357,20 +388,6 @@ namespace Bloom.Collection
 			}
 		}
 
-		// styleNameKey must be the non-localized version
-		private void AddNumberingStyleCssRule(StringBuilder sb, string styleNameKey)
-		{
-			var mediaSelector = "@media print";
-			var selector = " .numberedPage:after";
-			sb.AppendLine();
-			sb.AppendLine(mediaSelector);
-			sb.AppendLine("{");
-			sb.AppendLine(selector);
-			sb.AppendLine(" {");
-			sb.AppendLine("  content: counter(pageNumber, " + styleNameKey.ToLower() + ");");
-			sb.AppendLine(" }");
-			sb.AppendLine("}");
-		}
 
 		private void AddFontCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight)
 		{
@@ -400,7 +417,10 @@ namespace Bloom.Collection
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
 
 				var style = GetValue(library, "PageNumberStyle", "Decimal");
-				PageNumberStyle = PageNumberStyleKeys.Contains(style) ? style : "Decimal";
+
+				//for historical (and maybe future?) reasons, we collect the page number style as one of the
+				//CSS counter number styles
+				PageNumberStyle = CssNumberStylesToCultureOrDigits.Keys.Contains(style) ? style : "Decimal";
 
 				BrandingProjectName = GetValue(library, "BrandingProjectName", "Default");
 
@@ -743,8 +763,48 @@ namespace Bloom.Collection
 		}
 
 		/// <summary>
+		/// The user settings can define a number system. This gives the digits, 0..9 of the selected system.
+		/// </summary>
+		public string CharactersForDigitsForPageNumbers
+		{
+			get
+			{
+				string info;
+				if(CssNumberStylesToCultureOrDigits.TryGetValue(PageNumberStyle, out info))
+				{
+					if (info.Length == 10) // string of digits
+						return info; //we've just listed the digits out, no need to look up a culture
+
+					if(info.Length == 5) // Microsoft culture code
+					{
+						try
+						{
+							var digits = new CultureInfo(info).NumberFormat.NativeDigits;
+							Debug.Assert(digits.Length == 10);
+							var joined = string.Join("", digits);
+							Debug.Assert(joined.Length == 10);
+							return joined;
+						}
+						catch(CultureNotFoundException)
+						{
+							// fall through to default return value
+						}
+						catch(Exception)
+						{
+							//there's no scenario
+							//where this is worth stopping people in their tracks. I just want a
+							//problem report saying "Hey page numbers don't look right on this machine".
+						}
+					}
+				}
+				//Missing or malformed value for this identifier.
+				return "0123456789";
+			}
+		}
+
+		/// <summary>
 		/// The collection settings point to object which might not exist. For example, the xmatter pack might not exist.
-		/// So this should be called as soon as it is ok to show some UI. It will find any dependencies it can't meet,
+		/// So this should be called as soon as it is OK to show some UI. It will find any dependencies it can't meet,
 		/// revert them to defaults, and notify the user.
 		/// </summary>
 		public void CheckAndFixDependencies(BloomFileLocator bloomFileLocator)

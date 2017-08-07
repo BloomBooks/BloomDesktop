@@ -96,7 +96,7 @@ namespace Bloom.ImageProcessing
 				{
 					using (var tmp = new TempFile())
 					{
-						SIL.IO.RobustIO.SaveImage(image, tmp.Path, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
+						RobustImageIO.SaveImage(image, tmp.Path, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
 						SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tmp.Path, destinationPath, null);
 					}
 
@@ -265,7 +265,7 @@ namespace Bloom.ImageProcessing
 					using(var jpegFile = new TempFile())
 					using(var pngFile = new TempFile())
 					{
-						SIL.IO.RobustIO.SaveImage(image, pngFile.Path, ImageFormat.Png);
+						RobustImageIO.SaveImage(image, pngFile.Path, ImageFormat.Png);
 						SaveAsTopQualityJpeg(safetyImage, jpegFile.Path);
 						var jpegInfo = new FileInfo(jpegFile.Path);
 						var pngInfo = new FileInfo(pngFile.Path);
@@ -305,7 +305,7 @@ namespace Bloom.ImageProcessing
 				{
 					//0 = max compression, 100 = least
 					parameters.Param[0] = new EncoderParameter(encoder, 100L);
-					SIL.IO.RobustIO.SaveImage(safetyImage, temp.Path, jpgEncoder, parameters);
+					RobustImageIO.SaveImage(safetyImage, temp.Path, jpgEncoder, parameters);
 				}
 				SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, destinationPath, null);
 			}

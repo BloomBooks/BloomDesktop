@@ -1,9 +1,8 @@
-﻿///<reference path="../../../typings/axios/axios.d.ts"/>
-import axios = require('axios');
+﻿import axios from "axios";
 
 $(document).ready(() => {
     // request our model and set the controls
-    axios.get<any>('/bloom/api/book/settings').then(result => {
+    axios.get("/bloom/api/book/settings").then(result => {
         var settings = result.data;
 
         // Only show this if we are editing a shell book. Otherwise, it's already not locked.
@@ -29,11 +28,4 @@ export function handleBookSettingCheckboxClick(clickedButton: any) {
         return o;
     })[0];
     axios.post("/bloom/api/book/settings", settings);
-}
-
-
-export function handleResetZoom(clickedButton: any) {
-    var pageDom = <HTMLIFrameElement>parent.window.document.getElementById('page');
-    var pageBody = $(pageDom.contentWindow.document.body);
-    $(pageBody).find("div#page-scaling-container").css('transform', 'scale(1.0)');
 }

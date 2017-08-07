@@ -422,11 +422,10 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab.MenusToolStrip");
-			this._menusToolStrip.Location = new System.Drawing.Point(294, 10);
+			this._menusToolStrip.Location = new System.Drawing.Point(294, 2);
 			this._menusToolStrip.Name = "_menusToolStrip";
 			this._menusToolStrip.Size = new System.Drawing.Size(165, 56);
 			this._menusToolStrip.TabIndex = 2;
-			this._menusToolStrip.Text = "";
 			// 
 			// _contentLanguagesDropdown
 			// 
@@ -457,6 +456,8 @@
 			// _browser1
 			// 
 			this._browser1.BackColor = System.Drawing.Color.DarkGray;
+			this._browser1.ContextMenuProvider = null;
+			this._browser1.ControlKeyEvent = null;
 			this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._browser1.Isolator = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._browser1, null);

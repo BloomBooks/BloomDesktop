@@ -35,8 +35,9 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler("addPage", HandleAddPage);
-			server.RegisterEndpointHandler("changeLayout", HandleChangeLayout);
+			// Both of these display UI, expect to require UI thread.
+			server.RegisterEndpointHandler("addPage", HandleAddPage, true);
+			server.RegisterEndpointHandler("changeLayout", HandleChangeLayout, true);
 		}
 
 		private void HandleAddPage(ApiRequest request)

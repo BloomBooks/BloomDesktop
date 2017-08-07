@@ -1,8 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Reflection;
 using System.Xml;
 using Bloom;
 using Bloom.Book;
@@ -12,11 +11,9 @@ using Moq;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
-using SIL.Progress;
 using SIL.Code;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
-using RobustIO = Bloom.RobustIO;
 
 namespace BloomTests.Book
 {
@@ -139,7 +136,7 @@ namespace BloomTests.Book
 		protected void MakeSamplePngImageWithMetadata(string path)
 		{
 			var x = new Bitmap(10, 10);
-			SIL.IO.RobustIO.SaveImage(x, path, ImageFormat.Png);
+			RobustImageIO.SaveImage(x, path, ImageFormat.Png);
 			x.Dispose();
 			using (var img = PalasoImage.FromFileRobustly(path))
 			{

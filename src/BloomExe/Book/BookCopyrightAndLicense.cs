@@ -273,7 +273,7 @@ namespace Bloom.Book
 				{
 					using(Stream fs = new FileStream(imagePath, FileMode.Create))
 					{
-						SIL.IO.RobustIO.SaveImage(licenseImage, fs, ImageFormat.Png);
+						RobustImageIO.SaveImage(licenseImage, fs, ImageFormat.Png);
 					}
 				}
 				else

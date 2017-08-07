@@ -17,6 +17,7 @@ using SIL.Reporting;
 using Gecko;
 using SIL.IO;
 using System.Drawing;
+using SIL.PlatformUtilities;
 
 namespace Bloom.Publish
 {
@@ -30,6 +31,7 @@ namespace Bloom.Publish
 		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
 		private EpubView _epubPreviewControl;
+		private AndroidView _androidControl;
 		private NavigationIsolator _isolator;
 
 		public delegate PublishView Factory();//autofac uses this
@@ -66,8 +68,10 @@ namespace Bloom.Publish
 													{
 														Activate();
 													}
-													else if (c.To!=this && IsMakingPdf)
-														_makePdfBackgroundWorker.CancelAsync();
+													else if (c.To != this)
+													{
+														Deactivate();
+													}
 												});
 
 			//TODO: find a way to call this just once, at the right time:
@@ -110,6 +114,14 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Enabled = enable;
 			_bookletCoverRadio.Enabled = enable;
 			_simpleAllPagesRadio.Enabled = enable;
+			_androidRadio.Enabled = enable;
+		}
+
+		private void Deactivate()
+		{
+			if (IsMakingPdf)
+				_makePdfBackgroundWorker.CancelAsync();
+			_androidControl?.Deactivate();
 		}
 
 		private void BackgroundColorsForLinux() {
@@ -135,6 +147,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
 			_epubRadio.AutoCheck = autoCheck;
+			_androidRadio.AutoCheck = autoCheck;
 		}
 
 		private void SetupLocalization()
@@ -144,6 +157,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_epubRadio, "PublishTab.EpubRadio");
+			LocalizeSuperToolTip(_androidRadio, "PublishTab.AndroidButton");
 		}
 
 		// Used by LocalizeSuperToolTip to remember original English keys
@@ -207,7 +221,8 @@ namespace Bloom.Publish
 
 		private void ClearRadioButtons()
 		{
-			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked = _simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = false;
+			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
+				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _androidRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -219,6 +234,13 @@ namespace Bloom.Publish
 		public Control TopBarControl
 		{
 			get { return _topBarPanel; }
+		}
+
+		public int WidthToReserveForTopBarControl => TopBarControl.Width;
+
+		public void PlaceTopBarControl()
+		{
+			_topBarPanel.Dock = DockStyle.Left;
 		}
 
 		public Bitmap ToolStripBackground { get; set; }
@@ -270,6 +292,8 @@ namespace Bloom.Publish
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
 				else if (_epubRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
+				else if (_androidRadio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.Android;
 				else if (_model.PdfGenerationSucceeded)
 					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
 				else
@@ -288,8 +312,6 @@ namespace Bloom.Publish
 		{
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
-
-			_layoutChoices.Text = _model.PageLayout.ToString();
 
 			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
 			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
@@ -321,8 +343,11 @@ namespace Bloom.Publish
 			var layout = _model.PageLayout;
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
 			_layoutChoices.DropDownItems.Clear();
-//			_layoutChoices.Items.AddRange(layoutChoices.ToArray());
-//			_layoutChoices.SelectedText = _model.BookSelection.CurrentSelection.GetLayout().ToString();
+			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
+			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Layout",
+				@"Header for a region of the menu which lists various standard page layout sizes");
+			var headerItem2 = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(headerText);
+			headerItem2.Enabled = false;
 			foreach (var lc in layoutChoices)
 			{
 				var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
@@ -333,7 +358,6 @@ namespace Bloom.Publish
 				item.CheckOnClick = true;
 				item.Click += OnLayoutChosen;
 			}
-			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 
 			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
 			var textItem = LocalizationManager.GetString("PublishTab.LessMemoryPdfMode", "Use less memory (slower)");
@@ -351,7 +375,6 @@ namespace Bloom.Publish
 		{
 			var item = (ToolStripMenuItem)sender;
 			_model.PageLayout = ((Layout)item.Tag);
-			_layoutChoices.Text = _model.PageLayout.ToString();
 			ClearRadioButtons();
 			UpdateDisplay();
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
@@ -374,7 +397,11 @@ namespace Bloom.Publish
 			{
 				Controls.Remove(_epubPreviewControl);
 			}
-			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB)
+			if (displayMode != PublishModel.DisplayModes.Android && _androidControl != null && Controls.Contains(_androidControl))
+			{
+				Controls.Remove(_androidControl);
+			}
+			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Android)
 				_pdfViewer.Visible = true;
 			switch (displayMode)
 			{
@@ -454,6 +481,26 @@ namespace Bloom.Publish
 
 						break;
 				}
+				case PublishModel.DisplayModes.Android:
+				{
+					_workingIndicator.Visible = false;
+					_printButton.Enabled = false;
+					_pdfViewer.Visible = false;
+					Cursor = Cursors.WaitCursor;
+					_androidControl = new AndroidView(_isolator);
+					_androidControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
+						_pdfViewer.Width, _pdfViewer.Height);
+					_androidControl.Dock = _pdfViewer.Dock;
+					_androidControl.Anchor = _pdfViewer.Anchor;
+					var saveBackGround = _androidControl.BackColor; // changed to match parent during next statement
+					Controls.Add(_androidControl);
+					_androidControl.BackColor = saveBackGround; // keep own color.
+																// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
+					_androidControl.BringToFront();
+					Cursor = Cursors.Default;
+
+					break;
+				}
 			}
 			UpdateSaveButton();
 		}
@@ -512,6 +559,10 @@ namespace Bloom.Publish
 				{
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
 				}
+				else if (_androidRadio.Checked)
+				{
+					_model.DisplayMode = PublishModel.DisplayModes.Android;
+				}
 				else if (_model.DisplayMode == PublishModel.DisplayModes.Upload)
 				{
 					// no change because the PREVIOUS button was the cloud one. Need to restore the appropriate
@@ -563,6 +614,8 @@ namespace Bloom.Publish
 
 		internal string PdfPreviewPath { get { return _model.PdfFilePath; } }
 
+		SIL.Windows.Forms.Progress.ProgressDialog _progress;
+
 		public void MakeBooklet()
 		{
 			if (IsMakingPdf)
@@ -592,7 +645,37 @@ namespace Bloom.Publish
 			}
 
 			SetDisplayMode(PublishModel.DisplayModes.Working);
-			_makePdfBackgroundWorker.RunWorkerAsync();
+
+			using (_progress = new SIL.Windows.Forms.Progress.ProgressDialog())
+			{
+				_progress.Overview = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.Creating",
+					"Creating PDF...",
+					@"Message displayed in a progress report dialog box");
+				_progress.BackgroundWorker = _makePdfBackgroundWorker;
+				_makePdfBackgroundWorker.ProgressChanged += UpdateProgress;
+				_progress.ShowDialog();	// will start the background process when loaded/showing
+				_makePdfBackgroundWorker.ProgressChanged -= UpdateProgress;
+				_progress.BackgroundWorker = null;
+				if (_progress.ProgressStateResult != null && _progress.ProgressStateResult.ExceptionThatWasEncountered != null)
+				{
+					string shortMsg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.ErrorProcessing",
+						"Error creating, compressing, or recoloring the PDF file",
+						@"Message briefly displayed to the user in a toast");
+					var longMsg = String.Format("Exception encountered processing the PDF file: {0}", _progress.ProgressStateResult.ExceptionThatWasEncountered);
+					NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, _progress.ProgressStateResult.ExceptionThatWasEncountered);
+				}
+			}
+			_progress = null;
+		}
+
+		private void UpdateProgress(object sender, ProgressChangedEventArgs e)
+		{
+			if (_progress == null || _progress.IsDisposed)
+				return;
+			_progress.Progress = e.ProgressPercentage;
+			var status = e.UserState as string;
+			if (status != null)
+				_progress.StatusText = status;
 		}
 
 		private bool isBooklet()

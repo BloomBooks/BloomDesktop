@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<!-- This makes defaults for various properties unless they are set from the command line or TeamCity parameter settings.
 	Typically command line includes /p:BUILD_NUMBER=3.1.22.0 (all 4 digits required).
 	May include something like /p:channel=Alpha.-->
@@ -35,21 +35,19 @@
 		<teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
 	</PropertyGroup>
 
-	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="NUnit3" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="NUnit3" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.dll" />
+	<UsingTask TaskName="S3BuildPublisher" AssemblyFile="$(RootDir)/build/SIL.BuildTasks.AWS.dll" />
 	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
 	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
-	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets" Condition="'$(OS)'=='Windows_NT'"/>
 
-  <PropertyGroup>
-	<AccessKey>AKIAJ24BTPKNQCTQ3WQQ</AccessKey> <!-- This is for JohnThomson, a user who can upload to our libraries; override with /p:AccessKey=; used by ConfigureS3 target-->
-	<Secret></Secret> <!-- Secret access key for use in $(AccessKey) Must override with /p:Secret=; used by ConfigureS3 target-->
-	<Key>Dev</Key>  <!-- Which set of keys to use; May override with /p:Key=; used by all S3 upload targets. Must configure with this key before using other targets.-->
-	<Bucket>bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
-  </PropertyGroup>
+	<PropertyGroup>
+		<ProfileName>BloomLibrary</ProfileName>
+		<Bucket>bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
+	</PropertyGroup>
 
   <Target Name="VersionNumbers">
 	<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
@@ -65,7 +63,7 @@
 	<Message Text="BuildHash: $(BuildHash)" Importance="high"/>
 
 	<!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-	<CreateProperty Value="3.9.$(BuildCounter)">
+	<CreateProperty Value="4.0.$(BuildCounter)">
 	  <Output PropertyName="Version" TaskParameter="Value"/>
 	</CreateProperty>
 	<CreateProperty Value="$(Version).$(BuildHash)">
@@ -186,11 +184,11 @@
 		-->
 		<Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(channelRelease).htm"/>
 		<S3BuildPublisher
-		  EncryptionContainerName ="$(Key)"
+		  CredentialStoreProfileName ="$(ProfileName)"
 		  SourceFiles="../output/installer/DownloadPointers_$(channelRelease).htm"
 		  DestinationBucket="$(Bucket)"
 		  DestinationFolder="channels"
-		  PublicRead="true" />
+		  IsPublicRead="true" />
 	</Target>
 
 	<Target Name="Installer" DependsOnTargets="VersionNumbers; Build ">
@@ -215,13 +213,15 @@
 		<!-- Bloom expects an icon with a name corresponding to the EXE, which gets used for the desktop shortcut.
 		If we one day make distinct icons for the channels, we'll need to revise this to get the right channel-specific icon.-->
 		<Copy SourceFiles="$(RootDir)\src\SquirrelInstaller\Bloom.ico"  DestinationFiles="$(RootDir)\output\Release\Bloom$(channelRelease).ico"/>
+		<!-- The same is true for an initial splash image.  Right now, all channels use the same splash image for the instant splash. -->
+		<Copy SourceFiles="$(RootDir)\src\BloomSplash.png"  DestinationFiles="$(RootDir)\output\$(Configuration)\Bloom$(channel)Splash.png"/>
 
 		<Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
 
 		<!-- This is the command that actually runs Squirrel. Usually the exe invoked here is called Squirrel. However, we're building our own
 		version, and it's easiest to go with the exe name that the Squirrel build process actually produces.
 		The relaseDir here is a shared drive for all the build agents (though for now we only use one, because only it has the signing data). -->
-		<Exec Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu'"/>
+		<Exec Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu' --framework-version=net461"/>
 
 		<Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
 			  DestinationFiles="$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"
@@ -265,35 +265,35 @@
 		When we're ready to go live with squirrel we can change this target folder or the web site.-->
 		<!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
 		<S3BuildPublisher
-		EncryptionContainerName ="$(Key)"
+		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelInstallerFileName)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="installers$(channel)"
-		PublicRead="true" />
+		IsPublicRead="true" />
 
 		<!-- The delta, full, and RELEASES files must all be in the same directory, the one indicated by Program.SquirrelUpdateUrl.
 		This MUST NOT CHANGE once we start shipping squirrel installers, because it's where all the old versions will look for
 		newer ones.-->
 		<S3BuildPublisher
-		EncryptionContainerName ="$(Key)"
+		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelDeltaPkg)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
-		PublicRead="true" />
+		IsPublicRead="true" />
 
 		<S3BuildPublisher
-		EncryptionContainerName ="$(Key)"
+		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
-		PublicRead="true" />
+		IsPublicRead="true" />
 
 		<S3BuildPublisher
-		EncryptionContainerName ="$(Key)"
+		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(SquirrelReleaseFolder)/RELEASES"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
-		PublicRead="true" />
+		IsPublicRead="true" />
 
 		<CallTarget Targets ='MakeDownloadPointers'/>
 	</Target>

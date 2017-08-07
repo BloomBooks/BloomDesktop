@@ -320,7 +320,7 @@ namespace Bloom.MiscUI
 				{
 					using (var file = TempFile.WithFilenameInTempFolder("screenshot.png"))
 					{
-						SIL.IO.RobustIO.SaveImage(_screenshot, file.Path, ImageFormat.Png);
+						RobustImageIO.SaveImage(_screenshot, file.Path, ImageFormat.Png);
 						AddAttachment(file.Path);
 					}
 				}
@@ -488,7 +488,7 @@ namespace Bloom.MiscUI
 			{
 				using (var file = TempFile.WithFilenameInTempFolder("screenshot.png"))
 				{
-					SIL.IO.RobustIO.SaveImage(_screenshot, file.Path, ImageFormat.Png);
+					RobustImageIO.SaveImage(_screenshot, file.Path, ImageFormat.Png);
 					zip.AddTopLevelFile(file.Path);
 				}
 			}

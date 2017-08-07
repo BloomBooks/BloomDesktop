@@ -83,6 +83,16 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap android {
+            get {
+                object obj = ResourceManager.GetObject("android", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Bloom {
             get {
                 object obj = ResourceManager.GetObject("Bloom", resourceCulture);
@@ -217,9 +227,9 @@ namespace Bloom.Properties {
         ///		{id:&quot;parseSandbox&quot;, url: &quot;https://bloom-parse-server-develop.azurewebsites.net/parse/&quot;},
         ///		{id:&quot;librarySite&quot;, url: &quot;http://bloomlibrary.org&quot;},
         ///		{id:&quot;librarySiteSandbox&quot;, url: &quot;http://dev.bloomlibrary.org&quot;},
-        ///        {id:&quot;userSuggestions&quot;, url: &quot;https://community.software.sil.org/c/bloom/featurerequests&quot;},
-        ///        {id:&quot;support&quot;,&quot;url&quot;: &quot;https://community.software.sil.org/c/bloom&quot;},
-        ///		{id:&quot;issueTrackingSy [rest of string was truncated]&quot;;.
+        ///		{id:&quot;userSuggestions&quot;, url: &quot;http://bloombooks.uservoice.com/forums/153625-general&quot;},
+        ///		{id:&quot;issueTrackingSystem&quot;, url: &quot;https://silbloom.myjetbrains.com&quot;},
+        ///		{id:&quot;issueTrackingSystemBackend&quot;, ur [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string CurrentServiceUrls {
             get {

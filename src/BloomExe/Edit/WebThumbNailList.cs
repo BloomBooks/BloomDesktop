@@ -10,6 +10,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
+using Bloom.MiscUI;
 using Gecko;
 using SIL.Windows.Forms.Reporting;
 using SIL.Xml;
@@ -109,15 +110,33 @@ namespace Bloom.Edit
 			}
 		}
 
-	   private void InvokePageSelectedChanged(IPage page)
+		private void InvokePageSelectedChanged(IPage page)
 		{
 			EventHandler handler = PageSelectedChanged;
-			if (handler != null && /*REVIEW */ page!=null )
+
+			// We're not really sure which of the two times will be shorter,
+			// since there is SOME stuff that happens in C# after telling the browser
+			// to navigate to the new page. This counts how many of the two reports have
+			// been sent, so we can stop the watch when we're done with it.
+			int reportsSent = 0;
+
+			if (handler != null && /*REVIEW */ page != null)
 			{
+				var stopwatch = Stopwatch.StartNew();
+				Browser.RequestTimingNotification("editPagePainted", () =>
+				{
+					var paintTime = stopwatch.ElapsedMilliseconds;
+					if (reportsSent++ >= 2)
+						stopwatch.Stop();
+					TroubleShooterDialog.Report($"page change to paint complete took {paintTime} milliseconds");
+				});
 				handler(page, null);
+				var time = stopwatch.ElapsedMilliseconds;
+				if (reportsSent++ >= 2)
+					stopwatch.Stop();
+				TroubleShooterDialog.Report($"C# part of page change took {time} milliseconds");
 			}
 		}
-
 
 		public bool CanSelect { get; set; }
 		public bool PreferPageNumbers { get; set; }
@@ -186,12 +205,22 @@ namespace Bloom.Edit
 				UpdateItems(_pages);
 		}
 
+		private void OnPaneContentsChanging()
+		{
+			RemoveThumbnailListeners();
+			// We get confusing Javascript errors if the websocket made for the previous version of this page
+			// is still listening after the browser has navigated away to a new version of the page.
+			// This used to be part of RemoveThumbnailListeners(), but that function is used elsewhere such that
+			// we lost the Saving... toast functionality.
+			_browser.RunJavaScript("if (typeof FrameExports !== 'undefined') {FrameExports.stopListeningForSave();}");
+		}
+
 		private bool _usingTwoColumns;
 		private string PageContainerClass = "pageContainer";
 
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
-			RemoveThumbnailListeners();
+			OnPaneContentsChanging();
 			var result = new List<IPage>();
 			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
 			if (firstRealPage == null)
@@ -227,13 +256,29 @@ namespace Bloom.Edit
 				if (pageElement == null)
 					continue; // or crash? How can this happen?
 				result.Add(page);
-				var pageElementForThumbnail = pageDoc.ImportNode(pageElement, true) as XmlElement;
+				XmlElement pageElementForThumbnail = null;
+				var pageClasses = pageElement.GetStringAttribute("class").Split(new[] { ' ' });
+				var cssClass = pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
+				if (!TroubleShooterDialog.MakeEmptyPageThumbnails)
+				{
+					pageElementForThumbnail = pageDoc.ImportNode(pageElement, true) as XmlElement;
 
-				// BL-1112: Reduce size of images in page thumbnails.
-				// We are setting the src to empty so that we can use JavaScript to request the thumbnails
-				// in a controlled manner that should reduce the likelihood of not receiving the image quickly
-				// enough and displaying the alt text rather than the image.
-				DelayAllImageNodes(pageElementForThumbnail);
+					// BL-1112: Reduce size of images in page thumbnails.
+					// We are setting the src to empty so that we can use JavaScript to request the thumbnails
+					// in a controlled manner that should reduce the likelihood of not receiving the image quickly
+					// enough and displaying the alt text rather than the image.
+					DelayAllImageNodes(pageElementForThumbnail);
+				}
+				else
+				{
+					// Just make a minimal placeholder to get the white border.
+					pageElementForThumbnail = pageDoc.CreateElement("div");
+					var pageClass = "bloom-page";
+					// The page needs to have one of the classes like A4Portrait or it will have zero size and vanish.
+					if (!string.IsNullOrEmpty(cssClass))
+						pageClass += " " + cssClass;
+					pageElementForThumbnail.SetAttribute("class", pageClass);
+				}
 
 				var cellDiv = pageDoc.CreateElement("div");
 				cellDiv.SetAttribute("class", ClassForGridItem);
@@ -256,8 +301,6 @@ namespace Bloom.Edit
 					moment, we assign appropriate sizes, by hand. We rely on c# code to add these
 					classes, since we can't write a rule in css3 that peeks into a child attribute.
 				*/
-				var pageClasses = pageElementForThumbnail.GetStringAttribute("class").Split(new[] {' '});
-				var cssClass = pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
 				if (!string.IsNullOrEmpty(cssClass))
 					pageContainer.SetAttribute("class", "pageContainer " + cssClass);
 
@@ -341,9 +384,6 @@ namespace Bloom.Edit
 			_browser.RemoveMessageEventListener("gridClick");
 			_browser.RemoveMessageEventListener("gridReordered");
 			_browser.RemoveMessageEventListener("menuClicked");
-			// We get confusing Javascript errors if the websocket made for the previous version of this page
-			// is still listening after the browser has navigated away to a new version of the page.
-			_browser.RunJavaScript("if (typeof FrameExports !== 'undefined') {FrameExports.stopListeningForSave();}");
 		}
 
 		private void ItemClick(string s)
@@ -504,6 +544,8 @@ namespace Bloom.Edit
 				UpdateItems(_pages);
 				return;
 			}
+			if (TroubleShooterDialog.MakeEmptyPageThumbnails)
+				return; // no new content needed.
 			var targetClass = "bloom-page";
 			var gridElt = GetGridElementForPage(page);
 			var pageContainerElt = GetFirstChildWithClass(gridElt, PageContainerClass) as GeckoElement;

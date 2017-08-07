@@ -45,7 +45,7 @@ _NCrunch*
 build/xulrunner*
 build/Palaso.BuildTasks.dll
 build/MSBuild.*
-build/AWSSDK.dll
+build/AWSSDK*.dll
 packages/*.*
 Copy*.bat
 *.orig
@@ -69,8 +69,10 @@ Copy*.bat
 DistFiles/wkhtmltopdf/
 lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
+.nuget/nuget.exe
 LibChorus.*
 build/Palaso.BuildTasks.dll*
+build/SIL.BuildTasks*.dll*
 *.userprefs
 Downloads/
 Bloom Q&A SIL Literacy Oct 2013.pdf
@@ -81,6 +83,7 @@ DistFiles/Bloom.chm
 DistFiles/optipng.exe
 DistFiles/bloomPlayer.js
 DistFiles/leveledRTInfo/*.html
+DistFiles/ghostscript/
 build/ChorusInstallerStuff/ChorusMergeModule.msm
 build/JohnsTestInstallerBuild.bat
 lib/dotnet/

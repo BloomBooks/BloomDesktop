@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,11 +8,13 @@ using Bloom.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
+using SIL.Reporting;
 using SIL.TestUtilities;
 
 namespace BloomTests.CollectionTab
 {
 	[TestFixture]
+	[SuppressMessage("ReSharper", "LocalizableElement")]
 	class LibraryModelTests
 	{
 		private TemporaryFolder _collection;
@@ -21,6 +24,7 @@ namespace BloomTests.CollectionTab
 		[SetUp]
 		public void Setup()
 		{
+			ErrorReport.IsOkToInteractWithUser = false;
 			_folder = new TemporaryFolder("LibraryModelTests");
 			_collection = new TemporaryFolder(_folder, "FakeCollection");
 			MakeFakeCssFile();
@@ -38,6 +42,7 @@ namespace BloomTests.CollectionTab
 			var f = new TemporaryFolder(_collection, "unittest-" + Guid.NewGuid());
 			File.WriteAllText(Path.Combine(f.Path, "one.htm"), "test");
 			File.WriteAllText(Path.Combine(f.Path, "one.css"), "test");
+			File.WriteAllText(Path.Combine(f.Path, "meta.json"), new BookMetaData().Json);
 			return f.Path;
 		}
 
@@ -54,18 +59,7 @@ namespace BloomTests.CollectionTab
 		// Imitate LibraryModel.MakeBloomPack() without the user interaction
 		private void MakeTestBloomPack(string bloomPackName, bool forReaderTools)
 		{
-			using (var fsOut = File.Create(bloomPackName))
-			{
-				using (var zipStream = new ZipOutputStream(fsOut))
-				{
-					zipStream.SetLevel(9);
-
-					_testLibraryModel.RunCompressDirectoryTest(zipStream, forReaderTools);
-
-					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
-					zipStream.Close();
-				}
-			}
+			_testLibraryModel.RunCompressDirectoryTest(bloomPackName, forReaderTools);
 		}
 
 		// Don't do anything with the zip file except read in the filenames

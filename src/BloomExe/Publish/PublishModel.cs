@@ -38,7 +38,8 @@ namespace Bloom.Publish
 			Upload,
 			EPUB,
 			Printing,
-			ResumeAfterPrint
+			ResumeAfterPrint,
+			Android
 		}
 
 		public enum BookletPortions
@@ -72,6 +73,7 @@ namespace Bloom.Publish
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
+			_pdfMaker.CompressPdf = true;	// See http://issues.bloomlibrary.org/youtrack/issue/BL-3721.
 			//_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
 			_currentBookCollectionSelection = currentBookCollectionSelection;
 			ShowCropMarks=false;
@@ -358,11 +360,25 @@ namespace Bloom.Publish
 					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath),
 														 _collectionSettings.GetLanguage1Name("en"), portion);
 					dlg.FileName = suggestedName;
-					dlg.Filter = "PDF|*.pdf";
+					var desktopPrinting = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.DesktopPrinting",
+						"PDF for Desktop Printing",
+						@"displayed as file type for Save File dialog.  Don't use vertical bar (|) in this string!");
+					var printshop = L10NSharp.LocalizationManager.GetString("@PublishTab.PdfMaker.Printshop",
+						"PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)",
+						@"displayed as file type for Save File dialog, the content in parentheses may not be translatable.  Don't use vertical bar (|) in this string!");
+					dlg.Filter = String.Format("{0}|*.pdf|{1}|*.pdf", desktopPrinting, printshop);
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
 						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-						RobustFile.Copy(PdfFilePath, dlg.FileName, true);
+						switch (dlg.FilterIndex)
+						{
+						case 1:	// PDF for Desktop Printing
+							RobustFile.Copy(PdfFilePath, dlg.FileName, true);
+							break;
+						case 2:	// PDF for Printshop (CMYK US Web Coated V2)
+							ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType.Printshop, dlg.FileName);
+							break;
+						}
 						Analytics.Track("Save PDF", new Dictionary<string, string>()
 							{
 								{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
@@ -376,6 +392,62 @@ namespace Bloom.Publish
 			catch (Exception err)
 			{
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the PDF.  {0}", err.Message);
+			}
+		}
+
+		private void ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType type, string outputPath)
+		{
+			if (type == ProcessPdfWithGhostscript.OutputType.Printshop &&
+				!Bloom.Properties.Settings.Default.AdobeColorProfileEula2003Accepted)
+			{
+				var prolog = L10NSharp.LocalizationManager.GetString(@"PublishTab.PrologToAdobeEula",
+					"Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a \"PDF for Printshop\".  You must agree to the following license in order to perform this task in Bloom.",
+					@"Brief explanation of what this license is and why the user needs to agree to it");
+				using (var dlg = new Bloom.Registration.LicenseDialog("AdobeColorProfileEULA.md", prolog))
+				{
+					dlg.Text = L10NSharp.LocalizationManager.GetString(@"PublishTab.AdobeEulaTitle",
+						"Adobe Color Profile License Agreement", @"dialog title for license agreement");
+					if (dlg.ShowDialog() != DialogResult.OK)
+					{
+						var msg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfNotSavedWhy",
+							"The PDF file has not been saved because you chose not to allow producing a \"PDF for Printshop\".",
+							@"explanation that file was not saved displayed in a message box");
+						var heading = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfNotSaved",
+							"PDF Not Saved", @"title for the message box");
+						MessageBox.Show(msg, heading, MessageBoxButtons.OK, MessageBoxIcon.Information);
+						return;
+					}
+				}
+				Bloom.Properties.Settings.Default.AdobeColorProfileEula2003Accepted = true;
+				Bloom.Properties.Settings.Default.Save();
+			}
+			using (var progress = new SIL.Windows.Forms.Progress.ProgressDialog())
+			{
+				progress.ProgressRangeMinimum = 0;
+				progress.ProgressRangeMaximum = 100;
+				progress.Overview = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.Saving",
+					"Saving PDF...",
+					@"Message displayed in a progress report dialog box");
+				progress.BackgroundWorker = new BackgroundWorker();
+				progress.BackgroundWorker.DoWork += (object sender, DoWorkEventArgs e) => {
+					var pdfProcess = new ProcessPdfWithGhostscript(type, sender as BackgroundWorker);
+					pdfProcess.ProcessPdfFile(PdfFilePath, outputPath);
+				};
+				progress.BackgroundWorker.ProgressChanged += (object sender, ProgressChangedEventArgs e) => {
+					progress.Progress = e.ProgressPercentage;
+					var status = e.UserState as string;
+					if (!String.IsNullOrWhiteSpace(status))
+						progress.StatusText = status;
+				};
+				progress.ShowDialog();	// will start the background process when loaded/showing
+				if (progress.ProgressStateResult != null && progress.ProgressStateResult.ExceptionThatWasEncountered != null)
+				{
+					string shortMsg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.ErrorProcessing",
+						"Error compressing or recoloring the PDF file",
+						@"Message briefly displayed to the user in a toast");
+					var longMsg = String.Format("Exception encountered processing the PDF file: {0}", progress.ProgressStateResult.ExceptionThatWasEncountered);
+					NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, progress.ProgressStateResult.ExceptionThatWasEncountered);
+				}
 			}
 		}
 

@@ -1,11 +1,12 @@
-
 {
     "compilerOptions": {
         "target": "es5",
-        "module":"commonjs",
-        "sourceMap": true
-     },
-     "exclude": [
-        "node_modules", "typings"
+        "module": "commonjs",
+        "sourceMap": true,
+        "jsx": "react"
+    },
+    "exclude": [
+        "node_modules",
+        "typings"
     ]
 }

@@ -1,7 +1,8 @@
-// Copyright (c) 2014 SIL International
+﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
@@ -70,6 +71,8 @@ namespace Bloom.Api
 			return;
 		}
 
+		public string DoNotCacheFolder { get; set; }
+
 		public void WriteCompleteOutput(string s)
 		{
 			WriteOutput(Encoding.UTF8.GetBytes(s), _actualContext.Response);
@@ -127,7 +130,11 @@ namespace Bloom.Api
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
 				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
-					//helps with debugging what file is being chosen
+				if (ShouldCache(path))
+				{
+					_actualContext.Response.AppendHeader("Cache-Control",
+						"max-age=600000"); // about a week...if someone spends longer editing one book, well, files will get loaded one more time...
+				}
 
 				// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
 				// to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
@@ -144,18 +151,46 @@ namespace Bloom.Api
 					// changed, Geckofx would use the cached file rather than requesting the updated file from the localhost.
 					_actualContext.Response.AppendHeader("Last-Modified", lastModified);
 				}
+				else if (fs.Length < 2 * 1024 * 1024)
+				{
+					// This buffer size was picked to be big enough for any of the standard files we load in every page.
+					// Profiling indicates it is MUCH faster to use Response.Close() rather than writing to the output stream,
+					// though the gain may be illusory since the final 'false' argument allows our code to proceed without waiting
+					// for the complete data transfer. At a minimum, it makes this thread available to work on another
+					// request sooner.
+					var buffer = new byte[fs.Length];
+					fs.Read(buffer, 0, (int)fs.Length);
+					_actualContext.Response.Close(buffer, false);
+				}
 				else
 				{
+					// For really big (typically image) files, use the old buffered approach
 					var buffer = new byte[1024*512]; //512KB
 					int read;
 					while((read = fs.Read(buffer, 0, buffer.Length)) > 0)
 						_actualContext.Response.OutputStream.Write(buffer, 0, read);
+					_actualContext.Response.OutputStream.Close();
 				}
 
 			}
 
-			_actualContext.Response.OutputStream.Close();
 			HaveOutput = true;
+		}
+
+		HashSet<string> _cacheableExtensions = new HashSet<string>(new[] {".js", ".css", ".jpg", ".jpeg", ".svg", ".png"});
+
+		private bool ShouldCache(string path)
+		{
+#if DEBUG
+			// Developers never want caching...interferes with trying new versions of stuff.
+			return false;
+#endif
+			if (string.IsNullOrEmpty(DoNotCacheFolder))
+				return false; // if for some reason this hasn't been set, play safe and don't cache.
+			if (path.StartsWith(DoNotCacheFolder))
+				return false; // in the folder we never cache, typically the editable project folder
+
+			return _cacheableExtensions.Contains(Path.GetExtension(path));
 		}
 
 		public void ReplyWithImage(string path)

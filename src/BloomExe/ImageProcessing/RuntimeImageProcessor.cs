@@ -169,7 +169,7 @@ namespace Bloom.ImageProcessing
 
 				using (var newImg = originalImage.Image.GetThumbnailImage(newW, newH, () => false, IntPtr.Zero))
 				{
-					SIL.IO.RobustIO.SaveImage(newImg, pathToProcessedImage);
+					RobustImageIO.SaveImage(newImg, pathToProcessedImage);
 				}
 			}
 
@@ -218,7 +218,7 @@ namespace Bloom.ImageProcessing
 							try
 							{
 								error = null;
-								SIL.IO.RobustIO.SaveImage(processedBitmap, pathToProcessedImage, originalImage.Image.RawFormat);
+								RobustImageIO.SaveImage(processedBitmap, pathToProcessedImage, originalImage.Image.RawFormat);
 								break;
 							}
 							catch (Exception e)

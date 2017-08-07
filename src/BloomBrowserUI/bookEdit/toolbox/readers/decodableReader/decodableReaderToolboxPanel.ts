@@ -94,6 +94,9 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
     }
 
     updateMarkup() {
+        // Most cases don't require setMarkupType(), but when switching pages
+        // it will have been set to 0 by hideTool() on the old page.
+        getTheOneReaderToolsModel().setMarkupType(1);
         getTheOneReaderToolsModel().doMarkup();
     }
 

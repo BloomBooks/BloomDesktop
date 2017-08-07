@@ -458,7 +458,7 @@ namespace Bloom
 						//gives a blank         _pendingThumbnail.Save(thumbNailFilePath);
 						using (Bitmap b = new Bitmap(pendingThumbnail))
 						{
-							SIL.IO.RobustIO.SaveImage(b, order.ThumbNailFilePath);
+							RobustImageIO.SaveImage(b, order.ThumbNailFilePath);
 						}
 					}
 					catch (Exception)

@@ -306,6 +306,7 @@ namespace Bloom.Book
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _collectionSettings, _storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
+
 			if (IsSuitableForMakingShells && !page.IsXMatter)
 			{
 				// We're editing a template page in a template book.
@@ -612,7 +613,6 @@ namespace Bloom.Book
 			return pages[pageIndex];
 		}
 
-		// Reduce repetitive reloading of books when looking up the related "TemplateBook".
 		string _cachedTemplateKey;
 		Book _cachedTemplateBook;
 
@@ -913,6 +913,8 @@ namespace Bloom.Book
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null,
 				val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 
+			bookDOM.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
+
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 
 			//we've removed and possible added pages, so our page cache is invalid
@@ -997,7 +999,7 @@ namespace Bloom.Book
 			// this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
 			// still requiring it to be a valid layout.
 			layout = Layout.FromDomAndChoices(bookDOM, layout, _storage.GetFileLocator());
-			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
+			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout, _collectionSettings.BrandingProjectName, _storage.FolderPath);
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
 			TranslationGroupManager.PrepareDataBookTranslationGroups(RawDom, dataBookLangs);
@@ -1646,12 +1648,15 @@ namespace Bloom.Book
 			BookStarter.SetupIdAndLineage(templatePageDiv, newPageDiv);
 			BookStarter.SetupPage(newPageDiv, _collectionSettings, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);//, LockedExceptForTranslation);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
+
+
 			newPageDiv.RemoveAttribute("title"); //titles are just for templates [Review: that's not true for front matter pages, but at the moment you can't insert those, so this is ok]C:\dev\Bloom\src\BloomExe\StyleSheetService.cs
 			// If we're a template, make the new page a template one.
 			HtmlDom.MakePageWithTemplateStatus(IsSuitableForMakingShells, newPageDiv);
 			var elementOfPageBefore = FindPageDiv(pageBefore);
 			elementOfPageBefore.ParentNode.InsertAfter(newPageDiv, elementOfPageBefore);
 
+			OrderOrNumberOfPagesChanged();
 			BuildPageCache();
 			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == newPageDiv);
 			Guard.AgainstNull(newPage,"could not find the page we just added");
@@ -1795,6 +1800,7 @@ namespace Bloom.Book
 
 			ClearPagesCache();
 			//_pagesCache.Remove(page);
+			OrderOrNumberOfPagesChanged();
 
 			var pageNode = FindPageDiv(page);
 		   pageNode.ParentNode.RemoveChild(pageNode);
@@ -1805,6 +1811,12 @@ namespace Bloom.Book
 				_pageListChangedEvent.Raise(null);
 
 			InvokeContentsChanged(null);
+		}
+
+		private void OrderOrNumberOfPagesChanged()
+		{
+			OurHtmlDom.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers,
+				_collectionSettings.IsLanguage1Rtl);
 		}
 
 		private void ClearPagesCache()
@@ -1941,6 +1953,7 @@ namespace Bloom.Book
 			{
 				body.InsertAfter(pageDiv, pages[indexOfItemAfterRelocation-1]);
 			}
+			OrderOrNumberOfPagesChanged();
 			BuildPageCache();
 			Save();
 			InvokeContentsChanged(null);

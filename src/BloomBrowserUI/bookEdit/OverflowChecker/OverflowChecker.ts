@@ -20,11 +20,6 @@ export default class OverflowChecker {
                 // BL-1260: disable overflow checking for pages with too many elements
                 if (editablePageElements.length > 30) return;
 
-                //first, check to see if the stylesheet is going to give us overflow even for a single character:
-                editablePageElements.each(function () {
-                        OverflowChecker.CheckOnMinHeight(this);
-                });
-
                 //Add the handler so that when the elements change, we test for overflow
                 editablePageElements.on('keyup paste', function (e) {
                         // BL-2892 There's no guarantee that the paste target isn't inside one of the editablePageElements
@@ -58,10 +53,25 @@ export default class OverflowChecker {
                         $(this).removeClass('overflow thisOverflowingParent childOverflowingThis');
                 });
 
+                // Checking for overflow is time-consuming for complex pages, and doesn't HAVE to be done
+                // before we display and allow editing. We check one box per 'animation cycle' which
+                // in a maximum-29-box page will take less than half a second if a single check fits in the
+                // usual animation cycle of 1/60 second. This is the most effective way I've found to actually
+                // get the page showing (and editable) before doing all the overflow checking.
+                window.requestAnimationFrame(() => OverflowChecker.IncrementalOverflowCheck(editablePageElements, 0));
+
+        }
+
+        public static IncrementalOverflowCheck(editablePageElements: JQuery, index: number) {
+                if (index >= editablePageElements.length) {
+                        return;
+                }
+                let box = editablePageElements.get(index);
+                //first, check to see if the stylesheet is going to give us overflow even for a single character:
+                OverflowChecker.CheckOnMinHeight(box);
                 // Right now, test to see if any are already overflowing
-                editablePageElements.each(function () {
-                        OverflowChecker.MarkOverflowInternal(this);
-                });
+                OverflowChecker.MarkOverflowInternal(box);
+                window.requestAnimationFrame(() => OverflowChecker.IncrementalOverflowCheck(editablePageElements, index + 1));
         }
 
         // Actual testable determination of Type I overflow or not

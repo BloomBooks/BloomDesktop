@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Bloom.exe" source-language="en" target-language="am" datatype="plaintext" product-version="3.0.000.0" sil:hard-linebreak-replacement="\n">
+    <body>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader Tool</source>
+        <target xml:lang="am">ከድምጽ ጋር አዛምዶ ንባብ የማስተማሪያ መሳሪያ</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader Tool</source>
+        <target xml:lang="am">በደረጃ የተከፋፈለ የምንባብ መሳሪያ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="am">ተጨማሪ...</target>
+        <note>ID: EditTab.Toolbox.More</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+        <source xml:lang="en">Advanced Program Settings</source>
+        <target xml:lang="am">የላቀ ፕሮግራም ቅንጀቶች</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+        <source xml:lang="en">Book Making</source>
+        <target xml:lang="am">መጽሐፍ ዝግጅት</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+        <source xml:lang="en">Default Font for {0}</source>
+        <target xml:lang="am">ነባሪ ቅርፀ-ቁምፊ ለ {0}</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
+        <note>{0} is a language name.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+        <source xml:lang="en">Right to Left Writing System</source>
+        <target xml:lang="am">ከቀኝ ወደ ግራ የአጻጻፍ ሥርዓት</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="am">ቅንጅቶች</target>
+        <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+        <source xml:lang="en">Language 1</source>
+        <target xml:lang="am">ቋንቋ 1</target>
+        <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
+        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+        <source xml:lang="en">Language 2</source>
+        <target xml:lang="am">ቋንቋ 2</target>
+        <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
+        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+        <source xml:lang="en">Language 3</source>
+        <target xml:lang="am">ቋንቋ 3</target>
+        <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
+        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="am">ቋንቋዎች</target>
+        <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+        <source xml:lang="en">Vernacular Language</source>
+        <target xml:lang="am">የቋንቋ ዘየ</target>
+        <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+        <source xml:lang="en">Remove</source>
+        <target xml:lang="am">አስወግድ</target>
+        <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+        <source xml:lang="en">Bloom Collection Name</source>
+        <target xml:lang="am">የBloom ስብስብ ስም</target>
+        <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="am">ሀገር</target>
+        <note>ID: CollectionSettingsDialog.ProjectInformationTab.Country</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="am">ዲስትሪክት</target>
+        <note>ID: CollectionSettingsDialog.ProjectInformationTab.District</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+        <source xml:lang="en">Project Information</source>
+        <target xml:lang="am">የፕሮጀክት መረጃ</target>
+        <note>ID: CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="am">ክፍለ ሀገር</target>
+        <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.Restart">
+        <source xml:lang="en">Restart</source>
+        <target xml:lang="am">እንደገና ጀምር</target>
+        <note>ID: CollectionSettingsDialog.Restart</note>
+        <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.deleteBook">
+        <source xml:lang="en">Delete Book</source>
+        <target xml:lang="am">መጽሐፍን ሰርዝ</target>
+        <note>ID: CollectionTab.BookMenu.deleteBook</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.CollectionTabLabel">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="am">ስብስቦች</target>
+        <note>ID: CollectionTab.CollectionTabLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Collections">
+        <source xml:lang="en">Collections</source>
+        <target xml:lang="am">ስብስቦች</target>
+        <note>ID: CollectionTab.Collections</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
+        <source xml:lang="en">Make a book using this source</source>
+        <target xml:lang="am">ይህን ምንጭ በመጠቀም መጽሐፍ ያዘጋጁ</target>
+        <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+        <source xml:lang="en">Other Collection</source>
+        <target xml:lang="am">ሌላ ስብስብ</target>
+        <note>ID: CollectionTab.Open/CreateCollectionButton</note>
+        <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
+        <source xml:lang="en">Sample Shells</source>
+        <target xml:lang="am">ናሙና ሽፍኖች /Shells/</target>
+        <note>ID: CollectionTab.Sample Shells</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SettingsButton">
+        <source xml:lang="en">Settings</source>
+        <target xml:lang="am">ቅንጅቶች</target>
+        <note>ID: CollectionTab.SettingsButton</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="am">ምንጭ ስብስብ</target>
+        <note>ID: CollectionTab.Source Collection</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+        <source xml:lang="en">Open Additional Collections Folder</source>
+        <target xml:lang="am">ተጨማሪ የስብስቦች ዓቃፊን ይክፈቱ</target>
+        <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
+        <source xml:lang="en">Templates</source>
+        <target xml:lang="am">ብጁዎች</target>
+        <note>ID: CollectionTab.Templates</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.EditBookButton">
+        <source xml:lang="en">Edit this book</source>
+        <target xml:lang="am">ይህን መጽሐፍ አርትዕ</target>
+        <note>ID: CollectionTab.EditBookButton</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
+        <source xml:lang="en">Make Reader Template Bloom Pack...</source>
+        <target xml:lang="am">የምንባብ ብጁን የBloom ጥቅል ያድርጉት...</target>
+        <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="am">ምንጭ ስብስብ</target>
+        <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
+        <note>get this clicking on BloomLibrary.org link in source collection</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookSourceHeading">
+        <source xml:lang="en">Sources For New Books</source>
+        <target xml:lang="am">የአዳዲስ መጽሐፍት ምንጮች</target>
+        <note>ID: CollectionTab.BookSourceHeading</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+        <source xml:lang="en">More...</source>
+        <target xml:lang="am">ተጨማሪ...</target>
+        <note>ID: CollectionTab.MoreLanguagesMenuItem</note>
+        <note>Brings up the localization dialog</note>
+      </trans-unit>
+      <trans-unit id="Common.Cancel" sil:dynamic="true">
+        <source xml:lang="en">Cancel</source>
+        <target xml:lang="am">ተወው</target>
+        <note>ID: Common.Cancel</note>
+      </trans-unit>
+      <trans-unit id="Common.CancelButton">
+        <source xml:lang="en">&amp;Cancel</source>
+        <target xml:lang="am">&amp;ተወው</target>
+        <note>ID: Common.CancelButton</note>
+      </trans-unit>
+      <trans-unit id="Common.HelpButton">
+        <source xml:lang="en">&amp;Help</source>
+        <target xml:lang="am">&amp;እገዛ</target>
+        <note>ID: Common.HelpButton</note>
+      </trans-unit>
+      <trans-unit id="Common.NextButton">
+        <source xml:lang="en">Next</source>
+        <target xml:lang="am">ቀጣይ</target>
+        <note>ID: Common.NextButton</note>
+        <note>In a wizard, this button takes you to the next step.</note>
+      </trans-unit>
+      <trans-unit id="Common.OK" sil:dynamic="true">
+        <source xml:lang="en">OK</source>
+        <target xml:lang="am">እሺ</target>
+        <note>ID: Common.OK</note>
+      </trans-unit>
+      <trans-unit id="Common.OKButton">
+        <source xml:lang="en">&amp;OK</source>
+        <target xml:lang="am">&amp;እሺ</target>
+        <note>ID: Common.OKButton</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Letters in this stage</source>
+        <target xml:lang="am">በዚህ ክፍል ውስጥ ያሉ ፊደሎች</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.LettersInThisStage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true">
+        <source xml:lang="en">Open a Letter and Word List File</source>
+        <target xml:lang="am">የፊደሎች እና የቃላት ዝርዝር ፋይልን ይክፈቱ</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true">
+        <source xml:lang="en">Set up Stages</source>
+        <target xml:lang="am">ክፍሎችን አቀናጅ</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.SetUpStages</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+        <target xml:lang="am">ክፍል</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage" sil:dynamic="true">
+        <source xml:lang="en">Words in this stage</source>
+        <target xml:lang="am">በዚህ ደረጃ ላይ ያሉ ቃላት</target>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.WordsInThisStage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
+        <source xml:lang="en">This page will be permanently removed.</source>
+        <target xml:lang="am">ይህ ገጽ በቋሚነት የሚወገድ ይሆናል</target>
+        <note>ID: EditTab.ConfirmRemovePageDialog._messageLabel</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true">
+        <source xml:lang="en">Text</source>
+        <target xml:lang="am">ጽሑፍ</target>
+        <note>ID: EditTab.CustomPage.Text</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
+        <source xml:lang="en">Text Box</source>
+        <target xml:lang="am">የጽሑፍ ሳጥን</target>
+        <note>ID: EditTab.CustomPage.TextBox</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Edit">
+        <source xml:lang="en">Edit</source>
+        <target xml:lang="am">አርትዕ</target>
+        <note>ID: EditTab.Edit</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true">
+        <source xml:lang="en">Characters</source>
+        <target xml:lang="am">ቁምፊዎች</target>
+        <note>ID: EditTab.FormatDialog.CharactersTab</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true">
+        <source xml:lang="en">Create</source>
+        <target xml:lang="am">ፍጠር</target>
+        <note>ID: EditTab.FormatDialog.Create</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
+        <source xml:lang="en">Font</source>
+        <target xml:lang="am"> ቅርፀ-ቁምፊ</target>
+        <note>ID: EditTab.FormatDialog.Font</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true">
+        <source xml:lang="en">Spacing</source>
+        <target xml:lang="am">በፊደላትና በቃላት መካከል ክፍት ቦታ አሰጣጥ</target>
+        <note>ID: EditTab.FormatDialog.Spacing</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true">
+        <source xml:lang="en">Style</source>
+        <target xml:lang="am">ዘይቤ /Style/</target>
+        <note>ID: EditTab.FormatDialog.Style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true">
+        <source xml:lang="en">Style Name</source>
+        <target xml:lang="am">የዘይቤ ስም</target>
+        <note>ID: EditTab.FormatDialog.StyleNameTab</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
+        <source xml:lang="en">Extra Wide</source>
+        <target xml:lang="am">እጅግ ሰፊ</target>
+        <note>ID: EditTab.FormatDialog.WordSpacingExtraWide</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
+        <source xml:lang="en">Normal</source>
+        <target xml:lang="am">መደበኛ</target>
+        <note>ID: EditTab.FormatDialog.WordSpacingNormal</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true">
+        <source xml:lang="en">Wide</source>
+        <target xml:lang="am">ሰፊ</target>
+        <note>ID: EditTab.FormatDialog.WordSpacingWide</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
+        <source xml:lang="en">Book title in {lang}</source>
+        <target xml:lang="am">የመጽሐፍ ርዕስ በ{ቋንቋ}</target>
+        <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
+        <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
+        <source xml:lang="en">Change Image</source>
+        <target xml:lang="am">ምስል ቀይር</target>
+        <note>ID: EditTab.Image.ChangeImage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
+        <source xml:lang="en">Paste Image</source>
+        <target xml:lang="am">ምስልን ለጥፍ</target>
+        <note>ID: EditTab.Image.PasteImage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageList.Heading">
+        <source xml:lang="en">Pages</source>
+        <target xml:lang="am">ገጾች</target>
+        <note>ID: EditTab.PageList.Heading</note>
+      </trans-unit>
+      <trans-unit id="EditTab.TemplatePagesList.Heading">
+        <source xml:lang="en">Template Pages</source>
+        <target xml:lang="am">ብጁ ገጾች</target>
+        <note>ID: EditTab.TemplatePagesList.Heading</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true">
+        <source xml:lang="en">Alphabet</source>
+        <target xml:lang="am">ፊደል ተራ</target>
+        <note>ID: TemplateBooks.PageLabel.Alphabet</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Image</source>
+        <target xml:lang="am">መሠረታዊ ጽሑፍ እና ስዕል</target>
+        <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Image</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
+        <source xml:lang="en">Basic Text &amp; Picture</source>
+        <target xml:lang="am">መሠረታዊ ጽሑፍ እና ስዕል</target>
+        <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
+        <source xml:lang="en">Credits Page</source>
+        <target xml:lang="am">የክፍያ (ክሬዲትስ) ገጽ</target>
+        <note>ID: TemplateBooks.PageLabel.Credits Page</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="am">ብጁ</target>
+        <note>ID: TemplateBooks.PageLabel.Custom</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
+        <source xml:lang="en">Front Cover</source>
+        <target xml:lang="am">የፊትለፊት ሽፋን</target>
+        <note>ID: TemplateBooks.PageLabel.Front Cover</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
+        <source xml:lang="en">Image On Bottom</source>
+        <target xml:lang="am">ምስል በግርጌ</target>
+        <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">Image in Middle</source>
+        <target xml:lang="am">ምስል በመሃል</target>
+        <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Inside Back Cover</source>
+        <target xml:lang="am">የውስጥ የኋላ ሽፋን</target>
+        <note>ID: TemplateBooks.PageLabel.Inside Back Cover</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true">
+        <source xml:lang="en">Just Text</source>
+        <target xml:lang="am">ጽሑፍ ብቻ</target>
+        <note>ID: TemplateBooks.PageLabel.Just Text</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true">
+        <source xml:lang="en">Just a Picture</source>
+        <target xml:lang="am">ስዕል ብቻ</target>
+        <note>ID: TemplateBooks.PageLabel.Just a Picture</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
+        <source xml:lang="en">Just an Image</source>
+        <target xml:lang="am">ስዕል ብቻ</target>
+        <note>ID: TemplateBooks.PageLabel.Just an Image</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
+        <source xml:lang="en">Outside Back Cover</source>
+        <target xml:lang="am">የውጭ የኋላ ሽፋን</target>
+        <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
+        <source xml:lang="en">Picture on Bottom</source>
+        <target xml:lang="am">ስዕል በግርጌ</target>
+        <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
+        <source xml:lang="en">Picture in Middle</source>
+        <target xml:lang="am">ስዕል በመሃል</target>
+        <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
+        <source xml:lang="en">Title Page</source>
+        <target xml:lang="am">የርዕስ ገጽ</target>
+        <note>ID: TemplateBooks.PageLabel.Title Page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CopyButton">
+        <source xml:lang="en">Copy</source>
+        <target xml:lang="am">ቅዳ</target>
+        <note>ID: EditTab.CopyButton</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CutButton">
+        <source xml:lang="en">Cut</source>
+        <target xml:lang="am">ቁረጥ</target>
+        <note>ID: EditTab.CutButton</note>
+      </trans-unit>
+      <trans-unit id="EditTab.DeletePageButton">
+        <source xml:lang="en">Remove\n  Page</source>
+        <target xml:lang="am">ገጽን\n አስወግድ</target>
+        <note>ID: EditTab.DeletePageButton</note>
+      </trans-unit>
+      <trans-unit id="EditTab.DuplicatePageButton">
+        <source xml:lang="en">Duplicate\n   Page</source>
+        <target xml:lang="am">ገጽን\n አባዛ</target>
+        <note>ID: EditTab.DuplicatePageButton</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteButton">
+        <source xml:lang="en">Paste</source>
+        <target xml:lang="am">ለጥፍ</target>
+        <note>ID: EditTab.PasteButton</note>
+      </trans-unit>
+      <trans-unit id="EditTab.UndoButton">
+        <source xml:lang="en">Undo</source>
+        <target xml:lang="am">አታድርግ</target>
+        <note>ID: EditTab.UndoButton</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Bilingual">
+        <source xml:lang="en">Two Languages</source>
+        <target xml:lang="am">ሁለት ቋንቋዎች</target>
+        <note>ID: EditTab.Bilingual</note>
+        <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Monolingual">
+        <source xml:lang="en">One Language</source>
+        <target xml:lang="am">አንድ ቋንቋ</target>
+        <note>ID: EditTab.Monolingual</note>
+        <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Trilingual">
+        <source xml:lang="en">Three Languages</source>
+        <target xml:lang="am">ሦስት ቋንቋዎች</target>
+        <note>ID: EditTab.Trilingual</note>
+        <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
+        <source xml:lang="en">Building Reader Templates</source>
+        <target xml:lang="am">የአንባቢ ብጁዎችን መገንባት</target>
+        <note>ID: HelpMenu.BuildingReaderTemplatesMenuItem</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.Help Menu">
+        <source xml:lang="en">Help</source>
+        <target xml:lang="am">እገዛ</target>
+        <note>ID: HelpMenu.Help Menu</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
+        <source xml:lang="en">Using Reader Templates </source>
+        <target xml:lang="am">የአንባቢ ብጁዎችን መጠቀም</target>
+        <note>ID: HelpMenu.UsingReaderTemplatesMenuItem</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CheckForNewVersionMenuItem">
+        <source xml:lang="en">Check For New Version</source>
+        <target xml:lang="am">ለአዲስ ቅጅ ይፈትሹ</target>
+        <note>ID: HelpMenu.CheckForNewVersionMenuItem</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.CreditsMenuItem">
+        <source xml:lang="en">About Bloom</source>
+        <target xml:lang="am">ስለ Bloom</target>
+        <note>ID: HelpMenu.CreditsMenuItem</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
+        <source xml:lang="en">InDesign XML Information</source>
+        <target xml:lang="am">Bloom {0}</target>
+        <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
+        <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
+        <source xml:lang="en">Don't Show This Again</source>
+        <target xml:lang="am">ይህን በድጋሜ አታሳይ</target>
+        <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
+        <source xml:lang="en">Actual</source>
+        <target xml:lang="am">ትክክለኛ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.Actual</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true">
+        <source xml:lang="en">For this Level</source>
+        <target xml:lang="am">ለዚህ ደረጃ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.FoThisLevel</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
+        <source xml:lang="en">Keep in mind</source>
+        <target xml:lang="am">ልብ ይበሉ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.KeepInMind</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="am">ደረጃ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
+        <source xml:lang="en">Max</source>
+        <target xml:lang="am">ከፍተኛ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
+        <source xml:lang="en">per page</source>
+        <target xml:lang="am">በገጽ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.PerPage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
+        <source xml:lang="en">longest sentence</source>
+        <target xml:lang="am">በዐረፍተ ነገር</target>
+        <note>ID: EditTab.Toolbox._bookSelection.LongestSentence</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
+        <source xml:lang="en">Predictability</source>
+        <target xml:lang="am">ተተንባይነት</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.Predictability</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true">
+        <source xml:lang="en">Set up Levels</source>
+        <target xml:lang="am">ደረጃዎችን አቀናጅ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.SetUpLevels</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true">
+        <source xml:lang="en">This Book</source>
+        <target xml:lang="am">ይህ መጽሐፍ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisBook</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true">
+        <source xml:lang="en">This Page</source>
+        <target xml:lang="am">ይህ ገጽ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisPage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
+        <source xml:lang="en">total</source>
+        <target xml:lang="am">ድምር</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.Total</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
+        <source xml:lang="en">unique</source>
+        <target xml:lang="am">ልዩ</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.Unique</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true">
+        <source xml:lang="en">Vocabulary</source>
+        <target xml:lang="am">ቃላት</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.Vocabulary</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
+        <source xml:lang="en">Word Counts</source>
+        <target xml:lang="am">የቃላት ቁጥር</target>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.WordCounts</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+        <source xml:lang="en">Source Collection</source>
+        <target xml:lang="am">ምንጭ ስብስብ</target>
+        <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+        <source xml:lang="en">Vernacular/Local Language Collection</source>
+        <target xml:lang="am">የዘየ /Vernacular/ ስብስብ</target>
+        <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Country">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="am">ሀገር</target>
+        <note>ID: NewCollectionWizard.LocationPage.Country</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.District">
+        <source xml:lang="en">District</source>
+        <target xml:lang="am">ዲስትሪክት</target>
+        <note>ID: NewCollectionWizard.LocationPage.District</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.LocationPage.Province">
+        <source xml:lang="en">Province</source>
+        <target xml:lang="am">ክፍለ ሀገር</target>
+        <note>ID: NewCollectionWizard.LocationPage.Province</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.ProjectName">
+        <source xml:lang="en">Project Name</source>
+        <target xml:lang="am">የፕሮጀክት ስም</target>
+        <note>ID: NewCollectionWizard.ProjectName</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage">
+        <source xml:lang="en">Welcome To Bloom!</source>
+        <target xml:lang="am">ወደ Bloom  እንኳን በደህና መጡ</target>
+        <note>ID: NewCollectionWizard.WelcomePage</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection">
+        <source xml:lang="en">Create New Collection</source>
+        <target xml:lang="am">አዲስ ስብስብ ፍጠር</target>
+        <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Publish">
+        <source xml:lang="en">Publish</source>
+        <target xml:lang="am">አትም</target>
+        <note>ID: PublishTab.Publish</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Languages">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="am">ቋንቋዎች</target>
+        <note>ID: PublishTab.Upload.Languages</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms">
+        <source xml:lang="en">Please agree to terms of use</source>
+        <target xml:lang="am">እባክዎ የአጠቃቀም ውሎችን ይቀበሉ</target>
+        <note>ID: PublishTab.Upload.Login.PleaseAgreeTerms</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Title">
+        <source xml:lang="en">Title</source>
+        <target xml:lang="am">ርዕስ</target>
+        <note>ID: PublishTab.Upload.Title</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
+        <source xml:lang="en">Add Level</source>
+        <target xml:lang="am">ደረጃ አክል</target>
+        <note>ID: ReaderSetup.AddLevel</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true">
+        <source xml:lang="en">Add Stage</source>
+        <target xml:lang="am">ክፍል አክል</target>
+        <note>ID: ReaderSetup.AddStage</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true">
+        <source xml:lang="en">Book</source>
+        <target xml:lang="am">መጽሐፍ</target>
+        <note>ID: ReaderSetup.BookHeader</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
+        <source xml:lang="en">Decodable Stages</source>
+        <target xml:lang="am">ከድምጽ ጋር አዛምዶ የማንበቢያ ደረጃዎች</target>
+        <note>ID: ReaderSetup.DecodableStages</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="am">ፊደሎች</target>
+        <note>ID: ReaderSetup.Letters</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true">
+        <source xml:lang="en">Letters and Letter Combinations</source>
+        <target xml:lang="am">ፊደሎች እና የፊደሎች አሰካክ</target>
+        <note>ID: ReaderSetup.Letters.Header</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
+        <source xml:lang="en">Level</source>
+        <target xml:lang="am">ደረጃ</target>
+        <note>ID: ReaderSetup.LevelHeader</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
+        <source xml:lang="en">Level </source>
+        <target xml:lang="am">ደረጃ</target>
+        <note>ID: ReaderSetup.LevelLabel</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="am">የምንባብ ደረጃዎች</target>
+        <note>ID: ReaderSetup.Levels</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
+        <source xml:lang="en">Page</source>
+        <target xml:lang="am">ገጽ</target>
+        <note>ID: ReaderSetup.PageHeader</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
+        <source xml:lang="en">Reader Levels</source>
+        <target xml:lang="am">የምንባብ ደረጃዎች</target>
+        <note>ID: ReaderSetup.ReaderLevels</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
+        <source xml:lang="en">Remove Level {0}</source>
+        <target xml:lang="am">ደረጃ {0}ን አስወግድ</target>
+        <note>ID: ReaderSetup.RemoveLevel</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true">
+        <source xml:lang="en">Remove Stage {0}</source>
+        <target xml:lang="am">ክፍል {0}ን አስወግድ</target>
+        <note>ID: ReaderSetup.RemoveStage</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true">
+        <source xml:lang="en">Previous and New Letters</source>
+        <target xml:lang="am">የበፊት እና አዳዲስ ፊደሎች</target>
+        <note>ID: ReaderSetup.SelectedLetters</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true">
+        <source xml:lang="en">Sentence</source>
+        <target xml:lang="am">ዐረፈተ ነገር</target>
+        <note>ID: ReaderSetup.SentenceHeader</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
+        <source xml:lang="en">set up the alphabet for this language.</source>
+        <target xml:lang="am">የፊደል ተራዎችን ለዚህ ቋንቋ አቀናጅ</target>
+        <note>ID: ReaderSetup.SetupAlphabet</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
+        <source xml:lang="en">New Sight Words</source>
+        <target xml:lang="am">አዲስ የእይታ ቃላት</target>
+        <note>ID: ReaderSetup.SightWordLabel</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true">
+        <source xml:lang="en">Sight Words</source>
+        <target xml:lang="am">የእይታ ቃላት</target>
+        <note>ID: ReaderSetup.SightWordsHeader</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true">
+        <source xml:lang="en">Stage</source>
+        <target xml:lang="am">ክፍል</target>
+        <note>ID: ReaderSetup.StageHeader</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true">
+        <source xml:lang="en">Stage </source>
+        <target xml:lang="am">ክፍል</target>
+        <note>ID: ReaderSetup.StageLabel</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
+        <source xml:lang="en">Stages</source>
+        <target xml:lang="am">ክፍሎች</target>
+        <note>ID: ReaderSetup.Stages</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
+        <source xml:lang="en">Things to remember for this level:</source>
+        <target xml:lang="am">ለዚህ ደረጃ ሊታወሱ የሚገቡ ነገሮች</target>
+        <note>ID: ReaderSetup.ToRemember</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true">
+        <source xml:lang="en">Unique</source>
+        <target xml:lang="am">ልዩ</target>
+        <note>ID: ReaderSetup.UniqueHeader</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true">
+        <source xml:lang="en">Sample Texts Folder</source>
+        <target xml:lang="am">ናሙና የጽሑፍ ዓቃፊ</target>
+        <note>ID: ReaderSetup.Words.SampleTextFolder</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true">
+        <source xml:lang="en">Letters</source>
+        <target xml:lang="am">ፊደሎች</target>
+        <note>ID: ReaderSetup.lettersHeader</note>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+        <source xml:lang="en">Save Bloom Pack</source>
+        <target xml:lang="am">የBloom ጥቅልን አስቀምጥ</target>
+        <note>ID: ReaderTemplateBloomPackDialog.SaveBloomPackButton</note>
+      </trans-unit>
+      <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
+        <source xml:lang="en">Make Reader Template Bloom Pack</source>
+        <target xml:lang="am">የምንባብ ብጁን የBloom ጥቅል ያድርጉት</target>
+        <note>ID: ReaderTemplateBloomPackDialog.WindowTitle</note>
+      </trans-unit>
+      <trans-unit id="ReportProblemDialog.Close">
+        <source xml:lang="en">Close</source>
+        <target xml:lang="am">ዝጋ</target>
+        <note>ID: ReportProblemDialog.Close</note>
+        <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
+        <source xml:lang="en">Basic Book</source>
+        <target xml:lang="am">መሠረታዊ መጽሐፍ</target>
+        <note>ID: TemplateBooks.BookName.Basic Book</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true">
+        <source xml:lang="en">Big Book</source>
+        <target xml:lang="am">ትልቅ መጽሐፍ</target>
+        <note>ID: TemplateBooks.BookName.Big Book</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
+        <source xml:lang="en">Decodable Reader</source>
+        <target xml:lang="am">ከድምጽ ጋር ተዛምዶ የሚነበብ</target>
+        <note>ID: TemplateBooks.BookName.Decodable Reader</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
+        <source xml:lang="en">Leveled Reader</source>
+        <target xml:lang="am">በደረጃ የተከፋፈለ ምንባብ</target>
+        <note>ID: TemplateBooks.BookName.Leveled Reader</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

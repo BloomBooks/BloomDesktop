@@ -9,54 +9,6 @@ using SIL.IO;
 
 namespace BloomTemp
 {
-	public class TempLiftFile : TempFile
-	{
-		public TempLiftFile(string xmlOfEntries)
-			: this(xmlOfEntries, /*LiftIO.Validation.Validator.LiftVersion*/ "0.12")
-		{
-		}
-		public TempLiftFile(string xmlOfEntries, string claimedLiftVersion)
-			: this(null, xmlOfEntries, claimedLiftVersion)
-		{
-		}
-
-		public TempLiftFile(TemporaryFolder parentFolder, string xmlOfEntries, string claimedLiftVersion)
-			: base(false)
-		{
-			if (parentFolder != null)
-			{
-				_path = parentFolder.GetPathForNewTempFile(false) + ".lift";
-			}
-			else
-			{
-				_path = System.IO.Path.GetRandomFileName() + ".lift";
-			}
-
-			string liftContents = string.Format("<?xml version='1.0' encoding='utf-8'?><lift version='{0}'>{1}</lift>", claimedLiftVersion, xmlOfEntries);
-			RobustFile.WriteAllText(_path, liftContents);
-		}
-
-		public TempLiftFile(string fileName, TemporaryFolder parentFolder, string xmlOfEntries, string claimedLiftVersion)
-			: base(false)
-		{
-			_path = parentFolder.Combine(fileName);
-
-			string liftContents = string.Format("<?xml version='1.0' encoding='utf-8'?><lift version='{0}'>{1}</lift>", claimedLiftVersion, xmlOfEntries);
-			RobustFile.WriteAllText(_path, liftContents);
-		}
-		private TempLiftFile()
-		{
-		}
-		public new static TempLiftFile TrackExisting(string path)
-		{
-			Debug.Assert(RobustFile.Exists(path));
-			TempLiftFile t = new TempLiftFile();
-			t._path = path;
-			return t;
-		}
-
-	}
-
 	public static class TempFileUtils
 	{
 		public static TempFile CreateHtm5FromXml(XmlNode dom)

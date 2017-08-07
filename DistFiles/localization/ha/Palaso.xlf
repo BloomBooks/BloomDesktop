@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
+  <file original="Palaso.dll" source-language="en" target-language="ha" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
+    <body>
+      <trans-unit id="AboutDialog.AboutDialogWindowTitle">
+        <source xml:lang="en">About</source>
+        <target xml:lang="ha">Game da</target>
+        <note>ID: AboutDialog.AboutDialogWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="AboutDialog.NoUpdates">
+        <source xml:lang="en">No Updates</source>
+        <target xml:lang="ha">Ba sababbin abubuwa </target>
+        <note>ID: AboutDialog.NoUpdates</note>
+      </trans-unit>
+      <trans-unit id="AboutDialog._checkForUpdates">
+        <source xml:lang="en">Check For Updates</source>
+        <target xml:lang="ha">Ka bincika ko akwai sababbin abubuwa</target>
+        <note>ID: AboutDialog._checkForUpdates</note>
+      </trans-unit>
+      <trans-unit id="AboutDialog._releaseNotesLabel">
+        <source xml:lang="en">Release Notes</source>
+        <target xml:lang="ha">Bayanin fitarwa </target>
+        <note>ID: AboutDialog._releaseNotesLabel</note>
+      </trans-unit>
+      <trans-unit id="Application.AlreadyRunning.General">
+        <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
+        <target xml:lang="ha">Wani kofin wannan manhajar na kan gudana. Idan ba za ka iya samun shi ba, sai ka kashe sannan ka sake kunna na'urarka mai ƙwaƙwalwa.</target>
+        <note>ID: Application.AlreadyRunning.General</note>
+      </trans-unit>
+      <trans-unit id="Application.AlreadyRunning.Specific">
+        <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
+        <target xml:lang="ha">Wani kofin na {0} na kan gudana. Idan ba za ka iya samun kofin ba, sai ka kashe sannan ka sake kunna na'urarka mai ƙwaƙwalwa. </target>
+        <note>ID: Application.AlreadyRunning.Specific</note>
+        <note>{0} is the application name</note>
+      </trans-unit>
+      <trans-unit id="Application.ProblemStarting.General">
+        <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
+        <target xml:lang="ha">Akwai wata 'yar matsala a wurin buɗe manhajar wadda mai yiwuwa za ka buƙaci ka kashe, sannan ka sake kunna na'urar ta ka. </target>
+        <note>ID: Application.ProblemStarting.General</note>
+      </trans-unit>
+      <trans-unit id="Application.ProblemStarting.Specific">
+        <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
+        <target xml:lang="ha">A kwai wata 'yar matsala a wurin buɗewa {0} wadda me yiwuwu za ka buƙaci ka kashe na'urar ta ka sannan ka sake kunnawa.</target>
+        <note>ID: Application.ProblemStarting.Specific</note>
+        <note>{0} is the application name</note>
+      </trans-unit>
+      <trans-unit id="Application.WaitingFinish.General">
+        <source xml:lang="en">Waiting for other application to finish...</source>
+        <target xml:lang="ha">Ana jiran sauran manhajar su gama...</target>
+        <note>ID: Application.WaitingFinish.General</note>
+      </trans-unit>
+      <trans-unit id="Application.WaitingFinish.Specific">
+        <source xml:lang="en">Waiting for other {0} to finish...</source>
+        <target xml:lang="ha">Ana jiran sauran su gama...</target>
+        <note>ID: Application.WaitingFinish.Specific</note>
+        <note>{0} is the application name</note>
+      </trans-unit>
+      <trans-unit id="Common.CancelButton">
+        <source xml:lang="en">&amp;Cancel</source>
+        <target xml:lang="ha">&amp;Soke</target>
+        <note>ID: Common.CancelButton</note>
+      </trans-unit>
+      <trans-unit id="Common.No">
+        <source xml:lang="en">No</source>
+        <target xml:lang="ha">A'a </target>
+        <note>ID: Common.No</note>
+      </trans-unit>
+      <trans-unit id="Common.OKButton">
+        <source xml:lang="en">&amp;OK</source>
+        <target xml:lang="ha">&amp;Ya yi </target>
+        <note>ID: Common.OKButton</note>
+      </trans-unit>
+      <trans-unit id="Common.Yes">
+        <source xml:lang="en">Yes</source>
+        <target xml:lang="ha"> I</target>
+        <note>ID: Common.Yes</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
+        <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
+        <target xml:lang="ha">{0} za a jefa kwandon shara.</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
+        <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files"</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
+        <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
+        <target xml:lang="ha">{0} za a jefa a kwandon shara.</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
+        <note>Parameter {0} is a file name</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
+        <source xml:lang="en">Confirm Delete</source>
+        <target xml:lang="ha">Ka Tabbata kana so a share </target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
+        <source xml:lang="en">&amp;Cancel</source>
+        <target xml:lang="ha">&amp;Soke </target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
+      </trans-unit>
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
+        <source xml:lang="en">&amp;Delete</source>
+        <target xml:lang="ha">&amp;Share</target>
+        <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.AlmostMatchingImages">
+        <source xml:lang="en">Found {0} images with names close to {1}</source>
+        <target xml:lang="ha">An sami {0} hotuna masu sunaye kusa da {1}</target>
+        <note>ID: ImageToolbox.AlmostMatchingImages</note>
+        <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ArtOfReading">
+        <source xml:lang="en">Art Of Reading</source>
+        <target xml:lang="ha">Fasahar Karatu</target>
+        <note>ID: ImageToolbox.ArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.Camera">
+        <source xml:lang="en">Camera</source>
+        <target xml:lang="ha">Na'urar ɗaukar hoto</target>
+        <note>ID: ImageToolbox.Camera</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.CopyExemplarMetadata">
+        <source xml:lang="en">Use {0}</source>
+        <target xml:lang="ha">Yi amfani da {0}</target>
+        <note>ID: ImageToolbox.CopyExemplarMetadata</note>
+        <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.Crop">
+        <source xml:lang="en">Crop</source>
+        <target xml:lang="ha">Datse</target>
+        <note>ID: ImageToolbox.Crop</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.DownloadArtOfReading">
+        <source xml:lang="en">Download Art Of Reading Installer</source>
+        <target xml:lang="ha">Saukar da Manhajar Fasahar Karatu </target>
+        <note>ID: ImageToolbox.DownloadArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.EditMetadataLink">
+        <source xml:lang="en">Edit...</source>
+        <target xml:lang="ha">Tace rubutu...</target>
+        <note>ID: ImageToolbox.EditMetadataLink</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.EnterSearchTerms">
+        <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
+        <target xml:lang="ha">Wannan shine zauren 'Fasahar Karatu'. A cikin akwatin da ke sama, ka rubuta abinda kake nema, sannan ka dangwala ENTER. Kana iya rubuta kalmomi a cikin harshen Ingilishi ko Indonisiya.</target>
+        <note>ID: ImageToolbox.EnterSearchTerms</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.FileButton">
+        <source xml:lang="en">File</source>
+        <target xml:lang="ha">Kundi </target>
+        <note>ID: ImageToolbox.FileButton</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.GenericGettingImageProblem">
+        <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
+        <target xml:lang="ha">Gafara dai, an ɗan sami 'yar matsala a lokacin da ake ƙoƙarin samun hoton.</target>
+        <note>ID: ImageToolbox.GenericGettingImageProblem</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.GenericProblem">
+        <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
+        <target xml:lang="ha">Yi haƙuri, wani abu ya sami akwatin da hoton ya ke ciki</target>
+        <note>ID: ImageToolbox.GenericProblem</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.GetPicture">
+        <source xml:lang="en">Get Picture</source>
+        <target xml:lang="ha">Samu hoto</target>
+        <note>ID: ImageToolbox.GetPicture</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
+        <source xml:lang="en">Image Toolbox</source>
+        <target xml:lang="ha">Akwati mai ɗauke da hoto</target>
+        <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.InstallArtOfReading">
+        <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
+        <target xml:lang="ha">A Saka manhajar Fasahar Karatu (mai yiwuwa ya ɗan ɗauki lokaci)</target>
+        <note>ID: ImageToolbox.InstallArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.MatchingImages">
+        <source xml:lang="en">Found {0} images</source>
+        <target xml:lang="ha">An sami {0} hotuna</target>
+        <note>ID: ImageToolbox.MatchingImages</note>
+        <note>The {0} will be replaced by the number of matching images</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.NewMultilingual">
+        <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili?  It is free and available for downloading.</source>
+        <target xml:lang="ha">Ko ka san akwai wani sabon manhajar wanda zai ba ka damar bincike a cikin harshen Larabci, Bengali, Sinanci, Ingilishi, Farasanci, Indonsiyanci, Hindu, Potugis, Spaniyanci, Thai ko Suwahili? A kyauta, kuma zaka iya saukar da shi zuwa cikin taka na'urar. </target>
+        <note>ID: ImageToolbox.NewMultilingual</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.NoArtOfReading">
+        <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
+        <target xml:lang="ha">Da alama wannan na'urar ba ta da manhajar zauren Fasahar karatu tukunna. </target>
+        <note>ID: ImageToolbox.NoArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.NoMatchingImages">
+        <source xml:lang="en">Found no matching images</source>
+        <target xml:lang="ha">Ba a samu hotunan da suka dace ba </target>
+        <note>ID: ImageToolbox.NoMatchingImages</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.PictureFiles">
+        <source xml:lang="en">picture files</source>
+        <target xml:lang="ha">Kundayen hoto </target>
+        <note>ID: ImageToolbox.PictureFiles</note>
+        <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
+        <source xml:lang="en">Problem Getting Image</source>
+        <target xml:lang="ha">Matsala ta Samun Hoto </target>
+        <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.ProblemLoadingImage">
+        <source xml:lang="en">Sorry, there was a problem loading that image.</source>
+        <target xml:lang="ha">Gafara dai, an samu matsala wajen jawo wancen hoton.</target>
+        <note>ID: ImageToolbox.ProblemLoadingImage</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.PromptForMissingMetadata">
+        <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
+        <target xml:lang="ha">Wannan hoton bai san shi ba:\n\n ba Wa ya ƙirƙiro shi?\nWa zai iya amfani da shi? </target>
+        <note>ID: ImageToolbox.PromptForMissingMetadata</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.Scanner">
+        <source xml:lang="en">Scanner</source>
+        <target xml:lang="ha">Mai ɗaukar hoton cikin abu</target>
+        <note>ID: ImageToolbox.Scanner</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.SearchArtOfReading">
+        <source xml:lang="en">Search the Art of Reading Gallery</source>
+        <target xml:lang="ha">Binciki Zauren Fasahar Karatu</target>
+        <note>ID: ImageToolbox.SearchArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.SearchLanguage">
+        <source xml:lang="en">The search box is currently set to {0}</source>
+        <target xml:lang="ha">A halin yanzu an saita akwatin binciken ya {0} </target>
+        <note>ID: ImageToolbox.SearchLanguage</note>
+      </trans-unit>
+      <trans-unit id="ImageToolbox.SetUpMetadataLink">
+        <source xml:lang="en">Set up metadata...</source>
+        <target xml:lang="ha">Yi saitin matattarar bayanai... </target>
+        <note>ID: ImageToolbox.SetUpMetadataLink</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.AlternateNamesHeader">
+        <source xml:lang="en">Other Names</source>
+        <target xml:lang="ha">Wasu Sunaye </target>
+        <note>ID: LanguageLookup.AlternateNamesHeader</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
+        <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
+        <target xml:lang="ha">Wannan jerin zai ƙunshi dukkan yarukan  ISO-369, haɗe da dukkan sunayen da ethnologue.com ya sani.\n\n Idan ya zama dole, yi amfani da zaɓin "Yarurrukan da basu cikin jeri" waɗanda za a zaɓa maka yanzu.</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
+        <source xml:lang="en">Ethnologue.com</source>
+        <target xml:lang="ha">Ethnologue.com </target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
+        <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
+        <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
+        <target xml:lang="ha">Game da Yaren 639-3 Codes da Yadda Za Ka Nemi Wasu Sabbi</target>
+        <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
+        <source xml:lang="en">About The ISO Language Registry</source>
+        <target xml:lang="ha">Game da wurin yin Rajistar Yaren ISO </target>
+        <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CodeHeader">
+        <source xml:lang="en">Code</source>
+        <target xml:lang="ha">Lamba ta musamman</target>
+        <note>ID: LanguageLookup.CodeHeader</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CountryCount">
+        <source xml:lang="en">{0} Countries</source>
+        <target xml:lang="ha">Ƙasashe {0}</target>
+        <note>ID: LanguageLookup.CountryCount</note>
+        <note>Shown when there are multiple countries and it is just confusing to list them all. {0} is a count of countries.</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.CountryHeader">
+        <source xml:lang="en">Country</source>
+        <target xml:lang="ha">Ƙasa</target>
+        <note>ID: LanguageLookup.CountryHeader</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel">
+        <source xml:lang="en">You can change how the language name will be displayed here:</source>
+        <target xml:lang="ha">Ka na iya canza yadda za a nuna sunan yaren a nan:</target>
+        <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle">
+        <source xml:lang="en">Lookup Language Code...</source>
+        <target xml:lang="ha">Duba Lamba ta Yaren... </target>
+        <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.PrimaryNameHeader">
+        <source xml:lang="en">Name</source>
+        <target xml:lang="ha">Suna</target>
+        <note>ID: LanguageLookup.PrimaryNameHeader</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
+        <source xml:lang="en">Show regional dialects</source>
+        <target xml:lang="ha">Nuna ƙarin harsunan lardi</target>
+        <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup.UnlistedLanguage">
+        <source xml:lang="en">Unlisted Language</source>
+        <target xml:lang="ha">Yaren da ba shi a cikin jeri</target>
+        <note>ID: LanguageLookup.UnlistedLanguage</note>
+      </trans-unit>
+      <trans-unit id="LanguageLookup._cannotFindLanguageLink">
+        <source xml:lang="en">Can't find your language?</source>
+        <target xml:lang="ha">Ba ka sami yarenka ba?</target>
+        <note>ID: LanguageLookup._cannotFindLanguageLink</note>
+      </trans-unit>
+      <trans-unit id="MemoryWarning">
+        <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
+        <target xml:lang="ha">Amma kash, {0} wurin ajiyar bayanai na na'urarka ya ragu sosai, kuma saurin ta na iya raguwa, haɗi da wasu    matsaloli. Muna ba ka shawarar ka fita sannan ka kuma sake kunna ta a lokacin da ya dace.</target>
+        <note>ID: MemoryWarning</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Creator">
+        <source xml:lang="en">Creator: {0}</source>
+        <target xml:lang="ha">Maiƙirƙirowa: {0} </target>
+        <note>ID: MetadataDisplay.Creator</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.CreatorLabel">
+        <source xml:lang="en">Creator</source>
+        <target xml:lang="ha">Maiƙirƙirowa</target>
+        <note>ID: MetadataDisplay.CreatorLabel</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.LicenseInfo">
+        <source xml:lang="en">License Info</source>
+        <target xml:lang="ha">Bayanin izini</target>
+        <note>ID: MetadataDisplay.LicenseInfo</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
+        <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
+        <target xml:lang="ha">Dole ne ka ajiye haƙƙin mallaka da kuma alaƙanta aiki ga marubuta, masu zayyana da sauran su. </target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
+        <source xml:lang="en">You are free to make commercial use of this work.</source>
+        <target xml:lang="ha">An yarda ka yi amfani da wannan aikin ta wajen harkar kasuwanci. </target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true">
+        <source xml:lang="en">You may adapt and add to this work.</source>
+        <target xml:lang="ha">Kana iya ɗaukar aikin nan a yadda ya ke ko ka yi ƙari akai. </target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
+        <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
+        <target xml:lang="ha">Kana iya ɗaukar aikin nan a yadda ya ke, amma za ka iya rarraba sakamakonsa ta ƙarƙashin wannan izinin ne ko wani makamancinsa kawai.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true">
+        <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
+        <target xml:lang="ha">Ba zai yiwu ka yi canje-canje ko ka yi ɗori akan wannan aikin ba tare da izini ba. </target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true">
+        <source xml:lang="en">You may not use this work for commercial purposes.</source>
+        <target xml:lang="ha">Wannan aiki ba domin a yi amfani da shi domin kasuwanci ba ne.</target>
+        <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
+        <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
+        <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
+        <target xml:lang="ha">Don izinin sake amfani da shi, ka tuntuɓi mai haƙƙin mallaka.</target>
+        <note>ID: MetadataDisplay.Licenses.NullLicense</note>
+        <note>This is used when all we have is a copyright, no other license.</note>
+      </trans-unit>
+      <trans-unit id="MetadataDisplay.NoLicense">
+        <source xml:lang="en">No license specified</source>
+        <target xml:lang="ha">Ba wani izinin da aka bayyana  </target>
+        <note>ID: MetadataDisplay.NoLicense</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.AllowCommercialUse">
+        <source xml:lang="en">Allow commercial uses of your work?</source>
+        <target xml:lang="ha">An ba da izinin yin amfanin da shi domin kasuwanci?  </target>
+        <note>ID: MetadataEditor.AllowCommercialUse</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.AllowDerivatives">
+        <source xml:lang="en">Allow modifications of your work?</source>
+        <target xml:lang="ha">Am bayar da izinin yin gyare-gyare a cikin aikinka?</target>
+        <note>ID: MetadataEditor.AllowDerivatives</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.CopyrightHolder">
+        <source xml:lang="en">Copyright Holder</source>
+        <target xml:lang="ha">Mai haƙƙin Mallaka </target>
+        <note>ID: MetadataEditor.CopyrightHolder</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.CreativeCommons">
+        <source xml:lang="en">Creative Commons</source>
+        <target xml:lang="ha">Sanayyar Fasaha </target>
+        <note>ID: MetadataEditor.CreativeCommons</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.CreatorLabel">
+        <source xml:lang="en">Creator</source>
+        <target xml:lang="ha">Maiƙirƙirowa</target>
+        <note>ID: MetadataEditor.CreatorLabel</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.CustomLicense">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="ha">al'ada</target>
+        <note>ID: MetadataEditor.CustomLicense</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.TitleNoCredit">
+        <source xml:lang="en">Copyright and License</source>
+        <target xml:lang="ha">Haƙƙin Mallaka da bayar da izini </target>
+        <note>ID: MetadataEditor.TitleNoCredit</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.TitleWithCredit">
+        <source xml:lang="en">Credit, Copyright, and License</source>
+        <target xml:lang="ha">Ta'allaƙawa, Haƙƙin Mallaka da Izini</target>
+        <note>ID: MetadataEditor.TitleWithCredit</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.UnknownLicense">
+        <source xml:lang="en">Contact the copyright holder for any permissions</source>
+        <target xml:lang="ha">Ka tuntuɓi Mai haƙƙin Mallaka don neman izini </target>
+        <note>ID: MetadataEditor.UnknownLicense</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.YesShareAlike">
+        <source xml:lang="en">Yes, as long as others share alike</source>
+        <target xml:lang="ha">I, muddin manufarmu ta zama iri ɗaya ce</target>
+        <note>ID: MetadataEditor.YesShareAlike</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.additionalRequestsLabel">
+        <source xml:lang="en">Additional Requests</source>
+        <target xml:lang="ha">Ƙarin roko</target>
+        <note>ID: MetadataEditor.additionalRequestsLabel</note>
+        <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.betterLinkLabel1">
+        <source xml:lang="en">more info</source>
+        <target xml:lang="ha">Ƙarin bayani</target>
+        <note>ID: MetadataEditor.betterLinkLabel1</note>
+        <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
+      </trans-unit>
+      <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
+        <source xml:lang="en">Not Enforceable</source>
+        <target xml:lang="ha">Ba tilastawa </target>
+        <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
+        <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
+        <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
+        <target xml:lang="ha">Wannan zai iya ɓoye wasu madannai ma waɗanda basu ƙware ba domin ba su buƙatarsu.</target>
+        <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.CtrlShiftHint">
+        <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
+        <target xml:lang="ha">Madannai za su ta fito idan ka danna Ctrl da Shift tare.</target>
+        <note>ID: SettingsProtection.CtrlShiftHint</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.LauncherButtonLabel">
+        <source xml:lang="en">Settings...</source>
+        <target xml:lang="ha">Tsaruka...</target>
+        <note>ID: SettingsProtection.LauncherButtonLabel</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
+        <source xml:lang="en">Hide the button that opens settings.</source>
+        <target xml:lang="ha">Ɓoye madanni da ya ke bude wurin saitin tsare-tsare.</target>
+        <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword">
+        <source xml:lang="en">Factory Password</source>
+        <target xml:lang="ha">Kalmar izinin shiga daga kamfani </target>
+        <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation">
+        <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
+        <target xml:lang="ha">Don kiyaye faruwar canje-canjen da ba a buƙata waɗanda za su iya sa wannan manhajar da kake aiki da ita ta dena, an rufe wannan saitin.</target>
+        <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle">
+        <source xml:lang="en">Settings Protection Password</source>
+        <target xml:lang="ha">Kalma ta Kariyar shiga Tsarin saiti</target>
+        <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
+        <source xml:lang="en">Show Characters</source>
+        <target xml:lang="ha">Nuna Baƙaƙe </target>
+        <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.PasswordNotice">
+        <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
+        <target xml:lang="ha">Kalmar Izinin Shiga ta Kamfani don yin wannan saitin ita ce "{0}". Idan ka manta ta, a kodayaushe za ka iya shiga yanar gizon matambayi ba ya bata don "{1}" da "{2}"</target>
+        <note>ID: SettingsProtection.PasswordNotice</note>
+        <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
+        <source xml:lang="en">Require the factory password to get into settings.</source>
+        <target xml:lang="ha">Nemi Kalmar Izinin Shiga ta Kamfani don yin saiti.</target>
+        <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
+      </trans-unit>
+      <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
+        <source xml:lang="en">Settings Protection</source>
+        <target xml:lang="ha">Tsarin saitin Kalmar Izinin Shiga ta Kariya</target>
+        <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.Font">
+        <source xml:lang="en">&amp;Font:</source>
+        <target xml:lang="ha">&amp;Girman Haruffa:</target>
+        <note>ID: WSFontControl.Font</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.FontNotAvailable">
+        <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
+        <target xml:lang="ha">(Ba harafin da ka zaba akan wannan na'urar, ta yin amfanida abun ta fito da shi tun asali.)</target>
+        <note>ID: WSFontControl.FontNotAvailable</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.RightToLeftWS">
+        <source xml:lang="en">This is a &amp;right to left writing system.</source>
+        <target xml:lang="ha">Wannan tsarin rubutun da ake farawa ne daga hannun dama zuwa hagu.</target>
+        <note>ID: WSFontControl.RightToLeftWS</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.Size">
+        <source xml:lang="en">&amp;Size:</source>
+        <target xml:lang="ha">&amp;Yanayin Girma:</target>
+        <note>ID: WSFontControl.Size</note>
+      </trans-unit>
+      <trans-unit id="WSFontControl.TestArea">
+        <source xml:lang="en">&amp;Test Area:</source>
+        <target xml:lang="ha">&amp;Wurin Jarrabawa:</target>
+        <note>ID: WSFontControl.TestArea</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeyboardNotListed">
+        <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
+        <target xml:lang="ha">Idan ba a sa irin wurin latsa kalmomin rubutun da kake bukata ba, ka dangwala hanyar da tafi dacewa a ƙasa don yin saitin</target>
+        <note>ID: WSKeyboardControl.KeyboardNotListed</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeyboardSettingsLink">
+        <source xml:lang="en">Windows keyboard settings</source>
+        <target xml:lang="ha">Tsarin allon madannai na Windows</target>
+        <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
+        <source xml:lang="en">Available keyboards</source>
+        <target xml:lang="ha">Allon maddannan da ke akwai</target>
+        <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
+        <source xml:lang="en">Previously used keyboards</source>
+        <target xml:lang="ha">Allon madannan da aka yi amfani da su</target>
+        <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
+        <source xml:lang="en">Keyman Configuration</source>
+        <target xml:lang="ha">Saitin Keyman. </target>
+        <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
+        <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
+        <target xml:lang="ha">Ba a riga an sa Keyman 5.0 ko na gaba ba.</target>
+        <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
+        <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
+        <target xml:lang="ha">Zaɓi Wurin kalmomin rubutu da za ka rubuta {0}</target>
+        <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
+      </trans-unit>
+      <trans-unit id="WSKeyboardControl.TestAreaCaption">
+        <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
+        <target xml:lang="ha">&amp;Wurin Jarrabawa (Ka yi amfani da wannan wurin don rubuta wani abin da za ka jarraba allon madannanka.)</target>
+        <note>ID: WSKeyboardControl.TestAreaCaption</note>
+      </trans-unit>
+      <trans-unit id="Warning">
+        <source xml:lang="en">Warning</source>
+        <target xml:lang="ha">Gargaɗi</target>
+        <note>ID: Warning</note>
+      </trans-unit>
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
+        <source xml:lang="en">Unable to connect to SLDR</source>
+        <target xml:lang="ha">An kasa haɗawa zuwa SLDR</target>
+        <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
+      </trans-unit>
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
+        <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
+        <target xml:lang="ha">Manhajar ta kasa haɗawa da gidan yanar gizon na ma'adanar SIL don samun sabon bayani game da wannan harshen.  Idan ka ƙirƙiri wannan tsarin rubutu, saitin da na'ura ta fito da shi me yiwuwa ba daidai yake ba ko kuma ya ƙare aiki. Ka tabbata zaka sake ƙirƙirar wani tsarin rubutun?</target>
+        <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

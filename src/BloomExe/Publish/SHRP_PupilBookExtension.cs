@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
+using SIL.IO;
 
 namespace Bloom.Publish
 {
@@ -167,7 +168,7 @@ namespace Bloom.Publish
 			//just doing image.Save() works for .bmp and .jpg, but not .png
 			using (var b = new Bitmap(image))
 			{
-				SIL.IO.RobustIO.SaveImage(b, Path.Combine(exportFolder, fileName));
+				RobustImageIO.SaveImage(b, Path.Combine(exportFolder, fileName));
 			}
 		}
 	}

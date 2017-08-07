@@ -23,7 +23,8 @@ namespace Bloom.web
 		const string kPrefix = "externalLink";
 		public static void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.HandleRequest);
+			// Opening a page, better be in UI thread.
+			server.RegisterEndpointHandler(kPrefix+"/.*", ExternalLinkController.HandleRequest, true);
 		}
 
 		/// <summary>

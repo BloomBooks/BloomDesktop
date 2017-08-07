@@ -4,12 +4,12 @@ namespace Bloom.Publish
 {
 	partial class BloomLibraryPublishControl
 	{
-		/// <summary> 
+		/// <summary>
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary> 
+		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -24,8 +24,8 @@ namespace Bloom.Publish
 
 		#region Component Designer generated code
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
+		/// <summary>
+		/// Required method for Designer support - do not modify
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent()
@@ -77,9 +77,9 @@ namespace Bloom.Publish
 			this._ccPanel.SuspendLayout();
 			this.panel1.SuspendLayout();
 			this.SuspendLayout();
-			// 
+			//
 			// _uploadButton
-			// 
+			//
 			this._uploadButton.Dock = System.Windows.Forms.DockStyle.Left;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._uploadButton, null);
@@ -91,9 +91,9 @@ namespace Bloom.Publish
 			this._uploadButton.Text = "Upload Book";
 			this._uploadButton.UseVisualStyleBackColor = true;
 			this._uploadButton.Click += new System.EventHandler(this._uploadButton_Click);
-			// 
+			//
 			// label1
-			// 
+			//
 			this.label1.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label1.ForeColor = System.Drawing.SystemColors.ControlText;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
@@ -104,14 +104,14 @@ namespace Bloom.Publish
 			this.label1.Size = new System.Drawing.Size(300, 15);
 			this.label1.TabIndex = 19;
 			this.label1.Text = "Upload Progress";
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "PublishTab.Upload";
-			// 
+			//
 			// label3
-			// 
+			//
 			this.label3.AutoSize = true;
 			this.label3.Dock = System.Windows.Forms.DockStyle.Left;
 			this.label3.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -124,9 +124,9 @@ namespace Bloom.Publish
 			this.label3.Size = new System.Drawing.Size(104, 13);
 			this.label3.TabIndex = 12;
 			this.label3.Text = "Acknowledgments";
-			// 
+			//
 			// _labelBeforeLicense
-			// 
+			//
 			this._labelBeforeLicense.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this._labelBeforeLicense.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._labelBeforeLicense.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -138,9 +138,9 @@ namespace Bloom.Publish
 			this._labelBeforeLicense.Size = new System.Drawing.Size(300, 15);
 			this._labelBeforeLicense.TabIndex = 8;
 			this._labelBeforeLicense.Text = "Copyright";
-			// 
+			//
 			// label5
-			// 
+			//
 			this.label5.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label5.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label5.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -152,9 +152,9 @@ namespace Bloom.Publish
 			this.label5.Size = new System.Drawing.Size(300, 15);
 			this.label5.TabIndex = 5;
 			this.label5.Text = "Usage/License";
-			// 
+			//
 			// _ccLabel
-			// 
+			//
 			this._ccLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this._ccLabel.Cursor = System.Windows.Forms.Cursors.HSplit;
 			this._ccLabel.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -167,9 +167,9 @@ namespace Bloom.Publish
 			this._ccLabel.Size = new System.Drawing.Size(300, 15);
 			this._ccLabel.TabIndex = 7;
 			this._ccLabel.Text = "Creative Commons";
-			// 
+			//
 			// label7
-			// 
+			//
 			this.label7.AutoSize = true;
 			this.label7.Dock = System.Windows.Forms.DockStyle.Left;
 			this.label7.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
@@ -182,9 +182,9 @@ namespace Bloom.Publish
 			this.label7.Size = new System.Drawing.Size(204, 21);
 			this.label7.TabIndex = 0;
 			this.label7.Text = "Step 1: Confirm Metadata";
-			// 
+			//
 			// label8
-			// 
+			//
 			this.label8.AutoSize = true;
 			this.label8.Dock = System.Windows.Forms.DockStyle.Left;
 			this.label8.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
@@ -197,9 +197,9 @@ namespace Bloom.Publish
 			this.label8.Size = new System.Drawing.Size(121, 21);
 			this.label8.TabIndex = 16;
 			this.label8.Text = "Step 2: Upload";
-			// 
+			//
 			// label6
-			// 
+			//
 			this.label6.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this.label6.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label6.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -211,9 +211,9 @@ namespace Bloom.Publish
 			this.label6.Size = new System.Drawing.Size(32, 15);
 			this.label6.TabIndex = 1;
 			this.label6.Text = "Title";
-			// 
+			//
 			// _titleLabel
-			// 
+			//
 			this._titleLabel.AutoSize = true;
 			this._titleLabel.Dock = System.Windows.Forms.DockStyle.Left;
 			this._titleLabel.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -227,9 +227,9 @@ namespace Bloom.Publish
 			this._titleLabel.TabIndex = 2;
 			this._titleLabel.Text = "Title";
 			this._titleLabel.UseMnemonic = false;
-			// 
+			//
 			// _copyrightLabel
-			// 
+			//
 			this._copyrightLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this._copyrightLabel.ForeColor = System.Drawing.SystemColors.ControlText;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._copyrightLabel, null);
@@ -242,9 +242,9 @@ namespace Bloom.Publish
 			this._copyrightLabel.TabIndex = 9;
 			this._copyrightLabel.Text = "Copyright";
 			this._copyrightLabel.UseMnemonic = false;
-			// 
+			//
 			// _langsLabel
-			// 
+			//
 			this._langsLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
 			this._langsLabel.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._langsLabel.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -256,9 +256,9 @@ namespace Bloom.Publish
 			this._langsLabel.Size = new System.Drawing.Size(300, 15);
 			this._langsLabel.TabIndex = 10;
 			this._langsLabel.Text = "Languages";
-			// 
+			//
 			// _loginLink
-			// 
+			//
 			this._loginLink.AutoSize = true;
 			this._loginLink.Dock = System.Windows.Forms.DockStyle.Right;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._loginLink, null);
@@ -272,9 +272,9 @@ namespace Bloom.Publish
 			this._loginLink.Text = "Log in to BloomLibrary.org";
 			this._loginLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			this._loginLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._loginLink_LinkClicked);
-			// 
+			//
 			// _termsLink
-			// 
+			//
 			this._termsLink.AutoSize = true;
 			this._termsLink.Dock = System.Windows.Forms.DockStyle.Right;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._termsLink, null);
@@ -288,9 +288,9 @@ namespace Bloom.Publish
 			this._termsLink.Text = "Show Terms of Use";
 			this._termsLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			this._termsLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._termsLink_LinkClicked);
-			// 
+			//
 			// _creditsLabel
-			// 
+			//
 			this._creditsLabel.AutoEllipsis = true;
 			this._creditsLabel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._creditsLabel.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -303,9 +303,9 @@ namespace Bloom.Publish
 			this._creditsLabel.TabIndex = 13;
 			this._creditsLabel.Text = "credits";
 			this._creditsLabel.UseMnemonic = false;
-			// 
+			//
 			// _summaryBox
-			// 
+			//
 			this._summaryBox.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._summaryBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._summaryBox, null);
@@ -315,9 +315,9 @@ namespace Bloom.Publish
 			this._summaryBox.Size = new System.Drawing.Size(604, 20);
 			this._summaryBox.TabIndex = 4;
 			this._summaryBox.TextChanged += new System.EventHandler(this._summaryBox_TextChanged);
-			// 
+			//
 			// _signUpLink
-			// 
+			//
 			this._signUpLink.AutoSize = true;
 			this._signUpLink.Dock = System.Windows.Forms.DockStyle.Right;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._signUpLink, null);
@@ -331,9 +331,9 @@ namespace Bloom.Publish
 			this._signUpLink.Text = "Sign up for BloomLibrary.org";
 			this._signUpLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			this._signUpLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._signUpLink_LinkClicked);
-			// 
+			//
 			// _optional2
-			// 
+			//
 			this._optional2.AutoSize = true;
 			this._optional2.Dock = System.Windows.Forms.DockStyle.Right;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._optional2, null);
@@ -344,9 +344,9 @@ namespace Bloom.Publish
 			this._optional2.Size = new System.Drawing.Size(44, 13);
 			this._optional2.TabIndex = 23;
 			this._optional2.Text = "optional";
-			// 
+			//
 			// _licenseSuggestion
-			// 
+			//
 			this._licenseSuggestion.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._licenseSuggestion.ForeColor = System.Drawing.Color.Red;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._licenseSuggestion, null);
@@ -359,9 +359,9 @@ namespace Bloom.Publish
 			this._licenseSuggestion.TabIndex = 24;
 			this._licenseSuggestion.Text = "License Suggestion";
 			this._licenseSuggestion.UseMnemonic = false;
-			// 
+			//
 			// _creativeCommonsLink
-			// 
+			//
 			this._creativeCommonsLink.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._creativeCommonsLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._creativeCommonsLink, null);
@@ -374,10 +374,10 @@ namespace Bloom.Publish
 			this._creativeCommonsLink.Text = "CC-BY-NC";
 			this._creativeCommonsLink.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			this._creativeCommonsLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._creativeCommonsLink_LinkClicked);
-			// 
+			//
 			// _licenseNotesLabel
-			// 
-			this._licenseNotesLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			//
+			this._licenseNotesLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._licenseNotesLabel.ForeColor = System.Drawing.SystemColors.ControlText;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._licenseNotesLabel, null);
@@ -390,9 +390,9 @@ namespace Bloom.Publish
 			this._licenseNotesLabel.TabIndex = 26;
 			this._licenseNotesLabel.Text = "License Notes";
 			this._licenseNotesLabel.UseMnemonic = false;
-			// 
+			//
 			// label10
-			// 
+			//
 			this.label10.AutoSize = true;
 			this.label10.Dock = System.Windows.Forms.DockStyle.Left;
 			this.label10.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -405,9 +405,9 @@ namespace Bloom.Publish
 			this.label10.Size = new System.Drawing.Size(56, 13);
 			this.label10.TabIndex = 3;
 			this.label10.Text = "Summary";
-			// 
+			//
 			// label11
-			// 
+			//
 			this.label11.AutoSize = true;
 			this.label11.Dock = System.Windows.Forms.DockStyle.Left;
 			this.label11.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -421,9 +421,9 @@ namespace Bloom.Publish
 			this.label11.TabIndex = 3;
 			this.label11.Text = "By uploading, you confirm your agreement with the Bloom Library Terms of Use and " +
     "grant the rights it describes.";
-			// 
+			//
 			// _optional1
-			// 
+			//
 			this._optional1.AutoSize = true;
 			this._optional1.Dock = System.Windows.Forms.DockStyle.Right;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._optional1, null);
@@ -434,10 +434,10 @@ namespace Bloom.Publish
 			this._optional1.Size = new System.Drawing.Size(44, 13);
 			this._optional1.TabIndex = 22;
 			this._optional1.Text = "optional";
-			// 
+			//
 			// _progressBox
-			// 
-			this._progressBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			//
+			this._progressBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._progressBox.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this._progressBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(171)))), ((int)(((byte)(173)))), ((int)(((byte)(179)))));
@@ -459,9 +459,9 @@ namespace Bloom.Publish
 			this._progressBox.ShowMenu = true;
 			this._progressBox.Size = new System.Drawing.Size(604, 175);
 			this._progressBox.TabIndex = 30;
-			// 
+			//
 			// _userId
-			// 
+			//
 			this._userId.AutoSize = true;
 			this._userId.Dock = System.Windows.Forms.DockStyle.Right;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._userId, null);
@@ -474,9 +474,9 @@ namespace Bloom.Publish
 			this._userId.TabIndex = 22;
 			this._userId.Text = "UID";
 			this._userId.Visible = false;
-			// 
+			//
 			// _giveBackLabel
-			// 
+			//
 			this._giveBackLabel.AutoSize = true;
 			this._giveBackLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
 			this._L10NSharpExtender.SetLocalizableToolTip(this._giveBackLabel, null);
@@ -486,10 +486,10 @@ namespace Bloom.Publish
 			this._giveBackLabel.Name = "_giveBackLabel";
 			this._giveBackLabel.Size = new System.Drawing.Size(149, 20);
 			this._giveBackLabel.TabIndex = 31;
-			this._giveBackLabel.Text = "It’s easy “give back”";
-			// 
+			this._giveBackLabel.Text = "It’s easy to “give back”";
+			//
 			// _helpEachOtherLabel
-			// 
+			//
 			this._helpEachOtherLabel.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._helpEachOtherLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._helpEachOtherLabel, null);
@@ -500,10 +500,10 @@ namespace Bloom.Publish
 			this._helpEachOtherLabel.TabIndex = 32;
 			this._helpEachOtherLabel.Text = "In the Bloom community, we help each other by sharing both new and newly translat" +
     "ed books on the Bloom Library.";
-			// 
+			//
 			// tableLayoutPanel1
-			// 
-			this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			//
+			this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.tableLayoutPanel1.AutoSize = false;
 			this.tableLayoutPanel1.ColumnCount = 1;
@@ -565,9 +565,9 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.Size = new System.Drawing.Size(610, 672);
 			this.tableLayoutPanel1.TabIndex = 27;
-			// 
+			//
 			// panel1a
-			// 
+			//
 			this.panel1a.Controls.Add(this._userId);
 			this.panel1a.Controls.Add(this.label8);
 			this.panel1a.Controls.Add(this._signUpLink);
@@ -576,9 +576,9 @@ namespace Bloom.Publish
 			this.panel1a.Name = "panel1a";
 			this.panel1a.Size = new System.Drawing.Size(604, 22);
 			this.panel1a.TabIndex = 28;
-			// 
+			//
 			// panel2
-			// 
+			//
 			this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel2.Controls.Add(this._uploadButton);
 			this.panel2.Controls.Add(this._loginLink);
@@ -586,9 +586,9 @@ namespace Bloom.Publish
 			this.panel2.Name = "panel2";
 			this.panel2.Size = new System.Drawing.Size(604, 25);
 			this.panel2.TabIndex = 28;
-			// 
+			//
 			// panel4
-			// 
+			//
 			this.panel4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel4.Controls.Add(this.label11);
 			this.panel4.Controls.Add(this._termsLink);
@@ -596,9 +596,9 @@ namespace Bloom.Publish
 			this.panel4.Name = "panel4";
 			this.panel4.Size = new System.Drawing.Size(604, 18);
 			this.panel4.TabIndex = 29;
-			// 
+			//
 			// panel3
-			// 
+			//
 			this.panel3.Controls.Add(this.label3);
 			this.panel3.Controls.Add(this._optional2);
 			this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -606,9 +606,9 @@ namespace Bloom.Publish
 			this.panel3.Name = "panel3";
 			this.panel3.Size = new System.Drawing.Size(604, 13);
 			this.panel3.TabIndex = 28;
-			// 
+			//
 			// _ccPanel
-			// 
+			//
 			this._ccPanel.Controls.Add(this._creativeCommonsLink);
 			this._ccPanel.Controls.Add(this._ccLabel);
 			this._ccPanel.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -616,9 +616,9 @@ namespace Bloom.Publish
 			this._ccPanel.Name = "_ccPanel";
 			this._ccPanel.Size = new System.Drawing.Size(604, 18);
 			this._ccPanel.TabIndex = 28;
-			// 
+			//
 			// panel1
-			// 
+			//
 			this.panel1.Controls.Add(this.label10);
 			this.panel1.Controls.Add(this._optional1);
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -626,17 +626,17 @@ namespace Bloom.Publish
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(604, 13);
 			this.panel1.TabIndex = 29;
-			// 
+			//
 			// _languagesFlow
-			// 
+			//
 			this._languagesFlow.AutoSize = true;
 			this._languagesFlow.Location = new System.Drawing.Point(3, 340);
 			this._languagesFlow.Name = "_languagesFlow";
 			this._languagesFlow.Size = new System.Drawing.Size(0, 0);
 			this._languagesFlow.TabIndex = 11;
-			// 
+			//
 			// BloomLibraryPublishControl
-			// 
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoScroll = true;

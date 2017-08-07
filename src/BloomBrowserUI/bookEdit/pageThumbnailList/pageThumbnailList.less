@@ -14,7 +14,7 @@ BODY {
 
 /* this is handy for debugging page numbering in the thumbnail list
 .bloom-page::after {
-    content: counter(pageNumber);
+    content: attr(data-page-number);
     position: absolute;
     bottom: 7px;
     left: 10px;
@@ -32,25 +32,25 @@ BODY {
         height: 65px; width: 47px; /* default = A5Portrait */
 
         &.A5Landscape {
-                height: 51px;
-                width: 69px;
-                .bloom-page {
-                        transform: scale(0.08);
-                }
+            height: 51px;
+            width: 69px;
+            .bloom-page {
+                transform: scale(0.08);
+            }
         }
         &.A4Landscape {
-                height: 54px;
-                width: 74px;
-                .bloom-page {
-                        transform: scale(0.061);
-                }
+            height: 54px;
+            width: 74px;
+            .bloom-page {
+                transform: scale(0.061);
+            }
         }
         &.A4Portrait {
-                height: 62px;
-                width: 46px;
-                .bloom-page {
-                        transform: scale(0.05);
-                }
+            height: 62px;
+            width: 46px;
+            .bloom-page {
+                transform: scale(0.05);
+            }
         }
         &.A3Landscape {
             height: 57px;
@@ -60,54 +60,80 @@ BODY {
             }
         }
         &.B5Portrait {
-                height: 63px;
-                width: 46px;
-                .bloom-page {
-                        transform: scale(0.06);
-                }
+            height: 63px;
+            width: 46px;
+            .bloom-page {
+                transform: scale(0.06);
+            }
         }
         &.LetterLandscape {
-                height: 47px;
-                width: 61px;
-                .bloom-page {
-                        transform: scale(0.058);
-                }
+            height: 47px;
+            width: 61px;
+            .bloom-page {
+                transform: scale(0.058);
+            }
         }
         &.LetterPortrait {
-                height: 61px;
-                width: 47px;
-                .bloom-page {
-                        transform: scale(0.058);
-                }
+            height: 61px;
+            width: 47px;
+            .bloom-page {
+                transform: scale(0.058);
+            }
         }
         &.HalfLetterPortrait {
-                height: 61px;
-                width: 47px;
-                .bloom-page {
-                        transform: scale(0.075);
-                }
+            height: 61px;
+            width: 47px;
+            .bloom-page {
+                transform: scale(0.075);
+            }
         }
         &.QuarterLetterLandscape {
-                height: 47px;
-                width: 61px;
-                .bloom-page {
-                        transform: scale(0.115);
-                }
+            height: 47px;
+            width: 61px;
+            .bloom-page {
+                transform: scale(0.115);
+            }
         }
         &.QuarterLetterPortrait {
-                height: 61px;
-                width: 47px;
-                .bloom-page {
-                        transform: scale(0.115);
-                }
+            height: 61px;
+            width: 47px;
+            .bloom-page {
+                transform: scale(0.115);
+            }
+        }
+        &.Device16x9Portrait {
+            height: 67px;
+            width: 40px;
+            .bloom-page {
+                transform: scale(0.092);
+            }
+        }
+        &.Device16x9Landscape {
+            height: 43px;
+            width: 70px;
+            .bloom-page {
+                transform: scale(0.095);
+            }
+        }
+        &.A6Portrait {
+            .bloom-page {
+                transform: scale(0.11);
+            }
+        }
+        &.A6Landscape {
+            height: 51px;
+            width: 69px;
+            .bloom-page {
+                transform: scale(0.12);
+            }
         }
 
         //http://stackoverflow.com/questions/17824060/ios-safari-runs-out-of-memory-with-webkit-transform
         transform-style: preserve-3d;
         .bloom-page {
-                backface-visibility: hidden;
-                transform: scale(0.074); // default = A5Portrait
-                transform-origin: left top;
+            backface-visibility: hidden;
+            transform: scale(0.074); // default = A5Portrait
+            transform-origin: left top;
         }
 }
 

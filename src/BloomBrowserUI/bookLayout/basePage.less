@@ -1,5 +1,7 @@
 @import "../templates/common-mixins.less";
 @import "basePage-sharedRules.less";
+@import "device.less";
+@import "textOverPicture.less";
 
 .Browser-Reset() {
     /*+init {*/
@@ -173,21 +175,12 @@ page be the full page, regardless of the contents.
 To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
 preview.css.
 
-Changes here generally require similar changes in EpubMaker.FixPictureSizes().
+Changes here generally require similar changes in EpubMaker.FixPictureSizes() and pageThumbnailList.less.
 */
 .bloom-page {
-    &.Device16x9Portrait{
-        min-width: @Device16x9Portrait-Width;
-        max-width: @Device16x9Portrait-Width;
-        min-height: @Device16x9Portrait-Height;
-        max-height: @Device16x9Portrait-Height;
-    }
-    &.Device16x9Landscape{
-        min-width: @Device16x9Landscape-Width;
-        max-width: @Device16x9Landscape-Width;
-        min-height: @Device16x9Landscape-Height;
-        max-height: @Device16x9Landscape-Height;
-    }
+    // See device.less for all css involving the following layouts:
+    //   Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape
+
     &.A5Portrait {
         min-width: @A5Portrait-Width;
         max-width: @A5Portrait-Width;
@@ -317,64 +310,16 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
     top: @MarginTop;
 }
 
-.Device16x9Landscape{
-    //TODO: This is only for videos
-    background-color: black;
-    img{ background-color: white; } // so that transparent images show
-}
-
-.Device16x9Landscape, .Device16x9Portrait{
-    .origami-toggle{display:none}
-    .pageLabel{display:none}
-
-    .marginBox {
-        .split-pane.horizontal-percent > .split-pane-component.position-top{
-            margin-bottom: 0;
-        }
-
-        .bloom-imageContainer{
-            //the basePage.css has a "- 3px" that leaves the bottom of the screen unused
-            height: calc(100%) !important;
-        }
+// Mixin for setting .marginBox margins.
+.SetMarginBox(@PageWidth, @PageHeight) {
+    height: @PageHeight - (@MarginTop + @MarginBottom);
+    width: @PageWidth - ( @MarginOuter + @MarginInner );
+    IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+        max-width: @PageWidth - ( @MarginOuter + @MarginInner );
     }
 }
 
 .marginBox {
-    .SetMarginBox(@PageWidth, @PageHeight) {
-        height: @PageHeight - (@MarginTop + @MarginBottom);
-        width: @PageWidth - ( @MarginOuter + @MarginInner );
-        IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-            max-width: @PageWidth - ( @MarginOuter + @MarginInner );
-        }
-    }
-    .SetMarginBoxDevice(@PageWidth, @PageHeight) {
-        height: @PageHeight ;
-        width: @PageWidth;
-        IMG {
-            max-width: @PageWidth ;
-        }
-        top:0;
-        left:0 !important;
-    }
-
-    .Device16x9Portrait & {
-        .SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
-
-        //that makes the margin box actually have no margin. Which looks good for the image, but
-        //looks bad for the text. So here we re-introduce a margin... a bit of a hack
-        .bloom-editable{
-            margin-left: 10px;
-            width: ~"calc(100% - 20px)"; // 10px for the left, 10px for the right
-        }
-    }
-
-    .Device16x9Landscape & {
-        .SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
-
-        //make the top half take up the whole screen
-        .position-top{bottom: 0 !important;}
-        .position-bottom{display:none;}
-    }
     .A3Landscape & {
         .SetMarginBox(@A3Landscape-Width, @A3Landscape-Height);
     }
@@ -427,20 +372,17 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
     }
 }
 
-//Currently, in edit mode there is only one page in the html, so every
-//page looks like page 1 from the view of the css, so showing every page
-//as if it were odd is just confusing for the user.
-//Therefore we only turn on left-vs.right distinctions when when making PDF.
-.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
-    &.bloom-page:nth-of-type(odd){
+:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
+    &.side-left  // maintained by c#
+    {
         .marginBox{
-            /* shifted margin */
             left: @MarginOuter;
         }
     }
-    &.bloom-page:nth-of-type(even){
+
+    &.side-right // maintained by c#
+    {
         .marginBox{
-            /* shifted margin */
             left: @MarginInner;
         }
     }
@@ -455,27 +397,6 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
         /* balanced margin*/
         left: @MarginBalanced;
     }
-}
-
-//in right-to-left books, the way our pdf booklet maker works, it just reverses
-//the page order. In doing so, what use to be odd becomes even, and our margins
-//and page numbering logic needs to switch accordingly. Page numbering is
-//not part of the basePage.less.
-
-.rightToLeft.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
-  &.bloom-page:nth-of-type(odd) .marginBox  {
-      /* swap margins on right to left */
-      left: @MarginInner;
-  }
-  &.bloom-page:nth-of-type(even) .marginBox  {
-      /* swap margins on right to left */
-      left: @MarginOuter;
-  }
-}
-
-//in edit mode, just split the difference, centering the margin box
-body:not(.publishMode) .marginBox{
-  left: @MarginBalanced;
 }
 
 // pageDescription is for javascript to read, we never display it directly on the page
@@ -518,7 +439,7 @@ h2 {
         height: ~"calc(100% - 3px)"; //hack: this should logically be 1px, but 3 was needed, so I'm missing something, or maybe it's about rounding and such.
 
         // above so buttons show
-        z-index: 1000;
+        z-index: @imageContainerZIndex;
         // Solves BL-1033 small picture frames cycling red overflow
         overflow: hidden;
     }
@@ -611,5 +532,27 @@ h2 {
 .bloom-content3 {
     order: 2;
 }
+
+
+//Enhance: I think these could be computed, based on the current margin
+@OddPageNumberPosition: 57px;
+@EvenPageNumberPosition: 60px;
+
+.numberedPage{
+    &:after {
+        content: attr(data-page-number);
+        font-size: 14pt;
+        position: absolute;
+        bottom: 20px;
+    }
+    &.side-left:after { // side-___ maintained by c#
+        left: @OddPageNumberPosition;
+    }
+    &.side-right:after { // side-___ maintained by c#
+        right: @EvenPageNumberPosition;
+        text-align: right;
+    }
+}
+
 
 //... to be continued. We sandwich most other sheets between this one and the languageDisplay.css, which comes last-ish

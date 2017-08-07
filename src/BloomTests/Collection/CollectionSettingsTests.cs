@@ -93,20 +93,11 @@ namespace BloomTests.Collection
 			settings.Language1Iso639Code = "en";
 			settings.PageNumberStyle = style;
 			settings.Save();
-			VerifyCorrectCssRuleExists(collectionName, settings.PageNumberStyle.ToLower());
-			settings = null; // dispose of the old one
 			var newSettings = CreateCollectionSettings(_folder.Path, collectionName);
 			Assert.AreEqual(style, newSettings.PageNumberStyle, "Numbering style 'Gurmukhi' should round trip");
 		}
 
-		private void VerifyCorrectCssRuleExists(string collectionName, string oldNumberStyle)
-		{
-			var mainFile = CollectionSettings.GetPathForNewSettings(_folder.Path, collectionName);
-			var cssFile = Path.Combine(Path.GetDirectoryName(mainFile), "settingsCollectionStyles.css");
-			var css = RobustFile.ReadAllText(cssFile);
-			Assert.IsTrue(Regex.Match(css, @"@media\s+print\s+{\s+\.numberedPage:after\s+{\s+content:\s+counter\(pageNumber,\s+" + oldNumberStyle + @"\);\s+}\s+}").Success,
-							  "Css did not generate PageNumber style rule match.");
-		}
+
 
 		[TestCase("en", "es", "de", new[] {"en", "es", "de", "en"})] // we don't really need it, but English is put at the end even if already present
 		[TestCase("id", "es", "de", new[] { "id", "es", "de", "en" })] // more typical case where adding English is important
@@ -132,6 +123,18 @@ namespace BloomTests.Collection
 			settings.Language2Iso639Code = lang2;
 			settings.Language3Iso639Code = lang3;
 			Assert.That(settings.LicenseDescriptionLanguagePriorities, Is.EqualTo(results));
+		}
+
+		[TestCase("", "2")] // default
+		[TestCase("Decimal", "2")]
+		[TestCase("Devanagari", "२")]
+		[TestCase("Khmer", "២", ExcludePlatform = "Linux", Reason = "Fails until BL-4796 provides a better implementation")]
+		[TestCase("Cjk-Decimal", "二")]
+		public void CharactersForDigitsForPageNumbers_Tests(string numberStyleName, string digitForNumber2)
+		{
+			var settings = CreateCollectionSettings(_folder.Path, "test");
+			settings.PageNumberStyle = numberStyleName;
+			Assert.AreEqual(digitForNumber2, settings.CharactersForDigitsForPageNumbers.Substring(2,1));
 		}
 	}
 }

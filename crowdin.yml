@@ -1,0 +1,3 @@
+files:
+  - source: /DistFiles/localization/en/*.xlf
+    translation: /DistFiles/localization/%two_letters_code%/%original_file_name%

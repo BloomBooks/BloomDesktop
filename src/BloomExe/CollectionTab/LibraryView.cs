@@ -6,6 +6,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 using System.Drawing;
+using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
 {
@@ -63,6 +64,15 @@ namespace Bloom.CollectionTab
 												});
 		}
 
+		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
+		{
+			//we have a couple of buttons which don't make sense for the remote (therefore vulnerable) low-end user
+			settingsLauncherHelper.ManageComponent(_settingsButton);
+
+			//NB: this isn't really a setting, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
+			settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
+		}
+
 		private void BackgroundColorsForLinux() {
 
 			// Set the background image for Mono because the background color does not paint,
@@ -116,6 +126,36 @@ namespace Bloom.CollectionTab
 			get { return _topBarControl; }
 		}
 
+		/// <summary>
+		/// TopBarControl.Width is not right here, because (a) the Send/Receive button currently never shows, and
+		/// (b) the Make Bloompack button only shows in source collections.
+		/// </summary>
+		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width +
+			(_makeBloomPackButton.Visible ? _makeBloomPackButton.Width : 0);
+
+		public void PlaceTopBarControl()
+		{
+			_topBarControl.Dock = DockStyle.Right;
+		}
+
 		public Bitmap ToolStripBackground { get; set; }
+
+		private WorkspaceView GetWorkspaceView()
+		{
+			Control ancestor = Parent;
+			while (ancestor != null && !(ancestor is WorkspaceView))
+				ancestor = ancestor.Parent;
+			return ancestor as WorkspaceView;
+		}
+
+		private void _settingsButton_Click(object sender, EventArgs e)
+		{
+			GetWorkspaceView().OnSettingsButton_Click(sender, e);
+		}
+
+		private void _openCreateCollectionButton_Click(object sender, EventArgs e)
+		{
+			GetWorkspaceView().OpenCreateLibrary();
+		}
 	}
 }

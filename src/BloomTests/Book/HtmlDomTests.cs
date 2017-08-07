@@ -774,5 +774,97 @@ namespace BloomTests.Book
 			}
 			Assert.That(countEmpty, Is.EqualTo(2));
 		}
+
+		[TestCase("first page", 1,
+			"<div id='ego' class='bloom-page numberedPage'/>" +
+			"<div class='bloom-page numberedPage'/>" +
+			"<div class='bloom-page numberedPage'/>")]
+		// REVIEW: should we be returning string so that we can say "cover", for example?
+		[TestCase("on a page that itself is not numbered", 0,
+			"<div id='ego' class='bloom-page'/>")]
+		[TestCase("first page is numbered, this is second numbered page", 2,
+			"<div class='bloom-page numberedPage'></div><div id='ego' class='bloom-page numberedPage'/>")]
+		[TestCase("first page is not numbered",
+			1, " <div class='bloom-page'/><div id='ego' class='bloom-page numberedPage'/>")]
+		[TestCase("previous page is countPageButDoNotShowNumber",
+			2, " <div class='bloom-page countPageButDoNotShowNumber'/><div id='ego' class='bloom-page numberedPage'/>")]
+		[TestCase("bloom-startPageNumbering restarts numbering", 1,
+			"<div class='bloom-page numberedPage'></div><div id='ego' class='bloom-page bloom-startPageNumbering'/>")]
+		[TestCase("page not found for this item", -1,
+			"<div id='ego'/>")]
+		[TestCase("the works", 2, "<div class='bloom-page'/>" +
+								"<div class='bloom-page numberedPage'/>" +
+								"<div class='bloom-page bloom-startPageNumbering'/>" +
+								"<div id='ego' class='bloom-page numberedPage'/>" +
+								"<div class='bloom-page numberedPage'/>" +
+								"<div class='bloom-page numberedPage'/>")]
+		public void GetPageNumberOfPage_ReturnsExpectedNumber(string description, int expected, string contents)
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body><div id='bloomDataDiv'></div>" + contents + "</body></html>");
+			var ego = dom.RawDom.SelectSingleNode("//div[@id='ego']") as XmlElement;
+			Assert.AreEqual(expected, dom.GetPageNumberOfPage(ego), "Failed " + description);
+		}
+
+		[Test]
+		public void UpdatePageNumberAndSideClassOfPages_TestSideClasses()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+					<div id='cover' class='bloom-page side-foo'/>
+					<div id='insideFrontCover' class='bloom-page side-foo'/>
+					<div id='firstWhitePage' class='bloom-page side-foo'/>
+				</body></html>");
+
+			dom.UpdatePageNumberAndSideClassOfPages("abcdefghij", false /* not rtl */);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='cover' and contains(@class,'side-right')]", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='insideFrontCover' and contains(@class,'side-left')]", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='firstWhitePage' and contains(@class,'side-right')]", 1);
+		}
+
+
+		[Test]
+		public void UpdatePageNumberAndSideClassOfPages_RightToLeft_TestSideClasses()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+					<div id='cover' class='bloom-page side-foo'/>
+					<div id='insideFrontCover' class='bloom-page side-foo'/>
+					<div id='firstWhitePage' class='bloom-page side-foo'/>
+				</body></html>");
+
+			dom.UpdatePageNumberAndSideClassOfPages("abcdefghij", true /* rtl */);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='cover' and contains(@class,'side-left')]", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='insideFrontCover' and contains(@class,'side-right')]", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='firstWhitePage' and contains(@class,'side-left')]", 1);
+		}
+
+		[TestCase("12", "")] // just use default (0..9)
+		[TestCase("bc", "abcdefghij")] // provide explicit digits
+		public void UpdatePageNumberAndSideClassOfPages_TestPageNumbers(string page12Number, string numberStyleOrDigits)
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+					<div id='frontmatter' class='bloom-page' data-page-number='99'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div  class='bloom-page numberedPage'/>
+					<div id='12' class='bloom-page numberedPage'/>
+				</body></html>");
+
+			dom.UpdatePageNumberAndSideClassOfPages(numberStyleOrDigits, false /* not rtl */);
+			// we don't have to test anything except that a number does get added or updated,
+			// because the testing of the number logic is done on the GetPageNumberOfPage() method
+
+			//this first one wasn't marked for getting a page number
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='frontmatter' and @data-page-number='']", 1);
+			//should be page 2 ('c' in our pretend script)
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath($"//div[@id='12' and @data-page-number='{page12Number}']", 1);
+
+		}
 	}
 }

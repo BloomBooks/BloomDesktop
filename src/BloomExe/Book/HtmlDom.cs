@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -392,6 +393,10 @@ namespace Bloom.Book
 			element.SetAttribute("class", (classes + " " + className).Trim());
 		}
 
+		public static bool HasClass(XmlElement element, string className)
+		{
+			return GetClasses(element).Contains(className);
+		}
 
 		/// <summary>
 		/// Applies the XSLT, and returns an XML dom
@@ -1334,6 +1339,13 @@ namespace Bloom.Book
 				.OfType<XmlElement>();
 		}
 
+		private IEnumerable<XmlElement> GetPageElements()
+		{
+			return _dom.SafeSelectNodes(
+					"/html/body/div[contains(@class,'bloom-page')]")
+				.OfType<XmlElement>();
+		}
+
 		/// <summary>
 		/// Can switch a page from being a template page or back to a normal page.
 		/// </summary>
@@ -1387,6 +1399,93 @@ namespace Bloom.Book
 			{
 				RemoveMetaElement("lockedDownAsShell");
 			}
+		}
+
+		/// <summary>
+		/// Given a page or a child of a page, return the page
+		/// </summary>
+		private XmlElement GetPageDivOfElement(XmlElement element)
+		{
+			return element.SelectSingleNode("ancestor-or-self::div[contains(@class,'bloom-page')]") as XmlElement;
+		}
+
+		/// <summary>
+		/// Figure out what page number would be shown on the page
+		/// </summary>
+		public int GetPageNumberOfPage(XmlElement pageDiv )
+		{
+			var allPages = RawDom.SelectNodes("html/body/div[contains(@class,'bloom-page')]").Cast<XmlElement>();
+
+			var pageNumber = 0;
+			foreach(var p in allPages)
+			{
+				if(HtmlDom.HasClass(p, "numberedPage") || HtmlDom.HasClass(p, "countPageButDoNotShowNumber"))
+				{
+					++pageNumber;
+				}
+				if(HtmlDom.HasClass(p, "bloom-startPageNumbering"))
+				{
+					pageNumber=1;
+				}
+				if (p == pageDiv)
+					return pageNumber;
+			}
+			return -1;
+		}
+
+		public XmlElement FindPageById(string pageId)
+		{
+			return RawDom.SafeSelectNodes("//body/div[@id='" + pageId + "']").Cast<XmlElement>().FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Updates the side-right and side-left classes of every page div in the supplied dom.
+		/// These will only be correct if the dom is the full book; from a dom made of one page,
+		/// we cannot determine if it is left or right, nor what page.
+		/// </summary>
+		public void UpdatePageNumberAndSideClassOfPages(string charactersForDigits, bool languageIsRightToLeft)
+		{
+			var i = 0;
+			foreach (var pageDiv in GetPageElements())
+			{
+				UpdateSideClass(pageDiv, i, languageIsRightToLeft);
+				// enhance: we could optimize this since we are doing them all in sequence...
+				// we'd have to call this until we get a non-empty page number, but perhaps
+				// we could keep going through the back cover so long as the stylesheet
+				// ignores the numbers on those so no one will see them?
+				var number = GetPageNumberOfPage(pageDiv);
+				var numberInScript = number > 0 ? GetNumberStringRepresentation(number, charactersForDigits) : "";
+				pageDiv.SetAttribute("data-page-number", numberInScript);
+				i++;
+			}
+		}
+
+		/// <summary>
+		/// Simplified from https://stackoverflow.com/a/35099462/723299
+		/// If there are number systems that can't be represented by just exchanging digits, this won't work for them.
+		/// </summary>
+		private string GetNumberStringRepresentation(int postiveInteger, string charactersForDigits)
+		{
+			if(string.IsNullOrEmpty(charactersForDigits))
+				return postiveInteger.ToString(CultureInfo.InvariantCulture);
+
+			Debug.Assert(charactersForDigits.Length==10);
+
+			return String.Join("", postiveInteger.ToString(CultureInfo.InvariantCulture)
+				.Select(x =>
+				{
+					if ("1234567890".Contains(x.ToString()))
+						return charactersForDigits.Substring(x - '0', 1);
+					else
+						return x.ToString();
+				}));
+		}
+
+		private static void UpdateSideClass(XmlElement pageDiv, int indexOfPageZeroBased, bool languageIsRightToLeft)
+		{
+			RemoveClassesBeginingWith(pageDiv, "side-");
+			var rightSideRemainder = languageIsRightToLeft ? 1 : 0;
+			AddClassIfMissing(pageDiv, indexOfPageZeroBased % 2 == rightSideRemainder ? "side-right" : "side-left");
 		}
 	}
 }

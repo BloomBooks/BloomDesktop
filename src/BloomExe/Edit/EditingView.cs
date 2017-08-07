@@ -12,23 +12,23 @@ using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Api;
 using Bloom.web.controllers;
+using Bloom.Workspace;
 using L10NSharp;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Windows.Forms.ImageGallery;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Miscellaneous;
 using Gecko;
 using TempFile = SIL.IO.TempFile;
-using Bloom.Workspace;
 using Gecko.DOM;
 using SIL.IO;
+using SIL.Windows.Forms.ImageToolbox.ImageGallery;
 using SIL.Windows.Forms.Widgets;
 
 namespace Bloom.Edit
 {
-	public partial class EditingView : UserControl, IBloomTabArea
+	public partial class EditingView : UserControl, IBloomTabArea, IZoomManager
 	{
 		private readonly EditingModel _model;
 		private PageListView _pageListView;
@@ -43,12 +43,12 @@ namespace Bloom.Edit
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
 		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
+		private BloomWebSocketServer _webSocketServer;
 
 		public delegate EditingView Factory(); //autofac uses this
 
-		public EditingView(EditingModel model, PageListView pageListView,
-			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand,
-			DuplicatePageCommand duplicatePageCommand,
+		public EditingView(EditingModel model, PageListView pageListView, CutCommand cutCommand, CopyCommand copyCommand,
+			PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
 			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
 		{
 			_model = model;
@@ -59,6 +59,7 @@ namespace Bloom.Edit
 			_undoCommand = undoCommand;
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
+			_webSocketServer = model.EditModelSocketServer;
 			InitializeComponent();
 			_browser1.Isolator = isolator;
 			_splitContainer1.Tag = _splitContainer1.SplitterDistance; //save it
@@ -87,10 +88,10 @@ namespace Bloom.Edit
 			Controls.Remove(_topBarPanel);
 			SetupBrowserContextMenu();
 #if __MonoCS__
-			// The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
-			// Merely introducing an "identity color matrix" to the image attributes appears to fix
-			// this problem.  (The active form looks okay with or without this fix.)
-			// See http://issues.bloomlibrary.org/youtrack/issue/BL-3714.
+// The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
+// Merely introducing an "identity color matrix" to the image attributes appears to fix
+// this problem.  (The active form looks okay with or without this fix.)
+// See http://issues.bloomlibrary.org/youtrack/issue/BL-3714.
 			float[][] colorMatrixElements = {
 				new float[] {1,  0,  0,  0,  0},		// red scaling factor of 1
 				new float[] {0,  1,  0,  0,  0},		// green scaling factor of 1
@@ -107,9 +108,43 @@ namespace Bloom.Edit
 #endif
 		}
 
+		/// <summary>
+		/// Might add a menu item to the Gecko context menu.
+		/// If the current book is LockedDown, we don't add any text over picture options.
+		/// If we are in a "bloom-imageContainer" div the menu item will be to add a text box to the image.
+		/// If we are in a "bloom-textOverPicture" div the menu item will be to delete a text box from the image.
+		/// Otherwise no menu item is added.
+		/// </summary>
 		private void SetupBrowserContextMenu()
 		{
-			// currently nothing to do.
+			// "return false" means we don't want to override other menu items that might be added
+			_browser1.ContextMenuProvider = args =>
+			{
+				// don't allow changes if locked down; I doubt args.TargetNode CAN be anything else, but just being safe.
+				if (_model.CurrentBook.LockedDown || !(args.TargetNode is GeckoHtmlElement))
+					return false;
+
+				var targetProxy = new ElementProxy((GeckoHtmlElement) args.TargetNode);
+				// Since at this point we don't have a way to keep TextOverPicture textboxes that the user adds to xMatter pages
+				// we won't give them the opportunity. If we later add that capability, besides removing this 'if', make sure that
+				// textboxes appear above cover images.
+				if (targetProxy.SelfOrAncestorHasClass("bloom-frontMatter") || targetProxy.SelfOrAncestorHasClass("bloom-backMatter"))
+				{
+					return false;
+				}
+				if (targetProxy.SelfOrAncestorHasClass("bloom-textOverPicture"))
+				{
+					var deleteMessage = LocalizationManager.GetString("EditTab.DeleteTextBoxFromImage", "Delete Text Box From Image");
+					args.ContextMenu.MenuItems.Add(deleteMessage, (sender, e) => deleteTextbox_Click());
+					return false; // we don't expect to need both Add and Delete in the same place
+				}
+				if (targetProxy.SelfOrAncestorHasClass("bloom-imageContainer"))
+				{
+					var addMessage = LocalizationManager.GetString("EditTab.AddTextBoxToImage", "Add Text Box To Image");
+					args.ContextMenu.MenuItems.Add(addMessage, (sender, e) => addTextbox_Click());
+				}
+				return false;
+			};
 		}
 
 		private void HandleControlKeyEvent(object keyData)
@@ -166,6 +201,11 @@ namespace Bloom.Edit
 			get { return _topBarPanel; }
 		}
 
+		// The full width of the TopBarControl is a bit much, because the actual values in the _menusToolStrip are usually narrower
+		// than the control name shown in design mode. The "5" just gives a little margin.
+		public int WidthToReserveForTopBarControl => _menusToolStrip.Left + 5
+			+ Math.Max(_contentLanguagesDropdown.Bounds.Right, _layoutChoices.Bounds.Right);
+
 		/// <summary>
 		/// Prevents a white line from appearing below the tool strip
 		/// Be careful if using this on Linux; it can have strange side-effects (https://jira.sil.org/browse/BL-509).
@@ -204,6 +244,11 @@ namespace Bloom.Edit
 			_browser1.WebBrowser.Select();
 
 			_editButtonsUpdateTimer.Enabled = Parent != null;
+		}
+
+		public void PlaceTopBarControl()
+		{
+			_topBarPanel.Dock = DockStyle.Left;
 		}
 
 		public Bitmap ToolStripBackground { get; set; }
@@ -344,6 +389,7 @@ namespace Bloom.Edit
 				RemoveMessageEventListener("setModalStateEvent");
 				Application.Idle -= new EventHandler(VisibleNowAddSlowContents); //make sure
 				_browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
+				_model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
 			}
 		}
 
@@ -363,10 +409,20 @@ namespace Bloom.Edit
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				_model.SetupServerWithCurrentPageIframeContents();
 				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
-				var dom = _model.GetXmlDocumentForEditScreenWebPage();
-				_model.RemoveStandardEventListeners();
-				_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true);
-				_model.CheckForBL2364("navigated to page");
+				if (_model.AreToolboxAndOuterFrameCurrent())
+				{
+					var pageUrl = _model.GetUrlForCurrentPage();
+					_browser1.SetEditDom(domForCurrentPage);
+					RunJavaScript("FrameExports.switchContentPage('" + pageUrl + "');");
+				}
+				else
+				{
+					_model.SetupServerWithCurrentBookToolboxContents();
+					var dom = _model.GetXmlDocumentForEditScreenWebPage();
+					_model.RemoveStandardEventListeners();
+					_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true);
+				}
+				_model.CheckForBL2634("navigated to page");
 				_pageListView.Focus();
 				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
 				// initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
@@ -504,7 +560,6 @@ namespace Bloom.Edit
 			}
 		}
 
-
 		private void RememberSourceTabChoice(GeckoHtmlElement target)
 		{
 			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
@@ -513,7 +568,6 @@ namespace Bloom.Edit
 			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
-
 		private void OnEditImageMetdata(DomEventArgs ge)
 		{
 			var imageElement = GetImageNode(ge);
@@ -521,31 +575,19 @@ namespace Bloom.Edit
 				return;
 			string fileName = HtmlDom.GetImageElementUrl(imageElement).NotEncoded;
 
-			//enhance: this all could be done without loading the image into memory
-			//could just deal with the metadata
-			//e.g., var metadata = Metadata.FromFile(path)
-			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
-			PalasoImage imageInfo = null;
-			try
+			var imageInfo = ImageUpdater.GetImageInfoSafelyFromFilePath(_model.CurrentBook.FolderPath, fileName);
+			if (imageInfo == null)
 			{
-				imageInfo = PalasoImage.FromFileRobustly(path);
-			}
-			catch(TagLib.CorruptFileException e)
-			{
-				ErrorReport.NotifyUserOfProblem(e,
-					"Bloom ran into a problem while trying to read the metadata portion of this image, " + path);
-				return;
+				return; // exception handled in ImageUpdater
 			}
 
 			using(imageInfo)
 			{
-				var hasMetadata = !(imageInfo.Metadata == null || imageInfo.Metadata.IsEmpty);
-				if(hasMetadata)
+				if(ImageUpdater.ImageHasMetadata(imageInfo))
 				{
 					// If we have metadata with an official collectionUri or we are translating a shell
 					// just give a summary of the metadata
-					var looksOfficial = !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
-					if(looksOfficial || !_model.CanEditCopyrightAndLicense)
+					if(ImageUpdater.ImageIsFromOfficialCollection(imageInfo.Metadata) || !_model.CanEditCopyrightAndLicense)
 					{
 						MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
 						return;
@@ -703,7 +745,7 @@ namespace Bloom.Edit
 						}
 						using(var temp = TempFile.TrackExisting(pathToPngVersion))
 						{
-							SIL.IO.RobustIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
+							SIL.IO.RobustImageIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
 
 							using(var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
 							{
@@ -1226,9 +1268,21 @@ namespace Bloom.Edit
 			UpdateEditButtons();
 		}
 
+		private void addTextbox_Click()
+		{
+			var mousePoint = _browser1.ContextMenuLocation; // avoids compiler warning (CS1690) about marshal-by-reference class
+			_webSocketServer.Send("addTextBox", $"{mousePoint.X},{mousePoint.Y}");
+		}
+
 		private void _cutButton_Click(object sender, EventArgs e)
 		{
 			ExecuteCommandSafely(_cutCommand);
+		}
+
+		private void deleteTextbox_Click()
+		{
+			var mousePoint = _browser1.ContextMenuLocation; // avoids compiler warning (CS1690) about marshal-by-reference class
+			_webSocketServer.Send("deleteTextBox", $"{mousePoint.X},{mousePoint.Y}");
 		}
 
 		private void _undoButton_Click(object sender, EventArgs e)
@@ -1334,6 +1388,23 @@ namespace Bloom.Edit
 		{
 			return LocalizationManager.GetString("EditTab.HowToUnlockBook",
 							"To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.");
+		}
+
+		// The zoom factor that is shown in the top right of the toolbar (a percent).
+		public int Zoom
+		{
+			// Whatever the user may have saved (e.g., from earlier use of ctrl-wheel), we'll make this an expected multiple-of-10 percent.
+			get { return (int) Math.Round(float.Parse(Settings.Default.PageZoom ?? "1.0") * 10) * 10; }
+			set
+			{
+				Settings.Default.PageZoom = (value / 100.0).ToString();
+				Settings.Default.Save();
+				if (_browser1 != null)
+				{
+					RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().setZoom(" +
+					              Settings.Default.PageZoom + ");}");
+				}
+			}
 		}
 	}
 }

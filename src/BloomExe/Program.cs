@@ -77,6 +77,8 @@ namespace Bloom
 		{
 			Logger.Init();
 			CheckForCorruptUserConfig();
+			// We use crowdin for localizing, and they require a directory per language setup.
+			LocalizationManager.UseLanguageCodeFolders = true;
 
 			// Bloom has several command line scenarios, without a coherent system for them.
 			// The following is how we will do things from now on, and things can be moved
@@ -147,7 +149,7 @@ namespace Bloom
 				if (!Settings.Default.LicenseAccepted)
 				{
 					Browser.SetUpXulRunner();
-					using (var dlg = new LicenseDialog())
+					using (var dlg = new LicenseDialog("license.md"))
 						if (dlg.ShowDialog() != DialogResult.OK)
 							return 1;
 					Settings.Default.LicenseAccepted = true;
@@ -492,7 +494,10 @@ namespace Bloom
 				return;
 			}
 			if(_splashForm==null)
+			{
 				_splashForm = SplashScreen.CreateAndShow();//warning: this does an ApplicationEvents()
+				CloseFastSplashScreen();
+			}
 			else if (DateTime.Now > _earliestWeShouldCloseTheSplashScreen)
 			{
 				// BL-3192. If there is some modal in front (e.g. dropbox or screen DPI warnings), just wait. We'll keep getting called with these
@@ -955,8 +960,9 @@ namespace Bloom
 				// support multiple variants for a single language like zh-CN or zh-Hans, at which point both might be in the
 				// list and we'd want the best match. In the meantime we want zh-Hans to find zh-CN. See BL-3691.)
 				string localeMatchingLanguage = null;
-				foreach  (var lang in LocalizationManager.GetAvailableUILanguageTags(installedStringFileFolder, "Bloom"))
+				foreach  (var ci in LocalizationManager.GetUILanguages(true))
 				{
+					var lang = ci.IetfLanguageTag;
 					if (lang == UserInterfaceCulture.IetfLanguageTag)
 						return UserInterfaceCulture.IetfLanguageTag;
 					if (localeMatchingLanguage == null && lang.StartsWith(UserInterfaceCulture.TwoLetterISOLanguageName))
@@ -1222,6 +1228,27 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			get
 			{
 				return Assembly.GetEntryAssembly() == null;
+			}
+		}
+
+		/// <summary>
+		/// If launched by a fast splash screen program, signal it to close.
+		/// </summary>
+		private static void CloseFastSplashScreen()
+		{
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				File.Delete("/tmp/BloomLaunching.now");	// (okay if file doesn't exist)
+			}
+			else if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				// signal the native process (that launched us) to close the splash screen
+				// (okay if there's nobody there to receive the signal)
+				using (var closeSplashEvent = new EventWaitHandle(false,
+					EventResetMode.ManualReset, "CloseSquirrelSplashScreenEvent"))
+				{
+					closeSplashEvent.Set();
+				}
 			}
 		}
 	}

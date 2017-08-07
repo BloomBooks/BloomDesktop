@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2014-2015 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -61,8 +62,12 @@ namespace Bloom.Api
 		/// </summary>
 		/// <param name="pattern">Simple string or regex to match APIs that this can handle. This must match what comes after the ".../api/" of the URL</param>
 		/// <param name="handler">The method to call</param>
-		/// <param name="handleOnUiThread">For safety, this defaults to true, but that can kill performance if you don't need it (BL-3452) </param>
-		public void RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread = true)
+		/// <param name="handleOnUiThread">If true, the current thread will suspend until the UI thread can be used to call the method.
+		/// This deliberately no longer has a default. It's something that should be thought about.
+		/// Making it true can kill performance if you don't need it (BL-3452), and complicates exception handling and problem reporting (BL-4679).
+		/// There's also danger of deadlock if something in the UI thread is somehow waiting for this request to complete.
+		/// But, beware of race conditions or anything that manipulates UI controls if you make it false.</param>
+		public void RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread)
 		{
 			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = new EndpointRegistration()
 			{
@@ -85,6 +90,8 @@ namespace Bloom.Api
 		public string CurrentPageContent { get; set; }
 		public string ToolboxContent { get; set; }
 		public bool AuthorMode { get; set; }
+
+		public Book.Book CurrentBook => _bookSelection?.CurrentSelection;
 
 		/// <summary>
 		/// This code sets things up so that we can edit (or make a thumbnail of, etc.) one page of a book.
@@ -114,17 +121,25 @@ namespace Bloom.Api
 		/// A marker is inserted into the generated urls if the input HtmlDom wants to use original images.
 		/// </summary>
 		/// <param name="dom"></param>
-		/// <param name="escapeUrlAsNeededForSrcAttribute">If this is true, the url will be inserted by JavaScript into
+		/// <param name="isCurrentPageContent">If this is true, the url will be inserted by JavaScript into
 		/// a src attr for an IFrame. We need to account for this because un-escaped quotation marks in the
-		/// URL can cause errors in JavaScript strings.</param>
+		/// URL can cause errors in JavaScript strings. Also, we want to use the same name each time
+		/// for current page content, so Open Page in Browser works even after changing pages.</param>
 		/// <returns></returns>
-		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool escapeUrlAsNeededForSrcAttribute = false, bool setAsCurrentPageForDebugging = false)
+		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false)
 		{
-			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".html");
+			var simulatedPageFileName = Path.ChangeExtension(isCurrentPageContent ? "currentPage" : Guid.NewGuid().ToString(), ".html");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
 			if (dom.BaseForRelativePaths != null)
 			{
 				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
+			}
+			if (File.Exists(pathToSimulatedPageFile))
+			{
+				// Just in case someone perversely calls a book "currentPage" we will use another name.
+				// (We want one that does NOT conflict with anything really in the folder.)
+				// We only allow one HTML file per folder so we shouldn't need multiple attempts.
+				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, "X" + simulatedPageFileName).Replace('\\', '/');
 			}
 			// FromLocalHost is smart about doing nothing if it is not a localhost url. In case it is, we
 			// want the OriginalImageMarker (if any) after the localhost stuff.
@@ -133,7 +148,7 @@ namespace Bloom.Api
 				pathToSimulatedPageFile = OriginalImageMarker + "/" + pathToSimulatedPageFile;
 			var url = pathToSimulatedPageFile.ToLocalhost();
 			var key = pathToSimulatedPageFile.Replace('\\', '/');
-			if (escapeUrlAsNeededForSrcAttribute)
+			if (isCurrentPageContent)
 			{
 				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript.
 				url = EscapeUrlQuotes(url);
@@ -194,6 +209,9 @@ namespace Bloom.Api
 		// NOTE: this method gets called on different threads!
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
+			if (CurrentCollectionSettings != null && CurrentCollectionSettings.SettingsFilePath != null)
+				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath);
+
 			var localPath = GetLocalPathWithoutQuery(info);
 
 			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
@@ -287,7 +305,8 @@ namespace Bloom.Api
 			}
 			//Firefox debugger, looking for a source map, was prefixing in this unexpected
 			//way.
-			localPath = localPath.Replace("output/browser/", "");
+			if(localPath.EndsWith("map"))
+				localPath = localPath.Replace("output/browser/", "");
 
 			return ProcessContent(info, localPath);
 		}
@@ -672,11 +691,11 @@ namespace Bloom.Api
 			info.ReplyWithFileContent(path);
 		}
 
-		private bool ProcessCssFile(IRequestInfo info, string localPath)
+		private bool ProcessCssFile(IRequestInfo info, string incomingPath)
 		{
 			// BL-2219: "OriginalImages" means we're generating a pdf and want full images,
 			// but it has nothing to do with css files and defeats the following 'if'
-			localPath = localPath.Replace(OriginalImageMarker + "/", "");
+			var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
 			// is this request the full path to a real file?
 			if (RobustFile.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
@@ -709,9 +728,16 @@ namespace Bloom.Api
 			if (string.IsNullOrEmpty(path))
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
-				var lastTry = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
-				if(RobustFile.Exists(lastTry)) path = lastTry;
+				var p = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
+				if(RobustFile.Exists(p)) path = p;
 			}
+			if (string.IsNullOrEmpty(path))
+			{
+				var p = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, incomingPath);
+				if (RobustFile.Exists(p))
+					path = p;
+			}
+
 
 			// return false if the file was not found
 			if (string.IsNullOrEmpty(path)) return false;
@@ -728,6 +754,15 @@ namespace Bloom.Api
 			{
 				if (_sampleTextsWatcher == null)
 				{
+					if (string.IsNullOrEmpty(CurrentCollectionSettings?.SettingsFilePath))
+					{
+						// We've had cases (BL-4744) where this is apparently called before CurrentCollectionSettings is
+						// established. I'm not sure how this can happen but if we haven't even established a current collection
+						// yet I think it's pretty safe to say its sample texts haven't changed since we last read them.
+						info.ContentType = "text/plain";
+						info.WriteCompleteOutput("no");
+						return true;
+					}
 					var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
 					if (!Directory.Exists(path))
 						Directory.CreateDirectory(path);

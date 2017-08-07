@@ -30,6 +30,14 @@ namespace Bloom.Publish
 		/// </summary>
 		public bool ShowCropMarks;
 
+		/// <summary>
+		/// Flag whether to compress the PDF file.
+		/// </summary>
+		/// <remarks>
+		/// Do we ever NOT want to do this?
+		/// </remarks>
+		public bool CompressPdf;
+
 		///  <summary>
 		///
 		///  </summary>
@@ -86,6 +94,9 @@ namespace Bloom.Publish
 					// If we get a reliable fix to BL-932 we can take this 'else' out altogether.
 					CheckPdf(outputPdfPath);
 				}
+				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
+				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
+				fixPdf.ProcessPdfFile(outputPdfPath, outputPdfPath);
 			}
 			catch (KeyNotFoundException e)
 			{
