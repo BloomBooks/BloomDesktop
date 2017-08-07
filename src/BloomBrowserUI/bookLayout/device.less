@@ -14,7 +14,7 @@
 
     //that makes the margin box actually have no margin. Which looks good for the image, but
     //looks bad for the text. So here we re-introduce a margin... a bit of a hack
-    .bloom-editable{
+    &> DIV{
         margin-left: @DeviceMargin;
         width: calc(~"100% - "(@DeviceMargin*2)); // 10px for the left, 10px for the right
     }
