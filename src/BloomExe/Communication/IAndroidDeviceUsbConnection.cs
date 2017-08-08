@@ -5,8 +5,8 @@ namespace Bloom.Communication
 {
 	internal interface IAndroidDeviceUsbConnection
 	{
-		event EventHandler OneApplicableDeviceFound;
-		event EventHandler<MoreThanOneApplicableDeviceFoundEventArgs> MoreThanOneApplicableDeviceFound;
+		event EventHandler OneReadyDeviceFound;
+		event EventHandler<OneReadyDeviceNotFoundEventArgs> OneReadyDeviceNotFound;
 
 		/// <summary>
 		/// Attempt to establish a connection with a device which has the Bloom Reader app
@@ -19,12 +19,23 @@ namespace Bloom.Communication
 		string GetDeviceName();
 	}
 
-	class MoreThanOneApplicableDeviceFoundEventArgs
+	enum DeviceNotFoundReportType
 	{
-		public MoreThanOneApplicableDeviceFoundEventArgs(List<string> deviceNames)
+		Unknown,
+		NoDeviceFound,
+		NoBloomDirectory,
+		MoreThanOneReadyDevice
+	}
+
+	class OneReadyDeviceNotFoundEventArgs
+	{
+		public OneReadyDeviceNotFoundEventArgs(DeviceNotFoundReportType reportType, List<string> deviceNames)
 		{
+			ReportType = reportType;
 			DeviceNames = deviceNames;
 		}
+
+		public DeviceNotFoundReportType ReportType { get; }
 
 		public List<string> DeviceNames { get; }
 	}

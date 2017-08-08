@@ -13,8 +13,8 @@ namespace Bloom.Communication
 	/// </summary>
 	class AndroidDeviceUsbConnection : IAndroidDeviceUsbConnection
 	{
-		public event EventHandler OneApplicableDeviceFound;
-		public event EventHandler<MoreThanOneApplicableDeviceFoundEventArgs> MoreThanOneApplicableDeviceFound;
+		public event EventHandler OneReadyDeviceFound;
+		public event EventHandler<OneReadyDeviceNotFoundEventArgs> OneReadyDeviceNotFound;
 
 		private const string kBloomFolderOnDevice = "Bloom";
 		private IDevice _device;
@@ -107,26 +107,40 @@ namespace Bloom.Communication
 		private void GetOneDevice(IEnumerable<IDevice> devices)
 		{
 			List<IDevice> applicableDevices = new List<IDevice>();
+			int totalDevicesFound = 0;
 			foreach (var device in devices)
 			{
 				_bloomFolderPath = GetBloomFolderPath(device);
 				if (_bloomFolderPath != null)
 					applicableDevices.Add(device);
+				totalDevicesFound++;
 			}
 
 			if (applicableDevices.Count == 1)
 			{
 				_device = applicableDevices[0];
-				OneApplicableDeviceFound?.Invoke(this, new EventArgs());
+				OneReadyDeviceFound?.Invoke(this, new EventArgs());
 				return;
 			}
 
 			_bloomFolderPath = null;
+
+			if (totalDevicesFound > 0 && applicableDevices.Count == 0)
+			{
+				var args = new OneReadyDeviceNotFoundEventArgs(DeviceNotFoundReportType.NoBloomDirectory,
+					devices.Select(d => d.Name).ToList());
+				OneReadyDeviceNotFound?.Invoke(this, args);
+				return;
+			}
+
+			DeviceNotFoundReportType deviceNotFoundReportType = DeviceNotFoundReportType.NoDeviceFound;
 			if (applicableDevices.Count > 1)
 			{
-				EventHandler<MoreThanOneApplicableDeviceFoundEventArgs> handler = MoreThanOneApplicableDeviceFound;
-				handler?.Invoke(this, new MoreThanOneApplicableDeviceFoundEventArgs(applicableDevices.Select(d => d.Name).ToList()));
+				deviceNotFoundReportType = DeviceNotFoundReportType.MoreThanOneReadyDevice;
 			}
+			var eventArgs = new OneReadyDeviceNotFoundEventArgs(deviceNotFoundReportType,
+				applicableDevices.Select(d => d.Name).ToList());
+			OneReadyDeviceNotFound?.Invoke(this, eventArgs);
 		}
 
 		private string GetBloomFolderPath(IDevice device)
