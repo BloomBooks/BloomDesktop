@@ -422,7 +422,7 @@ namespace Bloom.CollectionTab
 
 				if (_bookSelection != null)
 				{
-					_bookSelection.SelectBook(newBook);
+					_bookSelection.SelectBook(newBook, aboutToEdit: true);
 				}
 				//enhance: would be nice to know if this is a new shell
 				if (sourceBook.IsShellOrTemplate)

@@ -801,11 +801,11 @@ namespace Bloom
 		// contain references to files in the directory of the original HTML file it is derived from,
 		// 'cause that provides the information needed
 		// to fake out the browser about where the 'file' is so internal references work.
-		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false)
+		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false, string source="nav")
 		{
 			if (InvokeRequired)
 			{
-				Invoke(new Action<HtmlDom, HtmlDom, bool>(Navigate), htmlDom, htmlEditDom, setAsCurrentPageForDebugging);
+				Invoke(new Action<HtmlDom, HtmlDom, bool, string>(Navigate), htmlDom, htmlEditDom, setAsCurrentPageForDebugging, source);
 				return;
 			}
 
@@ -816,7 +816,7 @@ namespace Bloom
 			_pageEditDom = editDom ?? dom;
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging);
+			var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source:source);
 			SetNewDependent(fakeTempFile);
 			_url = fakeTempFile.Key;
 			UpdateDisplay();

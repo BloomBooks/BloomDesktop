@@ -892,7 +892,7 @@ namespace Bloom.Publish
 			_browser.WebBrowser.DocumentCompleted += (sender, args) => done = true;
 			// just in case something goes wrong, keep program from deadlocking a few lines below.
 			_browser.WebBrowser.NavigationError += (object sender, Gecko.Events.GeckoNavigationErrorEventArgs e) => done = true;
-			_browser.Navigate(normalDom);
+			_browser.Navigate(normalDom, source:"epub");
 			while (!done)
 			{
 				Application.DoEvents();

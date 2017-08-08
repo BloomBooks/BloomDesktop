@@ -30,6 +30,7 @@ namespace Bloom.Api
 	/// thread-safe.</remarks>
 	public class EnhancedImageServer: ImageServer
 	{
+		private const string SimulatedFileUrlMarker = "-memsim-";
 		private FileSystemWatcher _sampleTextsWatcher;
 		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
@@ -126,9 +127,9 @@ namespace Bloom.Api
 		/// URL can cause errors in JavaScript strings. Also, we want to use the same name each time
 		/// for current page content, so Open Page in Browser works even after changing pages.</param>
 		/// <returns></returns>
-		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false)
+		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false, string source="")
 		{
-			var simulatedPageFileName = Path.ChangeExtension(isCurrentPageContent ? "currentPage" : Guid.NewGuid().ToString(), ".html");
+			var simulatedPageFileName = Path.ChangeExtension((isCurrentPageContent ? "currentPage" : Guid.NewGuid().ToString()) + SimulatedFileUrlMarker + source, ".html");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
 			if (dom.BaseForRelativePaths != null)
 			{
@@ -669,8 +670,7 @@ namespace Bloom.Api
 
 			// a good improvement might be to make these urls more obviously cache requests. But for now, let's just see if they are filename guids
 			var filename = Path.GetFileNameWithoutExtension(localPath);
-			Guid result;
-			return Guid.TryParse(filename, out result);
+			return filename.Contains(SimulatedFileUrlMarker);
 		}
 
 		/// <summary>

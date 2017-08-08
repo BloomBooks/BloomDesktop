@@ -17,7 +17,7 @@ namespace Bloom.Workspace
 		{
 			_bookSelection = bookSelection;
 			_directoryPath = directoryPath;
-			_bookSelection.SelectionChanged += new EventHandler(OnSelectionChanged);
+			_bookSelection.SelectionChanged += OnSelectionChanged;
 		}
 
 		public bool ShowEditPage
@@ -35,7 +35,7 @@ namespace Bloom.Workspace
 			get { return Path.GetFileName(_directoryPath); }
 		}
 
-		void OnSelectionChanged(object sender, EventArgs e)
+		void OnSelectionChanged(object sender, BookSelectionChangedEventArgs bookSelectionChangedEventArgs)
 		{
 			InvokeUpdateDisplay();
 		}

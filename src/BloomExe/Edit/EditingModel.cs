@@ -194,7 +194,7 @@ namespace Bloom.Edit
 			_view.OnVisibleChanged(Visible);
 		}
 
-		private void OnBookSelectionChanged(object sender, EventArgs e)
+		private void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs bookSelectionChangedEventArgs)
 		{
 			//prevent trying to save this page in whatever comes next
 			var wasNull = _domForCurrentPage == null;

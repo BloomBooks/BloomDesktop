@@ -4,11 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.MiscUI;
-//using Bloom.SendReceive;
-using Bloom.Api;
-using Bloom.Edit;
 using Gecko;
-using Gecko.DOM;
 
 namespace Bloom.CollectionTab
 {
@@ -42,7 +38,7 @@ namespace Bloom.CollectionTab
 			//_sendReceiver = sendReceiver;
 			_createFromSourceBookCommand = createFromSourceBookCommand;
 			_editBookCommand = editBookCommand;
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+			bookSelection.SelectionChanged += OnBookSelectionChanged;
 
 			selectedTabAboutToChangeEvent.Subscribe(c =>
 			{
@@ -86,11 +82,15 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		void OnBookSelectionChanged(object sender, EventArgs e)
+		void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs args)
 		{
 			try
 			{
-				LoadBook();
+				// If we just created this book and are right about to switch to edit mode,
+				// we don't need to update the preview. Not doing so prevents situations where
+				// the page expires before we display it properly (somehow...BL-4856) and
+				// also just saves time.
+				LoadBook(!args.AboutToEdit);
 				UpdateTitleBar();
 			}
 			catch (Exception error)
@@ -101,10 +101,10 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private void LoadBook()
+		private void LoadBook(bool updatePreview = true)
 		{
 			_editBookButton.Visible = _addToCollectionButton.Visible =  _addToCollectionButton.Enabled = _bookSelection.CurrentSelection != null;
-			ShowBook();
+			ShowBook(updatePreview);
 			if (_bookSelection.CurrentSelection != null)
 			{
 				_bookSelection.CurrentSelection.ContentsChanged += new EventHandler(CurrentSelection_ContentsChanged);
@@ -122,7 +122,7 @@ namespace Bloom.CollectionTab
 			UpdateTitleBar();
 		}
 
-		private void ShowBook()
+		private void ShowBook(bool updatePreview = true)
 		{
 			if (_bookSelection.CurrentSelection == null || !_visible)
 			{
@@ -137,8 +137,8 @@ namespace Bloom.CollectionTab
 				_readmeBrowser.Visible = false;
 				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
-				if (!TroubleShooterDialog.SuppressBookPreview)
-					_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
+				if (updatePreview && !TroubleShooterDialog.SuppressBookPreview)
+					_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook(), source:"preview");
 				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{
