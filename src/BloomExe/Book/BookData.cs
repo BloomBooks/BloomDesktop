@@ -56,6 +56,9 @@ namespace Bloom.Book
 		private readonly DataSet _dataset;
 		private XmlElement _dataDiv;
 		private Object thisLock = new Object();
+		private string _cachedMcl2;
+		private string _cachedMcl3;
+		private bool _gotMclCache;
 
 		//URLs are encoded in a certain way for the src attributes
 		//If they have certain symbols (namely &), they need to be encoded differently
@@ -82,15 +85,29 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// For bilingual or trilingual books, this is the second language to show, after the vernacular
+		/// For bilingual or trilingual books, this is the second language to show, after the vernacular.
 		/// </summary>
 		public string MultilingualContentLanguage2
 		{
 			get
 			{
-				GatherDataItemsFromXElement(_dataset,_dom.RawDom);
-				return GetVariableOrNull("contentLanguage2", "*");
+				if (!_gotMclCache)
+					CacheMclData();
+				return _cachedMcl2;
 			}
+		}
+
+		/// <summary>
+		/// Cache values for MultilingualContentLanguage2 and MultilingualContentLanguage3
+		/// It is safe to cache this because we reload everything when changing languages.
+		/// It is important because these properties are heavily used, especially when saving pages.
+		/// </summary>
+		private void CacheMclData()
+		{
+			GatherDataItemsFromXElement(_dataset, _dom.RawDom);
+			_cachedMcl2 = GetVariableOrNull("contentLanguage2", "*");
+			_cachedMcl3 = GetVariableOrNull("contentLanguage3", "*");
+			_gotMclCache = true;
 		}
 
 		/// <summary>
@@ -100,8 +117,9 @@ namespace Bloom.Book
 		{
 			get
 			{
-				GatherDataItemsFromXElement(_dataset, _dom.RawDom);
-				return GetVariableOrNull("contentLanguage3", "*");
+				if (!_gotMclCache)
+					CacheMclData();
+				return _cachedMcl3;
 			}
 		}
 
@@ -454,6 +472,10 @@ namespace Bloom.Book
 		{
 			_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
 			UpdateSingleTextVariableInDataDiv(key, _dataset.TextVariables[key].TextAlternatives);
+			if (key == "contentLanguage2")
+				_cachedMcl2 = value;
+			else if (key == "contentLanguage3")
+				_cachedMcl3 = value;
 		}
 
 		public void Set(string key, string value, string lang)
