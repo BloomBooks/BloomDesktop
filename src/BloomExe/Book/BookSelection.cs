@@ -1,4 +1,4 @@
-using System.Drawing.Imaging;
+﻿using System.Drawing.Imaging;
 using SIL.Extensions;
 using SIL.Windows.Forms.ClearShare;
 using System;
@@ -9,10 +9,10 @@ namespace Bloom.Book
 	public class BookSelection
 	{
 		private Book _currentSelection;
-		public event EventHandler SelectionChanged;
+		public event EventHandler<BookSelectionChangedEventArgs> SelectionChanged;
 
 
-		public void SelectBook(Book book)
+		public void SelectBook(Book book, bool aboutToEdit = false)
 		{
 			if (_currentSelection == book)
 				return;
@@ -21,7 +21,7 @@ namespace Bloom.Book
 
 		   _currentSelection = book;
 
-			InvokeSelectionChanged();
+			InvokeSelectionChanged(aboutToEdit);
 		}
 
 		public Book CurrentSelection
@@ -29,13 +29,9 @@ namespace Bloom.Book
 			get { return _currentSelection; }
 		}
 
-		private void InvokeSelectionChanged()
+		private void InvokeSelectionChanged(bool aboutToEdit)
 		{
-			EventHandler handler = SelectionChanged;
-			if (handler != null)
-			{
-				handler(this, null);
-			}
+			SelectionChanged?.Invoke(this, new BookSelectionChangedEventArgs() {AboutToEdit = aboutToEdit});
 		}
 	}
 }

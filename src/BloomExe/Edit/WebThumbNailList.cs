@@ -324,7 +324,7 @@ namespace Bloom.Edit
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 			_verticalScrollDistance = _browser.VerticalScrollDistance;
 			_baseForRelativePaths = dom.BaseForRelativePaths;
-			_browser.Navigate(dom);
+			_browser.Navigate(dom, source:"pagelist");
 			return result;
 		}
 
