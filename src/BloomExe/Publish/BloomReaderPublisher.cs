@@ -5,6 +5,7 @@ using System.Net;
 using Bloom.Book;
 using Bloom.Communication;
 using L10NSharp;
+using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 
@@ -116,20 +117,23 @@ namespace Bloom.Publish
 				var bookTitle = book.Title;
 				_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.LookingForExisting",
 					"Looking for an existing \"{0}\"...", "{0} is a book title"), bookTitle));
-				var bookExistsOnDevice =
-					_androidDeviceUsbConnection.BookExists(bookTitle + BookCompressor.ExtensionForDeviceBloomBook);
+				var publishedFileName = bookTitle + BookCompressor.ExtensionForDeviceBloomBook;
+				var bookExistsOnDevice = _androidDeviceUsbConnection.BookExists(publishedFileName);
 
 				_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.PackagingBook",
 					"Packaging \"{0}\" for use with Bloom Reader...", "{0} is a book title"), bookTitle));
-				var bloomdPath = BookCompressor.CompressBookForDevice(book);
+				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
+				{
+					BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book);
 
-				if (bookExistsOnDevice)
-					_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.ReplacingBook",
-						"Replacing existing \"{0}\"...", "{0} is a book title"), bookTitle));
-				else
-					_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.SendingBook",
-						"Sending \"{0}\" to your Android device...", "{0} is a book title"), bookTitle));
-				_androidDeviceUsbConnection.SendBook(bloomdPath);
+					if (bookExistsOnDevice)
+						_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.ReplacingBook",
+							"Replacing existing \"{0}\"...", "{0} is a book title"), bookTitle));
+					else
+						_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.SendingBook",
+							"Sending \"{0}\" to your Android device...", "{0} is a book title"), bookTitle));
+					_androidDeviceUsbConnection.SendBook(bloomdTempFile.Path);
+				}
 
 				if (_androidDeviceUsbConnection.BookExists(bookTitle + BookCompressor.ExtensionForDeviceBloomBook))
 				{
@@ -166,12 +170,17 @@ namespace Bloom.Publish
 		{
 			var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
 			_progress.WriteMessage($"Sending \"{book.Title}\" to device {androidIpAddress}");
-			var bloomdPath = BookCompressor.CompressBookForDevice(book);
-			using (WebClient myClient = new WebClient())
+
+			var publishedFileName = book.Title + BookCompressor.ExtensionForDeviceBloomBook;
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 			{
-				myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(book.Title) +
-					BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdPath));
-				myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] {0});
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book);
+				using (WebClient myClient = new WebClient())
+				{
+					myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(book.Title) +
+										BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdTempFile.Path));
+					myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] {0});
+				}
 			}
 			_progress.WriteMessage($"Finished sending \"{book.Title}\" to device {androidIpAddress}");
 		}

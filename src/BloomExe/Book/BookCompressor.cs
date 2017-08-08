@@ -2,11 +2,9 @@
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Bloom.Publish;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.IO;
-using SIL.Progress;
 using System.Drawing;
 using System;
 using System.Drawing.Drawing2D;
@@ -20,33 +18,12 @@ namespace Bloom.Book
 		// these image files may need to be reduced before being stored in the compressed output file
 		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
-		// these files (if encountered) won't be included the compressed version
+		// these files (if encountered) won't be included in the compressed version
 		internal static readonly string[] ExcludedFileExtensionsLowerCase = { ".db", ".pdf", ".bloompack", ".bak", ".userprefs", ".wav", ".bloombookorder" };
 
-		public static string CompressBookForDevice(Book book)
+		public static void CompressBookForDevice(string outputPath, Book book)
 		{
-			// todo: probably not needed once this is being called from Publish
-			{
-				// In case we have any new settings since the last time we were in the Edit tab (BL-3881)
-				book.BringBookUpToDate(new NullProgress());
-				book.Save();
-			}
-
-			var bookFolderPath = book.FolderPath;
-			// todo: there are already methods in PublishModel/PublishView to handle audio including displaying the Lame is missing page.
-			// Once this is actually being called from Publish, this can probably be reworked a little.
-			AudioProcessor.TryCompressingAudioAsNeeded(bookFolderPath, book.RawDom);
-
-			using (var tempFile = TempFile.WithFilenameInTempFolder(book.Title + ExtensionForDeviceBloomBook))
-			{
-				CompressDirectory(tempFile.Path, bookFolderPath, "", reduceImages:true, omitMetaJson: true);
-
-				// todo: if the code remains as is such that the caller just gets a path, it will be responsible
-				// for ensuring we aren't leaving temp files hanging around. But it might be better to eventually have this
-				// code handle moving/cleaning up the zip file once it has been created.
-				tempFile.Detach();
-				return tempFile.Path;
-			}
+			CompressDirectory(outputPath, book.FolderPath, "", reduceImages:true, omitMetaJson: true);
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
