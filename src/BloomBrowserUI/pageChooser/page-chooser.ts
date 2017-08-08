@@ -386,7 +386,11 @@ class PageChooser {
                 this.thumbnailClickHandler(div, evt);
             }); // invisibleThumbCover click
         }); // each
-        if (gotSelectedPage) {
+        // If we found the specified page to select in this group, it is the one indicated by
+        // this._indexOfPageToSelect; select that now.
+        // In case we were not provided with a default page to select, this._indexOfPageToSelect remains 0,
+        // and if this is the first group we go ahead and select its first page.
+        if (gotSelectedPage || (defaultPageToSelect === "" && previousPagesCount == 0)) {
             this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
         }
     } // loadPageFromGroup
