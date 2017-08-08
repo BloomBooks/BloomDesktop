@@ -12,6 +12,7 @@ using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Code;
+using SIL.Progress;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
 
@@ -123,9 +124,12 @@ namespace BloomTests.Book
 				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}
 
-		protected virtual Bloom.Book.Book CreateBook()
+		protected virtual Bloom.Book.Book CreateBook(bool bringBookUpToDate = false)
 		{
-			return CreateBook(CreateDefaultCollectionsSettings());
+			var book = CreateBook(CreateDefaultCollectionsSettings());
+			if (bringBookUpToDate)
+				book.BringBookUpToDate(new NullProgress());
+			return book;
 		}
 
 		protected CollectionSettings CreateDefaultCollectionsSettings()

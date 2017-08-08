@@ -487,6 +487,10 @@ namespace Bloom.Publish
 					_printButton.Enabled = false;
 					_pdfViewer.Visible = false;
 					Cursor = Cursors.WaitCursor;
+
+					// Calls LoadBookIfNeeded() which calls BringBookUpToDate() and Save() if needed
+					_model.DoAnyNeededAudioCompression();
+
 					_androidControl = new AndroidView(_isolator);
 					_androidControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 						_pdfViewer.Width, _pdfViewer.Height);

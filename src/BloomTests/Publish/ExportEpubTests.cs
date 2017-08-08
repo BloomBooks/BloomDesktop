@@ -142,7 +142,7 @@ namespace BloomTests.Publish
 			var book = CreateBook();
 			CreateCommonCssFiles(book);
 			s_bookSelection.SelectBook(book);
-			
+
 			// Set up the visibility classes correctly
 			book.UpdateEditableAreasOfElement(book.OurHtmlDom);
 
@@ -465,9 +465,9 @@ namespace BloomTests.Publish
 			File.WriteAllText(customBookPath, "body:{font-family: 'Andika New Basic';}");
 		}
 
-		protected override Bloom.Book.Book CreateBook()
+		protected override Bloom.Book.Book CreateBook(bool bringBookUpToDate = false)
 		{
-			var book = base.CreateBook();
+			var book = base.CreateBook(bringBookUpToDate);
 			// Export requires us to have a thumbnail.
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("thumbnail-256.png"));
 			return book;

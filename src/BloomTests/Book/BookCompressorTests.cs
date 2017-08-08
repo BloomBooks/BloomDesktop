@@ -1,12 +1,9 @@
 ﻿using System.IO;
 using System.Linq;
-using Bloom;
 using Bloom.Book;
-using Bloom.Collection;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
-using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 
 namespace BloomTests.Book
@@ -16,36 +13,42 @@ namespace BloomTests.Book
 		[Test]
 		public void CompressBookForDevice_FileNameIsCorrect()
 		{
-			var testBook = CreateBook();
+			var testBook = CreateBook(bringBookUpToDate: true);
 
-			var pathToCompressedBook = BookCompressor.CompressBookForDevice(testBook);
-			Assert.AreEqual(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook, Path.GetFileName(pathToCompressedBook));
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
+			{
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
+				Assert.AreEqual(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook,
+					Path.GetFileName(bloomdTempFile.Path));
+			}
 		}
 
 		[Test]
 		public void CompressBookForDevice_ContainsCorrectNumberOfFiles()
 		{
-			var testBook = CreateBook();
+			var testBook = CreateBook(bringBookUpToDate: true);
 			var bookDirInfo = new DirectoryInfo(testBook.FolderPath);
 
-			ZipFile zip = new ZipFile(BookCompressor.CompressBookForDevice(testBook));
-			Assert.True(zip.Count > 0);
-			Assert.AreEqual(bookDirInfo.EnumerateFiles().Count(), zip.Count);
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
+			{
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
+				ZipFile zip = new ZipFile(bloomdTempFile.Path);
+				Assert.True(zip.Count > 0);
+				Assert.AreEqual(bookDirInfo.EnumerateFiles().Count(), zip.Count);
+			}
 		}
 
 		[Test]
 		public void CompressBookForDevice_OmitsUnwantedFiles()
 		{
-			var testBook = CreateBook();
+			var testBook = CreateBook(bringBookUpToDate: true);
 			// before we add the ones we want excluded note the ones we want.
 			// Enhance: not very thorough, since mocking BookStorage prevents CreateBook from creating most of the
 			// interesting files.
 			var expectedFiles = Directory.GetFiles(testBook.FolderPath).ToList();
-			expectedFiles.Add("license.png"); // Something in the compression process adds this.
-			expectedFiles.Add("back-cover-outside.svg"); // Something in the compression process adds this.
 			expectedFiles.Add("thumbnail.png"); // We should NOT eliminate thumbnail.png, which we eventually want for the reader book chooser UI.
 
-			// This unwanted file has to be real; just putting some text in it leads to out-of-memory failues when Bloom
+			// This unwanted file has to be real; just putting some text in it leads to out-of-memory failures when Bloom
 			// tries to make its background transparent.
 			File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(testBook.FolderPath, "thumbnail.png"));
 			File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(testBook.FolderPath, "thumbnail-256.png"));
@@ -55,18 +58,22 @@ namespace BloomTests.Book
 			File.WriteAllText(Path.Combine(testBook.FolderPath, "previewMode.css"), @"This is unwanted");
 			File.WriteAllText(Path.Combine(testBook.FolderPath, "meta.json"), @"This is unwanted");
 
-			ZipFile zip = new ZipFile(BookCompressor.CompressBookForDevice(testBook));
-			Assert.AreEqual(expectedFiles.Count, zip.Count);
-			foreach (var file in expectedFiles)
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
 			{
-				Assert.That(zip.FindEntry(Path.GetFileName(file), true), Is.Not.Null);
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
+				ZipFile zip = new ZipFile(bloomdTempFile.Path);
+				Assert.AreEqual(expectedFiles.Count, zip.Count);
+				foreach (var file in expectedFiles)
+				{
+					Assert.That(zip.FindEntry(Path.GetFileName(file), true), Is.Not.Null);
+				}
 			}
 		}
 
 		[Test]
 		public void CompressBookForDevice_RemovesImgElementsWithMissingSrc()
 		{
-			var testBook = CreateBook();
+			var testBook = CreateBook(bringBookUpToDate: true);
 			// This requires a real book file (which a mocked book usually doesn't have).
 			var imgsToRemove =
 				"<img class='branding branding-wide' src='back-cover-outside-wide.svg' type='image/svg' onerror='this.style.display='none''></img><img src = 'nonsence.svg'/><img src=\"rubbish\"> </img  >";
@@ -99,10 +106,15 @@ namespace BloomTests.Book
 			File.WriteAllText(bookPath, htmlOriginal);
 			// Simulate the typical situation where we have the regular but not the wide svg
 			File.WriteAllText(Path.Combine(testBook.FolderPath, "back-cover-outside.svg"), @"this is a fake for testing");
-			ZipFile zip = new ZipFile(BookCompressor.CompressBookForDevice(testBook));
-			// Technically this is too strong. We'd be happy with any equivalent HTML file, e.g., whitespace could
-			// have changed. But this is the easiest to test and works with the current implementation.
-			Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
+
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
+			{
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
+				ZipFile zip = new ZipFile(bloomdTempFile.Path);
+				// Technically this is too strong. We'd be happy with any equivalent HTML file, e.g., whitespace could
+				// have changed. But this is the easiest to test and works with the current implementation.
+				Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
+			}
 		}
 
 		private string GetEntryContents(ZipFile zip, string name)
