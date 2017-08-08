@@ -7,8 +7,9 @@ namespace Bloom.Communication
 	/// </summary>
 	class UnimplementedAndroidDeviceUsbConnection : IAndroidDeviceUsbConnection
 	{
-		public event EventHandler OneApplicableDeviceFound;
-		public event EventHandler<MoreThanOneApplicableDeviceFoundEventArgs> MoreThanOneApplicableDeviceFound;
+		public event EventHandler OneReadyDeviceFound;
+		public event EventHandler<OneReadyDeviceNotFoundEventArgs> OneReadyDeviceNotFound;
+
 		public void FindDevice()
 		{
 			throw new NotImplementedException();
