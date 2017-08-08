@@ -80,7 +80,7 @@ namespace Bloom.Publish
 			_collectionSettings = collectionSettings;
 			_bookServer = bookServer;
 			_thumbNailer = thumbNailer;
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+			bookSelection.SelectionChanged += OnBookSelectionChanged;
 			_isoloator = isolator;
 			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 		}
@@ -95,7 +95,7 @@ namespace Bloom.Publish
 
 		public bool PdfGenerationSucceeded { get; set; }
 
-		private void OnBookSelectionChanged(object sender, EventArgs e)
+		private void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs bookSelectionChangedEventArgs)
 		{
 			//some of this checking is about bl-272, which was replicated by having one book, going to publish, then deleting that last book.
 			if (BookSelection != null && View != null && BookSelection.CurrentSelection!=null && _currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
@@ -171,7 +171,7 @@ namespace Bloom.Publish
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
 			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
-			return EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom);
+			return EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom, source:"pub");
 		}
 
 		private void AddStylesheetClasses(XmlDocument dom)
@@ -602,7 +602,7 @@ namespace Bloom.Publish
 
 		internal bool DoAnyNeededAudioCompression()
 		{
-			return AudioProcessor.TryCompressingAudioAsNeeded(BookSelection.CurrentSelection.FolderPath, LoadBookIfNeeded().RawDom); 
+			return AudioProcessor.TryCompressingAudioAsNeeded(BookSelection.CurrentSelection.FolderPath, LoadBookIfNeeded().RawDom);
 		}
 
 		internal string StagingDirectory { get { return EpubMaker.BookInStagingFolder; } }

@@ -87,7 +87,7 @@ namespace Bloom.CollectionTab
 			_collectionBookFont = new Font(SystemFonts.DialogFont.FontFamily, (float)9.0);
 
 			//enhance: move to model
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
+			bookSelection.SelectionChanged += OnBookSelectionChanged;
 
 			_settingsProtectionHelper.ManageComponent(_openFolderOnDisk);
 
@@ -214,7 +214,7 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private void OnBookSelectionChanged(object sender, EventArgs e)
+		private void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs bookSelectionChangedEventArgs)
 		{
 			if (sender == null) return;
 
