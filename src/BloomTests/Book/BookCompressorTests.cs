@@ -71,12 +71,14 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CompressBookForDevice_RemovesImgElementsWithMissingSrc()
+		public void CompressBookForDevice_RemovesImgElementsWithMissingSrc_AndContentEditable()
 		{
 			var testBook = CreateBook(bringBookUpToDate: true);
 			// This requires a real book file (which a mocked book usually doesn't have).
 			var imgsToRemove =
 				"<img class='branding branding-wide' src='back-cover-outside-wide.svg' type='image/svg' onerror='this.style.display='none''></img><img src = 'nonsence.svg'/><img src=\"rubbish\"> </img  >";
+			var positiveCe = " contenteditable=\"true\"";
+			var negativeCe = " contenteditable='false'";
 			var htmlTemplate = @"<!DOCTYPE html>
 <html>
 <body>
@@ -88,19 +90,19 @@ namespace BloomTests.Book
 
         <div class='marginBox'>
         <div class='bloom-translationGroup' data-default-languages='N1'>
-            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr' contenteditable='true' data-book='outsideBackCover'>
+            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr'{1} data-book='outsideBackCover'>
                 <label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
             </div>
 
-            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de' contenteditable='true' data-book='outsideBackCover'></div>
+            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de'{1} data-book='outsideBackCover'></div>
 
-            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf' contenteditable='true' data-book='outsideBackCover'></div>
-        </div>{0} <img class='branding' src='back-cover-outside.svg' type='image/svg' onerror='this.style.display='none''></img></div>
+            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf'{1} data-book='outsideBackCover'></div>
+        </div{2}>{0} <img class='branding' src='back-cover-outside.svg' type='image/svg' onerror='this.style.display='none''></img></div>
     </div>
 </body>
 </html>";
-			var htmlOriginal = string.Format(htmlTemplate, imgsToRemove);
-			var htmlExpected = string.Format(htmlTemplate, "");
+			var htmlOriginal = string.Format(htmlTemplate, imgsToRemove, positiveCe, negativeCe);
+			var htmlExpected = string.Format(htmlTemplate, "", "", "");
 			var bookFileName = Path.GetFileName(testBook.FolderPath) + ".htm";
 			var bookPath = Path.Combine(testBook.FolderPath, bookFileName);
 			File.WriteAllText(bookPath, htmlOriginal);

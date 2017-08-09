@@ -120,7 +120,7 @@ namespace BloomTests.Publish
 			var body = string.Format(@"<div class='bloom-page" + extraPageClass + @"'>
 						<div id='" + parentDivId + @"' class='marginBox'>
 							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs {7}' lang='' data-default-languages='{8}'>
-								<div class='bloom-editable {6}' lang='{0}'>
+								<div class='bloom-editable {6}' lang='{0}' contenteditable='true'>
 									{1}
 								</div>
 								{2}
@@ -225,6 +225,8 @@ namespace BloomTests.Publish
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@lang='']");
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:script", _ns);
 			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@lang='*']");
+			AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//xhtml:div[@contenteditable]", _ns);
+
 			foreach (var image in images)
 				AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//img[@src='" +image + ".png']");
 			AssertThatXmlIn.String(_page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='settingsCollectionStyles.css']", _ns);
