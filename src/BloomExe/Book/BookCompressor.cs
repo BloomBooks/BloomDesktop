@@ -115,7 +115,10 @@ namespace Bloom.Book
 				}
 				else if (reduceImages && (bookFile == filePath))
 				{
-					modifiedContent = StripImagesWithMissingSrc(bookFile);
+					var content = File.ReadAllText(bookFile, Encoding.UTF8);
+					content = StripImagesWithMissingSrc(content, bookFile);
+					content = StripContentEditable(content);
+					modifiedContent = Encoding.UTF8.GetBytes(content);
 					newEntry.Size = modifiedContent.Length;
 				}
 				else
@@ -157,13 +160,13 @@ namespace Bloom.Book
 			}
 		}
 
-		private static byte[] StripImagesWithMissingSrc(string bookFile)
+		private static string StripImagesWithMissingSrc(string input, string bookFile)
 		{
 			// Suspect this is faster than reading the whole thing into a DOM and using xpath.
 			// That might be marginally more robust, but I think this is good enough.
 			// The main purpose of this is to remove stubs put in to support optional branding files.
 			// The javascript that hides the element if the file is not found doesn't work in the reader.
-			var content = File.ReadAllText(bookFile, Encoding.UTF8);
+			var content = input;
 			// Note that whitespace is not valid in places like < img> or <img / > or < / img>.
 			// I expect tidy will make sure we really don't have any, so I'm not checking for it in
 			// those spots.
@@ -183,7 +186,13 @@ namespace Bloom.Book
 					match = regex.Match(content, match.Index + match.Length);
 				}
 			}
-			return Encoding.UTF8.GetBytes(content);
+			return content;
+		}
+
+		private static string StripContentEditable(string input)
+		{
+			var regex = new Regex("\\s*contenteditable\\s*=\\s*(['\"]).*?\\1");
+			return regex.Replace(input, "");
 		}
 
 		private static string GetMetaJsonModfiedForTemplate(string path)

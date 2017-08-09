@@ -929,6 +929,11 @@ namespace Bloom.Publish
 			{
 				elt.RemoveAttribute("recordingmd5");
 			}
+			// Users should not be able to edit content of published books
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div[@contenteditable]"))
+			{
+				elt.RemoveAttribute("contenteditable");
+			}
 			RemoveTempIds(pageElt); // don't need temporary IDs any more.
 		}
 
