@@ -214,7 +214,10 @@ namespace Bloom.Book
 					fileName = Path.GetFileName(pathToRealImage); // May have changed extension
 					RobustFile.Copy(pathToRealImage, Path.Combine(bookFolderPath, fileName), true);
 				}
-				imageElt.SetAttribute("src", fileName);
+				// The HTML typically already has onerror="style='display:none'" to prevent a missing
+				// image icon in the book, since branding images are generally optional.
+				// This marker prevents the image server from complaining that it is missing.
+				imageElt.SetAttribute("src", fileName + "?optional=true");
 			}
 		}
 
