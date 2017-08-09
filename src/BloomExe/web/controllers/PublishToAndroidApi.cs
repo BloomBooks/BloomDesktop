@@ -16,9 +16,9 @@ namespace Bloom.Api
 		private const string kWebsocketStateId = "publish/android/state";
 		private readonly BloomReaderPublisher _bloomReaderPublisher;
 		private readonly BloomWebSocketServer _webSocketServer;
+		private readonly WebSocketProgress _progress;
 		private WiFiAdvertiser _advertiser;
 		private BloomReaderUDPListener m_listener;
-		private WebSocketProgress _progress;
 
 		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer)
 		{
@@ -35,11 +35,10 @@ namespace Bloom.Api
 			server.RegisterEndpointHandler(kApiUrlPart + "sendBook/start", request =>
 			{
 				_webSocketServer.Send(kWebsocketStateId, "Sending");
-				request.Succeeded();
-				if (_bloomReaderPublisher.SendBook(server.CurrentBook))
-					_webSocketServer.Send(kWebsocketStateId, "ReadyToSend");
-				else
-					_webSocketServer.Send(kWebsocketStateId, "ReadyToConnect");
+				_bloomReaderPublisher.SendBookSucceeded += OnSendBookSucceeded;
+				_bloomReaderPublisher.SendBookFailed += OnSendBookFailed;
+				_bloomReaderPublisher.SendBook(server.CurrentBook);
+				request.SucceededDoNotNavigate();
 			}, true);
 		}
 
@@ -107,14 +106,36 @@ namespace Bloom.Api
 
 		private void OnConnectionFailed(object sender, EventArgs args)
 		{
-			_bloomReaderPublisher.ConnectionFailed -= OnConnectionFailed;
-			_webSocketServer.Send(kWebsocketStateId, "ReadyToConnect");
+			ResolveConnect("ReadyToConnect");
 		}
 
 		private void OnConnected(object sender, EventArgs args)
 		{
+			ResolveConnect("ReadyToSend");
+		}
+
+		private void ResolveConnect(string newState)
+		{
 			_bloomReaderPublisher.Connected -= OnConnected;
-			_webSocketServer.Send(kWebsocketStateId, "ReadyToSend");
+			_bloomReaderPublisher.ConnectionFailed -= OnConnectionFailed;
+			_webSocketServer.Send(kWebsocketStateId, newState);
+		}
+
+		private void OnSendBookSucceeded(object sender, EventArgs args)
+		{
+			ResolveSendBook("ReadyToSend");
+		}
+
+		private void OnSendBookFailed(object sender, EventArgs args)
+		{
+			ResolveSendBook("ReadyToConnect");
+		}
+
+		private void ResolveSendBook(string newState)
+		{
+			_bloomReaderPublisher.SendBookSucceeded -= OnSendBookSucceeded;
+			_bloomReaderPublisher.SendBookFailed -= OnSendBookFailed;
+			_webSocketServer.Send(kWebsocketStateId, newState);
 		}
 	}
 }
