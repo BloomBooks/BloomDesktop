@@ -601,7 +601,11 @@ namespace Bloom.Api
 			}
 			if (!RobustFile.Exists(path))
 			{
-				ReportMissingFile(localPath,path);
+				// images with src derived from Branding API img elements get this marker
+				// in XMatterHelper.CleanupBrandingImages() to prevent spurious reports of
+				// images that are intentionally optional.
+				if (info.GetQueryParameters().Get("optional") != "true")
+					ReportMissingFile(localPath,path);
 				return false;
 			}
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
