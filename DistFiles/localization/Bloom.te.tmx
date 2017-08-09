@@ -247,7 +247,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
-      <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
       <tuv xml:lang="en">
         <seg>Language 1</seg>
       </tuv>
@@ -256,7 +256,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
-      <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       <tuv xml:lang="en">
         <seg>Language 2</seg>
       </tuv>
@@ -265,7 +265,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
-      <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       <tuv xml:lang="en">
         <seg>Language 3</seg>
       </tuv>
@@ -301,7 +301,7 @@
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
       <tuv xml:lang="en">
-        <seg>Vernacular Language</seg>
+        <seg>Local Language</seg>
       </tuv>
       <tuv xml:lang="te">
         <seg>వ్యవహారిక భాషలో</seg>
@@ -2282,7 +2282,7 @@
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
       <tuv xml:lang="en">
-        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make local language books with your shells.</seg>
       </tuv>
       <tuv xml:lang="te">
         <seg>విస్తృత కమ్యూనికేషన్ ఒకటి లేదా ఎక్కువ భాషలలో షెల్ లేదా టెంప్లేట్ పుస్తకాల సేకరణ. మీరు BloomLibrary.org ఈ గుండ్లు అప్లోడ్ మరియు వైకల్పికంగా వారు మీ పెంకులు తో వ్యావహారికంలో పుస్తకాలు చేయవచ్చు తద్వారా ఇతరులకు ఇవ్వాలని ఒక BloomPack తయారు చేయగలరు.</seg>
@@ -2290,7 +2290,7 @@
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
       <tuv xml:lang="en">
-        <seg>Vernacular/Local Language Collection</seg>
+        <seg>Local Language Collection</seg>
       </tuv>
       <tuv xml:lang="te">
         <seg>వ్యావహారికంలో / స్థానిక భాష సేకరణ</seg>

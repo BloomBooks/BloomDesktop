@@ -201,7 +201,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
-      <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
       <tuv xml:lang="en">
         <seg>Language 1</seg>
       </tuv>
@@ -210,7 +210,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
-      <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       <tuv xml:lang="en">
         <seg>Language 2</seg>
       </tuv>
@@ -219,7 +219,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
-      <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       <tuv xml:lang="en">
         <seg>Language 3</seg>
       </tuv>
@@ -255,7 +255,7 @@
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
       <tuv xml:lang="en">
-        <seg>Vernacular Language</seg>
+        <seg>Local Language</seg>
       </tuv>
       <tuv xml:lang="rw">
         <seg>Ururimi kavukire</seg>
@@ -1792,7 +1792,7 @@
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
       <tuv xml:lang="en">
-        <seg>Vernacular/Local Language Collection</seg>
+        <seg>Local Language Collection</seg>
       </tuv>
       <tuv xml:lang="rw">
         <seg>Ikusanyirizo mu rurimi kavukire/Ururimi gakondo</seg>

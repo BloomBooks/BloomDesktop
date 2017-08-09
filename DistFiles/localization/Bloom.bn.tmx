@@ -593,7 +593,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
-         <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+         <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
          <tuv xml:lang="en">
             <seg>Language 1</seg>
          </tuv>
@@ -602,7 +602,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
-         <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+         <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
          <tuv xml:lang="en">
             <seg>Language 2</seg>
          </tuv>
@@ -611,7 +611,7 @@
          </tuv>
       </tu>
       <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
-         <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
          <tuv xml:lang="en">
             <seg>Language 3</seg>
          </tuv>
@@ -646,7 +646,7 @@
       </tu>
       <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
          <tuv xml:lang="en">
-            <seg>Vernacular Language</seg>
+            <seg>Local Language</seg>
          </tuv>
          <tuv xml:lang="bn">
             <seg>স্বদেশীয় ভাষা</seg>
@@ -3889,7 +3889,7 @@
       </tu>
       <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
          <tuv xml:lang="en">
-            <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make vernacular books with your shells.</seg>
+            <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</seg>
          </tuv>
          <tuv xml:lang="bn">
             <seg>বিস্তৃত যোগাযোগের জন্য এক বা ততোধিক ভাষায় একটি সংগ্রহের শেল অথবা টেমপ্লেট বইসমূহ।আপনি BloomLibrary.org - এ এই শেলগুলি আপলোড করতে পারবেন।আপনি অন্যদেরকে দেওয়ার জন্য একটি ব্লুম প্যাকও বানাতে পারেন তাহলে তারা আপনার শেলগুলো দিয়ে স্বদেশীয় বই বানাতে পারবেন।</seg>
@@ -3897,7 +3897,7 @@
       </tu>
       <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
          <tuv xml:lang="en">
-            <seg>Vernacular/Local Language Collection</seg>
+            <seg>Local Language Collection</seg>
          </tuv>
          <tuv xml:lang="bn">
             <seg>স্বদেশীয়/স্থানীয় ভাষা সংগ্রহ</seg>

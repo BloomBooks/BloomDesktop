@@ -265,7 +265,7 @@ namespace Bloom.Collection
 			this._language1Label.Name = "_language1Label";
 			this._language1Label.Size = new System.Drawing.Size(139, 19);
 			this._language1Label.TabIndex = 7;
-			this._language1Label.Text = "Vernacular Language";
+			this._language1Label.Text = "Local Language";
 			// 
 			// tabPage2
 			// 
