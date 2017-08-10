@@ -1,4 +1,4 @@
-/// <reference path="../../typings/jquery/jquery.d.ts" />
+﻿/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jquery.gridly.d.ts" />
 ///<reference path="../../typings/toastr/toastr.d.ts"/>
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
@@ -116,7 +116,13 @@ function loadNextThumbnail() {
     var img = nextImg[0];
 
     // adding this to the query string tells the server to generate a thumbnail from the image file
-    var src = img.getAttribute("thumb-src") + "?thumbnail=1";
+    var src = img.getAttribute("thumb-src");
+    if (src.indexOf("?") >= 0) {
+        // already has a query (e.g., optional=true for branding)
+        src = src + "&thumbnail=1";
+    } else {
+        src = src + "?thumbnail=1";
+    }
     img.removeAttribute("thumb-src");
 
     SetImageElementUrl(img, src);

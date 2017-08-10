@@ -335,7 +335,8 @@ namespace Bloom.Edit
 			{
 				foreach (XmlElement imgNode in imgNodes)
 				{
-					imgNode.SetAttribute("thumb-src", HtmlDom.GetImageElementUrl(imgNode).UrlEncoded);
+					var imageElementUrl = HtmlDom.GetImageElementUrl(imgNode);
+					imgNode.SetAttribute("thumb-src", imageElementUrl.PathOnly.UrlEncoded + imageElementUrl.QueryOnly.NotEncoded);
 					HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(""));
 				}
 			}
@@ -349,14 +350,25 @@ namespace Bloom.Edit
 				foreach (XmlElement imgNode in imgNodes)
 				{
 					//We can't handle doing anything special with these /api/branding/ images yet, they get mangled.
-					if(HtmlDom.GetImageElementUrl(imgNode).NotEncoded.Contains("/api/"))
+					var imageElementUrl = HtmlDom.GetImageElementUrl(imgNode);
+					if(imageElementUrl.NotEncoded.Contains("/api/"))
 						continue;
 
-					var filename = HtmlDom.GetImageElementUrl(imgNode).UrlEncoded;
+					var filename = imageElementUrl.PathOnly.UrlEncoded;
 					if(!string.IsNullOrWhiteSpace(filename))
 					{
 						var url = filename + "?thumbnail=1";
-						HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(url));
+						var query = imageElementUrl.QueryOnly;
+						if (query.NotEncoded.Length > 0)
+						{
+							// Already has query, add another parameter. (e.g.: optional=true for branding image).
+							// It's important that the query be not encoded, otherwise the %3f for question mark
+							// gets interpreted as part of the filename.
+							url = filename + query.NotEncoded + "&thumbnail=1";
+						}
+						// It's not strictly true that url here is unencoded. In fact it contains a file path that IS
+						// encoded. But also a query that isn't. So we need to treat it as unencoded.
+						HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUnencodedString(url));
 					}
 				}
 			}

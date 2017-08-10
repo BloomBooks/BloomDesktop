@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -95,6 +95,20 @@ namespace Bloom
 				//to be strict about assuming it is unencoded, and then accidentally re-unencoding
 				//it against that previous instruction, when we spil out the paths.
 				return CreateFromUnencodedString(_notEncoded.Split('?')[0], true);
+			}
+		}
+
+		/// <summary>
+		/// Returns the query portion of the path, or an empty string if there is no query.
+		/// </summary>
+		public UrlPathString QueryOnly
+		{
+			get
+			{
+				var startQuery = _notEncoded.IndexOf("?");
+				if (startQuery < 0)
+					return CreateFromUnencodedString("");
+				return CreateFromUnencodedString(_notEncoded.Substring(startQuery));
 			}
 		}
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2015 SIL International
+﻿// Copyright (c) 2015 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using Bloom;
@@ -96,6 +96,19 @@ namespace BloomTests
 			//this checks that PathOnly doesn't do processing in ambiguous mode, undoing the information we gave it to be strict
 			Assert.AreEqual("test%20me", UrlPathString.CreateFromUnencodedString("test%20me", true).PathOnly.NotEncoded);
 		}
+
+		[Test]
+		public void QueryOnly_HasQuery_ReturnsIt()
+		{
+			Assert.That(UrlPathString.CreateFromUnencodedString("test%20me?12345").QueryOnly.NotEncoded, Is.EqualTo("?12345"));
+		}
+
+		[Test]
+		public void QueryOnly_NoQuery_ReturnsEmpty()
+		{
+			Assert.That(UrlPathString.CreateFromUnencodedString("test%20me").QueryOnly.NotEncoded, Is.EqualTo(""));
+		}
+
 		[Test]
 		public void CreateFromUnencodedString_LooksEncodedButSetStrictlyTreatAsEncodedTrue_RoundTrips()
 		{
