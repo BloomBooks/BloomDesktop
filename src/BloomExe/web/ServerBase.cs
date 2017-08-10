@@ -502,9 +502,7 @@ namespace Bloom.Api
 			if (localPath.Contains("?") && !RobustFile.Exists(localPath))
 			{
 				var idx = localPath.LastIndexOf("?", StringComparison.Ordinal);
-				var temp = localPath.Substring(0, idx);
-				if (localPath.EndsWith("?thumbnail=1") || RobustFile.Exists(localPath))
-					return temp;
+				return localPath.Substring(0, idx);
 			}
 			return localPath;
 		}
