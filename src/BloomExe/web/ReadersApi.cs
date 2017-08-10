@@ -11,6 +11,7 @@ using SIL.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
+using Amazon.Runtime.Internal.Util;
 using Bloom.Book;
 using Bloom.Edit;
 using L10NSharp;
@@ -106,8 +107,26 @@ namespace Bloom.Api
 				//note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
 				//This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
 				case "synphonyLanguageData":
-					//This is the "post". There is no direct "get", but the name of the file is given in the "sampleTextList" reply, below:
-					SaveSynphonyLanguageData(request.RequiredPostJson());
+					//This is the "post". There is no direct "get", but the name of the file is given in the "sampleTextList" reply, below.
+					// We've had situations (BL-4313 and friends) where reading the posted data fails. This seems to be due to situations
+					// where we have a very large block of data and are rapidly switching between books. But as far as I can tell, the only
+					// case where it's at all important to capture the new language data is if the user has been changing settings and
+					// in particular editing the word list. Timing out the save in that situation seems very unlikely to fail.
+					// So, in the interests of preventing the crash when switching books fast, we will ignore failure to read all the
+					// json, and just not update the file. We would in any case keep only the version of the data sent to us by
+					// the last book which sends it, and that one is unlikely to get interrupted.
+					string langdata;
+					try
+					{
+						langdata = request.RequiredPostJson();
+					}
+					catch (IOException e)
+					{
+						SIL.Reporting.Logger.WriteError("Saving synphonyLanguageData failed to get Json", e);
+						break;
+					}
+
+					SaveSynphonyLanguageData(langdata);
 					request.Succeeded();
 					break;
 
