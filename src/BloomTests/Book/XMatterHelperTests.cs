@@ -94,7 +94,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void InjectXMatter_BrandingApi_ChangesSrcAndCopiesFile()
+		public void InjectXMatter_BrandingApi_ChangesSrcAndCopiesFileAndMarksOptional()
 		{
 			using (var tempFolder = new TemporaryFolder("InjectXMatter_BrandingApi_ChangesSrcAndCopiesFile"))
 			{
@@ -115,10 +115,10 @@ namespace BloomTests.Book
 				helper.XMatterDom = frontMatterDom;
 
 				helper.InjectXMatter(_dataSet.WritingSystemAliases, Layout.A5Portrait, "Default", bookFolder);
-				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg']", 1);
-				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='another-image.png']", 1);
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg?optional=true']", 1);
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='another-image.png?optional=true']", 1);
 				// Can't find this file, so just leave in case user sometime supplies it?
-				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='some nonexistent file.svg']", 1);
+				AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='some nonexistent file.svg?optional=true']", 1);
 				Assert.That(File.Exists(Path.Combine(bookFolder, "back-cover-outside.svg")));
 				Assert.That(File.Exists(Path.Combine(bookFolder, "another-image.png")));
 			}
