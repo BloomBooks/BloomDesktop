@@ -1,10 +1,10 @@
-# About the Picture Dictionary Template
-Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.
+# About the Picture Dictionary Template {i18n="picture.dictionary"}
+Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual. {i18n="picture.dictionary.use"}
 
-#Limitations of this version
-This book is currently marked "experimental" because we know of several problems in layout and convenience.
+# Limitations of this version {i18n="picture.dictionary.limits"}
+This book is currently marked "experimental" because we know of several problems in layout and convenience. {i18n="picture.dictionary.stillexperimental"}
 
-#Feedback
-Please give and vote on [suggestions](http://bloomlibrary.org/suggestions)
+# Feedback {i18n="picture.dictionary.feedback"}
+Please give and vote on [suggestions](http://bloomlibrary.org/suggestions) {i18n="picture.dictionary.feedbackvoting"}
 
-Please report problems to [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Picture&nbsp;Dictionary&nbsp;Problem).
+Please report problems to [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Picture&nbsp;Dictionary&nbsp;Problem). {i18n="picture.dictionary.reportbugs"}
