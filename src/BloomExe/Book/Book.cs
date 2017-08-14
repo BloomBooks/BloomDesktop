@@ -17,7 +17,7 @@ using Bloom.Publish;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using MarkdownSharp;
+using Markdig;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -1463,9 +1463,9 @@ namespace Bloom.Book
 		{
 			get
 			{
-				var options = new MarkdownOptions() {LinkEmails = true, AutoHyperlink=true};
-				var m = new Markdown(options);
-				var contents = m.Transform(RobustFile.ReadAllText(AboutBookMarkdownPath));
+				// enable autolinks from text `http://`, `https://`, `ftp://`, `mailto:`, `www.xxx.yyy`
+				var pipeline = new MarkdownPipelineBuilder().UseAutoLinks().UseCustomContainers().UseGenericAttributes().Build();
+				var contents = Markdown.ToHtml(RobustFile.ReadAllText(AboutBookMarkdownPath), pipeline);
 				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unnecessary.... do they scan .md files?
 
 				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
