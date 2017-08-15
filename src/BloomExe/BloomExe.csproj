@@ -1392,11 +1392,4 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
   </Target>
-  <Import Project="..\..\packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\build\net40\runtime.win7-x86.vcruntime140.targets" Condition="'$(OS)'=='Windows_NT' and Exists('..\..\packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\build\net40\runtime.win7-x86.vcruntime140.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition="'$(OS)'=='Windows_NT'">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\build\net40\runtime.win7-x86.vcruntime140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\runtime.win7-x86.vcruntime140.14.00.24406.0-r160\build\net40\runtime.win7-x86.vcruntime140.targets'))" />
-  </Target>
 </Project>
