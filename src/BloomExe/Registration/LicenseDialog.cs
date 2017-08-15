@@ -5,7 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using MarkdownSharp;
+using Markdig;
 using SIL.IO;
 
 namespace Bloom.Registration
@@ -40,8 +40,6 @@ namespace Bloom.Registration
 			_licenseBrowser.Name = "licenseBrowser";
 			_licenseBrowser.Size = new Size(_acceptButton.Right - 12, _acceptButton.Top - 24);
 			Controls.Add(_licenseBrowser);
-			var options = new MarkdownOptions() { LinkEmails = true, AutoHyperlink = true };
-			var m = new Markdown(options);
 			var locale = CultureInfo.CurrentUICulture.Name;
 			string licenseFilePath = BloomFileLocator.GetFileDistributedWithApplication(licenseMdFile);
 			var localizedLicenseFilePath = licenseFilePath.Substring(0, licenseFilePath.Length - 3) + "-" + locale + ".md";
@@ -59,7 +57,9 @@ namespace Bloom.Registration
 				}
 			}
 			var markdown = prolog + RobustFile.ReadAllText(licenseFilePath, Encoding.UTF8);
-			var contents = m.Transform(markdown);
+			// enable autolinks from text `http://`, `https://`, `ftp://`, `mailto:`, `www.xxx.yyy`
+			var pipeline = new MarkdownPipelineBuilder().UseAutoLinks().UseCustomContainers().UseGenericAttributes().Build();
+			var contents = Markdown.ToHtml(markdown, pipeline);
 			var html = string.Format("<html><head><head/><body style=\"font-family:sans-serif\">{0}</body></html>", contents);
 			_licenseBrowser.NavigateRawHtml(html);
 			_licenseBrowser.Visible = true;
