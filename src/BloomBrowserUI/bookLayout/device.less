@@ -4,20 +4,13 @@
 
 // Mixin for setting .marginBox margins for Device layouts.
 .SetMarginBoxDevice(@PageWidth, @PageHeight) {
-    height: @PageHeight;
-    width: @PageWidth;
+    height: @PageHeight - (@DeviceMargin*2);
+    width: @PageWidth - (@DeviceMargin*2);
     IMG {
-        max-width: @PageWidth;
+        max-width: @PageWidth - (@DeviceMargin*2);
     }
-    top:0;
-    left:0 !important;
-
-    //that makes the margin box actually have no margin. Which looks good for the image, but
-    //looks bad for the text. So here we re-introduce a margin... a bit of a hack
-    .bloom-editable{
-        margin-left: @DeviceMargin;
-        width: calc(~"100% - "(@DeviceMargin*2)); // 10px for the left, 10px for the right
-    }
+    top:@DeviceMargin;
+    left:@DeviceMargin !important;
 }
 
 // Mixin to leave space for page number at the bottom of the marginBox
