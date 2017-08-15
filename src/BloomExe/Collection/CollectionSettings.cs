@@ -45,36 +45,40 @@ namespace Bloom.Collection
 				// we then switched to having code keep the page number in data-page-number,
 				// so we can't make use of that CSS feature anymore but want to keep the same
 				// list and keep working for users of previous versions.
-				// In this dictionary, we're pairing css counting styles (the key) with either
-				// a Microsoft culture that happens to implement it or, if that can't be found,
-				// then the 10 digits of used by the script. As a side benefit, this will allow us to support
+				// In this dictionary, we're pairing css counting styles (the key) with
+				// the 10 digits used by the script. As a side benefit, this will allow us to support
 				// other number systems, if people request them (so long as they can be represented by just
 				// replacing digits).
-				{ "Arabic-Indic", "ar-SA"}, // not certain that this is correct one
-				{ "Armenian", "hy-AM"},
-				{ "Upper-Armenian", "hy-AM"},
+				// In many cases, as commented, the ten digits were obtained from Microsoft cultures using this expression:
+				// new CultureInfo(cultureCode).NumberFormat.NativeDigits
+				// Some of the results are empty strings when it doesn't seem they should be (Hebrew, Armenian, Georgian)
+				// This reflects that these systems can't be done with simple digit substitution, so we fall
+				// back to not converting
+				{ "Arabic-Indic", "٠١٢٣٤٥٦٧٨٩"}, // from ar-SA, not certain that this is correct one
+				//{ "Armenian", ""}, // hy-AM yields 0123456789; not true Armenian, an ancient letter-value system so we can't do it
+				//{ "Upper-Armenian", ""}, // hy-AM, probably a variation on Armenian also not permitting digit-substitution
 				//{ "Lower-Armenian", ""},//haven't found the culture or list of number for this
-				{ "Bengali", "bn-BD"},
-				{ "Cambodian", "km-KH"},
-				{ "Khmer", "km-KH"},
+				{ "Bengali", "০১২৩৪৫৬৭৮৯"}, // from bn-BD
+				{ "Cambodian", "០១២៣៤៥៦៧៨៩"}, // from km-KH
+				{ "Khmer", "០១២៣៤៥៦៧៨៩"}, // from km-KH"
 				{ "Cjk-Decimal", "〇一二三四五六七八九"},// haven't found a culture for this
 				{ "Decimal", "" },
-				{ "Devanagari", "०१२३४५६७८९"}, // "hi-IN"}, was apparently failing on TeamCity Windows 7 agent
-				{ "Georgian", "ka-GE"},
-				{ "Gujarati", "gu-IN"},
-				{ "Gurmukhi", "pa-IN"},
-				{ "Hebrew", "he-IL"},
-				{ "Kannada", "kn-IN"},
-				{ "Lao", "lo-LA"},
-				{ "Malayalam", "ml-IN"},
-				{ "Mongolian", "mn-Mong-MN"},
-				{ "Myanmar", "my-MM"},
+				{ "Devanagari", "०१२३४५६७८९"}, // from hi-IN
+				//{ "Georgian", ""}, //  ka-GE yields 0123456789; https://en.wikipedia.org/wiki/Georgian_numerals says Georgian is not a simple positional system so we can't do it
+				{ "Gujarati", "૦૧૨૩૪૫૬૭૮૯"}, // from gu-IN
+				{ "Gurmukhi", "੦੧੨੩੪੫੬੭੮੯"}, // from pa-IN
+				// { "Hebrew", ""}, // he-IL yields 0123456789; not true Hebrew, which uses a non-positional letter-value system, so we can't do it.
+				{ "Kannada", "೦೧೨೩೪೫೬೭೮೯"}, // from kn-IN
+				{ "Lao", "໐໑໒໓໔໕໖໗໘໙"}, // from lo-LA
+				{ "Malayalam", "൦൧൨൩൪൫൬൭൮൯"}, // ml-IN
+				{ "Mongolian", "᠐᠑᠒᠓᠔᠕᠖᠗᠘᠙"}, // from https://en.wikipedia.org/wiki/Mongolian_numerals; was mn-Mong-MN, which would wrongly be used as a digit string.
+				{ "Myanmar", "၀၁၂၃၄၅၆၇၈၉"}, // from my-MM
 				{ "Oriya", "୦୧୨୩୪୫୬୭୮୯"}, // haven't found a culture for this
-				{ "Persian", "fa-IR"},
-				{ "Tamil", "ta-IN"},
-				{ "Telugu", "te-IN"},
-				{ "Thai", "th-TH"},
-				{ "Tibetan", "bo-CN"}
+				{ "Persian", "۰۱۲۳۴۵۶۷۸۹"}, // from fa-IR
+				{ "Tamil", "௦௧௨௩௪௫௬௭௮௯"}, // from ta-IN"
+				{ "Telugu", "౦౧౨౩౪౫౬౭౮౯"}, // from te-IN
+				{ "Thai", "๐๑๒๓๔๕๖๗๘๙"}, // from th-TH
+				{ "Tibetan", "༠༡༢༣༤༥༦༧༨༩"}, // from bo-CN
 			};
 
 		/// <summary>
