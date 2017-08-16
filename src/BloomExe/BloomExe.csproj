@@ -158,6 +158,9 @@
     <Reference Include="L10NSharp">
       <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlXliff">
+      <HintPath>..\..\lib\dotnet\HtmlXliff.exe</HintPath>
+    </Reference>
     <Reference Include="Markdig">
       <HintPath>..\..\packages\Markdig.0.13.0\lib\net40\Markdig.dll</HintPath>
     </Reference>

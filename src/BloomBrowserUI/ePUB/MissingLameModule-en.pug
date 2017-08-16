@@ -6,17 +6,17 @@ html
 		link(rel='stylesheet', type='text/css', href='bloomEPUBPreview.css')
 	body
 		#missingLame
-			h3 Please Install LAME
-			p
+			h3(i18n="missing.lame.please.install") Please Install LAME
+			p(i18n="missing.lame.bloom.needs.lame")
 				| This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run
 				+link('http://lame.buanzo.org/#lamewindl') 'Lame_v3.99 for Windows.exe'
 				| . Next, restart Bloom.
-			p
+			p(i18n="missing.lame.audio.optional")
 				| If you prefer to go ahead and publish your book without audio, click
 				+link('javascript:void(0)')#proceedWithoutAudio here
 				| .
-			h3 Legal Considerations
-			p
+			h3(i18n="missing.lame.legalities") Legal Considerations
+			p(i18n="missing.lame.old.patent.issues")
 				| Our understanding is that in a few countries (perhaps only in the USA, and then only until 2017), there are patents covering the creation of mp3's. In correspondence with the patent holder's representative, we were told:
 				blockquote
 					| You may need a license if there is any type of subscription, content, service, per unit or itemized revenue for the distribution of mp3, or if there is any advertising present during the presentation of any mp3 content, either on a webpage with any links to your Talking Books, or as part of a messaging system, and this total mp3-associated mp3 revenue exceeds USD $100,000 per year.

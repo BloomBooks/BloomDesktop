@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+  <file original="MissingLameModule-en.html" datatype="html" source-language="en">
+    <body>
+      <trans-unit id="missing.lame.please.install">
+        <source xml:lang="en">Please Install LAME</source>
+        <note>ID: missing.lame.please.install</note>
+      </trans-unit>
+      <trans-unit id="missing.lame.bloom.needs.lame">
+        <source xml:lang="en">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
+      </source>
+        <note>ID: missing.lame.bloom.needs.lame</note>
+      </trans-unit>
+      <trans-unit id="missing.lame.audio.optional">
+        <source xml:lang="en">If you prefer to go ahead and publish your book without audio, click <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">here</g>.
+      </source>
+        <note>ID: missing.lame.audio.optional</note>
+      </trans-unit>
+      <trans-unit id="missing.lame.legalities">
+        <source xml:lang="en">Legal Considerations</source>
+        <note>ID: missing.lame.legalities</note>
+      </trans-unit>
+      <trans-unit id="missing.lame.old.patent.issues">
+        <source xml:lang="en">Our understanding is that in a few countries (perhaps only in the USA, and then only until 2017), there are patents covering the creation of mp3's. In correspondence with the patent holder's representative, we were told:
+        <g id="genid-3" ctype="x-html-blockquote">You may need a license if there is any type of subscription, content, service, per unit or itemized revenue for the distribution of mp3, or if there is any advertising present during the presentation of any mp3 content, either on a webpage with any links to your Talking Books, or as part of a messaging system, and this total mp3-associated mp3 revenue exceeds USD $100,000 per year.</g>Therefore, if you are just making Talking Books and giving them away, then only the distributor (e.g. BloomLibrary.org) needs to be concerned about licensing this technology (and since we don't make money from BloomLibrary.org, we don't have to worry, either.) For more information, see <g id="genid-4" ctype="x-html-a" html:href="http://www.mp3licensing.com/">mp3licensing.com</g>.
+      </source>
+        <note>ID: missing.lame.old.patent.issues</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
