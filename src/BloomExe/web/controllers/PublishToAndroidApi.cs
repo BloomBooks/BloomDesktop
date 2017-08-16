@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using Bloom.Collection;
 using Bloom.Publish;
 using Bloom.web;
@@ -75,15 +78,47 @@ namespace Bloom.Api
 			// a book that is exactly what it has already...with the risk that it might miss binary changes to images, if nothing changes
 			// in the HTML. However, this doesn't prevent overwriting a newer book with an older one. Another option would be to
 			// send the file modify time (as well or instead). Or we can institute some system of versioning books...
-			_advertiser.BookVersion = Convert.ToBase64String(SHA256Managed.Create().ComputeHash(Encoding.UTF8.GetBytes(server.CurrentBook.RawDom.OuterXml)));
+			_advertiser.BookVersion = MakeVersionCode(File.ReadAllText(server.CurrentBook.GetPathHtmlFile()));
+
 			_advertiser.Start();
 
 			request.SucceededDoNotNavigate();
 		}
 
+		public static string MakeVersionCode(string fileContent)
+		{
+			var simplified = fileContent;
+			// In general, whitespace sequences are equivalent to a single space.
+			// If the user types multiple spaces all but one will be turned to &nbsp;
+			simplified = new Regex(@"\s+").Replace(simplified," ");
+			// Between the end of one tag and the start of the next white space doesn't count at all
+			simplified = new Regex(@">\s+<").Replace(simplified, "><");
+			// Page IDs (actually any element ids) are ignored
+			// (the bit before the 'id' matches an opening wedge followed by anything but a closing one,
+			// and is tranferred to the output by $1. Then we look for an id='whatever', with optional
+			// whitespace, where (['\"]) matches either kind of opening quote while \2 matches the same one at the end.
+			// The question mark makes sure we end with the first possible closing quote.
+			// Then we grab everything up to the closing wedge and transfer that to the output as $3.)
+			simplified = new Regex("(<[^>]*)\\s*id\\s*=\\s*(['\"]).*?\\2\\s*([^>]*>)").Replace(simplified, "$1$3");
+			var bytes = Encoding.UTF8.GetBytes(simplified);
+			return Convert.ToBase64String(SHA256Managed.Create().ComputeHash(bytes));
+		}
+
 		private void SendBookTo(Book.Book book, string androidIpAddress)
 		{
-			_bloomReaderPublisher.SendBookToClientOnLocalSubNet(book, androidIpAddress);
+			try
+			{
+				_bloomReaderPublisher.SendBookToClientOnLocalSubNet(book, androidIpAddress);
+			}
+			catch (Exception e)
+			{
+				// This method is called on a background thread in response to receiving a request from Bloom Reader.
+				// Exceptions somehow get discarded, so there is no point in letting them propagate further.
+				_progress.WriteError("Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:");
+				_progress.WriteError(e.Message);
+				_progress.WriteError(e.StackTrace);
+				Debug.Fail("got exception " + e.Message + " sending book");
+			}
 		}
 
 		private void ConnectCancelHandler(ApiRequest request)

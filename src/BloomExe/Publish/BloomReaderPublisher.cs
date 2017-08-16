@@ -216,7 +216,7 @@ namespace Bloom.Publish
 			_progress.WriteMessage($"Sending \"{book.Title}\" to device {androidIpAddress}");
 
 			var publishedFileName = book.Title + BookCompressor.ExtensionForDeviceBloomBook;
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(BookStorage.SanitizeNameForFileSystem(publishedFileName)))
 			{
 				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book);
 				using (WebClient myClient = new WebClient())
