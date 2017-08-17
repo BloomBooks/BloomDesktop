@@ -13,8 +13,8 @@ namespace Bloom.Publish
 {
 	public class BloomReaderPublisher
 	{
-		public event EventHandler Connected;
-		public event EventHandler ConnectionFailed;
+		public event EventHandler UsbConnected;
+		public event EventHandler UsbConnectionFailed;
 		public event EventHandler SendBookSucceeded;
 		public event EventHandler SendBookFailed;
 
@@ -51,14 +51,14 @@ namespace Bloom.Publish
 				{
 					if (args.Error != null)
 					{
-						FailConnect(args.Error);
+						UsbFailConnect(args.Error);
 					}
 				};
 				backgroundWorker.RunWorkerAsync();
 			}
 			catch (Exception e)
 			{
-				FailConnect(e);
+				UsbFailConnect(e);
 			}
 		}
 
@@ -70,7 +70,7 @@ namespace Bloom.Publish
 			_androidDeviceUsbConnection.OneReadyDeviceNotFound -= OneReadyDeviceNotFound;
 		}
 
-		private void FailConnect(Exception e)
+		private void UsbFailConnect(Exception e)
 		{
 			var unableToConnectMessage = LocalizationManager.GetString("Publish.BloomReaderPublisher.UnableToConnect",
 				"Unable to connect to any Android device which has Bloom Reader.");
@@ -78,7 +78,7 @@ namespace Bloom.Publish
 			_progress.WriteError(unableToConnectMessage);
 			_progress.WriteError("\tTechnical details to share with the development team: " + e);
 			Logger.WriteError(e);
-			ConnectionFailed?.Invoke(this, new EventArgs());
+			UsbConnectionFailed?.Invoke(this, new EventArgs());
 		}
 
 		private void OneReadyDeviceFound(object sender, EventArgs args)
@@ -87,10 +87,10 @@ namespace Bloom.Publish
 			_androidDeviceUsbConnection.OneReadyDeviceNotFound -= OneReadyDeviceNotFound;
 
 			_progress.WriteMessage(String.Format(LocalizationManager.GetString(
-				"Publish.BloomReaderPublisher.Connected",
-				"Connected to {0}...", "{0} is a device name"), _androidDeviceUsbConnection.GetDeviceName()));
+				"Publish.BloomReaderPublisher.UsbConnected",
+				"UsbConnected to {0}...", "{0} is a device name"), _androidDeviceUsbConnection.GetDeviceName()));
 
-			Connected?.Invoke(this, new EventArgs());
+			UsbConnected?.Invoke(this, new EventArgs());
 		}
 
 		private void OneReadyDeviceNotFound(object sender, OneReadyDeviceNotFoundEventArgs eventArgs)
@@ -126,7 +126,7 @@ namespace Bloom.Publish
 		/// Attempt to send the book to the device
 		/// </summary>
 		/// <param name="book"></param>
-		public void SendBook(Book.Book book)
+		public void SendBookAsync(Book.Book book)
 		{
 			try
 			{

@@ -37,15 +37,18 @@ body {
   box-sizing: border-box;
 }
 
-#connect-buttons {
-  display: inline;
-}
-
 button {
-  margin-top: 1em;
   &:disabled {
     color:white;// darkgray;
   }
+}
+
+#progress-row {
+    display: flex;
+    justify-content: space-between; // push link to the right
+    width: 100%;
+    margin-block-start: 1em;
+    H1 { margin-block-start: 0;}
 }
 
 #progress {

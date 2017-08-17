@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.web;
-using SIL.Progress;
-using ThirdParty.Json.LitJson;
 
 namespace Bloom.Publish
 {

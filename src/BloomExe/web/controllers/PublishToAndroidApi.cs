@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Bloom.Collection;
 using Bloom.Publish;
 using Bloom.web;
+using SIL.Code;
 
 namespace Bloom.Api
 {
@@ -20,69 +21,80 @@ namespace Bloom.Api
 		private readonly BloomReaderPublisher _bloomReaderPublisher;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly WebSocketProgress _progress;
-		private WiFiAdvertiser _advertiser;
-		private BloomReaderUDPListener m_listener;
+		private WiFiAdvertiser _wifiAdvertiser;
+		private BloomReaderUDPListener _wifiListener;
+		private Book.Book _book;
 
 		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer)
 		{
 			_webSocketServer = bloomWebSocketServer;
 			_progress = new WebSocketProgress(_webSocketServer);
 			_bloomReaderPublisher = new BloomReaderPublisher(_progress);
+			_bloomReaderPublisher.UsbConnected += OnUsbConnected;
+			_bloomReaderPublisher.UsbConnectionFailed += OnUsbConnectionFailed;
+			_bloomReaderPublisher.SendBookSucceeded += OnSendBookSucceeded;
+			_bloomReaderPublisher.SendBookFailed += OnSendBookFailed;
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
-			server.RegisterEndpointHandler(kApiUrlPart + "connectUsb/start", ConnectUsbStartHandler, true);
-			server.RegisterEndpointHandler(kApiUrlPart + "connectWiFi/start", request => ConnectWiFiStartHandler(server, request), true);
-			server.RegisterEndpointHandler(kApiUrlPart + "connect/cancel", ConnectCancelHandler, true);
-			server.RegisterEndpointHandler(kApiUrlPart + "sendBook/start", request =>
-			{
-				_webSocketServer.Send(kWebsocketStateId, "Sending");
-				_bloomReaderPublisher.SendBookSucceeded += OnSendBookSucceeded;
-				_bloomReaderPublisher.SendBookFailed += OnSendBookFailed;
-				_bloomReaderPublisher.SendBook(server.CurrentBook);
-				request.SucceededDoNotNavigate();
-			}, true);
+			server.RegisterEndpointHandler(kApiUrlPart + "usb/start", UsbStartHandler, true);
+			server.RegisterEndpointHandler(kApiUrlPart + "usb/stop", StopHandler, true);
+			server.RegisterEndpointHandler(kApiUrlPart + "wifi/start", WiFiStartHandler, true);
+			server.RegisterEndpointHandler(kApiUrlPart + "wifi/stop", StopHandler, true);
+			server.RegisterEndpointHandler(kApiUrlPart + "cleanup", StopHandler, true);
 		}
 
-		private void ConnectUsbStartHandler(ApiRequest request)
+		private void UsbStartHandler(ApiRequest request)
 		{
-			_webSocketServer.Send(kWebsocketStateId, "TryingToConnect");
-			_bloomReaderPublisher.Connected += OnConnected;
-			_bloomReaderPublisher.ConnectionFailed += OnConnectionFailed;
+			_book = request.CurrentBook;
+			SetState("UsbStarted");
 			_bloomReaderPublisher.Connect();
 			request.SucceededDoNotNavigate();
 		}
 
-		private void ConnectWiFiStartHandler(EnhancedImageServer server, ApiRequest request)
+		private void WiFiStartHandler(ApiRequest request)
 		{
-			if (_advertiser != null)
-				return; // repeat clicks do nothing.
-
-			_webSocketServer.Send(kWebsocketStateId, "ServingOnWifi"); // this will change, I suspect, but at least it keeps you from clicking repeatedly
+			if (_wifiAdvertiser != null)
+			{
+				CloseDownWiFiServing();
+			}
 
 			// This listens for a BloomReader to request a book.
 			// It requires a firewall hole allowing Bloom to receive messages on _portToListen.
 			// We initialize it before starting the Advertiser to avoid any chance of a race condition
 			// where a BloomReader manages to request an advertised book before we start the listener.
-			m_listener = new BloomReaderUDPListener();
-			m_listener.NewMessageReceived += (sender, args) =>
+			_wifiListener = new BloomReaderUDPListener();
+			_wifiListener.NewMessageReceived += (sender, args) =>
 			{
 				var androidIpAddress = Encoding.UTF8.GetString(args.data);
-				SendBookTo(server.CurrentBook, androidIpAddress);
+				SendBookOverWiFi(request.CurrentBook, androidIpAddress);
 			};
-			_advertiser = new WiFiAdvertiser(_progress);
-			_advertiser.BookTitle = server.CurrentBook.Title;
-			_advertiser.TitleLanguage = server.CurrentBook.CollectionSettings.Language1Iso639Code;
+
+			_wifiAdvertiser = new WiFiAdvertiser(_progress)
+			{
+				BookTitle = request.CurrentBook.Title,
+				TitleLanguage = request.CurrentCollectionSettings.Language1Iso639Code,
+				BookVersion = MakeVersionCode(File.ReadAllText(request.CurrentBook.GetPathHtmlFile()))
+			};
 			// Review: not sure this is what we want for a version. Basically, it allows the Android (by saving it) to avoid downloading
 			// a book that is exactly what it has already...with the risk that it might miss binary changes to images, if nothing changes
 			// in the HTML. However, this doesn't prevent overwriting a newer book with an older one. Another option would be to
 			// send the file modify time (as well or instead). Or we can institute some system of versioning books...
-			_advertiser.BookVersion = MakeVersionCode(File.ReadAllText(server.CurrentBook.GetPathHtmlFile()));
 
-			_advertiser.Start();
+			_wifiAdvertiser.Start();
 
+			SetState("ServingOnWifi");
 			request.SucceededDoNotNavigate();
+
+			_progress.WriteMessage(
+				"On the Android, run Bloom Reader, open the menu and choose 'Receive Books from WiFi'.");
+			_progress.WriteMessage("You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
+		}
+
+		private void SetState(string state)
+		{
+			_webSocketServer.Send(kWebsocketStateId, state);
 		}
 
 		public static string MakeVersionCode(string fileContent)
@@ -95,7 +107,7 @@ namespace Bloom.Api
 			simplified = new Regex(@">\s+<").Replace(simplified, "><");
 			// Page IDs (actually any element ids) are ignored
 			// (the bit before the 'id' matches an opening wedge followed by anything but a closing one,
-			// and is tranferred to the output by $1. Then we look for an id='whatever', with optional
+			// and is transferred to the output by $1. Then we look for an id='whatever', with optional
 			// whitespace, where (['\"]) matches either kind of opening quote while \2 matches the same one at the end.
 			// The question mark makes sure we end with the first possible closing quote.
 			// Then we grab everything up to the closing wedge and transfer that to the output as $3.)
@@ -104,7 +116,7 @@ namespace Bloom.Api
 			return Convert.ToBase64String(SHA256Managed.Create().ComputeHash(bytes));
 		}
 
-		private void SendBookTo(Book.Book book, string androidIpAddress)
+		private void SendBookOverWiFi(Book.Book book, string androidIpAddress)
 		{
 			try
 			{
@@ -121,56 +133,50 @@ namespace Bloom.Api
 			}
 		}
 
-		private void ConnectCancelHandler(ApiRequest request)
+		private void StopHandler(ApiRequest request)
 		{
-			if (_advertiser == null)
+			if (_wifiAdvertiser == null)
 			{
 				// either closed without pressing any connect button, or used the USB one.
 				_bloomReaderPublisher.CancelConnect();
 			}
-			else {
+			else
+			{
 				// Enhance: should we do something if a transfer is in progress? Here or in Dispose?
-				_advertiser.Stop();
-				_advertiser.Dispose();
-				_advertiser = null;
-				m_listener.StopListener();
-				m_listener = null;
+				CloseDownWiFiServing();
 			}
+			SetState("stopped");
 			request.Succeeded();
 		}
 
-		private void OnConnectionFailed(object sender, EventArgs args)
+		private void CloseDownWiFiServing()
 		{
-			ResolveConnect("ReadyToConnect");
+			_wifiAdvertiser.Stop();
+			_wifiAdvertiser.Dispose();
+			_wifiAdvertiser = null;
+			_wifiListener.StopListener();
+			_wifiListener = null;
 		}
 
-		private void OnConnected(object sender, EventArgs args)
+		private void OnUsbConnectionFailed(object sender, EventArgs args)
 		{
-			ResolveConnect("ReadyToSend");
+			SetState("stopped");
 		}
 
-		private void ResolveConnect(string newState)
+		private void OnUsbConnected(object sender, EventArgs args)
 		{
-			_bloomReaderPublisher.Connected -= OnConnected;
-			_bloomReaderPublisher.ConnectionFailed -= OnConnectionFailed;
-			_webSocketServer.Send(kWebsocketStateId, newState);
+			Guard.AgainstNull(_book, "_book");
+			_bloomReaderPublisher.SendBookAsync(_book);
 		}
 
 		private void OnSendBookSucceeded(object sender, EventArgs args)
 		{
-			ResolveSendBook("ReadyToSend");
+			SetState("stopped");
 		}
 
 		private void OnSendBookFailed(object sender, EventArgs args)
 		{
-			ResolveSendBook("ReadyToConnect");
-		}
-
-		private void ResolveSendBook(string newState)
-		{
-			_bloomReaderPublisher.SendBookSucceeded -= OnSendBookSucceeded;
-			_bloomReaderPublisher.SendBookFailed -= OnSendBookFailed;
-			_webSocketServer.Send(kWebsocketStateId, newState);
+			SetState("stopped");
 		}
 	}
 }
