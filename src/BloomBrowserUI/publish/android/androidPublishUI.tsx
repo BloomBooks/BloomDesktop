@@ -7,6 +7,7 @@ import HelpLink from "../../react_components/helpLink";
 import { H1, H2, LocalizableElement, IUILanguageAwareProps, P } from "../../react_components/l10n";
 
 interface IComponentState {
+    method: string;
     stateId: string;
 }
 
@@ -19,7 +20,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         super(props);
 
         this.isLinux = this.getIsLinuxFromUrl();
-        this.state = { stateId: "ReadyToConnect" };
+        this.state = { stateId: "stopped", method: "wifi" };
 
         // enhance: For some reason setting the callback to "this.handleUpdate" calls handleUpdate()
         // with "this" set to the button, not this overall control.
@@ -48,7 +49,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
     }
 
     componentCleanup() {
-        axios.post("/bloom/api/publish/android/connect/cancel");
+        axios.post("/bloom/api/publish/android/cleanup");
     }
 
     handleUpdateState(s: string): void {
@@ -66,67 +67,64 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
     render() {
         let self = this;
+
         return (
             <div>
-                <HelpLink l10nKey="Publish.Android.LearnAboutDigitalPublishingOptions"
-                    l10nComment="" helpId="learnAboutDigitalPublishingOptions">
-                    Learn about your digital publishing options.
-                </HelpLink>
-                <H1 l10nKey="Publish.Android.StepInstall">
-                    Step 1: Install the Bloom Reader app on the Android device</H1>
-                <HelpLink l10nKey="Publish.Android.HowToGetBloomReaderOnDevice"
-                    helpId="howToGetBloomReaderOnDevice.html">
-                    How to get the Bloom Reader app on your device.
-                </HelpLink>
-                <br />
-                <HelpLink l10nKey="Publish.Android.LearnAboutBloomReaderApp"
-                    helpId="learnAboutBloomReaderApp.html">
-                    Learn more about the Bloom Reader app.
-                </HelpLink>
-                <H1 l10nKey="Publish.Android.StepLaunch">
-                    Step 2: Launch the Bloom Reader app on the device
+                <H1 l10nKey="Publish.Android.Method"
+                    l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser.">
+                    Method
                 </H1>
-                <H1 l10nKey="Publish.Android.StepConnect">
-                    Step 3: Connect this computer to the device
+                <select disabled={this.state.stateId !== "stopped"} value={this.state.method} onChange={
+                    (event) => self.setState({ method: event.target.value })}>;
+                    <option value="wifi">WiFi</option>
+                    <option value="usb">USB</option>
+                </select>
+
+                <H1 l10nKey="Publish.Android.Control"
+                    l10nComment="This is the heading above various buttons that control the publishing of the book to Android.">
+                    Control
                 </H1>
 
-                <div id="connect-buttons">
-                    <BloomButton l10nKey="Publish.Android.ConnectUsb"
-                        l10nComment="Button that tells Bloom to connect to a device using a USB cable"
-                        enabled={this.state.stateId === "ReadyToConnect"}
-                        clickEndpoint="publish/android/connectUsb/start"
-                        hidden={this.isLinux}>
-                        Connect with USB cable
-                    </BloomButton>
-                    <BloomButton l10nKey="Publish.Android.ConnectWifi"
-                        l10nComment="Button that tells Bloom to connect to a device using Wifi"
-                        enabled={this.state.stateId === "ReadyToConnect"}
-                        clickEndpoint="publish/android/connectWifi/start">
-                        Connect with WiFi
-                    </BloomButton>
+                {this.state.method === "wifi" &&
+                    <div>
+                        <BloomButton l10nKey="Publish.Android.Wifi.Serving"
+                            enabled={this.state.stateId === "stopped"}
+                            clickEndpoint="publish/android/wifi/start">
+                            Start Serving
+                        </BloomButton>
+                        <BloomButton l10nKey="Publish.Android.Wifi.Stopped"
+                            enabled={this.state.stateId === "ServingOnWifi"}
+                            clickEndpoint="publish/android/wifi/stop">
+                            Stop Serving
+                        </BloomButton>
+                    </div>
+                }
+
+                {this.state.method === "usb" &&
+                    <div>
+                        <BloomButton l10nKey="Publish.Android.Usb.Start"
+                            l10nComment="Button that tells Bloom to send the book to a device via USB cable."
+                            enabled={this.state.stateId === "stopped"}
+                            clickEndpoint="publish/android/usb/start"
+                            hidden={this.isLinux}>
+                            Connect with USB cable
+                        </BloomButton>
+
+                        <BloomButton l10nKey="Publish.Android.Usb.Stop"
+                            enabled={this.state.stateId === "UsbStarted"}
+                            clickEndpoint="publish/android/usb/stop">
+                            Stop Serving
+                        </BloomButton>
+                    </div>
+                }
+
+                <div id="progress-row">
+                    <h1>Progress</h1>
+                    <HelpLink l10nKey="Publish.Android.Troubleshooting"
+                        helpId="publish-android-troubleshooting.html">
+                        Troubleshooting Tips
+                    </HelpLink>
                 </div>
-
-                <H1 l10nKey="Publish.Android.StepSend"
-                    hidden={this.isLinux && this.state.stateId !== "ServingOnWifi"}>
-                    Step 4: Send this book to the device
-                </H1>
-                <BloomButton l10nKey="Publish.Android.SendBook"
-                    l10nComment="Button that tells Bloom to send the book to the connected device"
-                    enabled={this.state.stateId === "ReadyToSend"}
-                    clickEndpoint="publish/android/sendBook/start"
-                    hidden={this.isLinux || this.state.stateId === "ServingOnWifi"}>
-                    Send Book
-                </BloomButton>
-                <P l10nKey="Publish.Android.ReceiveOnDevice"
-                    hidden={this.state.stateId !== "ServingOnWifi"}>
-                    To start a transfer, run Bloom Reader, tap the three-lines icon in the top left of the screen, and choose "Get Books from Desktop."
-                    You can do this on as many devices as you like.
-                    Make sure each device is connected to the same network as this computer.
-                </P>
-
-                <h3>Progress</h3>
-                {/*state: {this.state.stateId}*/}
-
                 <ProgressBox />
             </div>
         );
