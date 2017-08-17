@@ -57,7 +57,7 @@ namespace Bloom.Communication
 				throw new ArgumentNullException(nameof(bloomdPath));
 
 			if (_device == null || _bloomFolderPath == null)
-				throw new InvalidOperationException("Must connect before calling SendBook");
+				throw new InvalidOperationException("Must connect before calling SendBookAsync");
 
 			var sourceStream = File.OpenRead(bloomdPath);
 			var targetStream = _device.OpenWrite(Path.Combine(_bloomFolderPath, Path.GetFileName(bloomdPath)), new FileInfo(bloomdPath).Length, true);
