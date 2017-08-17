@@ -108,7 +108,28 @@
 	<MSBuild Projects="$(RootDir)/$(Solution)"
 			 Targets="Rebuild"
 			 Properties="Configuration=$(Configuration)" />
+	<CallTarget Targets="ExtractXliffFromHtml"/>
   </Target>
+
+	<PropertyGroup>
+		<!-- we can't trust the system mono on Linux since we build with our own version -->
+		<HtmlXliffProgram Condition="'$(OS)'=='Windows_NT'">$(RootDir)/output/$(Configuration)/HtmlXliff.exe</HtmlXliffProgram>
+		<HtmlXliffProgram Condition="'$(OS)'!='Windows_NT'">/opt/mono4-sil/bin/mono $(RootDir)/output/$(Configuration)/HtmlXliff.exe</HtmlXliffProgram>
+	</PropertyGroup>
+
+	<Target Name="ExtractXliffFromHtml">
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Decodable Reader/ReadMe.xlf" "$(RootDir)/src/BloomBrowserUI/templates/template books/Decodable Reader/ReadMe-en.md"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Picture Dictionary/ReadMe.xlf" "$(RootDir)/src/BloomBrowserUI/templates/template books/Picture Dictionary/ReadMe-en.md"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Wall Calendar/ReadMe.xlf" "$(RootDir)/src/BloomBrowserUI/templates/template books/Wall Calendar/ReadMe-en.md"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Leveled Reader/Readme.xlf" "$(RootDir)/src/BloomBrowserUI/templates/template books/Leveled Reader/ReadMe-en.md"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Big Book/ReadMe.xlf" "$(RootDir)/src/BloomBrowserUI/templates/template books/Big Book/ReadMe-en.md"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/Template Starter/ReadMe.xlf" "$(RootDir)/src/BloomBrowserUI/templates/template books/Template Starter/ReadMe-en.md"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/bloomEpubPreview.xlf" "$(RootDir)/output/browser/ePUB/bloomEpubPreview-en.html"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/MissingLameModule.xlf" "$(RootDir)/output/browser/ePUB/MissingLameModule-en.html"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/TrainingVideos.xlf" "$(RootDir)/DistFiles/infoPages/TrainingVideos-en.md"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/IntegrityFailureAdvice.xlf" "$(RootDir)/DistFiles/IntegrityFailureAdvice-en.md"'/>
+		<Exec Command='$(HtmlXliffProgram) -o "$(RootDir)/DistFiles/localization/en/leveledReaderInfo.xlf" "$(RootDir)/DistFiles/leveledRTInfo/leveledReaderInfo-en.html"'/>
+	</Target>
 
 	<ItemGroup>
 		<TestAssemblies Include="$(RootDir)/output/$(Configuration)/BloomTests.dll"/>

@@ -13,7 +13,7 @@ After you submit this report, we will contact you and help you work this out. In
 
 * Run the Bloom installer again, and see if it starts up OK this time. {i18n="integrity.todo.ideas.Reinstall"}
 
-* If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at **{installFolder}**. {i18n="integrity.todo.ideas.Antivirus"}
+* If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at **{{installFolder}}**. {i18n="integrity.todo.ideas.Antivirus"}
     * AVAST: [Instructions](http://www.getavast.net/support/managing-exceptions). {i18n="integrity.todo.ideas.AVAST"}
     * Norton Antivirus: [Instructions from Symantec](https://support.symantec.com/en_US/article.HOWTO80920.html). {i18n="integrity.todo.ideas.Norton"}
     * AVG: [Instructions from AVG](https://support.avg.com/SupportArticleView?l=en_US&urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning). {i18n="integrity.todo.ideas.AVG"}
