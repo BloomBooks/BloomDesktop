@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using Bloom.Api;
-using Bloom.web;
+using SIL.Progress;
 
 namespace Bloom.Publish.Android.wifi
 {
@@ -30,13 +30,12 @@ namespace Bloom.Publish.Android.wifi
 		private const int Port = 5913; // must match port in BloomReader NewBookListenerService.startListenForUDPBroadcast
 		private string _currentIpAddress;
 		private byte[] _sendBytes; // Data we send in each advertisement packet
+		private readonly IProgress _progress;
 
-		internal WiFiAdvertiser(WebSocketProgress progress)
+		internal WiFiAdvertiser(IProgress progress)
 		{
-			Progress = progress;
+			_progress = progress;
 		}
-
-		private WebSocketProgress Progress { get; }
 
 		public void Start()
 		{
@@ -55,7 +54,7 @@ namespace Bloom.Publish.Android.wifi
 
 		private void Work()
 		{
-			Progress.WriteStatus("Advertising book to Bloom Readers on local network...");
+			_progress.WriteStatus("Advertising book to Bloom Readers on local network...");
 			try
 			{
 				while (true)
@@ -67,13 +66,13 @@ namespace Bloom.Publish.Android.wifi
 			}
 			catch (ThreadAbortException)
 			{
-				Progress.WriteStatus("Stopped Advertising.");
-				//Progress.WriteVerbose("Advertiser Thread Aborting (that's normal)");
+				_progress.WriteStatus("Stopped Advertising.");
+				//_progress.WriteVerbose("Advertiser Thread Aborting (that's normal)");
 				_client.Close();
 			}
 			catch (Exception error)
 			{
-				Progress.WriteError("Application", string.Format("Error in Advertiser: {0}", error.Message), EventLogEntryType.Error);
+				_progress.WriteError("Application", string.Format("Error in Advertiser: {0}", error.Message), EventLogEntryType.Error);
 			}
 		}
 		public static void SendCallback(IAsyncResult args)

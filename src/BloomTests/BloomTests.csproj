@@ -214,7 +214,7 @@
     <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="web\controllers\PageTemplatesApiTests.cs" />
-    <Compile Include="web\controllers\PublishToWebApiTests.cs" />
+    <Compile Include="web\controllers\WiFiPublisher.cs" />
     <Compile Include="web\controllers\ReadersApiTests.cs" />
     <Compile Include="web\controllers\ApiTest.cs" />
     <Compile Include="WebLibraryIntegration\ProblemBookUploaderTests.cs" />
