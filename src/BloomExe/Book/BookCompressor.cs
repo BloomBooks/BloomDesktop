@@ -8,6 +8,7 @@ using SIL.IO;
 using System.Drawing;
 using System;
 using System.Drawing.Drawing2D;
+using Bloom.Api;
 
 namespace Bloom.Book
 {
@@ -115,11 +116,23 @@ namespace Bloom.Book
 				}
 				else if (reduceImages && (bookFile == filePath))
 				{
-					var content = File.ReadAllText(bookFile, Encoding.UTF8);
-					content = StripImagesWithMissingSrc(content, bookFile);
+					var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
+					var content = StripImagesWithMissingSrc(originalContent, bookFile);
 					content = StripContentEditable(content);
 					modifiedContent = Encoding.UTF8.GetBytes(content);
 					newEntry.Size = modifiedContent.Length;
+
+					// Make an extra entry containing the sha
+					var sha = PublishToAndroidApi.MakeVersionCode(originalContent);
+					ZipEntry shaEntry = new ZipEntry(Path.ChangeExtension(entryName, "version"));
+					var shaBytes = Encoding.UTF8.GetBytes(sha);
+					shaEntry.Size = shaBytes.Length;
+					zipStream.PutNextEntry(shaEntry);
+					using (var memStream = new MemoryStream(shaBytes))
+					{
+						StreamUtils.Copy(memStream, zipStream, new byte[1024]);
+					}
+					zipStream.CloseEntry();
 				}
 				else
 				{
@@ -132,7 +145,9 @@ namespace Bloom.Book
 				{
 					using (var memStream = new MemoryStream(modifiedContent))
 					{
-						StreamUtils.Copy(memStream, zipStream, new byte[modifiedContent.Length]);
+						// There is some minimum buffer size (44 was too small); I don't know exactly what it is,
+						// but 1024 makes it happy.
+						StreamUtils.Copy(memStream, zipStream, new byte[Math.Max(modifiedContent.Length, 1024)]);
 					}
 				}
 				else
