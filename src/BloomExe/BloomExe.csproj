@@ -325,7 +325,7 @@
     <Compile Include="Publish\Android\wifi\WiFiPublisher.cs" />
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\Epub\ElectronicPublishView.cs" />
-    <Compile Include="Publish\Android\BloomReaderPublisher.cs" />
+    <Compile Include="Publish\Android\UsbPublisher.cs" />
     <Compile Include="Publish\Android\AndroidView.cs">
       <SubType>UserControl</SubType>
     </Compile>

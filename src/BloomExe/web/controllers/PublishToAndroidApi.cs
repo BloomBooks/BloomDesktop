@@ -20,7 +20,7 @@ namespace Bloom.Api
 	{
 		private const string kApiUrlPart = "publish/android/";
 		private const string kWebsocketStateId = "publish/android/state";
-		private readonly BloomReaderPublisher _bloomReaderPublisher;
+		private readonly UsbPublisher _usbPublisher;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly WebSocketProgress _progress;
 		private WiFiAdvertiser _wifiAdvertiser;
@@ -31,11 +31,11 @@ namespace Bloom.Api
 		{
 			_webSocketServer = bloomWebSocketServer;
 			_progress = new WebSocketProgress(_webSocketServer);
-			_bloomReaderPublisher = new BloomReaderPublisher(_progress);
-			_bloomReaderPublisher.UsbConnected += OnUsbConnected;
-			_bloomReaderPublisher.UsbConnectionFailed += OnUsbConnectionFailed;
-			_bloomReaderPublisher.SendBookSucceeded += OnSendBookSucceeded;
-			_bloomReaderPublisher.SendBookFailed += OnSendBookFailed;
+			_usbPublisher = new UsbPublisher(_progress);
+			_usbPublisher.UsbConnected += OnUsbConnected;
+			_usbPublisher.UsbConnectionFailed += OnUsbConnectionFailed;
+			_usbPublisher.SendBookSucceeded += OnSendBookSucceeded;
+			_usbPublisher.SendBookFailed += OnSendBookFailed;
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -51,7 +51,7 @@ namespace Bloom.Api
 		{
 			_book = request.CurrentBook;
 			SetState("UsbStarted");
-			_bloomReaderPublisher.Connect();
+			_usbPublisher.Connect();
 			request.SucceededDoNotNavigate();
 		}
 
@@ -140,7 +140,7 @@ namespace Bloom.Api
 			if (_wifiAdvertiser == null)
 			{
 				// either closed without pressing any connect button, or used the USB one.
-				_bloomReaderPublisher.CancelConnect();
+				_usbPublisher.CancelConnect();
 			}
 			else
 			{
@@ -168,7 +168,7 @@ namespace Bloom.Api
 		private void OnUsbConnected(object sender, EventArgs args)
 		{
 			Guard.AgainstNull(_book, "_book");
-			_bloomReaderPublisher.SendBookAsync(_book);
+			_usbPublisher.SendBookAsync(_book);
 		}
 
 		private void OnSendBookSucceeded(object sender, EventArgs args)

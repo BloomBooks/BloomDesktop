@@ -11,7 +11,7 @@ using SIL.Reporting;
 
 namespace Bloom.Publish.Android
 {
-	public class BloomReaderPublisher
+	public class UsbPublisher
 	{
 		public event EventHandler UsbConnected;
 		public event EventHandler UsbConnectionFailed;
@@ -22,7 +22,7 @@ namespace Bloom.Publish.Android
 		private readonly IAndroidDeviceUsbConnection _androidDeviceUsbConnection;
 		private DeviceNotFoundReportType _previousDeviceNotFoundReportType;
 
-		public BloomReaderPublisher(IProgress progress)
+		public UsbPublisher(IProgress progress)
 		{
 			_progress = progress;
 #if !__MonoCS__
@@ -197,6 +197,6 @@ namespace Bloom.Publish.Android
 			SendBookFailed?.Invoke(this, new EventArgs());
 		}
 
-		
+
 	}
 }
