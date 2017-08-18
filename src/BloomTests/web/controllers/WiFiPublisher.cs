@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Bloom.Api;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace BloomTests.web.controllers
 {
-	public class PublishToWebApiTests
+	public class WiFiPublisher
 	{
 		[Test]
 		public void MakeVersionCode_DistinguishesTextChanges()
@@ -16,7 +10,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div>{0}</div></body></html>";
 			var first = string.Format(template, "abc");
 			var second = string.Format(template, "abd");
-			Assert.That(PublishToAndroidApi.MakeVersionCode(first), Is.Not.EqualTo(PublishToAndroidApi.MakeVersionCode(second)));
+			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
 		}
 
 		[TestCase("abc", "ab c")]
@@ -27,7 +21,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div>{0}</div></body></html>";
 			var first = string.Format(template, firstArg);
 			var second = string.Format(template, secondArg);
-			Assert.That(PublishToAndroidApi.MakeVersionCode(first), Is.Not.EqualTo(PublishToAndroidApi.MakeVersionCode(second)));
+			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -36,7 +30,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div>{0}</div></body></html>";
 			var first = string.Format(template, "abc");
 			var second = string.Format(template, "<p>abc<p>");
-			Assert.That(PublishToAndroidApi.MakeVersionCode(first), Is.Not.EqualTo(PublishToAndroidApi.MakeVersionCode(second)));
+			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -50,7 +44,7 @@ namespace BloomTests.web.controllers
 	<body> <div>abc</div>
 	</body>
 </html>";
-			Assert.That(PublishToAndroidApi.MakeVersionCode(first), Is.EqualTo(PublishToAndroidApi.MakeVersionCode(second)));
+			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -68,7 +62,7 @@ namespace BloomTests.web.controllers
                         DIV.bloom-page.coverColor       {               background-color: #C2A6BF !important;   }
     </style>
 </head><body><div>abc</div></body></html>";
-			Assert.That(PublishToAndroidApi.MakeVersionCode(first), Is.EqualTo(PublishToAndroidApi.MakeVersionCode(second)));
+			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -77,7 +71,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div class='bloom-page' id='{0}'>abc</div></body></html>";
 			var first = string.Format(template, "934245d2-94dd-4f40-8b53-279867d8e07b");
 			var second = string.Format(template, "d9a71953-6cf4-475a-8236-36d509ff8e1c");
-			Assert.That(PublishToAndroidApi.MakeVersionCode(first), Is.EqualTo(PublishToAndroidApi.MakeVersionCode(second)));
+			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -86,7 +80,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div class='bloom-page'>id='{0}'</div></body></html>";
 			var first = string.Format(template, "934245d2-94dd-4f40-8b53-279867d8e07b");
 			var second = string.Format(template, "d9a71953-6cf4-475a-8236-36d509ff8e1c");
-			Assert.That(PublishToAndroidApi.MakeVersionCode(first), Is.Not.EqualTo(PublishToAndroidApi.MakeVersionCode(second)));
+			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
 		}
 	}
 }
