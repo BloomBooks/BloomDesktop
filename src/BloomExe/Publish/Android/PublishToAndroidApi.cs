@@ -69,7 +69,7 @@ namespace Bloom.Api
 			_wifiListener = new BloomReaderUDPListener();
 			_wifiListener.NewMessageReceived += (sender, args) =>
 			{
-				var androidIpAddress = Encoding.UTF8.GetString(args.data);
+				var androidIpAddress = Encoding.UTF8.GetString(args.Data);
 				SendBookOverWiFi(request.CurrentBook, androidIpAddress);
 			};
 

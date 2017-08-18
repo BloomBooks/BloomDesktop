@@ -9,11 +9,11 @@ namespace Bloom.Api
 	/// </summary>
 	class AndroidMessageArgs : EventArgs
 	{
-		public byte[] data { get; set; }
+		public byte[] Data { get; set; }
 
 		public AndroidMessageArgs(byte[] newData)
 		{
-			data = newData;
+			Data = newData;
 		}
 	}
 }
