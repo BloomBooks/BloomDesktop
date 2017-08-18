@@ -16,6 +16,7 @@ using Bloom.ImageProcessing;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
+using Bloom.Publish.Android;
 using Bloom.web;
 using Bloom.web.controllers;
 //using Chorus;

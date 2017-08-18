@@ -1,7 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.IO;
-using System.Net;
 using Bloom.Book;
 using Bloom.Communication;
 using L10NSharp;
@@ -13,10 +11,7 @@ namespace Bloom.Publish.Android
 {
 	public class UsbPublisher
 	{
-		public event EventHandler UsbConnected;
-		public event EventHandler UsbConnectionFailed;
-		public event EventHandler SendBookSucceeded;
-		public event EventHandler SendBookFailed;
+		public Action Stopped;
 
 		private readonly IProgress _progress;
 		private readonly IAndroidDeviceUsbConnection _androidDeviceUsbConnection;
@@ -39,7 +34,7 @@ namespace Bloom.Publish.Android
 		{
 			try
 			{
-				_progress.WriteMessage(LocalizationManager.GetString("Publish.BloomReaderPublisher.LookingForDevice",
+				_progress.WriteMessage(LocalizationManager.GetString("Publish.Android.Usb.LookingForDevice",
 					"Looking for an Android device connected by USB cable and set up for MTP..."));
 
 				_androidDeviceUsbConnection.OneReadyDeviceFound += OneReadyDeviceFound;
@@ -62,23 +57,23 @@ namespace Bloom.Publish.Android
 			}
 		}
 
-		public void CancelConnect()
+		public void Stop()
 		{
+			_progress.WriteMessage("Stopped");
 			_androidDeviceUsbConnection.StopFindingDevice();
-
 			_androidDeviceUsbConnection.OneReadyDeviceFound -= OneReadyDeviceFound;
 			_androidDeviceUsbConnection.OneReadyDeviceNotFound -= OneReadyDeviceNotFound;
 		}
 
 		private void UsbFailConnect(Exception e)
 		{
-			var unableToConnectMessage = LocalizationManager.GetString("Publish.BloomReaderPublisher.UnableToConnect",
+			var unableToConnectMessage = LocalizationManager.GetString("Publish.Android.Usb.UnableToConnect",
 				"Unable to connect to any Android device which has Bloom Reader.");
-			CancelConnect();
+			Stop();
 			_progress.WriteError(unableToConnectMessage);
 			_progress.WriteError("\tTechnical details to share with the development team: " + e);
 			Logger.WriteError(e);
-			UsbConnectionFailed?.Invoke(this, new EventArgs());
+			Stopped();
 		}
 
 		private void OneReadyDeviceFound(object sender, EventArgs args)
@@ -87,10 +82,10 @@ namespace Bloom.Publish.Android
 			_androidDeviceUsbConnection.OneReadyDeviceNotFound -= OneReadyDeviceNotFound;
 
 			_progress.WriteMessage(String.Format(LocalizationManager.GetString(
-				"Publish.BloomReaderPublisher.UsbConnected",
+				"Publish.Android.Usb.UsbConnected",
 				"UsbConnected to {0}...", "{0} is a device name"), _androidDeviceUsbConnection.GetDeviceName()));
 
-			UsbConnected?.Invoke(this, new EventArgs());
+			Stopped();
 		}
 
 		private void OneReadyDeviceNotFound(object sender, OneReadyDeviceNotFoundEventArgs eventArgs)
@@ -104,17 +99,17 @@ namespace Bloom.Publish.Android
 			switch (eventArgs.ReportType)
 			{
 				case DeviceNotFoundReportType.NoDeviceFound:
-					_progress.WriteWarning(LocalizationManager.GetString("Publish.BloomReaderPublisher.NoDeviceFound",
+					_progress.WriteWarning(LocalizationManager.GetString("Publish.Android.Usb.NoDeviceFound",
 						"No device found. Still looking..."));
 					break;
 				case DeviceNotFoundReportType.NoBloomDirectory:
-					_progress.WriteWarning(LocalizationManager.GetString("Publish.BloomReaderPublisher.DeviceWithoutBloomReader",
+					_progress.WriteWarning(LocalizationManager.GetString("Publish.Android.Usb.DeviceWithoutBloomReader",
 						"The following devices are connected but do not seem to have Bloom Reader installed."));
 					foreach (var deviceName in eventArgs.DeviceNames)
 						_progress.WriteWarning($"\t{deviceName}");
 					break;
 				case DeviceNotFoundReportType.MoreThanOneReadyDevice:
-					_progress.WriteWarning(LocalizationManager.GetString("Publish.BloomReaderPublisher.MoreThanOne",
+					_progress.WriteWarning(LocalizationManager.GetString("Publish.Android.Usb.MoreThanOne",
 						"The following connected devices all have Bloom Reader installed. Please connect only one of these devices."));
 					foreach (var deviceName in eventArgs.DeviceNames)
 						_progress.WriteWarning($"\t{deviceName}");
@@ -138,7 +133,7 @@ namespace Bloom.Publish.Android
 					if (args.Error != null)
 						FailSendBook(args.Error);
 					else
-						SendBookSucceeded?.Invoke(sender, new EventArgs());
+						Stopped();
 				};
 				backgroundWorker.RunWorkerAsync();
 			}
@@ -152,22 +147,22 @@ namespace Bloom.Publish.Android
 		{
 			var bookTitle = book.Title;
 			_progress.WriteMessage(String.Format(LocalizationManager.GetString(
-				"Publish.BloomReaderPublisher.LookingForExisting",
+				"Publish.Android.Usb.LookingForExisting",
 				"Looking for an existing \"{0}\"...", "{0} is a book title"), bookTitle));
 			var publishedFileName = bookTitle + BookCompressor.ExtensionForDeviceBloomBook;
 			var bookExistsOnDevice = _androidDeviceUsbConnection.BookExists(publishedFileName);
 
-			_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.PackagingBook",
+			_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.Android.Usb.PackagingBook",
 				"Packaging \"{0}\" for use with Bloom Reader...", "{0} is a book title"), bookTitle));
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 			{
 				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book);
 
 				if (bookExistsOnDevice)
-					_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.ReplacingBook",
+					_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.Android.Usb.ReplacingBook",
 						"Replacing existing \"{0}\"...", "{0} is a book title"), bookTitle));
 				else
-					_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.BloomReaderPublisher.SendingBook",
+					_progress.WriteMessage(String.Format(LocalizationManager.GetString("Publish.Android.Usb.SendingBook",
 						"Sending \"{0}\" to your Android device...", "{0} is a book title"), bookTitle));
 				_androidDeviceUsbConnection.SendBook(bloomdTempFile.Path);
 			}
@@ -175,7 +170,7 @@ namespace Bloom.Publish.Android
 			if (_androidDeviceUsbConnection.BookExists(bookTitle + BookCompressor.ExtensionForDeviceBloomBook))
 			{
 				_progress.WriteMessage(String.Format(LocalizationManager.GetString(
-					"Publish.BloomReaderPublisher.BookSent",
+					"Publish.Android.Usb.BookSent",
 					"You can now read \"{0}\" in Bloom Reader!", "{0} is a book title"), bookTitle));
 			}
 			else
@@ -186,7 +181,7 @@ namespace Bloom.Publish.Android
 
 		private void FailSendBook(Exception e)
 		{
-			string generalFailureMessage = LocalizationManager.GetString("Publish.BloomReaderPublisher.FailureToSend",
+			var generalFailureMessage = LocalizationManager.GetString("Publish.Android.Usb.FailureToSend",
 				"An error occurred and the book was not sent to your Android device.");
 			_progress.WriteError(generalFailureMessage);
 			if (e != null)
@@ -194,9 +189,7 @@ namespace Bloom.Publish.Android
 				_progress.WriteError("\tTechnical details to share with the development team: " + e);
 				Logger.WriteError(e);
 			}
-			SendBookFailed?.Invoke(this, new EventArgs());
+			Stopped();
 		}
-
-
 	}
 }
