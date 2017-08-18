@@ -1,10 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Windows.Media;
 #if __MonoCS__
 using SharpFont;
 #else
-
+using System.Windows.Media;		// not implemented in Mono
 #endif
 
 namespace Bloom.Publish.Epub
