@@ -37,17 +37,51 @@ body {
   box-sizing: border-box;
 }
 
+select {
+    padding-bottom: 105px;
+    border-bottom: none !important;
+    padding-top: 0 !important;
+}
+.method-option {
+    height: 146px;
+    width: 600px;
+    padding-top: 10px;
+    background-repeat: no-repeat;
+    text-align: center;
+    font-size: 18pt;
+    background-size: 200px auto;
+}
+.wifi-method-option{
+    background-image: url(publish-android-wifi.svg);
+    border-bottom: solid thin lightgray;
+    background-position: center 40px;
+}
+.usb-method-option{
+    background-image: url(publish-android-usb.svg);
+    border-bottom: solid thin lightgray;
+    background-position: center 70px;
+}
+.file-method-option{
+    background-image: url(publish-android-file.svg);
+    background-position: center 70px;
+}
+
 button {
-  &:disabled {
-    color:white;// darkgray;
-  }
+    background-color: white;
+    &:disabled {
+        color:gray;
+    }
+}
+
+button + button {
+    margin-left: 1em;
 }
 
 #progress-row {
     display: flex;
     justify-content: space-between; // push link to the right
     width: 100%;
-    margin-block-start: 1em;
+    margin-block-start: 2em;
     H1 { margin-block-start: 0;}
 }
 

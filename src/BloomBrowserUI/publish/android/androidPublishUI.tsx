@@ -74,12 +74,15 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser.">
                     Method
                 </H1>
-                <select disabled={this.state.stateId !== "stopped"} value={this.state.method} onChange={
-                    (event) => self.setState({ method: event.target.value })}>;
-                    <option value="wifi">WiFi</option>
-                    <option value="usb">USB</option>
+                <select className={`method-option ${this.state.method}-method-option`}
+                    disabled={this.state.stateId !== "stopped"} value={this.state.method} onChange={
+                        (event) => self.setState({ method: event.target.value })}>;
+                    <option className="method-option wifi-method-option" value="wifi">Serve on WiFi Network</option>
+                    <option className="method-option usb-method-option" value="usb">Send over USB Cable</option>
+                    <option className="method-option file-method-option" value="file">Save Bloom Reader File</option>
                 </select>
 
+                <p />
                 <H1 l10nKey="Publish.Android.Control"
                     l10nComment="This is the heading above various buttons that control the publishing of the book to Android.">
                     Control
@@ -113,11 +116,21 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                         <BloomButton l10nKey="Publish.Android.Usb.Stop"
                             enabled={this.state.stateId === "UsbStarted"}
                             clickEndpoint="publish/android/usb/stop">
-                            Stop Serving
+                            Stop Trying
                         </BloomButton>
                     </div>
                 }
-
+                {this.state.method === "file" &&
+                    <div>
+                        <BloomButton l10nKey="Publish.Android.Save"
+                            l10nComment="Button that tells Bloom to save the book as a .bloomD file."
+                            clickEndpoint="publish/android/usb/save"
+                            enabled={true}>
+                            Save...
+                        </BloomButton>
+                        &lt;--- Not implemented yet
+                    </div>
+                }
                 <div id="progress-row">
                     <h1>Progress</h1>
                     <HelpLink l10nKey="Publish.Android.Troubleshooting"
