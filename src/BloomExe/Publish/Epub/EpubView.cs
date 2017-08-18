@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.Epub
 {
 	/// <summary>
 	/// This class implements the panel that appears in the Publish tab when the ePUB button is selected.

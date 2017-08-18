@@ -11,7 +11,7 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Windows.Forms.ClearShare;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.BloomLibrary
 {
 	/// <summary>
 	/// This class replaces the AdobeReaderControl in the PublishView when the Upload To BloomLibrary.org option is selected.

@@ -1,5 +1,5 @@
 ﻿#if !__MonoCS__
-namespace Bloom.Publish
+namespace Bloom.Publish.PDF
 {
 	partial class AdobeReaderControl
 	{

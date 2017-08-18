@@ -1,4 +1,4 @@
-﻿namespace Bloom.Publish
+﻿namespace Bloom.Publish.Epub
 {
 	partial class EpubView
 	{

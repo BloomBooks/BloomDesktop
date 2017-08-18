@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Media;
 #if __MonoCS__
 using SharpFont;
 #else
-using System.Windows.Media;
+
 #endif
 
-namespace Bloom.Publish
+namespace Bloom.Publish.Epub
 {
 	/// <summary>
 	/// Set of up to four files useful for a given font name

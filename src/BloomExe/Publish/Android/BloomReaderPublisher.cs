@@ -9,7 +9,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.Android
 {
 	public class BloomReaderPublisher
 	{

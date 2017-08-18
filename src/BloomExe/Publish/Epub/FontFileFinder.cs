@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Drawing.Text;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Media;
 #if __MonoCS__
 using SharpFont;				// Linux only (interface to libfreetype.so.6)
 #else
-using System.Windows.Media;		// Windows .Net only
+
+// Windows .Net only
 #endif
 
-namespace Bloom.Publish
+namespace Bloom.Publish.Epub
 {
 	/// <summary>
 	/// This class handles the problem of finding what files contain the definition of the various faces of a particular font.

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
-using Bloom.Edit;
 using Gecko;
 using SIL.IO;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.Epub
 {
 	public class ElectronicPublishView
 	{

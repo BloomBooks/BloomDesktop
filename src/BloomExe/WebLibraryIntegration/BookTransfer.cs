@@ -14,6 +14,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
+using Bloom.Publish.PDF;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;

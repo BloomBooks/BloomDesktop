@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Bloom.Collection;
 using Bloom.Publish;
+using Bloom.Publish.Android;
+using Bloom.Publish.Android.wifi;
 using Bloom.web;
 using SIL.Code;
 

@@ -15,6 +15,7 @@ using L10NSharp;
 using SIL.IO;
 using Bloom.Collection;
 using Bloom.Publish;
+using Bloom.Publish.Epub;
 using Bloom.Workspace;
 using Newtonsoft.Json;
 using SIL.Reporting;

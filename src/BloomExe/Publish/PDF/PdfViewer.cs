@@ -1,23 +1,22 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
+
 using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using System.Runtime.InteropServices;
-using Bloom.Properties;
+using System.Windows.Forms;
 using Gecko;
 using Gecko.Interop;
 using L10NSharp;
-#if !__MonoCS__
-using IWshRuntimeLibrary;
-#endif
 using Microsoft.Win32;
 using SIL.IO;
+#if !__MonoCS__
+#endif
 
-namespace Bloom.Publish
+namespace Bloom.Publish.PDF
 {
 	/// <summary>
 	/// Wrapper class that wraps either a Gecko web browser that displays the PDF file through

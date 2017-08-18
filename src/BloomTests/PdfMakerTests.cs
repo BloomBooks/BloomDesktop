@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.IO;
 using Bloom.Publish;
+using Bloom.Publish.PDF;
 using NUnit.Framework;
 using SIL.IO;
 

@@ -3,7 +3,7 @@ using System;
 using System.Windows.Forms;
 using L10NSharp;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.PDF
 {
 	/// <summary>
 	/// Wraps the adobe reader ActiveX control primarily so that we can

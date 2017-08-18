@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,16 +10,14 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.Edit;
 using BloomTemp;
-#if !__MonoCS__
 using NAudio.Wave;
-#endif
 using SIL.IO;
-using SIL.Progress;
 using SIL.Xml;
+#if !__MonoCS__
+#endif
 
-namespace Bloom.Publish
+namespace Bloom.Publish.Epub
 {
 	/// <summary>
 	/// This class handles the process of creating an ePUB out of a bloom book.

@@ -1,4 +1,6 @@
-﻿namespace Bloom.Publish
+﻿using Bloom.Publish.PDF;
+
+namespace Bloom.Publish
 {
     partial class PublishView
     {
@@ -59,7 +61,7 @@
 			this._simpleAllPagesRadio = new System.Windows.Forms.RadioButton();
 			this._epubRadio = new System.Windows.Forms.RadioButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._pdfViewer = new Bloom.Publish.PdfViewer();
+			this._pdfViewer = new PdfViewer();
 			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
 			this._uploadRadio = new System.Windows.Forms.RadioButton();
 			this._androidRadio = new System.Windows.Forms.RadioButton();

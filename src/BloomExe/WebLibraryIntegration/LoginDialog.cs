@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.Publish;
+using Bloom.Publish.BloomLibrary;
 using L10NSharp;
 using SIL.Code;
 using SIL.Reporting;

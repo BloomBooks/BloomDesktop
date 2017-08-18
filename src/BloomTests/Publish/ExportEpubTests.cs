@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
+using Bloom.Publish.Epub;
 using BloomTemp;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;

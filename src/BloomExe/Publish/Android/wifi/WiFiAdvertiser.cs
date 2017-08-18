@@ -8,7 +8,7 @@ using System.Threading;
 using Bloom.Api;
 using Bloom.web;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.Android.wifi
 {
 	/// <summary>
 	/// This class broadcasts a message over the network offering to supply a book to any Android that wants it.

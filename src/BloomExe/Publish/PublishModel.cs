@@ -13,6 +13,8 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Api;
+using Bloom.Publish.Epub;
+using Bloom.Publish.PDF;
 using DesktopAnalytics;
 using SIL.IO;
 using SIL.Progress;

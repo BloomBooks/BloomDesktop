@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
+using System.Text;
 using System.Windows.Forms;
-using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.CommandLineProcessing;
 using SIL.IO;
-using SIL.Progress;
 using SIL.PlatformUtilities;
-using System.Text;
+using SIL.Progress;
 using SIL.Reporting;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.PDF
 {
 	/// <summary>
 	/// This wrapper uses the GeckoFxHtmlToPdf program, which we rename to

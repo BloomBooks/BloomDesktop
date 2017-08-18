@@ -1,23 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Windows.Forms;
-using Bloom.ToPalaso;
-using L10NSharp;
+using System.Text;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
-using SIL.PlatformUtilities;
-using System.Text;
-using SIL.Reporting;
 using TempFile = SIL.IO.TempFile;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.PDF
 {
 	/// <summary>
 	/// The Geckofx/Mozilla code used to create PDF files can create truly huge files in the hundreds of megabytes

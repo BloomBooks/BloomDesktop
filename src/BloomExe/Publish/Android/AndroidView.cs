@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using SIL.PlatformUtilities;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.Android
 {
 	/// <summary>
 	/// This class implements the panel that appears in the Publish tab when the Android button is selected.

@@ -1,8 +1,7 @@
 ﻿using System.Drawing;
-using System.Windows.Forms;
 using SIL.Windows.Forms.Widgets;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.PDF
 {
 	partial class SamplePrintNotification
 	{

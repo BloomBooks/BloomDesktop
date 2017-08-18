@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Bloom.Publish;
+using Bloom.Publish.Epub;
 using CommandLine;
 
 namespace Bloom.CLI

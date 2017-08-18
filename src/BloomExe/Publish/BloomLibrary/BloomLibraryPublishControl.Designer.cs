@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.BloomLibrary
 {
 	partial class BloomLibraryPublishControl
 	{

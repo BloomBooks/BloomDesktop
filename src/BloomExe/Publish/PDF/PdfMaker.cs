@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
-using Bloom.Edit;
-using Bloom.ToPalaso;
 using Bloom.Workspace;
 using L10NSharp;
-using SIL.Code;
-using SIL.CommandLineProcessing;
-using SIL.IO;
-using SIL.Progress;
 using PdfDroplet.LayoutMethods;
 using PdfSharp;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
+using SIL.IO;
+using SIL.Progress;
 
-namespace Bloom.Publish
+namespace Bloom.Publish.PDF
 {
 	/// <summary>
 	/// Creates a pdf from Html, optionally layed out in various booklet layouts

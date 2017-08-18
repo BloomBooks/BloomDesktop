@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Publish.Epub;
 using Bloom.web;
 using DesktopAnalytics;
 using L10NSharp;
@@ -474,7 +475,7 @@ namespace Bloom.Api
 				"/branding/image",
 				// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
 				// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
-				Bloom.Publish.EpubMaker.kEPUBExportFolder.ToLowerInvariant()
+				EpubMaker.kEPUBExportFolder.ToLowerInvariant()
 			};
 			return stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s)));
 		}
