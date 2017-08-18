@@ -11,11 +11,11 @@ using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using BloomTemp;
+#if !__MonoCS__
 using NAudio.Wave;
+#endif
 using SIL.IO;
 using SIL.Xml;
-#if !__MonoCS__
-#endif
 
 namespace Bloom.Publish.Epub
 {

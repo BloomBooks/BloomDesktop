@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Drawing.Text;
 using System.IO;
-using System.Windows.Media;
 #if __MonoCS__
 using SharpFont;				// Linux only (interface to libfreetype.so.6)
 #else
-
-// Windows .Net only
+using System.Windows.Media;		// not implemented in Mono
 #endif
 
 namespace Bloom.Publish.Epub
