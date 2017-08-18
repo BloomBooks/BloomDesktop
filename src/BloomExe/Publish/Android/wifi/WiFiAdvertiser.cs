@@ -93,7 +93,7 @@ namespace Bloom.Publish.Android.wifi
 				advertisement.Title = BookTitle;
 				advertisement.Version = BookVersion;
 				advertisement.Language = TitleLanguage;
-				advertisement.ProtocolVersion = BloomReaderPublisher.ProtocolVersion;
+				advertisement.ProtocolVersion = WiFiPublisher.ProtocolVersion;
 				advertisement.Sender = System.Environment.MachineName;
 
 				_sendBytes = Encoding.UTF8.GetBytes(advertisement.ToString());

@@ -122,7 +122,7 @@ namespace Bloom.Api
 		{
 			try
 			{
-				_bloomReaderPublisher.SendBookToClientOnLocalSubNet(book, androidIpAddress);
+				WiFiPublisher.SendBookToClientOnLocalSubNet(book, androidIpAddress, _progress);
 			}
 			catch (Exception e)
 			{
