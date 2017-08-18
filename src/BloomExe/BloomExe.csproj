@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -321,15 +321,15 @@
       <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\AudioProcessor.cs" />
-    <Compile Include="Publish\ElectronicPublishView.cs" />
-    <Compile Include="Publish\BloomReaderPublisher.cs" />
-    <Compile Include="Publish\AndroidView.cs">
+    <Compile Include="Publish\Epub\ElectronicPublishView.cs" />
+    <Compile Include="Publish\Android\BloomReaderPublisher.cs" />
+    <Compile Include="Publish\Android\AndroidView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Publish\AndroidView.Designer.cs">
+    <Compile Include="Publish\Android\AndroidView.Designer.cs">
       <DependentUpon>AndroidView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\WiFiAdvertiser.cs" />
+    <Compile Include="Publish\Android\WiFiAdvertiser.cs" />
     <Compile Include="RobustIO.cs" />
     <Compile Include="NonFatalProblem.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
@@ -343,7 +343,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Publish\EpubMaker.cs" />
+    <Compile Include="Publish\Epub\EpubMaker.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
     <Compile Include="Book\BookData.cs" />
@@ -455,16 +455,16 @@
     <Compile Include="MiscUI\ProblemReporterDialog.Designer.cs">
       <DependentUpon>ProblemReporterDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\AdobeReaderControl.cs">
+    <Compile Include="Publish\PDF\AdobeReaderControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Publish\AdobeReaderControl.Designer.cs">
+    <Compile Include="Publish\PDF\AdobeReaderControl.Designer.cs">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\BloomLibraryPublishControl.cs">
+    <Compile Include="Publish\BloomLibrary\BloomLibraryPublishControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Publish\BloomLibraryPublishControl.Designer.cs">
+    <Compile Include="Publish\BloomLibrary\BloomLibraryPublishControl.Designer.cs">
       <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\BulkUploadProgressDlg.cs">
@@ -473,26 +473,26 @@
     <Compile Include="Publish\BulkUploadProgressDlg.Designer.cs">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\EpubView.cs">
+    <Compile Include="Publish\Epub\EpubView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Publish\EpubView.Designer.cs">
+    <Compile Include="Publish\Epub\EpubView.Designer.cs">
       <DependentUpon>EpubView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\FontFileFinder.cs" />
-    <Compile Include="Publish\FontGroup.cs" />
-    <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfProgram.cs" />
-    <Compile Include="Publish\PdfViewer.cs">
+    <Compile Include="Publish\Epub\FontFileFinder.cs" />
+    <Compile Include="Publish\Epub\FontGroup.cs" />
+    <Compile Include="Publish\PDF\MakePdfUsingGeckofxHtmlToPdfProgram.cs" />
+    <Compile Include="Publish\PDF\PdfViewer.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Publish\PdfViewer.Designer.cs">
+    <Compile Include="Publish\PDF\PdfViewer.Designer.cs">
       <DependentUpon>PdfViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\ProcessPdfWithGhostscript.cs" />
-    <Compile Include="Publish\SamplePrintNotification.cs">
+    <Compile Include="Publish\PDF\ProcessPdfWithGhostscript.cs" />
+    <Compile Include="Publish\PDF\SamplePrintNotification.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Publish\SamplePrintNotification.Designer.cs">
+    <Compile Include="Publish\PDF\SamplePrintNotification.Designer.cs">
       <DependentUpon>SamplePrintNotification.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
@@ -681,7 +681,7 @@
     </Compile>
     <Compile Include="ProjectContext.cs" />
     <Compile Include="Collection\CollectionSettings.cs" />
-    <Compile Include="Publish\PdfMaker.cs" />
+    <Compile Include="Publish\PDF\PdfMaker.cs" />
     <Compile Include="Publish\PublishModel.cs" />
     <Compile Include="ResolveShortcut.cs" />
     <Compile Include="SplashScreen.cs">
@@ -819,25 +819,25 @@
     <EmbeddedResource Include="MiscUI\TroubleShooterDialog.resx">
       <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\AdobeReaderControl.resx">
+    <EmbeddedResource Include="Publish\PDF\AdobeReaderControl.resx">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\BloomLibraryPublishControl.resx">
+    <EmbeddedResource Include="Publish\BloomLibrary\BloomLibraryPublishControl.resx">
       <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\AndroidView.resx">
+    <EmbeddedResource Include="Publish\Android\AndroidView.resx">
       <DependentUpon>AndroidView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\EpubView.resx">
+    <EmbeddedResource Include="Publish\Epub\EpubView.resx">
       <DependentUpon>EpubView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\PdfViewer.resx">
+    <EmbeddedResource Include="Publish\PDF\PdfViewer.resx">
       <DependentUpon>PdfViewer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Publish\SamplePrintNotification.resx">
+    <EmbeddedResource Include="Publish\PDF\SamplePrintNotification.resx">
       <DependentUpon>SamplePrintNotification.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Registration\LicenseDialog.resx">
