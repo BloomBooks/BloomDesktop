@@ -170,7 +170,10 @@ namespace Bloom.Book
 			// Note that whitespace is not valid in places like < img> or <img / > or < / img>.
 			// I expect tidy will make sure we really don't have any, so I'm not checking for it in
 			// those spots.
-			var regex = new Regex("<img[^>]*src\\s*=\\s*(['\"])(.*?)\\1[^>]*(/>|>\\s*</img\\s*>)");
+			// Note that the src path can end either with the closing quote of the src attr or with a
+			// question mark, signifying options (like ?optional=true for branding images) which are
+			// not part of the file we want to search for.
+			var regex = new Regex("<img[^>]*src\\s*=\\s*(['\"])(.*?)(\\1|\\?)[^>]*(/>|>\\s*</img\\s*>)");
 			var match = regex.Match(content);
 			var folderPath = Path.GetDirectoryName(bookFile);
 			while (match.Success)

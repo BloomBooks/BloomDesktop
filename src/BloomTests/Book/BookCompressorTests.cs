@@ -70,6 +70,7 @@ namespace BloomTests.Book
 			}
 		}
 
+		// Also verifies that images that DO exist are NOT removed (even if src attr includes params like ?optional=true)
 		[Test]
 		public void CompressBookForDevice_RemovesImgElementsWithMissingSrc_AndContentEditable()
 		{
@@ -97,7 +98,7 @@ namespace BloomTests.Book
             <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de'{1} data-book='outsideBackCover'></div>
 
             <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf'{1} data-book='outsideBackCover'></div>
-        </div{2}>{0} <img class='branding' src='back-cover-outside.svg' type='image/svg' onerror='this.style.display='none''></img></div>
+        </div{2}>{0} <img class='branding' src='back-cover-outside.svg?optional=true' type='image/svg' onerror='this.style.display='none''></img></div>
     </div>
 </body>
 </html>";
