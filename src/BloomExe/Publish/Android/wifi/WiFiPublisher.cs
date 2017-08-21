@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Bloom.Book;
 using Bloom.Collection;
+using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Progress;
 
@@ -41,8 +42,25 @@ namespace Bloom.Publish.Android.wifi
 			_wifiListener = new BloomReaderUDPListener();
 			_wifiListener.NewMessageReceived += (sender, args) =>
 			{
-				var androidIpAddress = Encoding.UTF8.GetString(args.Data);
-				SendBookOverWiFi(book, androidIpAddress);
+
+				var json = Encoding.UTF8.GetString(args.Data);
+				try
+				{
+					dynamic settings = JsonConvert.DeserializeObject(json);
+					// The property names used here must match the ones in BloomReader, doInBackground method of SendMessage,
+					// a private class of NewBookListenerService.
+					var androidIpAddress = (string) settings.deviceAddress;
+					var androidName = (string) settings.deviceName;
+					SendBookOverWiFi(book, androidIpAddress, androidName);
+				}
+				// If there's something wrong with the JSON (maybe an obsolete or newer version of reader?)
+				// just ignore the request.
+				catch (Exception ex) when (ex is JsonReaderException || ex is JsonSerializationException)
+				{
+					_progress.WriteError(string.Format(
+						"Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader? Request contains {0}; trying to interpret as JSON we got {1}",
+						json, ex.Message));
+				}
 			};
 
 			_wifiAdvertiser = new WiFiAdvertiser(_progress)
@@ -110,10 +128,11 @@ namespace Bloom.Publish.Android.wifi
 		/// </summary>
 		/// <param name="book"></param>
 		/// <param name="androidIpAddress"></param>
-		private void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, IProgress progress)
+		/// <param name="androidName"></param>
+		private void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName, IProgress progress)
 		{
 			var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
-			progress.WriteMessage($"Sending \"{book.Title}\" to device {androidIpAddress}");
+			progress.WriteMessage($"Sending \"{book.Title}\" to device \"{androidName}\"");
 
 			var publishedFileName = book.Title + BookCompressor.ExtensionForDeviceBloomBook;
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(BookStorage.SanitizeNameForFileSystem(publishedFileName)))
@@ -126,14 +145,14 @@ namespace Bloom.Publish.Android.wifi
 					myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] { 0 });
 				}
 			}
-			progress.WriteMessage($"Finished sending \"{book.Title}\" to device {androidIpAddress}");
+			progress.WriteMessage($"Finished sending \"{book.Title}\" to device \"{androidName}\"");
 		}
 
-		private void SendBookOverWiFi(Book.Book book, string androidIpAddress)
+		private void SendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName)
 		{
 			try
 			{
-				SendBookToClientOnLocalSubNet(book, androidIpAddress, _progress);
+				SendBookToClientOnLocalSubNet(book, androidIpAddress, androidName, _progress);
 			}
 			catch (Exception e)
 			{
