@@ -8,7 +8,6 @@ using SIL.IO;
 using System.Drawing;
 using System;
 using System.Drawing.Drawing2D;
-using Bloom.Api;
 
 namespace Bloom.Book
 {
@@ -123,8 +122,8 @@ namespace Bloom.Book
 					newEntry.Size = modifiedContent.Length;
 
 					// Make an extra entry containing the sha
-					var sha = PublishToAndroidApi.MakeVersionCode(originalContent);
-					ZipEntry shaEntry = new ZipEntry(Path.ChangeExtension(entryName, "version"));
+					var sha = Book.MakeVersionCode(originalContent);
+					ZipEntry shaEntry = new ZipEntry("version.txt"); // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
 					var shaBytes = Encoding.UTF8.GetBytes(sha);
 					shaEntry.Size = shaBytes.Length;
 					zipStream.PutNextEntry(shaEntry);

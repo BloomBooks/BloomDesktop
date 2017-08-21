@@ -89,11 +89,11 @@ namespace Bloom.Publish.Android.wifi
 			{
 				_currentIpAddress = GetLocalIpAddress();
 				dynamic advertisement = new DynamicJson();
-				advertisement.Title = BookTitle;
-				advertisement.Version = BookVersion;
-				advertisement.Language = TitleLanguage;
-				advertisement.ProtocolVersion = WiFiPublisher.ProtocolVersion;
-				advertisement.Sender = System.Environment.MachineName;
+				advertisement.title = BookTitle;
+				advertisement.version = BookVersion;
+				advertisement.language = TitleLanguage;
+				advertisement.protocolVersion = WiFiPublisher.ProtocolVersion;
+				advertisement.sender = System.Environment.MachineName;
 
 				_sendBytes = Encoding.UTF8.GetBytes(advertisement.ToString());
 				//EventLog.WriteEntry("Application", "Serving at http://" + _currentIpAddress + ":" + ChorusHubOptions.MercurialPort, EventLogEntryType.Information);

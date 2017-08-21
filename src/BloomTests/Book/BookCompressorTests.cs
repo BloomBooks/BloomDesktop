@@ -148,7 +148,7 @@ namespace BloomTests.Book
 				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
 				ZipFile zip = new ZipFile(bloomdTempFile.Path);
 				Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
-				Assert.That(GetEntryContents(zip, Path.ChangeExtension(bookFileName, "version")), Is.EqualTo(PublishToAndroidApi.MakeVersionCode(html)));
+				Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html)));
 			}
 		}
 

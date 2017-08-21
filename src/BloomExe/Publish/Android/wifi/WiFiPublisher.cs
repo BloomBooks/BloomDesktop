@@ -47,9 +47,9 @@ namespace Bloom.Publish.Android.wifi
 
 			_wifiAdvertiser = new WiFiAdvertiser(_progress)
 			{
-				BookTitle = book.Title,
+				BookTitle = BookStorage.SanitizeNameForFileSystem(book.Title), // must be the exact same name as the file we will send if requested
 				TitleLanguage = collectionSettings.Language1Iso639Code,
-				BookVersion = MakeVersionCode(File.ReadAllText(book.GetPathHtmlFile()))
+				BookVersion = Book.Book.MakeVersionCode(File.ReadAllText(book.GetPathHtmlFile()))
 			};
 
 			_wifiAdvertiser.Start();
@@ -63,24 +63,6 @@ namespace Bloom.Publish.Android.wifi
 		// a book that is exactly what it has already...with the risk that it might miss binary changes to images, if nothing changes
 		// in the HTML. However, this doesn't prevent overwriting a newer book with an older one. Another option would be to
 		// send the file modify time (as well or instead). Or we can institute some system of versioning books...
-		public static string MakeVersionCode(string fileContent)
-		{
-			var simplified = fileContent;
-			// In general, whitespace sequences are equivalent to a single space.
-			// If the user types multiple spaces all but one will be turned to &nbsp;
-			simplified = new Regex(@"\s+").Replace(simplified, " ");
-			// Between the end of one tag and the start of the next white space doesn't count at all
-			simplified = new Regex(@">\s+<").Replace(simplified, "><");
-			// Page IDs (actually any element ids) are ignored
-			// (the bit before the 'id' matches an opening wedge followed by anything but a closing one,
-			// and is transferred to the output by $1. Then we look for an id='whatever', with optional
-			// whitespace, where (['\"]) matches either kind of opening quote while \2 matches the same one at the end.
-			// The question mark makes sure we end with the first possible closing quote.
-			// Then we grab everything up to the closing wedge and transfer that to the output as $3.)
-			simplified = new Regex("(<[^>]*)\\s*id\\s*=\\s*(['\"]).*?\\2\\s*([^>]*>)").Replace(simplified, "$1$3");
-			var bytes = Encoding.UTF8.GetBytes(simplified);
-			return Convert.ToBase64String(SHA256Managed.Create().ComputeHash(bytes));
-		}
 
 		public void Stop()
 		{
@@ -113,20 +95,21 @@ namespace Bloom.Publish.Android.wifi
 		private void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, IProgress progress)
 		{
 			var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
-			progress.WriteMessage($"Sending \"{book.Title}\" to device {androidIpAddress}");
+			var safeName = BookStorage.SanitizeNameForFileSystem(book.Title);
+			progress.WriteMessage($"Sending \"{safeName}\" to device {androidIpAddress}");
 
-			var publishedFileName = book.Title + BookCompressor.ExtensionForDeviceBloomBook;
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(BookStorage.SanitizeNameForFileSystem(publishedFileName)))
+			var publishedFileName = safeName + BookCompressor.ExtensionForDeviceBloomBook;
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 			{
 				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book);
 				using (WebClient myClient = new WebClient())
 				{
-					myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(book.Title) +
+					myClient.UploadData(androidHttpAddress + "/putfile?path=" + Uri.EscapeDataString(safeName) +
 										BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdTempFile.Path));
 					myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] { 0 });
 				}
 			}
-			progress.WriteMessage($"Finished sending \"{book.Title}\" to device {androidIpAddress}");
+			progress.WriteMessage($"Finished sending \"{safeName}\" to device {androidIpAddress}");
 		}
 
 		private void SendBookOverWiFi(Book.Book book, string androidIpAddress)
