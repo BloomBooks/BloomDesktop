@@ -122,6 +122,62 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CompressBookForDevice_RemovesIsbnDiv()
+		{
+			var testBook = CreateBook(bringBookUpToDate: true);
+			// This requires a real book file (which a mocked book usually doesn't have).
+			var isbnDiv =
+				@"<div class='ISBNContainer' data-hint='International Standard Book Number. Leave blank if you don't have one of these.'>
+            <span class='bloom-doNotPublishIfParentOtherwiseEmpty Credits-Page-style'>ISBN</span>
+
+            <div class='bloom-translationGroup' data-default-languages='*'>
+                <div class='bloom-editable Credits-Page-style bloom-visibility-code-on' data-book='ISBN' lang='*'></div>
+                <div class='bloom-editable Credits-Page-style bloom-content1 bloom-contentNational1' data-book='ISBN' lang='en'></div>
+            </div>
+        </div>";
+			// This one tests for deleting multiple isbn divs, also that it handles double-quotes and extra whitespace.
+			var isbnDiv2 = "<div someAttr=\"rubbish\" class = \"some rubbish ISBNContainer and more rubbish\" ></div >";
+			var htmlTemplate = @"<!DOCTYPE html>
+<html>
+<body>
+    <div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+        <div class='pageLabel' lang='en'>
+            Outside Back Cover
+        </div>
+        <div class='pageDescription' lang='en'></div>
+
+        <div class='marginBox'>
+        <div class='bloom-translationGroup' data-default-languages='N1'>
+            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational1 bloom-visibility-code-on' lang='fr' data-book='outsideBackCover'>
+                <label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
+            </div>
+
+            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-contentNational2' lang='de' data-book='outsideBackCover'></div>
+
+            <div class='bloom-editable Outside-Back-Cover-style bloom-copyFromOtherLanguageIfNecessary bloom-content1' lang='ksf' data-book='outsideBackCover'></div>
+        </div>{0}{1} <img class='branding' src='back-cover-outside.svg?optional=true' type='image/svg' onerror='this.style.display='none''></img></div>
+    </div>
+</body>
+</html>";
+			var htmlOriginal = string.Format(htmlTemplate, isbnDiv, isbnDiv2);
+			var htmlExpected = string.Format(htmlTemplate, "", "");
+			var bookFileName = Path.GetFileName(testBook.FolderPath) + ".htm";
+			var bookPath = Path.Combine(testBook.FolderPath, bookFileName);
+			File.WriteAllText(bookPath, htmlOriginal);
+			// Simulate the typical situation where we have the regular but not the wide svg
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "back-cover-outside.svg"), @"this is a fake for testing");
+
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
+			{
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
+				ZipFile zip = new ZipFile(bloomdTempFile.Path);
+				// Technically this is too strong. We'd be happy with any equivalent HTML file, e.g., whitespace could
+				// have changed. But this is the easiest to test and works with the current implementation.
+				Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
+			}
+		}
+
+		[Test]
 		public void CompressBookForDevice_IncludesVersionFile()
 		{
 			var testBook = CreateBook(bringBookUpToDate: true);
