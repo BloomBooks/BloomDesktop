@@ -7,6 +7,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using SIL.IO;
 using System.Drawing;
 using System;
+using System.Diagnostics;
 using System.Drawing.Drawing2D;
 
 namespace Bloom.Book
@@ -118,6 +119,7 @@ namespace Bloom.Book
 					var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
 					var content = StripImagesWithMissingSrc(originalContent, bookFile);
 					content = StripContentEditable(content);
+					content = StripIsbnDiv(content);
 					modifiedContent = Encoding.UTF8.GetBytes(content);
 					newEntry.Size = modifiedContent.Length;
 
@@ -172,6 +174,62 @@ namespace Bloom.Book
 
 				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
 			}
+		}
+
+		/// <summary>
+		/// Strip from the document the whole ISBN division, that is, the one with class ISBNContainer.
+		/// We don't expect electronic documents to need ISBNs. If they do, they will require different
+		/// ones from the paper books, and that will be a new feature. Typically, though, this just
+		/// serves to supppress the ISBN label when, as usual, there is no ISBN.
+		/// This is otherwise done by more general JS code in bookPreview.js (also used in publish)
+		/// which looks for divs with clas bloom-doNotPublishIfParentOtherwiseEmpty and if the parent is
+		/// empty adds bloom-hideWhenPublishing which previewMode.css sets to visibility: hidden.
+		/// ISBNs are also suppressed in epubs by a rule in epubVisibility.less which makes ISBNContainers
+		/// display:none and code in EpubMaker which deletes undisplayed divs.
+		/// </summary>
+		/// <param name="content1"></param>
+		/// <returns></returns>
+		private static string StripIsbnDiv(string content1)
+		{
+			string content = content1;
+			int startOuter = 0;
+			// This loop handles the unlikely event that there is more than one ISBNContainer div.
+			// Each iteration removes one of them.
+			for (;;)
+			{
+				// Again, this is not perfect, but we don't expect class attributes to contain a non-matching quote.
+				var match = new Regex("<div\\s+[^>]*class\\s*=\\s*['\"][^'\"]*ISBNContainer").Match(content, startOuter);
+				if (!match.Success)
+					break;
+				// Find the matching </div>.
+				int start = match.Index + match.Length;
+				int depth = 1;
+				Match matchDiv = null;
+				while (depth > 0)
+				{
+					matchDiv = new Regex("<(/?)div[^>]*>").Match(content,start);
+					if (!matchDiv.Success)
+					{
+						Debug.Fail("malformed book..divs don't match");
+						return content;
+					}
+					if (matchDiv.Groups[1].Length > 0)
+					{
+						// closing div (group 1 matched slash)
+						depth--;
+					}
+					else
+					{
+						// opening div (group 1 matched nothing)
+						depth++;
+					}
+					start = matchDiv.Index + matchDiv.Length;
+				}
+				int end = matchDiv.Index + matchDiv.Length;
+				content = content.Substring(0, match.Index) + content.Substring(end, content.Length - end);
+				startOuter = match.Index;
+			}
+			return content;
 		}
 
 		private static string StripImagesWithMissingSrc(string input, string bookFile)
