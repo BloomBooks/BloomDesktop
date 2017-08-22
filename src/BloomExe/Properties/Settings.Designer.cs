@@ -332,16 +332,25 @@ namespace Bloom.Properties {
                 this["PageZoom"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
+
+	    [global::System.Configuration.UserScopedSettingAttribute()]
+	    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+	    [global::System.Configuration.DefaultSettingValueAttribute("False")]
+	    public bool AdobeColorProfileEula2003Accepted
+	    {
+		    get { return ((bool) (this["AdobeColorProfileEula2003Accepted"])); }
+		    set { this["AdobeColorProfileEula2003Accepted"] = value; }
+	    }
+
+	    [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-		public bool AdobeColorProfileEula2003Accepted {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string BloomDeviceFileExportFolder {
             get {
-				return ((bool)(this["AdobeColorProfileEula2003Accepted"]));
+                return ((string)(this["BloomDeviceFileExportFolder"]));
             }
             set {
-				this["AdobeColorProfileEula2003Accepted"] = value;
+                this["BloomDeviceFileExportFolder"] = value;
             }
         }
     }

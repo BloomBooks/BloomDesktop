@@ -320,6 +320,7 @@
     <Compile Include="MiscUI\TroubleShooterDialog.Designer.cs">
       <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\Android\FilePublisher.cs" />
     <Compile Include="Publish\Android\wifi\BloomReaderUDPListener.cs" />
     <Compile Include="Publish\Android\wifi\WiFiAdvertiser.cs" />
     <Compile Include="Publish\Android\wifi\WiFiPublisher.cs" />

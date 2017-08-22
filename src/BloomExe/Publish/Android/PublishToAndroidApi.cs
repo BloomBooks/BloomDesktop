@@ -56,6 +56,13 @@ namespace Bloom.Publish.Android
 				request.Succeeded();
 			}, true);
 
+			server.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
+			{
+				FilePublisher.Save(request.CurrentBook);
+				SetState("stopped");
+				request.Succeeded();
+			}, true);
+
 			server.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
 			{
 				_usbPublisher.Stop();
