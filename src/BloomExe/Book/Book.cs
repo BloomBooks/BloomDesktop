@@ -6,7 +6,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
@@ -2326,6 +2328,25 @@ namespace Bloom.Book
 				if (CollectionSettings.IsSourceCollection)
 					OurHtmlDom.RecordAsLockedDown(true);
 			}
+		}
+
+		public static string MakeVersionCode(string fileContent)
+		{
+			var simplified = fileContent;
+			// In general, whitespace sequences are equivalent to a single space.
+			// If the user types multiple spaces all but one will be turned to &nbsp;
+			simplified = new Regex(@"\s+").Replace(simplified, " ");
+			// Between the end of one tag and the start of the next white space doesn't count at all
+			simplified = new Regex(@">\s+<").Replace(simplified, "><");
+			// Page IDs (actually any element ids) are ignored
+			// (the bit before the 'id' matches an opening wedge followed by anything but a closing one,
+			// and is transferred to the output by $1. Then we look for an id='whatever', with optional
+			// whitespace, where (['\"]) matches either kind of opening quote while \2 matches the same one at the end.
+			// The question mark makes sure we end with the first possible closing quote.
+			// Then we grab everything up to the closing wedge and transfer that to the output as $3.)
+			simplified = new Regex("(<[^>]*)\\s*id\\s*=\\s*(['\"]).*?\\2\\s*([^>]*>)").Replace(simplified, "$1$3");
+			var bytes = Encoding.UTF8.GetBytes(simplified);
+			return Convert.ToBase64String(SHA256Managed.Create().ComputeHash(bytes));
 		}
 	}
 }

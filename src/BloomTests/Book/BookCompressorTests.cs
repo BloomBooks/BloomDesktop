@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using Bloom.Api;
 using Bloom.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
@@ -117,6 +118,37 @@ namespace BloomTests.Book
 				// Technically this is too strong. We'd be happy with any equivalent HTML file, e.g., whitespace could
 				// have changed. But this is the easiest to test and works with the current implementation.
 				Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
+			}
+		}
+
+		[Test]
+		public void CompressBookForDevice_IncludesVersionFile()
+		{
+			var testBook = CreateBook(bringBookUpToDate: true);
+			// This requires a real book file (which a mocked book usually doesn't have).
+			// It's also important that the book contains something like contenteditable that will be removed when
+			// sending the book. The sha is based on the actual file contents of the book, not the
+			// content actually embedded in the bloomd.
+			var htmlTemplate = @"<!DOCTYPE html>
+<html>
+<body>
+    <div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+		<div{0}>something</div>
+    </div>
+</body>
+</html>";
+			var html = string.Format(htmlTemplate, " contenteditable='true'");
+			var htmlExpected = string.Format(htmlTemplate, "");
+			var bookFileName = Path.GetFileName(testBook.FolderPath) + ".htm";
+			var bookPath = Path.Combine(testBook.FolderPath, bookFileName);
+			File.WriteAllText(bookPath, html);
+
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
+			{
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
+				ZipFile zip = new ZipFile(bloomdTempFile.Path);
+				Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
+				Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html)));
 			}
 		}
 

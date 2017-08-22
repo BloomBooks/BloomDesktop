@@ -10,7 +10,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div>{0}</div></body></html>";
 			var first = string.Format(template, "abc");
 			var second = string.Format(template, "abd");
-			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
+			Assert.That(Bloom.Book.Book.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Book.Book.MakeVersionCode(second)));
 		}
 
 		[TestCase("abc", "ab c")]
@@ -21,7 +21,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div>{0}</div></body></html>";
 			var first = string.Format(template, firstArg);
 			var second = string.Format(template, secondArg);
-			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
+			Assert.That(Bloom.Book.Book.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Book.Book.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -30,7 +30,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div>{0}</div></body></html>";
 			var first = string.Format(template, "abc");
 			var second = string.Format(template, "<p>abc<p>");
-			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
+			Assert.That(Bloom.Book.Book.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Book.Book.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -44,7 +44,7 @@ namespace BloomTests.web.controllers
 	<body> <div>abc</div>
 	</body>
 </html>";
-			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
+			Assert.That(Bloom.Book.Book.MakeVersionCode(first), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -62,7 +62,7 @@ namespace BloomTests.web.controllers
                         DIV.bloom-page.coverColor       {               background-color: #C2A6BF !important;   }
     </style>
 </head><body><div>abc</div></body></html>";
-			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
+			Assert.That(Bloom.Book.Book.MakeVersionCode(first), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -71,7 +71,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div class='bloom-page' id='{0}'>abc</div></body></html>";
 			var first = string.Format(template, "934245d2-94dd-4f40-8b53-279867d8e07b");
 			var second = string.Format(template, "d9a71953-6cf4-475a-8236-36d509ff8e1c");
-			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
+			Assert.That(Bloom.Book.Book.MakeVersionCode(first), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(second)));
 		}
 
 		[Test]
@@ -80,7 +80,7 @@ namespace BloomTests.web.controllers
 			var template = @"<!DOCTYPE html><html><head></head><body><div class='bloom-page'>id='{0}'</div></body></html>";
 			var first = string.Format(template, "934245d2-94dd-4f40-8b53-279867d8e07b");
 			var second = string.Format(template, "d9a71953-6cf4-475a-8236-36d509ff8e1c");
-			Assert.That(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Publish.Android.wifi.WiFiPublisher.MakeVersionCode(second)));
+			Assert.That(Bloom.Book.Book.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Book.Book.MakeVersionCode(second)));
 		}
 	}
 }
