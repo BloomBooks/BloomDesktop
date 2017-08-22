@@ -124,11 +124,10 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                     <div>
                         <BloomButton l10nKey="Publish.Android.Save"
                             l10nComment="Button that tells Bloom to save the book as a .bloomD file."
-                            clickEndpoint="publish/android/usb/save"
+                            clickEndpoint="publish/android/file/save"
                             enabled={true}>
                             Save...
                         </BloomButton>
-                        &lt;--- Not implemented yet
                     </div>
                 }
                 <div id="progress-row">
