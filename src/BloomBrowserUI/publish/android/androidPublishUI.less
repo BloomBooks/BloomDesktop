@@ -28,13 +28,52 @@ body {
 
 // This is the div that react inserts and which becomes the real parent of all the content.
 // We make it flex so that we can make the progress panel grow to fill the available space.
-#AndroidPublishUI > [data-reactroot] {
+#AndroidPublishUI [data-reactroot]{
   height: 100%;
-  display:flex;
-  flex-direction: column;
-  align-items:flex-start; // stops buttons (and anything else) stretching to fill width.
+   display:flex;
+   flex-direction: column;
+   align-items:flex-start; // stops buttons (and anything else) stretching to fill width.
   padding: 3em;
   box-sizing: border-box;
+}
+#progress-section {
+    min-height: 100px;
+    width: 100%;
+
+    // the only thing that can grow, it gets all the spare height.
+    // This looks like a simple trick, but it's hard to make it work right.
+    // All containers must have some forced height (currently 100%).
+    // Also they must have no margin; otherwise, the box height is the full window
+    // height (100%) without the margin, and then the margin is added as part of the
+    // total content height, so that is now MORE than the window height, and
+    // the outer window gets a scroll bar.
+    // Any parent box that has vertical padding or border also needs box-sizing: border=box;
+    // otherwise, the padding and border are also considered outside the 100% and
+    // we get an outer scroll-bar.
+    flex:1;
+    display:flex;
+    flex-direction: column;
+    align-items:flex-start;
+}
+
+#progress-row {
+    display: flex;
+    justify-content: space-between; // push link to the right
+    width: 100%;
+    margin-block-start: 2em;
+    H1 { margin-block-start: 0;}
+}
+
+#progress-box {
+    min-height: 100px;
+    width: 100%;
+    border: solid thin darkgray;
+    overflow-x: auto;
+    overflow-y: scroll;
+    // see note on #progress-section about growing to take up whatever is left.
+    // It is the parent of this and it does that, then this must itself must do it, too.
+    flex:1;
+    box-sizing: border-box;
 }
 
 select {
@@ -77,33 +116,6 @@ button + button {
     margin-left: 1em;
 }
 
-#progress-row {
-    display: flex;
-    justify-content: space-between; // push link to the right
-    width: 100%;
-    margin-block-start: 2em;
-    H1 { margin-block-start: 0;}
-}
-
-#progress {
-    min-height: 100px;
-    width: 100%;
-    border: solid thin darkgray;
-    overflow-x: auto;
-    overflow-y: scroll;
-    // the only thing that can grow, it gets all the spare height.
-    // This looks like a simple trick, but it's hard to make it work right.
-    // All containers must have some forced height (currently 100%).
-    // Also they must have no margin; otherwise, the box height is the full window
-    // height (100%) without the margin, and then the margin is added as part of the
-    // total content height, so that is now MORE than the window height, and
-    // the outer window gets a scroll bar.
-    // Any parent box that has vertical padding or border also needs box-sizing: border=box;
-    // otherwise, the padding and border are also considered outside the 100% and
-    // we get an outer scroll-bar.
-    flex:1;
-    box-sizing: border-box;
-}
 
 .hidden {
     display: none;

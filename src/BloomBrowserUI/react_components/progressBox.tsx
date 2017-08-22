@@ -32,7 +32,7 @@ export default class ProgressBox extends React.Component<{}, ComponentState> {
     // (or alternatively, when a new message arrives and the scroll was previously at the bottom).
     render() {
         return (
-            <div id="progress" dangerouslySetInnerHTML={{ __html: this.state.progress }} />
+            <div id="progress-box" dangerouslySetInnerHTML={{ __html: this.state.progress }} />
         );
     }
 

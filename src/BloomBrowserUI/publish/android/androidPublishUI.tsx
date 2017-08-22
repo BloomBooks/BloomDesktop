@@ -130,14 +130,17 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                         </BloomButton>
                     </div>
                 }
-                <div id="progress-row">
-                    <h1>Progress</h1>
-                    <HelpLink l10nKey="Publish.Android.Troubleshooting"
-                        helpId="publish-android-troubleshooting.html">
-                        Troubleshooting Tips
-                    </HelpLink>
+
+                <div id="progress-section" style={{ visibility: this.state.method === "file" ? "hidden" : "visible" }}>
+                    <div id="progress-row">
+                        <h1>Progress</h1>
+                        <HelpLink l10nKey="Publish.Android.Troubleshooting"
+                            helpId="publish-android-troubleshooting.html">
+                            Troubleshooting Tips
+                        </HelpLink>
+                    </div>
+                    <ProgressBox />
                 </div>
-                <ProgressBox />
             </div>
         );
     }
