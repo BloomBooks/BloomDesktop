@@ -300,7 +300,25 @@ namespace Bloom.Book
 					// New width and height maintaining the aspect ratio
 					int newWidth = (int)(originalWidth * scale);
 					int newHeight = (int)(originalHeight * scale);
-					using (var newImage = new Bitmap(newWidth, newHeight, image.PixelFormat))
+					var imagePixelFormat = image.PixelFormat;
+					switch (imagePixelFormat)
+					{
+						// These three formats are not supported for bitmaps to be drawn on using Graphics.FromImage.
+						// So use the default bitmap format.
+						// Enhance: if these are common it may be worth research to find out whether there are better options.
+						// - possibly the 'reduced' image might not be reduced...even though smaller, the indexed format
+						// might be so much more efficient that it is smaller. However, even if that is true, it doesn't
+						// necessarily follow that it takes less memory to render on the device. So it's not obvious that
+						// we should keep the original just because it's a smaller file.
+						// - possibly we don't need a 32-bit bitmap? Unfortunately the 1bpp/4bpp/8bpp only tells us
+						// that the image uses two, 16, or 256 distinct colors, not what they are or what precision they have.
+							case PixelFormat.Format1bppIndexed:
+							case PixelFormat.Format4bppIndexed:
+							case PixelFormat.Format8bppIndexed:
+							imagePixelFormat = PixelFormat.Format32bppArgb;
+								break;
+					}
+					using (var newImage = new Bitmap(newWidth, newHeight, imagePixelFormat))
 					{
 						// Draws the image in the specified size with quality mode set to HighQuality
 						using (Graphics graphics = Graphics.FromImage(newImage))
