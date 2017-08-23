@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
@@ -72,6 +73,8 @@ namespace BloomTests.Book
 		}
 
 		// Also verifies that images that DO exist are NOT removed (even if src attr includes params like ?optional=true)
+		// Since this is one of the few tests that makes a real HTML file we use it also to check
+		// the the HTML file is at the root of the zip.
 		[Test]
 		public void CompressBookForDevice_RemovesImgElementsWithMissingSrc_AndContentEditable()
 		{
@@ -117,7 +120,7 @@ namespace BloomTests.Book
 				ZipFile zip = new ZipFile(bloomdTempFile.Path);
 				// Technically this is too strong. We'd be happy with any equivalent HTML file, e.g., whitespace could
 				// have changed. But this is the easiest to test and works with the current implementation.
-				Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
+				Assert.That(GetEntryContents(zip, bookFileName, true), Is.EqualTo(htmlExpected));
 			}
 		}
 
@@ -152,11 +155,17 @@ namespace BloomTests.Book
 			}
 		}
 
-		private string GetEntryContents(ZipFile zip, string name)
+		private string GetEntryContents(ZipFile zip, string name, bool exact = false)
 		{
 			var buffer = new byte[4096];
 
-			var ze = (from ZipEntry entry in zip select entry).FirstOrDefault(n => n.Name.EndsWith(name));
+			Func<ZipEntry, bool> predicate;
+			if (exact)
+				predicate = n => n.Name.Equals(name);
+			else
+				predicate = n => n.Name.EndsWith(name);
+
+			var ze = (from ZipEntry entry in zip select entry).FirstOrDefault(predicate);
 			Assert.That(ze, Is.Not.Null);
 
 			using (var instream = zip.GetInputStream(ze))

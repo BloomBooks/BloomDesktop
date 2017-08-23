@@ -26,11 +26,11 @@ namespace Bloom.Book
 
 		public static void CompressBookForDevice(string outputPath, Book book)
 		{
-			CompressDirectory(outputPath, book.FolderPath, "", reduceImages:true, omitMetaJson: true);
+			CompressDirectory(outputPath, book.FolderPath, "", reduceImages:true, omitMetaJson: true, wrapWithFolder:false);
 		}
 
 		public static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false)
+			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false, bool wrapWithFolder = true)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
 			{
@@ -38,8 +38,21 @@ namespace Bloom.Book
 				{
 					zipStream.SetLevel(9);
 
-					var rootName = Path.GetFileName(directoryToCompress);
-					int dirNameOffset = directoryToCompress.Length - rootName.Length;
+					int dirNameOffset;
+					if (wrapWithFolder)
+					{
+						// zip entry names will start with the compressed folder name (zip will contain the
+						// compressed folder as a folder...we do this in bloompacks, not sure why).
+						var rootName = Path.GetFileName(directoryToCompress);
+						dirNameOffset = directoryToCompress.Length - rootName.Length;
+					}
+					else
+					{
+						// zip entry names will start with the files or directories at the root of the book folder
+						// (zip root will contain the folder contents...suitable for compressing a single book into
+						// a zip, as with .bloomd files)
+						dirNameOffset = directoryToCompress.Length + 1;
+					}
 					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, omitMetaJson);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
