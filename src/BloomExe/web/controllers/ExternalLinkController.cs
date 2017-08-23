@@ -35,16 +35,8 @@ namespace Bloom.web
 		{
 			//NB: be careful not to lose case, as at least chrome is case-sensitive with anchors (e.g. #ChoiceOfTopic)
 			var localPath = Regex.Replace(request.LocalPath(), "api/"+ kPrefix+"/", "", RegexOptions.IgnoreCase);
-			var langCode = LocalizationManager.UILanguageId;
-			var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
-			var completeUiLangPath = completeEnglishPath.Replace("-en.htm", "-" + langCode + ".htm");
-
-			string url;
-			if (langCode != "en" && RobustFile.Exists(completeUiLangPath))
-				url = completeUiLangPath;
-			else
-				url = completeEnglishPath;
-			var cleanUrl = url.Replace("\\", "/"); // allows jump to file to work
+			var completeUiLangPath = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, localPath);
+			var cleanUrl = completeUiLangPath.Replace("\\", "/"); // allows jump to file to work
 
 
 			//we would like to get something like foo.htm#secondPart but the browser strips off that fragment part
