@@ -175,14 +175,17 @@ namespace BloomTests.Book
 		private const string _pathToTestImages = "src/BloomTests/ImageProcessing/images";
 
 		[Test]
-		public void GetBytesOfReducedImage_SmallPngImageStaysSame()
+		public void GetBytesOfReducedImage_SmallPngImageMadeTransparent()
 		{
 			// bird.png:                   PNG image data, 274 x 300, 8-bit/color RGBA, non-interlaced
 
 			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
 			byte[] originalBytes = File.ReadAllBytes(path);
 			byte[] reducedBytes = BookCompressor.GetBytesOfReducedImage(path);
-			Assert.AreEqual(originalBytes, reducedBytes, "bird.png is already small enough (274x300)");
+			Assert.That(reducedBytes, Is.Not.EqualTo(originalBytes)); // no easy way to check it was made transparent, but should be changed.
+			// Size should not change much.
+			Assert.That(reducedBytes.Length, Is.LessThan(originalBytes.Length * 11/10));
+			Assert.That(reducedBytes.Length, Is.GreaterThan(originalBytes.Length * 9 / 10));
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
 				var oldMetadata = Metadata.FromFile(path);
