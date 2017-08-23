@@ -1,4 +1,6 @@
-﻿using Bloom.Api;
+﻿using System.Linq;
+using Bloom.Api;
+using Bloom.Properties;
 using Bloom.Publish.Android.wifi;
 using Bloom.web;
 
@@ -28,6 +30,27 @@ namespace Bloom.Publish.Android
 
 		public void RegisterWithServer(EnhancedImageServer server)
 		{
+			// This is just for storing the user preference of method
+			// If we had a couple of these, we could just have a generic preferences api
+			// that browser-side code could use.
+			server.RegisterEndpointHandler(kApiUrlPart + "method", request =>
+			{
+				if(request.HttpMethod == HttpMethods.Get)
+				{
+					var method = Settings.Default.PublishAndroidMethod;
+					if(!new string[]{"wifi", "usb", "file"}.Contains(method))
+					{
+						method = "wifi";
+					}
+					request.ReplyWithText(method);
+				}
+				else // post
+				{
+					Settings.Default.PublishAndroidMethod = request.RequiredPostString();
+					request.SucceededDoNotNavigate();
+				}
+			}, true);
+
 			server.RegisterEndpointHandler(kApiUrlPart + "usb/start", request =>
 			{
 				SetState("UsbStarted");
