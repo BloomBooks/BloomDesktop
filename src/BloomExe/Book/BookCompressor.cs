@@ -8,6 +8,9 @@ using SIL.IO;
 using System.Drawing;
 using System;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using Bloom.ImageProcessing;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.Book
 {
@@ -273,20 +276,26 @@ namespace Bloom.Book
 		/// be displayed on small screens anyway.  So before zipping up the file, we replace its
 		/// bytes with the bytes of a reduced copy of itself.  If the original image is already
 		/// small enough, we return its bytes directly.
+		/// We also make png images have transparent backgrounds. This is currently only necessary
+		/// for cover pages, but it's an additional complication to detect which those are,
+		/// and doesn't seem likely to cost much extra to do.
 		/// </summary>
 		/// <returns>The bytes of the (possibly) reduced image.</returns>
 		internal static byte[] GetBytesOfReducedImage(string filePath)
 		{
-			using (var image = Image.FromFile(filePath))
+			using (var originalImage = PalasoImage.FromFileRobustly(filePath))
 			{
+				var image = originalImage.Image;
 				int originalWidth = image.Width;
 				int originalHeight = image.Height;
-				if (originalWidth > kMaxWidth || originalHeight > kMaxHeight)
+				var appearsToBeJpeg = ImageUtils.AppearsToBeJpeg(originalImage);
+				if (originalWidth > kMaxWidth || originalHeight > kMaxHeight || !appearsToBeJpeg)
 				{
 					// Preserve the aspect ratio
 					float scaleX = (float)kMaxWidth / (float)originalWidth;
 					float scaleY = (float)kMaxHeight / (float)originalHeight;
-					float scale = Math.Min(scaleX, scaleY);
+					// no point in ever expanding, even if we're making a new image just for transparency.
+					float scale = Math.Min(1.0f, Math.Min(scaleX, scaleY));
 
 					// New width and height maintaining the aspect ratio
 					int newWidth = (int)(originalWidth * scale);
@@ -299,7 +308,21 @@ namespace Bloom.Book
 							graphics.CompositingQuality = CompositingQuality.HighQuality;
 							graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 							graphics.SmoothingMode = SmoothingMode.HighQuality;
-							graphics.DrawImage(image, 0, 0, newWidth, newHeight);
+							if (appearsToBeJpeg)
+							{
+								graphics.DrawImage(image, 0, 0, newWidth, newHeight);
+							}
+							else
+							{
+								// In addition to possibly scaling, we want PNG images to have transparent backgrounds.
+								ImageAttributes convertWhiteToTransparent = new ImageAttributes();
+								// This specifies that all white or very-near-white pixels (all color components at least 253/255)
+								// will be made transparent.
+								convertWhiteToTransparent.SetColorKey(Color.FromArgb(253, 253, 253), Color.White);
+								var destRect = new Rectangle(0, 0, newWidth, newHeight);
+								graphics.DrawImage(image, destRect, 0,0, image.Width, image.Height,
+									GraphicsUnit.Pixel, convertWhiteToTransparent);
+							}
 						}
 						// Save the file in the same format as the original, and return its bytes.
 						using (var tempFile = TempFile.WithExtension(Path.GetExtension(filePath)))
