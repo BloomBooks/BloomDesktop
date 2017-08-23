@@ -35,6 +35,10 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 this.handleUpdateState(e.payload);
             }
         });
+
+        axios.get("/bloom/api/publish/android/method").then(result => {
+            this.setState({ method: result.data });
+        });
     }
 
     public componentDidMount() {
@@ -76,7 +80,11 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 </H1>
                 <select className={`method-option ${this.state.method}-method-option`}
                     disabled={this.state.stateId !== "stopped"} value={this.state.method} onChange={
-                        (event) => self.setState({ method: event.target.value })}>;
+                        (event) => {
+                            self.setState({ method: event.target.value });
+                            axios.post("/bloom/api/publish/android/method", event.target.value,
+                                { headers: { "Content-Type": "text/plain" } });
+                        }}>
                     <option className="method-option wifi-method-option" value="wifi">Serve on WiFi Network</option>
                     <option className="method-option usb-method-option" value="usb">Send over USB Cable</option>
                     <option className="method-option file-method-option" value="file">Save Bloom Reader File</option>

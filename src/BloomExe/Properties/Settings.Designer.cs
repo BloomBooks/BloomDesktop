@@ -12,7 +12,7 @@ namespace Bloom.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "14.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.1.0.0")]
     public sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -74,19 +74,19 @@ namespace Bloom.Properties {
             }
         }
         
-		[global::System.Configuration.UserScopedSettingAttribute()]
-		[global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("False")]
-		public bool UserInterfaceLanguageSetExplicitly {
-			get {
-				return ((bool)(this["UserInterfaceLanguageSetExplicitly"]));
-			}
-			set {
-				this["UserInterfaceLanguageSetExplicitly"] = value;
-			}
-		}
-
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UserInterfaceLanguageSetExplicitly {
+            get {
+                return ((bool)(this["UserInterfaceLanguageSetExplicitly"]));
+            }
+            set {
+                this["UserInterfaceLanguageSetExplicitly"] = value;
+            }
+        }
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -332,17 +332,20 @@ namespace Bloom.Properties {
                 this["PageZoom"] = value;
             }
         }
-
-	    [global::System.Configuration.UserScopedSettingAttribute()]
-	    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-	    [global::System.Configuration.DefaultSettingValueAttribute("False")]
-	    public bool AdobeColorProfileEula2003Accepted
-	    {
-		    get { return ((bool) (this["AdobeColorProfileEula2003Accepted"])); }
-		    set { this["AdobeColorProfileEula2003Accepted"] = value; }
-	    }
-
-	    [global::System.Configuration.UserScopedSettingAttribute()]
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AdobeColorProfileEula2003Accepted {
+            get {
+                return ((bool)(this["AdobeColorProfileEula2003Accepted"]));
+            }
+            set {
+                this["AdobeColorProfileEula2003Accepted"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string BloomDeviceFileExportFolder {
@@ -351,6 +354,18 @@ namespace Bloom.Properties {
             }
             set {
                 this["BloomDeviceFileExportFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string PublishAndroidMethod {
+            get {
+                return ((string)(this["PublishAndroidMethod"]));
+            }
+            set {
+                this["PublishAndroidMethod"] = value;
             }
         }
     }
