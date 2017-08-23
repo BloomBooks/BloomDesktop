@@ -80,7 +80,7 @@ namespace Bloom.MiscUI
 					var installFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
 							.CombineForPath(Application.ProductName);
 					message = RobustFile.ReadAllText(messagePath).Replace("{{installFolder}}", installFolder);//new
-					message = RobustFile.ReadAllText(messagePath).Replace("{installFolder}", installFolder);  //old
+					message = message.Replace("{installFolder}", installFolder);  //old
 				}
 
 				message = message + Environment.NewLine + Environment.NewLine + errors.ToString();
