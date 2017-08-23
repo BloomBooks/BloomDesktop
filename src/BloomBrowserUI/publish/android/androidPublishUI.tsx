@@ -4,6 +4,7 @@ import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
 import BloomButton from "../../react_components/bloomButton";
 import HelpLink from "../../react_components/helpLink";
+import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { H1, H2, LocalizableElement, IUILanguageAwareProps, P } from "../../react_components/l10n";
 
 interface IComponentState {
@@ -142,10 +143,10 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 <div id="progress-section" style={{ visibility: this.state.method === "file" ? "hidden" : "visible" }}>
                     <div id="progress-row">
                         <h1>Progress</h1>
-                        <HelpLink l10nKey="Publish.Android.Troubleshooting"
-                            helpId="publish-android-troubleshooting.html">
+                        <HtmlHelpLink l10nKey="Publish.Android.Troubleshooting"
+                            fileid="Publish-Android-Troubleshooting">
                             Troubleshooting Tips
-                        </HelpLink>
+                        </HtmlHelpLink>
                     </div>
                     <ProgressBox />
                 </div>

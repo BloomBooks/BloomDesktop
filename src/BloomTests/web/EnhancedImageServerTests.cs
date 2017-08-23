@@ -70,6 +70,17 @@ namespace BloomTests.web
 		}
 
 		[Test]
+		public void CanGetHelpHtml()
+		{
+			using(var server = CreateImageServer())
+			{
+				var transaction = new PretendRequestInfo("htmlhelp/Publish-Android-Troubleshooting");
+				server.MakeReply(transaction);
+				Assert.IsTrue(transaction.ReplyImagePath.Contains(".htm"));
+			}
+		}
+
+		[Test]
 		public void CanGetPdf()
 		{
 			// Setup

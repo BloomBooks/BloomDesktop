@@ -284,6 +284,22 @@ namespace Bloom.Api
 				ProcessError(info);
 				return true;
 			}
+			else if (localPath.StartsWith("htmlhelp/", StringComparison.InvariantCulture))
+			{
+				var filename = localPath.Split(new char[] {'/'}).LastOrDefault();
+				if(!string.IsNullOrWhiteSpace(filename))
+				{
+					if(Path.HasExtension(filename)) // e.g. a stylesheet. Stylesheets referenced from html pages will come in with a url containing htmlhelp/ too.
+					{
+						localPath = BloomFileLocator.GetFileDistributedWithApplication(false, "infoPages", filename);
+					}
+					else
+					{
+						localPath = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages",
+							filename + "-en.htm");
+					}
+				}
+			}
 			else if (localPath.StartsWith("i18n/", StringComparison.InvariantCulture))
 			{
 				if (ProcessI18N(localPath, info))
