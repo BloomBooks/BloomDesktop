@@ -305,8 +305,6 @@
     <Compile Include="CLI\DownloadBookCommand.cs" />
     <Compile Include="CLI\GetUsedFontsCommand.cs" />
     <Compile Include="CLI\HydrateBookCommand.cs" />
-    <Compile Include="Communication\IAndroidDeviceUsbConnection.cs" />
-    <Compile Include="Communication\UnimplementedAndroidDeviceUsbConnection.cs" />
     <Compile Include="Edit\BookSettingsTool.cs" />
     <Compile Include="Edit\ToolboxTool.cs" />
     <Compile Include="Edit\DecodableReaderTool.cs" />

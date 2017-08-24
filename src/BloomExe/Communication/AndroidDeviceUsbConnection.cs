@@ -8,13 +8,34 @@ using PodcastUtilities.PortableDevices;
 
 namespace Bloom.Communication
 {
+	enum DeviceNotFoundReportType
+	{
+		Unknown,
+		NoDeviceFound,
+		NoBloomDirectory,
+		MoreThanOneReadyDevice
+	}
+
+	class OneReadyDeviceNotFoundEventArgs
+	{
+		public OneReadyDeviceNotFoundEventArgs(DeviceNotFoundReportType reportType, List<string> deviceNames)
+		{
+			ReportType = reportType;
+			DeviceNames = deviceNames;
+		}
+
+		public DeviceNotFoundReportType ReportType { get; }
+
+		public List<string> DeviceNames { get; }
+	}
+
 	/// <summary>
 	/// Handles non-UI functions of connecting to an Android device via USB and working with the file system there
 	/// </summary>
-	class AndroidDeviceUsbConnection : IAndroidDeviceUsbConnection
+	class AndroidDeviceUsbConnection
 	{
-		public event EventHandler OneReadyDeviceFound;
-		public event EventHandler<OneReadyDeviceNotFoundEventArgs> OneReadyDeviceNotFound;
+		public Action<Book.Book> OneReadyDeviceFound;
+		public Action<DeviceNotFoundReportType, List<string>> OneReadyDeviceNotFound;
 
 		private const string kBloomFolderOnDevice = "Bloom";
 		private IDevice _device;
@@ -24,17 +45,17 @@ namespace Bloom.Communication
 		/// <summary>
 		/// Attempt to establish a connection with a device which has the Bloom Reader app
 		/// </summary>
-		public void FindDevice()
+		public void FindADeviceThatIsReadyToReceiveBook(Book.Book book)
 		{
 			_stopLookingForDevice = false;
-			var devices = EnumerateAllDevices();
-			GetOneDevice(devices);
 
 			while (!_stopLookingForDevice && _device == null)
 			{
-				Thread.Sleep(1000);
-				devices = EnumerateAllDevices();
-				GetOneDevice(devices);
+				var devices = EnumerateAllDevices();
+				if(!FindADeviceThatIsReadyToReceiveBookInternal(devices, book))
+				{
+					Thread.Sleep(1000);
+				}
 			}
 		}
 
@@ -103,8 +124,8 @@ namespace Bloom.Communication
 		/// as a direct child of a root storage object)
 		/// </summary>
 		/// <param name="devices"></param>
-		/// <returns></returns>
-		private void GetOneDevice(IEnumerable<IDevice> devices)
+		/// <returns>true if it found a ready device</returns>
+		private bool FindADeviceThatIsReadyToReceiveBookInternal(IEnumerable<IDevice> devices, Book.Book book)
 		{
 			List<IDevice> applicableDevices = new List<IDevice>();
 			int totalDevicesFound = 0;
@@ -119,18 +140,17 @@ namespace Bloom.Communication
 			if (applicableDevices.Count == 1)
 			{
 				_device = applicableDevices[0];
-				OneReadyDeviceFound?.Invoke(this, new EventArgs());
-				return;
+				OneReadyDeviceFound(book);
+				return true;
 			}
 
 			_bloomFolderPath = null;
 
 			if (totalDevicesFound > 0 && applicableDevices.Count == 0)
 			{
-				var args = new OneReadyDeviceNotFoundEventArgs(DeviceNotFoundReportType.NoBloomDirectory,
+				OneReadyDeviceNotFound(DeviceNotFoundReportType.NoBloomDirectory,
 					devices.Select(d => d.Name).ToList());
-				OneReadyDeviceNotFound?.Invoke(this, args);
-				return;
+				return false;
 			}
 
 			DeviceNotFoundReportType deviceNotFoundReportType = DeviceNotFoundReportType.NoDeviceFound;
@@ -138,9 +158,10 @@ namespace Bloom.Communication
 			{
 				deviceNotFoundReportType = DeviceNotFoundReportType.MoreThanOneReadyDevice;
 			}
-			var eventArgs = new OneReadyDeviceNotFoundEventArgs(deviceNotFoundReportType,
-				applicableDevices.Select(d => d.Name).ToList());
-			OneReadyDeviceNotFound?.Invoke(this, eventArgs);
+			OneReadyDeviceNotFound?.Invoke(DeviceNotFoundReportType.NoBloomDirectory,
+				devices.Select(d => d.Name).ToList());
+
+			return false;
 		}
 
 		private string GetBloomFolderPath(IDevice device)
