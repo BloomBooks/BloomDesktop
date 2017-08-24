@@ -134,20 +134,16 @@ namespace Bloom.Book
 					var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
 					var content = StripImagesWithMissingSrc(originalContent, bookFile);
 					content = StripContentEditable(content);
+					content = InsertReaderStylesheet(content);
 					modifiedContent = Encoding.UTF8.GetBytes(content);
 					newEntry.Size = modifiedContent.Length;
 
 					// Make an extra entry containing the sha
 					var sha = Book.MakeVersionCode(originalContent);
-					ZipEntry shaEntry = new ZipEntry("version.txt"); // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
-					var shaBytes = Encoding.UTF8.GetBytes(sha);
-					shaEntry.Size = shaBytes.Length;
-					zipStream.PutNextEntry(shaEntry);
-					using (var memStream = new MemoryStream(shaBytes))
-					{
-						StreamUtils.Copy(memStream, zipStream, new byte[1024]);
-					}
-					zipStream.CloseEntry();
+					var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
+					MakeExtraEntry(zipStream, name, sha);
+					MakeExtraEntry(zipStream, "readerStyles.css",
+						File.ReadAllText(FileLocator.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"publish","android","readerStyles.css"))));
 				}
 				else
 				{
@@ -188,6 +184,19 @@ namespace Bloom.Book
 
 				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
 			}
+		}
+
+		private static void MakeExtraEntry(ZipOutputStream zipStream, string name, string content)
+		{
+			ZipEntry entry = new ZipEntry(name);
+			var shaBytes = Encoding.UTF8.GetBytes(content);
+			entry.Size = shaBytes.Length;
+			zipStream.PutNextEntry(entry);
+			using (var memStream = new MemoryStream(shaBytes))
+			{
+				StreamUtils.Copy(memStream, zipStream, new byte[1024]);
+			}
+			zipStream.CloseEntry();
 		}
 
 		private static string StripImagesWithMissingSrc(string input, string bookFile)
@@ -233,6 +242,11 @@ namespace Bloom.Book
 			var meta = BookMetaData.FromString(RobustFile.ReadAllText(path));
 			meta.IsSuitableForMakingShells = true;
 			return meta.Json;
+		}
+
+		private static string InsertReaderStylesheet(string input)
+		{
+			return input.Replace("</head", "<link rel=\"stylesheet\" href=\"readerStyles.css\" type=\"text/css\"></link></head");
 		}
 
 		/// <summary>

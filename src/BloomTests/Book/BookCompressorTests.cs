@@ -125,7 +125,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CompressBookForDevice_IncludesVersionFile()
+		public void CompressBookForDevice_IncludesVersionFile_AndAddsStylesheet()
 		{
 			var testBook = CreateBook(bringBookUpToDate: true);
 			// This requires a real book file (which a mocked book usually doesn't have).
@@ -134,14 +134,20 @@ namespace BloomTests.Book
 			// content actually embedded in the bloomd.
 			var htmlTemplate = @"<!DOCTYPE html>
 <html>
+<head>
+    <meta charset='UTF-8'></meta>
+    <link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
+    <link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
+{1}</head>
 <body>
     <div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
 		<div{0}>something</div>
     </div>
 </body>
 </html>";
-			var html = string.Format(htmlTemplate, " contenteditable='true'");
-			var htmlExpected = string.Format(htmlTemplate, "");
+			var link = "<link rel=\"stylesheet\" href=\"readerStyles.css\" type=\"text/css\"></link>";
+			var html = string.Format(htmlTemplate, " contenteditable='true'", "");
+			var htmlExpected = string.Format(htmlTemplate, "", link);
 			var bookFileName = Path.GetFileName(testBook.FolderPath) + ".htm";
 			var bookPath = Path.Combine(testBook.FolderPath, bookFileName);
 			File.WriteAllText(bookPath, html);
@@ -152,6 +158,7 @@ namespace BloomTests.Book
 				ZipFile zip = new ZipFile(bloomdTempFile.Path);
 				Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
 				Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html)));
+				GetEntryContents(zip,"readerStyles.css");
 			}
 		}
 
