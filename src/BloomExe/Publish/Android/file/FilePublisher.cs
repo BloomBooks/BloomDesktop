@@ -1,14 +1,13 @@
 ﻿// // Copyright (c) 2017 SIL International
 // // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
-using System;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
 using L10NSharp;
 
-namespace Bloom.Publish.Android
+namespace Bloom.Publish.Android.file
 {
 	/// <summary>
 	/// Saves a .bloomd as a local file which the user can somehow get onto devices using some other tools.

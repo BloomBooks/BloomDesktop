@@ -3,13 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Bloom.Book;
-using Bloom.Communication;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 
-namespace Bloom.Publish.Android
+namespace Bloom.Publish.Android.usb
 {
 	public class UsbPublisher
 	{

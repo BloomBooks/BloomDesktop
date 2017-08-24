@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using PodcastUtilities.PortableDevices;
 
-namespace Bloom.Communication
+namespace Bloom.Publish.Android.usb
 {
 	enum DeviceNotFoundReportType
 	{

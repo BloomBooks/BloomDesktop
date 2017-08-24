@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using Bloom.Api;
 using Bloom.Properties;
+using Bloom.Publish.Android.file;
+using Bloom.Publish.Android.usb;
 using Bloom.Publish.Android.wifi;
 using Bloom.web;
 
