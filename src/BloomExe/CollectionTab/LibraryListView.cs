@@ -547,6 +547,7 @@ namespace Bloom.CollectionTab
 		}
 
 		private Timer _newDownloadTimer;
+		private HashSet<string> _changingFolders = new HashSet<string>();
 		/// <summary>
 		/// Called when a file system watcher notices a new book (or some similar change) in our downloaded books folder.
 		/// This will happen on a thread-pool thread.
@@ -577,7 +578,40 @@ namespace Bloom.CollectionTab
 					_newDownloadTimer.Dispose();
 					_newDownloadTimer = null;
 
-					UpdateDownloadedBooks(eventArgs.Path);
+					// Updating the books involves selecting the modified book, which might involve changing
+					// some files (e.g., adding a branding image, BL-4914), which could trigger this again.
+					// So don't allow it to be triggered by changes to a folder we're already sending
+					// notifications about.
+					// (It's PROBABLY overkill to maintain a set of these...don't expect a notification about
+					// one folder to trigger a change to another...but better safe than sorry.)
+					// (Note that we don't need synchronized access to this dictionary, because all this
+					// happens only on the UI thread.)
+					if (!_changingFolders.Contains(eventArgs.Path))
+					{
+						try
+						{
+							_changingFolders.Add(eventArgs.Path);
+							UpdateDownloadedBooks(eventArgs.Path);
+						}
+						finally
+						{
+							// Now we need to arrange to remove it again. But the critical time to suppress
+							// a notification on the same folder isn't DURING the notification, but just AFTER
+							// it, when the system is idle enough to notice the change in the folder.
+							// I'm giving it a generous 10 seconds before paying attention to new changes to
+							// this folder. Probably excessive, but this monitor is meant to catch new downloads;
+							// it's unlikely the same book can be downloaded again within 10 seconds.
+							var waitTimer = new Timer();
+							waitTimer.Interval = 10000;
+							waitTimer.Tick += (sender1, args1) =>
+							{
+								_changingFolders.Remove(eventArgs.Path);
+								waitTimer.Stop();
+								waitTimer.Dispose();
+							};
+							waitTimer.Start();
+						}
+					}
 				};
 				_newDownloadTimer.Interval = 500;
 				_newDownloadTimer.Start();
