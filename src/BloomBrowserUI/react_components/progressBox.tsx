@@ -18,14 +18,26 @@ export default class ProgressBox extends React.Component<{}, ComponentState> {
             var e = JSON.parse(event.data);
             if (e.id === "progress") {
                 self.setState({ progress: self.state.progress + "<br/>" + e.payload });
-                // Scroll the window to the bottom. Must be done AFTER painting once, so we
-                // get a real current scroll height.
-                window.requestAnimationFrame(() => {
-                    let progressDiv = document.getElementById("progress");
-                    progressDiv.scrollTop = progressDiv.scrollHeight;
-                });
+                this.tryScrollToBottom();
             }
         });
+    }
+
+    tryScrollToBottom() {
+        // Must be done AFTER painting once, so we
+        // get a real current scroll height.
+        let progressDiv = document.getElementById("progress-box");
+
+        // in my testing in FF, this worked the first time
+        if (progressDiv)
+            progressDiv.scrollTop = progressDiv.scrollHeight;
+        // but there apparently have been times when the div wasn't around
+        // yet, so we do this:
+        else {
+            window.requestAnimationFrame(() => this.tryScrollToBottom());
+            // note, I have tested what happens if the element is *never* found (due to some future bug).
+            // Tests show that everyhing stays responsive.
+        }
     }
 
     //TODO: make box messages scroll to bottom whenever a new message arrives
