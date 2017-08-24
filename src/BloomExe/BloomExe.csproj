@@ -293,7 +293,7 @@
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
-    <Compile Include="Communication\AndroidDeviceUsbConnection.cs" />
+    <Compile Include="Publish\Android\usb\AndroidDeviceUsbConnection.cs" />
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="BookThumbNailer.cs" />
@@ -305,8 +305,6 @@
     <Compile Include="CLI\DownloadBookCommand.cs" />
     <Compile Include="CLI\GetUsedFontsCommand.cs" />
     <Compile Include="CLI\HydrateBookCommand.cs" />
-    <Compile Include="Communication\IAndroidDeviceUsbConnection.cs" />
-    <Compile Include="Communication\UnimplementedAndroidDeviceUsbConnection.cs" />
     <Compile Include="Edit\BookSettingsTool.cs" />
     <Compile Include="Edit\ToolboxTool.cs" />
     <Compile Include="Edit\DecodableReaderTool.cs" />
@@ -320,13 +318,13 @@
     <Compile Include="MiscUI\TroubleShooterDialog.Designer.cs">
       <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\Android\FilePublisher.cs" />
+    <Compile Include="Publish\Android\file\FilePublisher.cs" />
     <Compile Include="Publish\Android\wifi\BloomReaderUDPListener.cs" />
     <Compile Include="Publish\Android\wifi\WiFiAdvertiser.cs" />
     <Compile Include="Publish\Android\wifi\WiFiPublisher.cs" />
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\Epub\ElectronicPublishView.cs" />
-    <Compile Include="Publish\Android\UsbPublisher.cs" />
+    <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
     <Compile Include="Publish\Android\AndroidView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -1373,6 +1371,9 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <ItemGroup>
     <IccFiles Include="..\..\DistFiles\ColorProfiles\CMYK\USWebCoatedSWOP.icc" />
     <IccFiles Include="..\..\DistFiles\ColorProfiles\RGB\AdobeRGB1998.icc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Communication\" />
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />

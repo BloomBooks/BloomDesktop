@@ -1,47 +1,45 @@
-﻿using System;
+﻿#if !__MonoCS__
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Bloom.Book;
-using Bloom.Communication;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 
-namespace Bloom.Publish.Android
+namespace Bloom.Publish.Android.usb
 {
 	public class UsbPublisher
 	{
 		public Action Stopped;
 
 		private readonly IProgress _progress;
-		private readonly IAndroidDeviceUsbConnection _androidDeviceUsbConnection;
+		private readonly AndroidDeviceUsbConnection _androidDeviceUsbConnection;
 		private DeviceNotFoundReportType _previousDeviceNotFoundReportType;
 
 		public UsbPublisher(IProgress progress)
 		{
 			_progress = progress;
-#if !__MonoCS__
 			_androidDeviceUsbConnection = new AndroidDeviceUsbConnection();
-#else
-			_androidDeviceUsbConnection = new UnimplementedAndroidDeviceUsbConnection();
-#endif
 		}
 
 		/// <summary>
 		/// Attempt to connect to a device
 		/// </summary>
-		public void Connect()
+		/// <param name="book"></param>
+		public void Connect(Book.Book book)
 		{
 			try
 			{
 				_progress.WriteMessage(LocalizationManager.GetString("Publish.Android.Usb.LookingForDevice",
 					"Looking for an Android device connected by USB cable and set up for MTP..."));
 
-				_androidDeviceUsbConnection.OneReadyDeviceFound += OneReadyDeviceFound;
-				_androidDeviceUsbConnection.OneReadyDeviceNotFound += OneReadyDeviceNotFound;
+				_androidDeviceUsbConnection.OneReadyDeviceFound = HandleFoundAReadyDevice;
+				_androidDeviceUsbConnection.OneReadyDeviceNotFound = HandeFoundOneNonReadyDevice;
 
 				var backgroundWorker = new BackgroundWorker();
-				backgroundWorker.DoWork += (sender, args) => _androidDeviceUsbConnection.FindDevice();
+				backgroundWorker.DoWork += (sender, args) => _androidDeviceUsbConnection.ConnectAndSendToOneDevice(book);
 				backgroundWorker.RunWorkerCompleted += (sender, args) =>
 				{
 					if (args.Error != null)
@@ -61,8 +59,6 @@ namespace Bloom.Publish.Android
 		{
 			_progress.WriteMessage("Stopped");
 			_androidDeviceUsbConnection.StopFindingDevice();
-			_androidDeviceUsbConnection.OneReadyDeviceFound -= OneReadyDeviceFound;
-			_androidDeviceUsbConnection.OneReadyDeviceNotFound -= OneReadyDeviceNotFound;
 		}
 
 		private void UsbFailConnect(Exception e)
@@ -76,27 +72,24 @@ namespace Bloom.Publish.Android
 			Stopped();
 		}
 
-		private void OneReadyDeviceFound(object sender, EventArgs args)
+		private void HandleFoundAReadyDevice(Book.Book book)
 		{
-			_androidDeviceUsbConnection.OneReadyDeviceFound -= OneReadyDeviceFound;
-			_androidDeviceUsbConnection.OneReadyDeviceNotFound -= OneReadyDeviceNotFound;
-
 			_progress.WriteMessage(String.Format(LocalizationManager.GetString(
 				"Publish.Android.Usb.UsbConnected",
-				"UsbConnected to {0}...", "{0} is a device name"), _androidDeviceUsbConnection.GetDeviceName()));
+				"Connected to {0} via USB...", "{0} is a device name"), _androidDeviceUsbConnection.GetDeviceName()));
 
-			Stopped();
+			SendBookAsync(book);
 		}
 
-		private void OneReadyDeviceNotFound(object sender, OneReadyDeviceNotFoundEventArgs eventArgs)
+		private void HandeFoundOneNonReadyDevice(DeviceNotFoundReportType reportType, List<string> deviceNames)
 		{
 			// Don't report the same thing over and over
-			if (_previousDeviceNotFoundReportType == eventArgs.ReportType)
+			if (_previousDeviceNotFoundReportType == reportType)
 				return;
 
-			_previousDeviceNotFoundReportType = eventArgs.ReportType;
+			_previousDeviceNotFoundReportType = reportType;
 
-			switch (eventArgs.ReportType)
+			switch (reportType)
 			{
 				case DeviceNotFoundReportType.NoDeviceFound:
 					_progress.WriteWarning(LocalizationManager.GetString("Publish.Android.Usb.NoDeviceFound",
@@ -108,13 +101,13 @@ namespace Bloom.Publish.Android
 						// we wouldn't get a bloom directory just from installing. We don't actually need it to be
 						// running, but this keeps the instructions simple.
 						"The following devices are connected but do not seem to have Bloom Reader running:"));
-					foreach (var deviceName in eventArgs.DeviceNames)
+					foreach (var deviceName in deviceNames)
 						_progress.WriteWarning($"\t{deviceName}");
 					break;
 				case DeviceNotFoundReportType.MoreThanOneReadyDevice:
 					_progress.WriteWarning(LocalizationManager.GetString("Publish.Android.Usb.MoreThanOne",
 						"The following connected devices all have Bloom Reader installed. Please connect only one of these devices."));
-					foreach (var deviceName in eventArgs.DeviceNames)
+					foreach (var deviceName in deviceNames)
 						_progress.WriteWarning($"\t{deviceName}");
 					break;
 			}
@@ -196,3 +189,4 @@ namespace Bloom.Publish.Android
 		}
 	}
 }
+#endif

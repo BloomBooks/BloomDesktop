@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using Bloom.Api;
 using Bloom.Properties;
+using Bloom.Publish.Android.file;
+using Bloom.Publish.Android.usb;
 using Bloom.Publish.Android.wifi;
 using Bloom.web;
 
@@ -14,7 +16,9 @@ namespace Bloom.Publish.Android
 		private const string kApiUrlPart = "publish/android/";
 		private const string kWebsocketStateId = "publish/android/state";
 		private readonly WiFiPublisher _wifiPublisher;
+#if !__MonoCS__
 		private readonly UsbPublisher _usbPublisher;
+#endif
 		private readonly BloomWebSocketServer _webSocketServer;
 
 		public PublishToAndroidApi(BloomWebSocketServer bloomWebSocketServer)
@@ -22,10 +26,12 @@ namespace Bloom.Publish.Android
 			_webSocketServer = bloomWebSocketServer;
 			var progress = new WebSocketProgress(_webSocketServer);
 			_wifiPublisher = new WiFiPublisher(progress);
+#if !__MonoCS__
 			_usbPublisher = new UsbPublisher(progress)
 			{
 				Stopped = () => SetState("stopped")
 			};
+#endif
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -51,10 +57,11 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
+#if !__MonoCS__
 			server.RegisterEndpointHandler(kApiUrlPart + "usb/start", request =>
 			{
 				SetState("UsbStarted");
-				_usbPublisher.Connect();
+				_usbPublisher.Connect(request.CurrentBook);
 				request.SucceededDoNotNavigate();
 			}, true);
 
@@ -64,7 +71,7 @@ namespace Bloom.Publish.Android
 				SetState("stopped");
 				request.Succeeded();
 			}, true);
-
+#endif
 			server.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
 				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings);
@@ -88,7 +95,9 @@ namespace Bloom.Publish.Android
 
 			server.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
 			{
+#if !__MonoCS__
 				_usbPublisher.Stop();
+#endif
 				_wifiPublisher.Stop();
 				SetState("stopped");
 				request.Succeeded();
