@@ -86,9 +86,24 @@ namespace Bloom.Api
 			//that's (currently) fine.
 			lock(this)
 			{
-				foreach (var socket in _allSockets)
+				// the ToArray() here gives us a copy so that if a socket
+				// is removed while we're doing this, it will be ok
+				foreach (var socket in _allSockets.ToArray())
 				{
-					socket.Send(e.ToString());
+					// see if it's been removed
+					if (_allSockets.Contains(socket))
+					{
+						// it could *still* be closed by the time we execute this,
+						// I don't know if Sending on a closed socket would throw, so we'll catch it in any case
+						try
+						{
+							socket.Send(e.ToString());
+						}
+						catch (Exception error)
+						{
+							NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, exception: error);
+						}
+					}
 				}
 			}
 		}
