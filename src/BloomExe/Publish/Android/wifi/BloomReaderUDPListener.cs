@@ -69,7 +69,8 @@ namespace Bloom.Publish.Android.wifi
 			if (_listening)
 			{
 				_listening = false;
-				_listener.Close(); // forcibly end communication
+				_listener?.Close(); // forcibly end communication
+				_listener = null;
 			}
 		}
 	}
