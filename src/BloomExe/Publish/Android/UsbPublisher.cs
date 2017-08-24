@@ -104,7 +104,10 @@ namespace Bloom.Publish.Android
 					break;
 				case DeviceNotFoundReportType.NoBloomDirectory:
 					_progress.WriteWarning(LocalizationManager.GetString("Publish.Android.Usb.DeviceWithoutBloomReader",
-						"The following devices are connected but do not seem to have Bloom Reader installed."));
+						// I made this "running" instead of "installed" because I'm assuming
+						// we wouldn't get a bloom directory just from installing. We don't actually need it to be
+						// running, but this keeps the instructions simple.
+						"The following devices are connected but do not seem to have Bloom Reader running:"));
 					foreach (var deviceName in eventArgs.DeviceNames)
 						_progress.WriteWarning($"\t{deviceName}");
 					break;
