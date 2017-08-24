@@ -39,7 +39,7 @@ namespace Bloom.Publish.Android.usb
 				_androidDeviceUsbConnection.OneReadyDeviceNotFound = HandeFoundOneNonReadyDevice;
 
 				var backgroundWorker = new BackgroundWorker();
-				backgroundWorker.DoWork += (sender, args) => _androidDeviceUsbConnection.FindADeviceThatIsReadyToReceiveBook(book);
+				backgroundWorker.DoWork += (sender, args) => _androidDeviceUsbConnection.ConnectAndSendToOneDevice(book);
 				backgroundWorker.RunWorkerCompleted += (sender, args) =>
 				{
 					if (args.Error != null)

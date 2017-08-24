@@ -43,16 +43,18 @@ namespace Bloom.Publish.Android.usb
 		private bool _stopLookingForDevice;
 
 		/// <summary>
-		/// Attempt to establish a connection with a device which has the Bloom Reader app
+		/// Attempt to establish a connection with a device which has the Bloom Reader app,
+		/// then send it the book.
 		/// </summary>
-		public void FindADeviceThatIsReadyToReceiveBook(Book.Book book)
+		public void ConnectAndSendToOneDevice(Book.Book book)
 		{
 			_stopLookingForDevice = false;
 
+			//The UX here is to only allow one device plugged in a time.
 			while (!_stopLookingForDevice && _device == null)
 			{
 				var devices = EnumerateAllDevices();
-				if(!FindADeviceThatIsReadyToReceiveBookInternal(devices, book))
+				if(!ConnectAndSendToOneDeviceInternal(devices, book))
 				{
 					Thread.Sleep(1000);
 				}
@@ -125,7 +127,7 @@ namespace Bloom.Publish.Android.usb
 		/// </summary>
 		/// <param name="devices"></param>
 		/// <returns>true if it found a ready device</returns>
-		private bool FindADeviceThatIsReadyToReceiveBookInternal(IEnumerable<IDevice> devices, Book.Book book)
+		private bool ConnectAndSendToOneDeviceInternal(IEnumerable<IDevice> devices, Book.Book book)
 		{
 			List<IDevice> applicableDevices = new List<IDevice>();
 			int totalDevicesFound = 0;
