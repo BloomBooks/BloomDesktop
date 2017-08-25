@@ -49,6 +49,7 @@ namespace Bloom.Publish.Android.usb
 		public void ConnectAndSendToOneDevice(Book.Book book)
 		{
 			_stopLookingForDevice = false;
+			_device = null;
 
 			//The UX here is to only allow one device plugged in a time.
 			while (!_stopLookingForDevice && _device == null)
