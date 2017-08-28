@@ -125,6 +125,49 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void CompressBookForDevice_ImgInImgContainer_ConvertedToBackground()
+		{
+			var testBook = CreateBook(bringBookUpToDate: true);
+			// This requires a real book file (which a mocked book usually doesn't have).
+			var oldImg =
+				"<div style=\"\" class=\"bloom-imageContainer bloom-leadingElement\">"
+					+ "<img data-creator=\"Anis Ka'abu\" data-license=\"cc-by\" data-copyright='1996 \"SIL\" PNG' style=\"width: 408px; height: 261px; margin-left: 0px; margin-top: 18px;\" alt=\"This picture, HL0014-1.svg, is missing or was loading too slowly.\" src=\"HL0014-1.svg\" height=\"261\" width=\"408\"></img>"
+				+ "</div>";
+			var newImg =
+				"<div class=\"bloom-imageContainer bloom-leadingElement bloom-backgroundImage\" style=\"background-image:url('HL0014-1.svg')\" data-creator=\"Anis Ka'abu\" data-license=\"cc-by\" data-copyright='1996 \"SIL\" PNG'></div>";
+			// {0} is in twice as a crude way of checking that it can replace more than one image.
+			var htmlTemplate = @"<!DOCTYPE html>
+<html>
+<body>
+    <div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+        <div class='pageDescription' lang='en'></div>
+
+        <div class='marginBox'>
+		{0}
+		{0}
+    </div>
+</body>
+</html>";
+			var htmlOriginal = string.Format(htmlTemplate, oldImg);
+			var htmlExpected = string.Format(htmlTemplate, newImg);
+			var bookFileName = Path.GetFileName(testBook.FolderPath) + ".htm";
+			var bookPath = Path.Combine(testBook.FolderPath, bookFileName);
+			File.WriteAllText(bookPath, htmlOriginal);
+			// The image file has to exist or we will delete instead of converting. Use svg because compression will
+			// actually try to draw, and fake pngs and jpgs cause exceptions.
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "HL0014-1.svg"), @"this is a fake for testing");
+
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
+			{
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
+				ZipFile zip = new ZipFile(bloomdTempFile.Path);
+				// Technically this is too strong. We'd be happy with any equivalent HTML file, e.g., whitespace could
+				// have changed. But this is the easiest to test and works with the current implementation.
+				Assert.That(GetEntryContents(zip, bookFileName, true), Is.EqualTo(htmlExpected));
+			}
+		}
+
+		[Test]
 		public void CompressBookForDevice_IncludesVersionFile_AndAddsStylesheet()
 		{
 			var testBook = CreateBook(bringBookUpToDate: true);
