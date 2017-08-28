@@ -87,18 +87,18 @@
         <note>ID: BloomPackInstallDialog.Opening</note>
         <target xml:lang="pt-PT">Abrindo {0}...</target>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.Replace">
+      <trans-unit id="BloomPackInstallDialog.Replace" approved="yes">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
         <note>ID: BloomPackInstallDialog.Replace</note>
-        <target xml:lang="pt-PT" state="translated">Este computador já tem uma coleção do Bloom chamada '{0}'. Você quer substituí-lo pela coleção deste Bloom Pack?</target>
+        <target xml:lang="pt-PT">Este computador já tem uma coleção do Bloom chamada '{0}'. Você quer substituí-lo pela coleção deste Bloom Pack?</target>
         <alt-trans>
           <target xml:lang="pt-PT">Este computador já tem uma coleção de Bloom chamada '{0}'. Você quer substituí-lo com uma coleção deste Bloom Pack?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder">
+      <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder" approved="yes">
         <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
         <note>ID: BloomPackInstallDialog.SingleCollectionFolder</note>
-        <target xml:lang="pt-PT" state="translated">Os Bloom Packs devem ter apenas uma única pasta de coleção no nível superior do arquivo .ZIP.</target>
+        <target xml:lang="pt-PT">Os Bloom Packs devem ter apenas uma única pasta de coleção no nível superior do arquivo .ZIP.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Os Bloom Packs devem ter apenas uma única pasta de coleção no nível superior da Arquivo ZIP.</target>
         </alt-trans>
@@ -114,27 +114,27 @@
           <target xml:lang="pt-PT">Bloom não foi capaz de remover a cópia existente do '{0}'. Pare Bloom se estiver em execução e tente novamente. Caso contrário, tente novamente depois de reiniciar seu computador.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true">
+      <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, then release the key.</source>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
         <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
-        <target xml:lang="pt-PT" state="translated">Para selecionar, use a botão central do mouse ou aponte para o que você quer e em seguida solte a tecla.</target>
+        <target xml:lang="pt-PT">Para selecionar, use a botão central do mouse ou aponte para o que você quer e em seguida solte a tecla.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Para selecionar, use a roda do rato (mouse) ou apontar para o que você quer e em seguida solte a chave.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true">
+      <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.DefaultForText</note>
-        <target xml:lang="pt-PT" state="translated">Esta formatação é padrão para todas as caixas de texto com estilo '{0}'.</target>
+        <target xml:lang="pt-PT">Esta formatação é padrão para todas as caixas de texto com estilo '{0}'.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Esta formatação é o padrão para todas as caixas de texto com estilo '{0}'.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookEditor.ForText" sil:dynamic="true">
+      <trans-unit id="BookEditor.ForText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.ForText</note>
-        <target xml:lang="pt-PT" state="translated">Esta formatação é para todas as caixas de texto com estilo '{0}'.</target>
+        <target xml:lang="pt-PT">Esta formatação é para todas as caixas de texto com estilo '{0}'.</target>
       </trans-unit>
       <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
@@ -184,39 +184,39 @@
           <target xml:lang="pt-PT">Abrir a página no Firefox (que deve ficar na variável de ambiente PATH)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
-        <target xml:lang="pt-PT" state="translated">Configurações Avançadas do Programa</target>
+        <target xml:lang="pt-PT">Configurações Avançadas do Programa</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate" approved="yes">
         <source xml:lang="en">Automatically update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
-        <target xml:lang="pt-PT" state="translated">Atualizar Automaticamente</target>
+        <target xml:lang="pt-PT">Atualizar Automaticamente o Bloom</target>
         <alt-trans>
-          <target xml:lang="pt-PT">Atualizar Automaticamente o Bloom</target>
+          <target xml:lang="pt-PT">Atualizar Automaticamente</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands" approved="yes">
         <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
-        <target xml:lang="pt-PT" state="translated">Mostrar comandos experimentais (por exemplo, exportar XML para o InDesign)</target>
+        <target xml:lang="pt-PT">Mostrar comandos experimentais (por exemplo, exportar XML para o InDesign)</target>
         <alt-trans>
           <target xml:lang="pt-PT">Mostrar comandos experimentais (ex: exportar XML para o InDesign)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates" approved="yes">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="pt-PT" state="translated">Mostrar modelos experimentais (por exemplo, dicionário de imagens)</target>
+        <target xml:lang="pt-PT">Mostrar modelos experimentais (por exemplo, dicionário de imagens)</target>
         <alt-trans>
           <target xml:lang="pt-PT">Mostrar modelos experimentais (ex: dicionário de imagens)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive" approved="yes">
         <source xml:lang="en">(Experimental) Show Send/Receive Controls</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive</note>
-        <target xml:lang="pt-PT" state="translated">(Experimental) Mostrar Controles Enviar/Receber</target>
+        <target xml:lang="pt-PT">(Experimental) Mostrar Controles Enviar/Receber</target>
         <alt-trans>
           <target xml:lang="pt-PT">(Experimental) Mostrar Controles de Enviar/Receber</target>
         </alt-trans>
@@ -304,48 +304,48 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal</note>
         <target xml:lang="pt-PT" state="translated">Cjk-Decimal</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal" approved="yes">
         <source xml:lang="en">Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal</note>
-        <target xml:lang="pt-PT" state="translated">Decimal</target>
+        <target xml:lang="pt-PT">Decimal</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari" approved="yes">
         <source xml:lang="en">Devanagari</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
-        <target xml:lang="pt-PT" state="translated">Devanágari</target>
+        <target xml:lang="pt-PT">Devanágari</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" approved="yes">
         <source xml:lang="en">Georgian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian</note>
-        <target xml:lang="pt-PT" state="translated">Georgiano</target>
+        <target xml:lang="pt-PT">Georgiano</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" approved="yes">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="pt-PT" state="translated">Gujarati</target>
+        <target xml:lang="pt-PT">Gujarati</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi" approved="yes">
         <source xml:lang="en">Gurmukhi</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
-        <target xml:lang="pt-PT" state="translated">Gurmukhi</target>
+        <target xml:lang="pt-PT">Gurmukhi</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" approved="yes">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="pt-PT" state="translated">Hebraico</target>
+        <target xml:lang="pt-PT">Hebraico</target>
         <alt-trans>
           <target xml:lang="pt-PT">Hebreu</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada" approved="yes">
         <source xml:lang="en">Kannada</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada</note>
-        <target xml:lang="pt-PT" state="translated">Kannada</target>
+        <target xml:lang="pt-PT">Kannada</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer" approved="yes">
         <source xml:lang="en">Khmer</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
-        <target xml:lang="pt-PT" state="translated">Khmer</target>
+        <target xml:lang="pt-PT">Khmer</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao">
         <source xml:lang="en">Lao</source>
@@ -357,20 +357,20 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
         <target xml:lang="pt-PT" state="translated">Armênio Inferior</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam" approved="yes">
         <source xml:lang="en">Malayalam</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam</note>
-        <target xml:lang="pt-PT" state="translated">Malaiala</target>
+        <target xml:lang="pt-PT">Malaiala</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" approved="yes">
         <source xml:lang="en">Mongolian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
-        <target xml:lang="pt-PT" state="translated">Mongol</target>
+        <target xml:lang="pt-PT">Mongol</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar" approved="yes">
         <source xml:lang="en">Myanmar</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
-        <target xml:lang="pt-PT" state="translated">Myanmar</target>
+        <target xml:lang="pt-PT">Myanmar</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya">
         <source xml:lang="en">Oriya</source>
