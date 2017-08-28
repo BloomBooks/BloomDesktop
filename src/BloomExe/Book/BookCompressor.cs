@@ -10,6 +10,7 @@ using System;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using Bloom.ImageProcessing;
+using Bloom.Publish.Epub;
 using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.Book
@@ -135,6 +136,7 @@ namespace Bloom.Book
 					var content = StripImagesWithMissingSrc(originalContent, bookFile);
 					content = StripContentEditable(content);
 					content = InsertReaderStylesheet(content);
+					content = ConvertImagesToBackground(content);
 					modifiedContent = Encoding.UTF8.GetBytes(content);
 					newEntry.Size = modifiedContent.Length;
 
@@ -184,6 +186,73 @@ namespace Bloom.Book
 
 				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, forReaderTools, excludeAudio, reduceImages);
 			}
+		}
+
+		private static string ConvertImagesToBackground(string content)
+		{
+			// regex components
+			var divWithWhiteSpace = @"<div\s+";
+			var anythingInTag = "[^>]*?";
+			var startClassAttr = @"class\s*=\s*";
+			var openQuote = "([\"'])"; // balance with @"\n", where n depends on how many parens preceed openQuote.
+			var anythingInAttr = "[^\"']*"; // not perfect but don't expect other kind of quotes in class attr.
+			var whitespace = @"\s*";
+			string attrContent = "(\"[^\"]*\"|'[^']*')"; // matches quoted string using either kind of quote.
+			// matches ="..." with optional whitespace and either kind of quote.
+			string equalsAttrContent = "\\s*=\\s*(['\"])(.*?)\\1";
+
+			var openContainerDiv = "(" + divWithWhiteSpace + anythingInTag + startClassAttr + openQuote + anythingInAttr
+			                       + "bloom-imageContainer" + anythingInAttr + @"\2" + anythingInTag + ")>";
+			var imgDiv = @"(<img\s+" + anythingInTag + ">" + whitespace + @"</img\s*>" + ")";
+			var regex = new Regex(openContainerDiv + whitespace + imgDiv + whitespace + @"</div\s*>");
+			int start = 0;
+			for (;;)
+			{
+				var match = regex.Match(content, start);
+				if (!match.Success)
+					break;
+				// Get everything in the opening <div before the closing wedge, dropping any style attribute.
+				// (Including whitespace on both sides of the style attr and replacing with a single space leaves things neat.)
+				var styleRegex = new Regex(whitespace + "style" + equalsAttrContent + whitespace);
+				var startOfDiv = styleRegex.Replace(match.Groups[1].Value, " ");
+
+				var classRegex = new Regex("class" + equalsAttrContent);
+				var classMatch = classRegex.Match(startOfDiv);
+
+				var endOfClassAttrValue = classMatch.Groups[2].Index + classMatch.Groups[2].Length;
+				var replacement = new StringBuilder(startOfDiv.Substring(0, endOfClassAttrValue)); // to just before closing quote of class attr value
+				replacement.Append(" bloom-backgroundImage");
+				replacement.Append(startOfDiv.Substring(endOfClassAttrValue, startOfDiv.Length - endOfClassAttrValue));
+
+				// Convert the src attribute into a background image style
+				var img = match.Groups[3].Value; // the whole img element
+				var srcRegex = new Regex("src" + equalsAttrContent);
+				var srcMatch = srcRegex.Match(img);
+				if (!srcMatch.Success)
+				{
+					// Huh? Anyway we can't do anything sensible with this. Leave it and search on.
+					start = match.Index + match.Length;
+					continue;
+				}
+				var source = srcMatch.Groups[2]; // src attr content, without quotes
+				replacement.Append(" style=\"background-image:url('");
+				replacement.Append(source);
+				replacement.Append("')\"");
+
+				// copy data-X attrs from img element
+				var alphanumeric = "[\\p{L}0-9]*";
+				foreach (Match dataMatch in new Regex("data-" + alphanumeric + equalsAttrContent).Matches(img))
+				{
+					replacement.Append(" ");
+					replacement.Append(dataMatch.Groups[0].Value);
+				}
+
+				replacement.Append("></div>");
+				content = content.Substring(0, match.Index) + replacement + content.Substring(match.Index + match.Length);
+				// continue after end of replacement.
+				start = match.Index + match.Length - replacement.Length;
+			}
+			return content;
 		}
 
 		private static void MakeExtraEntry(ZipOutputStream zipStream, string name, string content)
