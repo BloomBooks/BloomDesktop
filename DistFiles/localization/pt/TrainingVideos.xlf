@@ -5,34 +5,34 @@
       <trans-unit id="training.videos">
         <source xml:lang="en">Bloom Training Videos</source>
         <note>ID: training.videos</note>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom Training Videos</target>
+        <target xml:lang="pt-PT" state="translated">Vídeos de Treinamento do Bloom</target>
       </trans-unit>
       <trans-unit id="training.videos.watch">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser: </source>
         <note>ID: training.videos.watch</note>
-        <target xml:lang="pt-PT" state="needs-translation">If you are connected to the internet now, you can watch videos in your web browser: </target>
+        <target xml:lang="pt-PT" state="translated">Se o computador estiver conectado à internet, você pode ver vídeos no seu navegador: </target>
       </trans-unit>
       <trans-unit id="training.videos.all">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
         <note>ID: training.videos.all</note>
-        <target xml:lang="pt-PT" state="needs-translation">
-          <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
+        <target xml:lang="pt-PT" state="translated">
+          <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Todos os vídeos</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.intro">
         <source xml:lang="en">Introductory Videos</source>
         <note>ID: training.videos.intro</note>
-        <target xml:lang="pt-PT" state="needs-translation">Introductory Videos</target>
+        <target xml:lang="pt-PT" state="translated">Vídeos Introdutórios</target>
       </trans-unit>
       <trans-unit id="training.videos.whofor">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
         <note>ID: training.videos.whofor</note>
-        <target xml:lang="pt-PT" state="needs-translation">
-          <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
+        <target xml:lang="pt-PT" state="translated">
+          <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Para Quem É</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.templates">
