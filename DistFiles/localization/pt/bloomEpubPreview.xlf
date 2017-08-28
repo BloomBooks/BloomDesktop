@@ -9,20 +9,20 @@
         <target xml:lang="pt-PT" state="translated">Esta é uma versão &lt;a href="https://en.wikipedia.org/wiki/ePUB"&gt;ePUB&lt;/a&gt; (e-livro) de seu livro. &lt;span class="showForTalkingBooks"&gt;Contém áudio, para que novos leitores podem ouvir enquanto eles leem.&lt;/span&gt;
       </target>
       </trans-unit>
-      <trans-unit id="epubpreview.recording.butnotalk">
+      <trans-unit id="epubpreview.recording.butnotalk" approved="yes">
         <source xml:lang="en">This book has some recordings, but this audio is not included in the ePUB.</source>
         <note>ID: epubpreview.recording.butnotalk</note>
-        <target xml:lang="pt-PT" state="translated">Este livro tem algumas gravações, mas estes áudios não estão incluídos no ePUB.</target>
+        <target xml:lang="pt-PT">Este livro tem algumas gravações, mas estes áudios não estão incluídos no ePUB.</target>
       </trans-unit>
-      <trans-unit id="epubpreview.preview">
+      <trans-unit id="epubpreview.preview" approved="yes">
         <source xml:lang="en">Preview</source>
         <note>ID: epubpreview.preview</note>
-        <target xml:lang="pt-PT" state="translated">Visualizar</target>
+        <target xml:lang="pt-PT">Visualizar</target>
       </trans-unit>
-      <trans-unit id="epubpreview.resizing">
+      <trans-unit id="epubpreview.resizing" approved="yes">
         <source xml:lang="en">You can resize the preview by dragging the lower right corner of this simulated device. See how your book will look on screens of various sizes.</source>
         <note>ID: epubpreview.resizing</note>
-        <target xml:lang="pt-PT" state="translated">Você pode redimensionar a visualização arrastando o canto inferior direito deste dispositivo simulado. Veja como seu livro ficará em telas de vários tamanhos.</target>
+        <target xml:lang="pt-PT">Você pode redimensionar a visualização arrastando o canto inferior direito deste dispositivo simulado. Veja como seu livro ficará em telas de vários tamanhos.</target>
       </trans-unit>
       <trans-unit id="epubpreview.readium">
         <source xml:lang="en">This page uses the <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB reader. Books will likely look different on different readers.
@@ -38,10 +38,10 @@
         <target xml:lang="pt-PT" state="translated">Esta visualização ainda não pode reproduzir áudio dos livros. Você pode ouvi-lo usando o leitor (eReader) gratuito da Adobe chamado &lt;a href="http://www.adobe.com/solutions/ebook/digital-editions.html"&gt;Digital Editions&lt;/a&gt;.
       </target>
       </trans-unit>
-      <trans-unit id="epubpreview.ontodevice">
+      <trans-unit id="epubpreview.ontodevice" approved="yes">
         <source xml:lang="en">Getting this book onto your Device</source>
         <note>ID: epubpreview.ontodevice</note>
-        <target xml:lang="pt-PT" state="translated">Como carregar este livro em seu dispositivo</target>
+        <target xml:lang="pt-PT">Como carregar este livro em seu dispositivo</target>
       </trans-unit>
       <trans-unit id="epubpreview.usingdropbox">
         <source xml:lang="en">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
@@ -50,10 +50,10 @@
         <target xml:lang="pt-PT" state="translated">Uma maneira prática de obter livros para o seu telefone é configurar o Dropbox ou serviço similar no seu computador e seu celular/tablet. Apenas clique em salvar ePUB e escolha sua pasta Dropbox. Em seu telefone, abra o app Dropbox e selecione o seu livro. Se você estiver usando um laptop, você também pode tentar o programa gratuito de <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/"> ShareIt</g> para enviar arquivos de seu laptop para um telefone ou tablet.       
       </target>
       </trans-unit>
-      <trans-unit id="epubpreview.recommended.reader">
+      <trans-unit id="epubpreview.recommended.reader" approved="yes">
         <source xml:lang="en">Recommended Reader</source>
         <note>ID: epubpreview.recommended.reader</note>
-        <target xml:lang="pt-PT" state="translated">Leitor recomendado</target>
+        <target xml:lang="pt-PT">Leitor recomendado</target>
       </trans-unit>
       <trans-unit id="epubpreview.gitden.okay">
         <source xml:lang="en">Our testing has shown <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
@@ -80,15 +80,15 @@
       
       </target>
       </trans-unit>
-      <trans-unit id="epubpreview.write.us">
+      <trans-unit id="epubpreview.write.us" approved="yes">
         <source xml:lang="en">Write to us!</source>
         <note>ID: epubpreview.write.us</note>
-        <target xml:lang="pt-PT" state="translated">Escreva-nos!</target>
+        <target xml:lang="pt-PT">Escreva-nos!</target>
       </trans-unit>
-      <trans-unit id="epubpreview.use.help.report">
+      <trans-unit id="epubpreview.use.help.report" approved="yes">
         <source xml:lang="en">Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!</source>
         <note>ID: epubpreview.use.help.report</note>
-        <target xml:lang="pt-PT" state="translated">Está interessado em distribuir livros do Bloom para uso em celulares e outros leitores de ebook? Há alguma coisa que você precisa fazer antes que seja utilizável para você? Por favor, use o comando de ajuda: relatar um problema para enviar-nos comentários. Obrigado!</target>
+        <target xml:lang="pt-PT">Está interessado em distribuir livros do Bloom para uso em celulares e outros leitores de ebook? Há alguma coisa que você precisa fazer antes que seja utilizável para você? Por favor, use o comando de ajuda: relatar um problema para enviar-nos comentários. Obrigado!</target>
       </trans-unit>
     </body>
   </file>
