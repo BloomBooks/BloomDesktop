@@ -5,7 +5,7 @@
       <trans-unit id="leveled.reader.vocabulary">
         <source xml:lang="en">Vocabulary</source>
         <note>ID: leveled.reader.vocabulary</note>
-        <target xml:lang="pt-PT" state="needs-translation">Vocabulary</target>
+        <target xml:lang="pt-PT" state="translated">Vocabulário</target>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
@@ -15,7 +15,7 @@
       <trans-unit id="leveled.reader.formatting">
         <source xml:lang="en">Formatting</source>
         <note>ID: leveled.reader.formatting</note>
-        <target xml:lang="pt-PT" state="needs-translation">Formatting</target>
+        <target xml:lang="pt-PT" state="translated">Formatação</target>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
@@ -30,7 +30,7 @@
       <trans-unit id="leveled.reader.predictability">
         <source xml:lang="en">Predictability</source>
         <note>ID: leveled.reader.predictability</note>
-        <target xml:lang="pt-PT" state="needs-translation">Predictability</target>
+        <target xml:lang="pt-PT" state="translated">Previsibilidade</target>
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
@@ -78,7 +78,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
       <trans-unit id="leveled.reader.illustrations">
         <source xml:lang="en">Illustration Support</source>
         <note>ID: leveled.reader.illustrations</note>
-        <target xml:lang="pt-PT" state="needs-translation">Illustration Support</target>
+        <target xml:lang="pt-PT" state="translated">Suporte de ilustração</target>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
@@ -115,7 +115,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
       <trans-unit id="leveled.reader.topic.choice">
         <source xml:lang="en">Choice of Topic</source>
         <note>ID: leveled.reader.topic.choice</note>
-        <target xml:lang="pt-PT" state="needs-translation">Choice of Topic</target>
+        <target xml:lang="pt-PT" state="translated">Escolha do tema</target>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
