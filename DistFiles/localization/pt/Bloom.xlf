@@ -221,32 +221,32 @@
           <target xml:lang="pt-PT">(Experimental) Mostrar Controles de Enviar/Receber</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer" approved="yes">
         <source xml:lang="en">Use Image Server to reduce memory usage with large images.</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer</note>
         <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
-        <target xml:lang="pt-PT" state="translated">Use servidor de imagem para reduzir o uso de memória com imagens grandes.</target>
+        <target xml:lang="pt-PT">Use servidor de imagem para reduzir o uso de memória com imagens grandes.</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
-        <target xml:lang="pt-PT" state="translated">Bloom esta trocando a fonte padrão de "{0}" para o novo "Andika New Basic".</target>
+        <target xml:lang="pt-PT">Bloom esta trocando a fonte padrão de "{0}" para o novo "Andika New Basic".</target>
         <alt-trans>
           <target xml:lang="pt-PT">Bloom esta trocando a fonte padrão de"{0}" para o novo "Andika novo básico".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="pt-PT" state="translated">Isto melhorará a saída impressa para a maioria dos idiomas. Se a sua língua é uma das poucas que precisa da "Andika", você pode selecioná-la novamente em configurações: Elaboração de Livros.</target>
+        <target xml:lang="pt-PT">Isto melhorará a saída impressa para a maioria dos idiomas. Se a sua língua é uma das poucas que precisa da "Andika", você pode selecioná-la novamente em configurações: Elaboração de Livros.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Isto melhorará a saída impressa para a maioria dos idiomas. Se sua idioma é um dos poucos que precisam "Andika", pode trocar volta em configurações: Elaboração de Livros.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel" approved="yes">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="pt-PT" state="translated">Criação de livros</target>
+        <target xml:lang="pt-PT">Criação de livros</target>
         <alt-trans>
           <target xml:lang="pt-PT">Elaboração de livros</target>
         </alt-trans>
@@ -273,36 +273,36 @@
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
         <target xml:lang="pt-PT" state="translated">Economizador de papel</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
         <note>Name of the default Front/Back Matter Pack</note>
-        <target xml:lang="pt-PT" state="translated">Tradicional</target>
+        <target xml:lang="pt-PT">Tradicional</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
         <target xml:lang="pt-PT" state="translated">Arábico-Oriental</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" approved="yes">
         <source xml:lang="en">Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
-        <target xml:lang="pt-PT" state="translated">Armênio</target>
+        <target xml:lang="pt-PT">Armênio</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" approved="yes">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="pt-PT" state="translated">Bengalês</target>
+        <target xml:lang="pt-PT">Bengalês</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" approved="yes">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="pt-PT" state="translated">Cambojano</target>
+        <target xml:lang="pt-PT">Cambojano</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal" approved="yes">
         <source xml:lang="en">Cjk-Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal</note>
-        <target xml:lang="pt-PT" state="translated">Cjk-Decimal</target>
+        <target xml:lang="pt-PT">Cjk-Decimal</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal" approved="yes">
         <source xml:lang="en">Decimal</source>
