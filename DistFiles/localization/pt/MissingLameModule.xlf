@@ -5,37 +5,37 @@
       <trans-unit id="missing.lame.please.install">
         <source xml:lang="en">Please Install LAME</source>
         <note>ID: missing.lame.please.install</note>
-        <target xml:lang="pt-PT" state="needs-translation">Please Install LAME</target>
+        <target xml:lang="pt-PT" state="translated">Por favor, instale o LAME</target>
       </trans-unit>
       <trans-unit id="missing.lame.bloom.needs.lame">
         <source xml:lang="en">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
       </source>
         <note>ID: missing.lame.bloom.needs.lame</note>
-        <target xml:lang="pt-PT" state="needs-translation">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
-      
+        <target xml:lang="pt-PT" state="translated">Este livro tem gravações de áudio. O Bloom pode usar estas para fazer um "Áudio Livro" e-book. No entanto, o Bloom precisa de um programa chamado "LAME para Audacity" a fim de criar os arquivos de mp3 que o livro será utilizado. Configurá-lo é fácil. Primeiro, baixe e execute o <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl"> 'Lame_v3.99 para Windows.exe'</g>. Em seguida, reinicie o Bloom.       
       </target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Este livro tem gravações de áudio. O Bloom pode usar estas para fazer um "Talking Book" e-book. No entanto, o Bloom precisa de um programa chamado "LAME para Audacity" a fim de criar os arquivos de mp3 que o livro será utilizado. Configurá-lo é fácil. Primeiro, baixe e execute o <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl"> 'Lame_v3.99 para Windows.exe'</g>. Em seguida, reinicie o Bloom.       
+      </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="missing.lame.audio.optional">
         <source xml:lang="en">If you prefer to go ahead and publish your book without audio, click <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">here</g>.
       </source>
         <note>ID: missing.lame.audio.optional</note>
-        <target xml:lang="pt-PT" state="needs-translation">If you prefer to go ahead and publish your book without audio, click <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">here</g>.
-      
+        <target xml:lang="pt-PT" state="translated">Se você preferir ir em frente e publicar seu livro sem áudio, clique <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)"> aqui</g>.       
       </target>
       </trans-unit>
       <trans-unit id="missing.lame.legalities">
         <source xml:lang="en">Legal Considerations</source>
         <note>ID: missing.lame.legalities</note>
-        <target xml:lang="pt-PT" state="needs-translation">Legal Considerations</target>
+        <target xml:lang="pt-PT" state="translated">Condições legais</target>
       </trans-unit>
       <trans-unit id="missing.lame.old.patent.issues">
         <source xml:lang="en">Our understanding is that in a few countries (perhaps only in the USA, and then only until 2017), there are patents covering the creation of mp3's. In correspondence with the patent holder's representative, we were told:
         <g id="genid-3" ctype="x-html-blockquote">You may need a license if there is any type of subscription, content, service, per unit or itemized revenue for the distribution of mp3, or if there is any advertising present during the presentation of any mp3 content, either on a webpage with any links to your Talking Books, or as part of a messaging system, and this total mp3-associated mp3 revenue exceeds USD $100,000 per year.</g>Therefore, if you are just making Talking Books and giving them away, then only the distributor (e.g. BloomLibrary.org) needs to be concerned about licensing this technology (and since we don't make money from BloomLibrary.org, we don't have to worry, either.) For more information, see <g id="genid-4" ctype="x-html-a" html:href="http://www.mp3licensing.com/">mp3licensing.com</g>.
       </source>
         <note>ID: missing.lame.old.patent.issues</note>
-        <target xml:lang="pt-PT" state="needs-translation">Our understanding is that in a few countries (perhaps only in the USA, and then only until 2017), there are patents covering the creation of mp3's. In correspondence with the patent holder's representative, we were told:
-        <g id="genid-3" ctype="x-html-blockquote">You may need a license if there is any type of subscription, content, service, per unit or itemized revenue for the distribution of mp3, or if there is any advertising present during the presentation of any mp3 content, either on a webpage with any links to your Talking Books, or as part of a messaging system, and this total mp3-associated mp3 revenue exceeds USD $100,000 per year.</g>Therefore, if you are just making Talking Books and giving them away, then only the distributor (e.g. BloomLibrary.org) needs to be concerned about licensing this technology (and since we don't make money from BloomLibrary.org, we don't have to worry, either.) For more information, see <g id="genid-4" ctype="x-html-a" html:href="http://www.mp3licensing.com/">mp3licensing.com</g>.
-      
+        <target xml:lang="pt-PT" state="translated">Nosso entendimento é que, em alguns países (talvez só nos EUA até 2017), existam patentes cobrindo a criação de mp3. Em correspondência com o representante do titular da patente, disseram-nos: <g id="genid-3" ctype="x-html-blockquote"> você pode precisar de uma licença se houver qualquer tipo de assinatura, conteúdo, serviço, por unidade ou receita detalhada para a distribuição de mp3, ou se houver qualquer tipo de publicidade presente durante a apresentação de qualquer mp3 conteúdo, ou em uma página da Web com links para seus livros, ou como parte de um sistema de mensagens , e esta receita total mp3 e mp3-associada exceda USD $100.000 por ano.</g> Portanto, se você está apenas fazendo áudio livros e a doando-os, então apenas o distribuidor (por exemplo, BloomLibrary.org) precisa estar preocupado com esta tecnologia de licenciamento (e desde que nós não fazemos dinheiro de BloomLibrary.org, não temos que preocupar-se, também.) Para obter mais informações, consulte <g id="genid-4" ctype="x-html-a" html:href="http://www.mp3licensing.com/"> mp3licensing.com</g>.  
       </target>
       </trans-unit>
     </body>
