@@ -10,7 +10,7 @@
       <trans-unit id="integrity.causes">
         <source xml:lang="en">Possible Causes</source>
         <note>ID: integrity.causes</note>
-        <target xml:lang="pt-PT" state="needs-translation">Possible Causes</target>
+        <target xml:lang="pt-PT" state="translated">Possíveis causas</target>
       </trans-unit>
       <trans-unit id="integrity.causes.1">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files. </source>
@@ -25,7 +25,7 @@
       <trans-unit id="integrity.todo">
         <source xml:lang="en">What To Do</source>
         <note>ID: integrity.todo</note>
-        <target xml:lang="pt-PT" state="needs-translation">What To Do</target>
+        <target xml:lang="pt-PT" state="translated">Como Resolver</target>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas: </source>
@@ -45,17 +45,26 @@
       <trans-unit id="integrity.todo.ideas.AVAST">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>. </source>
         <note>ID: integrity.todo.ideas.AVAST</note>
-        <target xml:lang="pt-PT" state="needs-translation">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>.  </target>
+        <target xml:lang="pt-PT" state="translated">AVAST: <g id="genid-2" ctype="x-html-a" html:href="https://www.avast.com/pt-br/faq.php?article=AVKB168#artTitle"> instruções</g>.  </target>
+        <alt-trans>
+          <target xml:lang="pt-PT">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions"> instruções</g>.  </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Norton">
         <source xml:lang="en">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>. </source>
         <note>ID: integrity.todo.ideas.Norton</note>
-        <target xml:lang="pt-PT" state="needs-translation">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html">Instructions from Symantec</g>.  </target>
+        <target xml:lang="pt-PT" state="translated">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/pt_BR/article.HOWTO80920.html"> instruções da Symantec</g>. </target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Norton Antivirus: <g id="genid-3" ctype="x-html-a" html:href="https://support.symantec.com/en_US/article.HOWTO80920.html"> instruções da Symantec</g>.  </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVG">
         <source xml:lang="en">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>. </source>
         <note>ID: integrity.todo.ideas.AVG</note>
-        <target xml:lang="pt-PT" state="needs-translation">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning">Instructions from AVG</g>.  </target>
+        <target xml:lang="pt-PT" state="translated">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=pt&amp;urlName=How-to-exclude-file-folder-or-website-from-AVG-scanning&amp;q=How-to-exclude-file-folder-or-website-from-AVG-scanning"> instruções da AVG</g>.  </target>
+        <alt-trans>
+          <target xml:lang="pt-PT">AVG: <g id="genid-4" ctype="x-html-a" html:href="https://support.avg.com/SupportArticleView?l=en_US&amp;amp;urlname=How-to-exclude-file-folder-or-website-from-AVG-scanning"> instruções da AVG</g>.  </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Others">
         <source xml:lang="en">Others: Google for "whitelist directory name-of-your-antivirus" </source>
@@ -75,7 +84,7 @@
       <trans-unit id="integrity.missing">
         <source xml:lang="en">Missing Files</source>
         <note>ID: integrity.missing</note>
-        <target xml:lang="pt-PT" state="needs-translation">Missing Files</target>
+        <target xml:lang="pt-PT" state="translated">Arquivos ausentes</target>
       </trans-unit>
     </body>
   </file>
