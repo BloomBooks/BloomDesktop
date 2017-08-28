@@ -2,7 +2,9 @@
 using Bloom.Api;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
+#if !__MonoCS__
 using Bloom.Publish.Android.usb;
+#endif
 using Bloom.Publish.Android.wifi;
 using Bloom.web;
 
