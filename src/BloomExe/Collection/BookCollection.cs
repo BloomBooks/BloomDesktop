@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -57,7 +57,7 @@ namespace Bloom.Collection
 			string path = Path.Combine(_path, "customCollectionStyles.css");
 			if(RobustFile.Exists(path))
 				return;
-			RobustFile.Copy(BloomFileLocator.GetBrowserFile("bookLayout", "collection styles override template.css"), path);
+			RobustFile.Copy(BloomFileLocator.GetBrowserFile(false, "bookLayout", "collection styles override template.css"), path);
 		}
 
 		public CollectionType Type { get; private set; }
