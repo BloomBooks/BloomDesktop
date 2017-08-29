@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using PodcastUtilities.PortableDevices;
 
@@ -86,6 +87,13 @@ namespace Bloom.Publish.Android.usb
 			var sourceStream = File.OpenRead(bloomdPath);
 			var targetStream = _device.OpenWrite(Path.Combine(_bloomFolderPath, Path.GetFileName(bloomdPath)), new FileInfo(bloomdPath).Length, true);
 			Copy(sourceStream, targetStream);
+
+			// Also send a little marker file. BloomReader can tell "something has been updated" by just checking the modify time on this.
+			var buffer = Encoding.UTF8.GetBytes("Just for change detection");
+			var markerSourceStream = new MemoryStream(buffer);
+			targetStream = _device.OpenWrite(Path.Combine(_bloomFolderPath, "something.modified"), buffer.Length, true);
+			Copy(markerSourceStream, targetStream);
+
 		}
 
 		public string GetDeviceName()
