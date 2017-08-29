@@ -49,6 +49,7 @@ namespace BloomTests.Book
 			// interesting files.
 			var expectedFiles = Directory.GetFiles(testBook.FolderPath).ToList();
 			expectedFiles.Add("thumbnail.png"); // We should NOT eliminate thumbnail.png, which we eventually want for the reader book chooser UI.
+			expectedFiles.Add("previewMode.css"); // Somewhat sadly, we need this, e.g., for rules that hide the page labels.
 
 			// This unwanted file has to be real; just putting some text in it leads to out-of-memory failures when Bloom
 			// tries to make its background transparent.
@@ -57,7 +58,7 @@ namespace BloomTests.Book
 			File.Copy(SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(testBook.FolderPath, "thumbnail-70.png"));
 			File.WriteAllText(Path.Combine(testBook.FolderPath, "book.BloomBookOrder"), @"This is unwanted");
 			File.WriteAllText(Path.Combine(testBook.FolderPath, "book.pdf"), @"This is unwanted");
-			File.WriteAllText(Path.Combine(testBook.FolderPath, "previewMode.css"), @"This is unwanted");
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "previewMode.css"), @"This is wanted");
 			File.WriteAllText(Path.Combine(testBook.FolderPath, "meta.json"), @"This is unwanted");
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
