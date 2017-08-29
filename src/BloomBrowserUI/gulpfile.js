@@ -1,7 +1,17 @@
 /// <binding />
 var gulp = require('gulp');
 var semver = require('semver');
-var {engines} = require('./package');
+var { engines } = require('./package');
+var gutil = require('gulp-util');
+var tap = require('gulp-tap');
+
+//set up markdown with the extensions that we use to mark lines for localization
+var MarkdownIt = require('markdown-it');
+var markdownItContainer = require('markdown-it-container');
+var markdownItAttrs = require('markdown-it-attrs');
+var markdownIt = new MarkdownIt();
+markdownIt.use(markdownItContainer);
+markdownIt.use(markdownItAttrs);
 
 var debug = require('gulp-debug');
 //var ts = require('gulp-typescript');
@@ -15,6 +25,7 @@ var webpack = require('gulp-webpack');
 var del = require('del');
 var runSequence = require('run-sequence');
 var gulpCopy = require('gulp-copy');
+var gulpFlatten = require('gulp-flatten');
 
 // Ensure the version of node we are running is the one we require
 const version = engines.node;
@@ -29,6 +40,7 @@ var outputDir = "../../output/browser";
 
 //todo: can remove these output exlusions now that output/ is now 2 levels up with the c# outpuuts
 var paths = {
+    help: ['./help/**/*.md'],
     less: ['./**/*.less', '!./node_modules/**/*.less', '!./output/**/*.*'],
     pug: ['./**/*.pug', '!./node_modules/**/*.pug', '!./**/*mixins.pug', '!./output/**/*.*'],
     //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*','!./output/**/*.*'],
@@ -137,10 +149,28 @@ gulp.task('watch', function () {
     runSequence('clean', 'copy', ['less', 'pug'], 'watchInner');
 });
 
+gulp.task('markdownHelp', function () {
+    return gulp.src(paths.help)
+        .pipe(debug({ title: 'md:' }))
+        .pipe(tap(function (file) {
+            var result = markdownIt.render(file.contents.toString());
+            file.contents = new Buffer(
+                //here we are assigning an unfortunately named stylesheet that goes with all Bloom help pages
+                `<html><head><meta charset='utf-8'><link rel='stylesheet' href='help.css' type='text/css'/></head><body>
+                    ` + result + `
+                    </body></html>`);
+            file.path = gutil.replaceExtension(file.path, '.htm');
+            return;
+        }))
+        .pipe(gulpFlatten({ includeParents: 0 })) // number of parent folders to include
+        .pipe(gulp.dest(outputDir + "/help"))
+        .pipe(debug({ title: '   --> ' }));
+});
 
 gulp.task('default',
     function (callback) {
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
         //currently our webpack run is pure javascript, so do it only after the typescript is all done
-        runSequence('clean', 'copy', ['less', 'pug'], 'pugLRT', 'webpack', callback)
+        runSequence('clean', 'copy', ['less', 'pug', 'markdownHelp'], 'pugLRT', 'webpack', callback)
     });
+

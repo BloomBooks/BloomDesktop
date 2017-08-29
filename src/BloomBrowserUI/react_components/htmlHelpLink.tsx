@@ -13,7 +13,7 @@ export default class HtmlHelpLink extends LocalizableElement<ComponentProps, {}>
     render() {
         return (
             // we always provide the english path, but this api will return the best translation it finds
-            <a target="_blank" href={"/api/externalLink/DistFiles/infoPages/" + this.props.fileid + "-en.htm"}>
+            <a target="_blank" href={"/api/externalLink/help/" + this.props.fileid + "-en.htm"}>
                 {this.getLocalizedContent()}
             </a>
         );
