@@ -95,8 +95,7 @@ namespace Bloom.Book
 				// or displaying collections but not needed by the reader. The most important is probably
 				// eliminating the pdf, which can be very large. Note that we do NOT eliminate the
 				// basic thumbnail.png, as we want eventually to extract that to use in the Reader UI.
-				if (fileName=="thumbnail-70.png" || fileName=="thumbnail-256.png"
-					|| fileName == "previewmode.css")
+				if (fileName=="thumbnail-70.png" || fileName=="thumbnail-256.png")
 					continue;
 				if (fileName == "meta.json" && omitMetaJson)
 					continue;
