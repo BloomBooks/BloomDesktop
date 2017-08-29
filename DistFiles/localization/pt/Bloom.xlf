@@ -23,10 +23,10 @@
           <target xml:lang="pt-PT">Possivelmente, este é um Bloom Pack antigo criado antes que os Bloom Packs poderiam lidar com caracteres especiais em os nomes de arquivo. Talvez você possa pedir ao autor para recriá-lo usando uma versão atual. Se isso não for possível, talvez um especialista técnico poderá repará-lo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation" approved="yes">
         <source xml:lang="en">Bloom Pack Installation</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstallation</note>
-        <target xml:lang="pt-PT" state="translated">Instalação do Bloom Pack</target>
+        <target xml:lang="pt-PT">Instalação do Bloom Pack</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstalled" approved="yes">
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
@@ -103,10 +103,10 @@
           <target xml:lang="pt-PT">Os Bloom Packs devem ter apenas uma única pasta de coleção no nível superior da Arquivo ZIP.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.UnableToReplace">
+      <trans-unit id="BloomPackInstallDialog.UnableToReplace" approved="yes">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
-        <target xml:lang="pt-PT" state="translated">Bloom não foi capaz de remover a cópia existente do '{0}'. Feche o Bloom se estiver em execução e tente novamente. Caso contrário, reinicie o computador e tente novamente.</target>
+        <target xml:lang="pt-PT">Bloom não foi capaz de remover a cópia existente do '{0}'. Feche o Bloom se estiver em execução e tente novamente. Caso contrário, reinicie o computador e tente novamente.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Bloom não foi capaz de remover a cópia existente do '{0}'. Feche o Bloom se estiver em execução &amp; e tente novamente. Caso contrário, reinicie o computador e tente novamente.</target>
         </alt-trans>
@@ -136,10 +136,10 @@
         <note>ID: BookEditor.ForText</note>
         <target xml:lang="pt-PT">Esta formatação é para todas as caixas de texto com estilo '{0}'.</target>
       </trans-unit>
-      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
+      <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
-        <target xml:lang="pt-PT" state="translated">Esta formatação é para todas as caixas de texto de {0} com estilo '{1}'.</target>
+        <target xml:lang="pt-PT">Esta formatação é para todas as caixas de texto de {0} com estilo '{1}'.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Esta formatação é para todas as caixas de texto {0} com estilo '{1}'.</target>
         </alt-trans>
