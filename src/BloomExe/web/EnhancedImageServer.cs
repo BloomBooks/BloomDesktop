@@ -300,7 +300,7 @@ namespace Bloom.Api
 			// this is used only by the readium viewer
 			else if (localPath.StartsWith("node_modules/jquery/dist/jquery.js"))
 			{
-				localPath = BloomFileLocator.GetBrowserFile("jquery.min.js");
+				localPath = BloomFileLocator.GetBrowserFile(false, "jquery.min.js");
 				// Avoid having "output/browser/" removed on Linux developer machines.
 				// GetBrowserFile adds output to the path on developer machines, but not user installs.
 				return ProcessContent(info, localPath);
@@ -537,10 +537,10 @@ namespace Bloom.Api
 			{
 				var startOfBookLayout = localPath.IndexOf("bookLayout");
 				if (startOfBookLayout > 0)
-					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookLayout));
+					path = BloomFileLocator.GetBrowserFile(false, localPath.Substring(startOfBookLayout));
 				var startOfBookEdit = localPath.IndexOf("bookEdit");
 				if (startOfBookEdit > 0)
-					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
+					path = BloomFileLocator.GetBrowserFile(false, localPath.Substring(startOfBookEdit));
 			}
 
 			if (!RobustFile.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))

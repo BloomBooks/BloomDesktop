@@ -135,10 +135,10 @@ namespace Bloom
 			return locator;
 		}
 
-		public static string GetBrowserFile(params string[] parts)
+		public static string GetBrowserFile(bool optional, params string[] parts)
 		{
 			parts[0] = Path.Combine(BrowserRoot,parts[0]);
-			return FileLocator.GetFileDistributedWithApplication(false, parts);
+			return FileLocator.GetFileDistributedWithApplication(optional, parts);
 		}
 
 		public static string GetBrowserDirectory(params string[] parts)
@@ -207,8 +207,18 @@ namespace Bloom
 		/// </summary>
 		public static string GetBestLocalizableFileDistributedWithApplication(bool existenceOfEnglishVersionIsOptional, params string[] partsOfEnglishFilePath)
 		{
-			var englishPath = FileLocator.GetFileDistributedWithApplication(existenceOfEnglishVersionIsOptional, partsOfEnglishFilePath);
-			if(!RobustFile.Exists(englishPath))
+			// at this time, FileLocator does not have a way for the app to actually tell it where to find things distributed
+			// with the application...
+			var englishPath = FileLocator.GetFileDistributedWithApplication(true, partsOfEnglishFilePath);
+
+			// ... so if it doesn't find it, we have to keep looking
+			if (string.IsNullOrWhiteSpace(englishPath))
+			{
+				//this one will throw if we still can't find it and existenceOfEnglishVersionIsOptional is false
+				englishPath = BloomFileLocator.GetBrowserFile(existenceOfEnglishVersionIsOptional, partsOfEnglishFilePath);
+			}
+
+			if (!RobustFile.Exists(englishPath))
 			{
 				return englishPath; // just return whatever the original GetFileDistributedWithApplication gave. "", null, whatever it is.
 			}
