@@ -3,6 +3,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
 import BloomButton from "../../react_components/bloomButton";
+import Option from "../../react_components/option";
+import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { H1, H2, LocalizableElement, IUILanguageAwareProps, P } from "../../react_components/l10n";
@@ -86,9 +88,19 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                             axios.post("/bloom/api/publish/android/method", event.target.value,
                                 { headers: { "Content-Type": "text/plain" } });
                         }}>
-                    <option className="method-option wifi-method-option" value="wifi">Serve on WiFi Network</option>
-                    <option className="method-option usb-method-option" value="usb">Send over USB Cable</option>
-                    <option className="method-option file-method-option" value="file">Save Bloom Reader File</option>
+                    <Option l10nKey="Publish.Android.ChooseWifi"
+                        className="method-option wifi-method-option"
+                        value="wifi">
+                        Serve on WiFi Network
+                    </Option>
+                    <Option l10nKey="Publish.Android.ChooseUSB"
+                        className="method-option usb-method-option" value="usb">
+                        Send over USB Cable
+                    </Option>
+                    <Option l10nKey="Publish.Android.ChooseFile"
+                        className="method-option file-method-option" value="file">
+                        Save Bloom Reader File
+                    </Option>
                 </select>
 
                 <p />
@@ -99,12 +111,14 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
                 {this.state.method === "wifi" &&
                     <div>
-                        <BloomButton l10nKey="Publish.Android.Wifi.Serving"
+                        <BloomButton l10nKey="Publish.Android.Wifi.Start"
+                            l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                             enabled={this.state.stateId === "stopped"}
                             clickEndpoint="publish/android/wifi/start">
                             Start Serving
                         </BloomButton>
-                        <BloomButton l10nKey="Publish.Android.Wifi.Stopped"
+                        <BloomButton l10nKey="Publish.Android.Wifi.Stop"
+                            l10nComment="Button that tells Bloom to stop offering this book on the wifi network."
                             enabled={this.state.stateId === "ServingOnWifi"}
                             clickEndpoint="publish/android/wifi/stop">
                             Stop Serving
