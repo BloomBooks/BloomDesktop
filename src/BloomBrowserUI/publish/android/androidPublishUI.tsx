@@ -3,6 +3,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
 import BloomButton from "../../react_components/bloomButton";
+import Link from "../../react_components/link";
 import HelpLink from "../../react_components/helpLink";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { H1, H2, LocalizableElement, IUILanguageAwareProps, P } from "../../react_components/l10n";
@@ -143,6 +144,12 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 <div id="progress-section" style={{ visibility: this.state.method === "file" ? "hidden" : "visible" }}>
                     <div id="progress-row">
                         <h1>Progress</h1>
+                        <Link id="getBloomReaderLink"
+                            href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps"
+                            l10nKey="Publish.Android.GetBloomReader"
+                            l10nComment="Link to find Bloom Reader on Google Play Store">
+                            Get Bloom Reader App
+                        </Link>
                         <HtmlHelpLink l10nKey="Publish.Android.Troubleshooting"
                             fileid="Publish-Android-Troubleshooting">
                             Troubleshooting Tips

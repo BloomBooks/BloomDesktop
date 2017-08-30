@@ -8,9 +8,6 @@ interface ComponentProps extends ILocalizationProps {
 
 // just an html anchor that knows how to localize and how turn a Bloom help id into a url
 export default class HelpLink extends LocalizableElement<ComponentProps, {}> {
-    constructor(props) {
-        super(props);
-    }
     render() {
         return (
             <a href={"/bloom/api/help/" + this.props.helpId}>
