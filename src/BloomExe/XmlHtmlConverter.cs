@@ -303,6 +303,14 @@ namespace Bloom
 		/// </summary>
 		public static string SaveDOMAsHtml5(XmlDocument dom, string targetPath)
 		{
+			var html = ConvertDomToHtml5(dom);
+			RobustFile.WriteAllText(targetPath, html, Encoding.UTF8);
+
+			return targetPath;
+		}
+
+		public static string ConvertDomToHtml5(XmlDocument dom)
+		{
 			// First we write the DOM out to string
 
 			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true, OmitXmlDeclaration = true};
@@ -355,9 +363,7 @@ namespace Bloom
 
 			// Now revert the stuff we did to make it "safe from libtidy"
 			html = RemoveFillerInEmptyElements(html);
-			RobustFile.WriteAllText(targetPath, html, Encoding.UTF8);
-
-			return targetPath;
+			return html;
 		}
 
 		public static void RemoveAllContentTypesMetas(XmlDocument dom)
