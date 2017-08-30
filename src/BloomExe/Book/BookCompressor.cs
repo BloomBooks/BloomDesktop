@@ -137,6 +137,7 @@ namespace Bloom.Book
 					StripImagesWithMissingSrc(dom, bookFile);
 					StripContentEditable(dom);
 					InsertReaderStylesheet(dom);
+					ConvertImagesToBackground(dom);
 					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
 					modifiedContent = Encoding.UTF8.GetBytes(newContent);
 					newEntry.Size = modifiedContent.Length;
@@ -220,6 +221,39 @@ namespace Bloom.Book
 			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>().ToArray())
 			{
 				editableElt.RemoveAttribute("contenteditable");
+			}
+		}
+
+		/// <summary>
+		/// Find every place in the html file where an img element is nested inside a div with class bloom-imageContainer.
+		/// Convert the img into a background image of the image container div.
+		/// Specifically, make the following changes:
+		/// - Copy any data-x attributes from the img element to the div
+		/// - Convert the src attribute of the img to style="background-image:url('...')" (with the same source) on the div
+		///    (any pre-existing style attribute on the div is lost)
+		/// - Add the class bloom-backgroundImage to the div
+		/// - delete the img element
+		/// (See oldImg and newImg in unit test CompressBookForDevice_ImgInImgContainer_ConvertedToBackground for an example).
+		/// </summary>
+		/// <param name="wholeBookHtml"></param>
+		/// <returns></returns>
+		private static void ConvertImagesToBackground(XmlDocument dom)
+		{
+			foreach (var imgContainer in dom.SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]").Cast<XmlElement>().ToArray())
+			{
+				var img = imgContainer.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n is XmlElement && n.Name == "img");
+				if (img == null || img.Attributes["src"] == null)
+					continue;
+				// The filename should be already urlencoded since src is a url.
+				var src = img.Attributes["src"].Value;
+				HtmlDom.SetImageElementUrl(new ElementProxy(imgContainer), UrlPathString.CreateFromHtmlXmlEncodedString(src));
+				foreach (XmlAttribute attr in img.Attributes)
+				{
+					if (attr.Name.StartsWith("data-"))
+						imgContainer.SetAttribute(attr.Name, attr.Value);
+				}
+				imgContainer.SetAttribute("class", imgContainer.Attributes["class"].Value + " bloom-backgroundImage");
+				imgContainer.RemoveChild(img);
 			}
 		}
 
