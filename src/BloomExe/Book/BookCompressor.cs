@@ -208,7 +208,7 @@ namespace Bloom.Book
 			var folderPath = Path.GetDirectoryName(bookFile);
 			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())
 			{
-				var file = imgElt.Attributes["src"].Value.Split('?')[0];
+				var file = UrlPathString.CreateFromUrlEncodedString(imgElt.Attributes["src"].Value).NotEncoded.Split('?')[0];
 				if (!File.Exists(Path.Combine(folderPath, file)))
 				{
 					imgElt.ParentNode.RemoveChild(imgElt);
@@ -246,7 +246,7 @@ namespace Bloom.Book
 					continue;
 				// The filename should be already urlencoded since src is a url.
 				var src = img.Attributes["src"].Value;
-				HtmlDom.SetImageElementUrl(new ElementProxy(imgContainer), UrlPathString.CreateFromHtmlXmlEncodedString(src));
+				HtmlDom.SetImageElementUrl(new ElementProxy(imgContainer), UrlPathString.CreateFromUrlEncodedString(src));
 				foreach (XmlAttribute attr in img.Attributes)
 				{
 					if (attr.Name.StartsWith("data-"))

@@ -135,9 +135,9 @@ namespace BloomTests.Book
 			var oldImg =
 				"<div style=\"\" class=\"bloom-imageContainer bloom-leadingElement\">"
 				+
-				"<img data-creator=\"Anis Ka'abu\" data-license=\"cc-by\" data-copyright='1996 \"SIL\" PNG' style=\"width: 408px; height: 261px; margin-left: 0px; margin-top: 18px;\" alt=\"This picture, HL0014-1.svg, is missing or was loading too slowly.\" src=\"HL00'14-1.svg\" height=\"261\" width=\"408\"></img>"
+				"<img data-creator=\"Anis Ka'abu\" data-license=\"cc-by\" data-copyright='1996 \"SIL\" PNG' style=\"width: 408px; height: 261px; margin-left: 0px; margin-top: 18px;\" alt=\"This picture, HL0014-1.svg, is missing or was loading too slowly.\" src=\"HL00'14 1.svg\" height=\"261\" width=\"408\"></img>"
 				+ "</div>";
-			// Above should be replaced with something like this: "<div class=\"bloom-imageContainer bloom-leadingElement bloom-backgroundImage\" style=\"background-image:url('HL0014-1.svg')\" data-creator=\"Anis Ka'abu\" data-license=\"cc-by\" data-copyright='1996 \"SIL\" PNG'></div>";
+			// Above should be replaced with something like this: "<div class=\"bloom-imageContainer bloom-leadingElement bloom-backgroundImage\" style=\"background-image:url('HL00%2714%201.svg')\" data-creator=\"Anis Ka'abu\" data-license=\"cc-by\" data-copyright='1996 \"SIL\" PNG'></div>";
 			// {0} is in twice as a crude way of checking that it can replace more than one image.
 			var htmlTemplate = @"<!DOCTYPE html>
 <html>
@@ -157,7 +157,7 @@ namespace BloomTests.Book
 			File.WriteAllText(bookPath, htmlOriginal);
 			// The image file has to exist or we will delete instead of converting. Use svg because compression will
 			// actually try to draw, and fake pngs and jpgs cause exceptions.
-			File.WriteAllText(Path.Combine(testBook.FolderPath, "HL00'14-1.svg"), @"this is a fake for testing");
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "HL00'14 1.svg"), @"this is a fake for testing");
 
 			using (var bloomdTempFile =
 				TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
@@ -169,7 +169,7 @@ namespace BloomTests.Book
 				var newHtml = GetEntryContents(zip, bookFileName, true);
 				var assertThatNewHtml = AssertThatXmlIn.String(newHtml);
 				assertThatNewHtml.HasNoMatchForXpath("//img"); // should be merged into parent
-				assertThatNewHtml.HasSpecifiedNumberOfMatchesForXpath("//div[@data-creator=\"Anis Ka'abu\" and @data-license='cc-by' and @data-copyright='1996 \"SIL\" PNG' and @class='bloom-imageContainer bloom-leadingElement bloom-backgroundImage' and @style=\"background-image:url('HL00%2714-1.svg')\"]", 2);
+				assertThatNewHtml.HasSpecifiedNumberOfMatchesForXpath("//div[@data-creator=\"Anis Ka'abu\" and @data-license='cc-by' and @data-copyright='1996 \"SIL\" PNG' and @class='bloom-imageContainer bloom-leadingElement bloom-backgroundImage' and @style=\"background-image:url('HL00%2714%201.svg')\"]", 2);
 			}
 		}
 
