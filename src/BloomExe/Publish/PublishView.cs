@@ -17,6 +17,7 @@ using SIL.Reporting;
 using Gecko;
 using SIL.IO;
 using System.Drawing;
+using Bloom.Api;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
@@ -37,15 +38,17 @@ namespace Bloom.Publish
 		private EpubView _epubPreviewControl;
 		private AndroidView _androidControl;
 		private NavigationIsolator _isolator;
+		private BloomWebSocketServer _webSocketServer;
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator)
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login, NavigationIsolator isolator, BloomWebSocketServer webSocketServer)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 			_isolator = isolator;
+			_webSocketServer = webSocketServer;
 
 			InitializeComponent();
 
@@ -125,7 +128,11 @@ namespace Bloom.Publish
 		{
 			if (IsMakingPdf)
 				_makePdfBackgroundWorker.CancelAsync();
-			_androidControl?.Deactivate();
+			// This allows various cleanup of controls which we won't use again, since we
+			// always switch to this state when we reactivate the view.
+			// In particular, it is part of the solution to BL-4901 that the AndroidView,
+			// if it is active, is removed (hence deactivated) and disposed.
+			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
 		}
 
 		private void BackgroundColorsForLinux() {
@@ -404,6 +411,8 @@ namespace Bloom.Publish
 			if (displayMode != PublishModel.DisplayModes.Android && _androidControl != null && Controls.Contains(_androidControl))
 			{
 				Controls.Remove(_androidControl);
+				_androidControl.Dispose();
+				_androidControl = null;
 			}
 			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Android)
 				_pdfViewer.Visible = true;
@@ -495,7 +504,7 @@ namespace Bloom.Publish
 					// Calls LoadBookIfNeeded() which calls BringBookUpToDate() and Save() if needed
 					_model.DoAnyNeededAudioCompression();
 
-					_androidControl = new AndroidView(_isolator);
+					_androidControl = new AndroidView(_isolator, _webSocketServer);
 					_androidControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 						_pdfViewer.Width, _pdfViewer.Height);
 					_androidControl.Dock = _pdfViewer.Dock;
