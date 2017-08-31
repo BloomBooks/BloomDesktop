@@ -2,14 +2,12 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.web;
 using Newtonsoft.Json;
 using SIL.IO;
-using SIL.Progress;
 
 namespace Bloom.Publish.Android.wifi
 {
@@ -18,14 +16,14 @@ namespace Bloom.Publish.Android.wifi
 	/// </summary>
 	public class WiFiPublisher
 	{
-		private readonly IProgress _progress;
+		private readonly WebSocketProgress _progress;
 		private WiFiAdvertiser _wifiAdvertiser;
 		private BloomReaderUDPListener _wifiListener;
 		public const string ProtocolVersion = "1.0";
 
-		public WiFiPublisher(IProgress progress)
+		public WiFiPublisher(WebSocketProgress progress)
 		{
-			_progress = progress;
+			_progress = progress.WithL10NPrefix("Publish.Android.Wifi.Progress.");
 		}
 
 		public void Start(Book.Book book, CollectionSettings collectionSettings)
@@ -58,9 +56,11 @@ namespace Bloom.Publish.Android.wifi
 				// just ignore the request.
 				catch (Exception ex) when (ex is JsonReaderException || ex is JsonSerializationException)
 				{
-					_progress.WriteError(string.Format(
-						"Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader? Request contains {0}; trying to interpret as JSON we got {1}",
-						json, ex.Message));
+					_progress.Error(id: "BadBookRequest",
+						message: "Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?");
+
+					//this is too technical/hard to translate
+					_progress.ErrorWithoutLocalizing($" Request contains {json}; trying to interpret as JSON we got {ex.Message}");
 				}
 			};
 
@@ -73,9 +73,10 @@ namespace Bloom.Publish.Android.wifi
 
 			_wifiAdvertiser.Start();
 
-			_progress.WriteMessage(
-				"On the Android, run Bloom Reader, open the menu and choose 'Receive Books from WiFi'.");
-			_progress.WriteMessage("You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
+			_progress.Message(id: "WifiInstructions1",
+				message:"On the Android, run Bloom Reader, open the menu and choose 'Receive Books from WiFi'.");
+			_progress.Message(id: "WifiInstructions2",
+				message:"You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
 		}
 
 		// Review: not sure this is what we want for a version. Basically, it allows the Android (by saving it) to avoid downloading
@@ -112,11 +113,15 @@ namespace Bloom.Publish.Android.wifi
 		/// <param name="book"></param>
 		/// <param name="androidIpAddress"></param>
 		/// <param name="androidName"></param>
-		private void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName, IProgress progress)
+		private void SendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName)
 		{
 			var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
 			var safeName = BookStorage.SanitizeNameForFileSystem(book.Title);
-			progress.WriteMessage($"Sending \"{safeName}\" to device {androidName}");
+
+			_progress.MessageWithParams(id: "Sending",
+				comment: "{0} is the name of the book, {1} is the name of the device",
+				message: "Sending \"{0}\" to device {1}",
+				parameters: new object[] {safeName,androidName});
 
 			var publishedFileName = safeName + BookCompressor.ExtensionForDeviceBloomBook;
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
@@ -129,22 +134,26 @@ namespace Bloom.Publish.Android.wifi
 					myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] { 0 });
 				}
 			}
-			progress.WriteMessage($"Finished sending \"{safeName}\" to device {androidName}");
+			_progress.MessageWithParams(id: "Finished",
+				comment: "{0} is the name of the book, {1} is the name of the device",
+				message: "Finished sending \"{0}\" to device {1}",
+				parameters: new object[] {safeName, androidName});
 		}
 
 		private void SendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName)
 		{
 			try
 			{
-				SendBookToClientOnLocalSubNet(book, androidIpAddress, androidName, _progress);
+				SendBookToClientOnLocalSubNet(book, androidIpAddress, androidName);
 			}
 			catch (Exception e)
 			{
 				// This method is called on a background thread in response to receiving a request from Bloom Reader.
 				// Exceptions somehow get discarded, so there is no point in letting them propagate further.
-				_progress.WriteError("Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:");
-				_progress.WriteError(e.Message);
-				_progress.WriteError(e.StackTrace);
+				_progress.Error(id: "Failed",
+					message: "Sending the book failed. Possibly the device was disconnected? If you can't see a "
+							+"reason for this the following may be helpful to report to the developers:");
+				_progress.Exception(e);
 				Debug.Fail("got exception " + e.Message + " sending book");
 			}
 		}

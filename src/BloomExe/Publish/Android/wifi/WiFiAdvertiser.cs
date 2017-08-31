@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using Bloom.Api;
+using Bloom.web;
 using SIL.Progress;
 
 namespace Bloom.Publish.Android.wifi
@@ -30,9 +31,9 @@ namespace Bloom.Publish.Android.wifi
 		private const int Port = 5913; // must match port in BloomReader NewBookListenerService.startListenForUDPBroadcast
 		private string _currentIpAddress;
 		private byte[] _sendBytes; // Data we send in each advertisement packet
-		private readonly IProgress _progress;
+		private readonly WebSocketProgress _progress;
 
-		internal WiFiAdvertiser(IProgress progress)
+		internal WiFiAdvertiser(WebSocketProgress progress)
 		{
 			_progress = progress;
 		}
@@ -54,7 +55,7 @@ namespace Bloom.Publish.Android.wifi
 
 		private void Work()
 		{
-			_progress.WriteStatus("Advertising book to Bloom Readers on local network...");
+			_progress.Message(id:"beginAdvertising", message:"Advertising book to Bloom Readers on local network...");
 			try
 			{
 				while (true)
@@ -66,13 +67,13 @@ namespace Bloom.Publish.Android.wifi
 			}
 			catch (ThreadAbortException)
 			{
-				_progress.WriteStatus("Stopped Advertising.");
-				//_progress.WriteVerbose("Advertiser Thread Aborting (that's normal)");
+				_progress.Message(id: "Stopped", message: "Stopped Advertising.");
 				_client.Close();
 			}
 			catch (Exception error)
 			{
-				_progress.WriteError("Application", string.Format("Error in Advertiser: {0}", error.Message), EventLogEntryType.Error);
+				// not worth localizing
+				_progress.ErrorWithoutLocalizing($"Error in Advertiser: {error.Message}");
 			}
 		}
 		public static void SendCallback(IAsyncResult args)
