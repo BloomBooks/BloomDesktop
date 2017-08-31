@@ -1,84 +1,76 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using Bloom.Api;
-using SIL.Progress;
+using L10NSharp;
 
 namespace Bloom.web
 {
-
-	class WebSocketProgress : SIL.Progress.IProgress
+	/// <summary>
+	/// Sends localized messages to a websocket, intended for html display
+	/// </summary>
+	public class WebSocketProgress
 	{
 		private readonly BloomWebSocketServer _bloomWebSocketServer;
+		public string _l10IdPrefix;
+
+		/// <summary>
+		/// Get a new WebSocketProgress that will prefix each localization id with the given string
+		/// </summary>
+		/// <param name="localizationIdPrefix"></param>
+		/// <returns></returns>
+		public WebSocketProgress WithL10NPrefix(string localizationIdPrefix)
+		{
+			return new WebSocketProgress(_bloomWebSocketServer)
+			{
+				_l10IdPrefix = localizationIdPrefix
+			};
+		}
+
 		public WebSocketProgress(BloomWebSocketServer bloomWebSocketServer)
 		{
 			_bloomWebSocketServer = bloomWebSocketServer;
 		}
-		bool IProgress.ShowVerbose
+
+		public void ErrorWithoutLocalizing(string message, params object[] args)
 		{
-			set { }
+			MessageWithoutLocalizing($"<span style='color:red'>{message}</span>", args);
 		}
-		bool IProgress.CancelRequested
+		public void Error(string id, string message)
 		{
-			get { return false; }
-			set { }
-		}
-		bool IProgress.ErrorEncountered
-		{
-			get { return false; }
-			set { }
-		}
-		IProgressIndicator IProgress.ProgressIndicator
-		{
-			get { return null; }
-			set { }
-		}
-		SynchronizationContext IProgress.SyncContext
-		{
-			get { return null; }
-			set { }
+			ErrorWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message));
 		}
 
-		public void WriteError(string message, params object[] args)
-		{
-			WriteMessage($"<span style='color:red'>{message}</span>", args);
-		}
-
-		public void WriteException(Exception error)
-		{
-			//Enhance?
-			WriteError(error.Message);
-		}
-
-		public void WriteMessage(string message, params object[] args)
+		public void MessageWithoutLocalizing(string message, params object[] args)
 		{
 			_bloomWebSocketServer.Send("progress", message);
 		}
 
-		public void WriteMessageWithColor(string colorName, string message, params object[] args)
+		public void Message(string id, string message, string comment = null)
 		{
-			//TODO mark with a color?
-			WriteMessage(message, args);
+			MessageWithoutLocalizing(LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message, comment: comment));
 		}
 
-		public void WriteStatus(string message, params object[] args)
+		public void MessageWithParams(string id, string comment, string message, params object[] parameters)
 		{
-			WriteMessage(message, args);
+			Debug.Assert(message.Contains("{0}"));
+			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message, comment: comment);
+			var formatted = String.Format(localized, parameters);
+			MessageWithoutLocalizing(formatted);
 		}
 
-		public void WriteVerbose(string message, params object[] args)
+		public void MessageUsingTitle(string id, string message, string bookTitle)
 		{
-			//TODO mark with a verbose class
-			WriteMessage(message, args);
+			Debug.Assert(message.Contains("{0}"));
+			Debug.Assert(!message.Contains("{1}"));
+			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: _l10IdPrefix + id, englishText: message, comment: "{0} is a book title");
+			var formatted = String.Format(localized, bookTitle);
+			MessageWithoutLocalizing(formatted);
 		}
 
-		public void WriteWarning(string message, params object[] args)
+		public void Exception(Exception exception)
 		{
-			//TODO mark with a warning class
-			WriteMessage(message, args);
+			ErrorWithoutLocalizing(exception.Message);
+			ErrorWithoutLocalizing(exception.StackTrace);
 		}
 	}
 }
