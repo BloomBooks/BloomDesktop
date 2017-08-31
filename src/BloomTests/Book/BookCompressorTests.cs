@@ -108,7 +108,6 @@ namespace BloomTests.Book
 </body>
 </html>";
 			var htmlOriginal = string.Format(htmlTemplate, imgsToRemove, positiveCe, negativeCe);
-			var htmlExpected = string.Format(htmlTemplate, "", "", "");
 			var bookFileName = Path.GetFileName(testBook.FolderPath) + ".htm";
 			var bookPath = Path.Combine(testBook.FolderPath, bookFileName);
 			File.WriteAllText(bookPath, htmlOriginal);
@@ -119,9 +118,58 @@ namespace BloomTests.Book
 			{
 				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
 				ZipFile zip = new ZipFile(bloomdTempFile.Path);
+
+				var newHtml = GetEntryContents(zip, bookFileName, true);
+				var assertThatNewHtml = AssertThatXmlIn.String(newHtml);
+				assertThatNewHtml.HasSpecifiedNumberOfMatchesForXpath("//img",1); // only back-cover-outside.svg survives
+				assertThatNewHtml.HasSpecifiedNumberOfMatchesForXpath("//img[@src='back-cover-outside.svg?optional=true']", 1); // only back-cover-outside.svg survives
+				assertThatNewHtml.HasNoMatchForXpath("//div[@contenteditable]");
+			}
+		}
+
+		[Test]
+		public void CompressBookForDevice_ImgInImgContainer_ConvertedToBackground()
+		{
+			var testBook = CreateBook(bringBookUpToDate: true);
+			// This requires a real book file (which a mocked book usually doesn't have).
+			var oldImg =
+				"<div style=\"\" class=\"bloom-imageContainer bloom-leadingElement\">"
+				+
+				"<img data-creator=\"Anis Ka'abu\" data-license=\"cc-by\" data-copyright='1996 \"SIL\" PNG' style=\"width: 408px; height: 261px; margin-left: 0px; margin-top: 18px;\" alt=\"This picture, HL0014-1.svg, is missing or was loading too slowly.\" src=\"HL00'14-1.svg\" height=\"261\" width=\"408\"></img>"
+				+ "</div>";
+			// Above should be replaced with something like this: "<div class=\"bloom-imageContainer bloom-leadingElement bloom-backgroundImage\" style=\"background-image:url('HL0014-1.svg')\" data-creator=\"Anis Ka'abu\" data-license=\"cc-by\" data-copyright='1996 \"SIL\" PNG'></div>";
+			// {0} is in twice as a crude way of checking that it can replace more than one image.
+			var htmlTemplate = @"<!DOCTYPE html>
+<html>
+<body>
+    <div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
+        <div class='pageDescription' lang='en'></div>
+
+        <div class='marginBox'>
+    {0}
+    {0}
+    </div>
+</body>
+</html>";
+			var htmlOriginal = string.Format(htmlTemplate, oldImg);
+			var bookFileName = Path.GetFileName(testBook.FolderPath) + ".htm";
+			var bookPath = Path.Combine(testBook.FolderPath, bookFileName);
+			File.WriteAllText(bookPath, htmlOriginal);
+			// The image file has to exist or we will delete instead of converting. Use svg because compression will
+			// actually try to draw, and fake pngs and jpgs cause exceptions.
+			File.WriteAllText(Path.Combine(testBook.FolderPath, "HL00'14-1.svg"), @"this is a fake for testing");
+
+			using (var bloomdTempFile =
+				TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.ExtensionForDeviceBloomBook))
+			{
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
+				ZipFile zip = new ZipFile(bloomdTempFile.Path);
 				// Technically this is too strong. We'd be happy with any equivalent HTML file, e.g., whitespace could
 				// have changed. But this is the easiest to test and works with the current implementation.
-				Assert.That(GetEntryContents(zip, bookFileName, true), Is.EqualTo(htmlExpected));
+				var newHtml = GetEntryContents(zip, bookFileName, true);
+				var assertThatNewHtml = AssertThatXmlIn.String(newHtml);
+				assertThatNewHtml.HasNoMatchForXpath("//img"); // should be merged into parent
+				assertThatNewHtml.HasSpecifiedNumberOfMatchesForXpath("//div[@data-creator=\"Anis Ka'abu\" and @data-license='cc-by' and @data-copyright='1996 \"SIL\" PNG' and @class='bloom-imageContainer bloom-leadingElement bloom-backgroundImage' and @style=\"background-image:url('HL00%2714-1.svg')\"]", 2);
 			}
 		}
 
@@ -133,22 +181,19 @@ namespace BloomTests.Book
 			// It's also important that the book contains something like contenteditable that will be removed when
 			// sending the book. The sha is based on the actual file contents of the book, not the
 			// content actually embedded in the bloomd.
-			var htmlTemplate = @"<!DOCTYPE html>
+			var html = @"<!DOCTYPE html>
 <html>
 <head>
     <meta charset='UTF-8'></meta>
     <link rel='stylesheet' href='../settingsCollectionStyles.css' type='text/css'></link>
     <link rel='stylesheet' href='../customCollectionStyles.css' type='text/css'></link>
-{1}</head>
+</head>
 <body>
     <div class='bloom-page cover coverColor outsideBackCover bloom-backMatter A5Portrait' data-page='required singleton' data-export='back-matter-back-cover' id='b1b3129a-7675-44c4-bc1e-8265bd1dfb08'>
-		<div{0}>something</div>
+		<div  contenteditable='true'>something</div>
     </div>
 </body>
 </html>";
-			var link = "<link rel=\"stylesheet\" href=\"readerStyles.css\" type=\"text/css\"></link>";
-			var html = string.Format(htmlTemplate, " contenteditable='true'", "");
-			var htmlExpected = string.Format(htmlTemplate, "", link);
 			var bookFileName = Path.GetFileName(testBook.FolderPath) + ".htm";
 			var bookPath = Path.Combine(testBook.FolderPath, bookFileName);
 			File.WriteAllText(bookPath, html);
@@ -157,7 +202,8 @@ namespace BloomTests.Book
 			{
 				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, testBook);
 				ZipFile zip = new ZipFile(bloomdTempFile.Path);
-				Assert.That(GetEntryContents(zip, bookFileName), Is.EqualTo(htmlExpected));
+				var newHtml = GetEntryContents(zip, bookFileName);
+				AssertThatXmlIn.String(newHtml).HasSpecifiedNumberOfMatchesForXpath("//html/head/link[@rel='stylesheet' and @href='readerStyles.css' and @type='text/css']", 1);
 				Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html)));
 				GetEntryContents(zip,"readerStyles.css");
 			}

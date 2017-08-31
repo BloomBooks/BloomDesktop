@@ -9,8 +9,10 @@ using System.Drawing;
 using System;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Xml;
 using Bloom.ImageProcessing;
 using SIL.Windows.Forms.ImageToolbox;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -131,10 +133,13 @@ namespace Bloom.Book
 				else if (reduceImages && (bookFile == filePath))
 				{
 					var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
-					var content = StripImagesWithMissingSrc(originalContent, bookFile);
-					content = StripContentEditable(content);
-					content = InsertReaderStylesheet(content);
-					modifiedContent = Encoding.UTF8.GetBytes(content);
+					var dom = XmlHtmlConverter.GetXmlDomFromHtml(originalContent);
+					StripImagesWithMissingSrc(dom, bookFile);
+					StripContentEditable(dom);
+					InsertReaderStylesheet(dom);
+					ConvertImagesToBackground(dom);
+					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
+					modifiedContent = Encoding.UTF8.GetBytes(newContent);
 					newEntry.Size = modifiedContent.Length;
 
 					// Make an extra entry containing the sha
@@ -198,42 +203,58 @@ namespace Bloom.Book
 			zipStream.CloseEntry();
 		}
 
-		private static string StripImagesWithMissingSrc(string input, string bookFile)
+		private static void StripImagesWithMissingSrc(XmlDocument dom, string bookFile)
 		{
-			// Suspect this is faster than reading the whole thing into a DOM and using xpath.
-			// That might be marginally more robust, but I think this is good enough.
-			// The main purpose of this is to remove stubs put in to support optional branding files.
-			// The javascript that hides the element if the file is not found doesn't work in the reader.
-			var content = input;
-			// Note that whitespace is not valid in places like < img> or <img / > or < / img>.
-			// I expect tidy will make sure we really don't have any, so I'm not checking for it in
-			// those spots.
-			// Note that the src path can end either with the closing quote of the src attr or with a
-			// question mark, signifying options (like ?optional=true for branding images) which are
-			// not part of the file we want to search for.
-			var regex = new Regex("<img[^>]*src\\s*=\\s*(['\"])(.*?)(\\1|\\?)[^>]*(/>|>\\s*</img\\s*>)");
-			var match = regex.Match(content);
 			var folderPath = Path.GetDirectoryName(bookFile);
-			while (match.Success)
+			foreach (var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<XmlElement>().ToArray())
 			{
-				var file = match.Groups[2].Value;
+				var file = imgElt.Attributes["src"].Value.Split('?')[0];
 				if (!File.Exists(Path.Combine(folderPath, file)))
 				{
-					content = content.Substring(0, match.Index) + content.Substring(match.Index + match.Length);
-					match = regex.Match(content, match.Index);
-				}
-				else
-				{
-					match = regex.Match(content, match.Index + match.Length);
+					imgElt.ParentNode.RemoveChild(imgElt);
 				}
 			}
-			return content;
 		}
 
-		private static string StripContentEditable(string input)
+		private static void StripContentEditable(XmlDocument dom)
 		{
-			var regex = new Regex("\\s*contenteditable\\s*=\\s*(['\"]).*?\\1");
-			return regex.Replace(input, "");
+			foreach (var editableElt in dom.SafeSelectNodes("//div[@contenteditable]").Cast<XmlElement>().ToArray())
+			{
+				editableElt.RemoveAttribute("contenteditable");
+			}
+		}
+
+		/// <summary>
+		/// Find every place in the html file where an img element is nested inside a div with class bloom-imageContainer.
+		/// Convert the img into a background image of the image container div.
+		/// Specifically, make the following changes:
+		/// - Copy any data-x attributes from the img element to the div
+		/// - Convert the src attribute of the img to style="background-image:url('...')" (with the same source) on the div
+		///    (any pre-existing style attribute on the div is lost)
+		/// - Add the class bloom-backgroundImage to the div
+		/// - delete the img element
+		/// (See oldImg and newImg in unit test CompressBookForDevice_ImgInImgContainer_ConvertedToBackground for an example).
+		/// </summary>
+		/// <param name="wholeBookHtml"></param>
+		/// <returns></returns>
+		private static void ConvertImagesToBackground(XmlDocument dom)
+		{
+			foreach (var imgContainer in dom.SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]").Cast<XmlElement>().ToArray())
+			{
+				var img = imgContainer.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n is XmlElement && n.Name == "img");
+				if (img == null || img.Attributes["src"] == null)
+					continue;
+				// The filename should be already urlencoded since src is a url.
+				var src = img.Attributes["src"].Value;
+				HtmlDom.SetImageElementUrl(new ElementProxy(imgContainer), UrlPathString.CreateFromHtmlXmlEncodedString(src));
+				foreach (XmlAttribute attr in img.Attributes)
+				{
+					if (attr.Name.StartsWith("data-"))
+						imgContainer.SetAttribute(attr.Name, attr.Value);
+				}
+				imgContainer.SetAttribute("class", imgContainer.Attributes["class"].Value + " bloom-backgroundImage");
+				imgContainer.RemoveChild(img);
+			}
 		}
 
 		private static string GetMetaJsonModfiedForTemplate(string path)
@@ -243,9 +264,13 @@ namespace Bloom.Book
 			return meta.Json;
 		}
 
-		private static string InsertReaderStylesheet(string input)
+		private static void InsertReaderStylesheet(XmlDocument dom)
 		{
-			return input.Replace("</head", "<link rel=\"stylesheet\" href=\"readerStyles.css\" type=\"text/css\"></link></head");
+			var link = dom.CreateElement("link");
+			XmlUtils.GetOrCreateElement(dom, "html", "head").AppendChild(link);
+			link.SetAttribute("rel", "stylesheet");
+			link.SetAttribute("href", "readerStyles.css");
+			link.SetAttribute("type", "text/css");
 		}
 
 		/// <summary>
