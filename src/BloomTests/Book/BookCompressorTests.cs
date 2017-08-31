@@ -174,7 +174,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CompressBookForDevice_IncludesVersionFile_AndAddsStylesheet()
+		public void CompressBookForDevice_IncludesVersionFile_AndAddsStylesheets()
 		{
 			var testBook = CreateBook(bringBookUpToDate: true);
 			// This requires a real book file (which a mocked book usually doesn't have).
@@ -204,6 +204,7 @@ namespace BloomTests.Book
 				ZipFile zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				AssertThatXmlIn.String(newHtml).HasSpecifiedNumberOfMatchesForXpath("//html/head/link[@rel='stylesheet' and @href='readerStyles.css' and @type='text/css']", 1);
+				AssertThatXmlIn.String(newHtml).HasSpecifiedNumberOfMatchesForXpath("//html/head/link[@rel='stylesheet' and @href='file:///android_asset/book support files/android.css' and @type='text/css']", 1);
 				Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html)));
 				GetEntryContents(zip,"readerStyles.css");
 			}

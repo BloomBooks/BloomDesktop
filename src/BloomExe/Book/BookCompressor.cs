@@ -136,7 +136,7 @@ namespace Bloom.Book
 					var dom = XmlHtmlConverter.GetXmlDomFromHtml(originalContent);
 					StripImagesWithMissingSrc(dom, bookFile);
 					StripContentEditable(dom);
-					InsertReaderStylesheet(dom);
+					InsertReaderStylesheets(dom);
 					ConvertImagesToBackground(dom);
 					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
 					modifiedContent = Encoding.UTF8.GetBytes(newContent);
@@ -264,13 +264,20 @@ namespace Bloom.Book
 			return meta.Json;
 		}
 
-		private static void InsertReaderStylesheet(XmlDocument dom)
+		private static void InsertReaderStylesheets(XmlDocument dom)
 		{
+			var head = XmlUtils.GetOrCreateElement(dom, "html", "head");
 			var link = dom.CreateElement("link");
-			XmlUtils.GetOrCreateElement(dom, "html", "head").AppendChild(link);
 			link.SetAttribute("rel", "stylesheet");
 			link.SetAttribute("href", "readerStyles.css");
 			link.SetAttribute("type", "text/css");
+			head.AppendChild(link);
+
+			link = dom.CreateElement("link");
+			link.SetAttribute("rel", "stylesheet");
+			link.SetAttribute("href", "file:///android_asset/book support files/android.css");
+			link.SetAttribute("type", "text/css");
+			head.AppendChild(link);
 		}
 
 		/// <summary>
