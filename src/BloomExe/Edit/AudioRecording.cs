@@ -101,7 +101,7 @@ namespace Bloom.Edit
 			{
 				if (RobustFile.Exists(GetPathToSegment(id)))
 				{
-					request.Succeeded();
+					request.PostSucceeded();
 					return;
 				}
 			}
@@ -186,7 +186,7 @@ namespace Bloom.Edit
 				//we requested to stop. A few seconds later (2, looking at the library code today), it will
 				//actually close the file and raise the Stopped event
 				Recorder.Stop();
-				request.Succeeded();
+				request.PostSucceeded();
 				//ReportSuccessfulRecordingAnalytics();
 			}
 			catch (Exception)
@@ -415,7 +415,7 @@ namespace Bloom.Edit
 					if(dev.ProductName == name)
 					{
 						RecordingDevice = dev;
-						request.Succeeded();
+						request.PostSucceeded();
 						return;
 					}
 				}
@@ -440,14 +440,14 @@ namespace Bloom.Edit
 			var path = GetPathToSegment(request.RequiredParam("id"));
 			if(!RobustFile.Exists(path))
 			{
-				request.Succeeded();
+				request.PostSucceeded();
 			}
 			else
 			{
 				try
 				{
 					RobustFile.Delete(path);
-					request.Succeeded();
+					request.PostSucceeded();
 				}
 				catch(IOException e)
 				{

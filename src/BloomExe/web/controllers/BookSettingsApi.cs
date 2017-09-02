@@ -56,7 +56,7 @@ namespace Bloom.Api
 					// and we have no access to put the editable DOM into the right template/non-template state.
 					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
 #endif
-					request.Succeeded();
+					request.PostSucceeded();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();

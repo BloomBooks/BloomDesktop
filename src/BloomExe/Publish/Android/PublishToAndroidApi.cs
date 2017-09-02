@@ -55,7 +55,7 @@ namespace Bloom.Publish.Android
 				else // post
 				{
 					Settings.Default.PublishAndroidMethod = request.RequiredPostString();
-					request.SucceededDoNotNavigate();
+					request.PostSucceeded();
 				}
 			}, true);
 
@@ -64,35 +64,35 @@ namespace Bloom.Publish.Android
 			{
 				SetState("UsbStarted");
 				_usbPublisher.Connect(request.CurrentBook);
-				request.SucceededDoNotNavigate();
+				request.PostSucceeded();
 			}, true);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "usb/stop", request =>
 			{
 				_usbPublisher.Stop();
 				SetState("stopped");
-				request.Succeeded();
+				request.PostSucceeded();
 			}, true);
 #endif
 			server.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
 				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings);
 				SetState("ServingOnWifi");
-				request.SucceededDoNotNavigate();
+				request.PostSucceeded();
 			}, true);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "wifi/stop", request =>
 			{
 				_wifiPublisher.Stop();
 				SetState("stopped");
-				request.Succeeded();
+				request.PostSucceeded();
 			}, true);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
 				FilePublisher.Save(request.CurrentBook);
 				SetState("stopped");
-				request.Succeeded();
+				request.PostSucceeded();
 			}, true);
 
 			server.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
@@ -102,7 +102,7 @@ namespace Bloom.Publish.Android
 #endif
 				_wifiPublisher.Stop();
 				SetState("stopped");
-				request.Succeeded();
+				request.PostSucceeded();
 			}, true);
 		}
 

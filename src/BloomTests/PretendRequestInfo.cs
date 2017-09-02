@@ -100,7 +100,7 @@ namespace Bloom.Api
 		{
 			return "";
 		}
-		public void SucceededDoNotNavigate(){}
+		public void ExternalLinkSucceeded(){}
 		public string DoNotCacheFolder { get; set; }
 
 		public string RawUrl { get; private set; }

@@ -88,7 +88,7 @@ namespace Bloom.Api
 			switch (lastSegment)
 			{
 				case "test":
-					request.Succeeded();
+					request.PostSucceeded();
 					break;
 
 				case "readerToolSettings":
@@ -99,7 +99,7 @@ namespace Bloom.Api
 						var path = DecodableReaderTool.GetReaderToolsSettingsFilePath(request.CurrentCollectionSettings);
 						var content = request.RequiredPostJson();
 						RobustFile.WriteAllText(path, content, Encoding.UTF8);
-						request.Succeeded();
+						request.PostSucceeded();
 					}
 					break;
 
@@ -127,7 +127,7 @@ namespace Bloom.Api
 					}
 
 					SaveSynphonyLanguageData(langdata);
-					request.Succeeded();
+					request.PostSucceeded();
 					break;
 
 				case "sampleTextsList":
@@ -145,12 +145,12 @@ namespace Bloom.Api
 
 				case "makeLetterAndWordList":
 					MakeLetterAndWordList(request.RequiredPostValue("settings"), request.RequiredPostValue("allWords"));
-					request.Succeeded();
+					request.PostSucceeded();
 					break;
 
 				case "openTextsFolder":
 					OpenTextsFolder();
-					request.Succeeded();
+					request.PostSucceeded();
 					break;
 
 				case "chooseAllowedWordsListFile":
@@ -165,7 +165,7 @@ namespace Bloom.Api
 					{
 						case HttpMethods.Delete:
 							RecycleAllowedWordListFile(request.RequiredParam("fileName"));
-							request.Succeeded();
+							request.PostSucceeded();
 							break;
 						case HttpMethods.Get:
 							var fileName = request.RequiredParam("fileName");

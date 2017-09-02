@@ -64,7 +64,7 @@ namespace BloomTests.web
 		public void Get_EndPointHasTwoSegments_Works()
 		{
 			var result = ApiTest.GetString(_server, endPoint: "parent/child", query: "color=blue", returnType: ApiTest.ContentType.Text,
-				 handler: request => request.Succeeded());
+				 handler: request => request.PostSucceeded());
 			Assert.That(result, Is.EqualTo("OK"));
 		}
 
@@ -73,7 +73,7 @@ namespace BloomTests.web
 		public void Get_EndPointCaseIsIgnored()
 		{
 			var result = ApiTest.GetString(_server, endPoint: "fooBAR", endOfUrlForTest:"FOObar",
-				 handler: request => request.Succeeded());
+				 handler: request => request.PostSucceeded());
 			Assert.That(result, Is.EqualTo("OK"));
 		}
 
@@ -81,13 +81,13 @@ namespace BloomTests.web
 		public void Get_Unrecognized_Throws()
 		{
 			Assert.Throws<System.Net.WebException>(() => ApiTest.GetString(_server, endPoint: "foo[0-9]bar", endOfUrlForTest: "foobar",
-				 handler: request => request.Succeeded()));
+				 handler: request => request.PostSucceeded()));
 		}
 		[Test]
 		public void Get_RegexEndPoint()
 		{
 			var result = ApiTest.GetString(_server, endPoint: "foo[0-9]bar", endOfUrlForTest: "foo7bar",
-				 handler: request => request.Succeeded());
+				 handler: request => request.PostSucceeded());
 			Assert.That(result, Is.EqualTo("OK"));
 		}
 	}

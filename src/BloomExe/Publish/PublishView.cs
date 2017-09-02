@@ -408,11 +408,16 @@ namespace Bloom.Publish
 			{
 				Controls.Remove(_epubPreviewControl);
 			}
-			if (displayMode != PublishModel.DisplayModes.Android && _androidControl != null && Controls.Contains(_androidControl))
+			if(displayMode != PublishModel.DisplayModes.Android && _androidControl != null && Controls.Contains(_androidControl))
 			{
 				Controls.Remove(_androidControl);
-				_androidControl.Dispose();
-				_androidControl = null;
+
+				// disposal of the browser is good but it hides a multitude of sins that we'd rather catch and fix during development. E.g. BL-4901
+				if(!ApplicationUpdateSupport.IsDevOrAlpha)
+				{
+					_androidControl.Dispose();
+					_androidControl = null;
+				}
 			}
 			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.Android)
 				_pdfViewer.Visible = true;

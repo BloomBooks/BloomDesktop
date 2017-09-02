@@ -64,11 +64,10 @@ namespace Bloom.Api
 		}
 
 		//used when an anchor has given us info, but we don't actually want the browser to navigate
-		public void SucceededDoNotNavigate()
+		public void ExternalLinkSucceeded()
 		{
-			_actualContext.Response.StatusCode = 202; //Accepted. Request accepted but not completed yet, it will continue asynchronously.
+			_actualContext.Response.StatusCode = 200; //Completed
 			HaveOutput = true;
-			return;
 		}
 
 		public string DoNotCacheFolder { get; set; }

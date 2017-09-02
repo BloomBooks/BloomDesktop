@@ -168,6 +168,14 @@ namespace Bloom
 
 		internal const string kChannelNameForUnitTests ="TestChannel";
 
+		public static bool IsDevOrAlpha
+		{
+			get
+			{
+				var channel = ApplicationUpdateSupport.ChannelName.ToLowerInvariant();
+				return channel.Contains("developer") || channel.Contains("alpha") || channel.Contains("unstable");
+			}
+		}
 		public static string ChannelName
 		{
 			get
