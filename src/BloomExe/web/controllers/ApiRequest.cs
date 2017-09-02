@@ -59,7 +59,10 @@ namespace Bloom.Api
 			}
 		}
 
-		public void Succeeded()
+		/// <summary>
+		/// This is safe to use with axios.Post. SEel BL-4901
+		/// </summary>
+		public void PostSucceeded()
 		{
 			_requestInfo.ContentType = "text/plain";
 			_requestInfo.WriteCompleteOutput("OK");
@@ -68,9 +71,9 @@ namespace Bloom.Api
 		//Used when an anchor has given us info, but we don't actually want the browser to navigate
 		//For example, anchors that lead to help lead to an api handler that opens help but then
 		//calls this so that the browser just stays where it was.
-		public void SucceededDoNotNavigate()
+		public void ExternalLinkSucceeded()
 		{
-			_requestInfo.SucceededDoNotNavigate();
+			_requestInfo.ExternalLinkSucceeded();
 		}
 
 		public void ReplyWithText(string text)

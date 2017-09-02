@@ -47,7 +47,7 @@ namespace Bloom.web.controllers
 			{
 				_templateInsertionCommand.Insert(templatePage as Page);
 				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
-				request.Succeeded();
+				request.PostSucceeded();
 				return;
 			}
 		}
@@ -68,7 +68,7 @@ namespace Bloom.web.controllers
 					pageChanged.UpdateLineage(new[] { templatePage.Id });
 
 				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
-				request.Succeeded();
+				request.PostSucceeded();
 			}
 		}
 

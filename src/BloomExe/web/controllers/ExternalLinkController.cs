@@ -85,7 +85,7 @@ namespace Bloom.web
 				try
 				{
 					Process.Start(browser, "\"file:///" + cleanUrl + queryPart + "\"");
-					request.SucceededDoNotNavigate();
+					request.ExternalLinkSucceeded();
 					return;
 				}
 				catch (Exception)
@@ -97,7 +97,7 @@ namespace Bloom.web
 			// If the above failed, either for lack of default browser or exception, try this:
 			Process.Start("\"" + cleanUrl + "\"");
 
-			request.SucceededDoNotNavigate();
+			request.ExternalLinkSucceeded();
 		}
 
 		private static bool TryGetDefaultBrowserPathWindowsOnly(out string defaultBrowserPath)
