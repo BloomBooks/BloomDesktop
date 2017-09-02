@@ -9,11 +9,12 @@ import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { H1, H2, LocalizableElement, IUILanguageAwareProps, P } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
 
+const kWebSocketLifetime = "publish-android";
+
 interface IComponentState {
     method: string;
     stateId: string;
 }
-
 // This is a screen of controls that gives the user instructions and controls
 // for pushing a book to a connected Android device running Bloom Reader.
 class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponentState> {
@@ -30,13 +31,12 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         // See https://medium.com/@rjun07a/binding-callbacks-in-react-components-9133c0b396c6
         this.handleUpdateState = this.handleUpdateState.bind(this);
 
-        WebSocketManager.addListener(event => {
+        WebSocketManager.addListener(kWebSocketLifetime, event => {
             var e = JSON.parse(event.data);
             if (e.id === "publish/android/state") {
                 this.handleUpdateState(e.payload);
             }
         });
-        WebSocketManager.setCloseId("closeAndroidUISocket");
 
         axios.get("/bloom/api/publish/android/method").then(result => {
             this.setState({ method: result.data });
@@ -55,7 +55,9 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
     }
 
     componentCleanup() {
-        axios.post("/bloom/api/publish/android/cleanup");
+        axios.post("/bloom/api/publish/android/cleanup").then(result => {
+            WebSocketManager.closeSocket(kWebSocketLifetime);
+        });
     }
 
     handleUpdateState(s: string): void {
@@ -161,7 +163,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                             Troubleshooting Tips
                         </HtmlHelpLink>
                     </div>
-                    <ProgressBox />
+                    <ProgressBox lifetimeLabel={kWebSocketLifetime} />
                 </div>
             </div>
         );

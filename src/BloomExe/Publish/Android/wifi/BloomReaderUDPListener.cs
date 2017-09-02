@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -56,9 +57,11 @@ namespace Bloom.Publish.Android.wifi
 						//raise event
 						NewMessageReceived?.Invoke(this, new AndroidMessageArgs(bytes));
 					}
-					catch (Exception e)
+					catch(SocketException se)
 					{
-						Console.WriteLine(e.ToString());
+						if(!_listening || se.SocketErrorCode == SocketError.Interrupted)
+							return; // no problem, we're just closing up shop
+						throw se;
 					}
 				}
 			}
