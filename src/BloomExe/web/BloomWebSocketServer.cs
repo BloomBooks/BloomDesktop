@@ -40,13 +40,15 @@ namespace Bloom.Api
 				{
 					socket.OnOpen = () =>
 					{
-						Debug.WriteLine("Backend received an request to open a BloomWebSocketServer socket");
+						// our Typescript WebSocketManager sticks the name of the socket into this subProtocol parameter just for this debugging purpose
+						Debug.WriteLine($"Opening websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
 						_allSockets.Add(socket);
 					};
 					socket.OnClose = () =>
 					{
-						Debug.WriteLine("Backend received an request to close  BloomWebSocketServer socket");
+						Debug.WriteLine($"Closing websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
 						_allSockets.Remove(socket);
+						socket.Close();
 					};
 				});
 			}
@@ -116,6 +118,7 @@ namespace Bloom.Api
 				{
 					foreach(var socket in _allSockets)
 					{
+						Debug.WriteLine($"*** This sockets was still open and is being closed during shutdown: \"{socket.ConnectionInfo?.SubProtocol}\"");
 						socket.Close();
 					}
 					_allSockets.Clear();

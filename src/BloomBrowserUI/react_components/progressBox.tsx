@@ -6,16 +6,18 @@ import WebSocketManager from "../utils/WebSocketManager";
 interface ComponentState {
     progress: string;
 }
-
+interface ComponentProps {
+    lifetimeLabel: string;
+}
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
-export default class ProgressBox extends React.Component<{}, ComponentState> {
-    constructor(props) {
+export default class ProgressBox extends React.Component<ComponentProps, ComponentState> {
+    constructor(props: ComponentProps) {
         super(props);
         let self = this;
         this.state = { progress: "" };
         //get progress messages from c#
-        WebSocketManager.addListener(event => {
+        WebSocketManager.addListener(props.lifetimeLabel, event => {
             var e = JSON.parse(event.data);
             if (e.id === "progress") {
                 self.setState({ progress: self.state.progress + "<br/>" + e.payload });
