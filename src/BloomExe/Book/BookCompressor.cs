@@ -143,7 +143,7 @@ namespace Bloom.Book
 					newEntry.Size = modifiedContent.Length;
 
 					// Make an extra entry containing the sha
-					var sha = Book.MakeVersionCode(originalContent);
+					var sha = Book.MakeVersionCode(originalContent, filePath);
 					var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
 					MakeExtraEntry(zipStream, name, sha);
 					MakeExtraEntry(zipStream, "readerStyles.css",

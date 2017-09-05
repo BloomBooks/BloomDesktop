@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System.IO;
+using BloomTemp;
+using NUnit.Framework;
 
 namespace BloomTests.web.controllers
 {
@@ -81,6 +83,34 @@ namespace BloomTests.web.controllers
 			var first = string.Format(template, "934245d2-94dd-4f40-8b53-279867d8e07b");
 			var second = string.Format(template, "d9a71953-6cf4-475a-8236-36d509ff8e1c");
 			Assert.That(Bloom.Book.Book.MakeVersionCode(first), Is.Not.EqualTo(Bloom.Book.Book.MakeVersionCode(second)));
+		}
+
+		[Test]
+		public void MakeVersionCode_ConsidersFilesInFolder_ButNotHtm()
+		{
+			var template = @"<!DOCTYPE html><html><head></head><body><div class='bloom-page' id='{0}'>abc</div></body></html>";
+			var first = string.Format(template, "934245d2-94dd-4f40-8b53-279867d8e07b");
+			var second = string.Format(template, "d9a71953-6cf4-475a-8236-36d509ff8e1c");
+			using (var tempFolder = new TemporaryFolder("MakeVersionCode_ConsidersFilesInFolder_ButNotHtm"))
+			{
+				var htmPath = Path.Combine(tempFolder.FolderPath,"main.htm");
+				File.WriteAllText(htmPath, first);
+				var firstVersionCode = Bloom.Book.Book.MakeVersionCode(first, htmPath);
+				File.WriteAllText(htmPath, second);
+				var secondVersionCode = Bloom.Book.Book.MakeVersionCode(second, htmPath);
+				// This is not a significant change in the HTML (even though the htm file in the folder is also different).
+				Assert.That(firstVersionCode, Is.EqualTo(secondVersionCode));
+				// But a new file in the folder is significant
+				var extraFilePath = Path.Combine(tempFolder.FolderPath, "nonsense.txt");
+				File.WriteAllText(extraFilePath, @"nonsense");
+				var thirdVersionCode = Bloom.Book.Book.MakeVersionCode(second, htmPath);
+				Assert.That(thirdVersionCode, Is.Not.EqualTo(secondVersionCode));
+				// so is a change in that file
+				File.WriteAllText(extraFilePath, @"rubbish");
+				var fourthVersionCode = Bloom.Book.Book.MakeVersionCode(second, htmPath);
+				Assert.That(fourthVersionCode, Is.Not.EqualTo(thirdVersionCode));
+
+			}
 		}
 	}
 }
