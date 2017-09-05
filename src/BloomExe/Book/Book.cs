@@ -2330,7 +2330,27 @@ namespace Bloom.Book
 			}
 		}
 
-		public static string MakeVersionCode(string fileContent)
+		/// <summary>
+		/// Make a version code which will detect any significant changes to the content of a bloom book.
+		/// fileContent is typically the content of the file at filePath which is the book's main HTM file;
+		/// however (for testing) filePath may be omitted.
+		/// The method computes a SHA of the file content and, if a path is passed, all other files
+		/// in the same folder and its subfolders. The file is transformed somewhat so that (some) changes
+		/// that are not significant are ignored.
+		/// Notes:
+		/// - renaming a file may or may not produce a different code (depends on whether it changes
+		/// the alphabetical order of the files).
+		/// - pdf files are currently omitted
+		/// - audio files could be omitted until we start supporting audio, but as that is planned I
+		/// have not chosen to omit them
+		/// - I am not sure that this will reliably give the same result when run on Linux and Windows.
+		/// For one thing, depending on the exact file transfer process, one or more files might have
+		/// different line endings, which is enough to produce a different SHA.
+		/// </summary>
+		/// <param name="fileContent"></param>
+		/// <param name="filePath"></param>
+		/// <returns></returns>
+		public static string MakeVersionCode(string fileContent, string filePath = null)
 		{
 			var simplified = fileContent;
 			// In general, whitespace sequences are equivalent to a single space.
@@ -2346,7 +2366,25 @@ namespace Bloom.Book
 			// Then we grab everything up to the closing wedge and transfer that to the output as $3.)
 			simplified = new Regex("(<[^>]*)\\s*id\\s*=\\s*(['\"]).*?\\2\\s*([^>]*>)").Replace(simplified, "$1$3");
 			var bytes = Encoding.UTF8.GetBytes(simplified);
-			return Convert.ToBase64String(SHA256Managed.Create().ComputeHash(bytes));
+			var sha = SHA256Managed.Create();
+			sha.TransformBlock(bytes, 0, bytes.Length, bytes, 0);
+			if (filePath != null)
+			{
+				var folder = Path.GetDirectoryName(filePath);
+				// Order must be predictable but does not otherwise matter.
+				foreach (var path in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).OrderBy(x => x))
+				{
+					var ext = Path.GetExtension(path);
+					if (ext == ".pdf")
+						continue;
+					if (path == filePath)
+						continue; // we already included a simplified version of the main HTML file
+					var data = File.ReadAllBytes(path);
+					sha.TransformBlock(data, 0, data.Length, data, 0);
+				}
+			}
+			sha.TransformFinalBlock(new byte[0], 0, 0);
+			return Convert.ToBase64String(sha.Hash);
 		}
 	}
 }
