@@ -204,7 +204,7 @@ namespace BloomTests.Book
 				ZipFile zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				AssertThatXmlIn.String(newHtml).HasSpecifiedNumberOfMatchesForXpath("//html/head/link[@rel='stylesheet' and @href='readerStyles.css' and @type='text/css']", 1);
-				Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html)));
+				Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html, bookPath)));
 				GetEntryContents(zip,"readerStyles.css");
 			}
 		}
