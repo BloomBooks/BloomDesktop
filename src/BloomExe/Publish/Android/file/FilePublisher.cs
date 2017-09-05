@@ -32,6 +32,7 @@ namespace Bloom.Publish.Android.file
 				{
 					Settings.Default.BloomDeviceFileExportFolder = Path.GetDirectoryName(dlg.FileName);
 					BookCompressor.CompressBookForDevice(dlg.FileName, book);
+					PublishToAndroidApi.ReportAnalytics("file", book);
 				}
 			}
 		}

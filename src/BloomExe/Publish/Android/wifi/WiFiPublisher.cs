@@ -134,6 +134,7 @@ namespace Bloom.Publish.Android.wifi
 										BookCompressor.ExtensionForDeviceBloomBook, File.ReadAllBytes(bloomdTempFile.Path));
 					myClient.UploadData(androidHttpAddress + "/notify?message=transferComplete", new byte[] { 0 });
 				}
+				PublishToAndroidApi.ReportAnalytics("wifi", book);
 			}
 			_progress.MessageWithParams(id: "Finished",
 				comment: "{0} is the name of the book, {1} is the name of the device",

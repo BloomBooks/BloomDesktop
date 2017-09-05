@@ -158,6 +158,7 @@ namespace Bloom.Publish.Android.usb
 				else
 					_progress.MessageUsingTitle("SendingBook", "Sending \"{0}\" to your Android device...",  bookTitle);
 				_androidDeviceUsbConnection.SendBook(bloomdTempFile.Path);
+				PublishToAndroidApi.ReportAnalytics("usb", book);
 			}
 
 			if (_androidDeviceUsbConnection.BookExists(bookTitle + BookCompressor.ExtensionForDeviceBloomBook))
