@@ -75,7 +75,7 @@ namespace Bloom.Publish.Android.wifi
 			_wifiAdvertiser.Start();
 
 			_progress.Message(id: "WifiInstructions1",
-				message:"On the Android, run Bloom Reader, open the menu and choose 'Receive Books from WiFi'.");
+				message:"On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.");
 			_progress.Message(id: "WifiInstructions2",
 				message:"You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
 		}
