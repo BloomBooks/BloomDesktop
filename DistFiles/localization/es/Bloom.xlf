@@ -2679,11 +2679,11 @@
         <note>Message displayed in a progress report dialog box</note>
         <target xml:lang="es-ES" state="needs-translation">Creating PDF ...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.DesktopPrinting">
-        <source xml:lang="en">PDF for Desktop Printing</source>
-        <note>ID: PublishTab.PdfMaker.DesktopPrinting</note>
-        <note>displayed as file type for Save File dialog.  Don't use vertical bar (|) in this string!</note>
-        <target xml:lang="es-ES" state="needs-translation">PDF for Desktop Printing</target>
+      <trans-unit id="PublishTab.PdfMaker.PdfWithRGB">
+        <source xml:lang="en">PDF with RGB color</source>
+        <note>ID: PublishTab.PdfMaker.PdfWithRGB</note>
+        <note>displayed as file type for Save File dialog.  'RGB' may not be translatable, it is a standard.</note>
+        <target xml:lang="es-ES" state="needs-translation">PDF with RGB color</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
@@ -2709,11 +2709,11 @@
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
         <target xml:lang="es-ES" state="needs-translation">Making Page {0} of the PDF</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Printshop">
-        <source xml:lang="en">PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)</source>
-        <note>ID: PublishTab.PdfMaker.Printshop</note>
-        <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable.  Don't use vertical bar (|) in this string!</note>
-        <target xml:lang="es-ES" state="needs-translation">PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)</target>
+      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
+        <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
+        <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
+        <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
+        <target xml:lang="es-ES" state="needs-translation">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.TryMoreMemory">
         <source xml:lang="en">Try doing this on a computer with more memory</source>
