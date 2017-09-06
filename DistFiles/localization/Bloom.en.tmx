@@ -3334,10 +3334,10 @@
         <seg>Creating PDF ...</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.PdfMaker.DesktopPrinting">
-      <note>displayed as file type for Save File dialog.  Don't use vertical bar (|) in this string!</note>
+    <tu tuid="PublishTab.PdfMaker.PdfWithRGB">
+      <note>displayed as file type for Save File dialog. 'RGB' may not be translatable, it is a standard.</note>
       <tuv xml:lang="en">
-        <seg>PDF for Desktop Printing</seg>
+        <seg>PDF with RGB color</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.ErrorProcessing">
@@ -3364,10 +3364,10 @@
         <seg>Making Page {0} of the PDF</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.PdfMaker.Printshop">
-      <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable.  Don't use vertical bar (|) in this string!</note>
+    <tu tuid="PublishTab.PdfMaker.PdfWithCmykSwopV2">
+      <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
       <tuv xml:lang="en">
-        <seg>PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)</seg>
+        <seg>PDF with CMYK color (U.S. Web Coated (SWOP) v2)</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
