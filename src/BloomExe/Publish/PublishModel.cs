@@ -362,13 +362,16 @@ namespace Bloom.Publish
 					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath),
 														 _collectionSettings.GetLanguage1Name("en"), portion);
 					dlg.FileName = suggestedName;
-					var desktopPrinting = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.DesktopPrinting",
-						"PDF for Desktop Printing",
-						@"displayed as file type for Save File dialog.  Don't use vertical bar (|) in this string!");
-					var printshop = L10NSharp.LocalizationManager.GetString("@PublishTab.PdfMaker.Printshop",
-						"PDF for Printshop (CMYK - U.S. Web Coated (SWOP) v2)",
-						@"displayed as file type for Save File dialog, the content in parentheses may not be translatable.  Don't use vertical bar (|) in this string!");
-					dlg.Filter = String.Format("{0}|*.pdf|{1}|*.pdf", desktopPrinting, printshop);
+					var rgb = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfWithRGB",
+						"PDF with RGB color",
+						@"displayed as file type for Save File dialog. 'RGB' may not be translatable, it is a standard.");
+					var swopv2 = L10NSharp.LocalizationManager.GetString("@PublishTab.PdfMaker.PdfWithCmykSwopV2",
+						"PDF with CMYK color (U.S. Web Coated (SWOP) v2)",
+						@"displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.");
+
+					rgb = rgb.Replace("|", "");
+					swopv2 = rgb.Replace("|", "");
+					dlg.Filter = String.Format("{0}|*.pdf|{1}|*.pdf", rgb, swopv2);
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
 						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
