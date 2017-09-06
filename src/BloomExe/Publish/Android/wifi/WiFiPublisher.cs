@@ -23,7 +23,7 @@ namespace Bloom.Publish.Android.wifi
 
 		public WiFiPublisher(WebSocketProgress progress)
 		{
-			_progress = progress.WithL10NPrefix("Publish.Android.Wifi.Progress.");
+			_progress = progress.WithL10NPrefix("PublishTab.Android.Wifi.Progress.");
 		}
 
 		public void Start(Book.Book book, CollectionSettings collectionSettings)

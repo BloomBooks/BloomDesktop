@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ProgressBox from "../../react_components/progressBox";
@@ -79,7 +79,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
         return (
             <div>
-                <H1 l10nKey="Publish.Android.Method"
+                <H1 l10nKey="PublishTab.Android.Method"
                     l10nComment="There are several methods for pushing a book to android. This is the heading above the chooser.">
                     Method
                 </H1>
@@ -90,36 +90,36 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                             axios.post("/bloom/api/publish/android/method", event.target.value,
                                 { headers: { "Content-Type": "text/plain" } });
                         }}>
-                    <Option l10nKey="Publish.Android.ChooseWifi"
+                    <Option l10nKey="PublishTab.Android.ChooseWifi"
                         className="method-option wifi-method-option"
                         value="wifi">
                         Serve on WiFi Network
                     </Option>
-                    <Option l10nKey="Publish.Android.ChooseUSB"
+                    <Option l10nKey="PublishTab.Android.ChooseUSB"
                         className="method-option usb-method-option" value="usb">
                         Send over USB Cable
                     </Option>
-                    <Option l10nKey="Publish.Android.ChooseFile"
+                    <Option l10nKey="PublishTab.Android.ChooseFile"
                         className="method-option file-method-option" value="file">
                         Save Bloom Reader File
                     </Option>
                 </select>
 
                 <p />
-                <H1 l10nKey="Publish.Android.Control"
+                <H1 l10nKey="PublishTab.Android.Control"
                     l10nComment="This is the heading above various buttons that control the publishing of the book to Android.">
                     Control
                 </H1>
 
                 {this.state.method === "wifi" &&
                     <div>
-                        <BloomButton l10nKey="Publish.Android.Wifi.Start"
+                        <BloomButton l10nKey="PublishTab.Android.Wifi.Start"
                             l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                             enabled={this.state.stateId === "stopped"}
                             clickEndpoint="publish/android/wifi/start">
                             Start Serving
                         </BloomButton>
-                        <BloomButton l10nKey="Publish.Android.Wifi.Stop"
+                        <BloomButton l10nKey="PublishTab.Android.Wifi.Stop"
                             l10nComment="Button that tells Bloom to stop offering this book on the wifi network."
                             enabled={this.state.stateId === "ServingOnWifi"}
                             clickEndpoint="publish/android/wifi/stop">
@@ -130,7 +130,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
                 {this.state.method === "usb" &&
                     <div>
-                        <BloomButton l10nKey="Publish.Android.Usb.Start"
+                        <BloomButton l10nKey="PublishTab.Android.Usb.Start"
                             l10nComment="Button that tells Bloom to send the book to a device via USB cable."
                             enabled={this.state.stateId === "stopped"}
                             clickEndpoint="publish/android/usb/start"
@@ -138,7 +138,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                             Connect with USB cable
                         </BloomButton>
 
-                        <BloomButton l10nKey="Publish.Android.Usb.Stop"
+                        <BloomButton l10nKey="PublishTab.Android.Usb.Stop"
                             enabled={this.state.stateId === "UsbStarted"}
                             clickEndpoint="publish/android/usb/stop">
                             Stop Trying
@@ -147,7 +147,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 }
                 {this.state.method === "file" &&
                     <div>
-                        <BloomButton l10nKey="Publish.Android.Save"
+                        <BloomButton l10nKey="PublishTab.Android.Save"
                             l10nComment="Button that tells Bloom to save the book as a .bloomD file."
                             clickEndpoint="publish/android/file/save"
                             enabled={true}>
@@ -161,11 +161,11 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                         <h1>Progress</h1>
                         <Link id="getBloomReaderLink"
                             href="https://play.google.com/store/search?q=%2B%22sil%20international%22%20%2B%22bloom%20reader%22&amp;c=apps"
-                            l10nKey="Publish.Android.GetBloomReader"
+                            l10nKey="PublishTab.Android.GetBloomReader"
                             l10nComment="Link to find Bloom Reader on Google Play Store">
                             Get Bloom Reader App
                         </Link>
-                        <HtmlHelpLink l10nKey="Publish.Android.Troubleshooting"
+                        <HtmlHelpLink l10nKey="PublishTab.Android.Troubleshooting"
                             fileid="Publish-Android-Troubleshooting">
                             Troubleshooting Tips
                         </HtmlHelpLink>

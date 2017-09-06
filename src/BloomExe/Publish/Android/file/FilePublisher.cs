@@ -19,7 +19,7 @@ namespace Bloom.Publish.Android.file
 			using(var dlg = new SaveFileDialog())
 			{
 				dlg.DefaultExt = BookCompressor.ExtensionForDeviceBloomBook;
-				var bloomdFileDescription = LocalizationManager.GetString("Publish.Android.bloomdFileFormatLabel", "Bloom Book for Devices", "This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App");
+				var bloomdFileDescription = LocalizationManager.GetString("PublishTab.Android.bloomdFileFormatLabel", "Bloom Book for Devices", "This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App");
 				dlg.Filter = $"{bloomdFileDescription}|*{BookCompressor.ExtensionForDeviceBloomBook}";
 				dlg.FileName = Path.GetFileName(book.FolderPath) + BookCompressor.ExtensionForDeviceBloomBook;
 				if(!string.IsNullOrWhiteSpace(Settings.Default.BloomDeviceFileExportFolder) &&
