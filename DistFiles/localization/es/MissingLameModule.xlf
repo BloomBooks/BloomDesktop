@@ -23,21 +23,6 @@
       
       </target>
       </trans-unit>
-      <trans-unit id="missing.lame.legalities">
-        <source xml:lang="en">Legal Considerations</source>
-        <note>ID: missing.lame.legalities</note>
-        <target xml:lang="es-ES" state="needs-translation">Legal Considerations</target>
-      </trans-unit>
-      <trans-unit id="missing.lame.old.patent.issues">
-        <source xml:lang="en">Our understanding is that in a few countries (perhaps only in the USA, and then only until 2017), there are patents covering the creation of mp3's. In correspondence with the patent holder's representative, we were told:
-        <g id="genid-3" ctype="x-html-blockquote">You may need a license if there is any type of subscription, content, service, per unit or itemized revenue for the distribution of mp3, or if there is any advertising present during the presentation of any mp3 content, either on a webpage with any links to your Talking Books, or as part of a messaging system, and this total mp3-associated mp3 revenue exceeds USD $100,000 per year.</g>Therefore, if you are just making Talking Books and giving them away, then only the distributor (e.g. BloomLibrary.org) needs to be concerned about licensing this technology (and since we don't make money from BloomLibrary.org, we don't have to worry, either.) For more information, see <g id="genid-4" ctype="x-html-a" html:href="http://www.mp3licensing.com/">mp3licensing.com</g>.
-      </source>
-        <note>ID: missing.lame.old.patent.issues</note>
-        <target xml:lang="es-ES" state="needs-translation">Our understanding is that in a few countries (perhaps only in the USA, and then only until 2017), there are patents covering the creation of mp3's. In correspondence with the patent holder's representative, we were told:
-        <g id="genid-3" ctype="x-html-blockquote">You may need a license if there is any type of subscription, content, service, per unit or itemized revenue for the distribution of mp3, or if there is any advertising present during the presentation of any mp3 content, either on a webpage with any links to your Talking Books, or as part of a messaging system, and this total mp3-associated mp3 revenue exceeds USD $100,000 per year.</g>Therefore, if you are just making Talking Books and giving them away, then only the distributor (e.g. BloomLibrary.org) needs to be concerned about licensing this technology (and since we don't make money from BloomLibrary.org, we don't have to worry, either.) For more information, see <g id="genid-4" ctype="x-html-a" html:href="http://www.mp3licensing.com/">mp3licensing.com</g>.
-      
-      </target>
-      </trans-unit>
     </body>
   </file>
 </xliff>
