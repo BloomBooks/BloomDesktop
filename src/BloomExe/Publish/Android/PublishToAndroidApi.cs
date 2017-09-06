@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
 #if !__MonoCS__
@@ -7,6 +9,7 @@ using Bloom.Publish.Android.usb;
 #endif
 using Bloom.Publish.Android.wifi;
 using Bloom.web;
+using DesktopAnalytics;
 
 namespace Bloom.Publish.Android
 {
@@ -109,6 +112,11 @@ namespace Bloom.Publish.Android
 		private void SetState(string state)
 		{
 			_webSocketServer.Send(kWebsocketStateId, state);
+		}
+
+		public static void ReportAnalytics(string mode, Book.Book book)
+		{
+			Analytics.Track("Publish Android", new Dictionary<string, string>() {{"mode", mode}, {"BookId", book.ID}, { "Country", book.CollectionSettings.Country}, {"Language", book.CollectionSettings.Language1Iso639Code}});
 		}
 	}
 }
