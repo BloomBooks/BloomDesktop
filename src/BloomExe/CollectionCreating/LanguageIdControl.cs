@@ -16,6 +16,9 @@ namespace Bloom.CollectionCreating
 			InitializeComponent();
 			_lookupISOControl.SelectedLanguage = null;
 			_lookupISOControl.IsShowRegionalDialectsCheckBoxVisible = false;
+
+			// Following should be consistent with CollectionSettingsDialog.ChangeLanguage()
+			_lookupISOControl.UseSimplifiedChinese();
 		}
 
 		private void OnLookupISOControlReadinessChanged(object sender, EventArgs e)
