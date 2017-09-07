@@ -2535,186 +2535,186 @@
         <note>ID: PageList.CantMoveWhenTranslating</note>
         <target xml:lang="es-ES" state="translated">Las páginas no pueden ser reordenadas cuando está traduciendo un libro</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.bloomdFileFormatLabel">
+      <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
         <source xml:lang="en">Bloom Book for Devices</source>
-        <note>ID: Publish.Android.bloomdFileFormatLabel</note>
+        <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
         <target xml:lang="es-ES" state="needs-translation">Bloom Book for Devices</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.ChooseFile">
+      <trans-unit id="PublishTab.Android.ChooseFile">
         <source xml:lang="en">Save Bloom Reader File</source>
-        <note>ID: Publish.Android.ChooseFile</note>
+        <note>ID: PublishTab.Android.ChooseFile</note>
         <target xml:lang="es-ES" state="needs-translation">Save Bloom Reader File</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.ChooseUSB">
+      <trans-unit id="PublishTab.Android.ChooseUSB">
         <source xml:lang="en">Send over USB Cable</source>
-        <note>ID: Publish.Android.ChooseUSB</note>
+        <note>ID: PublishTab.Android.ChooseUSB</note>
         <target xml:lang="es-ES" state="needs-translation">Send over USB Cable</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.ChooseWifi">
+      <trans-unit id="PublishTab.Android.ChooseWifi">
         <source xml:lang="en">Serve on WiFi Network</source>
-        <note>ID: Publish.Android.ChooseWifi</note>
+        <note>ID: PublishTab.Android.ChooseWifi</note>
         <target xml:lang="es-ES" state="needs-translation">Serve on WiFi Network</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Control">
+      <trans-unit id="PublishTab.Android.Control">
         <source xml:lang="en">Control</source>
-        <note>ID: Publish.Android.Control</note>
+        <note>ID: PublishTab.Android.Control</note>
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
         <target xml:lang="es-ES" state="needs-translation">Control</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Method">
+      <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method</source>
-        <note>ID: Publish.Android.Method</note>
+        <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
         <target xml:lang="es-ES" state="needs-translation">Method</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Save">
+      <trans-unit id="PublishTab.Android.Save">
         <source xml:lang="en">Save...</source>
-        <note>ID: Publish.Android.Save</note>
+        <note>ID: PublishTab.Android.Save</note>
         <note>Button that tells Bloom to save the book as a .bloomD file.</note>
         <target xml:lang="es-ES" state="needs-translation">Save...</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Troubleshooting">
+      <trans-unit id="PublishTab.Android.Troubleshooting">
         <source xml:lang="en">Troubleshooting Tips</source>
-        <note>ID: Publish.Android.Troubleshooting</note>
+        <note>ID: PublishTab.Android.Troubleshooting</note>
         <target xml:lang="es-ES" state="needs-translation">Troubleshooting Tips</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.BookSent">
+      <trans-unit id="PublishTab.Android.Usb.Progress.BookSent">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
-        <note>ID: Publish.Android.Usb.Progress.BookSent</note>
+        <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
         <note>{0} is a book title</note>
         <target xml:lang="es-ES" state="needs-translation">You can now read "{0}" in Bloom Reader!</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.Connected">
+      <trans-unit id="PublishTab.Android.Usb.Progress.Connected">
         <source xml:lang="en">Connected to {0} via USB...</source>
-        <note>ID: Publish.Android.Usb.Progress.Connected</note>
+        <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
         <note>{0} is a the name of the device Bloom connected to</note>
         <target xml:lang="es-ES" state="needs-translation">Connected to {0} via USB...</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.DeviceWithoutBloomReader">
+      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
-        <note>ID: Publish.Android.Usb.Progress.DeviceWithoutBloomReader</note>
+        <note>ID: PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader</note>
         <target xml:lang="es-ES" state="needs-translation">The following devices are connected but do not seem to have Bloom Reader running:</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.FailureToSend">
+      <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend">
         <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
-        <note>ID: Publish.Android.Usb.Progress.FailureToSend</note>
+        <note>ID: PublishTab.Android.Usb.Progress.FailureToSend</note>
         <target xml:lang="es-ES" state="needs-translation">An error occurred and the book was not sent to your Android device.</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.LookingForDevice">
+      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice">
         <source xml:lang="en">Looking for an Android device connected by USB cable and set up for MTP...</source>
-        <note>ID: Publish.Android.Usb.Progress.LookingForDevice</note>
+        <note>ID: PublishTab.Android.Usb.Progress.LookingForDevice</note>
         <note>This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.</note>
         <target xml:lang="es-ES" state="needs-translation">Looking for an Android device connected by USB cable and set up for MTP...</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.LookingForExisting">
+      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting">
         <source xml:lang="en">Looking for an existing "{0}"...</source>
-        <note>ID: Publish.Android.Usb.Progress.LookingForExisting</note>
+        <note>ID: PublishTab.Android.Usb.Progress.LookingForExisting</note>
         <note>{0} is a book title</note>
         <target xml:lang="es-ES" state="needs-translation">Looking for an existing "{0}"...</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.MoreThanOne">
+      <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne">
         <source xml:lang="en">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</source>
-        <note>ID: Publish.Android.Usb.Progress.MoreThanOne</note>
+        <note>ID: PublishTab.Android.Usb.Progress.MoreThanOne</note>
         <note>{0} is a book title</note>
         <target xml:lang="es-ES" state="needs-translation">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.NoDeviceFound">
+      <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound">
         <source xml:lang="en">No device found. Still looking...</source>
-        <note>ID: Publish.Android.Usb.Progress.NoDeviceFound</note>
+        <note>ID: PublishTab.Android.Usb.Progress.NoDeviceFound</note>
         <note>{0} is a book title</note>
         <target xml:lang="es-ES" state="needs-translation">No device found. Still looking...</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.PackagingBook">
+      <trans-unit id="PublishTab.Android.Usb.Progress.PackagingBook">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
-        <note>ID: Publish.Android.Usb.Progress.PackagingBook</note>
+        <note>ID: PublishTab.Android.Usb.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
         <target xml:lang="es-ES" state="needs-translation">Packaging "{0}" for use with Bloom Reader...</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.ReplacingBook">
+      <trans-unit id="PublishTab.Android.Usb.Progress.ReplacingBook">
         <source xml:lang="en">Replacing existing "{0}"...</source>
-        <note>ID: Publish.Android.Usb.Progress.ReplacingBook</note>
+        <note>ID: PublishTab.Android.Usb.Progress.ReplacingBook</note>
         <note>{0} is a book title</note>
         <target xml:lang="es-ES" state="needs-translation">Replacing existing "{0}"...</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.SendingBook">
+      <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook">
         <source xml:lang="en">Sending "{0}" to your Android device...</source>
-        <note>ID: Publish.Android.Usb.Progress.SendingBook</note>
+        <note>ID: PublishTab.Android.Usb.Progress.SendingBook</note>
         <note>{0} is a book title</note>
         <target xml:lang="es-ES" state="needs-translation">Sending "{0}" to your Android device...</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.Stopped">
+      <trans-unit id="PublishTab.Android.Usb.Progress.Stopped">
         <source xml:lang="en">Stopped</source>
-        <note>ID: Publish.Android.Usb.Progress.Stopped</note>
+        <note>ID: PublishTab.Android.Usb.Progress.Stopped</note>
         <target xml:lang="es-ES" state="needs-translation">Stopped</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Progress.UnableToConnect">
+      <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect">
         <source xml:lang="en">Unable to connect to any Android device which has Bloom Reader.</source>
-        <note>ID: Publish.Android.Usb.Progress.UnableToConnect</note>
+        <note>ID: PublishTab.Android.Usb.Progress.UnableToConnect</note>
         <target xml:lang="es-ES" state="needs-translation">Unable to connect to any Android device which has Bloom Reader.</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Start">
+      <trans-unit id="PublishTab.Android.Usb.Start">
         <source xml:lang="en">Connect with USB cable</source>
-        <note>ID: Publish.Android.Usb.Start</note>
+        <note>ID: PublishTab.Android.Usb.Start</note>
         <note>Button that tells Bloom to send the book to a device via USB cable.</note>
         <target xml:lang="es-ES" state="needs-translation">Connect with USB cable</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Usb.Stop">
+      <trans-unit id="PublishTab.Android.Usb.Stop">
         <source xml:lang="en">Stop Trying</source>
-        <note>ID: Publish.Android.Usb.Stop</note>
+        <note>ID: PublishTab.Android.Usb.Stop</note>
         <target xml:lang="es-ES" state="needs-translation">Stop Trying</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Progress.BadBookRequest">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
-        <note>ID: Publish.Android.Wifi.Progress.BadBookRequest</note>
+        <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
         <target xml:lang="es-ES" state="needs-translation">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Progress.beginAdvertising">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.beginAdvertising">
         <source xml:lang="en">Advertising book to Bloom Readers on local network...</source>
-        <note>ID: Publish.Android.Wifi.Progress.beginAdvertising</note>
+        <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
         <target xml:lang="es-ES" state="needs-translation">Advertising book to Bloom Readers on local network...</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Progress.Failed">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.Failed">
         <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
-        <note>ID: Publish.Android.Wifi.Progress.Failed</note>
+        <note>ID: PublishTab.Android.Wifi.Progress.Failed</note>
         <target xml:lang="es-ES" state="needs-translation">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Progress.Finished">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.Finished">
         <source xml:lang="en">Finished sending "{0}" to device {1}</source>
-        <note>ID: Publish.Android.Wifi.Progress.Finished</note>
+        <note>ID: PublishTab.Android.Wifi.Progress.Finished</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
         <target xml:lang="es-ES" state="needs-translation">Finished sending "{0}" to device {1}</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Progress.Sending">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.Sending">
         <source xml:lang="en">Sending "{0}" to device {1}</source>
-        <note>ID: Publish.Android.Wifi.Progress.Sending</note>
+        <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
         <target xml:lang="es-ES" state="needs-translation">Sending "{0}" to device {1}</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Progress.Stopped">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.Stopped">
         <source xml:lang="en">Stopped Advertising.</source>
-        <note>ID: Publish.Android.Wifi.Progress.Stopped</note>
+        <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
         <target xml:lang="es-ES" state="needs-translation">Stopped Advertising.</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Progress.WifiInstructions1">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1">
         <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</source>
-        <note>ID: Publish.Android.Wifi.Progress.WifiInstructions1</note>
+        <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
         <target xml:lang="es-ES" state="needs-translation">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Progress.WifiInstructions2">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
-        <note>ID: Publish.Android.Wifi.Progress.WifiInstructions2</note>
+        <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions2</note>
         <target xml:lang="es-ES" state="needs-translation">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Start">
+      <trans-unit id="PublishTab.Android.Wifi.Start">
         <source xml:lang="en">Start Serving</source>
-        <note>ID: Publish.Android.Wifi.Start</note>
+        <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
         <target xml:lang="es-ES" state="needs-translation">Start Serving</target>
       </trans-unit>
-      <trans-unit id="Publish.Android.Wifi.Stop">
+      <trans-unit id="PublishTab.Android.Wifi.Stop">
         <source xml:lang="en">Stop Serving</source>
-        <note>ID: Publish.Android.Wifi.Stop</note>
+        <note>ID: PublishTab.Android.Wifi.Stop</note>
         <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
         <target xml:lang="es-ES" state="needs-translation">Stop Serving</target>
       </trans-unit>
