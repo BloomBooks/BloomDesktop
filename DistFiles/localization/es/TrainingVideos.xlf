@@ -5,34 +5,34 @@
       <trans-unit id="training.videos">
         <source xml:lang="en">Bloom Training Videos</source>
         <note>ID: training.videos</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom Training Videos</target>
+        <target xml:lang="es-ES" state="translated">Videos de capacitación Bloom</target>
       </trans-unit>
       <trans-unit id="training.videos.watch">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser: </source>
         <note>ID: training.videos.watch</note>
-        <target xml:lang="es-ES" state="needs-translation">If you are connected to the internet now, you can watch videos in your web browser: </target>
+        <target xml:lang="es-ES" state="translated">Si su computadora esta conectada al internet, puede ver videos por medio de su navegador: </target>
       </trans-unit>
       <trans-unit id="training.videos.all">
         <source xml:lang="en">
           <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
         </source>
         <note>ID: training.videos.all</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">All videos</g>
+        <target xml:lang="es-ES" state="translated">
+          <g id="genid-1" ctype="x-html-a" html:href="http://tiny.cc/bloomVimeo">Todos los vídeos</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.intro">
         <source xml:lang="en">Introductory Videos</source>
         <note>ID: training.videos.intro</note>
-        <target xml:lang="es-ES" state="needs-translation">Introductory Videos</target>
+        <target xml:lang="es-ES" state="translated">Videos introductorios</target>
       </trans-unit>
       <trans-unit id="training.videos.whofor">
         <source xml:lang="en">
           <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
         </source>
         <note>ID: training.videos.whofor</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Who is it for</g>
+        <target xml:lang="es-ES" state="translated">
+          <g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Para quién es</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.templates">
@@ -65,15 +65,15 @@
       <trans-unit id="training.videos.advanced">
         <source xml:lang="en">Advanced Topics</source>
         <note>ID: training.videos.advanced</note>
-        <target xml:lang="es-ES" state="needs-translation">Advanced Topics</target>
+        <target xml:lang="es-ES" state="translated">Temas avanzados</target>
       </trans-unit>
       <trans-unit id="training.videos.formatting">
         <source xml:lang="en">
           <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
         </source>
         <note>ID: training.videos.formatting</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Changing the format of text</g>
+        <target xml:lang="es-ES" state="translated">
+          <g id="genid-6" ctype="x-html-a" html:href="https://vimeo.com/117820891">Cambiando el formato del texto</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.custompage">
@@ -90,8 +90,8 @@
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
         </source>
         <note>ID: training.videos.specialcharacters</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Inserting special characters</g>
+        <target xml:lang="es-ES" state="translated">
+          <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Insertando caracteres especiales</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.readertemplates">
