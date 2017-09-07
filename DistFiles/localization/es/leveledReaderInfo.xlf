@@ -63,14 +63,13 @@ I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
         <note>ID: leveled.reader.rhyme</note>
-        <target xml:lang="es-ES" state="needs-translation">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
+        <target xml:lang="es-ES" state="translated">Rima - una historia con un patrón o secuencia que también incluye rima. Por ejemplo:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">Brown Bear, Brown Bear, What do you see?
-I see a red bird looking at me.
-Red Bird, Red Bird, What do you see?
-I see a yellow duck looking at me.
-Yellow Duck, Yellow Duck, What do you see?</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g>
+          <g id="genid-3" ctype="x-html-pre">El elefante lloraba
+porque no quería dormir
+Duerme elefantito mío
+que la luna te va a oír</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
         </g>
       
       </target>
