@@ -3018,7 +3018,10 @@
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you. If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
-        <target xml:lang="es-ES" state="translated">BloomLibrary.org ya tiene una versión anterior de este libro.  Si lo subes otra vez, se sustituirá con su versión actual.</target>
+        <target xml:lang="es-ES" state="translated">BloomLibrary.org ya tiene una versión anterior de este libro. Si lo subes otra vez, se sustituirá con su versión actual.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">BloomLibrary.org ya tiene una versión anterior de este libro.  Si lo subes otra vez, se sustituirá con su versión actual.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Copyright">
         <source xml:lang="en">Copyright</source>
@@ -3048,7 +3051,10 @@
       <trans-unit id="PublishTab.Upload.Gaurantee">
         <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>
         <note>ID: PublishTab.Upload.Gaurantee</note>
-        <target xml:lang="es-ES" state="translated">Al cargar, usted confirma su acuerdo con los términos de uso de la Bloom Library y concede los derechos que describe</target>
+        <target xml:lang="es-ES" state="translated">Al cargar, usted confirma su acuerdo con los términos de uso de la Bloom Library y concede los derechos que describe.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Al cargar, usted confirma su acuerdo con los términos de uso de la Bloom Library y concede los derechos que describe</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book.</source>
@@ -3149,7 +3155,10 @@
       <trans-unit id="PublishTab.Upload.Login.SendingResetPassword">
         <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password.</source>
         <note>ID: PublishTab.Upload.Login.SendingResetPassword</note>
-        <target xml:lang="es-ES" state="translated">Estamos enviando un correo electrónico a {0} con instrucciones para restablecer la contraseña</target>
+        <target xml:lang="es-ES" state="translated">Estamos enviando un correo electrónico a {0} con instrucciones para restablecer la contraseña.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estamos enviando un correo electrónico a {0} con instrucciones para restablecer la contraseña</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.Signup">
         <source xml:lang="en">Sign up for Bloom Library.</source>
