@@ -137,7 +137,10 @@
       <trans-unit id="ImageToolbox.DownloadArtOfReading">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="es-ES" state="needs-translation">Download Art Of Reading Installer</target>
+        <target xml:lang="es-ES" state="translated">Descargar el instalador para arte de la lectura</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Descargar el instalador para Arte de Lectura</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink">
         <source xml:lang="en">Edit...</source>
@@ -177,23 +180,23 @@
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="es-ES" state="needs-translation">Install the Art Of Reading package (this may be very slow)</target>
+        <target xml:lang="es-ES" state="translated">Instalar el paquete de arte de la lectura (esto puede ser muy lento)</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages">
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="es-ES" state="needs-translation">Found {0} images</target>
+        <target xml:lang="es-ES" state="translated">Encontró {0} imágenes</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
-        <target xml:lang="es-ES" state="needs-translation">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</target>
+        <target xml:lang="es-ES" state="translated">¿Sabía que hay una nueva versión de esta colección que le permite buscar en árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés o suajili? Es gratuito y disponible para descargar.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="es-ES" state="needs-translation">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</target>
+        <target xml:lang="es-ES" state="translated">Esta computadora no parece tener instalada la galería de arte de la lectura.</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
@@ -256,7 +259,7 @@
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="es-ES" state="needs-translation">Ethnologue.com</target>
+        <target xml:lang="es-ES" state="translated">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
@@ -302,7 +305,7 @@
       <trans-unit id="LanguageLookup.ShowRegionalDialectsLabel">
         <source xml:lang="en">Show regional dialects</source>
         <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
-        <target xml:lang="es-ES" state="needs-translation">Show regional dialects</target>
+        <target xml:lang="es-ES" state="translated">Mostrar dialectos regionales</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.UnlistedLanguage">
         <source xml:lang="en">Unlisted Language</source>
@@ -404,7 +407,7 @@
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="es-ES" state="needs-translation">Intergovernmental Version</target>
+        <target xml:lang="es-ES" state="translated">Versión Intergubernamental</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel">
         <source xml:lang="en">Creator</source>
@@ -513,7 +516,7 @@
       <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="needs-translation">Release Notes</target>
+        <target xml:lang="es-ES" state="translated">Notas de la versión</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Font">
         <source xml:lang="en">&amp;Font:</source>
@@ -523,7 +526,7 @@
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="es-ES" state="needs-translation">(The selected font is not available on this machine. Using default.)</target>
+        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Usando fuente por defecto.)</target>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
