@@ -5,7 +5,7 @@
       <trans-unit id="AboutDialog.BuiltOnDate">
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
-        <target xml:lang="es-ES" state="needs-translation">Built on {0}</target>
+        <target xml:lang="es-ES" state="translated">Compilado el {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
@@ -241,7 +241,7 @@
       <trans-unit id="ImageToolbox.SearchArtOfReading">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="es-ES" state="needs-translation">Search the Art of Reading Gallery</target>
+        <target xml:lang="es-ES" state="translated">Búsqueda de la galería de la arte de la lectura</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage">
         <source xml:lang="en">The search box is currently set to {0}</source>
