@@ -15,7 +15,7 @@
       <trans-unit id="leveled.reader.formatting">
         <source xml:lang="en">Formatting</source>
         <note>ID: leveled.reader.formatting</note>
-        <target xml:lang="es-ES" state="needs-translation">Formatting</target>
+        <target xml:lang="es-ES" state="translated">Formateo</target>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
