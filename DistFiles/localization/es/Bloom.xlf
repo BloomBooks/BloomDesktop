@@ -36,7 +36,7 @@
       <trans-unit id="BloomPackInstallDialog.CorruptBloomPack">
         <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
         <note>ID: BloomPackInstallDialog.CorruptBloomPack</note>
-        <target xml:lang="es-ES" state="needs-translation">This BloomPack appears to be incomplete or corrupt.</target>
+        <target xml:lang="es-ES" state="translated">Este BloomPack parece ser incompleto o corrupto.</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.DoesNotExist">
         <source xml:lang="en">{0} does not exist</source>
@@ -123,7 +123,7 @@
       <trans-unit id="Browser.CopyTroubleshootingInfo">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="es-ES" state="needs-translation">Copy Troubleshooting Information</target>
+        <target xml:lang="es-ES" state="translated">Copiar información sobre solución de problemas</target>
       </trans-unit>
       <trans-unit id="Browser.OpenPageInFirefox">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
@@ -179,7 +179,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
-        <target xml:lang="es-ES" state="needs-translation">Branding</target>
+        <target xml:lang="es-ES" state="translated">Branding/Marcacíon</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
         <source xml:lang="en">Default Font for {0}</source>
@@ -196,13 +196,13 @@
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
-        <target xml:lang="es-ES" state="needs-translation">Paper Saver</target>
+        <target xml:lang="es-ES" state="translated">Economizador de Papel</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
         <note>Name of the default Front/Back Matter Pack</note>
-        <target xml:lang="es-ES" state="needs-translation">Traditional</target>
+        <target xml:lang="es-ES" state="translated">Tradicional</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
         <source xml:lang="en">Arabic-Indic</source>
@@ -212,17 +212,17 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian">
         <source xml:lang="en">Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
-        <target xml:lang="es-ES" state="needs-translation">Armenian</target>
+        <target xml:lang="es-ES" state="translated">armenio</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="es-ES" state="needs-translation">Bengali</target>
+        <target xml:lang="es-ES" state="translated">bengalí</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="es-ES" state="needs-translation">Cambodian</target>
+        <target xml:lang="es-ES" state="translated">camboyano</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal">
         <source xml:lang="en">Cjk-Decimal</source>
@@ -232,32 +232,32 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal">
         <source xml:lang="en">Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal</note>
-        <target xml:lang="es-ES" state="needs-translation">Decimal</target>
+        <target xml:lang="es-ES" state="translated">Decimal</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari">
         <source xml:lang="en">Devanagari</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
-        <target xml:lang="es-ES" state="needs-translation">Devanagari</target>
+        <target xml:lang="es-ES" state="translated">devanagari</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian">
         <source xml:lang="en">Georgian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian</note>
-        <target xml:lang="es-ES" state="needs-translation">Georgian</target>
+        <target xml:lang="es-ES" state="translated">georgiano</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="es-ES" state="needs-translation">Gujarati</target>
+        <target xml:lang="es-ES" state="translated">gujarati</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi">
         <source xml:lang="en">Gurmukhi</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
-        <target xml:lang="es-ES" state="needs-translation">Gurmukhi</target>
+        <target xml:lang="es-ES" state="translated">gurmukhi</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="es-ES" state="needs-translation">Hebrew</target>
+        <target xml:lang="es-ES" state="translated">hebreo</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
         <source xml:lang="en">Kannada</source>
@@ -287,7 +287,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian">
         <source xml:lang="en">Mongolian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
-        <target xml:lang="es-ES" state="needs-translation">Mongolian</target>
+        <target xml:lang="es-ES" state="translated">mongol</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar">
         <source xml:lang="en">Myanmar</source>
