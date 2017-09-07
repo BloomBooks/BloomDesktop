@@ -55,8 +55,8 @@
           <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
         </source>
         <note>ID: training.videos.basicbook</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Using the Basic Book template</g>
+        <target xml:lang="es-ES" state="translated">
+          <g id="genid-4" ctype="x-html-a" html:href="https://vimeo.com/112825489">Usando la plantilla de libros básicos</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.readers">
@@ -64,8 +64,8 @@
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
         <note>ID: training.videos.readers</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
+        <target xml:lang="es-ES" state="translated">
+          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Usando la plantilla de lecturas decodifcables y niveladas (varios vídeos)</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.advanced">
@@ -87,9 +87,14 @@
           <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
         </source>
         <note>ID: training.videos.custompage</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Using the Custom Page template</g>
+        <target xml:lang="es-ES" state="translated">
+          <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Usando de la plantilla de página personalizada</g>
         </target>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          <g id="genid-7" ctype="x-html-a" html:href="https://vimeo.com/116868148">Uso de la plantilla de página personalizada</g>
+        </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.specialcharacters">
         <source xml:lang="en">
@@ -117,21 +122,21 @@
       <trans-unit id="training.videos.download">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: </source>
         <note>ID: training.videos.download</note>
-        <target xml:lang="es-ES" state="needs-translation">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: </target>
+        <target xml:lang="es-ES" state="translated">Si desea descargar alguno de estos videos para mostrar y compartir fuera de liña, puede descargarlos a su computadora: </target>
       </trans-unit>
       <trans-unit id="training.videos.hires">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
         <note>ID: training.videos.hires</note>
-        <target xml:lang="es-ES" state="needs-translation">
+        <target xml:lang="es-ES" state="translated">
           
-          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</target>
+          <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
       </trans-unit>
       <trans-unit id="training.videos.lores">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
         <note>ID: training.videos.lores</note>
-        <target xml:lang="es-ES" state="needs-translation">
+        <target xml:lang="es-ES" state="translated">
           
-          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</target>
+          <g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
       </trans-unit>
     </body>
   </file>
