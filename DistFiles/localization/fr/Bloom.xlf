@@ -357,19 +357,19 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection" approved="yes">
         <source xml:lang="en">Language 1</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
         <target xml:lang="fr">Langue 1</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection" approved="yes">
         <source xml:lang="en">Language 2</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
         <target xml:lang="fr">Langue 2</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection" approved="yes">
         <source xml:lang="en">Language 3</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
         <target xml:lang="fr">Langue 3</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
@@ -388,10 +388,10 @@
         <note>If there is no third language specified, the link changes to this.</note>
         <target xml:lang="fr">Choisir...</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
-        <source xml:lang="en">Vernacular Language</source>
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+        <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="fr">Langue Vernaculaire</target>
+        <target xml:lang="fr" state="needs-translation">Local Language</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label" approved="yes">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
@@ -2387,15 +2387,15 @@
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
         <target xml:lang="fr">Collection source</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make vernacular books with your shells.</source>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-        <target xml:lang="fr">Une collection de livres canevas ou modèles dans une ou plusieurs langues de communication courante. Il est possible de télécharger ces livres canevas sur BloomLibrary.org. Il est également possible de créer un pack Bloom et de le partager avec d'autres utilisateurs pour leur permettre de créer des livres en langue vernaculaire à partir de vos livres canevas.</target>
+        <target xml:lang="fr" state="needs-translation">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
-        <source xml:lang="en">Vernacular/Local Language Collection</source>
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+        <source xml:lang="en">Local Language Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-        <target xml:lang="fr">Collection en langue vernaculaire / régionale</target>
+        <target xml:lang="fr" state="needs-translation">Local Language Collection</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
         <source xml:lang="en">A collection of books in a local language.</source>
