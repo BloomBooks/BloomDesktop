@@ -54,11 +54,11 @@
         <note>ID: Application.WaitingFinish.General</note>
         <target xml:lang="es-ES" state="translated">Esperando a otra aplicación para finalizar...</target>
       </trans-unit>
-      <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
+      <trans-unit id="Application.WaitingFinish.Specific">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="es-ES">Esperando a otra {0} para finalizar...</target>
+        <target xml:lang="es-ES" state="translated">Esperando a otra {0} para finalizar...</target>
         <alt-trans>
           <target xml:lang="es-ES">Esperando a otra {0} para finalizar</target>
         </alt-trans>
@@ -73,10 +73,10 @@
         <note>ID: Common.No</note>
         <target xml:lang="es-ES" state="translated">No</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton" approved="yes">
+      <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="es-ES">&amp;Aceptar</target>
+        <target xml:lang="es-ES" state="translated">&amp;Aceptar</target>
         <alt-trans>
           <target xml:lang="es-ES">Aceptar</target>
         </alt-trans>
@@ -108,10 +108,10 @@
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
         <target xml:lang="es-ES" state="translated">&amp;Cancelar</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="es-ES">&amp;Eliminar</target>
+        <target xml:lang="es-ES" state="translated">&amp;Eliminar</target>
         <alt-trans>
           <target xml:lang="es-ES">Eliminar</target>
         </alt-trans>
@@ -350,7 +350,10 @@
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc...</target>
+        <target xml:lang="es-ES" state="translated">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
@@ -431,12 +434,18 @@
       <trans-unit id="MetadataEditor.TitleNoCredit">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="es-ES" state="translated">Derechos de autor &amp; licencia</target>
+        <target xml:lang="es-ES" state="translated">Derechos de autor y licencia</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Derechos de autor &amp; licencia</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleWithCredit">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="es-ES" state="translated">Crédito, derechos de autor &amp; licencia</target>
+        <target xml:lang="es-ES" state="translated">Crédito, derechos de autor y licencia</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crédito, derechos de autor &amp; licencia</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
@@ -510,7 +519,10 @@
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <target xml:lang="es-ES" state="translated">Contraseña de fábrica para estos ajustes es "{0}".  Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}"</target>
+        <target xml:lang="es-ES" state="translated">Contraseña de fábrica para estos ajustes es "{0}". Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Contraseña de fábrica para estos ajustes es "{0}".  Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}"</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
         <source xml:lang="en">Require the factory password to get into settings.</source>
