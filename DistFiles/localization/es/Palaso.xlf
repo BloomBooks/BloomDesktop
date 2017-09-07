@@ -402,7 +402,7 @@
       <trans-unit id="MetadataEditor.CreativeCommons">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="es-ES" state="needs-translation">Creative Commons</target>
+        <target xml:lang="es-ES" state="translated">Creative Commons</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
@@ -591,7 +591,7 @@
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="es-ES" state="needs-translation">Unable to connect to SLDR</target>
+        <target xml:lang="es-ES" state="translated">No se puede conectar al SLDR</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
