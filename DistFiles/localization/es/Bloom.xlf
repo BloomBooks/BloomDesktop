@@ -93,17 +93,26 @@
       <trans-unit id="BookEditor.DefaultForText" sil:dynamic="true">
         <source xml:lang="en">This formatting is the default for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.DefaultForText</note>
-        <target xml:lang="es-ES" state="translated">Este formato es el predeterminado para todos los cuadros de texto con el estilo '{0}'</target>
+        <target xml:lang="es-ES" state="translated">Este formato es el predeterminado para todos los cuadros de texto con el estilo '{0}'.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este formato es el predeterminado para todos los cuadros de texto con el estilo '{0}'</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.ForText" sil:dynamic="true">
         <source xml:lang="en">This formatting is for all text boxes with '{0}' style.</source>
         <note>ID: BookEditor.ForText</note>
-        <target xml:lang="es-ES" state="translated">Este formato es para todos los cuadros de texto con el estilo '{0}'</target>
+        <target xml:lang="es-ES" state="translated">Este formato es para todos los cuadros de texto con el estilo '{0}'.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este formato es para todos los cuadros de texto con el estilo '{0}'</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.ForTextInLang" sil:dynamic="true">
         <source xml:lang="en">This formatting is for all {0} text boxes with '{1}' style.</source>
         <note>ID: BookEditor.ForTextInLang</note>
-        <target xml:lang="es-ES" state="translated">Este formato es para todo texto {0} en cuadros con estilo '{1}'</target>
+        <target xml:lang="es-ES" state="translated">Este formato es para todo texto {0} en cuadros con estilo '{1}'.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este formato es para todo texto {0} en cuadros con estilo '{1}'</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
@@ -519,7 +528,10 @@
       <trans-unit id="CollectionTab.BookSourcesLockNotice">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
         <note>ID: CollectionTab.BookSourcesLockNotice</note>
-        <target xml:lang="es-ES" state="translated">Esta colección está bloqueada,  no se puede agregar o eliminar nuevos libros.</target>
+        <target xml:lang="es-ES" state="translated">Esta colección está bloqueada, no se puede agregar o eliminar nuevos libros.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta colección está bloqueada,  no se puede agregar o eliminar nuevos libros.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
         <source xml:lang="en">Books From BloomLibrary.org</source>
@@ -695,7 +707,10 @@
         <source xml:lang="en">Update for {0} is ready.</source>
         <note>ID: CollectionTab.UpdateInstalled</note>
         <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
-        <target xml:lang="es-ES" state="translated">Actualización para {0} está lista</target>
+        <target xml:lang="es-ES" state="translated">Actualización para {0} está lista.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Actualización para {0} está lista</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateNow">
         <source xml:lang="en">Update Now</source>
@@ -710,7 +725,10 @@
       <trans-unit id="CollectionTab.Updating">
         <source xml:lang="en">Downloading update to {0} ({1}kb).</source>
         <note>ID: CollectionTab.Updating</note>
-        <target xml:lang="es-ES" state="translated">Descargando la actualización a {0} ({1}K)</target>
+        <target xml:lang="es-ES" state="translated">Descargando la actualización a {0} ({1}K).</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Descargando la actualización a {0} ({1}K)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.BackButton">
         <source xml:lang="en">Back</source>
@@ -796,7 +814,10 @@
       <trans-unit id="Download.CopyFailed">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</source>
         <note>ID: Download.CopyFailed</note>
-        <target xml:lang="es-ES" state="translated">Bloom ha descargado el libro, pero tuvo problemas haciéndolo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje de nuevo, por favor haga clic en el botón "Detalles" y reportar el problema a los programadores de Bloom</target>
+        <target xml:lang="es-ES" state="translated">Bloom ha descargado el libro, pero tuvo problemas haciéndolo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje de nuevo, por favor haga clic en el botón "Detalles" y reportar el problema a los programadores de Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ha descargado el libro, pero tuvo problemas haciéndolo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje de nuevo, por favor haga clic en el botón "Detalles" y reportar el problema a los programadores de Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.DownloadingDialogTitle">
         <source xml:lang="en">Downloading book</source>
@@ -885,7 +906,10 @@
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
         <note>ID: EditTab.BookContextMenu.openHtmlInBrowser</note>
-        <target xml:lang="es-ES" state="translated">Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino).</target>
+        <target xml:lang="es-ES" state="translated">Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino).</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CannotChangeCopyright">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
@@ -997,7 +1021,10 @@
       <trans-unit id="EditTab.DeletePageButton">
         <source xml:lang="en">Remove\n  Page</source>
         <note>ID: EditTab.DeletePageButton</note>
-        <target xml:lang="es-ES" state="translated">Eliminar página</target>
+        <target xml:lang="es-ES" state="translated">Eliminar\n página</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Eliminar página</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTip">
         <source xml:lang="en">Remove this page from the book</source>
@@ -1451,7 +1478,10 @@
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
-        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas del material inicial y final deben permanecer donde están</target>
+        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas del material inicial y final deben permanecer donde están.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se permite ese cambio. Páginas del material inicial y final deben permanecer donde están</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.PageList.CantMoveXMatterCaption">
         <source xml:lang="en">Invalid Move</source>
@@ -2533,7 +2563,10 @@
       <trans-unit id="PageList.CantMoveWhenTranslating">
         <source xml:lang="en">Pages can not be re-ordered when you are translating a book.</source>
         <note>ID: PageList.CantMoveWhenTranslating</note>
-        <target xml:lang="es-ES" state="translated">Las páginas no pueden ser reordenadas cuando está traduciendo un libro</target>
+        <target xml:lang="es-ES" state="translated">Las páginas no pueden ser reordenadas cuando está traduciendo un libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Las páginas no pueden ser reordenadas cuando está traduciendo un libro</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
         <source xml:lang="en">Bloom Book for Devices</source>
@@ -2747,7 +2780,10 @@
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Hacer un folleto de las páginas interiores del libro. Las páginas se distribuido y reordenado de manera que cuando la doblará , tendrá un folleto</target>
+        <target xml:lang="es-ES" state="translated">Hacer un folleto de las páginas interiores del libro. Las páginas se distribuido y reordenado de manera que cuando la doblará, tendrá un folleto.\n</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un folleto de las páginas interiores del libro. Las páginas se distribuido y reordenado de manera que cuando la doblará , tendrá un folleto</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
         <source xml:lang="en">Upload</source>
@@ -2969,7 +3005,10 @@
       <trans-unit id="PublishTab.Upload.AllReserved">
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
         <note>ID: PublishTab.Upload.AllReserved</note>
-        <target xml:lang="es-ES" state="translated">Todos los derechos reservados (contacto el titular del Copyright para los permisos</target>
+        <target xml:lang="es-ES" state="translated">Todos los derechos reservados (Contacto el titular del Copyright para los permisos.)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Todos los derechos reservados (contacto el titular del Copyright para los permisos</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
