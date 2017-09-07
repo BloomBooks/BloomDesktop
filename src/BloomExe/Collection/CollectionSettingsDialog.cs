@@ -165,6 +165,16 @@ namespace Bloom.Collection
 				dlg.SelectedLanguage = language;
 				dlg.SearchText = iso639Code;
 
+				// Following should be consistent with LanguageIdControl constructor.
+				// per BL-4780 we don't offer these codes, which are to generic to be useful.
+				dlg.MatchingLanguageFilter = info => info.LanguageTag != "zh" && info.LanguageTag != "cmn";
+				// per BL-4780 we prefer these names for the common Chinese codes
+				dlg.SetLanguageAlias("zh-Hans", "Simplified Chinese (简体中文)");
+				dlg.SetLanguageAlias("zh-CN", "Simplified Chinese (简体中文)");
+				dlg.SetLanguageAlias("zh-Hant", "Traditional Chinese (繁体中文)");
+				dlg.SetLanguageAlias("zh-TW", "Traditional Chinese (繁体中文)");
+
+
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
 					return null;

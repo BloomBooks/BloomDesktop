@@ -16,6 +16,16 @@ namespace Bloom.CollectionCreating
 			InitializeComponent();
 			_lookupISOControl.SelectedLanguage = null;
 			_lookupISOControl.IsShowRegionalDialectsCheckBoxVisible = false;
+
+			// Following should be consistent with CollectionSettingsDialog.ChangeLanguage()
+			// per BL-4780 we don't offer these codes, which are to generic to be useful.
+			_lookupISOControl.MatchingLanguageFilter = info => info.LanguageTag != "zh" && info.LanguageTag != "cmn";
+			// per BL-4780 we prefer these names for the common Chinese codes
+			_lookupISOControl.SetLanguageAlias("zh-Hans", "Simplified Chinese (简体中文)");
+			_lookupISOControl.SetLanguageAlias("zh-CN", "Simplified Chinese (简体中文)");
+			_lookupISOControl.SetLanguageAlias("zh-Hant", "Traditional Chinese (繁体中文)");
+			_lookupISOControl.SetLanguageAlias("zh-TW", "Traditional Chinese (繁体中文)");
+
 		}
 
 		private void OnLookupISOControlReadinessChanged(object sender, EventArgs e)
