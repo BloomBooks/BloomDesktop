@@ -54,11 +54,14 @@
         <note>ID: Application.WaitingFinish.General</note>
         <target xml:lang="es-ES" state="translated">Esperando a otra aplicación para finalizar...</target>
       </trans-unit>
-      <trans-unit id="Application.WaitingFinish.Specific">
+      <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="es-ES" state="translated">Esperando a otra {0} para finalizar</target>
+        <target xml:lang="es-ES">Esperando a otra {0} para finalizar...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esperando a otra {0} para finalizar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.CancelButton">
         <source xml:lang="en">&amp;Cancel</source>
@@ -70,10 +73,13 @@
         <note>ID: Common.No</note>
         <target xml:lang="es-ES" state="translated">No</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="es-ES" state="translated">Aceptar</target>
+        <target xml:lang="es-ES">&amp;Aceptar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Aceptar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
@@ -102,10 +108,13 @@
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
         <target xml:lang="es-ES" state="translated">&amp;Cancelar</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="es-ES" state="translated">Eliminar</target>
+        <target xml:lang="es-ES">&amp;Eliminar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Eliminar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to {1}</source>
