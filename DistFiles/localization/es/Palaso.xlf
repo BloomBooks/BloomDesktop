@@ -15,7 +15,7 @@
       <trans-unit id="AboutDialog.WindowTitle">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="needs-translation">About {0}</target>
+        <target xml:lang="es-ES" state="translated">Sobre {0}</target>
       </trans-unit>
       <trans-unit id="AboutDialog._checkForUpdates">
         <source xml:lang="en">Check For Updates</source>
@@ -68,7 +68,7 @@
       <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="es-ES" state="needs-translation">No</target>
+        <target xml:lang="es-ES" state="translated">No</target>
       </trans-unit>
       <trans-unit id="Common.OKButton">
         <source xml:lang="en">&amp;OK</source>
@@ -111,7 +111,7 @@
         <source xml:lang="en">Found {0} images with names close to {1}</source>
         <note>ID: ImageToolbox.AlmostMatchingImages</note>
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
-        <target xml:lang="es-ES" state="needs-translation">Found {0} images with names close to {1}</target>
+        <target xml:lang="es-ES" state="translated">Encontro {0} imágenes con nombres parecidas a {1}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ArtOfReading">
         <source xml:lang="en">Art Of Reading</source>
@@ -121,7 +121,7 @@
       <trans-unit id="ImageToolbox.Camera">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="es-ES" state="needs-translation">Camera</target>
+        <target xml:lang="es-ES" state="translated">Cámara</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata">
         <source xml:lang="en">Use {0}</source>
