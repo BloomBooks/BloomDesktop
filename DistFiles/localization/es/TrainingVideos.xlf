@@ -46,8 +46,8 @@
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
         <note>ID: training.videos.templates</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
+        <target xml:lang="es-ES" state="translated">
+          <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Comprendiendo las plantillas y libros shell</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.basicbook">
