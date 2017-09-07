@@ -1,4 +1,4 @@
-﻿## 4.1 (preliminary plan)
+## 4.1 (preliminary plan)
 - Provide a way to create anthologies of multiple books, with an automated Table of Contents.
 - Add an Image Credits field which Bloom will automatically fill and keep up to date.
 - Allow user to choose what front/back matter fields to show, and in what languages
@@ -20,6 +20,7 @@
     - Publish Book to Android Bloom Reader (planned for 4.0, but not in alpha channel just yet).
 - Misc
     - When Bloom is first run after your computer starts, there was a delay caused by .net. This could cause people to think Bloom wasn't running, so they would try and run it again. Bloom will now show a simple splash screen instantly to indicate that it is coming. Currently on Windows, this feature is lost if you pin a running Bloom to the Windows taskbar. Instead, pin the icon from the desktop.
+    - Changed "Vernacular" to "Local Language"
 
 ## 3.9 (beta)
 - Custom Templates
@@ -360,7 +361,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
   - ALT+CTRL+2: Heading 2
 
 ### Fixes
-- Bloom will now be patient if Dropbox is temporarily locking the langaugedisplay.css file
+- Bloom will now be patient if Dropbox is temporarily locking the languagedisplay.css file
 - Title page now updates immeditatley if you change country/province in Settings Dialog
 - Format dialog tooltips no longer make Source Bubbles disappear
 - Improved error messages when an html file can't be opened

@@ -114,19 +114,19 @@
         <source xml:lang="en">Language 1</source>
         <target xml:lang="hi">1 भाषा</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
         <source xml:lang="en">Language 2</source>
         <target xml:lang="hi">2 भाषा</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
         <source xml:lang="en">Language 3</source>
         <target xml:lang="hi">3 भाषा</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
         <source xml:lang="en">Languages</source>
@@ -140,7 +140,7 @@
         <note>If there is no third language specified, the link changes to this.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
-        <source xml:lang="en">Vernacular Language</source>
+        <source xml:lang="en">Local Language</source>
         <target xml:lang="hi">जातीय भाषा</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
       </trans-unit>
@@ -1261,12 +1261,12 @@
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</source>
+        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make local language books with your shells.</source>
         <target xml:lang="hi">शेल या टेम्पलेट का एक संग्रह है व्यापक संचार के एक या एक से अधिक भाषाओं में किताबें। आप ये गोले BloomLibrary.org करने के लिए अपलोड करें और वैकल्पिक रूप से इतना है कि वे स्थानीय भाषा की पुस्तकों के साथ अपने गोले बना कर सकते हैं दूसरों को देने के लिए एक BloomPack बनाने के लिए सक्षम हो जाएगा।</target>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
-        <source xml:lang="en">Vernacular/Local Language Collection</source>
+        <source xml:lang="en">Local Language Collection</source>
         <target xml:lang="hi">स्थानीय भाषा/स्थानीय भाषा संग्रह</target>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
       </trans-unit>

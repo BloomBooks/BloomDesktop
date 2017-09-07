@@ -218,19 +218,19 @@
         <source xml:lang="en">Language 1</source>
         <target xml:lang="sw">Lugha ya 1</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
         <source xml:lang="en">Language 2</source>
         <target xml:lang="sw">Lugha ya 2</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
         <source xml:lang="en">Language 3</source>
         <target xml:lang="sw">Lugha ya 3</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
         <source xml:lang="en">Languages</source>
@@ -249,7 +249,7 @@
         <note>If there is no third language specified, the link changes to this.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
-        <source xml:lang="en">Vernacular Language</source>
+        <source xml:lang="en">Local Language</source>
         <target xml:lang="sw">Lugha ya Mama</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
       </trans-unit>
@@ -1924,12 +1924,12 @@
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
-        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make vernacular books with your shells.</source>
+        <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <target xml:lang="sw">Mkusanyiko wa sheli au vitabu vya vigezo katika lugha moja au zaidi za mawasiliano mapana. Utaweza kuziweka sheli hizi kwenye BloomLibrary.org. Pia unaweza kutengeneza Seti ya Bloom kuwapa wengine ili waweze kutengeneza vitabu kwa lugha ya mama kutoka kwa sheli zako.</target>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
-        <source xml:lang="en">Vernacular/Local Language Collection</source>
+        <source xml:lang="en">Local Language Collection</source>
         <target xml:lang="sw">Mkusanyikko wa Lugha ya mama/Lugha ya eneo</target>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
       </trans-unit>

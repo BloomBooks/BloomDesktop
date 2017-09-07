@@ -103,19 +103,19 @@
         <source xml:lang="en">Language 1</source>
         <target xml:lang="rw">Ururimi rwa 1</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
         <source xml:lang="en">Language 2</source>
         <target xml:lang="rw">Ururimi rwa 2</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
         <source xml:lang="en">Language 3</source>
         <target xml:lang="rw">Ururimi rwa 3</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
-        <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+        <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
         <source xml:lang="en">Languages</source>
@@ -129,7 +129,7 @@
         <note>If there is no third language specified, the link changes to this.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
-        <source xml:lang="en">Vernacular Language</source>
+        <source xml:lang="en">Local Language</source>
         <target xml:lang="rw">Ururimi kavukire</target>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
       </trans-unit>
@@ -1017,7 +1017,7 @@
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
-        <source xml:lang="en">Vernacular/Local Language Collection</source>
+        <source xml:lang="en">Local Language Collection</source>
         <target xml:lang="rw">Ikusanyirizo mu rurimi kavukire/Ururimi gakondo</target>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
       </trans-unit>
