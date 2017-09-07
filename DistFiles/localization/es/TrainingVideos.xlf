@@ -5,7 +5,10 @@
       <trans-unit id="training.videos">
         <source xml:lang="en">Bloom Training Videos</source>
         <note>ID: training.videos</note>
-        <target xml:lang="es-ES" state="translated">Videos de capacitación Bloom</target>
+        <target xml:lang="es-ES" state="translated">Vídeos de capacitación Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Videos de capacitación Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.watch">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser: </source>
@@ -24,7 +27,10 @@
       <trans-unit id="training.videos.intro">
         <source xml:lang="en">Introductory Videos</source>
         <note>ID: training.videos.intro</note>
-        <target xml:lang="es-ES" state="translated">Videos introductorios</target>
+        <target xml:lang="es-ES" state="translated">Vídeos introductorios</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Videos introductorios</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.whofor">
         <source xml:lang="en">
@@ -99,14 +105,14 @@
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
         <note>ID: training.videos.readertemplates</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
+        <target xml:lang="es-ES" state="translated">
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para lecturas decodificables y niveladas (varios vídeos)</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.offline">
         <source xml:lang="en">Offline Viewing</source>
         <note>ID: training.videos.offline</note>
-        <target xml:lang="es-ES" state="needs-translation">Offline Viewing</target>
+        <target xml:lang="es-ES" state="translated">Visualización fuera de línea</target>
       </trans-unit>
       <trans-unit id="training.videos.download">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: </source>
