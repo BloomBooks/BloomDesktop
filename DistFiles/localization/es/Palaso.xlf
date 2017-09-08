@@ -247,7 +247,7 @@
         <source xml:lang="en">The search box is currently set to {0}</source>
         <note>ID: ImageToolbox.SearchLanguage</note>
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
-        <target xml:lang="es-ES" state="needs-translation">The search box is currently set to {0}</target>
+        <target xml:lang="es-ES" state="translated">Actualmente el cuadro de búsqueda esta en {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SetUpMetadataLink">
         <source xml:lang="en">Set up metadata...</source>
@@ -542,7 +542,7 @@
       <trans-unit id="WSFontControl.Font">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="es-ES" state="needs-translation">&amp;Font:</target>
+        <target xml:lang="es-ES" state="translated">&amp;Fuente:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
@@ -552,12 +552,12 @@
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="es-ES" state="needs-translation">This is a &amp;right to left writing system.</target>
+        <target xml:lang="es-ES" state="translated">Esto es una &amp;escritura de derecha a izquierda.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Size">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="es-ES" state="needs-translation">&amp;Size:</target>
+        <target xml:lang="es-ES" state="translated">&amp;Tamaño:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea">
         <source xml:lang="en">&amp;Test Area:</source>
