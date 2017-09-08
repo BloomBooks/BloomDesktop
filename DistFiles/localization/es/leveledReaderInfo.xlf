@@ -55,7 +55,7 @@
       <trans-unit id="leveled.reader.building.sequence">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
         <note>ID: leveled.reader.building.sequence</note>
-        <target xml:lang="es-ES" state="needs-translation">Building Sequence - a story with a pattern that is repeated and added to with each new page</target>
+        <target xml:lang="es-ES" state="translated">Secuencia creciente - un cuento con un patrón que se repite y a lo cual se agrega en cada nueva página</target>
       </trans-unit>
       <trans-unit id="leveled.reader.rhyme">
         <source xml:lang="en">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
