@@ -68,12 +68,12 @@
       <trans-unit id="epubpreview.gitden.limits">
         <source xml:lang="en">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</source>
         <note>ID: epubpreview.gitden.limits</note>
-        <target xml:lang="es-ES" state="needs-translation">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</target>
+        <target xml:lang="es-ES" state="translated">Para escuchar este libro sonoro con Gitden en su celular o dispositivo, debe desactivar la función de "texto a voz". En seguida los controles de audio serán mostradas.</target>
       </trans-unit>
       <trans-unit id="epubpreview.make.it.talk">
         <source xml:lang="en">Make it Talk</source>
         <note>ID: epubpreview.make.it.talk</note>
-        <target xml:lang="es-ES" state="needs-translation">Make it Talk</target>
+        <target xml:lang="es-ES" state="translated">Hacerlo hablar</target>
       </trans-unit>
       <trans-unit id="epubpreview.talking.book.tool">
         <source xml:lang="en">If you want to make a "Talking Book" that new readers can read-along with, use Bloom's <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> to add voice recordings.
