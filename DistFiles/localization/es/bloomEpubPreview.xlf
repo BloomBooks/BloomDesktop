@@ -12,17 +12,17 @@
       <trans-unit id="epubpreview.recording.butnotalk">
         <source xml:lang="en">This book has some recordings, but this audio is not included in the ePUB.</source>
         <note>ID: epubpreview.recording.butnotalk</note>
-        <target xml:lang="es-ES" state="needs-translation">This book has some recordings, but this audio is not included in the ePUB.</target>
+        <target xml:lang="es-ES" state="translated">Este libro contiene algunas grabaciones, pero el audio no está incluido en el ePUB.</target>
       </trans-unit>
       <trans-unit id="epubpreview.preview">
         <source xml:lang="en">Preview</source>
         <note>ID: epubpreview.preview</note>
-        <target xml:lang="es-ES" state="needs-translation">Preview</target>
+        <target xml:lang="es-ES" state="translated">Vista previa</target>
       </trans-unit>
       <trans-unit id="epubpreview.resizing">
         <source xml:lang="en">You can resize the preview by dragging the lower right corner of this simulated device. See how your book will look on screens of various sizes.</source>
         <note>ID: epubpreview.resizing</note>
-        <target xml:lang="es-ES" state="needs-translation">You can resize the preview by dragging the lower right corner of this simulated device. See how your book will look on screens of various sizes.</target>
+        <target xml:lang="es-ES" state="translated">Para cambiar el tamaño la vista previa, arrastre la esquina inferior derecha de este dispositivo simulado. Asi se puede ver cómo su libro se verá en diversas pantallas.</target>
       </trans-unit>
       <trans-unit id="epubpreview.readium">
         <source xml:lang="en">This page uses the <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB reader. Books will likely look different on different readers.
