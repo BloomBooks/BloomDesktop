@@ -661,7 +661,10 @@
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Usando fuente por defecto.)</target>
+        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Usando fuente predeterminado.)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Usando fuente por defecto.)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
