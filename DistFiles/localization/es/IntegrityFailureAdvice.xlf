@@ -35,12 +35,12 @@
       <trans-unit id="integrity.todo.ideas.Reinstall">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time. </source>
         <note>ID: integrity.todo.ideas.Reinstall</note>
-        <target xml:lang="es-ES" state="needs-translation">Run the Bloom installer again, and see if it starts up OK this time. </target>
+        <target xml:lang="es-ES" state="translated">Vuelva a ejecutar el instalador de Bloom para ver si esta vez inicie corectamente. </target>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>. </source>
         <note>ID: integrity.todo.ideas.Antivirus</note>
-        <target xml:lang="es-ES" state="needs-translation">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.  </target>
+        <target xml:lang="es-ES" state="translated">Si eso no lo resueve, es tiempo investigar su programa de antivirus. Si la sección de "Missing Files" (archivos faltantes) muestra archivos que terminan en ".exe", considere poner la carpeta del programa Bloom en la "lista blanca" (white list), ubicada en <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.  </target>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.AVAST">
         <source xml:lang="en">AVAST: <g id="genid-2" ctype="x-html-a" html:href="http://www.getavast.net/support/managing-exceptions">Instructions</g>. </source>
