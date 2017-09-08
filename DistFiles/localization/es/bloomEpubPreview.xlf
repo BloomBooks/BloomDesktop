@@ -49,20 +49,19 @@
         <source xml:lang="en">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
       </source>
         <note>ID: epubpreview.usingdropbox</note>
-        <target xml:lang="es-ES" state="needs-translation">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
-      
+        <target xml:lang="es-ES" state="translated">Para cargar libros en su celular, se puede usar un servicio como Dropbox en su computadora y celular/dispositivo. Haga clic en "Save ePub". Seleccione su carpeta de Dropbox. En su celular, abre Dropbox y seleccione su libro. Si esta usando una computadora portátil, tambien puede probar el programa gratuito <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> para enviar archivos de su computadora a su celular o dispositivo.      
       </target>
       </trans-unit>
       <trans-unit id="epubpreview.recommended.reader">
         <source xml:lang="en">Recommended Reader</source>
         <note>ID: epubpreview.recommended.reader</note>
-        <target xml:lang="es-ES" state="needs-translation">Recommended Reader</target>
+        <target xml:lang="es-ES" state="translated">Lector recomendado</target>
       </trans-unit>
       <trans-unit id="epubpreview.gitden.okay">
         <source xml:lang="en">Our testing has shown <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
       </source>
         <note>ID: epubpreview.gitden.okay</note>
-        <target xml:lang="es-ES" state="needs-translation">Our testing has shown <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
+        <target xml:lang="es-ES" state="translated">Nuestras pruebas han mostrado que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> es una buena opción para dispositivos Android y IOS (IPhone &amp; IPad).
       
       </target>
       </trans-unit>
