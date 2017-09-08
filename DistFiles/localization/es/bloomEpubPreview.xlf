@@ -36,7 +36,7 @@
         <source xml:lang="en">The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> e-book reader.
       </source>
         <note>ID: epubpreview.talkingbookpreview</note>
-        <target xml:lang="es-ES" state="needs-translation">The preview here cannot yet play Talking Books. You can listen to it using Adobe's Free <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g> e-book reader.
+        <target xml:lang="es-ES" state="translated">Los libros sonoros no funcionan con esta vista previa. Puede escucharlo con el lector digital gratuito de Adobe llamado <g id="genid-4" ctype="x-html-a" html:href="http://www.adobe.com/solutions/ebook/digital-editions.html">Digital Editions</g>.
       
       </target>
       </trans-unit>
