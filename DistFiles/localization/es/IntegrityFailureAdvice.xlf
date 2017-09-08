@@ -73,12 +73,12 @@
       <trans-unit id="integrity.todo.ideas.Retrieve">
         <source xml:lang="en">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>. </source>
         <note>ID: integrity.todo.ideas.Retrieve</note>
-        <target xml:lang="es-ES" state="needs-translation">You can also try and retrieve the part of Bloom that your anti-virus program took from it. For AVG, you need to find the AVG "options" menu, click "virus vault", click on the Bloom file in the vault, and click "restore". For a visual guide, see <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">this image</g>.  </target>
+        <target xml:lang="es-ES" state="translated">También puede tratar de recuperar el componente de Bloom que fue removido por su programa de antivirus. Para AVG, necesita encontrar el menú de "opciones". Haga clic en "bóveda de virus", haga clic en el archivo de Bloom en la bóveda y haga clic en "restaurar". Para una guía visual, ver <g id="genid-5" ctype="x-html-a" html:href="https://i.imgur.com/dlRrsSN.png">esta imagen</g>.  </target>
       </trans-unit>
       <trans-unit id="integrity.missing">
         <source xml:lang="en">Missing Files</source>
         <note>ID: integrity.missing</note>
-        <target xml:lang="es-ES" state="needs-translation">Missing Files</target>
+        <target xml:lang="es-ES" state="translated">Archivos ausentes</target>
       </trans-unit>
     </body>
   </file>
