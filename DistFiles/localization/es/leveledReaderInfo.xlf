@@ -30,7 +30,7 @@
       <trans-unit id="leveled.reader.predictability">
         <source xml:lang="en">Predictability</source>
         <note>ID: leveled.reader.predictability</note>
-        <target xml:lang="es-ES" state="needs-translation">Predictability</target>
+        <target xml:lang="es-ES" state="translated">Previsibilidad</target>
       </trans-unit>
       <trans-unit id="leveled.reader.repeat.patterns">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
@@ -77,7 +77,7 @@ que la luna te va a oír</g>
       <trans-unit id="leveled.reader.illustrations">
         <source xml:lang="en">Illustration Support</source>
         <note>ID: leveled.reader.illustrations</note>
-        <target xml:lang="es-ES" state="needs-translation">Illustration Support</target>
+        <target xml:lang="es-ES" state="translated">Apoyo para ilustraciones</target>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
