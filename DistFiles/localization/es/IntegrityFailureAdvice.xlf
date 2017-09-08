@@ -5,32 +5,32 @@
       <trans-unit id="integrity.title">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
         <note>ID: integrity.title</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom cannot find some of its own files, and cannot continue</target>
+        <target xml:lang="es-ES" state="translated">Bloom no puede encontrar algunos de sus propios archivos y no puede continuar</target>
       </trans-unit>
       <trans-unit id="integrity.causes">
         <source xml:lang="en">Possible Causes</source>
         <note>ID: integrity.causes</note>
-        <target xml:lang="es-ES" state="needs-translation">Possible Causes</target>
+        <target xml:lang="es-ES" state="translated">Causas posibles</target>
       </trans-unit>
       <trans-unit id="integrity.causes.1">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files. </source>
         <note>ID: integrity.causes.1</note>
-        <target xml:lang="es-ES" state="needs-translation">Your antivirus may have "quarantined" one or more Bloom files. </target>
+        <target xml:lang="es-ES" state="translated">Su antivirus puede haber "puesto en cuarentena" uno o más archivos de Bloom. </target>
       </trans-unit>
       <trans-unit id="integrity.causes.2">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong.  </source>
         <note>ID: integrity.causes.2</note>
-        <target xml:lang="es-ES" state="needs-translation">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong.  </target>
+        <target xml:lang="es-ES" state="translated">Puede ser que el administrador de su computadora lo ha bloqueado para prevenir cosas malas, pero de tal manera que Bloom no pudo colocar estos archivos corectamente.  </target>
       </trans-unit>
       <trans-unit id="integrity.todo">
         <source xml:lang="en">What To Do</source>
         <note>ID: integrity.todo</note>
-        <target xml:lang="es-ES" state="needs-translation">What To Do</target>
+        <target xml:lang="es-ES" state="translated">Qué hacer</target>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas: </source>
         <note>ID: integrity.todo.ideas</note>
-        <target xml:lang="es-ES" state="needs-translation">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas: </target>
+        <target xml:lang="es-ES" state="translated">Después de enviar este informe, le contactaremos para ayudarle. Mientras tanto, aquí hay varias ideas: </target>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time. </source>
