@@ -605,12 +605,21 @@
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="es-ES" state="translated">Para evitar modificaciones accidentales que podrían causar esta herramienta de dejar de funcionar, estas configuraciones han sido bloqueadas.</target>
+        <target xml:lang="es-ES" state="translated">Estas configuraciones han sido bloquedas para prevenir modificaciones accidentales que podrían impedir el funcionamiento de esta herramienta.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para evitar modificaciones accidentales que podrían causar esta herramienta de dejar de funcionar, estas configuraciones han sido bloqueadas.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Contraseña para protección de la configuración</target>
+        <target xml:lang="es-ES" state="translated">Contraseña para proteger la configuración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Contraseña para proteger las configuraciones</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Contraseña para protección de la configuración</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
         <source xml:lang="en">Show Characters</source>
@@ -629,7 +638,10 @@
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="es-ES" state="translated">Requiere la contraseña de fábrica para entrar en la configuración.</target>
+        <target xml:lang="es-ES" state="translated">Requerir la contraseña de fábrica para entrar a la configuración.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Requiere la contraseña de fábrica para entrar en la configuración.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
         <source xml:lang="en">Settings Protection</source>
