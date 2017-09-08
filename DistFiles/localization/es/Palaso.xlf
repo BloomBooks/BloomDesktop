@@ -73,7 +73,10 @@
         <source xml:lang="en">Waiting for other {0} to finish...</source>
         <note>ID: Application.WaitingFinish.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="es-ES" state="translated">Esperando a otra {0} para finalizar...</target>
+        <target xml:lang="es-ES" state="translated">Esperando que otra {0} termine...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esperando a otra {0} para finalizar...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esperando a otra {0} para finalizar</target>
         </alt-trans>
@@ -161,7 +164,13 @@
       <trans-unit id="ImageToolbox.DownloadArtOfReading">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Descargar el instalador para arte de la lectura</target>
+        <target xml:lang="es-ES" state="translated">Descargar el instalador de arte de la lectura</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Descargar el instalador de la galeria arte de la lectura</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Descargar el instalador para arte de la lectura</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Descargar el instalador para Arte de Lectura</target>
         </alt-trans>
@@ -174,7 +183,10 @@
       <trans-unit id="ImageToolbox.EnterSearchTerms">
         <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
-        <target xml:lang="es-ES" state="translated">Esta es la galería de "Art of Reading" (Arte de la lectura). En el cuadro anterior, escriba lo que está buscando, a continuación, pulse ENTER. Puede escribir palabras en inglés e indonesio.</target>
+        <target xml:lang="es-ES" state="translated">Esto es la galería de 'arte de la lectura' (Art of Reading). En el cuadro superior, escriba lo que está buscando. A continuación pulse INTRO. Puede escribir palabras en inglés e indonesio.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta es la galería de "Art of Reading" (Arte de la lectura). En el cuadro anterior, escriba lo que está buscando, a continuación, pulse ENTER. Puede escribir palabras en inglés e indonesio.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.FileButton">
         <source xml:lang="en">File</source>
@@ -184,7 +196,10 @@
       <trans-unit id="ImageToolbox.GenericGettingImageProblem">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="es-ES" state="translated">Lo siento, algo salió mal al tratar de obtener la ilustración.</target>
+        <target xml:lang="es-ES" state="translated">Lastima, algo falló al tratar de obtener el imagen.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo siento, algo salió mal al tratar de obtener la ilustración.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericProblem">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
