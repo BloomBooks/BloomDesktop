@@ -20,12 +20,15 @@
       <trans-unit id="leveled.reader.start.large">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
         <note>ID: leveled.reader.start.large</note>
-        <target xml:lang="es-ES" state="needs-translation">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</target>
+        <target xml:lang="es-ES" state="translated">Lectores nuevos beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras o frases en el mismo lugar en cada página. A la medida que los lectores avanzan, los fuentes y espacios entre palabras pueden disminuir y las frases pueden ser ubicadas en distintos lugares.</target>
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
         <note>ID: leveled.reader.increase.sizes</note>
-        <target xml:lang="es-ES" state="translated">Para incrementar el tamaño de fuente, interlineado, y espacio entre palabras en Bloom, haga clic en un cuadro de texto ye despues en el icono de "engranage" gris en la esquina inferior izquierda. Si hace un libro de plantilla despues de hacer esto, los libros hechos con esa plantilla tambien usarán estas configuraciones.</target>
+        <target xml:lang="es-ES" state="translated">Para incrementar el tamaño de fuente, interlineado, y espacio entre palabras, haga clic en un cuadro de texto y despues en el icono de "engranage" gris en la esquina inferior izquierda. Si despues hace un libro de plantilla, los libros hechos con esa plantilla tambien usarán estas configuraciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para incrementar el tamaño de fuente, interlineado, y espacio entre palabras en Bloom, haga clic en un cuadro de texto ye despues en el icono de "engranage" gris en la esquina inferior izquierda. Si hace un libro de plantilla despues de hacer esto, los libros hechos con esa plantilla tambien usarán estas configuraciones.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.predictability">
         <source xml:lang="en">Predictability</source>
@@ -35,19 +38,19 @@
       <trans-unit id="leveled.reader.repeat.patterns">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
         <note>ID: leveled.reader.repeat.patterns</note>
-        <target xml:lang="es-ES" state="needs-translation">
+        <target xml:lang="es-ES" state="translated">
           
-          <g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</target>
+<g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría despues. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
       </trans-unit>
       <trans-unit id="leveled.reader.repetition">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
         <note>ID: leveled.reader.repetition</note>
-        <target xml:lang="es-ES" state="needs-translation">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</target>
+        <target xml:lang="es-ES" state="translated">Repetición - repetición de partes del texto. Por ejemplo, usar la misma frase en cada página y simplemente cambiar una palabra en la frase</target>
       </trans-unit>
       <trans-unit id="leveled.reader.sequencing">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
         <note>ID: leveled.reader.sequencing</note>
-        <target xml:lang="es-ES" state="needs-translation">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</target>
+        <target xml:lang="es-ES" state="translated">Secuenciación - un cuento con una secuencia conocida como los días de la semana o que utiliza números en un patrón</target>
       </trans-unit>
       <trans-unit id="leveled.reader.building.sequence">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
