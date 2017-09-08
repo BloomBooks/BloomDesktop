@@ -204,7 +204,10 @@
       <trans-unit id="ImageToolbox.GenericProblem">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="es-ES" state="translated">Lo siento, algo salió mal con el cuadro de herramientas de ilustraciones</target>
+        <target xml:lang="es-ES" state="translated">Lastimosamente, algo falló con el ImageToolbox (caja de herramientas de ilustraciones)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo siento, algo salió mal con el cuadro de herramientas de ilustraciones</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.GetPicture">
         <source xml:lang="en">Get Picture</source>
@@ -214,12 +217,18 @@
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Cuadro de herramientas de ilustraciones</target>
+        <target xml:lang="es-ES" state="translated">Image Toolbox (caja de herramientas de ilustraciones)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuadro de herramientas de ilustraciones</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Instalar el paquete de arte de la lectura (esto puede ser muy lento)</target>
+        <target xml:lang="es-ES" state="translated">Instalar el paquete de arte de la lectura (puede demorar)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Instalar el paquete de arte de la lectura (esto puede ser muy lento)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages">
         <source xml:lang="en">Found {0} images</source>
@@ -230,17 +239,26 @@
       <trans-unit id="ImageToolbox.NewMultilingual">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
-        <target xml:lang="es-ES" state="translated">¿Sabía que hay una nueva versión de esta colección que le permite buscar en árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés o suajili? Es gratuito y disponible para descargar.</target>
+        <target xml:lang="es-ES" state="translated">¿Sabía que hay una nueva versión de esta colección que le permite buscar en árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés, o suajili? Es gratuito y disponible para descargar.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Sabía que hay una nueva versión de esta colección que le permite buscar en árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés o suajili? Es gratuito y disponible para descargar.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoArtOfReading">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Esta computadora no parece tener instalada la galería de arte de la lectura.</target>
+        <target xml:lang="es-ES" state="translated">Esta computadora no parece tener instalada la galería de 'arte de la lectura' (Art of Reading).</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta computadora no parece tener instalada la galería de arte de la lectura.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="es-ES" state="translated">No se encontraron ilustraciones que coincidan</target>
+        <target xml:lang="es-ES" state="translated">No se encontraron ilustraciones que coinciden</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se encontraron ilustraciones que coincidan</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.PictureFiles">
         <source xml:lang="en">picture files</source>
@@ -251,17 +269,26 @@
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="es-ES" state="translated">Problema obteniendo la ilustración</target>
+        <target xml:lang="es-ES" state="translated">No se pudo obtener la ilustración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Problema obteniendo la ilustración</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemLoadingImage">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, hubo un problema al cargar la ilustración.</target>
+        <target xml:lang="es-ES" state="translated">Lastimosamente, no se pudo cargar esa ilustración.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo sentimos, hubo un problema al cargar la ilustración.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.PromptForMissingMetadata">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="es-ES" state="translated">La ilustración no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
+        <target xml:lang="es-ES" state="translated">Esta ilustración no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La ilustración no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.Scanner">
         <source xml:lang="en">Scanner</source>
@@ -308,7 +335,10 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle">
         <source xml:lang="en">About The ISO Language Registry</source>
         <note>ID: LanguageLookup.CannotFindMyLanguageWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Acerca del registro de idiomas ISO</target>
+        <target xml:lang="es-ES" state="translated">Acerca del registro ISO de idiomas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Acerca del registro de idiomas ISO</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.CodeHeader">
         <source xml:lang="en">Code</source>
@@ -329,12 +359,18 @@
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
-        <target xml:lang="es-ES" state="translated">Puede cambiar cómo se mostrarán aquí el nombre del idioma:</target>
+        <target xml:lang="es-ES" state="translated">Aqui puede cambiar cómo se mostrará el nombre del idioma:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Puede cambiar cómo se mostrarán aquí el nombre del idioma:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle">
         <source xml:lang="en">Lookup Language Code...</source>
         <note>ID: LanguageLookup.LanguageLookupDialogWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Búsqueda del código del idioma...</target>
+        <target xml:lang="es-ES" state="translated">Buscar el código del idioma...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Búsqueda del código del idioma...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.PrimaryNameHeader">
         <source xml:lang="en">Name</source>
@@ -349,7 +385,10 @@
       <trans-unit id="LanguageLookup.UnlistedLanguage">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="es-ES" state="translated">Idioma no enumerado</target>
+        <target xml:lang="es-ES" state="translated">Idioma no listada</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Idioma no enumerado</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup._cannotFindLanguageLink">
         <source xml:lang="en">Can't find your language?</source>
