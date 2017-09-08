@@ -100,8 +100,7 @@ que la luna te va a oír</g>
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
         <note>ID: leveled.reader.illustrations.early.reader</note>
-        <target xml:lang="es-ES" state="needs-translation">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
-      
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-7" ctype="x-html-strong"> Lectores principiantes </g> las ilustraciones deben ofrecer apoyo a la trama. A medida que aumenta la cantidad de texto, el lector depende menos de las imágenes y comprende más del texto. Las ilustraciones pueden ser más complejas.      
       </target>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader">
