@@ -165,6 +165,9 @@ namespace Bloom.Collection
 				dlg.SelectedLanguage = language;
 				dlg.SearchText = iso639Code;
 
+				// Following should be consistent with LanguageIdControl constructor.
+				dlg.UseSimplifiedChinese();
+
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
 					return null;
