@@ -5,7 +5,7 @@
       <trans-unit id="missing.lame.please.install">
         <source xml:lang="en">Please Install LAME</source>
         <note>ID: missing.lame.please.install</note>
-        <target xml:lang="es-ES" state="needs-translation">Please Install LAME</target>
+        <target xml:lang="es-ES" state="translated">Por favor, instale LAME</target>
       </trans-unit>
       <trans-unit id="missing.lame.bloom.needs.lame">
         <source xml:lang="en">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
