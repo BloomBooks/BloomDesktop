@@ -43,7 +43,7 @@
       <trans-unit id="epubpreview.ontodevice">
         <source xml:lang="en">Getting this book onto your Device</source>
         <note>ID: epubpreview.ontodevice</note>
-        <target xml:lang="es-ES" state="needs-translation">Getting this book onto your Device</target>
+        <target xml:lang="es-ES" state="translated">Cargar este libro a su dispositivo</target>
       </trans-unit>
       <trans-unit id="epubpreview.usingdropbox">
         <source xml:lang="en">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
