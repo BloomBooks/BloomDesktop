@@ -79,19 +79,20 @@
         <source xml:lang="en">If you want to make a "Talking Book" that new readers can read-along with, use Bloom's <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> to add voice recordings.
       </source>
         <note>ID: epubpreview.talking.book.tool</note>
-        <target xml:lang="es-ES" state="needs-translation">If you want to make a "Talking Book" that new readers can read-along with, use Bloom's <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> to add voice recordings.
-      
+        <target xml:lang="es-ES" state="translated">Si desea crear un "libro sonor" que los lectores pueden escuchar mientras que leen, use 
+<g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> para agregar grabaciones.      
       </target>
       </trans-unit>
       <trans-unit id="epubpreview.write.us">
         <source xml:lang="en">Write to us!</source>
         <note>ID: epubpreview.write.us</note>
-        <target xml:lang="es-ES" state="needs-translation">Write to us!</target>
+        <target xml:lang="es-ES" state="translated">¡Escribenos!</target>
       </trans-unit>
       <trans-unit id="epubpreview.use.help.report">
         <source xml:lang="en">Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!</source>
         <note>ID: epubpreview.use.help.report</note>
-        <target xml:lang="es-ES" state="needs-translation">Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!</target>
+        <target xml:lang="es-ES" state="translated">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos?
+Si hay algo que podemos hacer para hacerlo mas útil para usted, favor de usar la función Ayuda; Reportar problema (Help: Report a Problem) para compartir sus comentarios. ¡Gracias!</target>
       </trans-unit>
     </body>
   </file>
