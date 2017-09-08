@@ -86,16 +86,14 @@ que la luna te va a oír</g>
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
         <note>ID: leveled.reader.illustrations.help</note>
-        <target xml:lang="es-ES" state="needs-translation">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
-    
+        <target xml:lang="es-ES" state="translated">Las ilustraciones pueden apoyar a un cuento. Las ilustraciones se relacionan al cuento en distintos modos a distintos <g id="genid-5" ctype="x-html-em"> niveles</g> y para diferentes tipos de lectores (véase abajo). Recuerde que en muchas culturas que no tienen mucho material impreso, puede ser difícil entender las ilustraciones complejas.    
     </target>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
-        <target xml:lang="es-ES" state="needs-translation">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
-      
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-6" ctype="x-html-strong"> Lectores nuevos</g> las ilustraciones deben coincidir precisamente con la historia. Viendo las ilustraciones, un lector debe ser capaz de predecir la trama. Las ilustraciones en este nivel deben ser simples.      
       </target>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader">
