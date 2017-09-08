@@ -10,7 +10,7 @@
       <trans-unit id="leveled.reader.start.simple">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
         <note>ID: leveled.reader.start.simple</note>
-        <target xml:lang="es-ES" state="needs-translation">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</target>
+        <target xml:lang="es-ES" state="translated">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a nivelosles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y phrases cercanas, y por las ilustraciones.</target>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting">
         <source xml:lang="en">Formatting</source>
