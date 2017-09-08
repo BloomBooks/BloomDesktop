@@ -531,12 +531,21 @@
       <trans-unit id="MetadataEditor.UnknownLicense">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="es-ES" state="translated">Póngase en contacto con el titular del copyright para los permisos</target>
+        <target xml:lang="es-ES" state="translated">Comuniquese con el titular de derechos de autor para solicitar permisos</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Comuniquese con el titular del copyright para los permisos</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Póngase en contacto con el titular del copyright para los permisos</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.YesShareAlike">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="es-ES" state="translated">Sí, mientras otros comparten por igual</target>
+        <target xml:lang="es-ES" state="translated">Sí, mientras que otros comparten igualmente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sí, mientras otros comparten por igual</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.additionalRequestsLabel">
         <source xml:lang="en">Additional Requests</source>
@@ -554,22 +563,34 @@
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="es-ES" state="translated">No aplicable</target>
+        <target xml:lang="es-ES" state="translated">No exigible</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No aplicable</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="es-ES" state="translated">Esto puede también ocultar otros botones que no sean necesarios por parte del usuario no avanzado.</target>
+        <target xml:lang="es-ES" state="translated">Esto también puede ocultar otros botones que no sean necesarios por parte del usuario no avanzado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esto puede también ocultar otros botones que no sean necesarios por parte del usuario no avanzado.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.CtrlShiftHint">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="es-ES" state="translated">El botón se mostrará cuando se mantiene presionada juntos las teclas Ctrl y Mayús.</target>
+        <target xml:lang="es-ES" state="translated">El botón se mostrará cuando juntamente se presiona las teclas Ctrl y Mayús.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El botón se mostrará cuando se mantiene presionada juntos las teclas Ctrl y Mayús.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.LauncherButtonLabel">
         <source xml:lang="en">Settings...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
-        <target xml:lang="es-ES" state="translated">Protección de configuración...</target>
+        <target xml:lang="es-ES" state="translated">Configuración...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Protección de configuración...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
         <source xml:lang="en">Hide the button that opens settings.</source>
