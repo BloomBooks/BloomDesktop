@@ -6,8 +6,7 @@
         <source xml:lang="en">This is an <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) version of your book. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">It contains audio, so that new readers can listen as they read.</g>
       </source>
         <note>ID: epubpreview.describe</note>
-        <target xml:lang="es-ES" state="needs-translation">This is an <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) version of your book. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">It contains audio, so that new readers can listen as they read.</g>
-      
+        <target xml:lang="es-ES" state="translated">Esto es una versión <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) de su libro. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Contiene audio para que lectores iniciales pueden escucharlo mientras que lo leyan.</g>      
       </target>
       </trans-unit>
       <trans-unit id="epubpreview.recording.butnotalk">
