@@ -562,7 +562,7 @@
       <trans-unit id="WSFontControl.TestArea">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="es-ES" state="needs-translation">&amp;Test Area:</target>
+        <target xml:lang="es-ES" state="translated">&amp;Área de prueba:</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
