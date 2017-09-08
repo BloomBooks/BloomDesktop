@@ -107,8 +107,7 @@ que la luna te va a oír</g>
         <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
       </source>
         <note>ID: leveled.reader.fluent.reader</note>
-        <target xml:lang="es-ES" state="needs-translation">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.
-      
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-8" ctype="x-html-strong">Lectores fluidos</g> las ilustracionesdeben ofrecer poco o ningún apoyo a la trama. La comprensión del lector depende más del texto que las ilustraciones. Las ilustraciones pueden ser todavía más complejas.      
       </target>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice">
