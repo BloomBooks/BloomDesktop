@@ -28,7 +28,7 @@
         <source xml:lang="en">This page uses the <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB reader. Books will likely look different on different readers.
       </source>
         <note>ID: epubpreview.readium</note>
-        <target xml:lang="es-ES" state="needs-translation">This page uses the <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB reader. Books will likely look different on different readers.
+        <target xml:lang="es-ES" state="translated">Esta página usa el lector digital de ePUB <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g>. Los libros se ven distintos en lectores digitales diferentes.
       
       </target>
       </trans-unit>
