@@ -30,29 +30,44 @@
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="es-ES" state="translated">Otra copia del programa ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</target>
+        <target xml:lang="es-ES" state="translated">Se está ejecutando otra copia del programa. Si no lo encuentra, reinicie su computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Otra copia del programa ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.Specific">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="es-ES" state="translated">Otra copia de {0} ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</target>
+        <target xml:lang="es-ES" state="translated">Se está ejecutando otra copia de {0}. Si no lo encuentra, reinicie su computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Otra copia de {0} ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.General">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema al iniciar el programa que puede que tenga que reiniciar el equipo.</target>
+        <target xml:lang="es-ES" state="translated">Hubo un problema al iniciar el programa. Posiblemente tendrá que reiniciar su computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hubo un problema al iniciar el programa que puede que tenga que reiniciar el equipo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.ProblemStarting.Specific">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema al iniciar {0} que puede que tenga que reiniciar el equipo.</target>
+        <target xml:lang="es-ES" state="translated">Hubo un problema al iniciar {0}. Posiblemente tendrá que reiniciar su computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hubo un problema al iniciar {0} que puede que tenga que reiniciar el equipo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.General">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="es-ES" state="translated">Esperando a otra aplicación para finalizar...</target>
+        <target xml:lang="es-ES" state="translated">Esperando que otra aplicación termine...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esperando a otra aplicación para finalizar...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific">
         <source xml:lang="en">Waiting for other {0} to finish...</source>
@@ -617,7 +632,7 @@
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="es-ES" state="needs-translation">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</target>
+        <target xml:lang="es-ES" state="translated">La aplicación no puede conectarse con el base datos para obtener la información más reciente acerca de este idioma. Si usted crea esta escritura, la configuración predeterminada podría ser incorrecta o obseleto. ¿Realmente desea crear una nueva escritura?</target>
       </trans-unit>
     </body>
   </file>
