@@ -3320,7 +3320,7 @@ Do you want to go ahead?</target>
       <trans-unit id="PublishView._saveButton">
         <source xml:lang="en">Save stub</source>
         <note>ID: PublishView._saveButton</note>
-        <target xml:lang="es-ES" state="needs-translation">Save stub</target>
+        <target xml:lang="es-ES" state="translated">Guardar el stub (trozo)</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
         <source xml:lang="en">Add Level</source>
@@ -3340,22 +3340,22 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.AllowedWords" sil:dynamic="true">
         <source xml:lang="en">allowed words</source>
         <note>ID: ReaderSetup.AllowedWords</note>
-        <target xml:lang="es-ES" state="needs-translation">allowed words</target>
+        <target xml:lang="es-ES" state="translated">palabras permitidas</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AllowedWordsFile" sil:dynamic="true">
         <source xml:lang="en">Allowed Words File</source>
         <note>ID: ReaderSetup.AllowedWordsFile</note>
-        <target xml:lang="es-ES" state="needs-translation">Allowed Words File</target>
+        <target xml:lang="es-ES" state="translated">Archivo de palabras permitidas</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AllowedWordsFileHeader" sil:dynamic="true">
         <source xml:lang="en">Allowed Words File</source>
         <note>ID: ReaderSetup.AllowedWordsFileHeader</note>
-        <target xml:lang="es-ES" state="needs-translation">Allowed Words File</target>
+        <target xml:lang="es-ES" state="translated">Archivo de palabras permitidas</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AverageHeader" sil:dynamic="true">
         <source xml:lang="en">Avg</source>
         <note>ID: ReaderSetup.AverageHeader</note>
-        <target xml:lang="es-ES" state="needs-translation">Avg</target>
+        <target xml:lang="es-ES" state="translated">Prom.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true">
         <source xml:lang="en">Book</source>
@@ -3370,7 +3370,7 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: ReaderSetup.ChooseAllowedWordsFile</note>
-        <target xml:lang="es-ES" state="needs-translation">Choose...</target>
+        <target xml:lang="es-ES" state="translated">Elegir...</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true">
         <source xml:lang="en">Click on letters to add them to this stage.</source>
@@ -3380,17 +3380,17 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.CombinationHelp1" sil:dynamic="true">
         <source xml:lang="en">Separate by spaces</source>
         <note>ID: ReaderSetup.CombinationHelp1</note>
-        <target xml:lang="es-ES" state="needs-translation">Separate by spaces</target>
+        <target xml:lang="es-ES" state="translated">Separar con espacios</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.CombinationHelp2" sil:dynamic="true">
         <source xml:lang="en">E.g. "ai oo sh ng th ing"</source>
         <note>ID: ReaderSetup.CombinationHelp2</note>
-        <target xml:lang="es-ES" state="needs-translation">E.g. "ai oo sh ng th ing"</target>
+        <target xml:lang="es-ES" state="translated">p. ej. "ai oo sh ng th ing"</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Combinations" sil:dynamic="true">
         <source xml:lang="en">Letter Combinations (Graphemes)</source>
         <note>ID: ReaderSetup.Combinations</note>
-        <target xml:lang="es-ES" state="needs-translation">Letter Combinations (Graphemes)</target>
+        <target xml:lang="es-ES" state="translated">Combinaciones de letras (grafemas)</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
         <source xml:lang="en">Decodable Stages</source>
@@ -3420,7 +3420,7 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.Language" sil:dynamic="true">
         <source xml:lang="en">Language</source>
         <note>ID: ReaderSetup.Language</note>
-        <target xml:lang="es-ES" state="needs-translation">Language</target>
+        <target xml:lang="es-ES" state="translated">Idioma</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true">
         <source xml:lang="en">List letters and word-forming characters in alphabetic order.</source>
@@ -3430,7 +3430,7 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.LetterHelp2" sil:dynamic="true">
         <source xml:lang="en">Separate by spaces</source>
         <note>ID: ReaderSetup.LetterHelp2</note>
-        <target xml:lang="es-ES" state="needs-translation">Separate by spaces</target>
+        <target xml:lang="es-ES" state="translated">Separar con espacios</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LetterHelp3" sil:dynamic="true">
         <source xml:lang="en">E.g. "a b c d"</source>
