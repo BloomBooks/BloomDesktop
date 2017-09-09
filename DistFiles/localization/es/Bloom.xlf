@@ -117,7 +117,13 @@
       <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, plantillas de lectores no permiten cambios en el formato.</target>
+        <target xml:lang="es-ES" state="translated">Lo sentimos, plantillas de libros no permiten cambios en el formato.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo sentimos, plantillas de lecturas no permiten cambios en el formato.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo sentimos, plantillas de lectores no permiten cambios en el formato.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
@@ -3444,7 +3450,13 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
         <note>ID: ReaderSetup.Letters.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle a crear lectores decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para ayudarle a crear lecturas decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para ayudarle a crear lectores decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true">
         <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
@@ -3479,7 +3491,10 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.Levels</note>
-        <target xml:lang="es-ES" state="translated">Niveles de lectores</target>
+        <target xml:lang="es-ES" state="translated">Niveles de lecturas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Niveles de lectores</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.MatchingWords" sil:dynamic="true">
         <source xml:lang="en">matching words</source>
@@ -3529,7 +3544,10 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.ReaderLevels</note>
-        <target xml:lang="es-ES" state="translated">Niveles de lectores</target>
+        <target xml:lang="es-ES" state="translated">Niveles de lecturas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Niveles de lectores</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
         <source xml:lang="en">Remove Level {0}</source>
@@ -3599,12 +3617,24 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
         <note>ID: ReaderSetup.SetUpDecodableReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Configurar la herramienta de lectores decodificables</target>
+        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros decodificables</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configurar la herramienta de lecturas decodificables</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Configurar la herramienta de lectores decodificables</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true">
         <source xml:lang="en">Set up Leveled Reader Tool</source>
         <note>ID: ReaderSetup.SetUpLeveledReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Configurar la herramienta de lectores nivelados</target>
+        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros nivelados</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configurar la herramienta de lecturas nivelados</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Configurar la herramienta de lectores nivelados</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
         <source xml:lang="en">set up the alphabet for this language.</source>
@@ -3664,7 +3694,13 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage. There are two ways to give words to Bloom:</source>
         <note>ID: ReaderSetup.Words.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle a crear lectores decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras para Bloom:</target>
+        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para ayudarle a crear lecturas decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras para Bloom:</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para ayudarle a crear lectores decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras para Bloom:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true">
         <source xml:lang="en">2) Place Text Files in Your</source>
@@ -3699,7 +3735,13 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
-        <target xml:lang="es-ES" state="translated">Además, este BloomPack llevará su última configuración para lectores decodificables y nivelado para el idioma \"{0}\". Cualquiera que abre este BloomPack, que entonces se abre una colección en el idioma \"{0}\", tendrá su configuración actual para lectores decodificables y nivelado reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en lectores decodificables.</target>
+        <target xml:lang="es-ES" state="translated">Además, este BloomPack llevará su última configuración para libros decodificables y nivelados para el idioma \"{0}\". Cualquier que abre este BloomPack, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decodificables y nivelados reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en libros decodificables.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Además, este BloomPack llevará su última configuración para lecturas decodificables y nivelado para el idioma \"{0}\". Cualquier que abre este BloomPack, que entonces abre una colección en el idioma \"{0}\", tendrá su configuración actual para lecturas decodificables y nivelados reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en lecturas decodificables.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Además, este BloomPack llevará su última configuración para lectores decodificables y nivelado para el idioma \"{0}\". Cualquiera que abre este BloomPack, que entonces se abre una colección en el idioma \"{0}\", tendrá su configuración actual para lectores decodificables y nivelado reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en lectores decodificables.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
         <source xml:lang="en">The following books will be made into templates:</source>
@@ -3714,7 +3756,13 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
         <source xml:lang="en">Make Reader Template Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Crear BloomPack plantilla de lectores</target>
+        <target xml:lang="es-ES" state="translated">Crear un BloomPack de plantilla de libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un BloomPack de plantilla de lecturas</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear BloomPack plantilla de lectores</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="RegisterDialog.Email">
         <source xml:lang="en">Email Address</source>
