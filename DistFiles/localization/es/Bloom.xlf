@@ -1540,7 +1540,7 @@
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
         <note>ID: EditTab.SavingNotification</note>
-        <target xml:lang="es-ES" state="needs-translation">Saving...</target>
+        <target xml:lang="es-ES" state="translated">Guardando...</target>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.BorderToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the border and background</source>
@@ -1570,7 +1570,7 @@
       <trans-unit id="EditTab.StyleEditor.WordSpacingNormal" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.StyleEditor.WordSpacingNormal</note>
-        <target xml:lang="es-ES" state="needs-translation">Normal</target>
+        <target xml:lang="es-ES" state="translated">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.WordSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between words</source>
@@ -1601,12 +1601,12 @@
       <trans-unit id="EditTab.TextBoxProperties.LanguageTab">
         <source xml:lang="en">Language</source>
         <note>ID: EditTab.TextBoxProperties.LanguageTab</note>
-        <target xml:lang="es-ES" state="needs-translation">Language</target>
+        <target xml:lang="es-ES" state="translated">Idioma</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.TextBoxProperties.Alignment</note>
-        <target xml:lang="es-ES" state="needs-translation">Alignment</target>
+        <target xml:lang="es-ES" state="translated">Alineación</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Background" sil:dynamic="true">
         <source xml:lang="en">Background</source>
@@ -1637,17 +1637,17 @@
       <trans-unit id="EditTab.TextBoxProperties.LocalLanguage">
         <source xml:lang="en">Local Language</source>
         <note>ID: EditTab.TextBoxProperties.LocalLanguage</note>
-        <target xml:lang="es-ES" state="needs-translation">Local Language</target>
+        <target xml:lang="es-ES" state="translated">Idioma local</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NationalLanguage">
         <source xml:lang="en">National Language</source>
         <note>ID: EditTab.TextBoxProperties.NationalLanguage</note>
-        <target xml:lang="es-ES" state="needs-translation">National Language</target>
+        <target xml:lang="es-ES" state="translated">Idioma nacional</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Normal">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.TextBoxProperties.Normal</note>
-        <target xml:lang="es-ES" state="needs-translation">Normal</target>
+        <target xml:lang="es-ES" state="translated">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NormalLabel">
         <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
@@ -1662,7 +1662,7 @@
       <trans-unit id="EditTab.TextBoxProperties.RegionalLanguage">
         <source xml:lang="en">Regional Language</source>
         <note>ID: EditTab.TextBoxProperties.RegionalLanguage</note>
-        <target xml:lang="es-ES" state="needs-translation">Regional Language</target>
+        <target xml:lang="es-ES" state="translated">Idioma regional</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.WhatToPut">
         <source xml:lang="en">What should authors put in this box?</source>
@@ -1694,7 +1694,7 @@
         <source xml:lang="en">Vertical Alignment</source>
         <note>ID: EditTab.TextBoxProperties.VerticalAlignment</note>
         <note>Label above the set of options, Top/Center/Bottom</note>
-        <target xml:lang="es-ES" state="needs-translation">Vertical Alignment</target>
+        <target xml:lang="es-ES" state="translated">Alineación vertical</target>
       </trans-unit>
       <trans-unit id="EditTab.ThumbnailCaptions.Picture On Bottom">
         <source xml:lang="en">Picture On Bottom</source>
