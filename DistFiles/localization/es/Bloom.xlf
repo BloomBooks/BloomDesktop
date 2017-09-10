@@ -2725,7 +2725,7 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.Failed">
         <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Failed</note>
-        <target xml:lang="es-ES" state="needs-translation">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</target>
+        <target xml:lang="es-ES" state="translated">Falló el envío de este libro. Posiblemente el dispositivo esta desconectado. Si no puede determinar porque sucedió esto, lo siguiente puede ser útil reportar a los desarrolladores:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Finished">
         <source xml:lang="en">Finished sending "{0}" to device {1}</source>
