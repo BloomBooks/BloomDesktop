@@ -225,7 +225,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="es-ES" state="needs-translation">Arabic-Indic</target>
+        <target xml:lang="es-ES" state="translated">Indo-Arabe</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian">
         <source xml:lang="en">Armenian</source>
@@ -295,7 +295,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian">
         <source xml:lang="en">Lower-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
-        <target xml:lang="es-ES" state="needs-translation">Lower-Armenian</target>
+        <target xml:lang="es-ES" state="translated">armenio (lower)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam">
         <source xml:lang="en">Malayalam</source>
@@ -330,27 +330,27 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil">
         <source xml:lang="en">Tamil</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil</note>
-        <target xml:lang="es-ES" state="needs-translation">Tamil</target>
+        <target xml:lang="es-ES" state="translated">tamil</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
         <source xml:lang="en">Telugu</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
-        <target xml:lang="es-ES" state="needs-translation">Telugu</target>
+        <target xml:lang="es-ES" state="translated">télugu</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai">
         <source xml:lang="en">Thai</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai</note>
-        <target xml:lang="es-ES" state="needs-translation">Thai</target>
+        <target xml:lang="es-ES" state="translated">tailandés</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan">
         <source xml:lang="en">Tibetan</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan</note>
-        <target xml:lang="es-ES" state="needs-translation">Tibetan</target>
+        <target xml:lang="es-ES" state="translated">tibetano</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian">
         <source xml:lang="en">Upper-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
-        <target xml:lang="es-ES" state="needs-translation">Upper-Armenian</target>
+        <target xml:lang="es-ES" state="translated">armenio (upper)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
         <source xml:lang="en">Right to Left Writing System</source>
@@ -775,7 +775,7 @@
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
-        <target xml:lang="es-ES" state="needs-translation">Loading...</target>
+        <target xml:lang="es-ES" state="translated">Cargando...</target>
       </trans-unit>
       <trans-unit id="Common.Next">
         <source xml:lang="en">&amp;Next</source>
@@ -808,7 +808,7 @@
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
-        <target xml:lang="es-ES" state="needs-translation">See {0}.</target>
+        <target xml:lang="es-ES" state="translated">Ver {0}.</target>
       </trans-unit>
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
@@ -863,7 +863,7 @@
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutButton" sil:dynamic="true">
         <source xml:lang="en">Use This Layout</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutButton</note>
-        <target xml:lang="es-ES" state="needs-translation">Use This Layout</target>
+        <target xml:lang="es-ES" state="translated">Utilizar este diseño</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true">
         <source xml:lang="en">Continue anyway</source>
