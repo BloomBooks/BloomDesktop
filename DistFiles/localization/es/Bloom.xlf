@@ -211,7 +211,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="es-ES" state="translated">Paquete de materia frontal/posterior</target>
+        <target xml:lang="es-ES" state="translated">Paquete de páginas iniciales/finales</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Paquete de materia frontal/posterior</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
@@ -401,7 +404,10 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
-        <target xml:lang="es-ES" state="translated">Quitar</target>
+        <target xml:lang="es-ES" state="translated">Remover</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Quitar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
         <source xml:lang="en">Set...</source>
@@ -417,12 +423,18 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language2Label</note>
-        <target xml:lang="es-ES" state="translated">Idioma 2 (por ejemplo - idioma nacional)</target>
+        <target xml:lang="es-ES" state="translated">Idioma 2 (p. ej. - idioma nacional)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Idioma 2 (por ejemplo - idioma nacional)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label">
         <source xml:lang="en">Language 3 (e.g. Regional Language)  (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
-        <target xml:lang="es-ES" state="translated">Idioma 3 (por ejemplo - idioma regional) (opcional)</target>
+        <target xml:lang="es-ES" state="translated">Idioma 3 (p. ej. - idioma regional)  (opcional)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Idioma 3 (por ejemplo - idioma regional) (opcional)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
         <source xml:lang="en">Bloom Collection Name</source>
@@ -458,7 +470,10 @@
       <trans-unit id="CollectionSettingsDialog.RestartMessage">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
-        <target xml:lang="es-ES" state="translated">Bloom se cierre y vuelva a abrir este proyecto con la nueva configuración.</target>
+        <target xml:lang="es-ES" state="translated">Bloom cerrará y abrirá este proyecto con la nuevas configuraciónes.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom se cierre y vuelva a abrir este proyecto con la nueva configuración.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
@@ -490,7 +505,10 @@
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="es-ES" state="translated">Colección de origen</target>
+        <target xml:lang="es-ES" state="translated">Colección de libros fuentes</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de origen</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.DuplicateBook">
         <source xml:lang="en">Duplicate Book</source>
