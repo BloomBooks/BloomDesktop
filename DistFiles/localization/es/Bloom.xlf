@@ -729,7 +729,10 @@
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="es-ES" state="translated">Orígenes de armazones nuevas</target>
+        <target xml:lang="es-ES" state="translated">Fuentes para nuevos "libros shell"</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Orígenes de armazones nuevas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
         <source xml:lang="en">Templates</source>
@@ -740,7 +743,10 @@
         <source xml:lang="en">Title Missing</source>
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
-        <target xml:lang="es-ES" state="translated">Falta de título</target>
+        <target xml:lang="es-ES" state="translated">Título ausente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Falta de título</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
@@ -756,7 +762,10 @@
       <trans-unit id="CollectionTab.UpdateCheckInProgress">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya comprueba si hay actualizaciones.</target>
+        <target xml:lang="es-ES" state="translated">Bloom esta buscando actualizaciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ya comprueba si hay actualizaciones.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateFailed">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
@@ -785,7 +794,10 @@
       <trans-unit id="CollectionTab.Updating">
         <source xml:lang="en">Downloading update to {0} ({1}kb).</source>
         <note>ID: CollectionTab.Updating</note>
-        <target xml:lang="es-ES" state="translated">Descargando la actualización a {0} ({1}K).</target>
+        <target xml:lang="es-ES" state="translated">Descargando la actualización a {0} ({1}kb).</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Descargando la actualización a {0} ({1}K).</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Descargando la actualización a {0} ({1}K)</target>
         </alt-trans>
@@ -794,7 +806,10 @@
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
         <note>In a wizard, this button takes you to the previous step.</note>
-        <target xml:lang="es-ES" state="translated">Atrás</target>
+        <target xml:lang="es-ES" state="translated">Regresar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Atrás</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.Cancel" sil:dynamic="true">
         <source xml:lang="en">Cancel</source>
@@ -810,7 +825,10 @@
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="es-ES" state="translated">&amp;Finalizar</target>
+        <target xml:lang="es-ES" state="translated">&amp;Acabar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">&amp;Finalizar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
@@ -832,13 +850,19 @@
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="es-ES" state="translated">Próxima</target>
+        <target xml:lang="es-ES" state="translated">&amp;Siguiente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Próxima</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.NextButton">
         <source xml:lang="en">Next</source>
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
-        <target xml:lang="es-ES" state="translated">Próxima</target>
+        <target xml:lang="es-ES" state="translated">Siguiente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Próxima</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.OK" sil:dynamic="true">
         <source xml:lang="en">OK</source>
