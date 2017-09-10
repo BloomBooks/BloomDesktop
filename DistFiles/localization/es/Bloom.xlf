@@ -2694,23 +2694,23 @@
       <trans-unit id="PublishTab.Android.Usb.Progress.Stopped">
         <source xml:lang="en">Stopped</source>
         <note>ID: PublishTab.Android.Usb.Progress.Stopped</note>
-        <target xml:lang="es-ES" state="needs-translation">Stopped</target>
+        <target xml:lang="es-ES" state="translated">Parado</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect">
         <source xml:lang="en">Unable to connect to any Android device which has Bloom Reader.</source>
         <note>ID: PublishTab.Android.Usb.Progress.UnableToConnect</note>
-        <target xml:lang="es-ES" state="needs-translation">Unable to connect to any Android device which has Bloom Reader.</target>
+        <target xml:lang="es-ES" state="translated">No se puede conectar a cualquier dispositivo Android que tiene BloomReader.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Start">
         <source xml:lang="en">Connect with USB cable</source>
         <note>ID: PublishTab.Android.Usb.Start</note>
         <note>Button that tells Bloom to send the book to a device via USB cable.</note>
-        <target xml:lang="es-ES" state="needs-translation">Connect with USB cable</target>
+        <target xml:lang="es-ES" state="translated">Conectar con cable USB</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Stop">
         <source xml:lang="en">Stop Trying</source>
         <note>ID: PublishTab.Android.Usb.Stop</note>
-        <target xml:lang="es-ES" state="needs-translation">Stop Trying</target>
+        <target xml:lang="es-ES" state="translated">Deje de intentar</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
@@ -2758,19 +2758,19 @@
         <source xml:lang="en">Start Serving</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-        <target xml:lang="es-ES" state="needs-translation">Start Serving</target>
+        <target xml:lang="es-ES" state="translated">Comenzar a servir</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Stop">
         <source xml:lang="en">Stop Serving</source>
         <note>ID: PublishTab.Android.Wifi.Stop</note>
         <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
-        <target xml:lang="es-ES" state="needs-translation">Stop Serving</target>
+        <target xml:lang="es-ES" state="translated">Parar de servir</target>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeEulaTitle">
         <source xml:lang="en">Adobe Color Profile License Agreement</source>
         <note>ID: PublishTab.AdobeEulaTitle</note>
         <note>dialog title for license agreement</note>
-        <target xml:lang="es-ES" state="needs-translation">Adobe Color Profile License Agreement</target>
+        <target xml:lang="es-ES" state="translated">Acuerdo de licencia de Perfil de Color de Adobe</target>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
@@ -2823,12 +2823,12 @@
       <trans-unit id="PublishTab.EpubButton">
         <source xml:lang="en">ePUB</source>
         <note>ID: PublishTab.EpubButton</note>
-        <target xml:lang="es-ES" state="needs-translation">ePUB</target>
+        <target xml:lang="es-ES" state="translated">ePUB</target>
       </trans-unit>
       <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
-        <target xml:lang="es-ES" state="needs-translation">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</target>
+        <target xml:lang="es-ES" state="translated">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leido en varios dispositivos de lectura electrónica.</target>
       </trans-unit>
       <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
         <source xml:lang="en">Don't Show This Again</source>
