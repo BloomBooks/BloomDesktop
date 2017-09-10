@@ -2845,12 +2845,12 @@
         <source xml:lang="en">Use less memory (slower)</source>
         <note>ID: PublishTab.LessMemoryPdfMode</note>
         <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
-        <target xml:lang="es-ES" state="needs-translation">Use less memory (slower)</target>
+        <target xml:lang="es-ES" state="translated">Utilize menos memoria (más lento)</target>
       </trans-unit>
       <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
         <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
         <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
-        <target xml:lang="es-ES" state="needs-translation">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</target>
+        <target xml:lang="es-ES" state="translated">Este visualizadaor PDF puede ser mejorado con la instalación del Adobe Reader gratuito en esta computadora.</target>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio">
         <source xml:lang="en">Simple</source>
@@ -2867,13 +2867,13 @@
         <source xml:lang="en">Options</source>
         <note>ID: PublishTab.Options</note>
         <note>menu header in the Publish tab</note>
-        <target xml:lang="es-ES" state="needs-translation">Options</target>
+        <target xml:lang="es-ES" state="translated">Opciones</target>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
         <source xml:lang="en">Size/Layout</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
         <note>Header for a region of the menu which lists various standard page layout sizes</note>
-        <target xml:lang="es-ES" state="needs-translation">Size/Layout</target>
+        <target xml:lang="es-ES" state="translated">Tamaño/diseño</target>
       </trans-unit>
       <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
         <source xml:lang="en">Open the PDF in the default system PDF viewer</source>
@@ -2899,25 +2899,25 @@
         <source xml:lang="en">Compressing PDF</source>
         <note>ID: PublishTab.PdfMaker.Compress</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="needs-translation">Compressing PDF</target>
+        <target xml:lang="es-ES" state="translated">Comprimiendo el PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.CompressConvertColor">
         <source xml:lang="en">Compressing PDF &amp; Converting Color to CMYK</source>
         <note>ID: PublishTab.PdfMaker.CompressConvertColor</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="needs-translation">Compressing PDF &amp; Converting Color to CMYK</target>
+        <target xml:lang="es-ES" state="translated">Comprimiendo el PDF &amp; Covirtiendo Color a CMYK</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Creating">
         <source xml:lang="en">Creating PDF ...</source>
         <note>ID: PublishTab.PdfMaker.Creating</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="needs-translation">Creating PDF ...</target>
+        <target xml:lang="es-ES" state="translated">Creando PDF...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithRGB">
         <source xml:lang="en">PDF with RGB color</source>
         <note>ID: PublishTab.PdfMaker.PdfWithRGB</note>
         <note>displayed as file type for Save File dialog.  'RGB' may not be translatable, it is a standard.</note>
-        <target xml:lang="es-ES" state="needs-translation">PDF with RGB color</target>
+        <target xml:lang="es-ES" state="translated">PDF con color RGB</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
