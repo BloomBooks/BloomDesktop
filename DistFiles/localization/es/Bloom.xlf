@@ -280,7 +280,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
         <source xml:lang="en">Kannada</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada</note>
-        <target xml:lang="es-ES" state="needs-translation">Kannada</target>
+        <target xml:lang="es-ES" state="translated">canarés</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer">
         <source xml:lang="en">Khmer</source>
