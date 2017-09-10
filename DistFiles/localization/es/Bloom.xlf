@@ -1262,7 +1262,7 @@
       <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.FormatDialogTip</note>
-        <target xml:lang="es-ES" state="needs-translation">Adjust formatting for style</target>
+        <target xml:lang="es-ES" state="translated">Ajuste el el estilo del formato</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true">
         <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
@@ -1353,7 +1353,7 @@
       <trans-unit id="EditTab.FrontMatter.PasteImageCreditsLink" sil:dynamic="true">
         <source xml:lang="en">Paste Image Credits</source>
         <note>ID: EditTab.FrontMatter.PasteImageCreditsLink</note>
-        <target xml:lang="es-ES" state="needs-translation">Paste Image Credits</target>
+        <target xml:lang="es-ES" state="translated">Pegar los créditos de imagen</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.PasteMissingCredits" sil:dynamic="true">
         <source xml:lang="en">Missing credits:</source>
@@ -1520,12 +1520,12 @@
       <trans-unit id="EditTab.PastePage">
         <source xml:lang="en">Paste Page</source>
         <note>ID: EditTab.PastePage</note>
-        <target xml:lang="es-ES" state="needs-translation">Paste Page</target>
+        <target xml:lang="es-ES" state="translated">Pegar página</target>
       </trans-unit>
       <trans-unit id="EditTab.PasteButton.ToolTipWhenDisabled">
         <source xml:lang="en">There is nothing on the Clipboard that you can paste here.</source>
         <note>ID: EditTab.PasteButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="needs-translation">There is nothing on the Clipboard that you can paste here.</target>
+        <target xml:lang="es-ES" state="translated">No hay nada en el portapapeles que se puede pegar aquí.</target>
       </trans-unit>
       <trans-unit id="EditTab.Position" sil:dynamic="true">
         <source xml:lang="en">Position</source>
@@ -1596,7 +1596,7 @@
         <source xml:lang="en">Hint Bubbles</source>
         <note>ID: EditTab.TextBoxProperties.HintBubbles</note>
         <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
-        <target xml:lang="es-ES" state="needs-translation">Hint Bubbles</target>
+        <target xml:lang="es-ES" state="translated">Burbujas de sugerencia</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.LanguageTab">
         <source xml:lang="en">Language</source>
@@ -1616,17 +1616,17 @@
       <trans-unit id="EditTab.TextBoxProperties.BordersAndBackground" sil:dynamic="true">
         <source xml:lang="en">Borders &amp; Background</source>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
-        <target xml:lang="es-ES" state="needs-translation">Borders &amp; Background</target>
+        <target xml:lang="es-ES" state="translated">Bordes &amp; fondo</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.BorderSides" sil:dynamic="true">
         <source xml:lang="en">Border Sides</source>
         <note>ID: EditTab.TextBoxProperties.BorderSides</note>
-        <target xml:lang="es-ES" state="needs-translation">Border Sides</target>
+        <target xml:lang="es-ES" state="translated">Lados del borde</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.BorderStyle" sil:dynamic="true">
         <source xml:lang="en">Border Style</source>
         <note>ID: EditTab.TextBoxProperties.BorderStyle</note>
-        <target xml:lang="es-ES" state="needs-translation">Border Style</target>
+        <target xml:lang="es-ES" state="translated">Estilo de borde</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.IncludeLang">
         <source xml:lang="en">Include the name of the language using {lang}. For example: "Enter color in {lang}".</source>
@@ -1673,17 +1673,17 @@
         <source xml:lang="en">Show the hint bubble</source>
         <note>ID: EditTab.TextBoxProperties.ShowHintBubble</note>
         <note>Label above pull-down menu with options, ShowOnGroup/ShowOnEach</note>
-        <target xml:lang="es-ES" state="needs-translation">Show the hint bubble</target>
+        <target xml:lang="es-ES" state="translated">Mostrar la burbuja de sugerencia</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowOnGroup">
         <source xml:lang="en">Just once on the whole group</source>
         <note>ID: EditTab.TextBoxProperties.ShowOnGroup</note>
-        <target xml:lang="es-ES" state="needs-translation">Just once on the whole group</target>
+        <target xml:lang="es-ES" state="translated">Sólo una vez para todo el grupo</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowOnEach">
         <source xml:lang="en">On each language-field in the group</source>
         <note>ID: EditTab.TextBoxProperties.ShowOnEach</note>
-        <target xml:lang="es-ES" state="needs-translation">On each language-field in the group</target>
+        <target xml:lang="es-ES" state="translated">En cada campo de la lengua en el grupo</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Title">
         <source xml:lang="en">Text Box Properties</source>
@@ -1774,7 +1774,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Sample words in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage</note>
-        <target xml:lang="es-ES" state="needs-translation">Sample words in this stage</target>
+        <target xml:lang="es-ES" state="translated">Palabras de muestra en esta etapa</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true">
         <source xml:lang="en">Set up Stages</source>
@@ -2602,13 +2602,13 @@
         <source xml:lang="en">Control</source>
         <note>ID: PublishTab.Android.Control</note>
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
-        <target xml:lang="es-ES" state="needs-translation">Control</target>
+        <target xml:lang="es-ES" state="translated">Control</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
-        <target xml:lang="es-ES" state="needs-translation">Method</target>
+        <target xml:lang="es-ES" state="translated">Método</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Save">
         <source xml:lang="en">Save...</source>
