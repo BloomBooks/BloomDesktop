@@ -513,7 +513,10 @@
       <trans-unit id="CollectionTab.BookMenu.DuplicateBook">
         <source xml:lang="en">Duplicate Book</source>
         <note>ID: CollectionTab.BookMenu.DuplicateBook</note>
-        <target xml:lang="es-ES" state="translated">Copiar el libro</target>
+        <target xml:lang="es-ES" state="translated">Duplicar el libro</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Copiar el libro</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.DeleteBook">
         <source xml:lang="en">Delete Book</source>
@@ -523,7 +526,10 @@
       <trans-unit id="CollectionTab.BookMenu.ExportDocMessage">
         <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</source>
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
-        <target xml:lang="es-ES" state="translated">Bloom ahora se abrirá este documento de HTML en su programa de procesamiento de textos (normalmente Word o LibreOffice). Usted será capaz de trabajar con el texto y las imágenes de este libro, pero estos programas normalmente no hacer demasiado bien con la preservación del diseño de la página, así que no esperes mucho.</target>
+        <target xml:lang="es-ES" state="translated">Bloom abrirá este documento de HTML en su programa de procesamiento de textos (normalmente Word o LibreOffice). Usted podrá revisar el texto y las imágenes de este libro. Como estos programas tienden no preserar los diseños de página, debe mantener las expectativas bajas.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ahora se abrirá este documento de HTML en su programa de procesamiento de textos (normalmente Word o LibreOffice). Usted será capaz de trabajar con el texto y las imágenes de este libro, pero estos programas normalmente no hacer demasiado bien con la preservación del diseño de la página, así que no esperes mucho.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
@@ -553,7 +559,10 @@
       <trans-unit id="CollectionTab.BookSourceHeading">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="es-ES" state="translated">Orígenes de nuevos libros</target>
+        <target xml:lang="es-ES" state="translated">Fuentes para nuevos libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Orígenes de nuevos libros</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourcesLockNotice">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
@@ -571,17 +580,26 @@
       <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
         <source xml:lang="en">Do Updates of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks</note>
-        <target xml:lang="es-ES" state="translated">Hacer actualizaciones de todos los libros</target>
+        <target xml:lang="es-ES" state="translated">Actualizar todos los libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer actualizaciones de todos los libros</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks">
         <source xml:lang="en">Do Checks of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksOfAllBooks</note>
-        <target xml:lang="es-ES" state="translated">Hacer verificaciones de todos los libros</target>
+        <target xml:lang="es-ES" state="translated">Verificar todos los libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer verificaciones de todos los libros</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
-        <target xml:lang="es-ES" state="translated">Rescatar las ilustraciones que faltan...</target>
+        <target xml:lang="es-ES" state="translated">Rescatar ilustraciones ausentes...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Rescatar las ilustraciones que faltan...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.showHistory">
         <source xml:lang="en">Collection History...</source>
@@ -606,7 +624,10 @@
       <trans-unit id="CollectionTab.ConfiguringBookMessage">
         <source xml:lang="en">Building...</source>
         <note>ID: CollectionTab.ConfiguringBookMessage</note>
-        <target xml:lang="es-ES" state="translated">Construyendo...</target>
+        <target xml:lang="es-ES" state="translated">Compilando...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Construyendo...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.ConfirmRecycleDescription">
         <source xml:lang="en">The book '{0}'</source>
