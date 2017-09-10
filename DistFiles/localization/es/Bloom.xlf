@@ -888,7 +888,13 @@
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
-        <target xml:lang="es-ES" state="translated">Su descarga ({0}) es completa. Se puede ver en la sección de sus colecciones, "Libros de la Bloom Library". Si usted no parece estar en el medio de hacer algo, Bloom seleccionará por usted.</target>
+        <target xml:lang="es-ES" state="translated">Su descarga ({0}) esta completa. Lo puede ver en la sección de sus colecciones, "Libros de la biblioteca Bloom".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Su descarga ({0}) terminó. Lo puede ver en la sección de sus colecciones, "Libros de la biblioteca Bloom".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Su descarga ({0}) es completa. Se puede ver en la sección de sus colecciones, "Libros de la Bloom Library". Si usted no parece estar en el medio de hacer algo, Bloom seleccionará por usted.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.CompletedCaption">
         <source xml:lang="en">Download complete</source>
@@ -898,7 +904,10 @@
       <trans-unit id="Download.CopyFailed">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</source>
         <note>ID: Download.CopyFailed</note>
-        <target xml:lang="es-ES" state="translated">Bloom ha descargado el libro, pero tuvo problemas haciéndolo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje de nuevo, por favor haga clic en el botón "Detalles" y reportar el problema a los programadores de Bloom.</target>
+        <target xml:lang="es-ES" state="translated">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si nuevamente recibe este mensaje, por favor haga clic en el botón "Detalles" y reportar el problema a los desarolladores de Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ha descargado el libro, pero tuvo problemas haciéndolo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje de nuevo, por favor haga clic en el botón "Detalles" y reportar el problema a los programadores de Bloom.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ha descargado el libro, pero tuvo problemas haciéndolo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje de nuevo, por favor haga clic en el botón "Detalles" y reportar el problema a los programadores de Bloom</target>
         </alt-trans>
@@ -911,12 +920,18 @@
       <trans-unit id="Download.GenericNetworkProblemNotice">
         <source xml:lang="en">There was a problem downloading your book.</source>
         <note>ID: Download.GenericNetworkProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema al descargar su libro.</target>
+        <target xml:lang="es-ES" state="translated">No se pudo descargar su libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hubo un problema al descargar su libro.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.ProblemNotice">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: Download.ProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema al descargar su libro. Es posible que necesite reiniciar Bloom u obtener ayuda técnica.</target>
+        <target xml:lang="es-ES" state="translated">No se pudo descargar su libro. Es posible que necesite reiniciar Bloom u obtener ayuda técnica.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hubo un problema al descargar su libro. Es posible que necesite reiniciar Bloom u obtener ayuda técnica.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.TimeoutProblemNotice">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</source>
