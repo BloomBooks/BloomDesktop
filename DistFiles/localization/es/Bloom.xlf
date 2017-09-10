@@ -973,7 +973,7 @@
       <trans-unit id="EditTab.CopyButton.ToolTipWhenDisabled">
         <source xml:lang="en">You need to select some text before you can copy it</source>
         <note>ID: EditTab.CopyButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="needs-translation">You need to select some text before you can copy it</target>
+        <target xml:lang="es-ES" state="translated">Antes debe seleccionar el texto para poder copiarlo</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyImageIPMetadataQuestion">
         <source xml:lang="en">Copy this information to all other pictures in this book?</source>
@@ -984,7 +984,7 @@
       <trans-unit id="EditTab.CopyPage">
         <source xml:lang="en">Copy Page</source>
         <note>ID: EditTab.CopyPage</note>
-        <target xml:lang="es-ES" state="needs-translation">Copy Page</target>
+        <target xml:lang="es-ES" state="translated">Copiar página</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true">
         <source xml:lang="en">Change Layout</source>
@@ -1020,12 +1020,12 @@
       <trans-unit id="EditTab.CutButton.ToolTip">
         <source xml:lang="en">Cut (Ctrl+X)</source>
         <note>ID: EditTab.CutButton.ToolTip</note>
-        <target xml:lang="es-ES" state="needs-translation">Cut (Ctrl+X)</target>
+        <target xml:lang="es-ES" state="translated">Cortar (tCtrl+X)</target>
       </trans-unit>
       <trans-unit id="EditTab.CutButton.ToolTipWhenDisabled">
         <source xml:lang="en">You need to select some text before you can cut it</source>
         <note>ID: EditTab.CutButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="needs-translation">You need to select some text before you can cut it</target>
+        <target xml:lang="es-ES" state="translated">Antes debe seleccionar el texto para poder copiarlo</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton">
         <source xml:lang="en">Remove\n  Page</source>
@@ -1038,41 +1038,41 @@
       <trans-unit id="EditTab.DeletePageButton.ToolTip">
         <source xml:lang="en">Remove this page from the book</source>
         <note>ID: EditTab.DeletePageButton.ToolTip</note>
-        <target xml:lang="es-ES" state="needs-translation">Remove this page from the book</target>
+        <target xml:lang="es-ES" state="translated">Eliminar esta página del libro</target>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton.ToolTipWhenDisabled">
         <source xml:lang="en">This page cannot be removed</source>
         <note>ID: EditTab.DeletePageButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="needs-translation">This page cannot be removed</target>
+        <target xml:lang="es-ES" state="translated">Esta página no puede ser removida</target>
       </trans-unit>
       <trans-unit id="EditTab.DeleteTextBoxFromImage" sil:dynamic="true">
         <source xml:lang="en">Delete Text Box From Image</source>
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
-        <target xml:lang="es-ES" state="needs-translation">Delete Text Box From Image</target>
+        <target xml:lang="es-ES" state="translated">Eliminar cuadro de texto del imagen</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
         <source xml:lang="en">Bold</source>
         <note>ID: EditTab.DirectFormatting.Bold</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="es-ES" state="needs-translation">Bold</target>
+        <target xml:lang="es-ES" state="translated">Negrita</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Italic" sil:dynamic="true">
         <source xml:lang="en">Italic</source>
         <note>ID: EditTab.DirectFormatting.Italic</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="es-ES" state="needs-translation">Italic</target>
+        <target xml:lang="es-ES" state="translated">Cursiva</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true">
         <source xml:lang="en">Superscript</source>
         <note>ID: EditTab.DirectFormatting.Superscript</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="es-ES" state="needs-translation">Superscript</target>
+        <target xml:lang="es-ES" state="translated">Superíndice</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Underline" sil:dynamic="true">
         <source xml:lang="en">Underline</source>
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="es-ES" state="needs-translation">Underline</target>
+        <target xml:lang="es-ES" state="translated">Subrayado</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton">
         <source xml:lang="en">Duplicate\n  Page</source>
@@ -1082,12 +1082,12 @@
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTip</note>
-        <target xml:lang="es-ES" state="needs-translation">Insert a new page which is a duplicate of this one</target>
+        <target xml:lang="es-ES" state="translated">Insertar una nueva página que es un duplicado de éste</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
         <source xml:lang="en">This page cannot be duplicated</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="needs-translation">This page cannot be duplicated</target>
+        <target xml:lang="es-ES" state="translated">Esta página no puede ser duplicada</target>
       </trans-unit>
       <trans-unit id="EditTab.Edit">
         <source xml:lang="en">Edit</source>
@@ -1102,12 +1102,12 @@
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord">
         <source xml:lang="en">Sight Word</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord</note>
-        <target xml:lang="es-ES" state="needs-translation">Sight Word</target>
+        <target xml:lang="es-ES" state="translated">Palabra de vista</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable">
         <source xml:lang="en">This word is not decodable in this stage.</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable</note>
-        <target xml:lang="es-ES" state="needs-translation">This word is not decodable in this stage.</target>
+        <target xml:lang="es-ES" state="translated">Esta palabra no es decodificable en esta etapa.</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
