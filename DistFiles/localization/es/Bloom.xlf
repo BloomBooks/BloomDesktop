@@ -2434,7 +2434,7 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
         <source xml:lang="en">Local Language Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-        <target xml:lang="es-ES" state="needs-translation">Local Language Collection</target>
+        <target xml:lang="es-ES" state="translated">Colección de lengua local</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
         <source xml:lang="en">A collection of books in a local language.</source>
@@ -2567,7 +2567,7 @@
       <trans-unit id="OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_">
         <source xml:lang="en">Change user interface language</source>
         <note>ID: OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_</note>
-        <target xml:lang="es-ES" state="needs-translation">Change user interface language</target>
+        <target xml:lang="es-ES" state="translated">Cambiar el idioma de la interfaz</target>
       </trans-unit>
       <trans-unit id="PageList.CantMoveWhenTranslating">
         <source xml:lang="en">Pages can not be re-ordered when you are translating a book.</source>
@@ -2581,22 +2581,25 @@
         <source xml:lang="en">Bloom Book for Devices</source>
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom Book for Devices</target>
+        <target xml:lang="es-ES" state="translated">Libro de Bloom para dispositivos</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
-        <target xml:lang="es-ES" state="needs-translation">Save Bloom Reader File</target>
+        <target xml:lang="es-ES" state="translated">Guardar archivo de BloomReader</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Guardar archivo del libro Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB">
         <source xml:lang="en">Send over USB Cable</source>
         <note>ID: PublishTab.Android.ChooseUSB</note>
-        <target xml:lang="es-ES" state="needs-translation">Send over USB Cable</target>
+        <target xml:lang="es-ES" state="translated">Enviar a través de cable USB</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseWifi">
         <source xml:lang="en">Serve on WiFi Network</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-        <target xml:lang="es-ES" state="needs-translation">Serve on WiFi Network</target>
+        <target xml:lang="es-ES" state="translated">Servir en red WiFi</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Control">
         <source xml:lang="en">Control</source>
@@ -2614,24 +2617,27 @@
         <source xml:lang="en">Save...</source>
         <note>ID: PublishTab.Android.Save</note>
         <note>Button that tells Bloom to save the book as a .bloomD file.</note>
-        <target xml:lang="es-ES" state="needs-translation">Save...</target>
+        <target xml:lang="es-ES" state="translated">Guardar...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting">
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
-        <target xml:lang="es-ES" state="needs-translation">Troubleshooting Tips</target>
+        <target xml:lang="es-ES" state="translated">Consejos para resolver problemas</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
         <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="needs-translation">You can now read "{0}" in Bloom Reader!</target>
+        <target xml:lang="es-ES" state="translated">¡Ahora puede leer "{0}" en BloomReader!</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¡Ahora puede leer "{0}" en Bloom!</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.Connected">
         <source xml:lang="en">Connected to {0} via USB...</source>
         <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
         <note>{0} is a the name of the device Bloom connected to</note>
-        <target xml:lang="es-ES" state="needs-translation">Connected to {0} via USB...</target>
+        <target xml:lang="es-ES" state="translated">Conectado a {0} por USB...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
