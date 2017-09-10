@@ -1034,12 +1034,18 @@
       <trans-unit id="EditTab.CannotChangeCopyright">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
         <note>ID: EditTab.CannotChangeCopyright</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, no se puede cambiar los derechos de autor y la licencia de este libro.</target>
+        <target xml:lang="es-ES" state="translated">No se puede cambiar los derechos de autor o licencia de este libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo sentimos, no se puede cambiar los derechos de autor y la licencia de este libro.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CantPasteImageLocked">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, este libro está bloqueado para que las ilustraciones no se puedan cambiar.</target>
+        <target xml:lang="es-ES" state="translated">Este libro está bloqueado para que las ilustraciones no puedan ser cambiadas.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo sentimos, este libro está bloqueado para que las ilustraciones no se puedan cambiar.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ChooseLayoutButton">
         <source xml:lang="en">Choose Different Layout</source>
@@ -1054,12 +1060,18 @@
       <trans-unit id="EditTab.ConfirmRemovePageDialog.DeleteButton">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: EditTab.ConfirmRemovePageDialog.DeleteButton</note>
-        <target xml:lang="es-ES" state="translated">Eliminar</target>
+        <target xml:lang="es-ES" state="translated">&amp;Eliminar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Eliminar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog._messageLabel">
         <source xml:lang="en">This page will be permanently removed.</source>
         <note>ID: EditTab.ConfirmRemovePageDialog._messageLabel</note>
-        <target xml:lang="es-ES" state="translated">Esta página se eliminará de forma permanente.</target>
+        <target xml:lang="es-ES" state="translated">Esta página será permanentemente eliminado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta página se eliminará de forma permanente.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown">
         <source xml:lang="en">Multilingual Settings</source>
