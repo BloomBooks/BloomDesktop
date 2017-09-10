@@ -2715,12 +2715,12 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
         <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
-        <target xml:lang="es-ES" state="needs-translation">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</target>
+        <target xml:lang="es-ES" state="translated">La solicitud de libro que no pudo ser procesado. Es posible que el dispositivo está ejecutando una versión incompatible de BloomReader.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.beginAdvertising">
         <source xml:lang="en">Advertising book to Bloom Readers on local network...</source>
         <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
-        <target xml:lang="es-ES" state="needs-translation">Advertising book to Bloom Readers on local network...</target>
+        <target xml:lang="es-ES" state="translated">Anunciar libro a BloomReaders en red local...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Failed">
         <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
@@ -2737,12 +2737,12 @@
         <source xml:lang="en">Sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="es-ES" state="needs-translation">Sending "{0}" to device {1}</target>
+        <target xml:lang="es-ES" state="translated">Enviando "{0}" al dispositivo {1}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Stopped">
         <source xml:lang="en">Stopped Advertising.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
-        <target xml:lang="es-ES" state="needs-translation">Stopped Advertising.</target>
+        <target xml:lang="es-ES" state="translated">Paró de anunciar.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1">
         <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</source>
