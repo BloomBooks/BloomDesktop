@@ -2731,7 +2731,7 @@
         <source xml:lang="en">Finished sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Finished</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="es-ES" state="needs-translation">Finished sending "{0}" to device {1}</target>
+        <target xml:lang="es-ES" state="translated">Terminó el envío de "{0}" al dispositivo {1}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Sending">
         <source xml:lang="en">Sending "{0}" to device {1}</source>
@@ -2747,12 +2747,12 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1">
         <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
-        <target xml:lang="es-ES" state="needs-translation">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</target>
+        <target xml:lang="es-ES" state="translated">En el dispositivo de Android, ejecute BloomReader, abra el menú y elija 'Recibir libros por WiFi'.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions2</note>
-        <target xml:lang="es-ES" state="needs-translation">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</target>
+        <target xml:lang="es-ES" state="translated">Puede hacer esto en tantos dispositivos que guste. Asegure que cada dispositivo está conectado a la misma red que esta computadora.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Start">
         <source xml:lang="en">Start Serving</source>
