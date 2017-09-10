@@ -936,24 +936,42 @@
       <trans-unit id="Download.TimeoutProblemNotice">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.TimeoutProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema al descargar el libro: algo tomó demasiado tiempo. Puede volver a intentarlo en otro momento, o escríbanos a issues@bloomlibrary.org si la descarga no funciona desde su ubicación.</target>
+        <target xml:lang="es-ES" state="translated">No se pudo descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar de su ubicación, escríbanos a la dirección issues@bloomlibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hubo un problema al descargar el libro: algo tomó demasiado tiempo. Puede volver a intentarlo en otro momento, o escríbanos a issues@bloomlibrary.org si la descarga no funciona desde su ubicación.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddPageButton">
         <source xml:lang="en">Add Page</source>
         <note>ID: EditTab.AddPageDialog.AddPageButton</note>
         <note>This is for the button that LAUNCHES the dialog, not the "Add this page" button that is IN the dialog.</note>
-        <target xml:lang="es-ES" state="translated">Añandir pagina</target>
+        <target xml:lang="es-ES" state="translated">Agregar página</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Agregar pagina</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Añandir pagina</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddThisPageButton" sil:dynamic="true">
         <source xml:lang="en">Add This Page</source>
         <note>ID: EditTab.AddPageDialog.AddThisPageButton</note>
         <note>This is for the button inside the dialog</note>
-        <target xml:lang="es-ES" state="translated">Añandir esta pagina</target>
+        <target xml:lang="es-ES" state="translated">Agregar esta página</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Agregar esta pagina</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Añandir esta pagina</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutButton" sil:dynamic="true">
         <source xml:lang="en">Use This Layout</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutButton</note>
-        <target xml:lang="es-ES" state="translated">Utilizar este diseño</target>
+        <target xml:lang="es-ES" state="translated">Utilice este diseño</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Utilizar este diseño</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true">
         <source xml:lang="en">Continue anyway</source>
@@ -979,7 +997,10 @@
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
-        <target xml:lang="es-ES" state="translated">Añandir pagina...</target>
+        <target xml:lang="es-ES" state="translated">Agregar página...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Añandir pagina...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddTextBoxToImage" sil:dynamic="true">
         <source xml:lang="en">Add Text Box To Image</source>
