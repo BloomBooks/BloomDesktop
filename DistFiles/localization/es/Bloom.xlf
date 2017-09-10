@@ -409,7 +409,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="es-ES" state="needs-translation">Local Language</target>
+        <target xml:lang="es-ES" state="translated">Idioma local</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
@@ -517,7 +517,7 @@
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
-        <target xml:lang="es-ES" state="needs-translation">Make Bloom Pack...</target>
+        <target xml:lang="es-ES" state="translated">Crear BloomPack...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
@@ -643,7 +643,7 @@
         <source xml:lang="en">Open/Create/Get Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton_ToolTip_</note>
         <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="es-ES" state="needs-translation">Open/Create/Get Collection</target>
+        <target xml:lang="es-ES" state="translated">Abrir/crear/obtener colección</target>
       </trans-unit>
       <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem">
         <source xml:lang="en">Open or Create Another Collection</source>
@@ -873,18 +873,18 @@
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
         <source xml:lang="en">Choose Different Layout...</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
-        <target xml:lang="es-ES" state="needs-translation">Choose Different Layout...</target>
+        <target xml:lang="es-ES" state="translated">Elija un diseño diferente...</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true">
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
-        <target xml:lang="es-ES" state="needs-translation">Converting to this layout will cause some content to be lost.</target>
+        <target xml:lang="es-ES" state="translated">Convertir a este diseño causará algunas perdidas de contenido.</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
         <source xml:lang="en">(no template file found)</source>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
         <note>Seen when the book's main template page file is missing.</note>
-        <target xml:lang="es-ES" state="needs-translation">(no template file found)</target>
+        <target xml:lang="es-ES" state="translated">(no se encontró el archivo de plantilla)</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
         <source xml:lang="en">Add Page...</source>
@@ -894,7 +894,7 @@
       <trans-unit id="EditTab.AddTextBoxToImage" sil:dynamic="true">
         <source xml:lang="en">Add Text Box To Image</source>
         <note>ID: EditTab.AddTextBoxToImage</note>
-        <target xml:lang="es-ES" state="needs-translation">Add Text Box To Image</target>
+        <target xml:lang="es-ES" state="translated">Añadir cuadro de texto al imagen</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
@@ -933,7 +933,7 @@
       <trans-unit id="EditTab.ChooseLayoutButton">
         <source xml:lang="en">Choose Different Layout</source>
         <note>ID: EditTab.ChooseLayoutButton</note>
-        <target xml:lang="es-ES" state="needs-translation">Choose Different Layout</target>
+        <target xml:lang="es-ES" state="translated">Elija un diseño diferente</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
         <source xml:lang="en">Really Delete Page?</source>
@@ -958,7 +958,7 @@
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown.ToolTip</note>
-        <target xml:lang="es-ES" state="needs-translation">Choose language to make this a bilingual or trilingual book</target>
+        <target xml:lang="es-ES" state="translated">Selecciona idioma para crear un libro bilingüe o trilingüe</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton">
         <source xml:lang="en">Copy</source>
@@ -968,7 +968,7 @@
       <trans-unit id="EditTab.CopyButton.ToolTip">
         <source xml:lang="en">Copy (Ctrl+C)</source>
         <note>ID: EditTab.CopyButton.ToolTip</note>
-        <target xml:lang="es-ES" state="needs-translation">Copy (Ctrl+C)</target>
+        <target xml:lang="es-ES" state="translated">Copiar (Ctrl+C)</target>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton.ToolTipWhenDisabled">
         <source xml:lang="en">You need to select some text before you can copy it</source>
