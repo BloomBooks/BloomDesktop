@@ -2923,31 +2923,31 @@
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
         <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <target xml:lang="es-ES" state="needs-translation">Error creating, compressing, or recoloring the PDF file</target>
+        <target xml:lang="es-ES" state="translated">Error al crear, comprimir, o recolorear el archivo PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Finished">
         <source xml:lang="en">Finished making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.Finished</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="needs-translation">Finished making PDF from HTML</target>
+        <target xml:lang="es-ES" state="translated">Conversión de HTML a PDF esta concluido</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>
         <note>Message displayed in a progress report dialog box, a partial step of "Creating PDF"</note>
-        <target xml:lang="es-ES" state="needs-translation">Making PDF from HTML</target>
+        <target xml:lang="es-ES" state="translated">Convertiendo HMTL a PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingPageOfPdf">
         <source xml:lang="en">Making Page {0} of the PDF</source>
         <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
-        <target xml:lang="es-ES" state="needs-translation">Making Page {0} of the PDF</target>
+        <target xml:lang="es-ES" state="translated">Creando página {0} del PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
         <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
         <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
-        <target xml:lang="es-ES" state="needs-translation">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</target>
+        <target xml:lang="es-ES" state="translated">PDF con color CMYK (U.S. Web Coated (SWORP) v2)</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.TryMoreMemory">
         <source xml:lang="en">Try doing this on a computer with more memory</source>
@@ -2968,7 +2968,7 @@
         <source xml:lang="en">PDF Not Saved</source>
         <note>ID: PublishTab.PdfNotSaved</note>
         <note>title for the message box</note>
-        <target xml:lang="es-ES" state="needs-translation">PDF Not Saved</target>
+        <target xml:lang="es-ES" state="translated">PDF no guardado</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
