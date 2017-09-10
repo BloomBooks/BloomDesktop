@@ -1688,7 +1688,7 @@
       <trans-unit id="EditTab.TextBoxProperties.Title">
         <source xml:lang="en">Text Box Properties</source>
         <note>ID: EditTab.TextBoxProperties.Title</note>
-        <target xml:lang="es-ES" state="needs-translation">Text Box Properties</target>
+        <target xml:lang="es-ES" state="translated">Propiedades del cuadro de texto</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.VerticalAlignment">
         <source xml:lang="en">Vertical Alignment</source>
@@ -1714,12 +1714,12 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom can handle only the first {0} words.</target>
+        <target xml:lang="es-ES" state="translated">Bloom solo puede utilazar las primeras {0} palabras.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Allowed words in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage</note>
-        <target xml:lang="es-ES" state="needs-translation">Allowed words in this stage</target>
+        <target xml:lang="es-ES" state="translated">Palabras permitidas en esta etapa</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles">
         <source xml:lang="en">Text files</source>
@@ -1769,7 +1769,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
         <source xml:lang="en">Generate a letter and word list report</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
-        <target xml:lang="es-ES" state="needs-translation">Generate a letter and word list report</target>
+        <target xml:lang="es-ES" state="translated">Generar un informe de letras y palabras</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Sample words in this stage</source>
@@ -1784,17 +1784,17 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically">
         <source xml:lang="en">Sort alphabetically</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortAlphabetically</note>
-        <target xml:lang="es-ES" state="needs-translation">Sort alphabetically</target>
+        <target xml:lang="es-ES" state="translated">Ordenar alfabéticamente</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByFrequency">
         <source xml:lang="en">Sort by frequency</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortByFrequency</note>
-        <target xml:lang="es-ES" state="needs-translation">Sort by frequency</target>
+        <target xml:lang="es-ES" state="translated">Ordenar por frecuencia</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByWordLength">
         <source xml:lang="en">Sort by word length</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortByWordLength</note>
-        <target xml:lang="es-ES" state="needs-translation">Sort by word length</target>
+        <target xml:lang="es-ES" state="translated">Ordenar por longitud de palabra</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
         <source xml:lang="en">Stage</source>
@@ -1824,7 +1824,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
         <source xml:lang="en">avg per sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Average</note>
-        <target xml:lang="es-ES" state="needs-translation">avg per sentence</target>
+        <target xml:lang="es-ES" state="translated">prom. por frase</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true">
         <source xml:lang="en">Choice of Topic</source>
@@ -1876,7 +1876,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerSentence" sil:dynamic="true">
         <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.PerSentence</note>
-        <target xml:lang="es-ES" state="needs-translation">longest sentence</target>
+        <target xml:lang="es-ES" state="translated">frase más larga</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
         <source xml:lang="en">Predictability</source>
