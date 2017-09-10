@@ -197,7 +197,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
-        <target xml:lang="es-ES" state="translated">Branding/Marcacíon</target>
+        <target xml:lang="es-ES" state="translated">Marcacíon (Branding)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Branding/Marcacíon</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
         <source xml:lang="en">Default Font for {0}</source>
@@ -3185,9 +3188,9 @@
 
 Do you want to go ahead?</source>
         <note>ID: PublishTab.Upload.Template</note>
-        <target xml:lang="es-ES" state="needs-translation">This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.
+        <target xml:lang="es-ES" state="translated">Este libro parece ser una plantilla porque tiene páginas en blanco para escrivir un libro nuevo en vez de contenido para traducir a otros idiomas. Si eso no es lo que deseaba, debe conseguir ayuda eperta antes de cargar este libro.
 
-Do you want to go ahead?</target>
+Desea seguir?</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.UnknownUser">
         <source xml:lang="en">Unknown user</source>
@@ -3344,7 +3347,7 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.AddTexts" sil:dynamic="true">
         <source xml:lang="en">Please add texts to the Sample Texts folder.</source>
         <note>ID: ReaderSetup.AddTexts</note>
-        <target xml:lang="es-ES" state="needs-translation">Please add texts to the Sample Texts folder.</target>
+        <target xml:lang="es-ES" state="translated">Por favor, agregue textos a la carpeta de textos de muestra.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AllowedWords" sil:dynamic="true">
         <source xml:lang="en">allowed words</source>
@@ -3434,7 +3437,7 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true">
         <source xml:lang="en">List letters and word-forming characters in alphabetic order.</source>
         <note>ID: ReaderSetup.LetterHelp1</note>
-        <target xml:lang="es-ES" state="needs-translation">List letters and word-forming characters in alphabetic order.</target>
+        <target xml:lang="es-ES" state="translated">Liste las letras y otros carácteres que se usan para formar palabras en orden alfabético.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LetterHelp2" sil:dynamic="true">
         <source xml:lang="en">Separate by spaces</source>
@@ -3513,7 +3516,7 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Average Length of Sentences in Book</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
-        <target xml:lang="es-ES" state="needs-translation">Maximum Average Length of Sentences in Book</target>
+        <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de frases en el libro</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Unique Words per Book</source>
@@ -3528,7 +3531,7 @@ Do you want to go ahead?</target>
       <trans-unit id="ReaderSetup.OpenSampleTexts" sil:dynamic="true">
         <source xml:lang="en">Open the sample texts folder for this language.</source>
         <note>ID: ReaderSetup.OpenSampleTexts</note>
-        <target xml:lang="es-ES" state="needs-translation">Open the sample texts folder for this language.</target>
+        <target xml:lang="es-ES" state="translated">Abra la carpeta de textos de muestra para este idioma.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
         <source xml:lang="en">Page</source>
