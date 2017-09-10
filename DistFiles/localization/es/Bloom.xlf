@@ -2985,7 +2985,7 @@
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</target>
+        <target xml:lang="es-ES" state="translated">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de la preparación de un "PDF para la imprenta".  Debes aceptar la siguiente licencia para hacerlo en Bloom.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Publish">
         <source xml:lang="en">Publish</source>
@@ -3000,7 +3000,7 @@
       <trans-unit id="PublishTab.SaveEpub">
         <source xml:lang="en">&amp;Save ePUB...</source>
         <note>ID: PublishTab.SaveEpub</note>
-        <target xml:lang="es-ES" state="needs-translation">&amp;Save ePUB...</target>
+        <target xml:lang="es-ES" state="translated">&amp;Guarde como ePUB...</target>
       </trans-unit>
       <trans-unit id="PublishTab.ShowCropMarks">
         <source xml:lang="en">Crop Marks</source>
@@ -3028,7 +3028,7 @@
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
-        <target xml:lang="es-ES" state="needs-translation">CC-BY-NC</target>
+        <target xml:lang="es-ES" state="translated">CC BY-NC</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you. If you upload it again, it will be replaced with your current version.</source>
@@ -3079,7 +3079,7 @@
       <trans-unit id="PublishTab.Upload.GiveBack">
         <source xml:lang="en">It’s easy to “give back”</source>
         <note>ID: PublishTab.Upload.GiveBack</note>
-        <target xml:lang="es-ES" state="needs-translation">It’s easy to “give back”</target>
+        <target xml:lang="es-ES" state="translated">Es fácil "contribuir"</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.IncompleteTranslation">
         <source xml:lang="en">(incomplete translation)</source>
