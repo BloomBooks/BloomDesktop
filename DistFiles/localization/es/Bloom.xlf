@@ -4072,7 +4072,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.Levels</note>
-        <target xml:lang="es-ES" state="translated">Niveles de lecturas</target>
+        <target xml:lang="es-ES" state="translated">Niveles de libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Niveles de lecturas</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Niveles de lectores</target>
         </alt-trans>
@@ -4120,12 +4123,18 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true">
         <source xml:lang="en">Punctuation</source>
         <note>ID: ReaderSetup.Punctuation</note>
-        <target xml:lang="es-ES" state="translated">Punctuación</target>
+        <target xml:lang="es-ES" state="translated">Puntuación</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Punctuación</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.ReaderLevels</note>
-        <target xml:lang="es-ES" state="translated">Niveles de lecturas</target>
+        <target xml:lang="es-ES" state="translated">Niveles de libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Niveles de lecturas</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Niveles de lectores</target>
         </alt-trans>
@@ -4133,12 +4142,18 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
         <source xml:lang="en">Remove Level {0}</source>
         <note>ID: ReaderSetup.RemoveLevel</note>
-        <target xml:lang="es-ES" state="translated">Quitar el nivel {0}</target>
+        <target xml:lang="es-ES" state="translated">Eliminar el nivel {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Quitar el nivel {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true">
         <source xml:lang="en">Remove Stage {0}</source>
         <note>ID: ReaderSetup.RemoveStage</note>
-        <target xml:lang="es-ES" state="translated">Quitar la etapa {0}</target>
+        <target xml:lang="es-ES" state="translated">Eliminar la etapa {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Quitar la etapa {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.RemoveWordList" sil:dynamic="true">
         <source xml:lang="en">Remove from this stage</source>
@@ -4173,7 +4188,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true">
         <source xml:lang="en">Previous and New Letters</source>
         <note>ID: ReaderSetup.SelectedLetters</note>
-        <target xml:lang="es-ES" state="translated">Letras anteriores y nuevas</target>
+        <target xml:lang="es-ES" state="translated">Letras previas y nuevas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Letras anteriores y nuevas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true">
         <source xml:lang="en">Sentence</source>
@@ -4220,7 +4238,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
         <source xml:lang="en">set up the alphabet for this language.</source>
         <note>ID: ReaderSetup.SetupAlphabet</note>
-        <target xml:lang="es-ES" state="translated">configurar el alfabeto para este nivel:</target>
+        <target xml:lang="es-ES" state="translated">configurar el alfabeto para este idioma.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">configurar el alfabeto para este nivel:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true">
         <source xml:lang="en">What are sight words?</source>
@@ -4230,12 +4251,18 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
         <source xml:lang="en">New Sight Words</source>
         <note>ID: ReaderSetup.SightWordLabel</note>
-        <target xml:lang="es-ES" state="translated">Nuevas palabras de uso frecuente</target>
+        <target xml:lang="es-ES" state="translated">Nuevas palabras de vista</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Nuevas palabras de uso frecuente</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true">
         <source xml:lang="en">Sight Words</source>
         <note>ID: ReaderSetup.SightWordsHeader</note>
-        <target xml:lang="es-ES" state="translated">Palabras de uso frecuente</target>
+        <target xml:lang="es-ES" state="translated">Palabras de vista</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Palabras de uso frecuente</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true">
         <source xml:lang="en">Stage</source>
@@ -4260,7 +4287,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
         <source xml:lang="en">Things to remember for this level:</source>
         <note>ID: ReaderSetup.ToRemember</note>
-        <target xml:lang="es-ES" state="translated">Cosas para recordar para este nivel:</target>
+        <target xml:lang="es-ES" state="translated">Tener en cuenta en este nivel:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cosas para recordar para este nivel:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true">
         <source xml:lang="en">Unique</source>
