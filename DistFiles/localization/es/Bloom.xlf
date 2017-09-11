@@ -2295,12 +2295,18 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
-        <target xml:lang="es-ES" state="translated">Hacer un e-book que pueda reproducir las grabaciones y al mismo tiempo destacar el texto correspondiente.</target>
+        <target xml:lang="es-ES" state="translated">Hacer un e-libro que reproduce las grabaciones mientras que destaca las frases.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un e-book que pueda reproducir las grabaciones y al mismo tiempo destacar el texto correspondiente.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
         <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox._bookSelection.LongestSentence</note>
-        <target xml:lang="es-ES" state="translated">por frase</target>
+        <target xml:lang="es-ES" state="translated">frase más larga</target>
+        <alt-trans>
+          <target xml:lang="es-ES">por frase</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Trilingual">
         <source xml:lang="en">Three Languages</source>
@@ -2326,12 +2332,18 @@
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo mostrar este libro. Esto no significa que tu trabajo se haya perdido, pero significa que algo no está actualizada, que hace falta, o ha fallado.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero significa que algo no está actualizada, hace falta, o ha fallado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que tu trabajo se haya perdido, pero significa que algo no está actualizada, que hace falta, o ha fallado.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.BrokenBook">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.</source>
         <note>ID: Errors.BrokenBook</note>
-        <target xml:lang="es-ES" state="translated">Bloom tuvo un problema mostrando este libro. Esto no significa que su trabajo se perdió, pero sí significa que algo no está actualizado, no se encuentra, o se ha hecho mal. Considere el uso del comando 'reportar un problema' en el menú "Ayuda".</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, no se encuentra, o ha fallado. Considere usar el comando 'Reportar un problema' en el menú "Ayuda".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom tuvo un problema mostrando este libro. Esto no significa que su trabajo se perdió, pero sí significa que algo no está actualizado, no se encuentra, o se ha hecho mal. Considere el uso del comando 'reportar un problema' en el menú "Ayuda".</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.CannotAccessFile">
         <source xml:lang="en">Cannot access {0}</source>
@@ -2393,7 +2405,10 @@
       <trans-unit id="Errors.XMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
         <note>ID: Errors.XMatterNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro utiliza el paquete de materia frontal/posterior nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia frontal/posterior.</target>
+        <target xml:lang="es-ES" state="translated">Este libro utiliza el paquete de páginas iniciales/finales nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de páginas iniciales/finales.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro utiliza el paquete de materia frontal/posterior nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia frontal/posterior.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.XMatterProblemLabel">
         <source xml:lang="en">Front/Back Matter Problem</source>
