@@ -4520,12 +4520,18 @@ Desea seguir?</target>
       <trans-unit id="SamplePrintNotification.IGetIt">
         <source xml:lang="en">I get it. Do not show this again.</source>
         <note>ID: SamplePrintNotification.IGetIt</note>
-        <target xml:lang="es-ES" state="translated">Entiendo. No mostrar este mensaje de nuevo.</target>
+        <target xml:lang="es-ES" state="translated">Entendido. No me muestre el mensaje de nuevo.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Entiendo. No mostrar este mensaje de nuevo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.PleaseNotice">
         <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
         <note>ID: SamplePrintNotification.PleaseNotice</note>
-        <target xml:lang="es-ES" state="translated">Tenga en cuenta los valores de la impresora muestra abajo. Utilizarlos como una guía mientras configura la impresora.</target>
+        <target xml:lang="es-ES" state="translated">Fijese en la configuracion muestra para la impresora. Utilizelos como una guía mientras que configura la impresora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Tenga en cuenta los valores de la impresora muestra abajo. Utilizarlos como una guía mientras configura la impresora.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing">
         <source xml:lang="en">Default line spacing</source>
@@ -4590,7 +4596,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageDescription.Picture &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Page with a picture on top and a large, centered word below.</source>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
-        <target xml:lang="es-ES" state="translated">Página con una imagen en la parte superior y una palabra grande, centrada debajo</target>
+        <target xml:lang="es-ES" state="translated">Página con una imagen en la parte superior y una palabra grande, centrada debajo.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Página con una imagen en la parte superior y una palabra grande, centrada debajo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
         <source xml:lang="en">1</source>
@@ -4811,22 +4820,34 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
         <source xml:lang="en">Image On Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
-        <target xml:lang="es-ES" state="translated">Dibujo de fondo</target>
+        <target xml:lang="es-ES" state="translated">Imagen en parte inferior</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Dibujo de fondo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true">
         <source xml:lang="en">Image in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
-        <target xml:lang="es-ES" state="translated">Dibujo en medio</target>
+        <target xml:lang="es-ES" state="translated">Imagen en el medio</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Dibujo en medio</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Inside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Back Cover</note>
-        <target xml:lang="es-ES" state="translated">Contraportada interior</target>
+        <target xml:lang="es-ES" state="translated">Interior de la contraportada</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Contraportada interior</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
         <source xml:lang="en">Inside Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Front Cover</note>
-        <target xml:lang="es-ES" state="translated">El interior de la portada</target>
+        <target xml:lang="es-ES" state="translated">Interior de la portada</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El interior de la portada</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true">
         <source xml:lang="en">Instructions</source>
@@ -4836,17 +4857,26 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true">
         <source xml:lang="en">Just Text</source>
         <note>ID: TemplateBooks.PageLabel.Just Text</note>
-        <target xml:lang="es-ES" state="translated">Sólo texto</target>
+        <target xml:lang="es-ES" state="translated">Sólamente texto</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sólo texto</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true">
         <source xml:lang="en">Just a Picture</source>
         <note>ID: TemplateBooks.PageLabel.Just a Picture</note>
-        <target xml:lang="es-ES" state="translated">Sólo una imagen</target>
+        <target xml:lang="es-ES" state="translated">Solamente una imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sólo una imagen</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
         <source xml:lang="en">Just an Image</source>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
-        <target xml:lang="es-ES" state="translated">Solo una ilustración</target>
+        <target xml:lang="es-ES" state="translated">Solamented una ilustración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Solo una ilustración</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Outside Back Cover</source>
