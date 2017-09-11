@@ -3814,7 +3814,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.TimeProblem">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
         <note>ID: PublishTab.Upload.TimeProblem</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema cargando su libro. Probablemente su equipo está configurado para utilizar una zona horaria equivocada o la hora del sistema es incorrecta. Ver http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para ver cómo solucionar este problema.</target>
+        <target xml:lang="es-ES" state="translated">No se pudo cargar su libro. Probablemente su equipo está configurado a una zona horaria equivocada o la hora del sistema esta incorrecta. Ver http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para ver cómo resolver este problema.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hubo un problema cargando su libro. Probablemente su equipo está configurado para utilizar una zona horaria equivocada o la hora del sistema es incorrecta. Ver http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para ver cómo solucionar este problema.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Title">
         <source xml:lang="en">Title</source>
@@ -3839,7 +3842,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.UploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: PublishTab.Upload.UploadProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema cargando su libro. Es posible que necesite reiniciar Bloom o conseguir ayuda técnica.</target>
+        <target xml:lang="es-ES" state="translated">No se pudo cargar su libro. Es posible que necesite reiniciar Bloom o conseguir ayuda técnica.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hubo un problema cargando su libro. Es posible que necesite reiniciar Bloom o conseguir ayuda técnica.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadProgress">
         <source xml:lang="en">Upload Progress</source>
@@ -3849,13 +3855,19 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.UploadSandbox">
         <source xml:lang="en">Upload Book (to Sandbox)</source>
         <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="es-ES" state="translated">Cargar libro (a sandbox)</target>
+        <target xml:lang="es-ES" state="translated">Cargar libro (a Sandbox)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cargar libro (a sandbox)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
         <note>In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.</note>
-        <target xml:lang="es-ES" state="translated">Carga de metadatos de libro</target>
+        <target xml:lang="es-ES" state="translated">Cargando los metadatos del libro</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Carga de metadatos de libro</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadingStatus">
         <source xml:lang="en">Uploading {0}</source>
@@ -3910,17 +3922,26 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Words per Book</source>
         <note>ID: ReaderSetup.BookMaxWords</note>
-        <target xml:lang="es-ES" state="translated">Palabras como máximo por libro</target>
+        <target xml:lang="es-ES" state="translated">Palabras máximas por libro</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Palabras como máximo por libro</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
         <note>ID: ReaderSetup.ChooseAllowedWordsFile</note>
-        <target xml:lang="es-ES" state="translated">Elegir...</target>
+        <target xml:lang="es-ES" state="translated">Escoger...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Elegir...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true">
         <source xml:lang="en">Click on letters to add them to this stage.</source>
         <note>ID: ReaderSetup.ClickLetter</note>
-        <target xml:lang="es-ES" state="translated">Haga clic en las letras para añadirlos a esta etapa.</target>
+        <target xml:lang="es-ES" state="translated">Haga clic en cada letra que desea añadir a esta etapa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haga clic en las letras para añadirlos a esta etapa.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.CombinationHelp1" sil:dynamic="true">
         <source xml:lang="en">Separate by spaces</source>
@@ -3950,7 +3971,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true">
         <source xml:lang="en">First,</source>
         <note>ID: ReaderSetup.FirstSetupAlphabet</note>
-        <target xml:lang="es-ES" state="translated">En primer lugar,</target>
+        <target xml:lang="es-ES" state="translated">Primero,</target>
+        <alt-trans>
+          <target xml:lang="es-ES">En primer lugar,</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.FormatNotSupported" sil:dynamic="true">
         <source xml:lang="en">Cannot read this format</source>
@@ -3960,7 +3984,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true">
         <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
         <note>ID: ReaderSetup.HowToExport</note>
-        <target xml:lang="es-ES" state="translated">Ayuda para la exportación y la conversión de los archivos que se utilizará como textos modelos</target>
+        <target xml:lang="es-ES" state="translated">Ayuda para la exportación y conversión de archivos que serán usadas como muestras de texto</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ayuda para la exportación y la conversión de los archivos que se utilizará como textos modelos</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Language" sil:dynamic="true">
         <source xml:lang="en">Language</source>
@@ -3970,7 +3997,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true">
         <source xml:lang="en">List letters and word-forming characters in alphabetic order.</source>
         <note>ID: ReaderSetup.LetterHelp1</note>
-        <target xml:lang="es-ES" state="translated">Liste las letras y otros carácteres que se usan para formar palabras en orden alfabético.</target>
+        <target xml:lang="es-ES" state="translated">Ingrese las letras y otros carácteres que se usan para formar palabras en orden alfabético.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Liste las letras y otros carácteres que se usan para formar palabras en orden alfabético.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.LetterHelp2" sil:dynamic="true">
         <source xml:lang="en">Separate by spaces</source>
