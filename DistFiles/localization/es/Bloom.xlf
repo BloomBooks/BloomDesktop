@@ -1367,7 +1367,10 @@
       <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true">
         <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
         <note>ID: EditTab.FormatDialog.PleaseUseAlpha</note>
-        <target xml:lang="es-ES" state="translated">Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "part2".</target>
+        <target xml:lang="es-ES" state="translated">Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "part2".</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ResetStyle" sil:dynamic="true">
         <source xml:lang="en">Reset this style to default settings</source>
@@ -1392,7 +1395,13 @@
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
         <source xml:lang="en">Extra Wide</source>
         <note>ID: EditTab.FormatDialog.WordSpacingExtraWide</note>
-        <target xml:lang="es-ES" state="translated">Ancha extra</target>
+        <target xml:lang="es-ES" state="translated">Más ancho</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Más ancha</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Ancha extra</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
@@ -1412,7 +1421,10 @@
       <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.FormatDialogTip</note>
-        <target xml:lang="es-ES" state="translated">Ajuste el el estilo del formato</target>
+        <target xml:lang="es-ES" state="translated">Ajuste el estilo del formato</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ajuste el el estilo del formato</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true">
         <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
@@ -1422,12 +1434,18 @@
       <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true">
         <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Contributions</note>
-        <target xml:lang="es-ES" state="translated">Cuando vaya a crear un libro original, use este cuadro para registrar las contribuciones hechas por los escritores, ilustradores, editores, etc.</target>
+        <target xml:lang="es-ES" state="translated">Cuando esta creando un libro original, use este cuadro para registrar las contribuciones hechas por los escritores, ilustradores, editores, etc.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuando vaya a crear un libro original, use este cuadro para registrar las contribuciones hechas por los escritores, ilustradores, editores, etc.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true">
         <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Translator</note>
-        <target xml:lang="es-ES" state="translated">Cuando haces un libro desde un shell, utilice este cuadro para decir quién hizo la traducción.</target>
+        <target xml:lang="es-ES" state="translated">Cuando crea un libro a base de un libro shell, utilice este cuadro para indicar quien hizo la traducción.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuando haces un libro desde un shell, utilice este cuadro para decir quién hizo la traducción.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
         <source xml:lang="en">Book title in {lang}</source>
@@ -1444,7 +1462,10 @@
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
-        <target xml:lang="es-ES" state="translated">Haga clic para editar derechos de autor &amp; licencia</target>
+        <target xml:lang="es-ES" state="translated">Haga clic para editar los derechos de autor &amp; licencia</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haga clic para editar derechos de autor &amp; licencia</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
@@ -1454,7 +1475,10 @@
       <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true">
         <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
         <note>ID: EditTab.FrontMatter.ISBNPrompt</note>
-        <target xml:lang="es-ES" state="translated">Número Internacional Normalizado para Libros. Dejar en blanco si no tiene uno de estos.</target>
+        <target xml:lang="es-ES" state="translated">Número Internacional Normalizado para Libros. Dejar en blanco si no lo tiene.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Número Internacional Normalizado para Libros. Dejar en blanco si no tiene uno de estos.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
@@ -1475,7 +1499,10 @@
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
-        <target xml:lang="es-ES" state="translated">Reconocimientos originales (o Shell) en {lang}</target>
+        <target xml:lang="es-ES" state="translated">Reconocimientos de originales (o de Shell) en {lang}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reconocimientos originales (o Shell) en {lang}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true">
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
@@ -1486,13 +1513,19 @@
         <source xml:lang="en">Adapted from original without a copyright notice.</source>
         <note>ID: EditTab.FrontMatter.OriginalHadNoCopyrightSentence</note>
         <note>On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.</note>
-        <target xml:lang="es-ES" state="translated">Adaptado de una obra sin registro de derechos de autor.</target>
+        <target xml:lang="es-ES" state="translated">Adaptado de un original sin registro de derechos de autor.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Adaptado de una obra sin registro de derechos de autor.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalLicenseSentence">
         <source xml:lang="en">Licensed under {0}.</source>
         <note>ID: EditTab.FrontMatter.OriginalLicenseSentence</note>
         <note>On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.</note>
-        <target xml:lang="es-ES" state="translated">Licencia con código {0}.</target>
+        <target xml:lang="es-ES" state="translated">Licenciado bajo {0}.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Licencia con código {0}.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
         <source xml:lang="en">Adapted from original, {0}.</source>
@@ -1538,7 +1571,10 @@
       <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
         <source xml:lang="en">Copy Image</source>
         <note>ID: EditTab.Image.CopyImage</note>
-        <target xml:lang="es-ES" state="translated">Copiar imagen</target>
+        <target xml:lang="es-ES" state="translated">Copiar la imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Copiar imagen</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
