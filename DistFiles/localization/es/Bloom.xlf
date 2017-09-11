@@ -3762,12 +3762,18 @@ Desea seguir?</target>
         <source xml:lang="en">Please set this from the edit tab</source>
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
-        <target xml:lang="es-ES" state="translated">Configure esto desde la pestaña Editar</target>
+        <target xml:lang="es-ES" state="translated">Configure esto desde la pestaña "editar"</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configure esto desde la pestaña Editar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignupLink">
         <source xml:lang="en">Sign up for BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignupLink</note>
-        <target xml:lang="es-ES" state="translated">Inscríbete en la BloomLibrary.org</target>
+        <target xml:lang="es-ES" state="translated">Inscríbese en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Inscríbete en la BloomLibrary.org</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step1">
         <source xml:lang="en">Step 1: Confirm Metadata</source>
@@ -3782,12 +3788,18 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.SuggestAssignCC">
         <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
         <note>ID: PublishTab.Upload.SuggestAssignCC</note>
-        <target xml:lang="es-ES" state="translated">Sugerencia: Asignar una licencia Creative Commons facilita para que usted pueda conceder claramente determinados permisos a todo el mundo.</target>
+        <target xml:lang="es-ES" state="translated">Sugerencia: Asignar una licencia Creative Commons le facilita conceder claramente determinados permisos a todo el mundo.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sugerencia: Asignar una licencia Creative Commons facilita para que usted pueda conceder claramente determinados permisos a todo el mundo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SuggestChangeCC">
         <source xml:lang="en">Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</source>
         <note>ID: PublishTab.Upload.SuggestChangeCC</note>
-        <target xml:lang="es-ES" state="translated">Sugerencia: Las licencias Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</target>
+        <target xml:lang="es-ES" state="translated">Sugerencia: Las licencias de Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sugerencia: Las licencias Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Summary">
         <source xml:lang="en">Summary</source>
