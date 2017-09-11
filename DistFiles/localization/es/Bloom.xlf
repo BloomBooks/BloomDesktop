@@ -131,7 +131,7 @@
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo leer este libro y se recupero restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles y informenos.</target>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
@@ -146,7 +146,7 @@
       <trans-unit id="Browser.OpenPageInFirefox">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
-        <target xml:lang="es-ES" state="needs-translation">Open Page in Firefox (which must be in the PATH environment variable)</target>
+        <target xml:lang="es-ES" state="translated">Abrir página en Firefox (debe estar en el variable etorno PATH)</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
         <source xml:lang="en">Advanced Program Settings</source>
@@ -326,7 +326,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
         <source xml:lang="en">Page Numbering Style</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
-        <target xml:lang="es-ES" state="needs-translation">Page Numbering Style</target>
+        <target xml:lang="es-ES" state="translated">Estilo de numeración de páginas</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian">
         <source xml:lang="en">Persian</source>
@@ -361,7 +361,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
         <source xml:lang="en">Right to Left Writing System</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem</note>
-        <target xml:lang="es-ES" state="needs-translation">Right to Left Writing System</target>
+        <target xml:lang="es-ES" state="translated">Escritura de derecha a izquirda</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
         <source xml:lang="en">Special Script Settings</source>
@@ -4881,7 +4881,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
-        <target xml:lang="es-ES" state="translated">Contraportada exterior</target>
+        <target xml:lang="es-ES" state="translated">Exterior de la contraportada</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Contraportada exterior</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
@@ -4896,12 +4899,18 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
         <source xml:lang="en">Picture in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
-        <target xml:lang="es-ES" state="translated">Imagen en medio</target>
+        <target xml:lang="es-ES" state="translated">Imagen en el medio</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Imagen en medio</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
-        <target xml:lang="es-ES" state="translated">Imagen de fondo</target>
+        <target xml:lang="es-ES" state="translated">Imagen en la parte inferior</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Imagen de fondo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>
@@ -4916,7 +4925,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true">
         <source xml:lang="en">This Page Is Intentionally Blank</source>
         <note>ID: TemplateBooks.PageLabel.This Page Is Intentionally Blank</note>
-        <target xml:lang="es-ES" state="translated">Esta página se ha dejado en blanco intencionalmente</target>
+        <target xml:lang="es-ES" state="translated">Página intencionalmente en blanco</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta página se ha dejado en blanco intencionalmente</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
         <source xml:lang="en">Title Page</source>
@@ -4932,7 +4944,10 @@ Desea seguir?</target>
         <source xml:lang="en">Setup</source>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
-        <target xml:lang="es-ES" state="translated">Configuración</target>
+        <target xml:lang="es-ES" state="translated">Configurar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configuración</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true">
         <source xml:lang="en">Agriculture</source>
@@ -5003,7 +5018,10 @@ Desea seguir?</target>
       <trans-unit id="Topics.NoTopic" sil:dynamic="true">
         <source xml:lang="en">No Topic</source>
         <note>ID: Topics.NoTopic</note>
-        <target xml:lang="es-ES" state="translated">No hay temas</target>
+        <target xml:lang="es-ES" state="translated">Sin tema</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No hay temas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Topics.Non Fiction" sil:dynamic="true">
         <source xml:lang="en">Non Fiction</source>
@@ -5051,7 +5069,10 @@ Desea seguir?</target>
         <source xml:lang="en">Traditional Story</source>
         <note>ID: Topics.Traditional Story</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Cuentos folklórico</target>
+        <target xml:lang="es-ES" state="translated">Cuento tradicional</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuentos folklórico</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WebServer.Warning.NoImageFile">
         <source xml:lang="en">Cannot Find Image File</source>
