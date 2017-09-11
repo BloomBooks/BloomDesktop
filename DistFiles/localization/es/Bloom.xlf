@@ -483,7 +483,7 @@
       <trans-unit id="CollectionTab.AdminManagesUpdates">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
         <note>ID: CollectionTab.AdminManagesUpdates</note>
-        <target xml:lang="es-ES" state="needs-translation">Your system administrator manages Bloom updates for this computer.</target>
+        <target xml:lang="es-ES" state="translated">Su administrador de sistemas administra las actualizaciones de Bloom en esta computadora.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
         <source xml:lang="en">Advanced</source>
@@ -673,7 +673,7 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="es-ES" state="needs-translation">Create a book in my language using this source book</target>
+        <target xml:lang="es-ES" state="translated">Crear un libro en mi idioma usando este libro de fuente</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
         <source xml:lang="en">More...</source>
@@ -979,7 +979,7 @@
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true">
         <source xml:lang="en">Continue anyway</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutContinueCheckbox</note>
-        <target xml:lang="es-ES" state="needs-translation">Continue anyway</target>
+        <target xml:lang="es-ES" state="translated">Continuar de todos modos</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
         <source xml:lang="en">Choose Different Layout...</source>
@@ -1378,7 +1378,7 @@
       <trans-unit id="EditTab.FormatDialog.ResetStyle" sil:dynamic="true">
         <source xml:lang="en">Reset this style to default settings</source>
         <note>ID: EditTab.FormatDialog.ResetStyle</note>
-        <target xml:lang="es-ES" state="needs-translation">Reset this style to default settings</target>
+        <target xml:lang="es-ES" state="translated">Restaurar este estilo a la configuración predeterminda</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true">
         <source xml:lang="en">Spacing</source>
@@ -1432,7 +1432,7 @@
       <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true">
         <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
         <note>ID: EditTab.FrontMatter.AuthorIllustratorPrompt</note>
-        <target xml:lang="es-ES" state="needs-translation">You may use this space for author/illustrator, or anything else.</target>
+        <target xml:lang="es-ES" state="translated">Puede usar este espacio para el autor/ilustrador, o cualquier otra cosa.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true">
         <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
@@ -1460,7 +1460,7 @@
         <source xml:lang="en">Name of the translator, in {lang}</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="es-ES" state="needs-translation">Name of the translator, in {lang}</target>
+        <target xml:lang="es-ES" state="translated">Nombre del traductor, en {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
@@ -1486,7 +1486,7 @@
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
         <note>ID: EditTab.FrontMatter.InsideFrontCoverTextPrompt</note>
-        <target xml:lang="es-ES" state="needs-translation">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</target>
+        <target xml:lang="es-ES" state="translated">Si require donde poner más información sobre el libro, puede usar esta página que es la parte interior de la cubierta.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ListSeparator">
         <source xml:lang="en">, </source>
