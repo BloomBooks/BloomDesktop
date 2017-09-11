@@ -3258,12 +3258,18 @@
         <source xml:lang="en">Simple</source>
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
         <note>Instead of making a booklet, just make normal pages</note>
-        <target xml:lang="es-ES" state="translated">Una página por hoja</target>
+        <target xml:lang="es-ES" state="translated">Simple</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Una página por hoja</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
         <note>ID: PublishTab.OnePagePerPaperRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Hacer un PDF de cada página del libro, una página por hoja de papel.</target>
+        <target xml:lang="es-ES" state="translated">Hacer un PDF de cada página del libro, una página por hojal.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un PDF de cada página del libro, una página por hoja de papel.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Options">
         <source xml:lang="en">Options</source>
@@ -3280,12 +3286,18 @@
       <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
         <source xml:lang="en">Open the PDF in the default system PDF viewer</source>
         <note>ID: PublishTab.OpenThePDFInTheSystemPDFViewer</note>
-        <target xml:lang="es-ES" state="translated">Abra el PDF en el visor predeterminado de archivos PDF</target>
+        <target xml:lang="es-ES" state="translated">Abra el PDF en el visualizador PDF predeterminado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abra el PDF en el visor predeterminado de archivos PDF</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
         <source xml:lang="en">Replace Existing</source>
         <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
-        <target xml:lang="es-ES" state="translated">Reemplazar los existentes</target>
+        <target xml:lang="es-ES" state="translated">Reemplazar lo existente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reemplazar los existentes</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
         <source xml:lang="en">Notice</source>
@@ -3295,7 +3307,10 @@
       <trans-unit id="PublishTab.PdfMaker.BadPdf">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
-        <target xml:lang="es-ES" state="translated">Bloom tenía un problema al realizar un PDF de este libro. Tal vez necesite ayuda técnica o si necesita contactar los desarrolladores. Pero aquí hay algunas cosas que puede probar:</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo crear un PDF de este libro. Tal vez debe consequir ayuda técnica o contactar los desarrolladores. Pero puede intentar lo siguiente:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom tenía un problema al realizar un PDF de este libro. Tal vez necesite ayuda técnica o si necesita contactar los desarrolladores. Pero aquí hay algunas cosas que puede probar:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress">
         <source xml:lang="en">Compressing PDF</source>
@@ -3331,7 +3346,10 @@
         <source xml:lang="en">Finished making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.Finished</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="translated">Conversión de HTML a PDF esta concluido</target>
+        <target xml:lang="es-ES" state="translated">Se terminó la conversión de HTML a PDF</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Conversión de HTML a PDF esta concluido</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
@@ -3359,12 +3377,18 @@
       <trans-unit id="PublishTab.PdfMaker.TryRestart">
         <source xml:lang="en">Restart your computer and try this again right away</source>
         <note>ID: PublishTab.PdfMaker.TryRestart</note>
-        <target xml:lang="es-ES" state="translated">Reiniciar la computadora e inténtelo de nuevo</target>
+        <target xml:lang="es-ES" state="translated">Reiniciar su computadora e inténtelo de nuevo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reiniciar la computadora e inténtelo de nuevo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.TrySmallerImages">
         <source xml:lang="en">Replace large, high-resolution images in your document with lower-resolution ones</source>
         <note>ID: PublishTab.PdfMaker.TrySmallerImages</note>
-        <target xml:lang="es-ES" state="translated">Sustituya imágenes grandes y de alta resolución en el documento con los de resolución más baja</target>
+        <target xml:lang="es-ES" state="translated">Sustituya imágenes grandes y de alta resolución en su documento con imágenes de menor resolución</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sustituya imágenes grandes y de alta resolución en el documento con los de resolución más baja</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSaved">
         <source xml:lang="en">PDF Not Saved</source>
