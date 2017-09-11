@@ -4036,7 +4036,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true">
         <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
         <note>ID: ReaderSetup.Letters.LetterHelp1</note>
-        <target xml:lang="es-ES" state="translated">Separe cada letra o combinación de letras con un espacio. Por ejemplo, aquí es lo que podríamos utilizar para el idioma inglés:</target>
+        <target xml:lang="es-ES" state="translated">Separe cada letra o combinación de letras con un espacio. Por ejemplo, podriamos usar los siguiente el idioma inglés:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Separe cada letra o combinación de letras con un espacio. Por ejemplo, aquí es lo que podríamos utilizar para el idioma inglés:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp2" sil:dynamic="true">
         <source xml:lang="en">Notice that the English list includes symbols that are used to make words, like ' in </source>
@@ -4061,7 +4064,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
         <source xml:lang="en">Level&amp;nbsp;</source>
         <note>ID: ReaderSetup.LevelLabel</note>
-        <target xml:lang="es-ES" state="translated">Nivel</target>
+        <target xml:lang="es-ES" state="translated">Nivel&amp;nbsp;</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Nivel</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
         <source xml:lang="en">Reader Levels</source>
