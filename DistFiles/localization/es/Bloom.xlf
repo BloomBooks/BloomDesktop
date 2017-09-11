@@ -4305,7 +4305,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage. There are two ways to give words to Bloom:</source>
         <note>ID: ReaderSetup.Words.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
+        <target xml:lang="es-ES" state="translated">Para ayudarle con la creación de libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para ayudarle a crear libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para ayudarle a crear lecturas decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras para Bloom:</target>
         </alt-trans>
@@ -4357,7 +4360,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
         <source xml:lang="en">The following books will be made into templates:</source>
         <note>ID: ReaderTemplateBloomPackDialog.IntroLabel</note>
-        <target xml:lang="es-ES" state="translated">Los siguientes libros se harán en las plantillas:</target>
+        <target xml:lang="es-ES" state="translated">Los siguientes libros serán convertidos a plantillas:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Los siguientes libros se harán en las plantillas:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
         <source xml:lang="en">Save Bloom Pack</source>
@@ -4368,9 +4374,6 @@ Desea seguir?</target>
         <source xml:lang="en">Make Reader Template Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.WindowTitle</note>
         <target xml:lang="es-ES" state="translated">Crear un BloomPack de plantilla de libros</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Crear un BloomPack de plantilla de lecturas</target>
-        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear BloomPack plantilla de lectores</target>
         </alt-trans>
@@ -4400,7 +4403,10 @@ Desea seguir?</target>
       <trans-unit id="RegisterDialog.IAmStuckLabel">
         <source xml:lang="en">I'm stuck, I'll finish this later.</source>
         <note>ID: RegisterDialog.IAmStuckLabel</note>
-        <target xml:lang="es-ES" state="translated">Estoy atascado, voy a terminar esto más tarde.</target>
+        <target xml:lang="es-ES" state="translated">Estoy atascado, lo terminaré más tarde.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estoy atascado, voy a terminar esto más tarde.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="RegisterDialog.Organization">
         <source xml:lang="en">Organization</source>
@@ -4463,7 +4469,10 @@ Desea seguir?</target>
       <trans-unit id="ReportProblemDialog.SeeDetails">
         <source xml:lang="en">See what else will be submitted</source>
         <note>ID: ReportProblemDialog.SeeDetails</note>
-        <target xml:lang="es-ES" state="translated">Vea lo que se enviará</target>
+        <target xml:lang="es-ES" state="translated">Vea todo que será enviado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Vea lo que se enviará</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.SubmitButton">
         <source xml:lang="en">&amp;Submit</source>
@@ -4479,7 +4488,10 @@ Desea seguir?</target>
       <trans-unit id="ReportProblemDialog.Success">
         <source xml:lang="en">We received your report, thanks for taking the time to help make Bloom better!</source>
         <note>ID: ReportProblemDialog.Success</note>
-        <target xml:lang="es-ES" state="translated">Hemos recibido su informe. Gracias por tomarse el tiempo para ayudar a mejorar Bloom!</target>
+        <target xml:lang="es-ES" state="translated">Hemos recibido su informe. Gracias por contribuir a la mejora de Bloom!</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hemos recibido su informe. Gracias por tomarse el tiempo para ayudar a mejorar Bloom!</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.WhatsTheProblem">
         <source xml:lang="en">What seems to be the problem?</source>
@@ -4489,7 +4501,10 @@ Desea seguir?</target>
       <trans-unit id="ReportProblemDialog.WindowTitle">
         <source xml:lang="en">Report A Problem</source>
         <note>ID: ReportProblemDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Reportar un problema</target>
+        <target xml:lang="es-ES" state="translated">Informar sobre un problema</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reportar un problema</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Zipping">
         <source xml:lang="en">Zipping up book...</source>
