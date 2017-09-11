@@ -2830,17 +2830,26 @@
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
         <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2</note>
-        <target xml:lang="es-ES" state="translated">A fin de mantener un proyecto que es simple y organizada, Bloom mantiene todos los libros que realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Así que lo primero que debemos hacer es crear un libro.</target>
+        <target xml:lang="es-ES" state="translated">Con el propósito de mantener todo simple y organizado, Bloom mantiene todos los libros que realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Lo primero que temos que hacer es hacerle una colección.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">A fin de mantener un proyecto que es simple y organizada, Bloom mantiene todos los libros que realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Así que lo primero que debemos hacer es crear un libro.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
         <source xml:lang="en">Click 'Next' to get started.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine3</note>
-        <target xml:lang="es-ES" state="translated">Haga clic en 'Próxima' para empezar.</target>
+        <target xml:lang="es-ES" state="translated">Haga clic en 'Siguiente' para empezar.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haga clic en 'Próxima' para empezar.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InDropboxMessage">
         <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
         <note>ID: OpenCreateCloneControl.InDropboxMessage</note>
-        <target xml:lang="es-ES" state="translated">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porque Dropbox a veces bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o desactivar Dropbox durante el uso de Bloom.</target>
+        <target xml:lang="es-ES" state="translated">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porquea veces Dropbox bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o que desactive Dropbox mientras que usa Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porque Dropbox a veces bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o desactivar Dropbox durante el uso de Bloom.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
