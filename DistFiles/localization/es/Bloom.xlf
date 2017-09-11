@@ -3509,17 +3509,26 @@
       <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
         <source xml:lang="en">One or more fields above need your attention before uploading.</source>
         <note>ID: PublishTab.Upload.FieldsNeedAttention</note>
-        <target xml:lang="es-ES" state="translated">Uno o más campos anteriores necesitan su atención antes de cargar</target>
+        <target xml:lang="es-ES" state="translated">Por lo menos uno de los campos arriba requiere su atención antes de poder cargar.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Uno o más campos anteriores necesitan su atención antes de cargar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
         <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
         <note>ID: PublishTab.Upload.FinalUploadFailureNotice</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, "{0}" se ha subido correctamente</target>
+        <target xml:lang="es-ES" state="translated">Lastimosamente, "{0}" no cargo exitosamente. Esto puede ser causada por problemas transitorios con nuestros servidores. Vale la pena intentarlo de nuevo en unas horas. Por favor, avisenos si este probleme suele repetir.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo sentimos, "{0}" se ha subido correctamente</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Gaurantee">
         <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>
         <note>ID: PublishTab.Upload.Gaurantee</note>
-        <target xml:lang="es-ES" state="translated">Al cargar, usted confirma su acuerdo con los términos de uso de la Bloom Library y concede los derechos que describe.</target>
+        <target xml:lang="es-ES" state="translated">Al cargar, usted confirma su acuerdo con los términos de uso de la biblioteca Bloom (Bloom Library) y concede los derechos que describe.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Al cargar, usted confirma su acuerdo con los términos de uso de la Bloom Library y concede los derechos que describe.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Al cargar, usted confirma su acuerdo con los términos de uso de la Bloom Library y concede los derechos que describe</target>
         </alt-trans>
@@ -3538,7 +3547,10 @@
         <source xml:lang="en">(incomplete translation)</source>
         <note>ID: PublishTab.Upload.IncompleteTranslation</note>
         <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
-        <target xml:lang="es-ES" state="translated">(parcial)</target>
+        <target xml:lang="es-ES" state="translated">(traducción incompleta)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">(parcial)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Languages">
         <source xml:lang="en">Languages</source>
@@ -3558,12 +3570,18 @@
       <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
         <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</source>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
-        <target xml:lang="es-ES" state="translated">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. Le gustaría hacer login?</target>
+        <target xml:lang="es-ES" state="translated">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. Le gustaría entrar con su cuenta actual?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. Le gustaría hacer login?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed">
         <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.Login.LoginConnectFailed</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo conectar al servidor para verificar tu nombre de usuario. Por favor, compruebe su conexión de red.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo conectar al servidor para verificar su nombre de usuario. Por favor, compruebe su conexión de red.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo conectar al servidor para verificar tu nombre de usuario. Por favor, compruebe su conexión de red.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginFailed">
         <source xml:lang="en">Login failed</source>
