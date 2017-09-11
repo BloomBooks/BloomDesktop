@@ -2854,7 +2854,10 @@
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
         <note>ID: OpenCreateCloneControl.InSourceCollectionMessage</note>
-        <target xml:lang="es-ES" state="translated">Esta colección forma parte de sus "orígenes de nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No se puede abrir para su edición.</target>
+        <target xml:lang="es-ES" state="translated">Esta colección forma parte de sus "fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta colección forma parte de sus "orígenes de nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No se puede abrir para su edición.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.Bloom Collections">
         <source xml:lang="en">Bloom Collections</source>
@@ -2870,17 +2873,26 @@
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
         <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromChorusHub</note>
-        <target xml:lang="es-ES" state="translated">Copia desde Chorus Hub en la red local</target>
+        <target xml:lang="es-ES" state="translated">Copiar de Chorus Hub en la red local</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Copia desde Chorus Hub en la red local</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromInternet">
         <source xml:lang="en">Copy from Internet</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromInternet</note>
-        <target xml:lang="es-ES" state="translated">Copia desde el Internet</target>
+        <target xml:lang="es-ES" state="translated">Copiar del internet</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Copia desde el Internet</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
         <source xml:lang="en">Copy from USB Drive</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromUsbDrive</note>
-        <target xml:lang="es-ES" state="translated">Copia desde un USB</target>
+        <target xml:lang="es-ES" state="translated">Copiar de una unidad USB</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Copia desde un USB</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection">
         <source xml:lang="en">Create New Collection</source>
@@ -2901,7 +2913,10 @@
       <trans-unit id="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
         <source xml:lang="en">Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</source>
         <note>ID: OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus</note>
-        <target xml:lang="es-ES" state="translated">¿Ha utilizado alguien el "Enviar/Recibir" para compartir una colección con usted?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utilice Enviar/Recibir para compartir su trabajo con ellos.</target>
+        <target xml:lang="es-ES" state="translated">¿Alguien le ha compartido una colección por medio de la función Enviar/Recibir?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utilice Enviar/Recibir para compartir su trabajo con ellos.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Ha utilizado alguien el "Enviar/Recibir" para compartir una colección con usted?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utilice Enviar/Recibir para compartir su trabajo con ellos.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_">
         <source xml:lang="en">Change user interface language</source>
@@ -2911,7 +2926,10 @@
       <trans-unit id="PageList.CantMoveWhenTranslating">
         <source xml:lang="en">Pages can not be re-ordered when you are translating a book.</source>
         <note>ID: PageList.CantMoveWhenTranslating</note>
-        <target xml:lang="es-ES" state="translated">Las páginas no pueden ser reordenadas cuando está traduciendo un libro.</target>
+        <target xml:lang="es-ES" state="translated">Mientras que traduce un libro las páginas no pueden ser reordenadas.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Las páginas no pueden ser reordenadas cuando está traduciendo un libro.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Las páginas no pueden ser reordenadas cuando está traduciendo un libro</target>
         </alt-trans>
