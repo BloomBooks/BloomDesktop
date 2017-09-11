@@ -25,7 +25,7 @@ Just take your A4 PDF to a printer and ask them to enlarge it to A3. </source>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen">
-        <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try using CTRL+mouse wheel to zoom in to the page so you can edit it. </source>
+        <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate">

@@ -5,7 +5,7 @@ To make things more manageable, this template is set at A4 Landscape, with large
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3. {i18n="bigbook.printing.enlargeA4"}
 # Limitations of this version {i18n="bigbook.limits"}
-If you are using a small screen, it can be hard to read the credits page. Try using CTRL+mouse wheel to zoom in to the page so you can edit it. {i18n="bigbook.limits.smallscreen"}
+If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it. {i18n="bigbook.limits.smallscreen"}
 
 This version includes an "Instructions for Teachers" page that is already filled out, in English.
 If you would like to have instructions in a different language, you can delete that text and type in your own.
