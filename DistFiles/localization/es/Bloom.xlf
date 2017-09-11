@@ -1917,7 +1917,10 @@
       <trans-unit id="EditTab.TextBoxProperties.ShowOnEach">
         <source xml:lang="en">On each language-field in the group</source>
         <note>ID: EditTab.TextBoxProperties.ShowOnEach</note>
-        <target xml:lang="es-ES" state="translated">En cada campo de la lengua en el grupo</target>
+        <target xml:lang="es-ES" state="translated">En cada campo de idioma en el grupo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">En cada campo de la lengua en el grupo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Title">
         <source xml:lang="en">Text Box Properties</source>
@@ -1933,12 +1936,18 @@
       <trans-unit id="EditTab.ThumbnailCaptions.Picture On Bottom">
         <source xml:lang="en">Picture On Bottom</source>
         <note>ID: EditTab.ThumbnailCaptions.Picture On Bottom</note>
-        <target xml:lang="es-ES" state="translated">Imagen en el fondo</target>
+        <target xml:lang="es-ES" state="translated">Imagen en inferior de la página</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Imagen en el fondo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog">
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
-        <target xml:lang="es-ES" state="translated">Información de propiedad intelectual de la ilustración</target>
+        <target xml:lang="es-ES" state="translated">Información de propiedad intelectual de la imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
@@ -1968,7 +1977,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage">
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage</note>
-        <target xml:lang="es-ES" state="translated">El siguiente es un informe generado de las etapas decodificables para {0}. Usted puede hacer los cambios que desee a este archivo, pero Bloom no notará los cambios. Es sólo un informe.</target>
+        <target xml:lang="es-ES" state="translated">El siguiente es un informe generado sobre las etapas decodificables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El siguiente es un informe generado de las etapas decodificables para {0}. Usted puede hacer los cambios que desee a este archivo, pero Bloom no notará los cambios. Es sólo un informe.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords">
         <source xml:lang="en">New Decodable Words: {0}</source>
@@ -1988,7 +2000,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList">
         <source xml:lang="en">Complete Word List</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList</note>
-        <target xml:lang="es-ES" state="translated">Lista de palabras completa</target>
+        <target xml:lang="es-ES" state="translated">Lista completa de palabras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lista de palabras completa</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
         <source xml:lang="en">Letters in this stage</source>
@@ -1998,12 +2013,18 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true">
         <source xml:lang="en">Open a Letter and Word List File</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList</note>
-        <target xml:lang="es-ES" state="translated">Abrir un archivo de lista de letras y palabras</target>
+        <target xml:lang="es-ES" state="translated">Abrir un archivo que contiene una lista de letras y palabras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir un archivo de lista de letras y palabras</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
         <source xml:lang="en">Generate a letter and word list report</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
-        <target xml:lang="es-ES" state="translated">Generar un informe de letras y palabras</target>
+        <target xml:lang="es-ES" state="translated">Generar un informe que contiene una lista de letras y palabras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Generar un informe de letras y palabras</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Sample words in this stage</source>
@@ -2043,7 +2064,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Words in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.WordsInThisStage</note>
-        <target xml:lang="es-ES" state="translated">Las palabras en esta etapa</target>
+        <target xml:lang="es-ES" state="translated">Palabras en esta etapa</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Las palabras en esta etapa</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
         <source xml:lang="en">Leveled Reader Tool</source>
@@ -2073,12 +2097,18 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
         <source xml:lang="en">Formatting</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Formatting</note>
-        <target xml:lang="es-ES" state="translated">Formateando</target>
+        <target xml:lang="es-ES" state="translated">Formateo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Formateando</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true">
         <source xml:lang="en">Illustration Support</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.IllustrationSupport</note>
-        <target xml:lang="es-ES" state="translated">Soporte para imágenes</target>
+        <target xml:lang="es-ES" state="translated">Apoyo para ilustraciones</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Soporte para imágenes</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
         <source xml:lang="en">Keep in mind</source>
