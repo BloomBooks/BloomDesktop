@@ -1143,7 +1143,10 @@
       <trans-unit id="EditTab.CutButton.ToolTip">
         <source xml:lang="en">Cut (Ctrl+X)</source>
         <note>ID: EditTab.CutButton.ToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cortar (tCtrl+X)</target>
+        <target xml:lang="es-ES" state="translated">Cortar (Ctrl+X)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cortar (tCtrl+X)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CutButton.ToolTipWhenDisabled">
         <source xml:lang="en">You need to select some text before you can cut it</source>
