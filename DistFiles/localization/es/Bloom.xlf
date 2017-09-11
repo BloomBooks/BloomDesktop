@@ -1666,7 +1666,10 @@
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
-        <target xml:lang="es-ES" state="translated">Antes de que usted pueda pegar una ilustración, copiar uno de otro programa en su "portapapeles".</target>
+        <target xml:lang="es-ES" state="translated">Antes de poder pegar una ilustración, copie uno a su "portapapeles" desde de otro programa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Antes de que usted pueda pegar una ilustración, copiar uno de otro programa en su "portapapeles".</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts">
         <source xml:lang="en">There are no other layout options for this template.</source>
@@ -1688,7 +1691,10 @@
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
-        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas del material inicial y final deben permanecer donde están.</target>
+        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas de material inicial y final deben permanecer donde están.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se permite ese cambio. Páginas del material inicial y final deben permanecer donde están.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se permite ese cambio. Páginas del material inicial y final deben permanecer donde están</target>
         </alt-trans>
@@ -1696,17 +1702,26 @@
       <trans-unit id="EditTab.PageList.CantMoveXMatterCaption">
         <source xml:lang="en">Invalid Move</source>
         <note>ID: EditTab.PageList.CantMoveXMatterCaption</note>
-        <target xml:lang="es-ES" state="translated">Movimiento no válido</target>
+        <target xml:lang="es-ES" state="translated">Movimiento no permitido</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Movimiento no válido</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.PageList.Heading">
         <source xml:lang="en">Pages</source>
         <note>ID: EditTab.PageList.Heading</note>
-        <target xml:lang="es-ES" state="translated">Páginas de plantilla</target>
+        <target xml:lang="es-ES" state="translated">Páginas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Páginas de plantilla</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip">
         <source xml:lang="en">Choose a page size and orientation</source>
         <note>ID: EditTab.PageSizeAndOrientation.Tooltip</note>
-        <target xml:lang="es-ES" state="translated">Elija un tamaño de página y orientación</target>
+        <target xml:lang="es-ES" state="translated">Elija el tamaño y orientación de página</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Elija un tamaño de página y orientación</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.PasteButton">
         <source xml:lang="en">Paste</source>
@@ -1736,7 +1751,10 @@
       <trans-unit id="EditTab.ReadOnlyInAuthorMode" sil:dynamic="true">
         <source xml:lang="en">You cannot put anything in there while making an original book.</source>
         <note>ID: EditTab.ReadOnlyInAuthorMode</note>
-        <target xml:lang="es-ES" state="translated">No se puede poner nada allí mientras usted está haciendo un libro original.</target>
+        <target xml:lang="es-ES" state="translated">No se puede poner nada allí mientras que está haciendo un libro original.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se puede poner nada allí mientras usted está haciendo un libro original.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
         <source xml:lang="en">Saving...</source>
@@ -1761,12 +1779,18 @@
       <trans-unit id="EditTab.StyleEditor.LineSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between lines of text</source>
         <note>ID: EditTab.StyleEditor.LineSpacingToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el espaciado entre líneas de texto</target>
+        <target xml:lang="es-ES" state="translated">Cambiar el interlineado de texto</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cambiar el espaciado entre líneas de texto</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.WordSpacingExtraWide" sil:dynamic="true">
         <source xml:lang="en">Extra Wide</source>
         <note>ID: EditTab.StyleEditor.WordSpacingExtraWide</note>
-        <target xml:lang="es-ES" state="translated">Ancha extra</target>
+        <target xml:lang="es-ES" state="translated">Más ancho</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ancha extra</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.WordSpacingNormal" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
@@ -1776,7 +1800,10 @@
       <trans-unit id="EditTab.StyleEditor.WordSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between words</source>
         <note>ID: EditTab.StyleEditor.WordSpacingToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el espacio entre las palabras</target>
+        <target xml:lang="es-ES" state="translated">Cambiar el espacio entre palabras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cambiar el espacio entre las palabras</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.WordSpacingWide" sil:dynamic="true">
         <source xml:lang="en">Wide</source>
@@ -1786,7 +1813,10 @@
       <trans-unit id="EditTab.StyleEditorTip" sil:dynamic="true">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.StyleEditorTip</note>
-        <target xml:lang="es-ES" state="translated">Ajuste el formato de estilo</target>
+        <target xml:lang="es-ES" state="translated">Ajuste el esitilo del formato</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ajuste el formato de estilo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TemplatePagesList.Heading">
         <source xml:lang="en">Template Pages</source>
@@ -1879,7 +1909,10 @@
       <trans-unit id="EditTab.TextBoxProperties.ShowOnGroup">
         <source xml:lang="en">Just once on the whole group</source>
         <note>ID: EditTab.TextBoxProperties.ShowOnGroup</note>
-        <target xml:lang="es-ES" state="translated">Sólo una vez para todo el grupo</target>
+        <target xml:lang="es-ES" state="translated">Sólo una vez en todo el grupo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sólo una vez para todo el grupo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowOnEach">
         <source xml:lang="en">On each language-field in the group</source>
