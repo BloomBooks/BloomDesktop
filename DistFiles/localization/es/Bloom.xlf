@@ -2698,7 +2698,10 @@
       <trans-unit id="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
         <source xml:lang="en">What would you like to call this collection?</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
-        <target xml:lang="es-ES" state="translated">¿Qué te gustaría denomino a esta colección?</target>
+        <target xml:lang="es-ES" state="translated">¿Qué desea nombrar esta colección?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Qué te gustaría denomino a esta colección?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNameProblem">
         <source xml:lang="en">Collection Name Problem</source>
@@ -2739,7 +2742,10 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
         <source xml:lang="en">Source Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-        <target xml:lang="es-ES" state="translated">Colección de origen</target>
+        <target xml:lang="es-ES" state="translated">Colección de libros fuentes</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de origen</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
@@ -2754,12 +2760,18 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
         <source xml:lang="en">A collection of books in a local language.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
-        <target xml:lang="es-ES" state="translated">Una colección de libros en el idioma local</target>
+        <target xml:lang="es-ES" state="translated">Una colección de libros en un idioma local.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Una colección de libros en el idioma local</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage">
         <source xml:lang="en">Give Language Location</source>
         <note>ID: NewCollectionWizard.LocationPage</note>
-        <target xml:lang="es-ES" state="translated">Dale la ubicación del idioma</target>
+        <target xml:lang="es-ES" state="translated">Dar la ubicación del idioma</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Dale la ubicación del idioma</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.Country">
         <source xml:lang="en">Country</source>
@@ -2774,7 +2786,10 @@
       <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
         <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
         <note>ID: NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional</note>
-        <target xml:lang="es-ES" state="translated">Estos son opcionales. Bloom colocarlos en los lugares correctos en la página del título del libro que cree.</target>
+        <target xml:lang="es-ES" state="translated">Estos son opcionales. Bloom los colocará en los lugares apropiados en la página de título en los libros que hace.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estos son opcionales. Bloom colocarlos en los lugares correctos en la página del título del libro que cree.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.Province">
         <source xml:lang="en">Province</source>
