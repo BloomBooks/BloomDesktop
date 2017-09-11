@@ -2469,7 +2469,10 @@
       <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
         <source xml:lang="en">Request a Feature (web)</source>
         <note>ID: HelpMenu.MakeASuggestionMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Hacer una sugerencia</target>
+        <target xml:lang="es-ES" state="translated">Solicitar una función (web)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer una sugerencia</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.RegistrationMenuItem">
         <source xml:lang="en">Registration</source>
@@ -2479,12 +2482,18 @@
       <trans-unit id="HelpMenu.ReleaseNotesMenuItem">
         <source xml:lang="en">Release Notes...</source>
         <note>ID: HelpMenu.ReleaseNotesMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Notas de la versión (ingles)...</target>
+        <target xml:lang="es-ES" state="translated">Notas de versión (inglés)...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Notas de la versión (ingles)...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem">
         <source xml:lang="en">Report a Problem...</source>
         <note>ID: HelpMenu.ReportAProblemToolStripMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Informar sobre un problema...</target>
+        <target xml:lang="es-ES" state="translated">Reportar un problema...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Informar sobre un problema...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.ShowEventLogMenuItem">
         <source xml:lang="en">Show Event Log</source>
@@ -2504,7 +2513,10 @@
       <trans-unit id="HelpMenu.trainingVideos">
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
-        <target xml:lang="es-ES" state="translated">Videos de capacitación</target>
+        <target xml:lang="es-ES" state="translated">Vídeos de capacitación</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Videos de capacitación</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="InstallProblem.BloomPdfMaker">
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
@@ -2625,7 +2637,10 @@
       <trans-unit id="LoginDialog.AgreeToTerms">
         <source xml:lang="en">I agree to the Bloom Library's Terms of Use</source>
         <note>ID: LoginDialog.AgreeToTerms</note>
-        <target xml:lang="es-ES" state="translated">Estoy de acuerdo con los términos de uso de la Bloom Library</target>
+        <target xml:lang="es-ES" state="translated">Acepto los términos de uso de la biblioteca Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estoy de acuerdo con los términos de uso de la Bloom Library</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LoginDialog.Email">
         <source xml:lang="en">Email Address</source>
@@ -2640,7 +2655,10 @@
       <trans-unit id="LoginDialog.LoginButton">
         <source xml:lang="en">&amp;Login</source>
         <note>ID: LoginDialog.LoginButton</note>
-        <target xml:lang="es-ES" state="translated">Conectar</target>
+        <target xml:lang="es-ES" state="translated">&amp;Iniciar sesión</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Conectar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LoginDialog.Password">
         <source xml:lang="en">Password</source>
