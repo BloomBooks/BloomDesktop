@@ -3400,12 +3400,18 @@
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
-        <target xml:lang="es-ES" state="translated">No se guardol archivo PDF porque elegió no permitir la producción de "PDF para la imprenta".</target>
+        <target xml:lang="es-ES" state="translated">No se guardo el archivo PDF porque elegió no permitir la producción de "PDF para la imprenta".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se guardol archivo PDF porque elegió no permitir la producción de "PDF para la imprenta".</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PrintButton">
         <source xml:lang="en">&amp;Print...</source>
         <note>ID: PublishTab.PrintButton</note>
-        <target xml:lang="es-ES" state="translated">Imprimir...</target>
+        <target xml:lang="es-ES" state="translated">&amp;Imprimir...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Imprimir...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PrologToAdobeEula">
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
@@ -3421,12 +3427,18 @@
       <trans-unit id="PublishTab.SaveButton">
         <source xml:lang="en">&amp;Save PDF...</source>
         <note>ID: PublishTab.SaveButton</note>
-        <target xml:lang="es-ES" state="translated">Guarde como PDF...</target>
+        <target xml:lang="es-ES" state="translated">&amp;Guardar como PDF...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Guarde como PDF...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.SaveEpub">
         <source xml:lang="en">&amp;Save ePUB...</source>
         <note>ID: PublishTab.SaveEpub</note>
-        <target xml:lang="es-ES" state="translated">&amp;Guarde como ePUB...</target>
+        <target xml:lang="es-ES" state="translated">&amp;Guardar como ePUB...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">&amp;Guarde como ePUB...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.ShowCropMarks">
         <source xml:lang="en">Crop Marks</source>
@@ -3441,12 +3453,18 @@
       <trans-unit id="PublishTab.Upload.AdditionalRequests">
         <source xml:lang="en">Additional Requests: </source>
         <note>ID: PublishTab.Upload.AdditionalRequests</note>
-        <target xml:lang="es-ES" state="translated">SolicitudesAdicionales: </target>
+        <target xml:lang="es-ES" state="translated">Solicitudes Adicionales: </target>
+        <alt-trans>
+          <target xml:lang="es-ES">SolicitudesAdicionales: </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AllReserved">
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
         <note>ID: PublishTab.Upload.AllReserved</note>
-        <target xml:lang="es-ES" state="translated">Todos los derechos reservados (Contacto el titular del Copyright para los permisos.)</target>
+        <target xml:lang="es-ES" state="translated">Todos los derechos reservados (comuniquese con el titular de los derechos de autor para cualquier permiso.)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Todos los derechos reservados (Contacto el titular del Copyright para los permisos.)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Todos los derechos reservados (contacto el titular del Copyright para los permisos</target>
         </alt-trans>
@@ -3454,12 +3472,18 @@
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
-        <target xml:lang="es-ES" state="translated">CC BY-NC</target>
+        <target xml:lang="es-ES" state="translated">CC-BY-NC</target>
+        <alt-trans>
+          <target xml:lang="es-ES">CC BY-NC</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you. If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
-        <target xml:lang="es-ES" state="translated">BloomLibrary.org ya tiene una versión anterior de este libro. Si lo subes otra vez, se sustituirá con su versión actual.</target>
+        <target xml:lang="es-ES" state="translated">BloomLibrary.org ya tiene una versión anterior de este libro. Si lo cargas otra vez, se sustituirá con su versión actual.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">BloomLibrary.org ya tiene una versión anterior de este libro. Si lo subes otra vez, se sustituirá con su versión actual.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">BloomLibrary.org ya tiene una versión anterior de este libro.  Si lo subes otra vez, se sustituirá con su versión actual.</target>
         </alt-trans>
@@ -3477,7 +3501,10 @@
       <trans-unit id="PublishTab.Upload.ErrorUploading">
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
         <note>ID: PublishTab.Upload.ErrorUploading</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, hubo un problema cargando {0}. Siguen algunos detalles. Puede que necesites ayuda técnica.</target>
+        <target xml:lang="es-ES" state="translated">Lastimosamente, no se pudo cargar {0}. Siguen algunos detalles. Puede ser que require ayuda técnica.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo sentimos, hubo un problema cargando {0}. Siguen algunos detalles. Puede que necesites ayuda técnica.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
         <source xml:lang="en">One or more fields above need your attention before uploading.</source>
