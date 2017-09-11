@@ -3171,12 +3171,21 @@
       <trans-unit id="PublishTab.BodyOnlyRadio">
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
-        <target xml:lang="es-ES" state="translated">Interior del folleto</target>
+        <target xml:lang="es-ES" state="translated">Interior del librito</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Interior del libro</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Interior del folleto</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Hacer un folleto de las páginas interiores del libro. Las páginas se distribuido y reordenado de manera que cuando la doblará, tendrá un folleto.\n</target>
+        <target xml:lang="es-ES" state="translated">Hacer un librito de las páginas interiores del libro. Las páginas serán formateadas y reordenadas de tal manera que solo tiene que doblarlas para tener un librito.\n</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un folleto de las páginas interiores del libro. Las páginas se distribuido y reordenado de manera que cuando la doblará, tendrá un folleto.\n</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un folleto de las páginas interiores del libro. Las páginas se distribuido y reordenado de manera que cuando la doblará , tendrá un folleto</target>
         </alt-trans>
@@ -3189,17 +3198,26 @@
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
         <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Cargar a BloomLibrary.org, donde otros pueden descargar y localizar a su propia lengua.</target>
+        <target xml:lang="es-ES" state="translated">Cargar a BloomLibrary.org, donde otros pueden descargarlo para traducirlo a su propio idioma.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cargar a BloomLibrary.org, donde otros pueden descargar y localizar a su propia lengua.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio">
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
-        <target xml:lang="es-ES" state="translated">Portada</target>
+        <target xml:lang="es-ES" state="translated">Portada del librito</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Portada</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Hacer un PDF de sólo la anverso y reverso (ambos lados), para que pueda imprimir en papel de color.</target>
+        <target xml:lang="es-ES" state="translated">Hacer un PDF de solamente la cubierta (ambos lados), para que pueda imprimirlo en papel de color.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un PDF de sólo la anverso y reverso (ambos lados), para que pueda imprimir en papel de color.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.EpubButton">
         <source xml:lang="en">ePUB</source>
@@ -3209,7 +3227,10 @@
       <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leido en varios dispositivos de lectura electrónica.</target>
+        <target xml:lang="es-ES" state="translated">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leído en varios dispositivos de lectura electrónica.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leido en varios dispositivos de lectura electrónica.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
         <source xml:lang="en">Don't Show This Again</source>
