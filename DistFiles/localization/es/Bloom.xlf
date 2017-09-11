@@ -1151,7 +1151,10 @@
       <trans-unit id="EditTab.CutButton.ToolTipWhenDisabled">
         <source xml:lang="en">You need to select some text before you can cut it</source>
         <note>ID: EditTab.CutButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="translated">Antes debe seleccionar el texto para poder copiarlo</target>
+        <target xml:lang="es-ES" state="translated">Debe primero seleccionar el texto para poder copiarlo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Antes debe seleccionar el texto para poder copiarlo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DeletePageButton">
         <source xml:lang="en">Remove\n  Page</source>
@@ -1169,7 +1172,10 @@
       <trans-unit id="EditTab.DeletePageButton.ToolTipWhenDisabled">
         <source xml:lang="en">This page cannot be removed</source>
         <note>ID: EditTab.DeletePageButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="translated">Esta página no puede ser removida</target>
+        <target xml:lang="es-ES" state="translated">Esta página no puede ser eleminada</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta página no puede ser removida</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DeleteTextBoxFromImage" sil:dynamic="true">
         <source xml:lang="en">Delete Text Box From Image</source>
@@ -1203,12 +1209,18 @@
       <trans-unit id="EditTab.DuplicatePageButton">
         <source xml:lang="en">Duplicate\n  Page</source>
         <note>ID: EditTab.DuplicatePageButton</note>
-        <target xml:lang="es-ES" state="translated">Duplicado\n  Página</target>
+        <target xml:lang="es-ES" state="translated">Duplicar\n  Página</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Duplicado\n  Página</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTip</note>
-        <target xml:lang="es-ES" state="translated">Insertar una nueva página que es un duplicado de éste</target>
+        <target xml:lang="es-ES" state="translated">Insertar una nueva página que es una duplicada de éste</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Insertar una nueva página que es un duplicado de éste</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
         <source xml:lang="en">This page cannot be duplicated</source>
@@ -1223,7 +1235,10 @@
       <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true">
         <source xml:lang="en">You cannot change these because this is not the original copy.</source>
         <note>ID: EditTab.EditNotAllowed</note>
-        <target xml:lang="es-ES" state="translated">No se puede cambiar estos porque esta no es la copia original.</target>
+        <target xml:lang="es-ES" state="translated">No puede hacer cambios porque esta no es la copia original.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se puede cambiar estos porque esta no es la copia original.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord">
         <source xml:lang="en">Sight Word</source>
@@ -1243,12 +1258,18 @@
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
         <note>ID: EditTab.ExperimentalNotice</note>
-        <target xml:lang="es-ES" state="translated">Esta página es un prototipo experimental que puede tener muchos problemas, para lo cual pedimos disculpas.</target>
+        <target xml:lang="es-ES" state="translated">Esta página es un prototipo experimental que puede tener muchos problemas, por lo cual pedimos disculpas.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta página es un prototipo experimental que puede tener muchos problemas, para lo cual pedimos disculpas.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FontMissing">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
         <note>ID: EditTab.FontMissing</note>
-        <target xml:lang="es-ES" state="translated">La fuente seleccionada es '{0}', pero no está instalado en este computadora. Otra fuente se utiliza.</target>
+        <target xml:lang="es-ES" state="translated">La fuente seleccionada es '{0}', pero no está instalado en esta computadora. Otra fuente sera utilizada.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La fuente seleccionada es '{0}', pero no está instalado en este computadora. Otra fuente se utiliza.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
         <source xml:lang="en">Alignment</source>
@@ -1303,7 +1324,10 @@
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
-        <target xml:lang="es-ES" state="translated">Cambia el tamaño del texto para todas las cajas utilizando el estilo '{0}' y el idioma '{1}'.\nTamaño actual es {2} pt.</target>
+        <target xml:lang="es-ES" state="translated">Cambia el tamaño del texto para todas los cuadros utilizando el estilo '{0}' y el idioma '{1}'.\nTamaño actual es {2}pt.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cambia el tamaño del texto para todas las cajas utilizando el estilo '{0}' y el idioma '{1}'.\nTamaño actual es {2} pt.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font size</source>
