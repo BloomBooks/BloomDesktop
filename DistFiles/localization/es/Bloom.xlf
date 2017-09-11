@@ -3642,7 +3642,10 @@
       <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail">
         <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
         <note>ID: PublishTab.Upload.Login.PleaseProvideEmail</note>
-        <target xml:lang="es-ES" state="translated">Introduzca una dirección de correo electrónico válida. Le enviaremos un correo electrónico a esta dirección para que pueda restablecer su contraseña.</target>
+        <target xml:lang="es-ES" state="translated">Favord de introducir una dirección de correo electrónico válida. Le enviaremos un correo electrónico a esa dirección para que pueda restablecer su contraseña.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Introduzca una dirección de correo electrónico válida. Le enviaremos un correo electrónico a esta dirección para que pueda restablecer su contraseña.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.ResetConnectFailed">
         <source xml:lang="en">Bloom could not connect to the server to reset your password. Please check your network connection.</source>
@@ -3652,7 +3655,13 @@
       <trans-unit id="PublishTab.Upload.Login.ResetFailed">
         <source xml:lang="en">Reset Password failed</source>
         <note>ID: PublishTab.Upload.Login.ResetFailed</note>
-        <target xml:lang="es-ES" state="translated">No se pudo restablecer contraseña</target>
+        <target xml:lang="es-ES" state="translated">No se pudo restablecer la contraseña</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se pudo restablecer su contraseña</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">No se pudo restablecer contraseña</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.ResetPassword">
         <source xml:lang="en">Resetting Password</source>
@@ -3662,7 +3671,10 @@
       <trans-unit id="PublishTab.Upload.Login.SendingResetPassword">
         <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password.</source>
         <note>ID: PublishTab.Upload.Login.SendingResetPassword</note>
-        <target xml:lang="es-ES" state="translated">Estamos enviando un correo electrónico a {0} con instrucciones para restablecer la contraseña.</target>
+        <target xml:lang="es-ES" state="translated">Estamos enviandole un correo electrónico a {0} con instrucciones sobre como restablecer su contraseña.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estamos enviando un correo electrónico a {0} con instrucciones para restablecer la contraseña.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Estamos enviando un correo electrónico a {0} con instrucciones para restablecer la contraseña</target>
         </alt-trans>
