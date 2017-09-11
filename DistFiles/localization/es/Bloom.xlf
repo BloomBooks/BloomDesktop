@@ -2204,23 +2204,23 @@
       <trans-unit id="EditTab.Toolbox.Settings.IsTemplateBookIntroductionText" sil:dynamic="true">
         <source xml:lang="en">When you click "Add Page", you can choose from pages contained in template books. To make this a template book, tick this checkbox.</source>
         <note>ID: EditTab.Toolbox.Settings.IsTemplateBookIntroductionText</note>
-        <target xml:lang="es-ES" state="needs-translation">When you click "Add Page", you can choose from pages contained in template books. To make this a template book, tick this checkbox.</target>
+        <target xml:lang="es-ES" state="translated">Cuando haga clic en "Aggregar página" puede escoger entre páginas contenidas en los libros de plantilla. Para convertir este libro a un libro de plantilla, marque esta casilla.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
         <note>ID: EditTab.Toolbox.Settings.Unlock</note>
-        <target xml:lang="es-ES" state="needs-translation">Allow changes to this shellbook</target>
+        <target xml:lang="es-ES" state="translated">Permitir cambios a este libro shell</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText" sil:dynamic="true">
         <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</target>
+        <target xml:lang="es-ES" state="translated">Bloom normalmente previene la mayoría de los cambios a los libros shell. Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.BadState">
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.BadState</note>
         <note>This is very low priority for translation.</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</target>
+        <target xml:lang="es-ES" state="translated">La grabación no esta funcionando bien. De repente, el micrófono esta desenchufado. Tendra que empezar de nuevo.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput">
         <source xml:lang="en">No input device</source>
@@ -2398,7 +2398,7 @@
       <trans-unit id="Errors.SomethingWentWrong">
         <source xml:lang="en">Sorry, something went wrong.</source>
         <note>ID: Errors.SomethingWentWrong</note>
-        <target xml:lang="es-ES" state="needs-translation">Sorry, something went wrong.</target>
+        <target xml:lang="es-ES" state="translated">Lastimosamente, algo no funcionó.</target>
       </trans-unit>
       <trans-unit id="Errors.SpecifiedXMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
@@ -2417,7 +2417,7 @@
         <source xml:lang="en">Front/Back Matter Problem</source>
         <note>ID: Errors.XMatterProblemLabel</note>
         <note>This shows in the 'toast' that pops up to notify the user of a non-fatal problem.</note>
-        <target xml:lang="es-ES" state="needs-translation">Front/Back Matter Problem</target>
+        <target xml:lang="es-ES" state="translated">Problema con material inicial/final</target>
       </trans-unit>
       <trans-unit id="Errors.XMatterSpecifiedByBookNotFound">
         <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
@@ -2457,7 +2457,7 @@
       <trans-unit id="HelpMenu.Help Menu_ToolTip_" sil:dynamic="true">
         <source xml:lang="en">Get Help</source>
         <note>ID: HelpMenu.Help Menu_ToolTip_</note>
-        <target xml:lang="es-ES" state="needs-translation">Get Help</target>
+        <target xml:lang="es-ES" state="translated">Conseguir ayuda</target>
       </trans-unit>
       <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem">
         <source xml:lang="en">Key Bloom Concepts</source>
@@ -2467,7 +2467,7 @@
       <trans-unit id="HelpMenu.AskAQuestionMenuItem">
         <source xml:lang="en">Ask a Question (web)</source>
         <note>ID: HelpMenu.AskAQuestionMenuItem</note>
-        <target xml:lang="es-ES" state="needs-translation">Ask a Question (web)</target>
+        <target xml:lang="es-ES" state="translated">Hacer una pregunta (web)</target>
       </trans-unit>
       <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
         <source xml:lang="en">Request a Feature (web)</source>
@@ -2530,17 +2530,17 @@
         <source xml:lang="en">Converting to mp3</source>
         <note>ID: LameEncoder.Progress</note>
         <note>Appears in progress indicator</note>
-        <target xml:lang="es-ES" state="needs-translation">Converting to mp3</target>
+        <target xml:lang="es-ES" state="translated">Convertiend a mp3</target>
       </trans-unit>
       <trans-unit id="LanguageFontDetails.RightToLeftCheck">
         <source xml:lang="en">This script is right to left</source>
         <note>ID: LanguageFontDetails.RightToLeftCheck</note>
-        <target xml:lang="es-ES" state="needs-translation">This script is right to left</target>
+        <target xml:lang="es-ES" state="translated">Esta escritura es de derecha a izquierda</target>
       </trans-unit>
       <trans-unit id="LanguageFontDetails.TallerLinesCheck">
         <source xml:lang="en">This script requires taller lines</source>
         <note>ID: LanguageFontDetails.TallerLinesCheck</note>
-        <target xml:lang="es-ES" state="needs-translation">This script requires taller lines</target>
+        <target xml:lang="es-ES" state="translated">Esta escritura require liñas mas altas</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true">
         <source xml:lang="en">A3Landscape</source>
@@ -2630,7 +2630,7 @@
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom {0}</target>
+        <target xml:lang="es-ES" state="translated">Bloom {0}</target>
       </trans-unit>
       <trans-unit id="LicenseDialog._acceptButton">
         <source xml:lang="en">I accept the terms of the license agreement</source>
@@ -2730,7 +2730,7 @@
       <trans-unit id="NewCollectionWizard.FontAndScriptPage">
         <source xml:lang="en">Font and Script</source>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-        <target xml:lang="es-ES" state="needs-translation">Font and Script</target>
+        <target xml:lang="es-ES" state="translated">Fuente y Escritura</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
         <source xml:lang="en">Choose the Collection Type</source>
