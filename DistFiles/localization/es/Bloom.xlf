@@ -2113,7 +2113,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
         <source xml:lang="en">Keep in mind</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.KeepInMind</note>
-        <target xml:lang="es-ES" state="translated">Tener en mente</target>
+        <target xml:lang="es-ES" state="translated">Tenga en cuenta</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Tener en mente</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true">
         <source xml:lang="en">Level</source>
@@ -2180,7 +2183,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
         <source xml:lang="en">Word Counts</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WordCounts</note>
-        <target xml:lang="es-ES" state="translated">Conteo de palabras</target>
+        <target xml:lang="es-ES" state="translated">Numero de palabras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Conteo de palabras</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true">
         <source xml:lang="en">More...</source>
@@ -2232,7 +2238,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
-        <target xml:lang="es-ES" state="translated">Atrás</target>
+        <target xml:lang="es-ES" state="translated">Regresar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Atrás</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true">
         <source xml:lang="en">4) Check</source>
@@ -2242,7 +2251,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
-        <target xml:lang="es-ES" state="translated">1) Averiguar que está usando el dispositivo de grabación correcto y que el nivel de sonido aparece en la zona azul:</target>
+        <target xml:lang="es-ES" state="translated">1) Averigue que está usando un dispositivo de grabación correcto y que los niveles se ven azules:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">1) Averiguar que está usando el dispositivo de grabación correcto y que el nivel de sonido aparece en la zona azul:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true">
         <source xml:lang="en">Clear</source>
@@ -2252,7 +2264,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Heading</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de libros parlantes</target>
+        <target xml:lang="es-ES" state="translated">Herramienta de libros sonoros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Herramienta de libros parlantes</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true">
         <source xml:lang="en">Listen to the whole page</source>
@@ -2272,7 +2287,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
-        <target xml:lang="es-ES" state="translated">3) Grabar</target>
+        <target xml:lang="es-ES" state="translated">3) Hablar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">3) Grabar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
