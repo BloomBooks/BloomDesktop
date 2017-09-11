@@ -5,7 +5,10 @@
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Problema con Bloon</target>
+        <target xml:lang="es-ES" state="translated">Problema con Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Problema con Bloon</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Haciendo PDF...</target>
         </alt-trans>
@@ -825,7 +828,10 @@
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="es-ES" state="translated">&amp;Acabar</target>
+        <target xml:lang="es-ES" state="translated">&amp;Terminar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">&amp;Acabar</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">&amp;Finalizar</target>
         </alt-trans>
@@ -2378,12 +2384,12 @@
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</source>
         <note>ID: Errors.NeedNewerVersion</note>
         <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
-        <target xml:lang="es-ES" state="needs-translation">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</target>
+        <target xml:lang="es-ES" state="translated">{0} requiere una nueva versión de Bloom. Descargue la versión más reciente de {1}.</target>
       </trans-unit>
       <trans-unit id="Errors.ProblemDeletingFile">
         <source xml:lang="en">Bloom had a problem deleting this file: {0}</source>
         <note>ID: Errors.ProblemDeletingFile</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom had a problem deleting this file: {0}</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo eliminar este archivo {0}</target>
       </trans-unit>
       <trans-unit id="Errors.ProblemImportingPicture">
         <source xml:lang="en">Bloom had a problem importing this picture.</source>
@@ -2393,7 +2399,7 @@
       <trans-unit id="Errors.ReportThisProblemButton">
         <source xml:lang="en">Report this problem to Bloom Support</source>
         <note>ID: Errors.ReportThisProblemButton</note>
-        <target xml:lang="es-ES" state="needs-translation">Report this problem to Bloom Support</target>
+        <target xml:lang="es-ES" state="translated">Informar sobre este problema a Apoyo Bloom</target>
       </trans-unit>
       <trans-unit id="Errors.SomethingWentWrong">
         <source xml:lang="en">Sorry, something went wrong.</source>
@@ -2725,7 +2731,7 @@
         <source xml:lang="en">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</source>
         <note>ID: NewCollectionWizard.FinishPageContent</note>
         <note>{0} is the name of the new collection</note>
-        <target xml:lang="es-ES" state="needs-translation">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</target>
+        <target xml:lang="es-ES" state="translated">Eso es todo lo que se requiere para empezar con su nueva colección '{0}'.\nHaga clic sobre el botón 'Termina'.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.FontAndScriptPage">
         <source xml:lang="en">Font and Script</source>
@@ -2971,7 +2977,7 @@
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
-        <target xml:lang="es-ES" state="needs-translation">Get Bloom Reader App</target>
+        <target xml:lang="es-ES" state="translated">Obtenga la aplicación BloomReader</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method</source>
@@ -3008,7 +3014,7 @@
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
         <note>ID: PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader</note>
-        <target xml:lang="es-ES" state="needs-translation">The following devices are connected but do not seem to have Bloom Reader running:</target>
+        <target xml:lang="es-ES" state="translated">Los siguientes dispositivos estan conectados pero no estan ejecutando BloomReader:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend">
         <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
@@ -4809,7 +4815,7 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front/Back Matter</source>
         <note>ID: TemplateBooks.PageLabel.FrontBackMatter</note>
-        <target xml:lang="es-ES" state="needs-translation">Front/Back Matter</target>
+        <target xml:lang="es-ES" state="translated">Material inicial/final</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image For Thumbnail" sil:dynamic="true">
         <source xml:lang="en">Image For Thumbnail</source>
@@ -5078,13 +5084,13 @@ Desea seguir?</target>
         <source xml:lang="en">Cannot Find Image File</source>
         <note>ID: WebServer.Warning.NoImageFile</note>
         <note>displays as a "toast"</note>
-        <target xml:lang="es-ES" state="needs-translation">Cannot Find Image File</target>
+        <target xml:lang="es-ES" state="translated">Archivo de imagen no encontrado</target>
       </trans-unit>
       <trans-unit id="WebServer.Warning.NoFile">
         <source xml:lang="en">Cannot Find File</source>
         <note>ID: WebServer.Warning.NoFile</note>
         <note>displays as a "toast"</note>
-        <target xml:lang="es-ES" state="needs-translation">Cannot Find File</target>
+        <target xml:lang="es-ES" state="translated">Archivo no encontrado</target>
       </trans-unit>
     </body>
   </file>
