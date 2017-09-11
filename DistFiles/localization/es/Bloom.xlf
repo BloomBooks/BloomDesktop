@@ -3682,16 +3682,24 @@
       <trans-unit id="PublishTab.Upload.Login.Signup">
         <source xml:lang="en">Sign up for Bloom Library.</source>
         <note>ID: PublishTab.Upload.Login.Signup</note>
-        <target xml:lang="es-ES" state="translated">Inscríbete en la Bloom Library.</target>
+        <target xml:lang="es-ES" state="translated">Inscríbese a la Biblioteca Bloom (Bloom Library).</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Inscríbete en la Bloom Library.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Template">
         <source xml:lang="en">This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.
 
 Do you want to go ahead?</source>
         <note>ID: PublishTab.Upload.Template</note>
-        <target xml:lang="es-ES" state="translated">Este libro parece ser una plantilla porque tiene páginas en blanco para escrivir un libro nuevo en vez de contenido para traducir a otros idiomas. Si eso no es lo que deseaba, debe conseguir ayuda eperta antes de cargar este libro.
+        <target xml:lang="es-ES" state="translated">Este libro parece ser una plantilla porque tiene páginas en blanco para escribir un libro nuevo en vez de contenido que debe ser traducido a otros idiomas. Si eso no es lo que deseaba, debe conseguir ayuda experta antes de cargar este libro.
 
 Desea seguir?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro parece ser una plantilla porque tiene páginas en blanco para escrivir un libro nuevo en vez de contenido para traducir a otros idiomas. Si eso no es lo que deseaba, debe conseguir ayuda eperta antes de cargar este libro.
+
+Desea seguir?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.UnknownUser">
         <source xml:lang="en">Unknown user</source>
@@ -3716,7 +3724,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.MakingPdf">
         <source xml:lang="en">Making PDF Preview...</source>
         <note>ID: PublishTab.Upload.MakingPdf</note>
-        <target xml:lang="es-ES" state="translated">Haciendo una vista previa PDF...</target>
+        <target xml:lang="es-ES" state="translated">Haciendo una vista previa del PDF...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haciendo una vista previa PDF...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.MakingThumbnail">
         <source xml:lang="en">Making thumbnail image...</source>
@@ -3726,17 +3737,26 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.NoLangsFound">
         <source xml:lang="en">(None found)</source>
         <note>ID: PublishTab.Upload.NoLangsFound</note>
-        <target xml:lang="es-ES" state="translated">(No encontrado)</target>
+        <target xml:lang="es-ES" state="translated">(Ninguno encontrado)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">(No encontrado)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.OldVersion">
         <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
         <note>ID: PublishTab.Upload.OldVersion</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, esta versión de escritorio de Bloom no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
+        <target xml:lang="es-ES" state="translated">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo sentimos, esta versión de escritorio de Bloom no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseLogIn">
         <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
         <note>ID: PublishTab.Upload.PleaseLogIn</note>
-        <target xml:lang="es-ES" state="translated">Por favor, Inicia sesión para BloomLibrary.org (o registrarse) antes de cargar</target>
+        <target xml:lang="es-ES" state="translated">Por favor, ingrese a BloomLibrary.org (o inscribese) antes de cargar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor, Inicia sesión para BloomLibrary.org (o registrarse) antes de cargar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseSetThis">
         <source xml:lang="en">Please set this from the edit tab</source>
