@@ -2562,6 +2562,12 @@
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
         <target xml:lang="fr" state="needs-translation">Control</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.GetBloomReader">
+        <source xml:lang="en">Get Bloom Reader App</source>
+        <note>ID: PublishTab.Android.GetBloomReader</note>
+        <note>Link to find Bloom Reader on Google Play Store</note>
+        <target xml:lang="fr" state="needs-translation">Get Bloom Reader App</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method</source>
         <note>ID: PublishTab.Android.Method</note>
