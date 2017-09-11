@@ -1549,7 +1549,7 @@
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="es-ES" state="needs-translation">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</target>
+        <target xml:lang="es-ES" state="translated">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to choose topic</source>
@@ -1564,7 +1564,7 @@
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="es-ES" state="needs-translation">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</target>
+        <target xml:lang="es-ES" state="translated">Para desbloquear este libro de fuente, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro de fuente'.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
         <source xml:lang="en">Change Image</source>
@@ -1582,7 +1582,7 @@
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
         <note>ID: EditTab.Image.CopyImageFailed</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom had problems using your computer's clipboard. Some other program may be interfering.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo usar el portapapeles de su computadora. Es posible que hay un conflicto con otro programa.</target>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
         <source xml:lang="en">Cut Image</source>
@@ -1611,12 +1611,12 @@
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
         <note>ID: EditTab.Image.TryRestart</note>
-        <target xml:lang="es-ES" state="needs-translation">Try closing other programs and restart your computer if necessary.</target>
+        <target xml:lang="es-ES" state="translated">Intente cerrar otros programs y reiniciar su computadora si es necesario.</target>
       </trans-unit>
       <trans-unit id="EditTab.Instructions.DeleteAllowed">
         <source xml:lang="en">Feel free to modify or delete this page.</source>
         <note>ID: EditTab.Instructions.DeleteAllowed</note>
-        <target xml:lang="es-ES" state="needs-translation">Feel free to modify or delete this page.</target>
+        <target xml:lang="es-ES" state="translated">Puede modificar o eliminar esta página.</target>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.DoNotUse">
         <source xml:lang="en">Cancel this import</source>
@@ -1683,7 +1683,7 @@
       <trans-unit id="EditTab.Overflow" sil:dynamic="true">
         <source xml:lang="en">This box has more text than will fit</source>
         <note>ID: EditTab.Overflow</note>
-        <target xml:lang="es-ES" state="needs-translation">This box has more text than will fit</target>
+        <target xml:lang="es-ES" state="translated">Este cuadro contiene mas texto de lo que cabe</target>
       </trans-unit>
       <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true">
         <source xml:lang="en">A container on this page is overflowing</source>
