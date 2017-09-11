@@ -3078,7 +3078,10 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
         <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
-        <target xml:lang="es-ES" state="translated">La solicitud de libro que no pudo ser procesado. Es posible que el dispositivo está ejecutando una versión incompatible de BloomReader.</target>
+        <target xml:lang="es-ES" state="translated">Recibimo una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de BloomReader?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La solicitud de libro que no pudo ser procesado. Es posible que el dispositivo está ejecutando una versión incompatible de BloomReader.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.beginAdvertising">
         <source xml:lang="en">Advertising book to Bloom Readers on local network...</source>
@@ -3088,7 +3091,10 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.Failed">
         <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Failed</note>
-        <target xml:lang="es-ES" state="translated">Falló el envío de este libro. Posiblemente el dispositivo esta desconectado. Si no puede determinar porque sucedió esto, lo siguiente puede ser útil reportar a los desarrolladores:</target>
+        <target xml:lang="es-ES" state="translated">Falló el envío de este libro. ¿Será que el dispositivo esta desconectado? Si no puede determinar porque sucedió esto, lo siguiente puede ser útil reportar a los desarrolladores:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Falló el envío de este libro. Posiblemente el dispositivo esta desconectado. Si no puede determinar porque sucedió esto, lo siguiente puede ser útil reportar a los desarrolladores:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Finished">
         <source xml:lang="en">Finished sending "{0}" to device {1}</source>
@@ -3115,7 +3121,10 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions2</note>
-        <target xml:lang="es-ES" state="translated">Puede hacer esto en tantos dispositivos que guste. Asegure que cada dispositivo está conectado a la misma red que esta computadora.</target>
+        <target xml:lang="es-ES" state="translated">Puede hacer esto en tantos dispositivos que guste. Asegure que cada dispositivo está conectado a la misma red que la computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Puede hacer esto en tantos dispositivos que guste. Asegure que cada dispositivo está conectado a la misma red que esta computadora.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Start">
         <source xml:lang="en">Start Serving</source>
@@ -3138,17 +3147,26 @@
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
-        <target xml:lang="es-ES" state="translated">Por favor instale a Adobe Reader para que Bloom pueda mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        <target xml:lang="es-ES" state="translated">Por favor instale a Adobe Reader para que Bloom puede mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor instale a Adobe Reader para que Bloom pueda mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
         <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
         <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
-        <target xml:lang="es-ES" state="translated">Eso es extraño... Adobe Reader le dio un error al intentar mostrar ese PDF. Todavía puede intentar salvar el libro PDF.</target>
+        <target xml:lang="es-ES" state="translated">Eso es extraño... Adobe Reader le dio un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro PDF.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error al intentar mostrar ese PDF. Todavía puede intentar salvar el libro PDF.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
-        <target xml:lang="es-ES" state="translated">Noticia triste. Bloom no fue capaz de abrir Adobe Reader aquí, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva a instalar a 'Adobe Reader'.\nHasta que llegue ese fijo, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        <target xml:lang="es-ES" state="translated">Lastimosamente, Bloom no fue capaz de abrir Adobe Reader, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva (re)instalar 'Adobe Reader'.\nHasta que lo resuelve, puede guardar el libro PDF y abrirlo con otro programa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Noticia triste. Bloom no fue capaz de abrir Adobe Reader aquí, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva a instalar a 'Adobe Reader'.\nHasta que llegue ese fijo, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio">
         <source xml:lang="en">Booklet Insides</source>
