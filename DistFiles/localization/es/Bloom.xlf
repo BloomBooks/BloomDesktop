@@ -1584,17 +1584,26 @@
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
         <source xml:lang="en">Cut Image</source>
         <note>ID: EditTab.Image.CutImage</note>
-        <target xml:lang="es-ES" state="translated">Recortar imagen</target>
+        <target xml:lang="es-ES" state="translated">Cortar la imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Recortar imagen</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
         <source xml:lang="en">Edit Image Credits, Copyright, and License</source>
         <note>ID: EditTab.Image.EditMetadata</note>
-        <target xml:lang="es-ES" state="translated">Editar créditos de imagen, derechos de autor, y Licencia</target>
+        <target xml:lang="es-ES" state="translated">Editar créditos de imagen, derechos de autor, y licencia</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Editar créditos de imagen, derechos de autor, y Licencia</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
-        <target xml:lang="es-ES" state="translated">Pegar imagen</target>
+        <target xml:lang="es-ES" state="translated">Pegar la imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Pegar imagen</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
@@ -1619,7 +1628,10 @@
       <trans-unit id="EditTab.JpegWarningDialog.WarningText">
         <source xml:lang="en">The file you’ve chosen is a “JPEG” file. JPEG files are perfect for photographs and color artwork. However, JPEG files are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</source>
         <note>ID: EditTab.JpegWarningDialog.WarningText</note>
-        <target xml:lang="es-ES" state="translated">El archivo elegido es un archivo "JPEG". Ilustraciones JPEG son perfectas para las fotografías y las ilustraciones en color. Sin embargo, JPEG es un gran problema para arte de línea en blanco y negro. Los problemas incluyen: \n• Borrosidad y puntos grises. \n• Archivos de gran tamaño, esto hace un libro difícil a compartir. \n• Si hay muchos archivos JPEG de gran tamaño, Bloom no tiene suficiente memoria para hacer PDFs \n \n Nota: Debido a JPEG es "lossy", la conversión de un archivo JPEG a PNG, TIFF o BMP en realidad hace que las cosas aún peor. Si esta es arte de línea en blanco y negro, debe obtener un archivo original escaneado en uno de esos formatos \n\n Por favor seleccione uno de los siguientes, a continuación, haga clic en "Aceptar":</target>
+        <target xml:lang="es-ES" state="translated">El archivo elegido es un archivo "JPEG". Ilustraciones JPEG son perfectas para las fotografías y las ilustraciones a colores. Sin embargo, JPEG es un gran problema para arte de línea en blanco y negro. Los problemas incluyen:\n• Borrosidad y puntos grises.\n• Es dificil compartir los archivos grandes.\n• Si hay muchos archivos grandes de JPEG, es posible que Bloom no tendrá la memoria suficiente memoria para hacer PDFs.\n\n Nota: Debido a que JPEG es "lossy", la conversión de un archivo JPEG a PNG, TIFF o BMP empeora las cosas. Si esta es arte de línea en blanco y negro, debe obtener un escaneo original en uno de esos formatos.\n\n Por favor seleccione uno de los siguientes, y luego haga clic en "Aceptar":</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El archivo elegido es un archivo "JPEG". Ilustraciones JPEG son perfectas para las fotografías y las ilustraciones en color. Sin embargo, JPEG es un gran problema para arte de línea en blanco y negro. Los problemas incluyen: \n• Borrosidad y puntos grises. \n• Archivos de gran tamaño, esto hace un libro difícil a compartir. \n• Si hay muchos archivos JPEG de gran tamaño, Bloom no tiene suficiente memoria para hacer PDFs \n \n Nota: Debido a JPEG es "lossy", la conversión de un archivo JPEG a PNG, TIFF o BMP en realidad hace que las cosas aún peor. Si esta es arte de línea en blanco y negro, debe obtener un archivo original escaneado en uno de esos formatos \n\n Por favor seleccione uno de los siguientes, a continuación, haga clic en "Aceptar":</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.WindowTitle">
         <source xml:lang="en">JPEG Warning</source>
@@ -1629,7 +1641,10 @@
       <trans-unit id="EditTab.LayoutInPublishTabOnlyNotice">
         <source xml:lang="en">This option is only available in the Publish tab.</source>
         <note>ID: EditTab.LayoutInPublishTabOnlyNotice</note>
-        <target xml:lang="es-ES" state="translated">Esta opción sólo está disponible en la pestaña publicar.</target>
+        <target xml:lang="es-ES" state="translated">Esta opción sólo es disponible en la pestaña publicar.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta opción sólo está disponible en la pestaña publicar.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.LayoutMode.ChangeLayout" sil:dynamic="true">
         <source xml:lang="en">Change Layout</source>
