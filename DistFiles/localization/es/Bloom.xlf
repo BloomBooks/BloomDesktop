@@ -936,7 +936,10 @@
       <trans-unit id="Download.TimeoutProblemNotice">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.TimeoutProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">No se pudo descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar de su ubicación, escríbanos a la dirección issues@bloomlibrary.org</target>
+        <target xml:lang="es-ES" state="translated">No se pudo descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar de su ubicación, escríbanos a la dirección issues@bloomlibrary.org.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se pudo descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar de su ubicación, escríbanos a la dirección issues@bloomlibrary.org</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hubo un problema al descargar el libro: algo tomó demasiado tiempo. Puede volver a intentarlo en otro momento, o escríbanos a issues@bloomlibrary.org si la descarga no funciona desde su ubicación.</target>
         </alt-trans>
@@ -3591,32 +3594,50 @@
       <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
         <source xml:lang="en">Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</source>
         <note>ID: PublishTab.Upload.Login.LoginOrSignupConnectionFailed</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo conectar al servidor para completar su login o suscripción. Esto podría ser un problema con la conexión a internet, nuestro servidor o algún equipo en el medio.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo conectar al servidor para completar su login o suscripción. Esto podría ser un problema con su conexión al internet, nuestro servidor o algún equipo intermediario.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo conectar al servidor para completar su login o suscripción. Esto podría ser un problema con la conexión a internet, nuestro servidor o algún equipo en el medio.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.MustAgreeTerms">
         <source xml:lang="en">In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</source>
         <note>ID: PublishTab.Upload.Login.MustAgreeTerms</note>
-        <target xml:lang="es-ES" state="translated">Con el fin de registrarse para una cuenta de BloomLibrary.org, debe marcar la casilla indicando que de acuerdo a los términos de uso de BloomLibrary.</target>
+        <target xml:lang="es-ES" state="translated">Para inscribir una cuenta nueva en BloomLibrary.org, debe marcar el cuadro que indica que esta de acuerdo con los términos de uso de BloomLibrary.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Con el fin de registrarse para una cuenta de BloomLibrary.org, debe marcar la casilla indicando que de acuerdo a los términos de uso de BloomLibrary.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.Need Email">
         <source xml:lang="en">Email Needed</source>
         <note>ID: PublishTab.Upload.Login.Need Email</note>
-        <target xml:lang="es-ES" state="translated">Dirección de correo electrónico necesario</target>
+        <target xml:lang="es-ES" state="translated">Require dirección de correo electrónico</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Dirección de correo electrónico necesario</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser">
         <source xml:lang="en">We don't have a user on record with that email. Would you like to sign up?</source>
         <note>ID: PublishTab.Upload.Login.NoRecordOfUser</note>
-        <target xml:lang="es-ES" state="translated">No tenemos un usuario registrado con ese email. ¿Le gustaría registrarse?</target>
+        <target xml:lang="es-ES" state="translated">No tenemos un usuario registrado con ese correo electrónico. ¿Gustaría inscribirse?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No tenemos un usuario registrado con ese email. ¿Le gustaría registrarse?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.PasswordMismatch">
         <source xml:lang="en">Password and user ID did not match</source>
         <note>ID: PublishTab.Upload.Login.PasswordMismatch</note>
-        <target xml:lang="es-ES" state="translated">Contraseña y nombre de usuario no coincide</target>
+        <target xml:lang="es-ES" state="translated">Contraseña y nombre de usuario no coincidieron</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Contraseña y nombre de usuario no coincide</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms">
         <source xml:lang="en">Please agree to terms of use</source>
         <note>ID: PublishTab.Upload.Login.PleaseAgreeTerms</note>
-        <target xml:lang="es-ES" state="translated">Por favor, de acuerdo a los términos de uso</target>
+        <target xml:lang="es-ES" state="translated">Por favor, acepte los términos de uso</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor, de acuerdo a los términos de uso</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail">
         <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
