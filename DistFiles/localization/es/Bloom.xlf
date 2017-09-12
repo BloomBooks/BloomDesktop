@@ -2363,22 +2363,25 @@
       <trans-unit id="Errors.CannotConnectToBloomServer">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo empezar su propio HTTP listener que usa para comunicar con el busqueador itegrado de Firefox. Si esto sucede apesar de recien haber reiniciado su computadora, debe pedir que alguien investigue si tiene instalado un producto agresivo de cortafuegos. Es posible que tendra que desinstalar el cortafuegos para poder usar Bloom.</target>
       </trans-unit>
       <trans-unit id="Errors.DeniedAccess">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
         <note>ID: Errors.DeniedAccess</note>
-        <target xml:lang="es-ES" state="needs-translation">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</target>
+        <target xml:lang="es-ES" state="translated">So computador nego que Bloom accesara el libro. Pide ayuda tecnica para cambiar la configuración de permisos del sistema operativo de este archivo.</target>
       </trans-unit>
       <trans-unit id="Errors.ErrorSelecting">
         <source xml:lang="en">There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
         <note>ID: Errors.ErrorSelecting</note>
-        <target xml:lang="es-ES" state="needs-translation">There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</target>
+        <target xml:lang="es-ES" state="translated">No se pudo seleccionar el libro. Reiniciar Bloom puede resolver el problema. Si no lo resuelve, por favor haga clic en el botón "Detalles" y informenos del problema.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se pudo seleccionar el libro. Reiniciar Bloom puede resolver el problema. Si no lo resuelve, pof favor haga clic en el botón "Detalles" y informenos del problema.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.ErrorUpdating">
         <source xml:lang="en">There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
         <note>ID: Errors.ErrorUpdating</note>
-        <target xml:lang="es-ES" state="needs-translation">There was a problem updating the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</target>
+        <target xml:lang="es-ES" state="translated">No se pudo actualizar el lbro. Reiniciar Bloom puede resolver el problema. Si no lo resuelve, por favor haga clic en el botón "Detalles" y informenos del problema.</target>
       </trans-unit>
       <trans-unit id="Errors.NeedNewerVersion">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</source>
