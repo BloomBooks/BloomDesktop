@@ -105,7 +105,7 @@ namespace Bloom.Api
 								// then we want to remind the developer to add it to the english xlf file.
 								if (!LocalizationManager.GetIsStringAvailableForLangId(id, "en"))
 								{
-									ReportL10NMissingString(id, englishText);
+									ReportL10NMissingString(id, englishText, UrlPathString.CreateFromUrlEncodedString(parameters["comment"]??"").NotEncoded);
 								}
 								else
 								{
@@ -139,8 +139,9 @@ namespace Bloom.Api
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="defaultCurrent"></param>
+		/// <param name="comment">Localization comment, if any</param>
 		/// <returns></returns>
-		public static string GetTranslationDefaultMayNotBeEnglish(string key, string defaultCurrent)
+		public static string GetTranslationDefaultMayNotBeEnglish(string key, string defaultCurrent, string comment = null)
 		{
 			string translation;
 			if (LocalizationManager.GetIsStringAvailableForLangId(key, LocalizationManager.UILanguageId))
@@ -169,7 +170,7 @@ namespace Bloom.Api
 					if (string.IsNullOrWhiteSpace(translation))
 					{
 						translation = defaultCurrent;
-						ReportL10NMissingString(key, translation);
+						ReportL10NMissingString(key, translation, comment);
 					}
 				}
 			}
@@ -182,7 +183,7 @@ namespace Bloom.Api
 			return int.TryParse(key, out dummy);
 		}
 
-		private static void ReportL10NMissingString(string id, string englishText)
+		private static void ReportL10NMissingString(string id, string englishText, string comment)
 		{
 			if (ApplicationUpdateSupport.ChannelName.StartsWith("Developer"))
 			{
@@ -191,7 +192,7 @@ namespace Bloom.Api
 				//can put in the distribution one. We prefix it with CopyToDistributionXlf_, which he will have to remove, because
 				//otherwise the next time we look for this string, it would get found and we would lose the ability to point out the
 				//problem to the developer.
-				LocalizationManager.GetDynamicString("Bloom", "CopyToDistributionXlf_" + id, englishText);
+				LocalizationManager.GetDynamicString("Bloom", "CopyToDistributionXlf_" + id, englishText, comment);
 
 				var longMsg =
 					String.Format(
