@@ -377,20 +377,22 @@ namespace Bloom.Book
 							graphics.CompositingQuality = CompositingQuality.HighQuality;
 							graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 							graphics.SmoothingMode = SmoothingMode.HighQuality;
-							if (appearsToBeJpeg)
+							using (var imageAttributes = new ImageAttributes())
 							{
-								graphics.DrawImage(image, 0, 0, newWidth, newHeight);
-							}
-							else
-							{
+								// See https://stackoverflow.com/a/11850971/7442826
+								// Fixes the 50% gray border issue on bright white or dark images
+								imageAttributes.SetWrapMode(WrapMode.TileFlipXY);
+
 								// In addition to possibly scaling, we want PNG images to have transparent backgrounds.
-								ImageAttributes convertWhiteToTransparent = new ImageAttributes();
-								// This specifies that all white or very-near-white pixels (all color components at least 253/255)
-								// will be made transparent.
-								convertWhiteToTransparent.SetColorKey(Color.FromArgb(253, 253, 253), Color.White);
+								if (!appearsToBeJpeg)
+								{
+									// This specifies that all white or very-near-white pixels (all color components at least 253/255)
+									// will be made transparent.
+									imageAttributes.SetColorKey(Color.FromArgb(253, 253, 253), Color.White);
+								}
 								var destRect = new Rectangle(0, 0, newWidth, newHeight);
-								graphics.DrawImage(image, destRect, 0,0, image.Width, image.Height,
-									GraphicsUnit.Pixel, convertWhiteToTransparent);
+								graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height,
+									GraphicsUnit.Pixel, imageAttributes);
 							}
 						}
 						// Save the file in the same format as the original, and return its bytes.
