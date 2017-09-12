@@ -1262,7 +1262,10 @@
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
-        <target xml:lang="es-ES" state="translated">Esta frase es demasiado larga para este nivel.</target>
+        <target xml:lang="es-ES" state="translated">Esta oración es demasiado larga para este nivel.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta frase es demasiado larga para este nivel.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
@@ -2094,7 +2097,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
         <source xml:lang="en">avg per sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Average</note>
-        <target xml:lang="es-ES" state="translated">prom. por frase</target>
+        <target xml:lang="es-ES" state="translated">prom. por oración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">prom. por frase</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true">
         <source xml:lang="en">Choice of Topic</source>
