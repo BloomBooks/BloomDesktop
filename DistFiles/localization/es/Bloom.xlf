@@ -2161,7 +2161,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerSentence" sil:dynamic="true">
         <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.PerSentence</note>
-        <target xml:lang="es-ES" state="translated">frase más larga</target>
+        <target xml:lang="es-ES" state="translated">oración más larga</target>
+        <alt-trans>
+          <target xml:lang="es-ES">frase más larga</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
         <source xml:lang="en">Predictability</source>
@@ -2295,7 +2298,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
         <source xml:lang="en">2) Look at the highlighted sentence</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
-        <target xml:lang="es-ES" state="translated">2) Mirar la frase destacada</target>
+        <target xml:lang="es-ES" state="translated">2) Mirar la oración destacada</target>
+        <alt-trans>
+          <target xml:lang="es-ES">2) Mirar la frase destacada</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
@@ -2313,7 +2319,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
-        <target xml:lang="es-ES" state="translated">Hacer un e-libro que reproduce las grabaciones mientras que destaca las frases.</target>
+        <target xml:lang="es-ES" state="translated">Hacer un e-libro que reproduce las grabaciones mientras que destaca las oraciónes.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un e-libro que reproduce las grabaciones mientras que destaca las frases.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un e-book que pueda reproducir las grabaciones y al mismo tiempo destacar el texto correspondiente.</target>
         </alt-trans>
@@ -2321,7 +2330,10 @@
       <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
         <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox._bookSelection.LongestSentence</note>
-        <target xml:lang="es-ES" state="translated">frase más larga</target>
+        <target xml:lang="es-ES" state="translated">oración más larga</target>
+        <alt-trans>
+          <target xml:lang="es-ES">frase más larga</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">por frase</target>
         </alt-trans>
@@ -4112,7 +4124,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Average Length of Sentences in Book</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
-        <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de frases en el libro</target>
+        <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de oraciónes en el libro</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Promedio máximo de longitud de frases en el libro</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Unique Words per Book</source>
@@ -4220,22 +4235,31 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true">
         <source xml:lang="en">Sentence</source>
         <note>ID: ReaderSetup.SentenceHeader</note>
-        <target xml:lang="es-ES" state="translated">Frase</target>
+        <target xml:lang="es-ES" state="translated">Oración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Frase</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Words in each Sentence</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <target xml:lang="es-ES" state="translated">Palabras máximas en cada frase</target>
+        <target xml:lang="es-ES" state="translated">Palabras máximas en cada oración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Palabras máximas en cada frase</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="es-ES" state="translated">Puntuación especial para finales de frase</target>
+        <target xml:lang="es-ES" state="translated">Puntuación especial para finales de oración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Puntuación especial para finales de frase</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</target>
+        <target xml:lang="es-ES" state="translated">Bloom ya conoce que caracteres se usan en los idiomas del mundo para marcar el final de oraciones. Para agregar otros, ingrese los "Unicode character escapes" aqui. For ejemplo para tailandes, ingrese \U0020 para indicar a Bloom que en tailandes se usa espacios normales para terminar las oraciones.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
