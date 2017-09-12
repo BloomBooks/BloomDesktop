@@ -370,7 +370,7 @@ namespace Bloom.Publish
 						@"displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.");
 
 					rgb = rgb.Replace("|", "");
-					swopv2 = rgb.Replace("|", "");
+					swopv2 = swopv2.Replace("|", "");
 					dlg.Filter = String.Format("{0}|*.pdf|{1}|*.pdf", rgb, swopv2);
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
