@@ -3040,13 +3040,13 @@
         <source xml:lang="en">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</source>
         <note>ID: PublishTab.Android.Usb.Progress.MoreThanOne</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="needs-translation">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</target>
+        <target xml:lang="es-ES" state="translated">BloomReader esta instalado en todos los siguientes dispositivos conectados. Por favor conecte solamente uno de ellos.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound">
         <source xml:lang="en">No device found. Still looking...</source>
         <note>ID: PublishTab.Android.Usb.Progress.NoDeviceFound</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="needs-translation">No device found. Still looking...</target>
+        <target xml:lang="es-ES" state="translated">Dispositivo no ubicado. Sigue buscando...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.PackagingBook">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
@@ -3058,7 +3058,7 @@
         <source xml:lang="en">Replacing existing "{0}"...</source>
         <note>ID: PublishTab.Android.Usb.Progress.ReplacingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="needs-translation">Replacing existing "{0}"...</target>
+        <target xml:lang="es-ES" state="translated">Reemplazar el libro "{0}" actual...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook">
         <source xml:lang="en">Sending "{0}" to your Android device...</source>
@@ -4215,7 +4215,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="es-ES" state="needs-translation">Special Sentence-Ending Punctuation</target>
+        <target xml:lang="es-ES" state="translated">Puntuación especial para finales de frase</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
@@ -4255,7 +4255,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true">
         <source xml:lang="en">What are sight words?</source>
         <note>ID: ReaderSetup.SightWordHelp</note>
-        <target xml:lang="es-ES" state="needs-translation">What are sight words?</target>
+        <target xml:lang="es-ES" state="translated">¿Qúe son palabras de vista?</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
         <source xml:lang="en">New Sight Words</source>
@@ -4343,12 +4343,15 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Words.UseAllowedWords" sil:dynamic="true">
         <source xml:lang="en">We are using lists of allowed words to define stages</source>
         <note>ID: ReaderSetup.Words.UseAllowedWords</note>
-        <target xml:lang="es-ES" state="needs-translation">We are using lists of allowed words to define stages</target>
+        <target xml:lang="es-ES" state="translated">Estamos usando listas de palabras permitidas para definir etapas</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.UseLetters" sil:dynamic="true">
         <source xml:lang="en">We are using letters with sight words to define stages</source>
         <note>ID: ReaderSetup.Words.UseLetters</note>
-        <target xml:lang="es-ES" state="needs-translation">We are using letters with sight words to define stages</target>
+        <target xml:lang="es-ES" state="translated">Estamos usando leteras con palabras de vista para definir etapas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estamos usando leteras con palabras de vista para determinar etapas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true">
         <source xml:lang="en">Letters</source>
@@ -4545,7 +4548,7 @@ Desea seguir?</target>
       <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing">
         <source xml:lang="en">Default line spacing</source>
         <note>ID: ScriptSettingsDialog.DefaultLineSpacing</note>
-        <target xml:lang="es-ES" state="needs-translation">Default line spacing</target>
+        <target xml:lang="es-ES" state="translated">Interlineado predeterminado</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
         <source xml:lang="en">Arithmetic</source>
@@ -4600,7 +4603,7 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">This page was automatically inserted because the following page is marked as part of a two page spread.</source>
         <note>ID: TemplateBooks.PageDescription.Flyleaf</note>
-        <target xml:lang="es-ES" state="needs-translation">This page was automatically inserted because the following page is marked as part of a two page spread.</target>
+        <target xml:lang="es-ES" state="translated">Esta página fue automáticamente insertada porque la siguiente página forma parte de una página doble.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Page with a picture on top and a large, centered word below.</source>
