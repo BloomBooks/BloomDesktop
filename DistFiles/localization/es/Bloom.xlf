@@ -4585,7 +4585,7 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
         <note>ID: TemplateBooks.BookName.Template Starter</note>
-        <target xml:lang="es-ES" state="needs-translation">Template Starter</target>
+        <target xml:lang="es-ES" state="translated">Plantilla de inicio</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true">
         <source xml:lang="en">Wall Calendar</source>
@@ -4808,7 +4808,7 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">Flyleaf</source>
         <note>ID: TemplateBooks.PageLabel.Flyleaf</note>
-        <target xml:lang="es-ES" state="needs-translation">Flyleaf</target>
+        <target xml:lang="es-ES" state="translated">Guarda</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
         <source xml:lang="en">Front Cover</source>
