@@ -2542,7 +2542,7 @@
       <trans-unit id="InstallProblem.BloomPdfMaker">
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
         <note>ID: InstallProblem.BloomPdfMaker</note>
-        <target xml:lang="es-ES" state="needs-translation">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</target>
+        <target xml:lang="es-ES" state="translated">BloomPDFMaker.exe, un componente de Bloom, parece esta ausente. Esto previene la vista previa y impresión. Los programas de antivirus pueden causar esto. Puede requerir ayuda tecnica para reparar la instalación de Bloom y para proteger este archivo para que no se vuelve a eleminar.</target>
       </trans-unit>
       <trans-unit id="LameEncoder.Progress">
         <source xml:lang="en">Converting to mp3</source>
@@ -2771,7 +2771,7 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-        <target xml:lang="es-ES" state="needs-translation">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</target>
+        <target xml:lang="es-ES" state="translated">Una colección de libros shell o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus shells.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
         <source xml:lang="en">Local Language Collection</source>
