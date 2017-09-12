@@ -1700,7 +1700,10 @@
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
-        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas de material inicial y final deben permanecer donde están.</target>
+        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas de materia inicial y final deben permanecer donde están.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se permite ese cambio. Páginas de material inicial y final deben permanecer donde están.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se permite ese cambio. Páginas del material inicial y final deben permanecer donde están.</target>
         </alt-trans>
@@ -2412,7 +2415,10 @@
       <trans-unit id="Errors.SpecifiedXMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
         <note>ID: Errors.SpecifiedXMatterNotFound</note>
-        <target xml:lang="es-ES" state="needs-translation">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</target>
+        <target xml:lang="es-ES" state="translated">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero Bloom no logro conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Materia Inicial/Final del libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro pidió un Paquete de Material Inicial/Final nombrado '{0}', pero Bloom no logro conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Material Inicial/Final del libro.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.XMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
@@ -2426,12 +2432,15 @@
         <source xml:lang="en">Front/Back Matter Problem</source>
         <note>ID: Errors.XMatterProblemLabel</note>
         <note>This shows in the 'toast' that pops up to notify the user of a non-fatal problem.</note>
-        <target xml:lang="es-ES" state="translated">Problema con material inicial/final</target>
+        <target xml:lang="es-ES" state="translated">Problema con materia inicial/final</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Problema con material inicial/final</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.XMatterSpecifiedByBookNotFound">
         <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
         <note>ID: Errors.XMatterSpecifiedByBookNotFound</note>
-        <target xml:lang="es-ES" state="needs-translation">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</target>
+        <target xml:lang="es-ES" state="translated">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de Materia Inicial/Final de la configuación de la colección.</target>
       </trans-unit>
       <trans-unit id="Errors.ZoneAlarm">
         <source xml:lang="en">Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</source>
@@ -3022,19 +3031,19 @@
       <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend">
         <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
         <note>ID: PublishTab.Android.Usb.Progress.FailureToSend</note>
-        <target xml:lang="es-ES" state="needs-translation">An error occurred and the book was not sent to your Android device.</target>
+        <target xml:lang="es-ES" state="translated">Ocurrió un error y el libro no fue enviado a su dispositivo de Android.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice">
         <source xml:lang="en">Looking for an Android device connected by USB cable and set up for MTP...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForDevice</note>
         <note>This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.</note>
-        <target xml:lang="es-ES" state="needs-translation">Looking for an Android device connected by USB cable and set up for MTP...</target>
+        <target xml:lang="es-ES" state="translated">Buscando un dispositivo Android conecatado al cable USB y configurado para MTP...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting">
         <source xml:lang="en">Looking for an existing "{0}"...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForExisting</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="needs-translation">Looking for an existing "{0}"...</target>
+        <target xml:lang="es-ES" state="translated">Buscando el libro "{0}" existente...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne">
         <source xml:lang="en">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</source>
@@ -3052,7 +3061,7 @@
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.Usb.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="needs-translation">Packaging "{0}" for use with Bloom Reader...</target>
+        <target xml:lang="es-ES" state="translated">Preparando el libro "{0}" para uso con BloomReader...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.ReplacingBook">
         <source xml:lang="en">Replacing existing "{0}"...</source>
@@ -3064,7 +3073,7 @@
         <source xml:lang="en">Sending "{0}" to your Android device...</source>
         <note>ID: PublishTab.Android.Usb.Progress.SendingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="needs-translation">Sending "{0}" to your Android device...</target>
+        <target xml:lang="es-ES" state="translated">Enviando "{0}" a su dispositivo Android...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.Stopped">
         <source xml:lang="en">Stopped</source>
@@ -4821,7 +4830,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front/Back Matter</source>
         <note>ID: TemplateBooks.PageLabel.FrontBackMatter</note>
-        <target xml:lang="es-ES" state="translated">Material inicial/final</target>
+        <target xml:lang="es-ES" state="translated">Materia inicial/final</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Material inicial/final</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image For Thumbnail" sil:dynamic="true">
         <source xml:lang="en">Image For Thumbnail</source>
