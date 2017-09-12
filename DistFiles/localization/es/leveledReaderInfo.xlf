@@ -10,7 +10,10 @@
       <trans-unit id="leveled.reader.start.simple">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
         <note>ID: leveled.reader.start.simple</note>
-        <target xml:lang="es-ES" state="translated">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a nivelosles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y phrases cercanas, y por las ilustraciones.</target>
+        <target xml:lang="es-ES" state="translated">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a nivelosles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciónes cercanas, y por las ilustraciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a nivelosles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y phrases cercanas, y por las ilustraciones.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting">
         <source xml:lang="en">Formatting</source>
@@ -20,7 +23,10 @@
       <trans-unit id="leveled.reader.start.large">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
         <note>ID: leveled.reader.start.large</note>
-        <target xml:lang="es-ES" state="translated">Lectores nuevos beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras o frases en el mismo lugar en cada página. A la medida que los lectores avanzan, los fuentes y espacios entre palabras pueden disminuir y las frases pueden ser ubicadas en distintos lugares.</target>
+        <target xml:lang="es-ES" state="translated">Lectores nuevos beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras o oraciónes en el mismo lugar en cada página. A la medida que los lectores avanzan, los fuentes y espacios entre palabras pueden disminuir y las oraciónes pueden ser ubicadas en distintos lugares.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lectores nuevos beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras o frases en el mismo lugar en cada página. A la medida que los lectores avanzan, los fuentes y espacios entre palabras pueden disminuir y las frases pueden ser ubicadas en distintos lugares.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
@@ -45,7 +51,10 @@
       <trans-unit id="leveled.reader.repetition">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
         <note>ID: leveled.reader.repetition</note>
-        <target xml:lang="es-ES" state="translated">Repetición - repetición de partes del texto. Por ejemplo, usar la misma frase en cada página y simplemente cambiar una palabra en la frase</target>
+        <target xml:lang="es-ES" state="translated">Repetición - repetición de partes del texto. Por ejemplo, usar la misma oración en cada página y simplemente cambiar una palabra en la frase</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Repetición - repetición de partes del texto. Por ejemplo, usar la misma frase en cada página y simplemente cambiar una palabra en la frase</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.sequencing">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
