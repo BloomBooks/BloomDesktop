@@ -2445,7 +2445,7 @@
       <trans-unit id="Errors.ZoneAlarm">
         <source xml:lang="en">Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</source>
         <note>ID: Errors.ZoneAlarm</note>
-        <target xml:lang="es-ES" state="needs-translation">Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pued iniciar correctamente. Esta síntoma ha sido obersvado en computadoras con ZoneAlarm instalado. Nota: desactivando ZoneAlarm no resuelve este problema. Reiniciando con ZoneAlarm apagado tampoco. Para resolver el problema hay que desinstalarlo.</target>
       </trans-unit>
       <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
         <source xml:lang="en">Building Reader Templates</source>
