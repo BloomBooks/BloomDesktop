@@ -38,6 +38,8 @@ if (!semver.satisfies(process.version, version)) {
 //This one is really only used for 'clean';
 var outputDir = "../../output/browser";
 
+const leveledRTInfoPath = '../../DistFiles/leveledRTInfo';
+
 //todo: can remove these output exlusions now that output/ is now 2 levels up with the c# outpuuts
 var paths = {
     help: ['./help/**/*.md'],
@@ -70,14 +72,13 @@ gulp.task('pug', function () {
 });
 
 gulp.task('pugLRT', function () {
-    const lrtInfoPath = '../../DistFiles/leveledRTInfo';
     var pug = require('gulp-pug');
-    return gulp.src(lrtInfoPath + '/*.pug')
+    return gulp.src(leveledRTInfoPath + '/*.pug')
         .pipe(debug({ title: 'pug:' }))
         .pipe(pug({
             pretty: true
         }))
-        .pipe(gulp.dest(lrtInfoPath)); // these html's stay in place.
+        .pipe(gulp.dest(leveledRTInfoPath)); // these html's stay in place.
 });
 
 gulp.task('webpack', function () {
@@ -138,15 +139,21 @@ gulp.task('watchInner', function () {
     watch(paths.pug, batch(function (events, done) {
         gulp.start('pug', done);
     }));
+    watch(leveledRTInfoPath + '/*.pug', batch(function (events, done) {
+        gulp.start('pugLRT', done);
+    }));
+    watch(paths.help, batch(function (events, done) {
+        gulp.start('markdownHelp', done);
+    }));
 })
 
 gulp.task('watchlp', function () {
-    runSequence(['less', 'pug'], 'watchInner');
+    runSequence(['less', 'pug', 'pugLRT'], 'watchInner');
 });
 
 gulp.task('watch', function () {
     console.log('****** PLEASE run "webpack --watch" in a separate console *********');
-    runSequence('clean', 'copy', ['less', 'pug'], 'watchInner');
+    runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp'], 'watchInner');
 });
 
 gulp.task('markdownHelp', function () {
@@ -171,6 +178,6 @@ gulp.task('default',
     function (callback) {
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
         //currently our webpack run is pure javascript, so do it only after the typescript is all done
-        runSequence('clean', 'copy', ['less', 'pug', 'markdownHelp'], 'pugLRT', 'webpack', callback)
+        runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp'], 'webpack', callback)
     });
 
