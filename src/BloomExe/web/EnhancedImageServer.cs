@@ -652,11 +652,16 @@ namespace Bloom.Api
 			}
 			else if (IsImageTypeThatCanBeReturned(localPath))
 			{
-				// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
-				// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
-				var userMsg = LocalizationManager.GetString("WebServer.Warning.NoImageFile", "Cannot Find Image File");
-				var detailMsg = String.Format("Server could not find the image file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, userMsg, detailMsg);
+				// We don't need even a toast for missing images in the book folder. That's the user's problem and should be adequately
+				// documented by the browser message saying the file is missing.
+				if (!localPath.StartsWith((CurrentBook?.FolderPath ?? "").Replace("\\", "/")))
+				{
+					// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
+					// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
+					var userMsg = LocalizationManager.GetString("WebServer.Warning.NoImageFile", "Cannot Find Image File");
+					var detailMsg = String.Format("Server could not find the image file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
+					NonFatalProblem.Report(ModalIf.None, PassiveIf.All, userMsg, detailMsg);
+				}
 			}
 			else
 			{
