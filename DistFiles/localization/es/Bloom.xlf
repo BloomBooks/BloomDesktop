@@ -6,12 +6,6 @@
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
         <target xml:lang="es-ES" state="translated">Problema con Bloom</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Problema con Bloon</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Haciendo PDF...</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomIntegrityDialog.ReportProblem">
         <source xml:lang="en">Report Problem</source>
