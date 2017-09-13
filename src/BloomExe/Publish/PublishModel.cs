@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -360,7 +360,7 @@ namespace Bloom.Publish
 							throw new ArgumentOutOfRangeException();
 					}
 					string suggestedName = string.Format("{0}-{1}-{2}.pdf", Path.GetFileName(_currentlyLoadedBook.FolderPath),
-														 _collectionSettings.GetLanguage1Name("en"), portion);
+														 _collectionSettings.GetFilesafeLanguage1Name("en"), portion);
 					dlg.FileName = suggestedName;
 					var rgb = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfWithRGB",
 						"PDF with RGB color",

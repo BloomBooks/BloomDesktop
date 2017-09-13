@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -261,6 +261,18 @@ namespace Bloom.Collection
 			if (!_lookupIsoCode.GetBestLanguageName(Language1Iso639Code, out exactLanguageMatch))
 				return "L1-Unknown-" + Language1Iso639Code;
 			return GetLanguageNameInUILangIfPossible(exactLanguageMatch, inLanguage);
+		}
+
+		/// <summary>
+		/// Used by PublishModel to suggest a filename for saving pdfs.
+		/// </summary>
+		/// <param name="inLanguage"></param>
+		/// <returns></returns>
+		public object GetFilesafeLanguage1Name(string inLanguage)
+		{
+			var languageName = GetLanguage1Name(inLanguage);
+			return Path.GetInvalidFileNameChars().Aggregate(
+				languageName, (current, character) => current.Replace(character, ' '));
 		}
 
 		public string GetLanguage2Name(string inLanguage)
