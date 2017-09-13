@@ -18,17 +18,17 @@ html
 				| （电子）版。
 				+space
 				span.showForTalkingBooks 该书含有音频，新读者可以边听边读。
-			p.showWhenHaveAudioButNotMakingTalkingBook(i18n="epubpreview.recording.butnotalk") 这本书包含一些录音，但这个音频不包括在ePUB中。
+			p.showWhenHaveAudioButNotMakingTalkingBook(i18n="epubpreview.recording.butnotalk") 这本书包含一些录音，但这些音频不包括在ePUB中。
 			h3(i18n="epubpreview.preview") 预览
-			p(i18n="epubpreview.resizing") 您可以通过拖动此模拟设备的右下角来调整预览大小。 查看您的书在不同尺寸的屏幕上的样子。
+			p(i18n="epubpreview.resizing") 您可以通过拖动此模拟设备的右下角来调整预览大小。查看您的书在不同尺寸的屏幕上的样子。
 			p(i18n="epubpreview.readium")
 				| 本页使用
 				+link-followed-by-space('http://readium.org/') Readium
 				| ePUB阅读器。 图书在不同阅读设备上可能看起来不同。
 			p.showForTalkingBooks(i18n="epubpreview.talkingbookpreview")
-				| 预览暂时无法播放有声书。 您可以用Adobe的免费
-				+link('http://www.adobe.com/solutions/ebook/digital-editions.html') 电子版
-				| 听有声书电子书阅读器。
+				| 预览暂时无法播放有声书。 您可以使用Adobe公司出品的免费有声电子书阅读器——
+				+link('http://www.adobe.com/solutions/ebook/digital-editions.html') Digital Editions
+				| 。听
 			h3(i18n="epubpreview.ontodevice") 将本书保存到您的设备上
 			p(i18n="epubpreview.usingdropbox")
 				| 把书发送到手机的简便方法是，在计算机和手机/平板电脑上都安装Dropbox或类似软件。 只需点击保存ePUB，然后选择Dropbox文件夹。 在手机上打开Dropbox并选取您所要的书。 如果您用的是笔记本电脑，也可以尝试用免费的
@@ -40,14 +40,14 @@ html
 				+link-followed-by-space('/bloom/api/help/Concepts/Gitden_Reader.htm') Gitden Reader
 				| 对于搭载Android和IOS（IPhone &amp;amp; IPad）系统的设备来说是不错的选择。
 			p.showForTalkingBooks(i18n="epubpreview.gitden.limits")
-				| 要在手机或平板电脑上用Gitden听有声书时，需要禁用Gitden的“朗读文本”功能。 然后它会显示音频控制器。
+				| 要在手机或平板电脑上用Gitden听有声书时，需要禁用Gitden的“文字转语音”功能,然后它会显示音频控制器。
 			h3.showWhenNoAudio(i18n="epubpreview.make.it.talk") 用它播放有声书
 			p.showWhenNoAudio(i18n="epubpreview.talking.book.tool")
 				| 如果你想制作一本让新读者可以跟着音频一起读的“有声书”，可以用Bloom的
 				+link-followed-by-space('/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm') 有声书工具
 				| 来添加语音录音。
 			h3(i18n="epubpreview.write.us") 写信给我们！
-			p(i18n="epubpreview.use.help.report") 您有兴趣传播可用于手机和其他电子书阅读器上的Bloom电子书吗？ 为了方便您更好地使用Bloom，我们可以做些什么？ 请使用“帮助：报告问题”指令，给我们反馈。 谢谢！
+			p(i18n="epubpreview.use.help.report") 您有兴趣传播可用于手机和其他电子书阅读器上的Bloom电子书吗？ 为了方便您更好地使用Bloom，我们可以做些什么？ 请使用“帮助：报告问题”指令给我们反馈。 谢谢！
 		#device.ui-resizable
 			iframe(src='readium-cloudreader.htm?epub={EPUBFOLDER}')
 			#BottomRightHandle.ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-grip-diagonal-se
