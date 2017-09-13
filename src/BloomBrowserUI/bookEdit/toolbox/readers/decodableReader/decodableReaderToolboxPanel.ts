@@ -62,17 +62,17 @@ export default class DecodableReaderToolboxPanel implements ITabModel {
         // Update those 'title' attributes from localizationManager.
 
         var doc = paneDOM.ownerDocument;
-        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortAlphabetically', 'Sort alphabetically')
+        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortAlphabetically', 'Sort alphabetically', "")
             .done(function (result) {
                 $(doc.getElementById('sortAlphabetic')).find('i').attr('title', result);
             });
 
-        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByWordLength', 'Sort by word length')
+        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByWordLength', 'Sort by word length', "")
             .done(function (result) {
                 $(doc.getElementById('sortLength')).find('i').attr('title', result);
             });
 
-        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByFrequency', 'Sort by frequency')
+        theOneLocalizationManager.asyncGetText('EditTab.Toolbox.DecodableReaderTool.SortByFrequency', 'Sort by frequency', "")
             .done(function (result) {
                 // there are actually two here, but JQuery nicely just does it
                 $(doc.getElementById('sortFrequency')).find('i').attr('title', result);

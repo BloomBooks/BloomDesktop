@@ -69,7 +69,7 @@ $(window).ready(function () {
         }
     };
 
-    theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...").done(savingNotification => {
+    theOneLocalizationManager.asyncGetText("EditTab.SavingNotification", "Saving...", "").done(savingNotification => {
         localizedNotification = savingNotification;
         // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
         var socket = getWebSocket();

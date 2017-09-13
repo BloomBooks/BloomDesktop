@@ -46,7 +46,7 @@ export class LocalizableElement<P extends ILocalizationProps, S extends ILocaliz
     public componentDidMount() {
         let self = this;
         this.isComponentMounted = true;
-        theOneLocalizationManager.asyncGetText(this.props.l10nKey, this.getOriginalEnglishStringContent())
+        theOneLocalizationManager.asyncGetText(this.props.l10nKey, this.getOriginalEnglishStringContent(), this.props.l10nComment)
             .done(function (result) {
                 // TODO: This isMounted approach is an official antipattern, to swallow exception if the result comes back
                 // after this component is no longer visible. See note on componentWillUnmount()

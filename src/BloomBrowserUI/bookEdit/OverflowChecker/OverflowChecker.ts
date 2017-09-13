@@ -165,7 +165,7 @@ export default class OverflowChecker {
 
                 if (OverflowChecker.IsOverflowingSelf(box)) {
                         $box.addClass('overflow');
-                        theOneLocalizationManager.asyncGetText('EditTab.Overflow', 'This box has more text than will fit').done(overflowText => {
+                        theOneLocalizationManager.asyncGetText('EditTab.Overflow', 'This box has more text than will fit', "").done(overflowText => {
                                 $box.qtip({
                                         content: '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' + overflowText,
                                         show: { event: 'mouseenter' },
@@ -197,7 +197,7 @@ export default class OverflowChecker {
                                 $this.addClass('thisOverflowingParent'); // but it's this one that is actually overflowing
                                 var $overflowingAncestor = $(overflowingAncestor);
                                 $overflowingAncestor.addClass('childOverflowingThis');
-                                theOneLocalizationManager.asyncGetText('EditTab.OverflowContainer', 'A container on this page is overflowing').done(overflowText => {
+                                theOneLocalizationManager.asyncGetText('EditTab.OverflowContainer', 'A container on this page is overflowing', "").done(overflowText => {
                                         $overflowingAncestor.qtip({
                                                 content: '<img height="20" width="20" style="vertical-align:middle" src="/bloom/BloomBrowserUI/images/Attention.svg">' + overflowText,
                                                 show: { event: 'enterBorder' }, // nonstandard events triggered by mouse move in code below

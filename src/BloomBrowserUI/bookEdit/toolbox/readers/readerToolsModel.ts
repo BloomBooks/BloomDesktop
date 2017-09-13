@@ -116,7 +116,7 @@ export class ReaderToolsModel {
 
     setStageNumber(stage: number): void {
 
-        theOneLocalizationManager.asyncGetText("Common.Loading", "Loading...").then((loadingMessage) => {
+        theOneLocalizationManager.asyncGetText("Common.Loading", "Loading...", "").then((loadingMessage) => {
             // this may result in a need to resize the word list
             this.previousHeight = 0;
             $("#letterList").html(loadingMessage);

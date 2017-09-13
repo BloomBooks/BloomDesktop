@@ -644,9 +644,9 @@ function AddXMatterLabelAfterPageLabel(container) {
     xMatterLabel = xMatterLabel.replace(new RegExp("\"", "g"), ""); //No idea why the quotes are still in there at this point.
     if (xMatterLabel === "" || xMatterLabel === "none")
         return;
-    theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel." + xMatterLabel, xMatterLabel)
+    theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel." + xMatterLabel, xMatterLabel, "")
         .done(function (xMatterLabelTranslation) {
-            theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel.FrontBackMatter", "Front/Back Matter")
+            theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel.FrontBackMatter", "Front/Back Matter", "")
                 .done(function (frontBackTranslation) {
                     $(pageLabel).attr("data-after-content", xMatterLabelTranslation + " " + frontBackTranslation);
                 })
@@ -775,19 +775,19 @@ export function bootstrap() {
 function localizeCkeditorTooltips(bar: JQuery) {
     // The tooltips for the CKEditor Bold, Italic and Underline buttons need localization.
     var toolGroup = bar.find(".cke_toolgroup");
-    theOneLocalizationManager.asyncGetText("EditTab.DirectFormatting.Bold", "Bold")
+    theOneLocalizationManager.asyncGetText("EditTab.DirectFormatting.Bold", "Bold", "")
         .done(function (result) {
             $(toolGroup).find(".cke_button__bold").attr("title", result);
         });
-    theOneLocalizationManager.asyncGetText("EditTab.DirectFormatting.Italic", "Italic")
+    theOneLocalizationManager.asyncGetText("EditTab.DirectFormatting.Italic", "Italic", "")
         .done(function (result) {
             $(toolGroup).find(".cke_button__italic").attr("title", result);
         });
-    theOneLocalizationManager.asyncGetText("EditTab.DirectFormatting.Underline", "Underline")
+    theOneLocalizationManager.asyncGetText("EditTab.DirectFormatting.Underline", "Underline", "")
         .done(function (result) {
             $(toolGroup).find(".cke_button__underline").attr("title", result);
         });
-    theOneLocalizationManager.asyncGetText('EditTab.DirectFormatting.Superscript', 'Superscript')
+    theOneLocalizationManager.asyncGetText('EditTab.DirectFormatting.Superscript', 'Superscript', "")
         .done(function (result) {
             $(toolGroup).find('.cke_button__superscript').attr('title', result);
         });
@@ -832,7 +832,7 @@ export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
             if (response.data) {
                 theOneLocalizationManager.asyncGetText(
                     "BookEditor.CharacterMap.Instructions",
-                    "To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.")
+                    "To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.", "")
                     .done(function (translation) {
                         jQuerySetOfMatchedElements.longPress(
                             { instructions: "<div class='instructions'>" + translation + "</div>" }

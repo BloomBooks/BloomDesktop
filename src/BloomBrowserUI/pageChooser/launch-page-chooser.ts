@@ -28,7 +28,7 @@ export function showAddPageDialog(forChooseLayout: boolean) {
         english = 'Choose Different Layout...';
     }
 
-    theOneLocalizationManager.asyncGetText(key, english).done(title => {
+    theOneLocalizationManager.asyncGetText(key, english, "").done(title => {
         var dialogContents = CreateAddPageDiv();
 
         theDialog = $(dialogContents).dialog({

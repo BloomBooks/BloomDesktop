@@ -165,8 +165,8 @@ export class LocalizationManager {
      *          $(this).text(translation);
      *      });
     */
-    asyncGetTextInLang(id: string, englishText: string, langId: string, ...args): JQueryPromise<any> {
-        return this.asyncGetTextInLangCommon(id, englishText, langId, false, args);
+    asyncGetTextInLang(id: string, englishText: string, langId: string, comment: string, ...args): JQueryPromise<any> {
+        return this.asyncGetTextInLangCommon(id, englishText, langId, comment, false, args);
     }
     /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
      * UI language, it returns the english formatted text in the same way getText does.
@@ -183,11 +183,11 @@ export class LocalizationManager {
      *          $(this).text(translation);
      *      });
     */
-    asyncGetText(id: string, englishText: string, ...args): JQueryPromise<any> {
-        return this.asyncGetTextInLangCommon(id, englishText, "UI", true, args);
+    asyncGetText(id: string, englishText: string, comment: string, ...args): JQueryPromise<any> {
+        return this.asyncGetTextInLangCommon(id, englishText, "UI", comment, true, args);
     }
 
-    asyncGetTextInLangCommon(id: string, englishText: string, langId: string, englishDefault: boolean, args): JQueryPromise<any> {
+    asyncGetTextInLangCommon(id: string, englishText: string, langId: string, comment: string, englishDefault: boolean, args): JQueryPromise<any> {
         // We already get a promise from the async call, and could just return that.
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
@@ -196,7 +196,7 @@ export class LocalizationManager {
         //when the async call comes back, we massage the text
         axios.get("/bloom/i18n/translate",
             {
-                params: { key: id, englishText: englishText, langId: langId }
+                params: { key: id, englishText: englishText, langId: langId, comment: comment }
             })
             .then(response => {
                 var text = HtmlDecode(response.data);
@@ -223,7 +223,7 @@ export class LocalizationManager {
     }
 
     localizeThenSetElementText(element: HTMLElement, stringId: string, englishText: string): void {
-        this.asyncGetText(stringId, englishText).then((translation) => {
+        this.asyncGetText(stringId, englishText, $(element).attr("l10nComment")).then((translation) => {
             element.innerText = translation;
         });
     }
