@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using Bloom.Api;
-using Bloom.Book;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
 #if !__MonoCS__
@@ -105,6 +105,12 @@ namespace Bloom.Publish.Android
 #endif
 				_wifiPublisher.Stop();
 				SetState("stopped");
+				request.PostSucceeded();
+			}, true);
+
+			server.RegisterEndpointHandler(kApiUrlPart + "textToClipboard", request =>
+			{
+				Clipboard.SetText(request.RequiredPostString());
 				request.PostSucceeded();
 			}, true);
 		}

@@ -43,8 +43,6 @@ export default class ProgressBox extends React.Component<ComponentProps, Compone
         }
     }
 
-    //TODO: make box messages scroll to bottom whenever a new message arrives
-    // (or alternatively, when a new message arrives and the scroll was previously at the bottom).
     render() {
         return (
             <div id="progress-box" dangerouslySetInnerHTML={{ __html: this.state.progress }} />
