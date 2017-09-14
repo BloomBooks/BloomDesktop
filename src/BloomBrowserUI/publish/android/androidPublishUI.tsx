@@ -74,6 +74,16 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
         }
     }
 
+    onCopy(e) {
+        e.preventDefault();
+
+        // Yes, this is a hack. I simply could not get the client to populate the clipboard.
+        // I tried using react-copy-to-clipboard, but kept getting runtime errors as if the component was not found.
+        // I tried using document.execCommand("copy"), but though it worked in FF and Chrome, it did not work in Bloom.
+        axios.post("/bloom/api/publish/android/textToClipboard",
+            document.getElementById("progress-box").innerText, { headers: { "Content-Type": "text/plain" } });
+    }
+
     render() {
         let self = this;
 
@@ -171,6 +181,12 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                         </HtmlHelpLink>
                     </div>
                     <ProgressBox lifetimeLabel={kWebSocketLifetime} />
+                    <Link id="copyProgressToClipboard"
+                        href=""
+                        l10nKey="PublishTab.Android.CopyToClipboard"
+                        onClick={this.onCopy}>
+                        Copy to Clipboard
+                    </Link>
                 </div>
             </div>
         );
