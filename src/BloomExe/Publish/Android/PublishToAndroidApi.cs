@@ -4,6 +4,9 @@ using System.Windows;
 using Bloom.Api;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
+using SIL.Windows.Forms.Miscellaneous;
+
+
 #if !__MonoCS__
 using Bloom.Publish.Android.usb;
 #endif
@@ -110,7 +113,7 @@ namespace Bloom.Publish.Android
 
 			server.RegisterEndpointHandler(kApiUrlPart + "textToClipboard", request =>
 			{
-				Clipboard.SetText(request.RequiredPostString());
+				PortableClipboard.SetText(request.RequiredPostString());
 				request.PostSucceeded();
 			}, true);
 		}
