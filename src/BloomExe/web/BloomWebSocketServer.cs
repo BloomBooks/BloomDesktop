@@ -24,6 +24,10 @@ namespace Bloom.Api
 		//only a single client, we think more in terms of 1 to 1.  However there's nothing preventing multiple parts of the Bloom client from opening their
 		//own connection (socket).
 		private WebSocketServer _server;
+		// when disposing this object, we clear the list at the end so we don't need to remove the
+		// sockets one by one in the OnClose handler.  In fact, doing so invalidates the enumerator
+		// and can cause a pretty green dialog to pop up (at least on Linux).
+		private bool _closingAllSockets;
 		private List<IWebSocketConnection> _allSockets;
 
 		public void Init(string port)
@@ -47,7 +51,8 @@ namespace Bloom.Api
 					socket.OnClose = () =>
 					{
 						Debug.WriteLine($"Closing websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
-						_allSockets.Remove(socket);
+						if (!_closingAllSockets)
+							_allSockets.Remove(socket);
 						socket.Close();
 					};
 				});
@@ -116,12 +121,14 @@ namespace Bloom.Api
 			{
 				if(_server != null)
 				{
+					_closingAllSockets = true;
 					foreach(var socket in _allSockets)
 					{
 						Debug.WriteLine($"*** This sockets was still open and is being closed during shutdown: \"{socket.ConnectionInfo?.SubProtocol}\"");
 						socket.Close();
 					}
 					_allSockets.Clear();
+					_closingAllSockets = false;
 					_server.Dispose();
 					_server = null;
 				}
