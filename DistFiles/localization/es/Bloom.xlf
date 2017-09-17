@@ -2554,7 +2554,10 @@
       <trans-unit id="InstallProblem.BloomPdfMaker">
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
         <note>ID: InstallProblem.BloomPdfMaker</note>
-        <target xml:lang="es-ES" state="translated">BloomPDFMaker.exe, un componente de Bloom, parece esta ausente. Esto previene la vista previa y impresión. Los programas de antivirus pueden causar esto. Puede requerir ayuda tecnica para reparar la instalación de Bloom y para proteger este archivo para que no se vuelve a eleminar.</target>
+        <target xml:lang="es-ES" state="translated">BloomPDFMaker.exe, un componente de Bloom, parece estar ausente. Esto previene la vista previa y impresión. Los programas de antivirus pueden causar esto. Puede requerir ayuda tecnica para reparar la instalación de Bloom y para proteger este archivo para que no se vuelve a eleminar.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">BloomPDFMaker.exe, un componente de Bloom, parece esta ausente. Esto previene la vista previa y impresión. Los programas de antivirus pueden causar esto. Puede requerir ayuda tecnica para reparar la instalación de Bloom y para proteger este archivo para que no se vuelve a eleminar.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LameEncoder.Progress">
         <source xml:lang="en">Converting to mp3</source>
