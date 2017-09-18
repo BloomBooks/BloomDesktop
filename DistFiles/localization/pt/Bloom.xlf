@@ -1021,7 +1021,10 @@
         <source xml:lang="en">Two Languages</source>
         <note>ID: EditTab.Bilingual</note>
         <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
-        <target xml:lang="pt-PT" state="translated">Duas línguas</target>
+        <target xml:lang="pt-PT" state="translated">Dois idiomas</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Duas línguas</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pt-PT">Duas idiomas</target>
         </alt-trans>
@@ -2564,12 +2567,12 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-        <target xml:lang="pt-PT" state="needs-translation">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</target>
+        <target xml:lang="pt-PT" state="translated">Uma coleção de livros shell ou livros modelos numa ou mais idiomas de comunicação mais ampla. Você poderá fazer o upload dessas shells para BloomLibrary.org. Você também pode fazer um Bloom Pack para dar aos outros para que eles podem fazer livros vernáculos com suas shells.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
         <source xml:lang="en">Local Language Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-        <target xml:lang="pt-PT" state="needs-translation">Local Language Collection</target>
+        <target xml:lang="pt-PT" state="translated">Coleção de idioma local</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
         <source xml:lang="en">A collection of books in a local language.</source>
