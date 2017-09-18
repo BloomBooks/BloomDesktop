@@ -475,7 +475,7 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="pt-PT" state="needs-translation">Local Language</target>
+        <target xml:lang="pt-PT" state="translated">Idioma local</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
