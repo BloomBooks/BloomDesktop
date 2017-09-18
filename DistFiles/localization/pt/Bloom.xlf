@@ -1763,12 +1763,18 @@
       <trans-unit id="EditTab.TextBoxProperties.LocalLanguage">
         <source xml:lang="en">Local Language</source>
         <note>ID: EditTab.TextBoxProperties.LocalLanguage</note>
-        <target xml:lang="pt-PT" state="translated">Idioma Local</target>
+        <target xml:lang="pt-PT" state="translated">Idioma local</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Idioma Local</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NationalLanguage">
         <source xml:lang="en">National Language</source>
         <note>ID: EditTab.TextBoxProperties.NationalLanguage</note>
-        <target xml:lang="pt-PT" state="translated">Idioma Nacional</target>
+        <target xml:lang="pt-PT" state="translated">Idioma nacional</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Idioma Nacional</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Normal">
         <source xml:lang="en">Normal</source>
