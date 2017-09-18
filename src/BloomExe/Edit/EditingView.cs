@@ -1394,7 +1394,14 @@ namespace Bloom.Edit
 		public int Zoom
 		{
 			// Whatever the user may have saved (e.g., from earlier use of ctrl-wheel), we'll make this an expected multiple-of-10 percent.
-			get { return (int) Math.Round(float.Parse(Settings.Default.PageZoom ?? "1.0") * 10) * 10; }
+			get
+			{
+				float zoom;
+				if (float.TryParse(Settings.Default.PageZoom ?? "1.0", out zoom))
+					return (int)Math.Round(zoom * 10F) * 10;
+				else
+					return 100;
+			}
 			set
 			{
 				Settings.Default.PageZoom = (value / 100.0).ToString();
