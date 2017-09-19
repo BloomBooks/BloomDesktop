@@ -3165,7 +3165,10 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
         <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
-        <target xml:lang="es-ES" state="translated">Recibimo una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de BloomReader?</target>
+        <target xml:lang="es-ES" state="translated">Recibimos una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de BloomReader?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Recibimo una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de BloomReader?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">La solicitud de libro que no pudo ser procesado. Es posible que el dispositivo está ejecutando una versión incompatible de BloomReader.</target>
         </alt-trans>
