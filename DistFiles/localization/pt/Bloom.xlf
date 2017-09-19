@@ -1182,11 +1182,11 @@
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
         <target xml:lang="pt-PT" state="translated">Deletar Caixa de Texto da Imagem</target>
       </trans-unit>
-      <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
+      <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bold</source>
         <note>ID: EditTab.DirectFormatting.Bold</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="pt-PT" state="translated">Negrito</target>
+        <target xml:lang="pt-PT">Negrito</target>
         <alt-trans>
           <target xml:lang="pt-PT">Bold (realce)</target>
         </alt-trans>
@@ -1259,10 +1259,10 @@
         <note>ID: EditTab.FontMissing</note>
         <target xml:lang="pt-PT" state="translated">O fonte selecionado atual é '{0}', mas ele não está instalado neste computador. Algum outro fonte será usado.</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.FormatDialog.Alignment</note>
-        <target xml:lang="pt-PT" state="translated">Alinhamento</target>
+        <target xml:lang="pt-PT">Alinhamento</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true">
         <source xml:lang="en">That style already exists. Please choose another name.</source>
@@ -1294,25 +1294,25 @@
         <note>ID: EditTab.FormatDialog.DontSeeNeed</note>
         <target xml:lang="pt-PT" state="translated">Não vê o que você precisa?</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Emphasis</source>
         <note>ID: EditTab.FormatDialog.Emphasis</note>
-        <target xml:lang="pt-PT" state="translated">Estilo</target>
+        <target xml:lang="pt-PT">Estilo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Font</source>
         <note>ID: EditTab.FormatDialog.Font</note>
-        <target xml:lang="pt-PT" state="translated">Fonte</target>
+        <target xml:lang="pt-PT">Fonte</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font face</source>
         <note>ID: EditTab.FormatDialog.FontFaceToolTip</note>
         <target xml:lang="pt-PT" state="translated">Cambiar o estilo de fonte</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
-        <target xml:lang="pt-PT" state="translated">Alterar o tamanho do texto para todas as caixas com o estilo '{0}' e idioma '{1}'. \nTamanho atual é {2}pt.</target>
+        <target xml:lang="pt-PT">Alterar o tamanho do texto para todas as caixas com o estilo '{0}' e idioma '{1}'. \nTamanho atual é {2}pt.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font size</source>
@@ -1324,10 +1324,10 @@
         <note>ID: EditTab.FormatDialog.Format</note>
         <target xml:lang="pt-PT" state="translated">Formato</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
-        <target xml:lang="pt-PT" state="translated">Recuar/Indentar</target>
+        <target xml:lang="pt-PT">Recuar/Indentar</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between lines of text</source>
@@ -1344,10 +1344,10 @@
         <note>ID: EditTab.FormatDialog.ParagraphSpacing</note>
         <target xml:lang="pt-PT" state="translated">Espaçamento entre linhas</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.ParagraphTab">
+      <trans-unit id="EditTab.FormatDialog.ParagraphTab" approved="yes">
         <source xml:lang="en">Paragraph</source>
         <note>ID: EditTab.FormatDialog.ParagraphTab</note>
-        <target xml:lang="pt-PT" state="translated">Parágrafo</target>
+        <target xml:lang="pt-PT">Parágrafo</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true">
         <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
@@ -1359,10 +1359,10 @@
         <note>ID: EditTab.FormatDialog.ResetStyle</note>
         <target xml:lang="pt-PT" state="translated">Restabelecer as configurações padrão de este estilo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Spacing</source>
         <note>ID: EditTab.FormatDialog.Spacing</note>
-        <target xml:lang="pt-PT" state="translated">Espaçamento</target>
+        <target xml:lang="pt-PT">Espaçamento</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true">
         <source xml:lang="en">Style</source>
@@ -1379,10 +1379,10 @@
         <note>ID: EditTab.FormatDialog.WordSpacingExtraWide</note>
         <target xml:lang="pt-PT" state="translated">Muito amplo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.WordSpacingNormal</note>
-        <target xml:lang="pt-PT" state="translated">Normal</target>
+        <target xml:lang="pt-PT">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between words</source>
@@ -1782,10 +1782,10 @@
           <target xml:lang="pt-PT">Idioma Nacional</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.Normal">
+      <trans-unit id="EditTab.TextBoxProperties.Normal" approved="yes">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.TextBoxProperties.Normal</note>
-        <target xml:lang="pt-PT" state="translated">Normal</target>
+        <target xml:lang="pt-PT">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NormalLabel">
         <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
@@ -2036,10 +2036,10 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisPage</note>
         <target xml:lang="pt-PT" state="translated">Esta página</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true" approved="yes">
         <source xml:lang="en">total</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Total</note>
-        <target xml:lang="pt-PT" state="translated">total</target>
+        <target xml:lang="pt-PT">total</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
         <source xml:lang="en">unique</source>
