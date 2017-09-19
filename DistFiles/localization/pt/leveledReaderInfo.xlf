@@ -92,8 +92,7 @@ Yellow Duck, Yellow Duck, What do you see?</g>
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
-        <target xml:lang="pt-PT" state="needs-translation">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
-      
+        <target xml:lang="pt-PT" state="translated">Para os <g id="genid-6" ctype="x-html-strong"> Leitores novos</g> as ilustrações devem coincidir precisamente com a historia. Vendo as ilustrações, un leitor deve ser capaz de predizer a linha da historia. As ilustrações em neste nivel deven ser simples.      
       </target>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader">
