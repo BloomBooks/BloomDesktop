@@ -2869,46 +2869,46 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.Failed">
         <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Failed</note>
-        <target xml:lang="pt-PT" state="needs-translation">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</target>
+        <target xml:lang="pt-PT" state="translated">Falha ao enviar este livro. Possivelmente o dispositivo foi desconectado? Se você não pode determinar por que isso aconteceu, o seguinte pode ser útil para informar aos desenvolvedores:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Finished">
         <source xml:lang="en">Finished sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Finished</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="pt-PT" state="needs-translation">Finished sending "{0}" to device {1}</target>
+        <target xml:lang="pt-PT" state="translated">Erminou o envio de "{0}" para o dispositivo {1}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Sending">
         <source xml:lang="en">Sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="pt-PT" state="needs-translation">Sending "{0}" to device {1}</target>
+        <target xml:lang="pt-PT" state="translated">Enviando "{0}" para o dispositivo {1}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Stopped">
         <source xml:lang="en">Stopped Advertising.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
-        <target xml:lang="pt-PT" state="needs-translation">Stopped Advertising.</target>
+        <target xml:lang="pt-PT" state="translated">Parou de anunciar.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1">
         <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
-        <target xml:lang="pt-PT" state="needs-translation">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</target>
+        <target xml:lang="pt-PT" state="translated">No dispositivo Android, execute o BloomReader, abra o menu e escolha 'Receber livros por WiFi'.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions2</note>
-        <target xml:lang="pt-PT" state="needs-translation">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</target>
+        <target xml:lang="pt-PT" state="translated">Você pode fazer isso em tantos dispositivos quanto quiser. Certifique-se de que cada dispositivo esteja conectado à mesma rede que o computador.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Start">
         <source xml:lang="en">Start Serving</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Start Serving</target>
+        <target xml:lang="pt-PT" state="translated">Comece a servir</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Stop">
         <source xml:lang="en">Stop Serving</source>
         <note>ID: PublishTab.Android.Wifi.Stop</note>
         <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Stop Serving</target>
+        <target xml:lang="pt-PT" state="translated">Pare de servir</target>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeEulaTitle" approved="yes">
         <source xml:lang="en">Adobe Color Profile License Agreement</source>
@@ -3058,7 +3058,10 @@
         <source xml:lang="en">PDF with RGB color</source>
         <note>ID: PublishTab.PdfMaker.PdfWithRGB</note>
         <note>displayed as file type for Save File dialog.  'RGB' may not be translatable, it is a standard.</note>
-        <target xml:lang="pt-PT" state="needs-translation">PDF with RGB color</target>
+        <target xml:lang="pt-PT" state="translated">PDF com cor RGB</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">PDF em cores RGB</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ErrorProcessing" approved="yes">
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
@@ -3088,7 +3091,7 @@
         <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
         <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
-        <target xml:lang="pt-PT" state="needs-translation">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</target>
+        <target xml:lang="pt-PT" state="translated">PDF com cor CMYK (U.S. Web Coated (SWORP) v2)</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.TryMoreMemory">
         <source xml:lang="en">Try doing this on a computer with more memory</source>
