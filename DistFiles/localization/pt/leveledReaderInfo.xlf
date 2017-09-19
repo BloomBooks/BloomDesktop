@@ -52,7 +52,7 @@
       <trans-unit id="leveled.reader.building.sequence">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
         <note>ID: leveled.reader.building.sequence</note>
-        <target xml:lang="pt-PT" state="needs-translation">Building Sequence - a story with a pattern that is repeated and added to with each new page</target>
+        <target xml:lang="pt-PT" state="translated">Seqüência crescente - uma história com um padrão de repetição e a qual é adicionado em cada nova página</target>
       </trans-unit>
       <trans-unit id="leveled.reader.rhyme">
         <source xml:lang="en">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
@@ -63,29 +63,27 @@ I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
         <note>ID: leveled.reader.rhyme</note>
-        <target xml:lang="pt-PT" state="needs-translation">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
-        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
-          <g id="genid-3" ctype="x-html-pre">Brown Bear, Brown Bear, What do you see?
-I see a red bird looking at me.
-Red Bird, Red Bird, What do you see?
-I see a yellow duck looking at me.
-Yellow Duck, Yellow Duck, What do you see?</g>
-          <g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g>
+        <target xml:lang="pt-PT" state="translated">Rima - Uma história com um padrão ou sequência que também inclui rima. Por exemplo:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poesia">
+          <g id="genid-3" ctype="x-html-pre">O poeta é um fingidor.
+Finge tão completamente
+Que chega a fingir que é dor
+A dor que deveras sente.</g>
+          <g id="genid-4" ctype="x-html-div" html:class="autor">- Fernando Pessoa</g>
         </g>
       
       </target>
       </trans-unit>
-      <trans-unit id="leveled.reader.illustrations">
+      <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
         <note>ID: leveled.reader.illustrations</note>
-        <target xml:lang="pt-PT" state="translated">Suporte de ilustração</target>
+        <target xml:lang="pt-PT">Suporte de ilustração</target>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
         <note>ID: leveled.reader.illustrations.help</note>
-        <target xml:lang="pt-PT" state="needs-translation">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
-    
+        <target xml:lang="pt-PT" state="translated">As ilustrações podem suportar uma história. As ilustrações referem-se à história de diferentes maneiras para diferentes <g id="genid-5" ctype="x-html-em"> níveis</g> e para diferentes tipos de leitores (veja abaixo). Lembre-se de que em muitas culturas que não possuem muito material impresso, pode ser difícil entender ilustrações complexas.    
     </target>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader">
