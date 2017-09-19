@@ -761,12 +761,15 @@ namespace Bloom.Collection
 				var result = new[] { Language1Iso639Code, Language2Iso639Code, Language3Iso639Code, "en" };
 				// reverse-order loop so that given e.g. zh-Hans followed by zh-Hant we insert zh-CN after the second one.
 				// That is, we'll prefer either of the explicit variants to the fall-back.
+				// This also would insert (for example) "fr" (French) after either "fre" or "fra" both French variants.
+				// Unfortunately, this inserts "ru" (Russian) after "rub" (an African language), which isn't what's wanted.
+				// So we end up comparing English names of both codes to see if the long one starts with the short one.
 				for (int i = result.Length - 1; i >= 0; i--)
 				{
 					var culture = result[i];
-					if (culture == null || culture.Length <= 2)
+					if (culture == null)
 						continue;
-					var extra = culture.Substring(0, 2); // Generally insert corresponding language for longer culture
+					var extra = culture.Split('-')[0]; // Generally insert corresponding language for longer culture
 					if (extra == "zh")
 						extra = "zh-CN"; // Insert this instead for Chinese
 					if (result.IndexOf(extra) >= 0)
