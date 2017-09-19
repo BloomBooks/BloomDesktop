@@ -2302,10 +2302,10 @@
         <note>ID: HelpMenu.KeyBloomConceptsToolStripMenuItem</note>
         <target xml:lang="pt-PT" state="translated">Conceitos chave de Bloom</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.AskAQuestionMenuItem">
+      <trans-unit id="HelpMenu.AskAQuestionMenuItem" approved="yes">
         <source xml:lang="en">Ask a Question (web)</source>
         <note>ID: HelpMenu.AskAQuestionMenuItem</note>
-        <target xml:lang="pt-PT" state="translated">Pergunte (web)</target>
+        <target xml:lang="pt-PT">Pergunte (web)</target>
       </trans-unit>
       <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
         <source xml:lang="en">Request a Feature (web)</source>
@@ -2456,10 +2456,10 @@
         <note>ID: LayoutChoices.QuarterLetterLandscape</note>
         <target xml:lang="pt-PT" state="translated">QuartaCartaHorizontal</target>
       </trans-unit>
-      <trans-unit id="LicenseDialog.WindowTitle">
+      <trans-unit id="LicenseDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
-        <target xml:lang="pt-PT" state="translated">Bloom {0}</target>
+        <target xml:lang="pt-PT">Bloom {0}</target>
       </trans-unit>
       <trans-unit id="LicenseDialog._acceptButton">
         <source xml:lang="en">I accept the terms of the license agreement</source>
@@ -2481,10 +2481,10 @@
         <note>ID: LoginDialog.ForgotPassword</note>
         <target xml:lang="pt-PT" state="translated">Esqueci a senha</target>
       </trans-unit>
-      <trans-unit id="LoginDialog.LoginButton">
+      <trans-unit id="LoginDialog.LoginButton" approved="yes">
         <source xml:lang="en">&amp;Login</source>
         <note>ID: LoginDialog.LoginButton</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Login</target>
+        <target xml:lang="pt-PT">&amp;Login</target>
       </trans-unit>
       <trans-unit id="LoginDialog.Password">
         <source xml:lang="en">Password</source>
