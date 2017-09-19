@@ -691,10 +691,13 @@
         <note>ID: CollectionTab.Health</note>
         <target xml:lang="pt-PT" state="translated">Saúde</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
+      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="pt-PT" state="translated">Uma vez que esta é uma coleção de fonte, Bloom não está oferecendo Shells existentes como fontes para os novos Shells. Se você quiser adicionar um idioma a um Shell, você precisa editar a coleção que contém o shell, ao invés de fazer uma cópia dele. Além disso, o atual calendário não pode ser usado para fazer um novo Shell.</target>
+        <target xml:lang="pt-PT">Uma vez que esta é uma coleção de fonte, Bloom não está oferecendo Shells existentes como fontes para os novos Shells. Se você quiser adicionar um idioma a um Shell, você precisa editar a coleção que contém o Shell, ao invés de fazer uma cópia dele. Além disso, o atual calendário não pode ser usado para fazer um novo Shell.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Uma vez que esta é uma coleção de fonte, Bloom não está oferecendo Shells existentes como fontes para os novos Shells. Se você quiser adicionar um idioma a um Shell, você precisa editar a coleção que contém o shell, ao invés de fazer uma cópia dele. Além disso, o atual calendário não pode ser usado para fazer um novo Shell.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pt-PT">Porque esta é uma coleção de fonte, Bloom não está oferecendo Shells existentes como fontes para os novos Shells. Se você quiser adicionar um idioma a um Shell, em vez você precisa editar a coleção que contém o shell, ao invés de fazer uma cópia dele. Além disso, o calendário atualmente não pode ser usado para fazer um novo Shell.</target>
         </alt-trans>
