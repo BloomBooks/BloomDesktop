@@ -208,7 +208,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="es-ES" state="translated">Paquete de páginas iniciales/finales</target>
+        <target xml:lang="es-ES" state="translated">Paquete de materia inicial/final</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Paquete de páginas iniciales/finales</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Paquete de materia frontal/posterior</target>
         </alt-trans>
@@ -649,7 +652,10 @@
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="es-ES" state="translated">Porque este es una colección de furente, Bloom no está ofreciendo "libros shell" existentes como fuentes para nuevos "libros shell". Si desea agregar un idioma a un "libro shell", debe editar la colección que contiene el "libro shell", en vez de copiarlo. hacer una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "libro shell".</target>
+        <target xml:lang="es-ES" state="translated">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "libros shell" existentes como fuentes para nuevos "libros shell". Si desea agregar un idioma a un "libro shell", debe editar la colección que contiene el "libro shell", en vez de copiarlo. hacer una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "libro shell".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección de origen, Bloom no está ofreciendo ninguna shells existentes como orígenes de nuevas shells. Si desea agregar un idioma a una shell, en cambio es necesario editar la colección que contiene la shell, en lugar de hacer una copia de la misma. Además, el calendario de pared no se puede utilizar para crear una nueva shell.</target>
         </alt-trans>
@@ -698,7 +704,10 @@
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
         <source xml:lang="en">Sample Shells</source>
         <note>ID: CollectionTab.Sample Shells</note>
-        <target xml:lang="es-ES" state="translated">Shells de muestra</target>
+        <target xml:lang="es-ES" state="translated">"Shells" de muestra</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Shells de muestra</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.SendReceive">
         <source xml:lang="en">Send/Receive</source>
@@ -726,7 +735,10 @@
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="es-ES" state="translated">Fuentes para nuevos "libros shell"</target>
+        <target xml:lang="es-ES" state="translated">Fuentes para nuevos "shells"</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Fuentes para nuevos "libros shell"</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Orígenes de armazones nuevas</target>
         </alt-trans>
@@ -1448,7 +1460,10 @@
       <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true">
         <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Translator</note>
-        <target xml:lang="es-ES" state="translated">Cuando crea un libro a base de un libro shell, utilice este cuadro para indicar quien hizo la traducción.</target>
+        <target xml:lang="es-ES" state="translated">Cuando crea un libro a base de un libro "shell", utilice este cuadro para indicar quien hizo la traducción.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuando crea un libro a base de un libro shell, utilice este cuadro para indicar quien hizo la traducción.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cuando haces un libro desde un shell, utilice este cuadro para decir quién hizo la traducción.</target>
         </alt-trans>
@@ -1468,7 +1483,10 @@
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
-        <target xml:lang="es-ES" state="translated">Haga clic para editar los derechos de autor &amp; licencia</target>
+        <target xml:lang="es-ES" state="translated">Haga clic para editar los derechos de autor y licencia</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haga clic para editar los derechos de autor &amp; licencia</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Haga clic para editar derechos de autor &amp; licencia</target>
         </alt-trans>
@@ -1505,7 +1523,10 @@
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
-        <target xml:lang="es-ES" state="translated">Reconocimientos de originales (o de Shell) en {lang}</target>
+        <target xml:lang="es-ES" state="translated">Reconocimientos de originales (o de "shell") en {lang}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reconocimientos de originales (o de Shell) en {lang}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Reconocimientos originales (o Shell) en {lang}</target>
         </alt-trans>
@@ -1567,7 +1588,13 @@
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="es-ES" state="translated">Para desbloquear este libro de fuente, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro de fuente'.</target>
+        <target xml:lang="es-ES" state="translated">Para desbloquear este libro "shell", ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro "shell".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para desbloquear este libro de fuente, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro "shell".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Para desbloquear este libro de fuente, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro de fuente'.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
         <source xml:lang="en">Change Image</source>
@@ -2221,12 +2248,18 @@
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
         <note>ID: EditTab.Toolbox.Settings.Unlock</note>
-        <target xml:lang="es-ES" state="translated">Permitir cambios a este libro shell</target>
+        <target xml:lang="es-ES" state="translated">Permitir cambios a este libro "shell"</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Permitir cambios a este libro shell</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText" sil:dynamic="true">
         <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
-        <target xml:lang="es-ES" state="translated">Bloom normalmente previene la mayoría de los cambios a los libros shell. Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
+        <target xml:lang="es-ES" state="translated">Bloom normalmente previene la mayoría de los cambios a los libros "shell". Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom normalmente previene la mayoría de los cambios a los libros shell. Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.BadState">
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
@@ -2427,7 +2460,13 @@
       <trans-unit id="Errors.SpecifiedXMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
         <note>ID: Errors.SpecifiedXMatterNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero Bloom no logro conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Materia Inicial/Final del libro.</target>
+        <target xml:lang="es-ES" state="translated">Este libro pidió un paquete de materia inicial/final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de paquete de materia inicial/final del libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Materia Inicial/Final del libro.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero Bloom no logro conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Materia Inicial/Final del libro.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un Paquete de Material Inicial/Final nombrado '{0}', pero Bloom no logro conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Material Inicial/Final del libro.</target>
         </alt-trans>
@@ -2435,7 +2474,10 @@
       <trans-unit id="Errors.XMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
         <note>ID: Errors.XMatterNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro utiliza el paquete de páginas iniciales/finales nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de páginas iniciales/finales.</target>
+        <target xml:lang="es-ES" state="translated">Este libro utiliza el paquete de materia inicial/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia inicial/final.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro utiliza el paquete de páginas iniciales/finales nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de páginas iniciales/finales.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro utiliza el paquete de materia frontal/posterior nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia frontal/posterior.</target>
         </alt-trans>
@@ -2452,7 +2494,10 @@
       <trans-unit id="Errors.XMatterSpecifiedByBookNotFound">
         <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
         <note>ID: Errors.XMatterSpecifiedByBookNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de Materia Inicial/Final de la configuación de la colección.</target>
+        <target xml:lang="es-ES" state="translated">Este libro pidió un paquete de materia inicial/final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de materia inicial/final de la configuación de la colección.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de Materia Inicial/Final de la configuación de la colección.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.ZoneAlarm">
         <source xml:lang="en">Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</source>
@@ -2786,7 +2831,13 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-        <target xml:lang="es-ES" state="translated">Una colección de libros shell o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus shells.</target>
+        <target xml:lang="es-ES" state="translated">Una colección de libros "shell" o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus "shells".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Una colección de libros shell o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus "shells".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Una colección de libros shell o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus shells.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
         <source xml:lang="en">Local Language Collection</source>
