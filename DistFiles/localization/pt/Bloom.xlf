@@ -2095,7 +2095,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoMic">
         <source xml:lang="en">This computer appears to have no sound recording device available. You will need one to record audio for a talking book.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.NoMic</note>
-        <target xml:lang="pt-PT" state="translated">Este computador parece não ter nenhum dispositivo de gravação de som disponível. Você vai precisar de um para gravar áudio para um livro falante.</target>
+        <target xml:lang="pt-PT" state="translated">Este computador parece não ter nenhum dispositivo de gravação de som disponível. Você vai precisar de um para gravar áudio para um áudio livro.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Este computador parece não ter nenhum dispositivo de gravação de som disponível. Você vai precisar de um para gravar áudio para um livro falante.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.PleaseHoldMessage">
         <source xml:lang="en">Please hold the button down until you have finished recording</source>
@@ -2126,7 +2129,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Heading</note>
-        <target xml:lang="pt-PT" state="translated">Ferramenta de livro falante</target>
+        <target xml:lang="pt-PT" state="translated">Ferramenta de Áudio Livro</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Ferramenta de livro falante</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true">
         <source xml:lang="en">Listen to the whole page</source>
@@ -2719,57 +2725,57 @@
         <source xml:lang="en">Bloom Book for Devices</source>
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom Book for Devices</target>
+        <target xml:lang="pt-PT" state="translated">Livro Bloom para dispositivos</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
-        <target xml:lang="pt-PT" state="needs-translation">Save Bloom Reader File</target>
+        <target xml:lang="pt-PT" state="translated">Salvar arquivo BloomReader</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseUSB">
         <source xml:lang="en">Send over USB Cable</source>
         <note>ID: PublishTab.Android.ChooseUSB</note>
-        <target xml:lang="pt-PT" state="needs-translation">Send over USB Cable</target>
+        <target xml:lang="pt-PT" state="translated">Enviar via cabo USB</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseWifi">
         <source xml:lang="en">Serve on WiFi Network</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-        <target xml:lang="pt-PT" state="needs-translation">Serve on WiFi Network</target>
+        <target xml:lang="pt-PT" state="translated">Servir via rede Wi-Fi</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Control">
         <source xml:lang="en">Control</source>
         <note>ID: PublishTab.Android.Control</note>
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Control</target>
+        <target xml:lang="pt-PT" state="translated">Controlar</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
-        <target xml:lang="pt-PT" state="needs-translation">Get Bloom Reader App</target>
+        <target xml:lang="pt-PT" state="translated">Obter o aplicativo BloomReader</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Method</target>
+        <target xml:lang="pt-PT" state="translated">Método</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Save">
         <source xml:lang="en">Save...</source>
         <note>ID: PublishTab.Android.Save</note>
         <note>Button that tells Bloom to save the book as a .bloomD file.</note>
-        <target xml:lang="pt-PT" state="needs-translation">Save...</target>
+        <target xml:lang="pt-PT" state="translated">Salvar...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Troubleshooting">
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
-        <target xml:lang="pt-PT" state="needs-translation">Troubleshooting Tips</target>
+        <target xml:lang="pt-PT" state="translated">Dicas de solução de problemas</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
         <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
         <note>{0} is a book title</note>
-        <target xml:lang="pt-PT" state="needs-translation">You can now read "{0}" in Bloom Reader!</target>
+        <target xml:lang="pt-PT" state="translated">Agora você pode ler "{0}" no BloomReader!</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.Connected">
         <source xml:lang="en">Connected to {0} via USB...</source>
