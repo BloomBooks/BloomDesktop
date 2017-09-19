@@ -7,11 +7,11 @@
         <note>ID: missing.lame.please.install</note>
         <target xml:lang="pt-PT">Por favor, instale o LAME</target>
       </trans-unit>
-      <trans-unit id="missing.lame.bloom.needs.lame">
+      <trans-unit id="missing.lame.bloom.needs.lame" approved="yes">
         <source xml:lang="en">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
       </source>
         <note>ID: missing.lame.bloom.needs.lame</note>
-        <target xml:lang="pt-PT" state="translated">Este livro tem gravações de áudio. O Bloom pode usar estas para fazer um "Áudio Livro" e-book. No entanto, o Bloom precisa de um programa chamado "LAME para Audacity" a fim de criar os arquivos de mp3 que o livro será utilizado. Configurá-lo é fácil. Primeiro, baixe e execute o <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl"> 'Lame_v3.99 para Windows.exe'</g>. Em seguida, reinicie o Bloom.       
+        <target xml:lang="pt-PT">Este livro tem gravações de áudio. O Bloom pode usar estas para fazer um "Áudio Livro" e-book. No entanto, o Bloom precisa de um programa chamado "LAME para Audacity" a fim de criar os arquivos de mp3 que o livro será utilizado. Configurá-lo é fácil. Primeiro, baixe e execute o <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl"> 'Lame_v3.99 para Windows.exe'</g>. Em seguida, reinicie o Bloom.       
       </target>
         <alt-trans>
           <target xml:lang="pt-PT">Este livro tem gravações de áudio. O Bloom pode usar estas para fazer um "Talking Book" e-book. No entanto, o Bloom precisa de um programa chamado "LAME para Audacity" a fim de criar os arquivos de mp3 que o livro será utilizado. Configurá-lo é fácil. Primeiro, baixe e execute o <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl"> 'Lame_v3.99 para Windows.exe'</g>. Em seguida, reinicie o Bloom.       
