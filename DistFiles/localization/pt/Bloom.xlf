@@ -787,10 +787,10 @@
         <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
         <target xml:lang="pt-PT" state="translated">Não foi possível conectar ao servidor para verificar se há uma atualização. Você está conectado à internet?</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpToDate">
+      <trans-unit id="CollectionTab.UpToDate" approved="yes">
         <source xml:lang="en">Your Bloom is up to date.</source>
         <note>ID: CollectionTab.UpToDate</note>
-        <target xml:lang="pt-PT" state="translated">Seu Bloom está atualizado.</target>
+        <target xml:lang="pt-PT">Seu Bloom está atualizado.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Sua Bloom é até à data.</target>
         </alt-trans>
@@ -800,10 +800,10 @@
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
         <target xml:lang="pt-PT" state="translated">Bloom já está trabalhando na verificação de atualizações.</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateFailed">
+      <trans-unit id="CollectionTab.UpdateFailed" approved="yes">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
         <note>ID: CollectionTab.UpdateFailed</note>
-        <target xml:lang="pt-PT" state="translated">Uma nova versão parece estar disponível, mas não foi possível instalá-lo.</target>
+        <target xml:lang="pt-PT">Uma nova versão parece estar disponível, mas não foi possível instalá-lo.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Uma nova versão parece estar disponível, não foi possível instalá-lo.</target>
         </alt-trans>
@@ -876,24 +876,24 @@
           <target xml:lang="pt-PT">&amp;Seguinte</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.NextButton">
+      <trans-unit id="Common.NextButton" approved="yes">
         <source xml:lang="en">Next</source>
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
-        <target xml:lang="pt-PT" state="translated">Próximo</target>
+        <target xml:lang="pt-PT">Próximo</target>
         <alt-trans>
           <target xml:lang="pt-PT">Seguinte</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.OK" sil:dynamic="true">
+      <trans-unit id="Common.OK" sil:dynamic="true" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: Common.OK</note>
-        <target xml:lang="pt-PT" state="translated">OK</target>
+        <target xml:lang="pt-PT">OK</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="pt-PT" state="translated">&amp;OK</target>
+        <target xml:lang="pt-PT">&amp;OK</target>
       </trans-unit>
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
@@ -906,10 +906,10 @@
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
         <target xml:lang="pt-PT" state="translated">Consulte {0}.</target>
       </trans-unit>
-      <trans-unit id="Download.Completed">
+      <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
-        <target xml:lang="pt-PT" state="translated">Seu download ({0}) está completo. Verifique na seção de 'Livros da BloomLibrary.org' de suas coleções.</target>
+        <target xml:lang="pt-PT">Seu download ({0}) está completo. Verifique na seção de 'Livros da BloomLibrary.org' de suas coleções.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Seu download ({0}) é completa. Vê-lo na seção de 'Livros de BloomLibrary.org' de suas coleções.</target>
         </alt-trans>
@@ -919,10 +919,10 @@
         <note>ID: Download.CompletedCaption</note>
         <target xml:lang="pt-PT" state="translated">Download concluído</target>
       </trans-unit>
-      <trans-unit id="Download.CopyFailed">
+      <trans-unit id="Download.CopyFailed" approved="yes">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</source>
         <note>ID: Download.CopyFailed</note>
-        <target xml:lang="pt-PT" state="translated">Bloom baixou o livro, mas teve problemas em torná-lo disponível no Bloom. Por favor, reinicie o seu computador e tente novamente. Se você receber essa mensagem novamente, por favor, clique no botão 'Detalhes' e relate o problema para os desenvolvedores do programa.</target>
+        <target xml:lang="pt-PT">Bloom baixou o livro, mas teve problemas em torná-lo disponível no Bloom. Por favor, reinicie o seu computador e tente novamente. Se você receber essa mensagem novamente, por favor, clique no botão 'Detalhes' e relate o problema para os desenvolvedores do programa.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Bloom baixei o livro mas tive problemas tornar-lo disponível em Bloom. Por favor, reinicie o seu computador e tente novamente. Se você receber essa mensagem novamente, por favor clique no botão 'Detalhes' e relatar o problema para os programadores de Bloom.</target>
         </alt-trans>
@@ -937,18 +937,18 @@
         <note>ID: Download.GenericNetworkProblemNotice</note>
         <target xml:lang="pt-PT" state="translated">Houve um problema baixando o seu livro.</target>
       </trans-unit>
-      <trans-unit id="Download.ProblemNotice">
+      <trans-unit id="Download.ProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: Download.ProblemNotice</note>
-        <target xml:lang="pt-PT" state="translated">Houve um problema baixando o seu livro. Reinicie o Bloom ou obtenha ajuda técnica.</target>
+        <target xml:lang="pt-PT">Houve um problema baixando o seu livro. Reinicie o Bloom ou obtenha ajuda técnica.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Houve um problema, baixando o seu livro. Você pode precisar reiniciar o Bloom ou obter ajuda técnica.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.TimeoutProblemNotice">
+      <trans-unit id="Download.TimeoutProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.TimeoutProblemNotice</note>
-        <target xml:lang="pt-PT" state="translated">Houve um problema ao baixar o livro: algo demorou demais. Tente novamente, ou escreva para issues@BloomLibrary.org, caso não consiga fazer o download de sua localização.</target>
+        <target xml:lang="pt-PT">Houve um problema ao baixar o livro: algo demorou demais. Tente novamente, ou escreva para issues@BloomLibrary.org, caso não consiga fazer o download de sua localização.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Houve um problema de baixar o livro: algo demorou demais. Você pode tentar novamente, ou escrever-nos para issues@BloomLibrary.org, se você não pode fazer o download de sua localização.</target>
         </alt-trans>
@@ -975,18 +975,18 @@
         <note>ID: EditTab.AddPageDialog.ChooseLayoutContinueCheckbox</note>
         <target xml:lang="pt-PT" state="translated">Continuar assim mesmo</target>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Different Layout...</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
-        <target xml:lang="pt-PT" state="translated">Escolha uma configuração diferente...</target>
+        <target xml:lang="pt-PT">Escolha uma configuração diferente...</target>
         <alt-trans>
           <target xml:lang="pt-PT">Escolha configuração diferente...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
-        <target xml:lang="pt-PT" state="translated">Converter para esta configuração irá causar a perda de conteúdo.</target>
+        <target xml:lang="pt-PT">Converter para esta configuração irá causar a perda de conteúdo.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Convertendo para este configuração irá causar algum conteúdo ser perdido.</target>
         </alt-trans>
@@ -1002,10 +1002,10 @@
         <note>ID: EditTab.AddPageDialog.Title</note>
         <target xml:lang="pt-PT" state="translated">Adicionar página...</target>
       </trans-unit>
-      <trans-unit id="EditTab.AddTextBoxToImage" sil:dynamic="true">
+      <trans-unit id="EditTab.AddTextBoxToImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Text Box To Image</source>
         <note>ID: EditTab.AddTextBoxToImage</note>
-        <target xml:lang="pt-PT" state="translated">Adicionar Caixa de Texto a Imagem</target>
+        <target xml:lang="pt-PT">Adicionar Caixa de Texto a Imagem</target>
         <alt-trans>
           <target xml:lang="pt-PT">Adicionar caixa de texto a imagem</target>
         </alt-trans>
@@ -1037,18 +1037,18 @@
         <note>ID: EditTab.BookContextMenu.openHtmlInBrowser</note>
         <target xml:lang="pt-PT" state="translated">Abrir o HTML usado para fazer este PDF, no Firefox (deve estar no caminho)</target>
       </trans-unit>
-      <trans-unit id="EditTab.CannotChangeCopyright">
+      <trans-unit id="EditTab.CannotChangeCopyright" approved="yes">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
         <note>ID: EditTab.CannotChangeCopyright</note>
-        <target xml:lang="pt-PT" state="translated">Desculpe, os direitos autorais e licença para este livro não podem ser alterados.</target>
+        <target xml:lang="pt-PT">Desculpe, os direitos autorais e licença para este livro não podem ser alterados.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Desculpa, o direito de autor e licença para este livro não podem ser alterados.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.CantPasteImageLocked">
+      <trans-unit id="EditTab.CantPasteImageLocked" approved="yes">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
-        <target xml:lang="pt-PT" state="translated">Desculpe, este livro está bloqueado para que imagens não possam ser alteradas.</target>
+        <target xml:lang="pt-PT">Desculpe, este livro está bloqueado para que imagens não possam ser alteradas.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Desculpa, este livro está fechado para que imagens não podem ser alteradas.</target>
         </alt-trans>
@@ -1154,10 +1154,10 @@
         <note>ID: EditTab.CutButton.ToolTip</note>
         <target xml:lang="pt-PT" state="translated">Cortar (Ctrl + X)</target>
       </trans-unit>
-      <trans-unit id="EditTab.CutButton.ToolTipWhenDisabled">
+      <trans-unit id="EditTab.CutButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">You need to select some text before you can cut it</source>
         <note>ID: EditTab.CutButton.ToolTipWhenDisabled</note>
-        <target xml:lang="pt-PT" state="translated">Você precisa selecionar algum texto antes de poder recortá-la</target>
+        <target xml:lang="pt-PT">Você precisa selecionar algum texto antes de poder recortá-la</target>
         <alt-trans>
           <target xml:lang="pt-PT">Você precisa selecionar algum texto antes de você pode cortá-la</target>
         </alt-trans>
