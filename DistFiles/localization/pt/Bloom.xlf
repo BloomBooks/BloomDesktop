@@ -149,12 +149,12 @@
         <note>ID: BookEditor.FormattingDisabled</note>
         <target xml:lang="pt-PT" state="translated">Desculpa, os modelos de leitor não permitem alterações de formatação.</target>
       </trans-unit>
-      <trans-unit id="BookStorage.CorruptBook">
+      <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="pt-PT" state="translated">Bloom tinha um problema ao ler este livro e se recuperou restaurando um backup recente. Por favor verifique os alterações recentes neste livro. Se isso acontece sem nenhum motivo aparente, por favor clique em detalhes abaixo e informe-nos.</target>
+        <target xml:lang="pt-PT">Bloom teve um problema ao ler este livro. Foi restaurado um backup recente. Por favor, verifique os alterações recentes neste livro. Se isso acontecer sem nenhum motivo aparente, por favor, clique em Detalhes abaixo e informe-nos.</target>
         <alt-trans>
-          <target xml:lang="pt-PT">Bloom teve um problema ao ler este livro. Foi restaurado um backup recente. Por favor, verifique os alterações recentes neste livro. Se isso acontecer sem nenhum motivo aparente, por favor, clique em Detalhes abaixo e informe-nos.</target>
+          <target xml:lang="pt-PT">Bloom tinha um problema ao ler este livro e se recuperou restaurando um backup recente. Por favor verifique os alterações recentes neste livro. Se isso acontece sem nenhum motivo aparente, por favor clique em detalhes abaixo e informe-nos.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved">
@@ -168,20 +168,20 @@
           <target xml:lang="pt-PT">Parece que alguma parte do caminho da pasta para este livro tenha sido movido ou renomeado. Como resultado, não é possível salvar suas alterações nesta página e terá que sair agora. Se você não renomeou ou movido arquivos, por favor clique em Detalhes abaixo e relata o problema para os programadores.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Browser.CopyTroubleshootingInfo">
+      <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="pt-PT" state="translated">Copiar informações sobre solução de problemas</target>
+        <target xml:lang="pt-PT">Copiar informações para solução de problemas</target>
         <alt-trans>
-          <target xml:lang="pt-PT">Copiar informações para solução de problemas</target>
+          <target xml:lang="pt-PT">Copiar informações sobre solução de problemas</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Browser.OpenPageInFirefox">
+      <trans-unit id="Browser.OpenPageInFirefox" approved="yes">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
-        <target xml:lang="pt-PT" state="translated">Abrir uma página no Firefox (que deve ficar na variável de ambiente PATH)</target>
+        <target xml:lang="pt-PT">Abrir a página no Firefox (que deve ficar na variável de ambiente PATH)</target>
         <alt-trans>
-          <target xml:lang="pt-PT">Abrir a página no Firefox (que deve ficar na variável de ambiente PATH)</target>
+          <target xml:lang="pt-PT">Abrir uma página no Firefox (que deve ficar na variável de ambiente PATH)</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
@@ -377,10 +377,10 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
         <target xml:lang="pt-PT" state="translated">Oriya</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel" approved="yes">
         <source xml:lang="en">Page Numbering Style</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
-        <target xml:lang="pt-PT" state="translated">Estilo de numeração</target>
+        <target xml:lang="pt-PT">Estilo de numeração</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian">
         <source xml:lang="en">Persian</source>
@@ -422,10 +422,10 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
         <target xml:lang="pt-PT" state="translated">Configurações de escrita especial</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
-        <target xml:lang="pt-PT" state="translated">Configurações</target>
+        <target xml:lang="pt-PT">Configurações</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
@@ -458,10 +458,10 @@
         <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
         <target xml:lang="pt-PT" state="translated">Idiomas</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink" approved="yes">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
-        <target xml:lang="pt-PT" state="translated">Remover</target>
+        <target xml:lang="pt-PT">Remover</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
         <source xml:lang="en">Set...</source>
@@ -492,25 +492,25 @@
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
         <target xml:lang="pt-PT" state="translated">Nome da Coleção Bloom</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Country</note>
-        <target xml:lang="pt-PT" state="translated">País</target>
+        <target xml:lang="pt-PT">País</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District" approved="yes">
         <source xml:lang="en">District</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.District</note>
-        <target xml:lang="pt-PT" state="translated">Distrito</target>
+        <target xml:lang="pt-PT">Distrito</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel" approved="yes">
         <source xml:lang="en">Project Information</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel</note>
-        <target xml:lang="pt-PT" state="translated">Informações sobre o projeto</target>
+        <target xml:lang="pt-PT">Informações sobre o projeto</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province" approved="yes">
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
-        <target xml:lang="pt-PT" state="translated">Província</target>
+        <target xml:lang="pt-PT">Província</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart">
         <source xml:lang="en">Restart</source>
@@ -518,10 +518,10 @@
         <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
         <target xml:lang="pt-PT" state="translated">Reiniciar</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RestartMessage">
+      <trans-unit id="CollectionSettingsDialog.RestartMessage" approved="yes">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
-        <target xml:lang="pt-PT" state="translated">Bloom irá fechar e reabrir este projeto com as novas configurações.</target>
+        <target xml:lang="pt-PT">Bloom irá fechar e reabrir este projeto com as novas configurações.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Bloom vai fechar e reabrir este projeto com as novas configurações.</target>
         </alt-trans>
@@ -531,10 +531,10 @@
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
         <target xml:lang="pt-PT" state="translated">Fazer um Bloom Pack com um Modelo Leitor...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.AdminManagesUpdates">
+      <trans-unit id="CollectionTab.AdminManagesUpdates" approved="yes">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
         <note>ID: CollectionTab.AdminManagesUpdates</note>
-        <target xml:lang="pt-PT" state="translated">O seu administrador de sistema gerencia as atualizações do Bloom para este computador.</target>
+        <target xml:lang="pt-PT">O seu administrador de sistema gerencia as atualizações do Bloom para este computador.</target>
         <alt-trans>
           <target xml:lang="pt-PT">O administrador de sistema gerencia atualizações de Bloom para este computador.</target>
         </alt-trans>
@@ -549,11 +549,11 @@
         <note>ID: CollectionTab.Applying</note>
         <target xml:lang="pt-PT" state="translated">Aplicando atualizações</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
+      <trans-unit id="CollectionTab.BloomLibraryLinkLabel" approved="yes">
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-        <target xml:lang="pt-PT" state="translated">Obter mais livros fonte em BloomLibrary.org</target>
+        <target xml:lang="pt-PT">Obter mais livros fonte em BloomLibrary.org</target>
         <alt-trans>
           <target xml:lang="pt-PT">Obter mais de livros de fonte (origem) em BloomLibrary.org</target>
         </alt-trans>
@@ -609,18 +609,18 @@
         <note>ID: CollectionTab.BookSourceHeading</note>
         <target xml:lang="pt-PT" state="translated">Fontes para novos livros</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookSourcesLockNotice">
+      <trans-unit id="CollectionTab.BookSourcesLockNotice" approved="yes">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
         <note>ID: CollectionTab.BookSourcesLockNotice</note>
-        <target xml:lang="pt-PT" state="translated">Esta coleção está bloqueada. Novos livros não podem ser adicionado/removido.</target>
+        <target xml:lang="pt-PT">Esta coleção está bloqueada. Novos livros não podem ser adicionado/removido.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Esta coleção está trancada, então novos livros não podem ser adicionado/removido.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
-        <target xml:lang="pt-PT" state="translated">Livros da BloomLibrary.org</target>
+        <target xml:lang="pt-PT">Livros da BloomLibrary.org</target>
         <alt-trans>
           <target xml:lang="pt-PT">Livros de BloomLibrary.org</target>
         </alt-trans>
@@ -640,18 +640,18 @@
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
         <target xml:lang="pt-PT" state="translated">Resgatar imagens ausentes...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.showHistory">
+      <trans-unit id="CollectionTab.CollectionMenu.showHistory" approved="yes">
         <source xml:lang="en">Collection History...</source>
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>
-        <target xml:lang="pt-PT" state="translated">Histórico da Coleção...</target>
+        <target xml:lang="pt-PT">Histórico da Coleção...</target>
         <alt-trans>
           <target xml:lang="pt-PT">Historia da Coleção...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.showNotes">
+      <trans-unit id="CollectionTab.CollectionMenu.showNotes" approved="yes">
         <source xml:lang="en">Collection Notes...</source>
         <note>ID: CollectionTab.CollectionMenu.showNotes</note>
-        <target xml:lang="pt-PT" state="translated">Notas Sobre a Coleção...</target>
+        <target xml:lang="pt-PT">Notas Sobre a Coleção...</target>
         <alt-trans>
           <target xml:lang="pt-PT">Notas Sobre Coleção...</target>
         </alt-trans>
@@ -4490,11 +4490,11 @@ Deseja continuar?</target>
         <note>displays as a "toast"</note>
         <target xml:lang="pt-PT" state="translated">Arquivo de Imagem Não Encontrado</target>
       </trans-unit>
-      <trans-unit id="WebServer.Warning.NoFile">
+      <trans-unit id="WebServer.Warning.NoFile" approved="yes">
         <source xml:lang="en">Cannot Find File</source>
         <note>ID: WebServer.Warning.NoFile</note>
         <note>displays as a "toast"</note>
-        <target xml:lang="pt-PT" state="translated">Arquivo Não Encontrado</target>
+        <target xml:lang="pt-PT">Arquivo Não Encontrado</target>
       </trans-unit>
     </body>
   </file>
