@@ -273,11 +273,11 @@
           <target xml:lang="pt-PT">Pack de Matéria de Frente/Trás</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
-        <target xml:lang="pt-PT" state="translated">Economia de papel</target>
+        <target xml:lang="pt-PT">Economia de papel</target>
         <alt-trans>
           <target xml:lang="pt-PT">Economizador de papel</target>
         </alt-trans>
@@ -356,10 +356,13 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer</note>
         <target xml:lang="pt-PT">Khmer</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao" approved="yes">
         <source xml:lang="en">Lao</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao</note>
-        <target xml:lang="pt-PT" state="translated">Laosiano</target>
+        <target xml:lang="pt-PT">Laociano</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Laosiano</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian">
         <source xml:lang="en">Lower-Armenian</source>
@@ -404,48 +407,48 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil</note>
         <target xml:lang="pt-PT">Tâmil</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu" approved="yes">
         <source xml:lang="en">Telugu</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
-        <target xml:lang="pt-PT" state="translated">Telugo</target>
+        <target xml:lang="pt-PT">Telugo</target>
         <alt-trans>
           <target xml:lang="pt-PT">Telugu</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai" approved="yes">
         <source xml:lang="en">Thai</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai</note>
-        <target xml:lang="pt-PT" state="translated">Tailandês</target>
+        <target xml:lang="pt-PT">Tailandês</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan" approved="yes">
         <source xml:lang="en">Tibetan</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan</note>
-        <target xml:lang="pt-PT" state="translated">Tibetano</target>
+        <target xml:lang="pt-PT">Tibetano</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian">
         <source xml:lang="en">Upper-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
         <target xml:lang="pt-PT" state="translated">Armênio Superior</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem" approved="yes">
         <source xml:lang="en">Right to Left Writing System</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem</note>
-        <target xml:lang="pt-PT" state="translated">Sistemas de escrita direita para a esquerda</target>
+        <target xml:lang="pt-PT">Sistemas de escrita direita para a esquerda</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
-        <target xml:lang="pt-PT" state="translated">Configurações de escrita especial</target>
+        <target xml:lang="pt-PT">Configurações de escrita especial</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
         <target xml:lang="pt-PT">Configurações</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
-        <target xml:lang="pt-PT" state="translated">Alterar...</target>
+        <target xml:lang="pt-PT">Alterar...</target>
         <alt-trans>
           <target xml:lang="pt-PT">Cambiar...</target>
         </alt-trans>
@@ -468,44 +471,44 @@
         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
         <target xml:lang="pt-PT">Idioma 3</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
         <source xml:lang="en">Languages</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
-        <target xml:lang="pt-PT" state="translated">Idiomas</target>
+        <target xml:lang="pt-PT">Idiomas</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink" approved="yes">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
         <target xml:lang="pt-PT">Remover</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink" approved="yes">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
         <note>If there is no third language specified, the link changes to this.</note>
-        <target xml:lang="pt-PT" state="translated">Definir...</target>
+        <target xml:lang="pt-PT">Definir...</target>
         <alt-trans>
           <target xml:lang="pt-PT">Fixar...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="pt-PT" state="translated">Idioma local</target>
+        <target xml:lang="pt-PT">Idioma local</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label" approved="yes">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language2Label</note>
-        <target xml:lang="pt-PT" state="translated">Idioma 2 (por exemplo, idioma nacional)</target>
+        <target xml:lang="pt-PT">Idioma 2 (por exemplo, idioma nacional)</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label" approved="yes">
         <source xml:lang="en">Language 3 (e.g. Regional Language)  (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
-        <target xml:lang="pt-PT" state="translated">Idioma 3 (por exemplo, idioma regional) (opcional)</target>
+        <target xml:lang="pt-PT">Idioma 3 (por exemplo, idioma regional) (opcional)</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
-        <target xml:lang="pt-PT" state="translated">Nome da Coleção Bloom</target>
+        <target xml:lang="pt-PT">Nome da Coleção Bloom</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
