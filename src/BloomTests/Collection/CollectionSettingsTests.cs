@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.RegularExpressions;
 using Bloom.Collection;
 using NUnit.Framework;
@@ -108,7 +108,7 @@ namespace BloomTests.Collection
 							  "Css did not generate PageNumber style rule match.");
 		}
 
-		[TestCase("en", "es", "de", new[] {"en", "es", "de", "en"})] // we don't really need it, but English is put at the end even if already present
+		[TestCase("en", "es", "de", new[] { "en", "es", "de", "en" })] // we don't really need it, but English is put at the end even if already present
 		[TestCase("id", "es", "de", new[] { "id", "es", "de", "en" })] // more typical case where adding English is important
 		[TestCase("zh-CN", "es", "de", new[] { "zh-CN", "es", "de", "en" })] // zh-CN does not require an insertion
 		[TestCase("zh-Hans", "es", "de", new[] { "zh-Hans", "zh-CN", "es", "de", "en" })] // any other zh-X requires zh-CN to be inserted following it.
@@ -118,6 +118,7 @@ namespace BloomTests.Collection
 		[TestCase("fr-CA", "es", "de", new[] { "fr-CA", "fr", "es", "de", "en" })] // any fr-X requires fr inserted after it
 		[TestCase("es", "fr-CA", "de", new[] { "es", "fr-CA", "fr", "de", "en" })]
 		[TestCase("es", "id", "fr-LU", new[] { "es", "id", "fr-LU", "fr", "en" })]
+		[TestCase("rub", "", "en", new [] { "rub", "", "en", "en" })] // don't stick in Russian as an alternative to an unrelated 3 letter code.
 		// given two fr-X codes, insert fr after the last of them. The main point here is that fr should be tried after fr-FR and fr-LU.
 		// But the result here is actually debatable: should es be preferred to fr in this case?
 		// Maybe the right result is fr-FR, fr-LU, fr, es, en in this case, since the original order indicates that French is better than Spanish?
