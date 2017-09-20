@@ -778,41 +778,44 @@
         <note>ID: CollectionTab.Sample Shells</note>
         <target xml:lang="pt-PT" state="translated">Shells de amostra</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.SendReceive">
+      <trans-unit id="CollectionTab.SendReceive" approved="yes">
         <source xml:lang="en">Send/Receive</source>
         <note>ID: CollectionTab.SendReceive</note>
-        <target xml:lang="pt-PT" state="translated">Enviar/Receber</target>
+        <target xml:lang="pt-PT">Enviar/Receber</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.SettingsButton">
+      <trans-unit id="CollectionTab.SettingsButton" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionTab.SettingsButton</note>
-        <target xml:lang="pt-PT" state="translated">Configurações</target>
+        <target xml:lang="pt-PT">Configurações</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.Source Collection</note>
         <target xml:lang="pt-PT" state="translated">Coleção de fontes de livros</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections" approved="yes">
         <source xml:lang="en">Open Additional Collections Folder</source>
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
-        <target xml:lang="pt-PT" state="translated">Abrir uma pasta de coleções adicionais</target>
+        <target xml:lang="pt-PT">Abrir uma pasta de coleções adicionais</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
         <target xml:lang="pt-PT" state="translated">Fontes para os novos "Shells"</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Templates" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Templates" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Templates</source>
         <note>ID: CollectionTab.Templates</note>
-        <target xml:lang="pt-PT" state="translated">Modelos</target>
+        <target xml:lang="pt-PT">Modelos</target>
       </trans-unit>
       <trans-unit id="CollectionTab.TitleMissing">
         <source xml:lang="en">Title Missing</source>
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
-        <target xml:lang="pt-PT" state="translated">Falta título</target>
+        <target xml:lang="pt-PT" state="translated">Falta o título</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Falta título</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.UnableToCheckForUpdate">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
@@ -828,10 +831,10 @@
           <target xml:lang="pt-PT">Sua Bloom é até à data.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateCheckInProgress">
+      <trans-unit id="CollectionTab.UpdateCheckInProgress" approved="yes">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
-        <target xml:lang="pt-PT" state="translated">Bloom já está trabalhando na verificação de atualizações.</target>
+        <target xml:lang="pt-PT">Bloom já está trabalhando na verificação de atualizações.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateFailed" approved="yes">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
@@ -841,70 +844,73 @@
           <target xml:lang="pt-PT">Uma nova versão parece estar disponível, não foi possível instalá-lo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateInstalled">
+      <trans-unit id="CollectionTab.UpdateInstalled" approved="yes">
         <source xml:lang="en">Update for {0} is ready.</source>
         <note>ID: CollectionTab.UpdateInstalled</note>
         <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
-        <target xml:lang="pt-PT" state="translated">Atualização para {0} está pronto.</target>
+        <target xml:lang="pt-PT">Atualização para {0} está pronto.</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateNow">
+      <trans-unit id="CollectionTab.UpdateNow" approved="yes">
         <source xml:lang="en">Update Now</source>
         <note>ID: CollectionTab.UpdateNow</note>
-        <target xml:lang="pt-PT" state="translated">Atualizar agora</target>
+        <target xml:lang="pt-PT">Atualizar agora</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdatesAvailable">
+      <trans-unit id="CollectionTab.UpdatesAvailable" approved="yes">
         <source xml:lang="en">A new version of Bloom is available.</source>
         <note>ID: CollectionTab.UpdatesAvailable</note>
-        <target xml:lang="pt-PT" state="translated">Uma nova versão do Bloom está disponível.</target>
+        <target xml:lang="pt-PT">Uma nova versão do Bloom está disponível.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Updating">
         <source xml:lang="en">Downloading update to {0} ({1}kb).</source>
         <note>ID: CollectionTab.Updating</note>
         <target xml:lang="pt-PT" state="translated">Baixando atualização para {0} ({1}kb).</target>
       </trans-unit>
-      <trans-unit id="Common.BackButton">
+      <trans-unit id="Common.BackButton" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: Common.BackButton</note>
         <note>In a wizard, this button takes you to the previous step.</note>
-        <target xml:lang="pt-PT" state="translated">Voltar</target>
+        <target xml:lang="pt-PT">Voltar</target>
       </trans-unit>
-      <trans-unit id="Common.Cancel" sil:dynamic="true">
+      <trans-unit id="Common.Cancel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cancel</source>
         <note>ID: Common.Cancel</note>
-        <target xml:lang="pt-PT" state="translated">Cancelar</target>
+        <target xml:lang="pt-PT">Cancelar</target>
       </trans-unit>
-      <trans-unit id="Common.CancelButton">
+      <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Cancelar</target>
+        <target xml:lang="pt-PT">&amp;Cancelar</target>
       </trans-unit>
-      <trans-unit id="Common.Finish">
+      <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Terminar</target>
+        <target xml:lang="pt-PT">&amp;Concluir</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">&amp;Terminar</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Help" sil:dynamic="true">
+      <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
-        <target xml:lang="pt-PT" state="translated">Ajuda</target>
+        <target xml:lang="pt-PT">Ajuda</target>
       </trans-unit>
-      <trans-unit id="Common.HelpButton">
+      <trans-unit id="Common.HelpButton" approved="yes">
         <source xml:lang="en">&amp;Help</source>
         <note>ID: Common.HelpButton</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Ajuda</target>
+        <target xml:lang="pt-PT">&amp;Ajuda</target>
       </trans-unit>
-      <trans-unit id="Common.Loading" sil:dynamic="true">
+      <trans-unit id="Common.Loading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
-        <target xml:lang="pt-PT" state="translated">Carregando...</target>
+        <target xml:lang="pt-PT">Carregando...</target>
       </trans-unit>
-      <trans-unit id="Common.Next">
+      <trans-unit id="Common.Next" approved="yes">
         <source xml:lang="en">&amp;Next</source>
         <note>ID: Common.Next</note>
         <note>Used for the Next button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Próximo</target>
+        <target xml:lang="pt-PT">&amp;Próximo</target>
         <alt-trans>
           <target xml:lang="pt-PT">&amp;Seguinte</target>
         </alt-trans>
@@ -928,10 +934,10 @@
         <note>ID: Common.OKButton</note>
         <target xml:lang="pt-PT">&amp;OK</target>
       </trans-unit>
-      <trans-unit id="Common.Optional">
+      <trans-unit id="Common.Optional" approved="yes">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
-        <target xml:lang="pt-PT" state="translated">opcional</target>
+        <target xml:lang="pt-PT">opcional</target>
       </trans-unit>
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
@@ -947,10 +953,10 @@
           <target xml:lang="pt-PT">Seu download ({0}) é completa. Vê-lo na seção de 'Livros de BloomLibrary.org' de suas coleções.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.CompletedCaption">
+      <trans-unit id="Download.CompletedCaption" approved="yes">
         <source xml:lang="en">Download complete</source>
         <note>ID: Download.CompletedCaption</note>
-        <target xml:lang="pt-PT" state="translated">Download concluído</target>
+        <target xml:lang="pt-PT">Download concluído</target>
       </trans-unit>
       <trans-unit id="Download.CopyFailed" approved="yes">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</source>
@@ -963,12 +969,18 @@
       <trans-unit id="Download.DownloadingDialogTitle">
         <source xml:lang="en">Downloading book</source>
         <note>ID: Download.DownloadingDialogTitle</note>
-        <target xml:lang="pt-PT" state="translated">Baixando livro</target>
+        <target xml:lang="pt-PT" state="translated">Baixando o livro</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Baixando livro</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.GenericNetworkProblemNotice">
         <source xml:lang="en">There was a problem downloading your book.</source>
         <note>ID: Download.GenericNetworkProblemNotice</note>
-        <target xml:lang="pt-PT" state="translated">Houve um problema baixando o seu livro.</target>
+        <target xml:lang="pt-PT" state="translated">Houve um problema ao baixar o seu livro.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Houve um problema baixando o seu livro.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Download.ProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
@@ -986,22 +998,25 @@
           <target xml:lang="pt-PT">Houve um problema de baixar o livro: algo demorou demais. Você pode tentar novamente, ou escrever-nos para issues@BloomLibrary.org, se você não pode fazer o download de sua localização.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.AddPageButton">
+      <trans-unit id="EditTab.AddPageDialog.AddPageButton" approved="yes">
         <source xml:lang="en">Add Page</source>
         <note>ID: EditTab.AddPageDialog.AddPageButton</note>
         <note>This is for the button that LAUNCHES the dialog, not the "Add this page" button that is IN the dialog.</note>
-        <target xml:lang="pt-PT" state="translated">Adicionar página</target>
+        <target xml:lang="pt-PT">Adicionar página</target>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.AddThisPageButton" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.AddThisPageButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add This Page</source>
         <note>ID: EditTab.AddPageDialog.AddThisPageButton</note>
         <note>This is for the button inside the dialog</note>
-        <target xml:lang="pt-PT" state="translated">Adicionar esta página</target>
+        <target xml:lang="pt-PT">Adicionar esta página</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutButton" sil:dynamic="true">
         <source xml:lang="en">Use This Layout</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutButton</note>
-        <target xml:lang="pt-PT" state="translated">Usar este configuração (layout)</target>
+        <target xml:lang="pt-PT" state="translated">Usar este Layout</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Usar este configuração (layout)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true">
         <source xml:lang="en">Continue anyway</source>
@@ -1224,11 +1239,11 @@
           <target xml:lang="pt-PT">Bold (realce)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.DirectFormatting.Italic" sil:dynamic="true">
+      <trans-unit id="EditTab.DirectFormatting.Italic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Italic</source>
         <note>ID: EditTab.DirectFormatting.Italic</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="pt-PT" state="translated">Itálico</target>
+        <target xml:lang="pt-PT">Itálico</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Superscript</source>
@@ -1240,27 +1255,30 @@
         <source xml:lang="en">Underline</source>
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="pt-PT" state="translated">Sublinhar</target>
+        <target xml:lang="pt-PT" state="translated">Sublinhado</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Sublinhar</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.DuplicatePageButton">
+      <trans-unit id="EditTab.DuplicatePageButton" approved="yes">
         <source xml:lang="en">Duplicate\n  Page</source>
         <note>ID: EditTab.DuplicatePageButton</note>
-        <target xml:lang="pt-PT" state="translated">Duplicar\n página</target>
+        <target xml:lang="pt-PT">Duplicar\n página</target>
       </trans-unit>
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTip</note>
         <target xml:lang="pt-PT" state="translated">Inserir uma nova página que é uma duplicata desta</target>
       </trans-unit>
-      <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
+      <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">This page cannot be duplicated</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTipWhenDisabled</note>
-        <target xml:lang="pt-PT" state="translated">Esta página não pode ser duplicada</target>
+        <target xml:lang="pt-PT">Esta página não pode ser duplicada</target>
       </trans-unit>
-      <trans-unit id="EditTab.Edit">
+      <trans-unit id="EditTab.Edit" approved="yes">
         <source xml:lang="en">Edit</source>
         <note>ID: EditTab.Edit</note>
-        <target xml:lang="pt-PT" state="translated">Editar</target>
+        <target xml:lang="pt-PT">Editar</target>
       </trans-unit>
       <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true">
         <source xml:lang="en">You cannot change these because this is not the original copy.</source>
