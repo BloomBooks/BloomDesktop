@@ -608,10 +608,13 @@
         <note>ID: CollectionTab.BookMenu.ExportToWordOrLibreOffice</note>
         <target xml:lang="pt-PT">Exportar para o Word ou LibreOffice...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign">
+      <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign" approved="yes">
         <source xml:lang="en">Export to XML for InDesign...</source>
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
-        <target xml:lang="pt-PT" state="translated">Exportar para XML para o InDesign...</target>
+        <target xml:lang="pt-PT">Exportar de XML para o InDesign...</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Exportar para XML para o InDesign...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
         <source xml:lang="en">Make Bloom Pack...</source>
@@ -654,15 +657,18 @@
         <note>ID: CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks</note>
         <target xml:lang="pt-PT">Atualizar todos os livros</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks" approved="yes">
         <source xml:lang="en">Do Checks of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksOfAllBooks</note>
-        <target xml:lang="pt-PT" state="translated">Verificar todos os livros</target>
+        <target xml:lang="pt-PT">Verificar todos os livros</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
+      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages" approved="yes">
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
-        <target xml:lang="pt-PT" state="translated">Resgatar imagens ausentes...</target>
+        <target xml:lang="pt-PT">Resgatar imagens faltando...</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Resgatar imagens ausentes...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.showHistory" approved="yes">
         <source xml:lang="en">Collection History...</source>
@@ -680,40 +686,40 @@
           <target xml:lang="pt-PT">Notas Sobre Coleção...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionTabLabel">
+      <trans-unit id="CollectionTab.CollectionTabLabel" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.CollectionTabLabel</note>
-        <target xml:lang="pt-PT" state="translated">Coleções</target>
+        <target xml:lang="pt-PT">Coleções</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Collections">
+      <trans-unit id="CollectionTab.Collections" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.Collections</note>
-        <target xml:lang="pt-PT" state="translated">Coleções</target>
+        <target xml:lang="pt-PT">Coleções</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ConfiguringBookMessage">
         <source xml:lang="en">Building...</source>
         <note>ID: CollectionTab.ConfiguringBookMessage</note>
         <target xml:lang="pt-PT" state="translated">Compilando...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.ConfirmRecycleDescription">
+      <trans-unit id="CollectionTab.ConfirmRecycleDescription" approved="yes">
         <source xml:lang="en">The book '{0}'</source>
         <note>ID: CollectionTab.ConfirmRecycleDescription</note>
-        <target xml:lang="pt-PT" state="translated">O livro '{0}'</target>
+        <target xml:lang="pt-PT">O livro '{0}'</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
+      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk" approved="yes">
         <source xml:lang="en">Open Folder on Disk</source>
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
-        <target xml:lang="pt-PT" state="translated">Abrir pasta no disco</target>
+        <target xml:lang="pt-PT">Abrir pasta no disco</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.EditBookButton">
+      <trans-unit id="CollectionTab.EditBookButton" approved="yes">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
-        <target xml:lang="pt-PT" state="translated">Editar este livro</target>
+        <target xml:lang="pt-PT">Editar este livro</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Health" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Health" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Health</source>
         <note>ID: CollectionTab.Health</note>
-        <target xml:lang="pt-PT" state="translated">Saúde</target>
+        <target xml:lang="pt-PT">Saúde</target>
       </trans-unit>
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
@@ -741,28 +747,31 @@
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
         <target xml:lang="pt-PT" state="translated">Criar um livro no meu idioma usando este livro fonte</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem" approved="yes">
         <source xml:lang="en">More...</source>
         <note>ID: CollectionTab.MoreLanguagesMenuItem</note>
         <note>Brings up the localization dialog</note>
-        <target xml:lang="pt-PT" state="translated">Mais...</target>
+        <target xml:lang="pt-PT">Mais...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton" approved="yes">
         <source xml:lang="en">Other Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="pt-PT" state="translated">Outra coleção</target>
+        <target xml:lang="pt-PT">Outra coleção</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_">
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_" approved="yes">
         <source xml:lang="en">Open/Create/Get Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton_ToolTip_</note>
         <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="pt-PT" state="translated">Abrir/Criar/Obter Coleção</target>
+        <target xml:lang="pt-PT">Abrir/Criar/Obter Coleção</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem">
+      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem" approved="yes">
         <source xml:lang="en">Open or Create Another Collection</source>
         <note>ID: CollectionTab.OpenCreateCollectionMenuItem</note>
-        <target xml:lang="pt-PT" state="translated">Abrir ou crie outra coleção</target>
+        <target xml:lang="pt-PT">Abrir ou criar outra coleção</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Abrir ou crie outra coleção</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
         <source xml:lang="en">Sample Shells</source>
