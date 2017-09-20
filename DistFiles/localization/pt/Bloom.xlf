@@ -1418,10 +1418,10 @@
         <note>ID: EditTab.FormatDialog.ParagraphTab</note>
         <target xml:lang="pt-PT">Parágrafo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
         <note>ID: EditTab.FormatDialog.PleaseUseAlpha</note>
-        <target xml:lang="pt-PT" state="translated">Por favor, use apenas caracteres alfabéticos. É aceitável usar números no final, como em "parte2".</target>
+        <target xml:lang="pt-PT">Por favor, use apenas caracteres alfabéticos. É aceitável usar números no final, como em "parte2".</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ResetStyle" sil:dynamic="true">
         <source xml:lang="en">Reset this style to default settings</source>
@@ -1433,15 +1433,15 @@
         <note>ID: EditTab.FormatDialog.Spacing</note>
         <target xml:lang="pt-PT">Espaçamento</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style</source>
         <note>ID: EditTab.FormatDialog.Style</note>
-        <target xml:lang="pt-PT" state="translated">Estilo</target>
+        <target xml:lang="pt-PT">Estilo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style Name</source>
         <note>ID: EditTab.FormatDialog.StyleNameTab</note>
-        <target xml:lang="pt-PT" state="translated">Nome do estilo</target>
+        <target xml:lang="pt-PT">Nome do estilo</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
         <source xml:lang="en">Extra Wide</source>
@@ -1456,7 +1456,10 @@
       <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between words</source>
         <note>ID: EditTab.FormatDialog.WordSpacingToolTip</note>
-        <target xml:lang="pt-PT" state="translated">Cambiar o espaçamento entre palavras</target>
+        <target xml:lang="pt-PT" state="translated">Alterar o espaçamento entre palavras</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Cambiar o espaçamento entre palavras</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true">
         <source xml:lang="en">Wide</source>
@@ -1466,12 +1469,15 @@
       <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.FormatDialogTip</note>
-        <target xml:lang="pt-PT" state="translated">Ajustar o estilo de formatação</target>
+        <target xml:lang="pt-PT" state="translated">Ajustar a formatação de estilo</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Ajustar o estilo de formatação</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
         <note>ID: EditTab.FrontMatter.AuthorIllustratorPrompt</note>
-        <target xml:lang="pt-PT" state="translated">Você pode usar este espaço para autor/ilustrador, ou qualquer outra coisa.</target>
+        <target xml:lang="pt-PT">Você pode usar este espaço para autor/ilustrador, ou qualquer outra coisa.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true">
         <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
