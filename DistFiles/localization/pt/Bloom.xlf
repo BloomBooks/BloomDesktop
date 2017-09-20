@@ -160,10 +160,10 @@
           <target xml:lang="pt-PT">Bloom tinha um problema ao ler este livro e se recuperou restaurando um backup recente. Por favor verifique os alterações recentes neste livro. Se isso acontece sem nenhum motivo aparente, por favor clique em detalhes abaixo e informe-nos.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookStorage.FolderMoved">
+      <trans-unit id="BookStorage.FolderMoved" approved="yes">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="pt-PT" state="translated">Parece que alguma parte do caminho da pasta deste livro foi movido ou renomeado. Como resultado, o Bloom não conseguiu salvar suas alterações nesta página e terá de ser fechado. Se você não renomeou ou moveu items, por favor, clique em Detalhes e relate o problema aos desenvolvedores.</target>
+        <target xml:lang="pt-PT">Parece que alguma parte do caminho da pasta deste livro foi movido ou renomeado. Como resultado, o Bloom não conseguiu salvar suas alterações nesta página e terá de ser fechado. Se você não renomeou ou moveu items, por favor, clique em Detalhes e relate o problema aos desenvolvedores.</target>
         <alt-trans>
           <target xml:lang="pt-PT">Parece que alguma parte do caminho da pasta para este livro tenha sido movido ou renomeado. Como resultado, o Bloom não conseguiu salvar suas alterações nesta página e terá que sair agora. Se você não renomeou ou moveu items, por favor clique em Detalhes e relate o problema para os programadores.</target>
         </alt-trans>
@@ -259,22 +259,28 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
         <target xml:lang="pt-PT" state="translated">Identidade visual (branding)</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
-        <target xml:lang="pt-PT" state="translated">Fonte padrão para {0}</target>
+        <target xml:lang="pt-PT">Fonte padrão para {0}</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="pt-PT" state="translated">Pack de Matéria de Frente/Trás</target>
+        <target xml:lang="pt-PT">Pack de Matéria de Frente/Verso</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Pack de Matéria de Frente/Trás</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
-        <target xml:lang="pt-PT" state="translated">Economizador de papel</target>
+        <target xml:lang="pt-PT" state="translated">Economia de papel</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Economizador de papel</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
@@ -282,10 +288,10 @@
         <note>Name of the default Front/Back Matter Pack</note>
         <target xml:lang="pt-PT">Tradicional</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" approved="yes">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="pt-PT" state="translated">Arábico-Oriental</target>
+        <target xml:lang="pt-PT">Arábico-Oriental</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" approved="yes">
         <source xml:lang="en">Armenian</source>
@@ -375,30 +381,36 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar</note>
         <target xml:lang="pt-PT">Myanmar</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" approved="yes">
         <source xml:lang="en">Oriya</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
-        <target xml:lang="pt-PT" state="translated">Oriya</target>
+        <target xml:lang="pt-PT">Oriá</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Oriya</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel" approved="yes">
         <source xml:lang="en">Page Numbering Style</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
         <target xml:lang="pt-PT">Estilo de numeração</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" approved="yes">
         <source xml:lang="en">Persian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian</note>
-        <target xml:lang="pt-PT" state="translated">Persa</target>
+        <target xml:lang="pt-PT">Persa</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil" approved="yes">
         <source xml:lang="en">Tamil</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil</note>
-        <target xml:lang="pt-PT" state="translated">Tâmil</target>
+        <target xml:lang="pt-PT">Tâmil</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
         <source xml:lang="en">Telugu</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
-        <target xml:lang="pt-PT" state="translated">Telugu</target>
+        <target xml:lang="pt-PT" state="translated">Telugo</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Telugu</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai">
         <source xml:lang="en">Thai</source>
