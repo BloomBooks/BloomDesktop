@@ -55,10 +55,10 @@
         <note>ID: BloomPackInstallDialog.DoesNotExist</note>
         <target xml:lang="pt-PT">{0} não existe</target>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack">
+      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack" approved="yes">
         <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
         <note>ID: BloomPackInstallDialog.ErrorInstallingBloomPack</note>
-        <target xml:lang="pt-PT" state="translated">Bloom não foi capaz de instalar esse Bloom Pack</target>
+        <target xml:lang="pt-PT">Bloom não foi capaz de instalar esse Bloom Pack</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Extracting" approved="yes">
         <source xml:lang="en">Extracting...</source>
@@ -144,10 +144,13 @@
           <target xml:lang="pt-PT">Esta formatação é para todas as caixas de texto {0} com estilo '{1}'.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true">
+      <trans-unit id="BookEditor.FormattingDisabled" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sorry, Reader Templates do not allow changes to formatting.</source>
         <note>ID: BookEditor.FormattingDisabled</note>
-        <target xml:lang="pt-PT" state="translated">Desculpa, os modelos de leitor não permitem alterações de formatação.</target>
+        <target xml:lang="pt-PT">Desculpe, os modelos do leitor não permitem alterações de formatação.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Desculpa, os modelos de leitor não permitem alterações de formatação.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
@@ -435,23 +438,23 @@
           <target xml:lang="pt-PT">Cambiar...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection" approved="yes">
         <source xml:lang="en">Language 1</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
         <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
-        <target xml:lang="pt-PT" state="translated">Idioma 1</target>
+        <target xml:lang="pt-PT">Idioma 1</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection" approved="yes">
         <source xml:lang="en">Language 2</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
         <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="pt-PT" state="translated">Idioma 2</target>
+        <target xml:lang="pt-PT">Idioma 2</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection" approved="yes">
         <source xml:lang="en">Language 3</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="pt-PT" state="translated">Idioma 3</target>
+        <target xml:lang="pt-PT">Idioma 3</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
         <source xml:lang="en">Languages</source>
@@ -512,11 +515,11 @@
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
         <target xml:lang="pt-PT">Província</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.Restart">
+      <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
         <source xml:lang="en">Restart</source>
         <note>ID: CollectionSettingsDialog.Restart</note>
         <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
-        <target xml:lang="pt-PT" state="translated">Reiniciar</target>
+        <target xml:lang="pt-PT">Reiniciar</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.RestartMessage" approved="yes">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
@@ -539,15 +542,15 @@
           <target xml:lang="pt-PT">O administrador de sistema gerencia atualizações de Bloom para este computador.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
+      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem" approved="yes">
         <source xml:lang="en">Advanced</source>
         <note>ID: CollectionTab.AdvancedToolStripMenuItem</note>
-        <target xml:lang="pt-PT" state="translated">Avançado</target>
+        <target xml:lang="pt-PT">Avançado</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Applying">
+      <trans-unit id="CollectionTab.Applying" approved="yes">
         <source xml:lang="en">Applying updates</source>
         <note>ID: CollectionTab.Applying</note>
-        <target xml:lang="pt-PT" state="translated">Aplicando atualizações</target>
+        <target xml:lang="pt-PT">Aplicando atualizações</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkLabel" approved="yes">
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
@@ -564,25 +567,31 @@
         <note>get this clicking on BloomLibrary.org link in source collection</note>
         <target xml:lang="pt-PT" state="translated">Coleção de fontes de livros</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.DuplicateBook">
+      <trans-unit id="CollectionTab.BookMenu.DuplicateBook" approved="yes">
         <source xml:lang="en">Duplicate Book</source>
         <note>ID: CollectionTab.BookMenu.DuplicateBook</note>
-        <target xml:lang="pt-PT" state="translated">Duplicar o livro</target>
+        <target xml:lang="pt-PT">Duplicar o livro</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.DeleteBook">
+      <trans-unit id="CollectionTab.BookMenu.DeleteBook" approved="yes">
         <source xml:lang="en">Delete Book</source>
         <note>ID: CollectionTab.BookMenu.DeleteBook</note>
-        <target xml:lang="pt-PT" state="translated">Deletar livro</target>
+        <target xml:lang="pt-PT">Excluir o livro</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Deletar livro</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage">
+      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage" approved="yes">
         <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</source>
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
-        <target xml:lang="pt-PT" state="translated">Bloom abrirá este documento HTML em seu programa de processamento de texto (normalmente Word ou LibreOffice). Você será capaz de trabalhar com o texto e as imagens deste livro. Normalmente, estes programas não preservam bem o layout, então não espere muito.</target>
+        <target xml:lang="pt-PT">Bloom abrirá este documento HTML em seu programa de edição de texto (provavelmente Word ou LibreOffice). Você será capaz de trabalhar com o texto e as imagens deste livro. Normalmente, estes programas não preservam bem o layout, então não espere muito.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bloom abrirá este documento HTML em seu programa de processamento de texto (normalmente Word ou LibreOffice). Você será capaz de trabalhar com o texto e as imagens deste livro. Normalmente, estes programas não preservam bem o layout, então não espere muito.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
+      <trans-unit id="CollectionTab.BookMenu.ExportToWordOrLibreOffice" approved="yes">
         <source xml:lang="en">Export to Word or LibreOffice...</source>
         <note>ID: CollectionTab.BookMenu.ExportToWordOrLibreOffice</note>
-        <target xml:lang="pt-PT" state="translated">Exportar para o Word ou LibreOffice...</target>
+        <target xml:lang="pt-PT">Exportar para o Word ou LibreOffice...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ExportToXMLForInDesign">
         <source xml:lang="en">Export to XML for InDesign...</source>
@@ -594,10 +603,10 @@
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
         <target xml:lang="pt-PT" state="translated">Fazer um Bloom Pack...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
+      <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip" approved="yes">
         <source xml:lang="en">Update Book</source>
         <note>ID: CollectionTab.BookMenu.UpdateFrontMatterToolStrip</note>
-        <target xml:lang="pt-PT" state="translated">Atualizar o livro</target>
+        <target xml:lang="pt-PT">Atualizar o livro</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateThumbnail">
         <source xml:lang="en">Update Thumbnail</source>
@@ -625,10 +634,10 @@
           <target xml:lang="pt-PT">Livros de BloomLibrary.org</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+      <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks" approved="yes">
         <source xml:lang="en">Do Updates of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks</note>
-        <target xml:lang="pt-PT" state="translated">Atualizar todos os livros</target>
+        <target xml:lang="pt-PT">Atualizar todos os livros</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks">
         <source xml:lang="en">Do Checks of All Books</source>
@@ -1197,11 +1206,11 @@
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
         <target xml:lang="pt-PT" state="translated">Itálico</target>
       </trans-unit>
-      <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true">
+      <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Superscript</source>
         <note>ID: EditTab.DirectFormatting.Superscript</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="pt-PT" state="translated">Sobrescrito</target>
+        <target xml:lang="pt-PT">Sobrescrito</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Underline" sil:dynamic="true">
         <source xml:lang="en">Underline</source>
