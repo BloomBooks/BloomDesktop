@@ -3049,7 +3049,10 @@
         <source xml:lang="en">Control</source>
         <note>ID: PublishTab.Android.Control</note>
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
-        <target xml:lang="es-ES" state="translated">Control</target>
+        <target xml:lang="es-ES" state="translated">Controlar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Control</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader">
         <source xml:lang="en">Get Bloom Reader App</source>
