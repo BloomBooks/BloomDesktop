@@ -385,10 +385,10 @@
         <note>This is used when all we have is a copyright, no other license.</note>
         <target xml:lang="pt-PT" state="translated">Para receber permissão para reutilização, contacte o detentor dos direitos de autor.</target>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.NoLicense">
+      <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="pt-PT" state="translated">Nenhum licença especificada</target>
+        <target xml:lang="pt-PT">Nenhum licença especificada</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse">
         <source xml:lang="en">Allow commercial uses of your work?</source>
@@ -425,15 +425,15 @@
         <note>ID: MetadataEditor.CustomLicense</note>
         <target xml:lang="pt-PT" state="translated">Personalizado</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.TitleNoCredit">
+      <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="pt-PT" state="translated">Direitos autorais e licença</target>
+        <target xml:lang="pt-PT">Direitos autorais e licença</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.TitleWithCredit">
+      <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="pt-PT" state="translated">Créditos, direitos autorais, e licença</target>
+        <target xml:lang="pt-PT">Créditos, direitos autorais, e licença</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.UnknownLicense">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
@@ -451,11 +451,11 @@
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
         <target xml:lang="pt-PT" state="translated">Solicitações adicionais</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.betterLinkLabel1">
+      <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="pt-PT" state="translated">mais informação</target>
+        <target xml:lang="pt-PT">mais informação</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
         <source xml:lang="en">Not Enforceable</source>
@@ -473,10 +473,10 @@
         <note>ID: SettingsProtection.CtrlShiftHint</note>
         <target xml:lang="pt-PT" state="translated">O botão irá aparecer quando você mantenha pressionada as teclas Ctrl e Shift juntos.</target>
       </trans-unit>
-      <trans-unit id="SettingsProtection.LauncherButtonLabel">
+      <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
-        <target xml:lang="pt-PT" state="translated">Configurações...</target>
+        <target xml:lang="pt-PT">Configurações...</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
         <source xml:lang="en">Hide the button that opens settings.</source>
@@ -524,10 +524,10 @@
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
         <target xml:lang="pt-PT" state="translated">Notas de versão</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.Font">
+      <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Fonte:</target>
+        <target xml:lang="pt-PT">&amp;Fonte:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
@@ -539,10 +539,10 @@
         <note>ID: WSFontControl.RightToLeftWS</note>
         <target xml:lang="pt-PT" state="translated">Este é um sistema de escrita di&amp;reito para esquerda.</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.Size">
+      <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Tamanho:</target>
+        <target xml:lang="pt-PT">&amp;Tamanho:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea">
         <source xml:lang="en">&amp;Test Area:</source>
@@ -589,10 +589,10 @@
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
         <target xml:lang="pt-PT" state="translated">Área de &amp;teste (Use esta área para digitar algo para testar o teclado.)</target>
       </trans-unit>
-      <trans-unit id="Warning">
+      <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="pt-PT" state="translated">Aviso</target>
+        <target xml:lang="pt-PT">Aviso</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
         <source xml:lang="en">Unable to connect to SLDR</source>
