@@ -7,25 +7,25 @@
         <note>ID: AboutDialog.BuiltOnDate</note>
         <target xml:lang="pt-PT" state="translated">Construído em {0}</target>
       </trans-unit>
-      <trans-unit id="AboutDialog.NoUpdates">
+      <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="pt-PT" state="translated">Não há atualizações</target>
+        <target xml:lang="pt-PT">Não há atualizações</target>
       </trans-unit>
-      <trans-unit id="AboutDialog.WindowTitle">
+      <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
-        <target xml:lang="pt-PT" state="translated">Sobre {0}</target>
+        <target xml:lang="pt-PT">Sobre {0}</target>
       </trans-unit>
-      <trans-unit id="AboutDialog._checkForUpdates">
+      <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="pt-PT" state="translated">Verificar se há atualizações</target>
+        <target xml:lang="pt-PT">Verificar se há atualizações</target>
       </trans-unit>
-      <trans-unit id="AboutDialog._releaseNotesLabel">
+      <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="pt-PT" state="translated">Notas de versão</target>
+        <target xml:lang="pt-PT">Notas de versão</target>
       </trans-unit>
       <trans-unit id="Application.AlreadyRunning.General">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
@@ -60,25 +60,25 @@
         <note>{0} is the application name</note>
         <target xml:lang="pt-PT" state="translated">Esperando que outros {0} terminam...</target>
       </trans-unit>
-      <trans-unit id="Common.CancelButton">
+      <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Cancelar</target>
+        <target xml:lang="pt-PT">&amp;Cancelar</target>
       </trans-unit>
-      <trans-unit id="Common.No">
+      <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="pt-PT" state="translated">Não</target>
+        <target xml:lang="pt-PT">Não</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="pt-PT" state="translated">&amp;OK</target>
+        <target xml:lang="pt-PT">&amp;OK</target>
       </trans-unit>
-      <trans-unit id="Common.Yes">
+      <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="pt-PT" state="translated">Sim</target>
+        <target xml:lang="pt-PT">Sim</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
@@ -97,15 +97,18 @@
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
         <target xml:lang="pt-PT" state="translated">Confirmar Eliminação</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Cancelar</target>
+        <target xml:lang="pt-PT">&amp;Cancelar</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Deletar</target>
+        <target xml:lang="pt-PT" state="translated">&amp; Excluir</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">&amp;Deletar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.AlmostMatchingImages">
         <source xml:lang="en">Found {0} images with names close to {1}</source>
@@ -118,16 +121,19 @@
         <note>ID: ImageToolbox.ArtOfReading</note>
         <target xml:lang="pt-PT" state="translated">Arte da Leitura</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.Camera">
+      <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="pt-PT" state="translated">Câmara</target>
+        <target xml:lang="pt-PT">Câmera</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Câmara</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.CopyExemplarMetadata">
+      <trans-unit id="ImageToolbox.CopyExemplarMetadata" approved="yes">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="pt-PT" state="translated">Use {0}</target>
+        <target xml:lang="pt-PT">Use {0}</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.Crop">
         <source xml:lang="en">Crop</source>
@@ -139,20 +145,20 @@
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
         <target xml:lang="pt-PT" state="translated">Baixar o Instalador da Arte da Leitura</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.EditMetadataLink">
+      <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="pt-PT" state="translated">Editar...</target>
+        <target xml:lang="pt-PT">Editar...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms">
         <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
         <target xml:lang="pt-PT" state="translated">Esta é a Galeria 'Arte da Leitura'. Na caixa acima, digite o que você está procurando e, em seguida, pressione APLICAR/ENTER. Você pode digitar palavras em inglês e indonésio.</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.FileButton">
+      <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="pt-PT" state="translated">Arquivo</target>
+        <target xml:lang="pt-PT">Arquivo</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.GenericGettingImageProblem">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
@@ -179,11 +185,14 @@
         <note>ID: ImageToolbox.InstallArtOfReading</note>
         <target xml:lang="pt-PT" state="translated">Instale o pacote de Arte da Leitura (isto pode ser muito lento)</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.MatchingImages">
+      <trans-unit id="ImageToolbox.MatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="pt-PT" state="translated">Encontro {0} imagens</target>
+        <target xml:lang="pt-PT">Encontradas {0} imagens</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Encontro {0} imagens</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</source>
@@ -200,11 +209,11 @@
         <note>ID: ImageToolbox.NoMatchingImages</note>
         <target xml:lang="pt-PT" state="translated">Não encontrou imagens correspondentes</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.PictureFiles">
+      <trans-unit id="ImageToolbox.PictureFiles" approved="yes">
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="pt-PT" state="translated">arquivos de imagens</target>
+        <target xml:lang="pt-PT">arquivos de imagens</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
         <source xml:lang="en">Problem Getting Image</source>
@@ -242,21 +251,21 @@
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
         <target xml:lang="pt-PT" state="translated">Defina metadados...</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.AlternateNamesHeader">
+      <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="pt-PT" state="translated">Outros nomes</target>
+        <target xml:lang="pt-PT">Outros nomes</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
         <target xml:lang="pt-PT" state="translated">Esta lista deve incluir todas os idiomas na lista ISO-639, incluindo todos os nomes alternativos conhecidos por ethnologue.com.\n\nSe necessário, utilize a opção "Idioma não listado", que será seleccionada para você agora.</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue" approved="yes">
         <source xml:lang="en">Ethnologue.com</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToEthnologue</note>
         <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
-        <target xml:lang="pt-PT" state="translated">Ethnologue.com</target>
+        <target xml:lang="pt-PT">Ethnologue.com</target>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
