@@ -2275,7 +2275,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoMic">
         <source xml:lang="en">This computer appears to have no sound recording device available. You will need one to record audio for a talking book.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.NoMic</note>
-        <target xml:lang="es-ES" state="translated">Esta computadora no parece tener un micrófono. Se require micrófono para grabar el audio para un libro sonoro.</target>
+        <target xml:lang="es-ES" state="translated">Esta computadora no parece tener un micrófono. Se require micrófono para grabar el audio para un audiolibro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta computadora no parece tener un micrófono. Se require micrófono para grabar el audio para un libro sonoro.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.PleaseHoldMessage">
         <source xml:lang="en">Please hold the button down until you have finished recording</source>
@@ -2312,7 +2315,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Heading</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de libros sonoros</target>
+        <target xml:lang="es-ES" state="translated">Herramienta de audiolibros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Herramienta de libros sonoros</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Herramienta de libros parlantes</target>
         </alt-trans>
