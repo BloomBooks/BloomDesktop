@@ -65,6 +65,18 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <note>ID: leveled.reader.rhyme</note>
         <target xml:lang="pt-PT" state="translated">Rima - Uma história com um padrão ou sequência que também inclui rima. Por exemplo:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poesia">
+          <g id="genid-3" ctype="x-html-pre">Toda criança no mundo
+Deve ser bem protegida
+Contra os rigores do tempo
+Contra os rigores da vida.
+</g>
+          <g id="genid-4" ctype="x-html-div" html:class="autor">- Ruth Rocha</g>
+        </g>
+      
+      </target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Rima - Uma história com um padrão ou sequência que também inclui rima. Por exemplo:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poesia">
           <g id="genid-3" ctype="x-html-pre">O poeta é um fingidor.
 Finge tão completamente
 Que chega a fingir que é dor
@@ -73,6 +85,7 @@ A dor que deveras sente.</g>
         </g>
       
       </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
