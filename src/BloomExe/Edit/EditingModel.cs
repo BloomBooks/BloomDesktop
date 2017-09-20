@@ -674,7 +674,7 @@ namespace Bloom.Edit
 		/// </remarks>
 		private void SetupPageZoom()
 		{
-			var pageZoom = Settings.Default.PageZoom ?? "1.0";
+			var pageZoom = (float)_view.Zoom / 100F;
 			var body = _domForCurrentPage.Body;
 			var pageDiv = body.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]") as XmlElement;
 			if (pageDiv != null)
