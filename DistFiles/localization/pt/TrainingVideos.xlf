@@ -118,24 +118,24 @@
         <note>ID: training.videos.offline</note>
         <target xml:lang="pt-PT">Ver Vídeos Offline</target>
       </trans-unit>
-      <trans-unit id="training.videos.download">
+      <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: </source>
         <note>ID: training.videos.download</note>
-        <target xml:lang="pt-PT" state="translated">Se você quiser baixar qualquer um desses vídeos para mostrar e compartilhar quando não há conexão de Internet, você pode baixar os vídeos em seu computador: </target>
+        <target xml:lang="pt-PT">Se você quiser baixar qualquer um desses vídeos para mostrar e compartilhar quando não há conexão de Internet, você pode baixar os vídeos em seu computador: </target>
         <alt-trans>
           <target xml:lang="pt-PT">Se você gostaria de fazer download de qualquer destes vídeos para exibir e compartilhar quando não existe conexão de internet, você pode baixar vídeos para o seu computador: </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="training.videos.hires">
+      <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
         <note>ID: training.videos.hires</note>
-        <target xml:lang="pt-PT" state="translated">
+        <target xml:lang="pt-PT">
                      <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos"> Alta Resolução</g> (Arquivos grandes)</target>
       </trans-unit>
-      <trans-unit id="training.videos.lores">
+      <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
         <note>ID: training.videos.lores</note>
-        <target xml:lang="pt-PT" state="translated">
+        <target xml:lang="pt-PT">
                      <g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos"> Baixa Resolução</g> (Arquivos pequenos)</target>
       </trans-unit>
     </body>
