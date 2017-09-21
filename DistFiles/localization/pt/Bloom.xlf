@@ -2820,6 +2820,11 @@
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
         <target xml:lang="pt-PT" state="translated">Controlar</target>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.CopyToClipboard">
+        <source xml:lang="en">Copy to Clipboard</source>
+        <note>ID: PublishTab.Android.CopyToClipboard</note>
+        <target xml:lang="pt-PT" state="needs-translation">Copy to Clipboard</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
