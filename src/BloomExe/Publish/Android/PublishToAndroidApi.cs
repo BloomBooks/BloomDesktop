@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using Bloom.Api;
-using Bloom.Book;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
+using SIL.Windows.Forms.Miscellaneous;
+
+
 #if !__MonoCS__
 using Bloom.Publish.Android.usb;
 #endif
@@ -105,6 +108,12 @@ namespace Bloom.Publish.Android
 #endif
 				_wifiPublisher.Stop();
 				SetState("stopped");
+				request.PostSucceeded();
+			}, true);
+
+			server.RegisterEndpointHandler(kApiUrlPart + "textToClipboard", request =>
+			{
+				PortableClipboard.SetText(request.RequiredPostString());
 				request.PostSucceeded();
 			}, true);
 		}

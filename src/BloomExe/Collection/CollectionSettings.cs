@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -263,6 +263,19 @@ namespace Bloom.Collection
 			return GetLanguageNameInUILangIfPossible(exactLanguageMatch, inLanguage);
 		}
 
+		/// <summary>
+		/// Get a name for Language1 that is safe for using as part of a file name.
+		/// (Currently used for suggesting a pdf filename when publishing.)
+		/// </summary>
+		/// <param name="inLanguage"></param>
+		/// <returns></returns>
+		public object GetFilesafeLanguage1Name(string inLanguage)
+		{
+			var languageName = GetLanguage1Name(inLanguage);
+			return Path.GetInvalidFileNameChars().Aggregate(
+				languageName, (current, character) => current.Replace(character, ' '));
+		}
+
 		public string GetLanguage2Name(string inLanguage)
 		{
 			try
@@ -482,6 +495,12 @@ namespace Bloom.Collection
 			{
 				DoOneTimeCheck();
 			}
+
+			// Remove an obsolete page numbering rule if it exists in the collection styles file.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-5017.
+			// Saving the styles doesn't write the obsolete rule, effectively removing it.  Doing
+			// this unconditionally ensures any future similar problems are covered automatically.
+			SaveSettingsCollectionStylesCss();
 		}
 
 		private void DoOneTimeCheck()
@@ -748,18 +767,19 @@ namespace Bloom.Collection
 				var result = new[] { Language1Iso639Code, Language2Iso639Code, Language3Iso639Code, "en" };
 				// reverse-order loop so that given e.g. zh-Hans followed by zh-Hant we insert zh-CN after the second one.
 				// That is, we'll prefer either of the explicit variants to the fall-back.
+				// The part before the hyphen (if there is one) is the main language.
 				for (int i = result.Length - 1; i >= 0; i--)
 				{
-					var culture = result[i];
-					if (culture == null || culture.Length <= 2)
+					var fullLangTag = result[i];
+					if (fullLangTag == null)
 						continue;
-					var extra = culture.Substring(0, 2); // Generally insert corresponding language for longer culture
-					if (extra == "zh")
-						extra = "zh-CN"; // Insert this instead for Chinese
-					if (result.IndexOf(extra) >= 0)
+					var language = fullLangTag.Split('-')[0]; // Generally insert corresponding language for longer culture
+					if (language == "zh")
+						language = "zh-CN"; // Insert this instead for Chinese
+					if (result.IndexOf(language) >= 0)
 						continue;
 					var temp = result.ToList();
-					temp.Insert(i + 1, extra);
+					temp.Insert(i + 1, language);
 					result = temp.ToArray();
 				}
 				return result;

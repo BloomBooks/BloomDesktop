@@ -1394,15 +1394,42 @@ namespace Bloom.Edit
 		public int Zoom
 		{
 			// Whatever the user may have saved (e.g., from earlier use of ctrl-wheel), we'll make this an expected multiple-of-10 percent.
-			get { return (int) Math.Round(float.Parse(Settings.Default.PageZoom ?? "1.0") * 10) * 10; }
+			get
+			{
+				// we used to store floating point numbers, but we now store integer percentages (30%-990% or more?).
+				var zoomString = Settings.Default.PageZoom;
+				if (String.IsNullOrWhiteSpace(zoomString))
+					return 100;
+				if (zoomString.Contains(L10NCultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator))
+				{
+					float zoomFloat;
+					if (float.TryParse(zoomString, out zoomFloat))
+						return (int)Math.Round(zoomFloat * 10F) * 10;
+					else
+						return 100;
+				}
+				int zoomInt;
+				if (int.TryParse(zoomString, System.Globalization.NumberStyles.Integer, L10NCultureInfo.InvariantCulture, out zoomInt))
+				{
+					// we can't go below 30 (30%), so those must be old floating point values that rounded to an integer.
+					if (zoomInt < 30)
+						return zoomInt * 100;
+					else
+						return zoomInt;
+				}
+				else
+				{
+					return 100;
+				}
+			}
 			set
 			{
-				Settings.Default.PageZoom = (value / 100.0).ToString();
+				Settings.Default.PageZoom = value.ToString(L10NCultureInfo.InvariantCulture);
 				Settings.Default.Save();
 				if (_browser1 != null)
 				{
 					RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getPageFrameExports().setZoom(" +
-					              Settings.Default.PageZoom + ");}");
+								(value / 100.0).ToString() + ");}");
 				}
 			}
 		}

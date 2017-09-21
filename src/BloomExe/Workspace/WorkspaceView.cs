@@ -264,7 +264,7 @@ namespace Bloom.Workspace
 		private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
 		{
 			_applicationUpdateCheckTimer.Enabled = false;
-			if (!Debugger.IsAttached)
+			if (!Debugger.IsAttached && SIL.PlatformUtilities.Platform.IsWindows)
 			{
 				ApplicationUpdateSupport.CheckForASquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet, newInstallDir => RestartBloom(newInstallDir), Settings.Default.AutoUpdate);
 			}
