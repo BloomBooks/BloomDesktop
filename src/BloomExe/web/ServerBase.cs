@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2015 SIL International
+// Copyright (c) 2015-2017 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Publish.Epub;
@@ -454,30 +453,50 @@ namespace Bloom.Api
 
 		private void ReportMissingFile(IRequestInfo info)
 		{
-			var localPath = GetLocalPathWithoutQuery(info);
-			if (!IgnoreFileIfMissing(localPath))
+			string localPath;
+			if (!IgnoreFileIfMissing(info, out localPath))
+			{
 				Logger.WriteEvent("**{0}: File Missing: {1}", GetType().Name, localPath);
+			}
 			info.WriteError(404);
 		}
 
 		/// <summary>
 		/// Check for files that may be missing but that we know aren't important enough to complain about.
+		/// Includes branding files marked "optional".
 		/// </summary>
-		protected bool IgnoreFileIfMissing(string localPath)
+		protected bool IgnoreFileIfMissing(IRequestInfo info, out string path, string localPath = "")
 		{
+			var hasOptionalQueryParam = info.GetQueryParameters().Get("optional") == "true";
+			if (hasOptionalQueryParam)
+			{
+				path = string.Empty; // need 'out' variable, but in this case it won't be used.
+				return true;
+			}
+			if (string.IsNullOrEmpty(localPath))
+			{
+				localPath = GetLocalPathWithoutQuery(info);
+			}
 			var stuffToIgnore = new[] {
 				// browser/debugger stuff
 				"favicon.ico", ".map",
 				// Audio files may well be missing because we look for them as soon
 				// as we define an audio ID, but they wont' exist until we record something.
 				"/audio/",
+				// PageTemplatesApi creates a path containing this for a missing template.
+				// it gets reported inside the page chooser dialog.
+				"missingpagetemplate",
 				// Branding image files are expected to be missing in the normal case.  Only organizations that care about branding would have these images.
 				"/branding/image",
 				// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
 				// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
 				EpubMaker.kEPUBExportFolder.ToLowerInvariant()
 			};
-			return stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s)));
+			path = localPath; // can't use 'out' variable in below anonymous method
+			// images with src derived from Branding API img elements get this marker 
+			// in XMatterHelper.CleanupBrandingImages() to prevent spurious reports of 
+			// images that are intentionally optional. 
+			return stuffToIgnore.Any(s => localPath.ToLowerInvariant().Contains(s));
 		}
 
 		protected internal static string GetLocalPathWithoutQuery(IRequestInfo info)

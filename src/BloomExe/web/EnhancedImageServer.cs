@@ -1,7 +1,6 @@
-﻿// Copyright (c) 2014-2015 SIL International
+// Copyright (c) 2014-2017 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,7 +13,6 @@ using BloomTemp;
 using L10NSharp;
 using SIL.IO;
 using Bloom.Collection;
-using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.Workspace;
 using Newtonsoft.Json;
@@ -602,43 +600,26 @@ namespace Bloom.Api
 			}
 			if (!RobustFile.Exists(path))
 			{
-				// images with src derived from Branding API img elements get this marker
-				// in XMatterHelper.CleanupBrandingImages() to prevent spurious reports of
-				// images that are intentionally optional.
-				if (info.GetQueryParameters().Get("optional") != "true")
-					ReportMissingFile(localPath,path);
-				return false;
+				ReportMissingFile(localPath, path, info);
+				return false; // from here we head off to ServerBase.ReportMissingFile() which now uses the same IgnoreFileIfMissing() method.
 			}
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
 		}
 
-
-
-		// overridden in tests
-		internal virtual void ReportMissingFile(string localPath, string path)
+		// overridden in tests (Really?! Where!?)
+		internal virtual void ReportMissingFile(string localPath, string path, IRequestInfo info)
 		{
 			if (path == null)
 			{
 				path = "(was null)";
 			}
-			var stuffToIgnore = new[] {
-					//browser/debugger stuff
-					"favicon.ico", ".map",
-					// Audio files may well be missing because we look for them as soon
-					// as we define an audio ID, but they wont' exist until we record something.
-					"/audio/",
-					// PageTemplatesApi creates a path containing this for a missing template.
-					// it gets reported inside the page chooser dialog.
-					"missingpagetemplate",
-					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
-					// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
-					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
-				};
-
-			if (stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
+			string dummy;
+			if (IgnoreFileIfMissing(info, out dummy, localPath))
+			{
 				return;
+			}
 
 			// we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
 			// I suspect our disposal algorithm is just flawed: the page is removed from the _url cache as soon as we navigated away,
