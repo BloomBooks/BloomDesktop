@@ -3060,6 +3060,11 @@
           <target xml:lang="es-ES">Control</target>
         </alt-trans>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.CopyToClipboard">
+        <source xml:lang="en">Copy to Clipboard</source>
+        <note>ID: PublishTab.Android.CopyToClipboard</note>
+        <target xml:lang="es-ES" state="needs-translation">Copy to Clipboard</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
