@@ -495,6 +495,19 @@ namespace Bloom.Collection
 			{
 				DoOneTimeCheck();
 			}
+
+			// Remove an obsolete page numbering rule if it exists in the collection styles file.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-5017.
+			string collectionStylesPath = FolderPath.CombineForPath("settingsCollectionStyles.css");
+			if (RobustFile.Exists(collectionStylesPath))
+			{
+				string collectionStyles = RobustFile.ReadAllText(collectionStylesPath);
+				if (collectionStyles.Contains("@media print"))
+				{
+					// Saving the values doesn't write the obsolete rule, effectively removing it.
+					SaveSettingsCollectionStylesCss();
+				}
+			}
 		}
 
 		private void DoOneTimeCheck()
