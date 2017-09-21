@@ -1,7 +1,6 @@
-﻿// Copyright (c) 2014-2015 SIL International
+// Copyright (c) 2014-2017 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,7 +13,6 @@ using BloomTemp;
 using L10NSharp;
 using SIL.IO;
 using Bloom.Collection;
-using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.Workspace;
 using Newtonsoft.Json;
@@ -605,8 +603,13 @@ namespace Bloom.Api
 				// images with src derived from Branding API img elements get this marker
 				// in XMatterHelper.CleanupBrandingImages() to prevent spurious reports of
 				// images that are intentionally optional.
-				if (info.GetQueryParameters().Get("optional") != "true")
-					ReportMissingFile(localPath,path);
+				if (info.GetQueryParameters().Get("optional") == "true")
+				{
+					info.ContentType = "text/html";
+					info.WriteCompleteOutput("");
+					return true; // If we haven't found an optional Branding image by now, give up w/o logging it.
+				}
+				ReportMissingFile(localPath,path);
 				return false;
 			}
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
