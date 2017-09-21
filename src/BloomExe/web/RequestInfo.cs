@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014 SIL International
+// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
@@ -99,7 +99,7 @@ namespace Bloom.Api
 
 		public bool HaveOutput { get; private set; }
 
-		public void ReplyWithFileContent(string path)
+		public void ReplyWithFileContent(string path, string originalPath = null)
 		{
 			//Deal with BL-3153, where the file was still open in another thread
 			FileStream fs;
@@ -129,7 +129,7 @@ namespace Bloom.Api
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
 				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
-				if (ShouldCache(path))
+				if (ShouldCache(path, originalPath))
 				{
 					_actualContext.Response.AppendHeader("Cache-Control",
 						"max-age=600000"); // about a week...if someone spends longer editing one book, well, files will get loaded one more time...
@@ -176,29 +176,32 @@ namespace Bloom.Api
 			HaveOutput = true;
 		}
 
-		HashSet<string> _cacheableExtensions = new HashSet<string>(new[] {".js", ".css", ".jpg", ".jpeg", ".svg", ".png"});
+		readonly HashSet<string> _cacheableExtensions = new HashSet<string>(new[] {".js", ".css", ".jpg", ".jpeg", ".svg", ".png"});
 
-		private bool ShouldCache(string path)
+		private bool ShouldCache(string path, string originalPath)
 		{
 #if DEBUG
 			// Developers never want caching...interferes with trying new versions of stuff.
+			// So, obviously, you want to comment this line out to test caching.
 			return false;
 #endif
 			if (string.IsNullOrEmpty(DoNotCacheFolder))
 				return false; // if for some reason this hasn't been set, play safe and don't cache.
-			if (path.StartsWith(DoNotCacheFolder))
-				return false; // in the folder we never cache, typically the editable project folder
+			// if we're using a lower resolution version of an image (with a generated filename),
+			// we want ShouldCache to do its tests on the original filename.
+			if ((originalPath ?? path).Replace('\\','/').StartsWith(DoNotCacheFolder))
+				return false; // in the folder we never cache, typically the editable project folder.
 
 			return _cacheableExtensions.Contains(Path.GetExtension(path));
 		}
 
-		public void ReplyWithImage(string path)
+		public void ReplyWithImage(string path, string originalPath = null)
 		{
 			var pos = path.LastIndexOf('.');
 			if(pos > 0)
 				_actualContext.Response.ContentType = ServerBase.GetContentType(path.Substring(pos));
 
-			ReplyWithFileContent(path);
+			ReplyWithFileContent(path, originalPath);
 		}
 
 		public void WriteError(int errorCode, string errorDescription)
