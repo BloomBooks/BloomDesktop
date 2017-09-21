@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -98,16 +98,17 @@ namespace Bloom.ImageProcessing
 				processImage = false;
 			}
 
+			var originalImageFile = imageFile;
 			if (processImage)
 			{
 				// thumbnail requests have the thumbnail parameter set in the query string
 				var thumb = info.GetQueryParameters()["thumbnail"] != null;
-				imageFile = _cache.GetPathToResizedImage(imageFile, thumb);
+				imageFile = _cache.GetPathToResizedImage(imageFile, thumb).Replace('\\', '/');
 
 				if (string.IsNullOrEmpty(imageFile)) return false;
 			}
 
-			info.ReplyWithImage(imageFile);
+			info.ReplyWithImage(imageFile, imageFile == originalImageFile ? "" : originalImageFile);
 			return true;
 		}
 
@@ -120,11 +121,11 @@ namespace Bloom.ImageProcessing
 			return (new[] { ".png", ".jpg", ".jpeg"}.Contains(extension));
 		}
 
-		static HashSet<string> _imageExtentions = new HashSet<string>(new[] { ".jpg", "jpeg", ".png", ".svg" });
+		static HashSet<string> _imageExtensions = new HashSet<string>(new[] { ".jpg", "jpeg", ".png", ".svg" });
 
 		internal static bool IsImageTypeThatCanBeReturned(string path)
 		{
-			return _imageExtentions.Contains((Path.GetExtension(path) ?? "").ToLowerInvariant());
+			return _imageExtensions.Contains((Path.GetExtension(path) ?? "").ToLowerInvariant());
 		}
 	}
 }

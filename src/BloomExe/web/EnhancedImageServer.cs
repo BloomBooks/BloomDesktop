@@ -1,7 +1,6 @@
-﻿// Copyright (c) 2014-2015 SIL International
+// Copyright (c) 2014-2017 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,7 +13,6 @@ using BloomTemp;
 using L10NSharp;
 using SIL.IO;
 using Bloom.Collection;
-using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.Workspace;
 using Newtonsoft.Json;
@@ -212,7 +210,7 @@ namespace Bloom.Api
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
 			if (CurrentCollectionSettings != null && CurrentCollectionSettings.SettingsFilePath != null)
-				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath);
+				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath).Replace('\\','/');
 
 			var localPath = GetLocalPathWithoutQuery(info);
 
@@ -692,13 +690,6 @@ namespace Bloom.Api
 		protected override bool IsRecursiveRequestContext(HttpListenerContext context)
 		{
 			return base.IsRecursiveRequestContext(context) || context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
-		}
-
-
-		private static void ReplyWithFileContentAndType(IRequestInfo info, string path)
-		{
-			info.ContentType = GetContentType(Path.GetExtension(path));
-			info.ReplyWithFileContent(path);
 		}
 
 		private bool ProcessCssFile(IRequestInfo info, string incomingPath)

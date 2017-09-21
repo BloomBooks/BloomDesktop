@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
@@ -83,23 +83,25 @@ namespace Bloom.Api
 			_requestInfo.ContentType = "text/plain";
 			_requestInfo.WriteCompleteOutput(text);
 		}
+
 		public void ReplyWithJson(string json)
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + json);
 			_requestInfo.ContentType = "application/json";
 			_requestInfo.WriteCompleteOutput(json);
 		}
+
 		public void ReplyWithJson(object objectToMakeJson)
 		{
 			//Debug.WriteLine(this.Requestinfo.LocalPathWithoutQuery + ": " + json);
 			_requestInfo.ContentType = "application/json";
 			_requestInfo.WriteCompleteOutput(JsonConvert.SerializeObject(objectToMakeJson));
 		}
+
 		public void ReplyWithImage(string imagePath)
 		{
 			_requestInfo.ReplyWithImage(imagePath);
 		}
-
 
 		public void Failed(string text)
 		{
