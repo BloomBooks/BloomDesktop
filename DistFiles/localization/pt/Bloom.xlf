@@ -1603,7 +1603,10 @@
       <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
         <note>ID: EditTab.Image.CopyImageFailed</note>
-        <target xml:lang="pt-PT" state="translated">Bloom tinha problemas usando a área de transferência do seu computador. Algum outro programa pode estar interferindo.</target>
+        <target xml:lang="pt-PT" state="translated">Bloom não pôde usar a área de transferência de seu computador. É possível que haja um conflito com outro programa.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Bloom tinha problemas usando a área de transferência do seu computador. Algum outro programa pode estar interferindo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
         <source xml:lang="en">Cut Image</source>
@@ -1675,7 +1678,10 @@
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
-        <target xml:lang="pt-PT" state="translated">Até que você pode colar uma ilustração, copie um de outro programa na sua "área de transferência".</target>
+        <target xml:lang="pt-PT" state="translated">Antes de poder colar uma ilustração, copie uma na sua "área de transferência" de outro programa.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Até que você pode colar uma ilustração, copie um de outro programa na sua "área de transferência".</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts">
         <source xml:lang="en">There are no other layout options for this template.</source>
@@ -2823,7 +2829,7 @@
       <trans-unit id="PublishTab.Android.CopyToClipboard">
         <source xml:lang="en">Copy to Clipboard</source>
         <note>ID: PublishTab.Android.CopyToClipboard</note>
-        <target xml:lang="pt-PT" state="needs-translation">Copy to Clipboard</target>
+        <target xml:lang="pt-PT" state="translated">Copiar para Àrea de Transferência</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader">
         <source xml:lang="en">Get Bloom Reader App</source>
