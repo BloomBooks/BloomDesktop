@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
@@ -15,6 +16,7 @@ using SIL.Windows.Forms.Reporting;
 using SIL.Xml;
 using L10NSharp;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.Edit
 {
@@ -525,9 +527,30 @@ namespace Bloom.Edit
 			//clone so we can modify it for thumbnailing without messing up the version we will save
 			divNodeForThisPage = divNodeForThisPage.CloneNode(true) as XmlElement;
 			MarkImageNodesForThumbnail(divNodeForThisPage);
-			var geckoNode = MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, divNodeForThisPage);
-			pageContainerElt.ReplaceChild(geckoNode, pageElt);
-			pageElt.Dispose();
+			GeckoNode geckoNode = null;
+			for (int i = 0; i < 3; i++)
+			{
+				// As described in BL-4690, apparently some random event occasionally causes a failure
+				// deep inside Gecko when we go to do this.
+				// We don't need to bother the user if we just have a problem updating the thumbnail in
+				// the page list.
+				// So, we log it, and try again a couple of times in case it is a transient problem.
+				// If it keeps happening, just leave the old thumbnail in place.
+				try
+				{
+					geckoNode = MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, divNodeForThisPage);
+					break;
+				}
+				catch (InvalidComObjectException e)
+				{
+					Logger.WriteError("BL-4690 InvalidComObjectException try " + i, e);
+				}
+			}
+			if (geckoNode != null)
+			{
+				pageContainerElt.ReplaceChild(geckoNode, pageElt);
+				pageElt.Dispose();
+			}
 			AddThumbnailListeners();
 		}
 
