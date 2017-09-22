@@ -3319,7 +3319,10 @@
       <trans-unit id="PublishTab.CoverOnlyRadio">
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
-        <target xml:lang="es-ES" state="translated">Portada del librito</target>
+        <target xml:lang="es-ES" state="translated">Cubierta del librito</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Portada del librito</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Portada</target>
         </alt-trans>
@@ -4929,7 +4932,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
         <source xml:lang="en">Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Front Cover</note>
-        <target xml:lang="es-ES" state="translated">Portada</target>
+        <target xml:lang="es-ES" state="translated">Cubierta</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Portada</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front/Back Matter</source>
@@ -4972,7 +4978,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
         <source xml:lang="en">Inside Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Front Cover</note>
-        <target xml:lang="es-ES" state="translated">Interior de la portada</target>
+        <target xml:lang="es-ES" state="translated">Interior de la cubierta</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Interior de la portada</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">El interior de la portada</target>
         </alt-trans>
@@ -5009,7 +5018,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
-        <target xml:lang="es-ES" state="translated">Exterior de la contraportada</target>
+        <target xml:lang="es-ES" state="translated">Contracubierta</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Exterior de la contraportada</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Contraportada exterior</target>
         </alt-trans>
