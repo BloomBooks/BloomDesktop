@@ -152,12 +152,9 @@ namespace Bloom.Api
 			var key = pathToSimulatedPageFile.Replace('\\', '/');
 			if (isCurrentPageContent)
 			{
-				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript.
-				url = EscapeUrlQuotes(url);
-				// When JavaScript inserts our path into the html it replaces the three magic html characters with these substitutes.
-				// We need to modify our key so that when the JavaScript comes looking for the page its modified url will
-				// generate the right key.
-				key = SimulateJavaScriptHandlingOfHtml(key);
+				// We need to UrlEncode the single and double quote characters, and the space character,
+				//so they will play nicely with HTML.
+				url = EscapeUrlQuotesAndSpaces(url);
 			}
 			if(setAsCurrentPageForDebugging)
 			{
@@ -171,24 +168,14 @@ namespace Bloom.Api
 			return new SimulatedPageFile() {Key = url};
 		}
 
-		/// <summary>
-		/// When JavaScript inserts a url into an html document, it replaces the three magic html characters
-		/// with these substitutes.
-		/// </summary>
-		/// <remarks>Also used by PretendRequestInfo for testing</remarks>
-		public static string SimulateJavaScriptHandlingOfHtml(string url)
+		private static string EscapeUrlQuotesAndSpaces(string originalUrl)
 		{
-			return url.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+			return originalUrl.Replace("'", "%27").Replace("\"", "%22").Replace(" ", "%20");
 		}
 
-		private static string EscapeUrlQuotes(string originalUrl)
+		private static string UnescapeUrlQuotesAndSpaces(string escapedUrl)
 		{
-			return originalUrl.Replace("'", "%27").Replace("\"", "%22");
-		}
-
-		private static string UnescapeUrlQuotes(string escapedUrl)
-		{
-			return escapedUrl.Replace("%27", "'").Replace("%22", "\"");
+			return escapedUrl.Replace("%27", "'").Replace("%22", "\"").Replace("%20", " ");
 		}
 
 		internal static void RemoveSimulatedPageFile(string key)
@@ -484,9 +471,7 @@ namespace Bloom.Api
 		{
 			string modPath = localPath;
 			string path = null;
-			// When JavaScript inserts our path into the html it replaces the three magic html characters with these substitutes.
-			// We need to convert back in order to match our key. Then, reverse the change we made to deal with quotation marks.
-			string tempPath = UnescapeUrlQuotes(modPath.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&"));
+			string tempPath = UnescapeUrlQuotesAndSpaces(modPath);
 			if (RobustFile.Exists(tempPath))
 				modPath = tempPath;
 			try
