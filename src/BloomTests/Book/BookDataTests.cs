@@ -761,6 +761,7 @@ namespace BloomTests.Book
 			WriteSettingsFile(filepath, _preAndikaMigrationCollection);
 
 			// SUT
+			Assert.That(!File.Exists(cssFilePath));
 			_collectionSettings.Load();
 
 			// Verify
@@ -772,7 +773,7 @@ namespace BloomTests.Book
 			Assert.That(font2.Equals("Andika New Basic"));
 			var font3 = _collectionSettings.DefaultLanguage1FontName;
 			Assert.That(font3.Equals("Andika New Basic"));
-			Assert.That(File.Exists(cssFilePath)); // if this file exists, it means we did the migration
+			Assert.That(File.Exists(cssFilePath)); // Loading the settings creates this file at the very end.
 		}
 
 		[Test]
@@ -784,6 +785,7 @@ namespace BloomTests.Book
 			WriteSettingsFile(filepath, _postAndikaMigrationCollection);
 
 			// SUT
+			Assert.That(!File.Exists(cssFilePath));
 			_collectionSettings.Load();
 
 			// Verify
@@ -791,7 +793,7 @@ namespace BloomTests.Book
 			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
 			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
 			Assert.That(font1.Equals("Andika New Basic"));
-			Assert.That(!File.Exists(cssFilePath)); // if this file doesn't exist, it means we didn't do any migration
+			Assert.That(File.Exists(cssFilePath)); // Loading the settings creates this file at the very end.
 		}
 
 		[Test]
@@ -803,6 +805,7 @@ namespace BloomTests.Book
 			WriteSettingsFile(filepath, _postAndikaMigrationCollectionNoANB);
 
 			// SUT
+			Assert.That(!File.Exists(cssFilePath));
 			_collectionSettings.Load();
 
 			// Verify
@@ -810,7 +813,7 @@ namespace BloomTests.Book
 			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
 			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
 			Assert.That(font1.Equals("Andika"));
-			Assert.That(!File.Exists(cssFilePath)); // if this file doesn't exist, it means we didn't do any migration
+			Assert.That(File.Exists(cssFilePath)); // Loading the settings creates this file at the very end.
 		}
 
 		private void WriteSettingsFile(string filepath, string xmlString)
