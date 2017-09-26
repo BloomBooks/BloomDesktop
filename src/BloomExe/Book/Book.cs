@@ -671,7 +671,8 @@ namespace Bloom.Book
 
 		public virtual string FolderPath
 		{
-			get { return _storage.FolderPath; }
+			// Tests can run without ever setting _storage.  This check is currently enough for them to work.
+			get { return _storage?.FolderPath; }
 		}
 
 		public virtual HtmlDom GetPreviewHtmlFileForWholeBook()
