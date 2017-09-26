@@ -1352,7 +1352,10 @@
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
-        <target xml:lang="es-ES" state="translated">Esta oración es demasiado larga para este nivel.</target>
+        <target xml:lang="es-ES" state="translated">Esta oración es demasiada larga para este nivel.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta oración es demasiado larga para este nivel.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta frase es demasiado larga para este nivel.</target>
         </alt-trans>
@@ -1594,7 +1597,10 @@
       <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
         <note>ID: EditTab.FrontMatter.InsideFrontCoverTextPrompt</note>
-        <target xml:lang="es-ES" state="translated">Si require donde poner más información sobre el libro, puede usar esta página que es la parte interior de la cubierta.</target>
+        <target xml:lang="es-ES" state="translated">Si require donde poner más información sobre el libro, puede usar esta página que es la parte interior de la tapa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Si require donde poner más información sobre el libro, puede usar esta página que es la parte interior de la cubierta.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ListSeparator">
         <source xml:lang="en">, </source>
@@ -1817,7 +1823,10 @@
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
-        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas de materia inicial y final deben permanecer donde están.</target>
+        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas de material preliminanr y final deben permanecer donde están.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se permite ese cambio. Páginas de materia inicial y final deben permanecer donde están.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se permite ese cambio. Páginas de material inicial y final deben permanecer donde están.</target>
         </alt-trans>
@@ -2627,7 +2636,10 @@
         <source xml:lang="en">Front/Back Matter Problem</source>
         <note>ID: Errors.XMatterProblemLabel</note>
         <note>This shows in the 'toast' that pops up to notify the user of a non-fatal problem.</note>
-        <target xml:lang="es-ES" state="translated">Problema con materia inicial/final</target>
+        <target xml:lang="es-ES" state="translated">Problema con material preliminar/final</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Problema con materia inicial/final</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Problema con material inicial/final</target>
         </alt-trans>
@@ -2992,7 +3004,10 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
         <source xml:lang="en">Local Language Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-        <target xml:lang="es-ES" state="translated">Colección de lengua local</target>
+        <target xml:lang="es-ES" state="translated">Colección de idioma local</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de lengua local</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
         <source xml:lang="en">A collection of books in a local language.</source>
@@ -3603,7 +3618,10 @@
         <source xml:lang="en">Compressing PDF &amp; Converting Color to CMYK</source>
         <note>ID: PublishTab.PdfMaker.CompressConvertColor</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="translated">Comprimiendo el PDF &amp; Covirtiendo Color a CMYK</target>
+        <target xml:lang="es-ES" state="translated">Comprimiendo el PDF y Covirtiendo Color a CMYK</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Comprimiendo el PDF &amp; Covirtiendo Color a CMYK</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Creating">
         <source xml:lang="en">Creating PDF ...</source>
