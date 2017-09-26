@@ -1976,7 +1976,10 @@
       <trans-unit id="EditTab.TextBoxProperties.BordersAndBackground" sil:dynamic="true">
         <source xml:lang="en">Borders &amp; Background</source>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
-        <target xml:lang="es-ES" state="translated">Bordes &amp; fondo</target>
+        <target xml:lang="es-ES" state="translated">Bordes y fondo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bordes &amp; fondo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.BorderSides" sil:dynamic="true">
         <source xml:lang="en">Border Sides</source>
@@ -4545,12 +4548,18 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true">
         <source xml:lang="en">What are sight words?</source>
         <note>ID: ReaderSetup.SightWordHelp</note>
-        <target xml:lang="es-ES" state="translated">¿Qúe son palabras de vista?</target>
+        <target xml:lang="es-ES" state="translated">¿Qúe son palabras vistas?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Qúe son palabras de vista?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
         <source xml:lang="en">New Sight Words</source>
         <note>ID: ReaderSetup.SightWordLabel</note>
-        <target xml:lang="es-ES" state="translated">Nuevas palabras de vista</target>
+        <target xml:lang="es-ES" state="translated">Nuevas palabras vistas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Nuevas palabras de vista</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Nuevas palabras de uso frecuente</target>
         </alt-trans>
@@ -4558,7 +4567,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true">
         <source xml:lang="en">Sight Words</source>
         <note>ID: ReaderSetup.SightWordsHeader</note>
-        <target xml:lang="es-ES" state="translated">Palabras de vista</target>
+        <target xml:lang="es-ES" state="translated">Palabras vistas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Palabras de vista</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Palabras de uso frecuente</target>
         </alt-trans>
@@ -4641,7 +4653,13 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Words.UseLetters" sil:dynamic="true">
         <source xml:lang="en">We are using letters with sight words to define stages</source>
         <note>ID: ReaderSetup.Words.UseLetters</note>
-        <target xml:lang="es-ES" state="translated">Estamos usando leteras con palabras de vista para definir etapas</target>
+        <target xml:lang="es-ES" state="translated">Estamos usando letras con palabras vistas para definir etapas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estamos usando letras con palabras de vista para definir etapas</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Estamos usando leteras con palabras de vista para definir etapas</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Estamos usando leteras con palabras de vista para determinar etapas</target>
         </alt-trans>
@@ -4679,7 +4697,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
         <source xml:lang="en">Save Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.SaveBloomPackButton</note>
-        <target xml:lang="es-ES" state="translated">Guardar Paquete de Bloom</target>
+        <target xml:lang="es-ES" state="translated">Guardar el Paquete de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Guardar Paquete de Bloom</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Guardar BloomPack</target>
         </alt-trans>
@@ -4901,7 +4922,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true">
         <source xml:lang="en">Wall Calendar</source>
         <note>ID: TemplateBooks.BookName.Wall Calendar</note>
-        <target xml:lang="es-ES" state="translated">Calendario de pared</target>
+        <target xml:lang="es-ES" state="translated">Calendario</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Calendario de pared</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
         <source xml:lang="en">A blank page that allows you to add items.</source>
@@ -5064,12 +5088,21 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
         <source xml:lang="en">Basic Text &amp; Image</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Image</note>
-        <target xml:lang="es-ES" state="translated">Texto básico &amp; ilustración</target>
+        <target xml:lang="es-ES" state="translated">Texto básico e ilustración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Texto básico y ilustración</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Texto básico &amp; ilustración</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
-        <target xml:lang="es-ES" state="translated">Texto Básico e imagen</target>
+        <target xml:lang="es-ES" state="translated">Texto básico e imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Texto Básico e imagen</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
         <source xml:lang="en">Credits Page</source>
@@ -5124,7 +5157,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
         <source xml:lang="en">Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Front Cover</note>
-        <target xml:lang="es-ES" state="translated">Cubierta</target>
+        <target xml:lang="es-ES" state="translated">Tapa</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cubierta</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Portada</target>
         </alt-trans>
@@ -5132,7 +5168,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front/Back Matter</source>
         <note>ID: TemplateBooks.PageLabel.FrontBackMatter</note>
-        <target xml:lang="es-ES" state="translated">Materia inicial/final</target>
+        <target xml:lang="es-ES" state="translated">Material preliminar/final</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Materia inicial/final</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Material inicial/final</target>
         </alt-trans>
@@ -5162,7 +5201,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Inside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Back Cover</note>
-        <target xml:lang="es-ES" state="translated">Interior de la contraportada</target>
+        <target xml:lang="es-ES" state="translated">Interior de la contratapa</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Interior de la contraportada</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Contraportada interior</target>
         </alt-trans>
@@ -5170,7 +5212,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
         <source xml:lang="en">Inside Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Front Cover</note>
-        <target xml:lang="es-ES" state="translated">Interior de la cubierta</target>
+        <target xml:lang="es-ES" state="translated">Interior de la tapa</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Interior de la cubierta</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Interior de la portada</target>
         </alt-trans>
@@ -5210,7 +5255,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
-        <target xml:lang="es-ES" state="translated">Contracubierta</target>
+        <target xml:lang="es-ES" state="translated">Interior de la contratapa</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Contracubierta</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Exterior de la contraportada</target>
         </alt-trans>
@@ -5226,7 +5274,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Picture &amp; Word</source>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
-        <target xml:lang="es-ES" state="translated">Imagen &amp; Palabra</target>
+        <target xml:lang="es-ES" state="translated">Imagen y palabra</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Imagen &amp; Palabra</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
         <source xml:lang="en">Picture in Middle</source>
@@ -5265,7 +5316,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
         <source xml:lang="en">Title Page</source>
         <note>ID: TemplateBooks.PageLabel.Title Page</note>
-        <target xml:lang="es-ES" state="translated">Página de título</target>
+        <target xml:lang="es-ES" state="translated">Portada</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Página de título</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
