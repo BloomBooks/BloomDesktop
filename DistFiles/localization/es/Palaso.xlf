@@ -244,10 +244,7 @@
       <trans-unit id="ImageToolbox.NoArtOfReading">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Esta computadora no parece tener instalada la galería de 'arte de la lectura' (Art of Reading).</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Esta computadora no parece tener instalada la galería de arte de la lectura.</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Esta computadora no parece tener instalada la galería de 'Arte de la lectura' (Art of Reading).</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
@@ -264,7 +261,10 @@
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="es-ES" state="translated">archivos de ilustraciones</target>
+        <target xml:lang="es-ES" state="translated">archivos de imágenes</target>
+        <alt-trans>
+          <target xml:lang="es-ES">archivos de ilustraciones</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
         <source xml:lang="en">Problem Getting Image</source>
