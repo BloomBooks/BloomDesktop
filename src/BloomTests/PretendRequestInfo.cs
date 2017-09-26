@@ -25,13 +25,12 @@ namespace Bloom.Api
 			// In the real request, RawUrl does not include this prefix
 			RawUrl = url.Replace(ServerBase.ServerUrl, "");
 
-			// When JavaScript inserts a real path into the html it replaces the three magic html characters with these substitutes.
-			// For this PretendRequestInfo we simulate that by doing the replace here in the url.
-			if (forSrcAttr)
-				url = EnhancedImageServer.SimulateJavaScriptHandlingOfHtml(url);
-
 			// Reducing the /// emulates a behavior of the real HttpListener
-			LocalPathWithoutQuery = url.Replace(ServerBase.ServerUrl, "").Replace("/bloom/OriginalImages///", "/bloom/OriginalImages/").Replace("/bloom///", "/bloom/").UnescapeCharsForHttp();
+			var urlToDecode = url.Replace(ServerBase.ServerUrl, "").Replace("/bloom/OriginalImages///", "/bloom/OriginalImages/").Replace("/bloom///", "/bloom/").UnescapeCharsForHttp();
+			// Use the same decoding logic as in the "real" RequestInfo.
+			var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+","%2B");
+			LocalPathWithoutQuery = System.Web.HttpUtility.UrlDecode(pathWithoutLiteralPlusSigns);
+
 		}
 
 		public string LocalPathWithoutQuery { get; set; }
