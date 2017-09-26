@@ -10,10 +10,7 @@
       <trans-unit id="leveled.reader.start.simple">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
         <note>ID: leveled.reader.start.simple</note>
-        <target xml:lang="es-ES" state="translated">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a nivelosles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciónes cercanas, y por las ilustraciones.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a nivelosles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y phrases cercanas, y por las ilustraciones.</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a los niveles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciónes cercanas, y por las ilustraciones.</target>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting">
         <source xml:lang="en">Formatting</source>
@@ -24,17 +21,11 @@
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
         <note>ID: leveled.reader.start.large</note>
         <target xml:lang="es-ES" state="translated">Lectores nuevos beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras o oraciónes en el mismo lugar en cada página. A la medida que los lectores avanzan, los fuentes y espacios entre palabras pueden disminuir y las oraciónes pueden ser ubicadas en distintos lugares.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Lectores nuevos beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras o frases en el mismo lugar en cada página. A la medida que los lectores avanzan, los fuentes y espacios entre palabras pueden disminuir y las frases pueden ser ubicadas en distintos lugares.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
         <note>ID: leveled.reader.increase.sizes</note>
         <target xml:lang="es-ES" state="translated">Para incrementar el tamaño de fuente, interlineado, y espacio entre palabras, haga clic en un cuadro de texto y despues en el icono de "engranage" gris en la esquina inferior izquierda. Si despues hace un libro de plantilla, los libros hechos con esa plantilla tambien usarán estas configuraciones.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Para incrementar el tamaño de fuente, interlineado, y espacio entre palabras en Bloom, haga clic en un cuadro de texto ye despues en el icono de "engranage" gris en la esquina inferior izquierda. Si hace un libro de plantilla despues de hacer esto, los libros hechos con esa plantilla tambien usarán estas configuraciones.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.predictability">
         <source xml:lang="en">Predictability</source>
@@ -102,18 +93,14 @@ que la luna te va a oír</g>
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
       </source>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
-        <target xml:lang="es-ES" state="translated">Para los <g id="genid-6" ctype="x-html-strong"> Lectores incipiente</g> las ilustraciones deben coincidir precisamente con la historia. Viendo las ilustraciones, un lector debe ser capaz de predecir la trama. Las ilustraciones en este nivel deben ser simples.      
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-6" ctype="x-html-strong"> Lectores incipientes</g> las ilustraciones deben coincidir precisamente con la historia. Viendo las ilustraciones, un lector debe ser capaz de predecir la trama. Las ilustraciones en este nivel deben ser simples.      
       </target>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-6" ctype="x-html-strong"> Lectores nuevos</g> las ilustraciones deben coincidir precisamente con la historia. Viendo las ilustraciones, un lector debe ser capaz de predecir la trama. Las ilustraciones en este nivel deben ser simples.      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader">
         <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.
       </source>
         <note>ID: leveled.reader.illustrations.early.reader</note>
-        <target xml:lang="es-ES" state="translated">Para los <g id="genid-7" ctype="x-html-strong"> Lectores principiantes </g> las ilustraciones deben ofrecer apoyo a la trama. A medida que aumenta la cantidad de texto, el lector depende menos de las imágenes y comprende más del texto. Las ilustraciones pueden ser más complejas.      
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-7" ctype="x-html-strong"> Lectores principiantes </g> las ilustraciones deben ofrecer apoyo a la trama. A medida que aumenta la cantidad de texto, el lector depende menos de las ilustraciones y comprende más del texto. Las ilustraciones pueden ser más complejas.      
       </target>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader">
@@ -122,10 +109,6 @@ que la luna te va a oír</g>
         <note>ID: leveled.reader.fluent.reader</note>
         <target xml:lang="es-ES" state="translated">Para los <g id="genid-8" ctype="x-html-strong">Lectores fluidos</g> las ilustraciones deben ofrecer poco o ningún apoyo a la trama. La comprensión del lector depende más del texto que las ilustraciones. Las ilustraciones pueden ser todavía más complejas.      
       </target>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-8" ctype="x-html-strong">Lectores fluidos</g> las ilustracionesdeben ofrecer poco o ningún apoyo a la trama. La comprensión del lector depende más del texto que las ilustraciones. Las ilustraciones pueden ser todavía más complejas.      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice">
         <source xml:lang="en">Choice of Topic</source>
@@ -141,7 +124,7 @@ que la luna te va a oír</g>
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
       </source>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
-        <target xml:lang="es-ES" state="translated">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipiente</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.      
+        <target xml:lang="es-ES" state="translated">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipientes</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.      
       </target>
         <alt-trans>
           <target xml:lang="es-ES">Para los <g id="genid-9" ctype="x-html-strong"> Lectores nuevos</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.      
