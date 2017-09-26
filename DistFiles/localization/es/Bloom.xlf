@@ -15,12 +15,18 @@
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
-        <target xml:lang="es-ES" state="translated">Esta es posiblemente una antigua BloomPack creado antes de que BloomPacks pudieran manejar caracteres especiales en los nombres de los archivos. El autor de la BloomPack puede ser capaz de volver a crearlo utilizando la versión actual. Si eso no es posible, un experto técnico puede ser capaz de reparar el BloomPack.</target>
+        <target xml:lang="es-ES" state="translated">Esto es posiblemente un antiguo Paquete de Bloom creado antes de que los Paquetes de Bloom pudieran manejar caracteres especiales en los nombres de los archivos. El autor del Paquete de Bloom puede ser capaz de volver a crearlo utilizando la versión actual. Si eso no es posible, un experto técnico puede ser capaz de reparar el Paquete de Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta es posiblemente una antigua BloomPack creado antes de que BloomPacks pudieran manejar caracteres especiales en los nombres de los archivos. El autor de la BloomPack puede ser capaz de volver a crearlo utilizando la versión actual. Si eso no es posible, un experto técnico puede ser capaz de reparar el BloomPack.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
         <source xml:lang="en">Bloom Pack Installation</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstallation</note>
-        <target xml:lang="es-ES" state="translated">Instalación de BloomPack</target>
+        <target xml:lang="es-ES" state="translated">Instalación de un Paquete de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Instalación de BloomPack</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
@@ -31,12 +37,18 @@
         <source xml:lang="en">Bloom Pack Installer</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstaller</note>
         <note>Displayed as the message box title</note>
-        <target xml:lang="es-ES" state="translated">Instalador para BloomPack</target>
+        <target xml:lang="es-ES" state="translated">Instalador para Paquetes de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Instalador para BloomPack</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.CorruptBloomPack">
         <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
         <note>ID: BloomPackInstallDialog.CorruptBloomPack</note>
-        <target xml:lang="es-ES" state="translated">Este BloomPack parece ser incompleto o corrupto.</target>
+        <target xml:lang="es-ES" state="translated">Este Paquete de Bloom parece estar incompleto o corrupto.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este BloomPack parece ser incompleto o corrupto.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.DoesNotExist">
         <source xml:lang="en">{0} does not exist</source>
@@ -46,7 +58,10 @@
       <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack">
         <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
         <note>ID: BloomPackInstallDialog.ErrorInstallingBloomPack</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo instalar ese BloomPack</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo instalar ese Paquete de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo instalar ese BloomPack</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Extracting">
         <source xml:lang="en">Extracting...</source>
@@ -72,12 +87,18 @@
       <trans-unit id="BloomPackInstallDialog.Replace">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
         <note>ID: BloomPackInstallDialog.Replace</note>
-        <target xml:lang="es-ES" state="translated">Esta computadora ya tiene una colección Bloom llamado '{0}'. ¿Desea reemplazarlo por el de esta BloomPack?</target>
+        <target xml:lang="es-ES" state="translated">Esta computadora ya tiene una colección Bloom llamado '{0}'. ¿Desea reemplazarlo por el de este Paquete de Bloom?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta computadora ya tiene una colección Bloom llamado '{0}'. ¿Desea reemplazarlo por el de esta BloomPack?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder">
         <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
         <note>ID: BloomPackInstallDialog.SingleCollectionFolder</note>
-        <target xml:lang="es-ES" state="translated">BloomPacks deben tener sólo una carpeta de colección en el nivel superior del archivo zip.</target>
+        <target xml:lang="es-ES" state="translated">Los Paquetes de Bloom deben tener sólo una carpeta de colección en el nivel superior del archivo zip.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">BloomPacks deben tener sólo una carpeta de colección en el nivel superior del archivo zip.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.UnableToReplace">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
@@ -208,7 +229,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="es-ES" state="translated">Paquete de materia inicial/final</target>
+        <target xml:lang="es-ES" state="translated">Paquete de material preliminar/final</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Paquete de materia inicial/final</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Paquete de páginas iniciales/finales</target>
         </alt-trans>
@@ -478,7 +502,10 @@
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Crear una plantilla de libro para BloomPack...</target>
+        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom de plantilla de libro...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear una plantilla de libro para BloomPack...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.AdminManagesUpdates">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
@@ -550,7 +577,10 @@
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
-        <target xml:lang="es-ES" state="translated">Crear BloomPack...</target>
+        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear BloomPack...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
@@ -573,7 +603,10 @@
       <trans-unit id="CollectionTab.BookSourcesLockNotice">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
         <note>ID: CollectionTab.BookSourcesLockNotice</note>
-        <target xml:lang="es-ES" state="translated">Esta colección está bloqueada, no se puede agregar o eliminar nuevos libros.</target>
+        <target xml:lang="es-ES" state="translated">Esta colección está bloqueada, no se puede agregar o eliminar libros nuevos.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta colección está bloqueada, no se puede agregar o eliminar nuevos libros.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta colección está bloqueada,  no se puede agregar o eliminar nuevos libros.</target>
         </alt-trans>
@@ -678,7 +711,10 @@
       <trans-unit id="CollectionTab.MakeBloomPackButton">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
-        <target xml:lang="es-ES" state="translated">Crear BloomPack</target>
+        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear BloomPack</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear Paquete de Bloom</target>
         </alt-trans>
@@ -2520,7 +2556,13 @@
       <trans-unit id="Errors.SpecifiedXMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
         <note>ID: Errors.SpecifiedXMatterNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro pidió un paquete de materia inicial/final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de paquete de materia inicial/final del libro.</target>
+        <target xml:lang="es-ES" state="translated">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del paquete de material preliminar/final del libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del paquete de materia preliminar/final del libro.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro pidió un paquete de materia inicial/final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de paquete de materia inicial/final del libro.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Materia Inicial/Final del libro.</target>
         </alt-trans>
@@ -2534,7 +2576,13 @@
       <trans-unit id="Errors.XMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
         <note>ID: Errors.XMatterNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro utiliza el paquete de materia inicial/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia inicial/final.</target>
+        <target xml:lang="es-ES" state="translated">Este libro utiliza el paquete de material preliminar/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de material preliminar/final.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro utiliza el paquete de materia preliminar/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia preliminar/final.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro utiliza el paquete de materia inicial/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia inicial/final.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro utiliza el paquete de páginas iniciales/finales nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de páginas iniciales/finales.</target>
         </alt-trans>
@@ -2554,7 +2602,10 @@
       <trans-unit id="Errors.XMatterSpecifiedByBookNotFound">
         <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
         <note>ID: Errors.XMatterSpecifiedByBookNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro pidió un paquete de materia inicial/final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de materia inicial/final de la configuación de la colección.</target>
+        <target xml:lang="es-ES" state="translated">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de material preliminar/final de la configuación de la colección.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro pidió un paquete de materia inicial/final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de materia inicial/final de la configuación de la colección.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de Materia Inicial/Final de la configuación de la colección.</target>
         </alt-trans>
@@ -3201,7 +3252,10 @@
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.Usb.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">Preparando el libro "{0}" para uso con BloomReader...</target>
+        <target xml:lang="es-ES" state="translated">Preparando el libro "{0}" para uso con el LectorBloom...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Preparando el libro "{0}" para uso con BloomReader...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.ReplacingBook">
         <source xml:lang="en">Replacing existing "{0}"...</source>
@@ -4528,7 +4582,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
-        <target xml:lang="es-ES" state="translated">Además, este BloomPack llevará su última configuración para libros decodificables y nivelados para el idioma \"{0}\". Cualquier que abre este BloomPack, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decodificables y nivelados reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en libros decodificables.</target>
+        <target xml:lang="es-ES" state="translated">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y nivelados para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y nivelados reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Además, este BloomPack llevará su última configuración para libros decodificables y nivelados para el idioma \"{0}\". Cualquier que abre este BloomPack, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decodificables y nivelados reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en libros decodificables.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Además, este BloomPack llevará su última configuración para lecturas decodificables y nivelado para el idioma \"{0}\". Cualquier que abre este BloomPack, que entonces abre una colección en el idioma \"{0}\", tendrá su configuración actual para lecturas decodificables y nivelados reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en lecturas decodificables.</target>
         </alt-trans>
@@ -4547,12 +4604,18 @@ Desea seguir?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
         <source xml:lang="en">Save Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.SaveBloomPackButton</note>
-        <target xml:lang="es-ES" state="translated">Guardar BloomPack</target>
+        <target xml:lang="es-ES" state="translated">Guardar Paquete de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Guardar BloomPack</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
         <source xml:lang="en">Make Reader Template Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Crear un BloomPack de plantilla de libros</target>
+        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom de plantilla de libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un BloomPack de plantilla de libros</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear BloomPack plantilla de lectores</target>
         </alt-trans>
