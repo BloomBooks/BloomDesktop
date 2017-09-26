@@ -45,7 +45,7 @@ namespace Bloom
 			// decode it.
 
 			if(!strictlyTreatAsEncoded && Regex.IsMatch(unencoded,"%[A-Fa-f0-9]{2}"))
-					unencoded = HttpUtility.UrlDecode(unencoded);
+				unencoded = HttpUtility.UrlDecode(unencoded.Replace("+", "%2B"));	// preserve + as + (as above)
 			return new UrlPathString(unencoded);
 		}
 
@@ -71,6 +71,19 @@ namespace Bloom
 				x  = HttpUtility.UrlEncode(x);
 				//now do our own encoding for the protected space
 				return x.Replace(standInForSpace,"%20");
+			}
+		}
+
+		/// <summary>
+		/// Get the URL encoding but with / and : decoded so that we get a normal looking URL path.
+		/// </summary>
+		/// <value>The URL encoded for http path.</value>
+		public string UrlEncodedForHttpPath
+		{
+			get
+			{
+				var x = UrlEncoded;
+				return x.Replace("%2f","/").Replace("%3a",":");
 			}
 		}
 
