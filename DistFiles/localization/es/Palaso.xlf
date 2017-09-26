@@ -209,7 +209,10 @@
       <trans-unit id="ImageToolbox.GetPicture">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="es-ES" state="translated">Obtener ilustración</target>
+        <target xml:lang="es-ES" state="translated">Obtener imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Obtener ilustración</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
