@@ -661,7 +661,10 @@
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Usando fuente predeterminado.)</target>
+        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Usando el fuente predeterminado.)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Usando fuente predeterminado.)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Usando fuente por defecto.)</target>
         </alt-trans>
@@ -709,22 +712,37 @@
       <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="es-ES" state="translated">Keyman 5.0 o posterior no está instalado.</target>
+        <target xml:lang="es-ES" state="translated">Keyman 5.0 o más reciente no está instalado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Keyman 5.0 o posterior no está instalado.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="es-ES" state="translated">Seleccione el teclado con la cual escribir texto {0}</target>
+        <target xml:lang="es-ES" state="translated">Seleccione el &amp;teclado con lo cual desea ingresar texto {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Seleccione el teclado con lo cual desea ingresar texto {0}</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Seleccione el teclado con la cual escribir texto {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="es-ES" state="translated">Área de prueba (utilice esta zona para escribir algo para probar el teclado.)</target>
+        <target xml:lang="es-ES" state="translated">&amp;Área de prueba (utilice esta zona para escribir algo para probar el teclado.)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Área de prueba (utilice esta zona para escribir algo para probar el teclado.)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Warning">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="es-ES" state="translated">ADVERTENCIA</target>
+        <target xml:lang="es-ES" state="translated">Advertencia</target>
+        <alt-trans>
+          <target xml:lang="es-ES">ADVERTENCIA</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
         <source xml:lang="en">Unable to connect to SLDR</source>
