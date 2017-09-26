@@ -31,7 +31,10 @@
       <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstalled</note>
-        <target xml:lang="es-ES" state="translated">La colección {0} está lista para su uso en este computadora.</target>
+        <target xml:lang="es-ES" state="translated">La colección {0} está lista para uso en este computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La colección {0} está lista para su uso en este computadora.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BloomPackInstaller">
         <source xml:lang="en">Bloom Pack Installer</source>
@@ -1333,12 +1336,18 @@
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord">
         <source xml:lang="en">Sight Word</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord</note>
-        <target xml:lang="es-ES" state="translated">Palabra de vista</target>
+        <target xml:lang="es-ES" state="translated">Palabra vista</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Palabra de vista</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable">
         <source xml:lang="en">This word is not decodable in this stage.</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable</note>
-        <target xml:lang="es-ES" state="translated">Esta palabra no es decodificable en esta etapa.</target>
+        <target xml:lang="es-ES" state="translated">Esta palabra no es decifrable en esta etapa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta palabra no es decodificable en esta etapa.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
@@ -2072,7 +2081,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Herramienta para libros decodificables</target>
+        <target xml:lang="es-ES" state="translated">Herramienta para libros decifrables</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Herramienta para libros decodificables</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
@@ -2097,7 +2109,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage">
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage</note>
-        <target xml:lang="es-ES" state="translated">El siguiente es un informe generado sobre las etapas decodificables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
+        <target xml:lang="es-ES" state="translated">El siguiente es un informe generado sobre las etapas decifrables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El siguiente es un informe generado sobre las etapas decodificables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">El siguiente es un informe generado de las etapas decodificables para {0}. Usted puede hacer los cambios que desee a este archivo, pero Bloom no notará los cambios. Es sólo un informe.</target>
         </alt-trans>
@@ -2105,12 +2120,18 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords">
         <source xml:lang="en">New Decodable Words: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords</note>
-        <target xml:lang="es-ES" state="translated">Nuevas palabras decodificables: {0}</target>
+        <target xml:lang="es-ES" state="translated">Nuevas palabras decifrables: {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Nuevas palabras decodificables: {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords">
         <source xml:lang="en">New Sight Words: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords</note>
-        <target xml:lang="es-ES" state="translated">Nuevas palabras de vista: {0}</target>
+        <target xml:lang="es-ES" state="translated">Nuevas palabras vistas: {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Nuevas palabras de vista: {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage">
         <source xml:lang="en">Stage {0}</source>
@@ -2192,7 +2213,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
         <source xml:lang="en">Leveled Reader Tool</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Herramienta para libros nivelados</target>
+        <target xml:lang="es-ES" state="translated">Herramienta para libros por niveles</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Herramienta para libros nivelados</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
         <source xml:lang="en">Actual</source>
@@ -3147,7 +3171,10 @@
       <trans-unit id="PublishTab.Android.ChooseFile">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
-        <target xml:lang="es-ES" state="translated">Guardar archivo de BloomReader</target>
+        <target xml:lang="es-ES" state="translated">Guardar archivo de LectorBloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Guardar archivo de BloomReader</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Guardar archivo del libro Bloom</target>
         </alt-trans>
@@ -3180,7 +3207,10 @@
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
-        <target xml:lang="es-ES" state="translated">Obtenga la aplicación BloomReader</target>
+        <target xml:lang="es-ES" state="translated">Obtenga la aplicación LectorBloom (BloomReader)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Obtenga la aplicación BloomReader</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Method">
         <source xml:lang="en">Method</source>
@@ -3203,7 +3233,10 @@
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
         <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">¡Ahora puede leer "{0}" en BloomReader!</target>
+        <target xml:lang="es-ES" state="translated">¡Ahora puede leer "{0}" en LectorBloom!</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¡Ahora puede leer "{0}" en BloomReader!</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">¡Ahora puede leer "{0}" en Bloom!</target>
         </alt-trans>
@@ -3217,7 +3250,10 @@
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
         <note>ID: PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader</note>
-        <target xml:lang="es-ES" state="translated">Los siguientes dispositivos estan conectados pero no estan ejecutando BloomReader:</target>
+        <target xml:lang="es-ES" state="translated">Los siguientes dispositivos estan conectados pero no estan ejecutando el LectorBloom:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Los siguientes dispositivos estan conectados pero no estan ejecutando BloomReader:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend">
         <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
@@ -3240,7 +3276,10 @@
         <source xml:lang="en">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</source>
         <note>ID: PublishTab.Android.Usb.Progress.MoreThanOne</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">BloomReader esta instalado en todos los siguientes dispositivos conectados. Por favor conecte solamente uno de ellos.</target>
+        <target xml:lang="es-ES" state="translated">LectorBloom esta instalado en todos los siguientes dispositivos conectados. Por favor conecte solamente uno de ellos.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">BloomReader esta instalado en todos los siguientes dispositivos conectados. Por favor conecte solamente uno de ellos.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound">
         <source xml:lang="en">No device found. Still looking...</source>
@@ -3277,7 +3316,10 @@
       <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect">
         <source xml:lang="en">Unable to connect to any Android device which has Bloom Reader.</source>
         <note>ID: PublishTab.Android.Usb.Progress.UnableToConnect</note>
-        <target xml:lang="es-ES" state="translated">No se puede conectar a cualquier dispositivo Android que tiene BloomReader.</target>
+        <target xml:lang="es-ES" state="translated">No se puede conectar a cualquier dispositivo Android que tiene el LectorBloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se puede conectar a cualquier dispositivo Android que tiene BloomReader.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Start">
         <source xml:lang="en">Connect with USB cable</source>
@@ -3293,7 +3335,10 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
         <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
-        <target xml:lang="es-ES" state="translated">Recibimos una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de BloomReader?</target>
+        <target xml:lang="es-ES" state="translated">Recibimos una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de LectorBloom?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Recibimos una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de BloomReader?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Recibimo una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de BloomReader?</target>
         </alt-trans>
@@ -3304,7 +3349,10 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.beginAdvertising">
         <source xml:lang="en">Advertising book to Bloom Readers on local network...</source>
         <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
-        <target xml:lang="es-ES" state="translated">Anunciar libro a BloomReaders en red local...</target>
+        <target xml:lang="es-ES" state="translated">Anunciar libro a LectoresBloom en el red local...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Anunciar libro a BloomReaders en red local...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Failed">
         <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
@@ -3334,7 +3382,10 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1">
         <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
-        <target xml:lang="es-ES" state="translated">En el dispositivo de Android, ejecute BloomReader, abra el menú y elija 'Recibir libros por WiFi'.</target>
+        <target xml:lang="es-ES" state="translated">En el dispositivo de Android, ejecute LectorBloom (BloomReader), abra el menú y elija 'Recibir libros por WiFi'.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">En el dispositivo de Android, ejecute BloomReader, abra el menú y elija 'Recibir libros por WiFi'.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
@@ -4179,7 +4230,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
         <source xml:lang="en">Decodable Stages</source>
         <note>ID: ReaderSetup.DecodableStages</note>
-        <target xml:lang="es-ES" state="translated">Etapas decodificables</target>
+        <target xml:lang="es-ES" state="translated">Etapas decifrables</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Etapas decodificables</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.FileNeedsTxtExtension" sil:dynamic="true">
         <source xml:lang="en">File needs .TXT extension</source>
@@ -4243,7 +4297,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
         <note>ID: ReaderSetup.Letters.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros decifrables, Bloom nesecita saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para ayudarle a crear libros decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para ayudarle a crear lecturas decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
         </alt-trans>
@@ -4446,7 +4503,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
         <note>ID: ReaderSetup.SetUpDecodableReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros decodificables</target>
+        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros decifrables</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configurar la herramienta de libros decodificables</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Configurar la herramienta de lecturas decodificables</target>
         </alt-trans>
@@ -4457,7 +4517,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true">
         <source xml:lang="en">Set up Leveled Reader Tool</source>
         <note>ID: ReaderSetup.SetUpLeveledReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros nivelados</target>
+        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros por niveles</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configurar la herramienta de libros nivelados</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Configurar la herramienta de lecturas nivelados</target>
         </alt-trans>
@@ -4535,7 +4598,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage. There are two ways to give words to Bloom:</source>
         <note>ID: ReaderSetup.Words.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle con la creación de libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
+        <target xml:lang="es-ES" state="translated">Para ayudarle con la creación de libros decifrables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para ayudarle con la creación de libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para ayudarle a crear libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
         </alt-trans>
@@ -4798,7 +4864,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
-        <target xml:lang="es-ES" state="translated">Libro decodificable</target>
+        <target xml:lang="es-ES" state="translated">Libro decifrable</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Libro decodificable</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
         <source xml:lang="en">Leveled Reader</source>
