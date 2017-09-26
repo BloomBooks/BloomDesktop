@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Net;
 using Bloom;
+using Moq;
 using NUnit.Framework;
 
 namespace BloomTests
@@ -150,6 +151,45 @@ namespace BloomTests
 			//"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
 			//this just checks the part that is less likely to break (independent of channel)
 			Assert.That(t.LookupURLOfUpdate().URL.StartsWith("https://s3.amazonaws.com/bloomlibrary.org/deltas"));
+		}
+
+		[Test]
+		public void LookupURLOfUpdateInternal_NotBehindCaptivePortal_Works()
+		{
+			var t = new UpdateVersionTable();
+			t.URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
+			t.RunningVersion = Version.Parse("2.0.2000");
+			//the full result would normally be something like
+			//"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
+			//check that feeding this a normal WebClient doesn't find an error.
+			var client = new BloomUpdateWebClient();
+			Assert.That(t.LookupURLOfUpdateInternal(client), Is.Null);
+		}
+
+		[Test]
+		public void LookupURLOfUpdateInternal_BehindCaptivePortal_DoesNotCrash()
+		{
+			var t = new UpdateVersionTable();
+			t.URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
+			t.RunningVersion = Version.Parse("2.0.2000");
+			//the full result would normally be something like
+			//"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
+			//check that feeding this a mock WebClient that simulates a captive portal doesn't crash
+			var mockClient = GetMockWebClient();
+			Assert.That(() => t.LookupURLOfUpdateInternal(mockClient), Throws.Nothing);
+		}
+
+		private static IBloomWebClient GetMockWebClient()
+		{
+			const string portalHtml =
+				@"<html>
+					<body>
+						<div>Simulated captive portal</div>
+					</body>
+				</html>";
+			var mockClient = new Mock<IBloomWebClient>();
+			mockClient.Setup(x => x.DownloadString(It.IsAny<string>())).Returns(portalHtml);
+			return mockClient.Object;
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Reflection;
 using SIL.Reporting;
@@ -41,48 +41,19 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Note! This will propogate network exceptions, so client can catch them and warn or not warn the user.
+		/// Note! This will propagate network exceptions, so client can catch them and warn or not warn the user.
 		/// </summary>
 		/// <returns></returns>
 		public UpdateTableLookupResult LookupURLOfUpdate()
 		{
-			if(String.IsNullOrEmpty(TextContentsOfTable))
+			if(string.IsNullOrEmpty(TextContentsOfTable))
 			{
 				Logger.WriteEvent("Enter LookupURLOfUpdate()");
-				var client = new WebClient();
+				var client = new BloomUpdateWebClient();
 				{
-					try
-					{
-						Logger.WriteEvent("Channel is '" + ApplicationUpdateSupport.ChannelName + "'");
-						Logger.WriteEvent("UpdateVersionTable looking for UpdateVersionTable URL: " + GetUrlOfTable());
-						TextContentsOfTable = client.DownloadString(GetUrlOfTable());
-
-						//things like captive portals will return an html page rather than the text file what we asked for, if the user isn't
-						//logged in.
-						if(TextContentsOfTable.ToLower().Contains("<html"))
-						{
-							LogTableContents();
-							return new UpdateTableLookupResult() { Error = new WebException("Internet connection did not allow check for update.") };
-						}
-					}
-					catch(WebException e)
-					{
-						Logger.WriteEvent("***Error in LookupURLOfUpdate: " + e.Message);
-						if(e.Status == WebExceptionStatus.ProtocolError)
-						{
-							var resp = e.Response as HttpWebResponse;
-							if(resp != null && resp.StatusCode == HttpStatusCode.NotFound)
-							{
-								Logger.WriteEvent(String.Format("***Error: UpdateVersionTable failed to find a file at {0} (channel='{1}'",
-									GetUrlOfTable(), ApplicationUpdateSupport.ChannelName));
-							}
-						}
-						else if(IsConnectionError(e))
-						{
-							Logger.WriteEvent("***Error: UpdateVersionTable could not connect to the server");
-						}
-						return new UpdateTableLookupResult() { Error = e };
-					}
+					var result = LookupURLOfUpdateInternal(client);
+					if (result != null)
+						return result; // must have been an error
 				}
 			}
 			if(RunningVersion == default(Version))
@@ -109,7 +80,7 @@ namespace Bloom
 					var lower = Version.Parse(parts[0]);
 					var upper = Version.Parse(parts[1]);
 					if(lower <= RunningVersion && upper >= RunningVersion)
-						return new UpdateTableLookupResult() { URL = parts[2].Trim() };
+						return new UpdateTableLookupResult { URL = parts[2].Trim() };
 				}
 				parsingErrorMsg = string.Format("{0} contains no record for this version of Bloom", GetUrlOfTable());
 			}
@@ -129,12 +100,57 @@ namespace Bloom
 				parsingErrorMsg = "Could not parse a version number in the UpdateVersionTable" + e.Message;
 				Logger.WriteEvent(parsingErrorMsg);
 			}
-			return new UpdateTableLookupResult() { URL = String.Empty, Error = new WebException(parsingErrorMsg) };
+			return new UpdateTableLookupResult { URL = String.Empty, Error = new WebException(parsingErrorMsg) };
+		}
+
+		/// <summary>
+		/// This internal method enables testing of captive portal situations
+		/// </summary>
+		/// <param name="client"></param>
+		/// <returns></returns>
+		internal UpdateTableLookupResult LookupURLOfUpdateInternal(IBloomWebClient client)
+		{
+			try
+			{
+				Logger.WriteEvent("Channel is '" + ApplicationUpdateSupport.ChannelName + "'");
+				Logger.WriteEvent("UpdateVersionTable looking for UpdateVersionTable URL: " + GetUrlOfTable());
+				TextContentsOfTable = client.DownloadString(GetUrlOfTable());
+
+				//things like captive portals will return an html page rather than the text file what we asked for, if the user isn't
+				//logged in.
+				if (TextContentsOfTable.ToLower().Contains("<html"))
+				{
+					LogTableContents();
+					var msg = "Internet connection did not allow check for update.";
+					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, msg); // hopefully this will just 'toast'
+					return new UpdateTableLookupResult { URL = string.Empty, Error = new WebException(msg)};
+				}
+			}
+			catch (WebException e)
+			{
+				Logger.WriteEvent("***Error in LookupURLOfUpdate: " + e.Message);
+				if (e.Status == WebExceptionStatus.ProtocolError)
+				{
+					var resp = e.Response as HttpWebResponse;
+					if (resp != null && resp.StatusCode == HttpStatusCode.NotFound)
+					{
+						Logger.WriteEvent(String.Format("***Error: UpdateVersionTable failed to find a file at {0} (channel='{1}'",
+							GetUrlOfTable(), ApplicationUpdateSupport.ChannelName));
+					}
+				}
+				else if (IsConnectionError(e))
+				{
+					Logger.WriteEvent("***Error: UpdateVersionTable could not connect to the server");
+				}
+				return new UpdateTableLookupResult() { Error = e };
+			}
+			return null; // no error yet anyway!
 		}
 
 		private void LogTableContents()
 		{
 			//html may have javascript which has braces which will kill the string.format in WriteEvent
+			TextContentsOfTable = TextContentsOfTable ?? "<html></html>";
 			var safeContents = TextContentsOfTable.Replace("{", "{{").Replace("}", "}}");
 			Logger.WriteEvent("***UpdateVersionTable contents are " + Environment.NewLine + safeContents);
 		}

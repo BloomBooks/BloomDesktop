@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Properties;
-using Bloom.Publish;
 using Bloom.Publish.BloomLibrary;
 using L10NSharp;
 using SIL.Code;
@@ -13,7 +12,7 @@ using SIL.Reporting;
 namespace Bloom.WebLibraryIntegration
 {
 	/// <summary>
-	/// this class manages a the login process for Bloom, including signing up for new accounts.
+	/// this class manages the login process for Bloom, including signing up for new accounts.
 	/// (This is a bit clumsy, but makes it easy to switch to login if the user enters a known address,
 	/// or switch to signup if the user tries to log in with an unknown email.
 	/// It also saves passing another object around.)
