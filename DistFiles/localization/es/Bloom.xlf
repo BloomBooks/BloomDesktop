@@ -152,7 +152,10 @@
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo leer este libro y se recupero restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles y informenos.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo leer este libro y se recuperó restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles e informenos.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo leer este libro y se recupero restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles y informenos.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
@@ -1094,7 +1097,10 @@
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
         <note>ID: EditTab.BackMatter.InsideBackCoverTextPrompt</note>
-        <target xml:lang="es-ES" state="translated">Si require un lugar donde agregar más información sobre el libro, puede utilizar esta página, que es la parte interior de la contracubierta.</target>
+        <target xml:lang="es-ES" state="translated">Si require un lugar donde agregar más información sobre el libro, puede utilizar esta página, que es la parte interior de la contratapa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Si require un lugar donde agregar más información sobre el libro, puede utilizar esta página, que es la parte interior de la contracubierta.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Si usted necesita un lugar donde puede poner más información sobre el libro, puede utilizar esta página, que es la sobrecubierta.</target>
         </alt-trans>
@@ -1105,7 +1111,10 @@
       <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</source>
         <note>ID: EditTab.BackMatter.OutsideBackCoverTextPrompt</note>
-        <target xml:lang="es-ES" state="translated">Si usted necesita un lugar donde poner más información sobre el libro, puede utilizar esta página, que es la contracubierta.</target>
+        <target xml:lang="es-ES" state="translated">Si usted necesita un lugar donde poner más información sobre el libro, puede utilizar esta página, que es la contratapa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Si usted necesita un lugar donde poner más información sobre el libro, puede utilizar esta página, que es la contracubierta.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Si usted necesita un lugar para poner más información sobre el libro, puede utilizar esta página, que es la parte exterior de la cubierta posterior.</target>
         </alt-trans>
@@ -1616,7 +1625,7 @@
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
-        <target xml:lang="es-ES" state="translated">Reconocimientos de originales (o de libros prediseñados) en {lang}</target>
+        <target xml:lang="es-ES" state="translated">Reconocimientos de libros originales (o prediseñados) en {lang}</target>
         <alt-trans>
           <target xml:lang="es-ES">Reconocimientos de originales (o de "shell") en {lang}</target>
         </alt-trans>
@@ -1659,7 +1668,10 @@
       <trans-unit id="EditTab.FrontMatter.PasteImageCreditsLink" sil:dynamic="true">
         <source xml:lang="en">Paste Image Credits</source>
         <note>ID: EditTab.FrontMatter.PasteImageCreditsLink</note>
-        <target xml:lang="es-ES" state="translated">Pegar los créditos de imagen</target>
+        <target xml:lang="es-ES" state="translated">Pegar los créditos del imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Pegar los créditos de imagen</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.PasteMissingCredits" sil:dynamic="true">
         <source xml:lang="en">Missing credits:</source>
@@ -1818,12 +1830,12 @@
         <source xml:lang="en">A container on this page is overflowing</source>
         <note>ID: EditTab.OverflowContainer</note>
         <note>This shows up in pages like the cover where sizing is very flexible. No one thing is too big, but not everything on the page will fit. To see it, put a lot of text on a cover page, until a red bar appears at the bottom; then hover over the bar. </note>
-        <target xml:lang="es-ES" state="translated">Un contendedor en esta página se esta desbordando</target>
+        <target xml:lang="es-ES" state="translated">Un contenedor en esta página se esta desbordando</target>
       </trans-unit>
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
-        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas de material preliminanr y final deben permanecer donde están.</target>
+        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas de material preliminar y final deben permanecer donde están.</target>
         <alt-trans>
           <target xml:lang="es-ES">No se permite ese cambio. Páginas de materia inicial y final deben permanecer donde están.</target>
         </alt-trans>
@@ -2434,7 +2446,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
-        <target xml:lang="es-ES" state="translated">1) Averigue que está usando un dispositivo de grabación correcto y que los niveles se ven azules:</target>
+        <target xml:lang="es-ES" state="translated">1) Averigue que está grabando al dispositivo correcto y que los niveles se ven azules:</target>
         <alt-trans>
           <target xml:lang="es-ES">1) Averiguar que está usando el dispositivo de grabación correcto y que el nivel de sonido aparece en la zona azul:</target>
         </alt-trans>
@@ -2554,7 +2566,7 @@
       <trans-unit id="Errors.DeniedAccess">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
         <note>ID: Errors.DeniedAccess</note>
-        <target xml:lang="es-ES" state="translated">So computador nego que Bloom accesara el libro. Pide ayuda tecnica para cambiar la configuración de permisos del sistema operativo de este archivo.</target>
+        <target xml:lang="es-ES" state="translated">Su computador nego que Bloom accesara el libro. Pide ayuda tecnica para cambiar la configuración de permisos del sistema operativo de este archivo.</target>
       </trans-unit>
       <trans-unit id="Errors.ErrorSelecting">
         <source xml:lang="en">There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
@@ -2673,7 +2685,10 @@
       <trans-unit id="HelpMenu.CreditsMenuItem">
         <source xml:lang="en">About Bloom</source>
         <note>ID: HelpMenu.CreditsMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Sobre Bloom</target>
+        <target xml:lang="es-ES" state="translated">Acerca de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sobre Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem">
         <source xml:lang="en">Documentation</source>
@@ -3038,7 +3053,10 @@
       <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
         <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
         <note>ID: NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional</note>
-        <target xml:lang="es-ES" state="translated">Estos son opcionales. Bloom los colocará en los lugares apropiados en la página de título en los libros que hace.</target>
+        <target xml:lang="es-ES" state="translated">Estos son opcionales. Bloom los colocará en los lugares apropiados en la portada en los libros que hace.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estos son opcionales. Bloom los colocará en los lugares apropiados en la página de título en los libros que hace.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Estos son opcionales. Bloom colocarlos en los lugares correctos en la página del título del libro que cree.</target>
         </alt-trans>
@@ -3499,7 +3517,10 @@
       <trans-unit id="PublishTab.CoverOnlyRadio">
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
-        <target xml:lang="es-ES" state="translated">Cubierta del librito</target>
+        <target xml:lang="es-ES" state="translated">Tapa del libro</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cubierta del librito</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Portada del librito</target>
         </alt-trans>
@@ -3510,7 +3531,10 @@
       <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Hacer un PDF de solamente la cubierta (ambos lados), para que pueda imprimirlo en papel de color.</target>
+        <target xml:lang="es-ES" state="translated">Hacer un PDF de solamente la tapa (ambos lados), para que pueda imprimirlo en papel de color.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un PDF de solamente la cubierta (ambos lados), para que pueda imprimirlo en papel de color.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un PDF de sólo la anverso y reverso (ambos lados), para que pueda imprimir en papel de color.</target>
         </alt-trans>
