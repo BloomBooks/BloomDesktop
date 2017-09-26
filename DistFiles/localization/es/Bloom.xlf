@@ -2260,7 +2260,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
         <source xml:lang="en">Keep in mind</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.KeepInMind</note>
-        <target xml:lang="es-ES" state="translated">Tenga en cuenta</target>
+        <target xml:lang="es-ES" state="translated">Tenga en mente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Tenga en cuenta</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Tener en mente</target>
         </alt-trans>
@@ -2280,7 +2283,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
         <source xml:lang="en">Max</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
-        <target xml:lang="es-ES" state="translated">Máximo</target>
+        <target xml:lang="es-ES" state="translated">Máx.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Máximo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
         <source xml:lang="en">per page</source>
@@ -4648,7 +4654,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
-        <target xml:lang="es-ES" state="translated">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y nivelados para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y nivelados reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
+        <target xml:lang="es-ES" state="translated">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y por niveles para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y por niveles reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y nivelados para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y nivelados reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Además, este BloomPack llevará su última configuración para libros decodificables y nivelados para el idioma \"{0}\". Cualquier que abre este BloomPack, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decodificables y nivelados reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en libros decodificables.</target>
         </alt-trans>
