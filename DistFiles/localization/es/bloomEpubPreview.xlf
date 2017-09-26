@@ -43,7 +43,10 @@
       <trans-unit id="epubpreview.ontodevice">
         <source xml:lang="en">Getting this book onto your Device</source>
         <note>ID: epubpreview.ontodevice</note>
-        <target xml:lang="es-ES" state="translated">Cargar este libro a su dispositivo</target>
+        <target xml:lang="es-ES" state="translated">Cargando este libro a su dispositivo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cargar este libro a su dispositivo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.usingdropbox">
         <source xml:lang="en">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
@@ -100,7 +103,11 @@
         <source xml:lang="en">Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!</source>
         <note>ID: epubpreview.use.help.report</note>
         <target xml:lang="es-ES" state="translated">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos?
+algo que podemos hacer para hacerlo mas útil para usted? Favor de usar la función Ayuda: Reportar problema para compartir sus comentarios. ¡Gracias!</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos?
 Si hay algo que podemos hacer para hacerlo mas útil para usted, favor de usar la función Ayuda; Reportar problema (Help: Report a Problem) para compartir sus comentarios. ¡Gracias!</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
