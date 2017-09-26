@@ -143,7 +143,10 @@
       <trans-unit id="ImageToolbox.ArtOfReading">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Art Of Reading (Arte de la lectura)</target>
+        <target xml:lang="es-ES" state="translated">Arte de la lectura</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Art Of Reading (Arte de la lectura)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.Camera">
         <source xml:lang="en">Camera</source>
@@ -164,16 +167,7 @@
       <trans-unit id="ImageToolbox.DownloadArtOfReading">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Descargar el instalador de arte de la lectura</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Descargar el instalador de la galeria arte de la lectura</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Descargar el instalador para arte de la lectura</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Descargar el instalador para Arte de Lectura</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Descargar el instalador de Arte de la lectura</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EditMetadataLink">
         <source xml:lang="en">Edit...</source>
@@ -204,7 +198,10 @@
       <trans-unit id="ImageToolbox.GenericProblem">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="es-ES" state="translated">Lastimosamente, algo falló con el ImageToolbox (caja de herramientas de ilustraciones)</target>
+        <target xml:lang="es-ES" state="translated">Lastimosamente, algo falló con el ImageToolbox (caja de herramientas de imágenes)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lastimosamente, algo falló con el ImageToolbox (caja de herramientas de ilustraciones)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Lo siento, algo salió mal con el cuadro de herramientas de ilustraciones</target>
         </alt-trans>
@@ -217,7 +214,7 @@
       <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Image Toolbox (caja de herramientas de ilustraciones)</target>
+        <target xml:lang="es-ES" state="translated">Image Toolbox (caja de herramientas de imágenes)</target>
         <alt-trans>
           <target xml:lang="es-ES">Cuadro de herramientas de ilustraciones</target>
         </alt-trans>
@@ -225,10 +222,7 @@
       <trans-unit id="ImageToolbox.InstallArtOfReading">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Instalar el paquete de arte de la lectura (puede demorar)</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Instalar el paquete de arte de la lectura (esto puede ser muy lento)</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Instalar el paquete de Arte de la lectura (puede demorar)</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.MatchingImages">
         <source xml:lang="en">Found {0} images</source>
@@ -255,7 +249,10 @@
       <trans-unit id="ImageToolbox.NoMatchingImages">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="es-ES" state="translated">No se encontraron ilustraciones que coinciden</target>
+        <target xml:lang="es-ES" state="translated">No se encontraron imágenes que coinciden</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se encontraron ilustraciones que coinciden</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se encontraron ilustraciones que coincidan</target>
         </alt-trans>
@@ -269,7 +266,7 @@
       <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="es-ES" state="translated">No se pudo obtener la ilustración</target>
+        <target xml:lang="es-ES" state="translated">No se pudo obtener la imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Problema obteniendo la ilustración</target>
         </alt-trans>
@@ -277,7 +274,7 @@
       <trans-unit id="ImageToolbox.ProblemLoadingImage">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="es-ES" state="translated">Lastimosamente, no se pudo cargar esa ilustración.</target>
+        <target xml:lang="es-ES" state="translated">Lastimosamente, no se pudo cargar esa imagen.</target>
         <alt-trans>
           <target xml:lang="es-ES">Lo sentimos, hubo un problema al cargar la ilustración.</target>
         </alt-trans>
@@ -285,7 +282,10 @@
       <trans-unit id="ImageToolbox.PromptForMissingMetadata">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="es-ES" state="translated">Esta ilustración no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
+        <target xml:lang="es-ES" state="translated">Esta imagen no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta ilustración no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">La ilustración no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
         </alt-trans>
@@ -298,7 +298,7 @@
       <trans-unit id="ImageToolbox.SearchArtOfReading">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Búsqueda de la galería de la arte de la lectura</target>
+        <target xml:lang="es-ES" state="translated">Búsqueda de la galería de la Arte de la lectura</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage">
         <source xml:lang="en">The search box is currently set to {0}</source>
