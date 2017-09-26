@@ -644,7 +644,10 @@
       <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
-        <target xml:lang="es-ES" state="translated">Rescatar ilustraciones ausentes...</target>
+        <target xml:lang="es-ES" state="translated">Rescatar imágenes ausentes...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Rescatar ilustraciones ausentes...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Rescatar las ilustraciones que faltan...</target>
         </alt-trans>
@@ -1147,7 +1150,10 @@
       <trans-unit id="EditTab.CantPasteImageLocked">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
-        <target xml:lang="es-ES" state="translated">Este libro está bloqueado para que las ilustraciones no puedan ser cambiadas.</target>
+        <target xml:lang="es-ES" state="translated">Este libro está bloqueado para que las imágenes no puedan ser cambiadas.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro está bloqueado para que las ilustraciones no puedan ser cambiadas.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Lo sentimos, este libro está bloqueado para que las ilustraciones no se puedan cambiar.</target>
         </alt-trans>
@@ -1810,7 +1816,7 @@
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
-        <target xml:lang="es-ES" state="translated">Antes de poder pegar una ilustración, copie uno a su "portapapeles" desde de otro programa.</target>
+        <target xml:lang="es-ES" state="translated">Antes de poder pegar una imagen, copie uno a su "portapapeles" desde de otro programa.</target>
         <alt-trans>
           <target xml:lang="es-ES">Antes de que usted pueda pegar una ilustración, copiar uno de otro programa en su "portapapeles".</target>
         </alt-trans>
@@ -5130,10 +5136,7 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
         <source xml:lang="en">Basic Text &amp; Image</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Image</note>
-        <target xml:lang="es-ES" state="translated">Texto básico e ilustración</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Texto básico y ilustración</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Texto básico y imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Texto básico &amp; ilustración</target>
         </alt-trans>
@@ -5289,7 +5292,7 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
         <source xml:lang="en">Just an Image</source>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
-        <target xml:lang="es-ES" state="translated">Solamented una ilustración</target>
+        <target xml:lang="es-ES" state="translated">Solamente una imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Solo una ilustración</target>
         </alt-trans>
