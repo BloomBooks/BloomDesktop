@@ -126,10 +126,6 @@ que la luna te va a oír</g>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
         <target xml:lang="es-ES" state="translated">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipientes</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.      
       </target>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-9" ctype="x-html-strong"> Lectores nuevos</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader">
         <source xml:lang="en">For <g id="genid-10" ctype="x-html-strong">Early Readers</g>, develop a story around a familiar concept but in greater depth.
@@ -137,10 +133,6 @@ que la luna te va a oír</g>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
         <target xml:lang="es-ES" state="translated">Para los <g id="genid-10" ctype="x-html-strong"> Lectores principiantes</g>, se debe desarrollar un cuento alrededor de un concepto familiar pero con mayor profundidad.      
       </target>
-        <alt-trans>
-          <target xml:lang="es-ES">Para los <g id="genid-10" ctype="x-html-strong"> Lectores primarios</g>, se debe desarrollar un cuento alrededor de un concepto familiar pero con mayor profundidad.      
-      </target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.fluent.reader">
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
