@@ -499,13 +499,19 @@
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-        <target xml:lang="es-ES" state="translated">Conseguir más libros de fuente en BloomLibrary.org</target>
+        <target xml:lang="es-ES" state="translated">Conseguir más libros originarios en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Conseguir más libros de fuente en BloomLibrary.org</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="es-ES" state="translated">Colección de libros fuentes</target>
+        <target xml:lang="es-ES" state="translated">Colección de libros originarios</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros fuentes</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de origen</target>
         </alt-trans>
@@ -652,7 +658,13 @@
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="es-ES" state="translated">Porque este es una colección de furente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
+        <target xml:lang="es-ES" state="translated">Porque este es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Porque este es una colección originaría, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
         </alt-trans>
@@ -674,12 +686,18 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="es-ES" state="translated">Crear un libro con esta plantilla</target>
+        <target xml:lang="es-ES" state="translated">Crear un libro con este libro originario</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un libro con esta plantilla</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="es-ES" state="translated">Crear un libro en mi idioma usando este libro de fuente</target>
+        <target xml:lang="es-ES" state="translated">Crear un libro en mi idioma usando este libro originario</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un libro en mi idioma usando este libro de fuente</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
         <source xml:lang="en">More...</source>
@@ -728,7 +746,10 @@
       <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.Source Collection</note>
-        <target xml:lang="es-ES" state="translated">Colección de libros fuentes</target>
+        <target xml:lang="es-ES" state="translated">Colección de libros originarios</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros fuentes</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de origen</target>
         </alt-trans>
@@ -2275,7 +2296,10 @@
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
         <note>ID: EditTab.Toolbox.Settings.Unlock</note>
-        <target xml:lang="es-ES" state="translated">Permitir cambios a este libro "shell"</target>
+        <target xml:lang="es-ES" state="translated">Permitir cambios a este libro prediseñado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Permitir cambios a este libro "shell"</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Permitir cambios a este libro shell</target>
         </alt-trans>
@@ -2859,7 +2883,10 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
         <source xml:lang="en">Source Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-        <target xml:lang="es-ES" state="translated">Colección de libros fuentes</target>
+        <target xml:lang="es-ES" state="translated">Colección de libros originarios</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros fuentes</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de origen</target>
         </alt-trans>
@@ -2867,7 +2894,10 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-        <target xml:lang="es-ES" state="translated">Una colección de libros "shell" o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus "shells".</target>
+        <target xml:lang="es-ES" state="translated">Una colección de libros prediseñados o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede hacer un Paquete de Bloom para compartir con otros para que puedan hacer libros en su idioma local con sus libros prediseñados.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Una colección de libros "shell" o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus "shells".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Una colección de libros shell o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus "shells".</target>
         </alt-trans>
