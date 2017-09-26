@@ -652,7 +652,10 @@
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="es-ES" state="translated">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
+        <target xml:lang="es-ES" state="translated">Porque este es una colección de furente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "libros shell" existentes como fuentes para nuevos "libros shell". Si desea agregar un idioma a un "libro shell", debe editar la colección que contiene el "libro shell", en vez de copiarlo. hacer una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "libro shell".</target>
         </alt-trans>
@@ -704,7 +707,10 @@
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
         <source xml:lang="en">Sample Shells</source>
         <note>ID: CollectionTab.Sample Shells</note>
-        <target xml:lang="es-ES" state="translated">"Shells" de muestra</target>
+        <target xml:lang="es-ES" state="translated">Libros prediseñados de muestra</target>
+        <alt-trans>
+          <target xml:lang="es-ES">"Shells" de muestra</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Shells de muestra</target>
         </alt-trans>
@@ -735,7 +741,10 @@
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="es-ES" state="translated">Fuentes para nuevos "shells"</target>
+        <target xml:lang="es-ES" state="translated">Fuentes para nuevos libros prediseñados</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Fuentes para nuevos "shells"</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Fuentes para nuevos "libros shell"</target>
         </alt-trans>
@@ -1469,7 +1478,10 @@
       <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true">
         <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Translator</note>
-        <target xml:lang="es-ES" state="translated">Cuando crea un libro a base de un libro "shell", utilice este cuadro para indicar quien hizo la traducción.</target>
+        <target xml:lang="es-ES" state="translated">Cuando crea un libro a base de un libro prediseñado, utilice este cuadro para indicar quien hizo la traducción.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuando crea un libro a base de un libro "shell", utilice este cuadro para indicar quien hizo la traducción.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cuando crea un libro a base de un libro shell, utilice este cuadro para indicar quien hizo la traducción.</target>
         </alt-trans>
@@ -1532,7 +1544,10 @@
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
-        <target xml:lang="es-ES" state="translated">Reconocimientos de originales (o de "shell") en {lang}</target>
+        <target xml:lang="es-ES" state="translated">Reconocimientos de originales (o de libros prediseñados) en {lang}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reconocimientos de originales (o de "shell") en {lang}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Reconocimientos de originales (o de Shell) en {lang}</target>
         </alt-trans>
@@ -1597,7 +1612,10 @@
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="es-ES" state="translated">Para desbloquear este libro "shell", ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro "shell".</target>
+        <target xml:lang="es-ES" state="translated">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para desbloquear este libro "shell", ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro "shell".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para desbloquear este libro de fuente, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro "shell".</target>
         </alt-trans>
@@ -2265,7 +2283,10 @@
       <trans-unit id="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText" sil:dynamic="true">
         <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
-        <target xml:lang="es-ES" state="translated">Bloom normalmente previene la mayoría de los cambios a los libros "shell". Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
+        <target xml:lang="es-ES" state="translated">Bloom normalmente previene la mayoría de los cambios a los libros prediseñados. Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom normalmente previene la mayoría de los cambios a los libros "shell". Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom normalmente previene la mayoría de los cambios a los libros shell. Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
         </alt-trans>
