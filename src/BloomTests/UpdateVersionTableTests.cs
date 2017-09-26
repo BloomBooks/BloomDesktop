@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Net;
 using Bloom;
+using Moq;
 using NUnit.Framework;
+using TableLookupResult = Bloom.UpdateVersionTable.UpdateTableLookupResult; // shorthand
 
 namespace BloomTests
 {
@@ -150,6 +152,49 @@ namespace BloomTests
 			//"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
 			//this just checks the part that is less likely to break (independent of channel)
 			Assert.That(t.LookupURLOfUpdate().URL.StartsWith("https://s3.amazonaws.com/bloomlibrary.org/deltas"));
+		}
+
+		[Test]
+		public void LookupURLOfUpdateInternal_NotBehindCaptivePortal_Works()
+		{
+			var t = new UpdateVersionTable();
+			t.URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
+			t.RunningVersion = Version.Parse("2.0.2000");
+			//the full result would normally be something like
+			//"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
+			//check that feeding this a normal WebClient doesn't find an error.
+			var client = new BloomWebClient();
+			TableLookupResult dummy;
+			Assert.IsTrue(t.CanGetVersionTableFromWeb(client, out dummy));
+		}
+
+		[Test]
+		public void LookupURLOfUpdateInternal_BehindCaptivePortal_DoesNotCrash()
+		{
+			var t = new UpdateVersionTable();
+			t.URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
+			t.RunningVersion = Version.Parse("2.0.2000");
+			//the full result would normally be something like
+			//"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
+			//check that feeding this a mock WebClient that simulates a captive portal doesn't crash
+			var mockClient = GetMockWebClient();
+			TableLookupResult errorResult = null;
+			Assert.That(() => t.CanGetVersionTableFromWeb(mockClient, out errorResult), Throws.Nothing);
+			Assert.That(errorResult.URL, Is.EqualTo(string.Empty));
+			Assert.That(errorResult.Error.Message, Does.StartWith("Internet connection"));
+		}
+
+		private static IBloomWebClient GetMockWebClient()
+		{
+			const string portalHtml =
+				@"<html>
+					<body>
+						<div>Simulated captive portal</div>
+					</body>
+				</html>";
+			var mockClient = new Mock<IBloomWebClient>();
+			mockClient.Setup(x => x.DownloadString(It.IsAny<string>())).Returns(portalHtml);
+			return mockClient.Object;
 		}
 	}
 }
