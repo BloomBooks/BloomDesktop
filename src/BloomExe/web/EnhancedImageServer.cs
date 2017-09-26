@@ -1,7 +1,6 @@
-﻿// Copyright (c) 2014-2015 SIL International
+// Copyright (c) 2014-2017 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,7 +13,6 @@ using BloomTemp;
 using L10NSharp;
 using SIL.IO;
 using Bloom.Collection;
-using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.Workspace;
 using Newtonsoft.Json;
@@ -212,7 +210,7 @@ namespace Bloom.Api
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
 			if (CurrentCollectionSettings != null && CurrentCollectionSettings.SettingsFilePath != null)
-				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath);
+				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath).Replace('\\','/');
 
 			var localPath = GetLocalPathWithoutQuery(info);
 
@@ -602,43 +600,23 @@ namespace Bloom.Api
 			}
 			if (!RobustFile.Exists(path))
 			{
-				// images with src derived from Branding API img elements get this marker
-				// in XMatterHelper.CleanupBrandingImages() to prevent spurious reports of
-				// images that are intentionally optional.
-				if (info.GetQueryParameters().Get("optional") != "true")
-					ReportMissingFile(localPath,path);
-				return false;
+				if (ShouldReportFailedRequest(info, CurrentBook?.FolderPath))
+				{
+					ReportMissingFile(localPath, path);
+				}
+				return false; // from here we head off to ServerBase.MakeReply() which now uses the same ShouldReportFailedRequest() method.
 			}
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
 		}
 
-
-
-		// overridden in tests
-		internal virtual void ReportMissingFile(string localPath, string path)
+		private static void ReportMissingFile(string localPath, string path)
 		{
 			if (path == null)
 			{
 				path = "(was null)";
 			}
-			var stuffToIgnore = new[] {
-					//browser/debugger stuff
-					"favicon.ico", ".map",
-					// Audio files may well be missing because we look for them as soon
-					// as we define an audio ID, but they wont' exist until we record something.
-					"/audio/",
-					// PageTemplatesApi creates a path containing this for a missing template.
-					// it gets reported inside the page chooser dialog.
-					"missingpagetemplate",
-					// This is readium stuff that we don't ship with, because they are needed by the original reader to support display and implementation
-					// of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
-					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
-				};
-
-			if (stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
-				return;
 
 			// we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
 			// I suspect our disposal algorithm is just flawed: the page is removed from the _url cache as soon as we navigated away,
@@ -652,16 +630,11 @@ namespace Bloom.Api
 			}
 			else if (IsImageTypeThatCanBeReturned(localPath))
 			{
-				// We don't need even a toast for missing images in the book folder. That's the user's problem and should be adequately
-				// documented by the browser message saying the file is missing.
-				if (!localPath.StartsWith((CurrentBook?.FolderPath ?? "").Replace("\\", "/")))
-				{
-					// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
-					// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
-					var userMsg = LocalizationManager.GetString("WebServer.Warning.NoImageFile", "Cannot Find Image File");
-					var detailMsg = String.Format("Server could not find the image file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
-					NonFatalProblem.Report(ModalIf.None, PassiveIf.All, userMsg, detailMsg);
-				}
+				// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
+				// The user visible message needs to be localized.  The detailed message is more developer oriented, so should stay in English.  (BL-4151)
+				var userMsg = LocalizationManager.GetString("WebServer.Warning.NoImageFile", "Cannot Find Image File");
+				var detailMsg = String.Format("Server could not find the image file {0}. LocalPath was {1}{2}", path, localPath, System.Environment.NewLine);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, userMsg, detailMsg);
 			}
 			else
 			{
@@ -672,7 +645,7 @@ namespace Bloom.Api
 			}
 		}
 
-		protected bool IsSimulatedFileUrl(string localPath)
+		private static bool IsSimulatedFileUrl(string localPath)
 		{
 			var extension = Path.GetExtension(localPath);
 			if(extension != null && !extension.StartsWith(".htm"))
@@ -692,13 +665,6 @@ namespace Bloom.Api
 		protected override bool IsRecursiveRequestContext(HttpListenerContext context)
 		{
 			return base.IsRecursiveRequestContext(context) || context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
-		}
-
-
-		private static void ReplyWithFileContentAndType(IRequestInfo info, string path)
-		{
-			info.ContentType = GetContentType(Path.GetExtension(path));
-			info.ReplyWithFileContent(path);
 		}
 
 		private bool ProcessCssFile(IRequestInfo info, string incomingPath)

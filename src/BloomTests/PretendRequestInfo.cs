@@ -1,7 +1,6 @@
-﻿// Copyright (c) 2014 SIL International
+// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System.Collections.Specialized;
-using System.IO;
 using System.Text;
 using SIL.IO;
 
@@ -58,14 +57,14 @@ namespace Bloom.Api
 			HaveOutput = true;
 		}
 
-		public void ReplyWithFileContent(string path)
+		public void ReplyWithFileContent(string path, string originalPath = null)
 		{
 			ReplyImagePath = path;
 			WriteCompleteOutput(RobustFile.ReadAllText(path));
 			HaveOutput = true;
 		}
 
-		public void ReplyWithImage(string path)
+		public void ReplyWithImage(string path, string originalPath = null)
 		{
 			ReplyImagePath = path;
 		}
