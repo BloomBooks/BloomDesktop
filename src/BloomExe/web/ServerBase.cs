@@ -445,7 +445,7 @@ namespace Bloom.Api
 		/// <param name="info"></param>
 		internal void MakeReply(IRequestInfo info)
 		{
-			if (!ProcessRequest(info) && ShouldReportFailedRequest(info))
+			if (!ProcessRequest(info))
 			{
 				ReportMissingFile(info);
 			}
@@ -453,8 +453,11 @@ namespace Bloom.Api
 
 		private void ReportMissingFile(IRequestInfo info)
 		{
-			var localPath = GetLocalPathWithoutQuery(info);
-			Logger.WriteEvent("**{0}: File Missing: {1}", GetType().Name, localPath);
+			if (ShouldReportFailedRequest(info))
+			{
+				var localPath = GetLocalPathWithoutQuery(info);
+				Logger.WriteEvent("**{0}: File Missing: {1}", GetType().Name, localPath);
+			}
 			info.WriteError(404);
 		}
 

@@ -671,7 +671,7 @@ namespace Bloom.Book
 
 		public virtual string FolderPath
 		{
-			get { return _storage.FolderPath; }
+			get { return _storage?.FolderPath; }
 		}
 
 		public virtual HtmlDom GetPreviewHtmlFileForWholeBook()
