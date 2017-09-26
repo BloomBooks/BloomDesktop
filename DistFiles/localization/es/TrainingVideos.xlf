@@ -47,8 +47,13 @@
         </source>
         <note>ID: training.videos.templates</note>
         <target xml:lang="es-ES" state="translated">
+          <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Comprendiendo las plantillas y libros prediseñados</g>
+        </target>
+        <alt-trans>
+          <target xml:lang="es-ES">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Comprendiendo las plantillas y libros shell</g>
         </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.basicbook">
         <source xml:lang="en">
@@ -65,7 +70,7 @@
         </source>
         <note>ID: training.videos.readers</note>
         <target xml:lang="es-ES" state="translated">
-          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Usando la plantilla de lecturas decodifcables y niveladas (varios vídeos)</g>
+          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Usando la plantillas de libros decifrables y por niveles (varios vídeos)</g>
         </target>
       </trans-unit>
       <trans-unit id="training.videos.advanced">
@@ -102,8 +107,13 @@
         </source>
         <note>ID: training.videos.specialcharacters</note>
         <target xml:lang="es-ES" state="translated">
+          <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Ingresando caracteres especiales</g>
+        </target>
+        <alt-trans>
+          <target xml:lang="es-ES">
           <g id="genid-8" ctype="x-html-a" html:href="https://vimeo.com/117927599">Insertando caracteres especiales</g>
         </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.readertemplates">
         <source xml:lang="en">
@@ -111,8 +121,13 @@
         </source>
         <note>ID: training.videos.readertemplates</note>
         <target xml:lang="es-ES" state="translated">
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para libros decifrables y por niveles (varios vídeos)</g>
+        </target>
+        <alt-trans>
+          <target xml:lang="es-ES">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para lecturas decodificables y niveladas (varios vídeos)</g>
         </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.offline">
         <source xml:lang="en">Offline Viewing</source>
