@@ -286,6 +286,10 @@ namespace Bloom.Book
 		/// </summary>
 		public void CleanupUnusedImageFiles()
 		{
+			// Don't try to clean up template books: they are read-only on Linux and Windows --allUsers.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-5061.
+			if (_folderPath.Replace('\\','/').Contains("/browser/templates/template books/"))
+				return;
 			//Collect up all the image files in our book's directory
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });

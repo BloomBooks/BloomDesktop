@@ -201,6 +201,10 @@ namespace Bloom.Book
 		{
 			if (branding == null)
 				return; // in testing.
+			// Don't try to clean up template books: they are read-only on Linux and Windows --allUsers.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-5061.
+			if (bookFolderPath.Replace('\\','/').Contains("/browser/templates/template books/"))
+				return;
 			var prefix = BrandingApi.kApiBrandingImage + "?id=";
 			foreach (XmlElement imageElt in newPageDiv.SafeSelectNodes("//img"))
 			{
