@@ -154,13 +154,13 @@ namespace BloomTests.Book
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(@"<html><head></head><body>
-				<div class='bloom-page' id='guid1'>
+				<div class='bloom-page numberedPage' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='bookTitle'>tree</textarea>
 						<textarea lang='xyz' id='2'  data-book='bookTitle'>dog</textarea>
 					</p>
 				</div>
-				<div class='bloom-page' id='guid2'>
+				<div class='bloom-page numberedPage' id='guid2'>
 					<p>
 						<textarea lang='en' id='3'>english</textarea>
 						<textarea lang='xyz' id='4'>originalVernacular</textarea>
@@ -168,7 +168,7 @@ namespace BloomTests.Book
 					</p>
 					<img id='img1' src='original.png'/>
 				</div>
-				<div class='bloom-page' id='guid3'>
+				<div class='bloom-page numberedPage' id='guid3'>
 					<p>
 						<textarea id='6' lang='xyz'>original2</textarea>
 					</p>

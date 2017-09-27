@@ -1765,6 +1765,7 @@ namespace Bloom.Book
 			RemoveAudioMarkup(newpageDiv);
 
 			body.InsertAfter(newpageDiv, pages[currentPageIndex]);
+			_storage.Dom.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
 
 			ClearPagesCache();
 			Save();
@@ -1806,9 +1807,10 @@ namespace Bloom.Book
 			OrderOrNumberOfPagesChanged();
 
 			var pageNode = FindPageDiv(page);
-		   pageNode.ParentNode.RemoveChild(pageNode);
+			pageNode.ParentNode.RemoveChild(pageNode);
+			_storage.Dom.UpdatePageNumberAndSideClassOfPages(_collectionSettings.CharactersForDigitsForPageNumbers, _collectionSettings.IsLanguage1Rtl);
 
-		   _pageSelection.SelectPage(pageToShowNext);
+			_pageSelection.SelectPage(pageToShowNext);
 			Save();
 			if(_pageListChangedEvent !=null)
 				_pageListChangedEvent.Raise(null);
