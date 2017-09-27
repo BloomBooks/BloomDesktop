@@ -64,7 +64,7 @@
             this._makeBloomPackButton,
             this._settingsButton,
             this._openCreateCollectionButton});
-			this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
+			this._toolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._toolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
