@@ -201,6 +201,8 @@ namespace Bloom.Book
 		{
 			if (branding == null)
 				return; // in testing.
+			if (BookStorage.IsStaticContent(bookFolderPath))
+				return;
 			var prefix = BrandingApi.kApiBrandingImage + "?id=";
 			foreach (XmlElement imageElt in newPageDiv.SafeSelectNodes("//img"))
 			{
