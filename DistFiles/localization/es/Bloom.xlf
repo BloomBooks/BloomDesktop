@@ -1362,10 +1362,7 @@
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable">
         <source xml:lang="en">This word is not decodable in this stage.</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable</note>
-        <target xml:lang="es-ES" state="translated">Esta palabra no es decifrable en esta etapa.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Esta palabra no es decodificable en esta etapa.</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Esta palabra no es descifrable en esta etapa.</target>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
@@ -2111,7 +2108,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Herramienta para libros decifrables</target>
+        <target xml:lang="es-ES" state="translated">Herramienta para libros descifrables</target>
         <alt-trans>
           <target xml:lang="es-ES">Herramienta para libros decodificables</target>
         </alt-trans>
@@ -2139,10 +2136,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage">
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage</note>
-        <target xml:lang="es-ES" state="translated">El siguiente es un informe generado sobre las etapas decifrables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">El siguiente es un informe generado sobre las etapas decodificables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">El siguiente es un informe generado sobre las etapas descifrables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
         <alt-trans>
           <target xml:lang="es-ES">El siguiente es un informe generado de las etapas decodificables para {0}. Usted puede hacer los cambios que desee a este archivo, pero Bloom no notará los cambios. Es sólo un informe.</target>
         </alt-trans>
@@ -2150,7 +2144,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords">
         <source xml:lang="en">New Decodable Words: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords</note>
-        <target xml:lang="es-ES" state="translated">Nuevas palabras decifrables: {0}</target>
+        <target xml:lang="es-ES" state="translated">Nuevas palabras descifrables: {0}</target>
         <alt-trans>
           <target xml:lang="es-ES">Nuevas palabras decodificables: {0}</target>
         </alt-trans>
@@ -4287,7 +4281,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
         <source xml:lang="en">Decodable Stages</source>
         <note>ID: ReaderSetup.DecodableStages</note>
-        <target xml:lang="es-ES" state="translated">Etapas decifrables</target>
+        <target xml:lang="es-ES" state="translated">Etapas descifrables</target>
         <alt-trans>
           <target xml:lang="es-ES">Etapas decodificables</target>
         </alt-trans>
@@ -4354,13 +4348,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
         <note>ID: ReaderSetup.Letters.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros decifrables, Bloom nesecita saber las letras y combinaciones de letras que usted va a enseñar.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Para ayudarle a crear libros decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Para ayudarle a crear lecturas decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros descifrables, Bloom nesecita saber las letras y combinaciones de letras que usted va a enseñar.</target>
         <alt-trans>
           <target xml:lang="es-ES">Para ayudarle a crear lectores decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
         </alt-trans>
@@ -4560,13 +4548,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
         <note>ID: ReaderSetup.SetUpDecodableReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros decifrables</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Configurar la herramienta de libros decodificables</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Configurar la herramienta de lecturas decodificables</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros descifrables</target>
         <alt-trans>
           <target xml:lang="es-ES">Configurar la herramienta de lectores decodificables</target>
         </alt-trans>
@@ -4664,15 +4646,9 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage. There are two ways to give words to Bloom:</source>
         <note>ID: ReaderSetup.Words.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle con la creación de libros decifrables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Para ayudarle con la creación de libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Para ayudarle con la creación de libros descifrables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
         <alt-trans>
           <target xml:lang="es-ES">Para ayudarle a crear libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Para ayudarle a crear lecturas decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras para Bloom:</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para ayudarle a crear lectores decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras para Bloom:</target>
@@ -4942,7 +4918,7 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
-        <target xml:lang="es-ES" state="translated">Libro decifrable</target>
+        <target xml:lang="es-ES" state="translated">Libro descifrable</target>
         <alt-trans>
           <target xml:lang="es-ES">Libro decodificable</target>
         </alt-trans>
