@@ -224,12 +224,18 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
         <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
-        <target xml:lang="es-ES" state="translated">Mostrar los comandos experimentales (e.g. exportar XML para InDesign)</target>
+        <target xml:lang="es-ES" state="translated">Mostrar los comandos experimentales (p. ej. exportar XML para InDesign)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Mostrar los comandos experimentales (e.g. exportar XML para InDesign)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="es-ES" state="translated">Mostrar las plantillas experimentales (e.g. Diccionario del cuadro, calendario)</target>
+        <target xml:lang="es-ES" state="translated">Mostrar las plantillas experimentales (p. ej. Diccionario del cuadro, calendario)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Mostrar las plantillas experimentales (e.g. Diccionario del cuadro, calendario)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive" approved="yes">
         <source xml:lang="en">(Experimental) Show Send/Receive Controls</source>
@@ -484,10 +490,10 @@
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
         <target xml:lang="es-ES">Configuración</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
-        <target xml:lang="es-ES" state="translated">Cambiar...</target>
+        <target xml:lang="es-ES">Cambiar...</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection" approved="yes">
         <source xml:lang="en">Language 1</source>
@@ -520,57 +526,66 @@
           <target xml:lang="es-ES">Quitar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink" approved="yes">
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
         <note>If there is no third language specified, the link changes to this.</note>
-        <target xml:lang="es-ES" state="translated">Establecer...</target>
+        <target xml:lang="es-ES">Establecer...</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="es-ES" state="translated">Idioma local</target>
+        <target xml:lang="es-ES">Idioma local</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label" approved="yes">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language2Label</note>
-        <target xml:lang="es-ES" state="translated">Idioma 2 (p. ej. - idioma nacional)</target>
+        <target xml:lang="es-ES">Idioma 2 (p. ej. idioma nacional)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Idioma 2 (p. ej. - idioma nacional)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Idioma 2 (por ejemplo - idioma nacional)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label" approved="yes">
         <source xml:lang="en">Language 3 (e.g. Regional Language)  (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
-        <target xml:lang="es-ES" state="translated">Idioma 3 (p. ej. - idioma regional)  (opcional)</target>
+        <target xml:lang="es-ES">Idioma 3 (p. ej. idioma regional)  (opcional)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Idioma 3 (p. ej. - idioma regional)  (opcional)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Idioma 3 (por ejemplo - idioma regional) (opcional)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName" approved="yes">
         <source xml:lang="en">Bloom Collection Name</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName</note>
-        <target xml:lang="es-ES" state="translated">Nombre de la colección Bloom</target>
+        <target xml:lang="es-ES">Nombre de la Colección de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Nombre de la colección Bloom</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Country" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Country</note>
-        <target xml:lang="es-ES" state="translated">País</target>
+        <target xml:lang="es-ES">País</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.District" approved="yes">
         <source xml:lang="en">District</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.District</note>
-        <target xml:lang="es-ES" state="translated">Distrito</target>
+        <target xml:lang="es-ES">Distrito</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel" approved="yes">
         <source xml:lang="en">Project Information</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel</note>
-        <target xml:lang="es-ES" state="translated">Información del proyecto</target>
+        <target xml:lang="es-ES">Información del proyecto</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province">
+      <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province" approved="yes">
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
-        <target xml:lang="es-ES" state="translated">Provincia</target>
+        <target xml:lang="es-ES">Provincia</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart">
         <source xml:lang="en">Restart</source>
@@ -4346,10 +4361,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.CombinationHelp1</note>
         <target xml:lang="es-ES" state="translated">Separar con espacios</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.CombinationHelp2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.CombinationHelp2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">E.g. "ai oo sh ng th ing"</source>
         <note>ID: ReaderSetup.CombinationHelp2</note>
-        <target xml:lang="es-ES" state="translated">p. ej. "ai oo sh ng th ing"</target>
+        <target xml:lang="es-ES">p. ej. "ai oo sh ng th ing"</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Combinations" sil:dynamic="true">
         <source xml:lang="en">Letter Combinations (Graphemes)</source>
@@ -4408,10 +4423,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.LetterHelp2</note>
         <target xml:lang="es-ES" state="translated">Separar con espacios</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.LetterHelp3" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.LetterHelp3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">E.g. "a b c d"</source>
         <note>ID: ReaderSetup.LetterHelp3</note>
-        <target xml:lang="es-ES" state="translated">p. ej. "a b c d"</target>
+        <target xml:lang="es-ES">p. ej. "a b c d"</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
         <source xml:lang="en">Letters</source>
