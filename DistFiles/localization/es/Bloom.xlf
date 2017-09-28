@@ -2,20 +2,26 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="es-ES">
     <body>
-      <trans-unit id="BloomIntegrity.WindowTitle">
+      <trans-unit id="BloomIntegrity.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Problema con Bloom</target>
+        <target xml:lang="es-ES">Problema con Bloom</target>
       </trans-unit>
-      <trans-unit id="BloomIntegrityDialog.ReportProblem">
+      <trans-unit id="BloomIntegrityDialog.ReportProblem" approved="yes">
         <source xml:lang="en">Report Problem</source>
         <note>ID: BloomIntegrityDialog.ReportProblem</note>
-        <target xml:lang="es-ES" state="translated">Reportar un problema</target>
+        <target xml:lang="es-ES">Reportar problema</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reportar un problema</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
-        <target xml:lang="es-ES" state="translated">Esto es posiblemente un antiguo Paquete de Bloom creado antes de que los Paquetes de Bloom pudieran manejar caracteres especiales en los nombres de los archivos. El autor del Paquete de Bloom puede ser capaz de volver a crearlo utilizando la versión actual. Si eso no es posible, un experto técnico puede ser capaz de reparar el Paquete de Bloom.</target>
+        <target xml:lang="es-ES" state="translated">Este es posiblemente un antiguo Paquete de Bloom creado antes de que los Paquetes de Bloom pudieran manejar caracteres especiales en los nombres de los archivos. El autor del Paquete de Bloom puede ser capaz de volver a crearlo utilizando una versión actualizada. Si eso no es posible, un experto técnico puede ser capaz de reparar el Paquete de Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esto es posiblemente un antiguo Paquete de Bloom creado antes de que los Paquetes de Bloom pudieran manejar caracteres especiales en los nombres de los archivos. El autor del Paquete de Bloom puede ser capaz de volver a crearlo utilizando la versión actual. Si eso no es posible, un experto técnico puede ser capaz de reparar el Paquete de Bloom.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta es posiblemente una antigua BloomPack creado antes de que BloomPacks pudieran manejar caracteres especiales en los nombres de los archivos. El autor de la BloomPack puede ser capaz de volver a crearlo utilizando la versión actual. Si eso no es posible, un experto técnico puede ser capaz de reparar el BloomPack.</target>
         </alt-trans>
