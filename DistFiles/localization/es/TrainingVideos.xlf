@@ -70,8 +70,13 @@
         </source>
         <note>ID: training.videos.readers</note>
         <target xml:lang="es-ES" state="translated">
+          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Usando la plantillas de libros descifrables y por niveles (varios vídeos)</g>
+        </target>
+        <alt-trans>
+          <target xml:lang="es-ES">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Usando la plantillas de libros decifrables y por niveles (varios vídeos)</g>
         </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.advanced">
         <source xml:lang="en">Advanced Topics</source>
@@ -121,7 +126,7 @@
         </source>
         <note>ID: training.videos.readertemplates</note>
         <target xml:lang="es-ES" state="translated">
-          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para libros decifrables y por niveles (varios vídeos)</g>
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para libros descifrables y por niveles (varios vídeos)</g>
         </target>
         <alt-trans>
           <target xml:lang="es-ES">
