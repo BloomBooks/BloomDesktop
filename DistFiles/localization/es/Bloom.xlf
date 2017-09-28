@@ -231,29 +231,41 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
         <target xml:lang="es-ES" state="translated">Mostrar las plantillas experimentales (e.g. Diccionario del cuadro, calendario)</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive" approved="yes">
         <source xml:lang="en">(Experimental) Show Send/Receive Controls</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive</note>
-        <target xml:lang="es-ES" state="translated">(Experimental) Mostrar controles de enviar/recibir</target>
+        <target xml:lang="es-ES">(Experimental) Mostrar controles de Enviar/Recibir</target>
+        <alt-trans>
+          <target xml:lang="es-ES">(Experimental) Mostrar controles de enviar/recibir</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer" approved="yes">
         <source xml:lang="en">Use Image Server to reduce memory usage with large images.</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer</note>
         <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
-        <target xml:lang="es-ES" state="translated">Use el servidor de im; ágenes para reducir el uso de memoria con imágenes de tamño grande.</target>
+        <target xml:lang="es-ES">Utilice el Servidor de Imágenes para reducir el uso de memoria en imágenes de gran tamaño.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Utilice el Servidor de Imágenes para reducir el uso de memoria con imágenes de gran tamaño.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Use el servidor de im; ágenes para reducir el uso de memoria con imágenes de tamño grande.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Use el servidor de ilustraciones para reducir el uso de memoria con ilustraciones de gran tamaño.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
-        <target xml:lang="es-ES" state="translated">Bloom está cambiando la fuente predeterminada para "{0}" a la nueva fuente "Andika New Basic".</target>
+        <target xml:lang="es-ES">Bloom está cambiando la fuente predeterminada para "{0}" a la nueva fuente "Andika New Basic".</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="es-ES" state="translated">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede cambiar de nuevo en Configuración: Haciendo libros.</target>
+        <target xml:lang="es-ES" state="translated">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede vovler a cambiarlo en Configuración: Haciendo libros.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede cambiar de nuevo en Configuración: Haciendo libros.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
         <source xml:lang="en">Book Making</source>
@@ -268,11 +280,11 @@
           <target xml:lang="es-ES">Branding/Marcacíon</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.DefaultFontFor" approved="yes">
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
-        <target xml:lang="es-ES" state="translated">Fuente predeterminada para {0}</target>
+        <target xml:lang="es-ES">Fuente predeterminada para {0}</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
@@ -288,72 +300,90 @@
           <target xml:lang="es-ES">Paquete de materia frontal/posterior</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver</note>
         <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
-        <target xml:lang="es-ES" state="translated">Economizador de Papel</target>
+        <target xml:lang="es-ES">Economizador de Papel</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional</note>
         <note>Name of the default Front/Back Matter Pack</note>
-        <target xml:lang="es-ES" state="translated">Tradicional</target>
+        <target xml:lang="es-ES">Tradicional</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
         <target xml:lang="es-ES" state="translated">Indo-Arabe</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" approved="yes">
         <source xml:lang="en">Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian</note>
-        <target xml:lang="es-ES" state="translated">armenio</target>
+        <target xml:lang="es-ES">Armenio</target>
+        <alt-trans>
+          <target xml:lang="es-ES">armenio</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali" approved="yes">
         <source xml:lang="en">Bengali</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali</note>
-        <target xml:lang="es-ES" state="translated">bengalí</target>
+        <target xml:lang="es-ES">Bengalí</target>
+        <alt-trans>
+          <target xml:lang="es-ES">bengalí</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian" approved="yes">
         <source xml:lang="en">Cambodian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian</note>
-        <target xml:lang="es-ES" state="translated">camboyano</target>
+        <target xml:lang="es-ES">Camboyano</target>
+        <alt-trans>
+          <target xml:lang="es-ES">camboyano</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal">
         <source xml:lang="en">Cjk-Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal</note>
         <target xml:lang="es-ES" state="translated">CJK-Decimal</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal" approved="yes">
         <source xml:lang="en">Decimal</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal</note>
-        <target xml:lang="es-ES" state="translated">Decimal</target>
+        <target xml:lang="es-ES">Decimal</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari">
         <source xml:lang="en">Devanagari</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
         <target xml:lang="es-ES" state="translated">devanagari</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" approved="yes">
         <source xml:lang="en">Georgian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian</note>
-        <target xml:lang="es-ES" state="translated">georgiano</target>
+        <target xml:lang="es-ES">Georgiano</target>
+        <alt-trans>
+          <target xml:lang="es-ES">georgiano</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" approved="yes">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="es-ES" state="translated">gujarati</target>
+        <target xml:lang="es-ES">Gujarati</target>
+        <alt-trans>
+          <target xml:lang="es-ES">gujarati</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi">
         <source xml:lang="en">Gurmukhi</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi</note>
         <target xml:lang="es-ES" state="translated">gurmukhi</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew" approved="yes">
         <source xml:lang="en">Hebrew</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew</note>
-        <target xml:lang="es-ES" state="translated">hebreo</target>
+        <target xml:lang="es-ES">Hebreo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">hebreo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
         <source xml:lang="en">Kannada</source>
@@ -380,10 +410,13 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam</note>
         <target xml:lang="es-ES" state="translated">malabar</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" approved="yes">
         <source xml:lang="en">Mongolian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
-        <target xml:lang="es-ES" state="translated">mongol</target>
+        <target xml:lang="es-ES">Mongol</target>
+        <alt-trans>
+          <target xml:lang="es-ES">mongol</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar">
         <source xml:lang="en">Myanmar</source>
@@ -400,15 +433,21 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
         <target xml:lang="es-ES" state="translated">Estilo de numeración de páginas</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" approved="yes">
         <source xml:lang="en">Persian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian</note>
-        <target xml:lang="es-ES" state="translated">persa</target>
+        <target xml:lang="es-ES">Persa</target>
+        <alt-trans>
+          <target xml:lang="es-ES">persa</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil" approved="yes">
         <source xml:lang="en">Tamil</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil</note>
-        <target xml:lang="es-ES" state="translated">tamil</target>
+        <target xml:lang="es-ES">Tamil</target>
+        <alt-trans>
+          <target xml:lang="es-ES">tamil</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
         <source xml:lang="en">Telugu</source>
@@ -440,43 +479,43 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
         <target xml:lang="es-ES" state="translated">Configuración de alfabeto especial</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+      <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Configuración</target>
+        <target xml:lang="es-ES">Configuración</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
         <target xml:lang="es-ES" state="translated">Cambiar...</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection" approved="yes">
         <source xml:lang="en">Language 1</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language1InSourceCollection</note>
         <note>In a local language collection, we say 'Local Language', but in a source collection, Local Language has no relevance, so we use this different label</note>
-        <target xml:lang="es-ES" state="translated">Idioma 1</target>
+        <target xml:lang="es-ES">Idioma 1</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection" approved="yes">
         <source xml:lang="en">Language 2</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language2InSourceCollection</note>
         <note>In a local language collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="es-ES" state="translated">Idioma 2</target>
+        <target xml:lang="es-ES">Idioma 2</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection" approved="yes">
         <source xml:lang="en">Language 3</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.Language3InSourceCollection</note>
         <note>In a local language collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
-        <target xml:lang="es-ES" state="translated">Idioma 3</target>
+        <target xml:lang="es-ES">Idioma 3</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.LanguageTabLabel" approved="yes">
         <source xml:lang="en">Languages</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.LanguageTabLabel</note>
-        <target xml:lang="es-ES" state="translated">Idiomas</target>
+        <target xml:lang="es-ES">Idiomas</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
+      <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink" approved="yes">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
-        <target xml:lang="es-ES" state="translated">Remover</target>
+        <target xml:lang="es-ES">Remover</target>
         <alt-trans>
           <target xml:lang="es-ES">Quitar</target>
         </alt-trans>
