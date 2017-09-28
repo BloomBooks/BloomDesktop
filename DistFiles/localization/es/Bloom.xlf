@@ -15,10 +15,10 @@
           <target xml:lang="es-ES">Reportar un problema</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
+      <trans-unit id="BloomPackInstallDialog.BadCharsInFileName" approved="yes">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
         <note>ID: BloomPackInstallDialog.BadCharsInFileName</note>
-        <target xml:lang="es-ES" state="translated">Este es posiblemente un antiguo Paquete de Bloom creado antes de que los Paquetes de Bloom pudieran manejar caracteres especiales en los nombres de los archivos. El autor del Paquete de Bloom puede ser capaz de volver a crearlo utilizando una versión actualizada. Si eso no es posible, un experto técnico puede ser capaz de reparar el Paquete de Bloom.</target>
+        <target xml:lang="es-ES">Este es posiblemente un antiguo Paquete de Bloom creado antes de que los Paquetes de Bloom pudieran manejar caracteres especiales en los nombres de los archivos. El autor del Paquete de Bloom puede ser capaz de volver a crearlo utilizando una versión actualizada. Si eso no es posible, un experto técnico puede ser capaz de reparar el Paquete de Bloom.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esto es posiblemente un antiguo Paquete de Bloom creado antes de que los Paquetes de Bloom pudieran manejar caracteres especiales en los nombres de los archivos. El autor del Paquete de Bloom puede ser capaz de volver a crearlo utilizando la versión actual. Si eso no es posible, un experto técnico puede ser capaz de reparar el Paquete de Bloom.</target>
         </alt-trans>
@@ -26,72 +26,81 @@
           <target xml:lang="es-ES">Esta es posiblemente una antigua BloomPack creado antes de que BloomPacks pudieran manejar caracteres especiales en los nombres de los archivos. El autor de la BloomPack puede ser capaz de volver a crearlo utilizando la versión actual. Si eso no es posible, un experto técnico puede ser capaz de reparar el BloomPack.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation">
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstallation" approved="yes">
         <source xml:lang="en">Bloom Pack Installation</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstallation</note>
-        <target xml:lang="es-ES" state="translated">Instalación de un Paquete de Bloom</target>
+        <target xml:lang="es-ES">Instalación de un Paquete de Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Instalación de BloomPack</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BloomPackInstalled">
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstalled" approved="yes">
         <source xml:lang="en">The {0} Collection is now ready to use on this computer.</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstalled</note>
-        <target xml:lang="es-ES" state="translated">La colección {0} está lista para uso en este computadora.</target>
+        <target xml:lang="es-ES">La Colección {0} está lista para ser utilizada en esta computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La colección {0} está lista para uso en este computadora.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">La colección {0} está lista para su uso en este computadora.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.BloomPackInstaller">
+      <trans-unit id="BloomPackInstallDialog.BloomPackInstaller" approved="yes">
         <source xml:lang="en">Bloom Pack Installer</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstaller</note>
         <note>Displayed as the message box title</note>
-        <target xml:lang="es-ES" state="translated">Instalador para Paquetes de Bloom</target>
+        <target xml:lang="es-ES">Instalador para Paquetes de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Instalador de los Paquetes de Bloom</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Instalador para BloomPack</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.CorruptBloomPack">
+      <trans-unit id="BloomPackInstallDialog.CorruptBloomPack" approved="yes">
         <source xml:lang="en">This BloomPack appears to be incomplete or corrupt.</source>
         <note>ID: BloomPackInstallDialog.CorruptBloomPack</note>
-        <target xml:lang="es-ES" state="translated">Este Paquete de Bloom parece estar incompleto o corrupto.</target>
+        <target xml:lang="es-ES">Este Paquete de Bloom parece estar incompleto o corrupto.</target>
         <alt-trans>
           <target xml:lang="es-ES">Este BloomPack parece ser incompleto o corrupto.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.DoesNotExist">
+      <trans-unit id="BloomPackInstallDialog.DoesNotExist" approved="yes">
         <source xml:lang="en">{0} does not exist</source>
         <note>ID: BloomPackInstallDialog.DoesNotExist</note>
-        <target xml:lang="es-ES" state="translated">{0} no existe</target>
+        <target xml:lang="es-ES">{0} no existe</target>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack">
+      <trans-unit id="BloomPackInstallDialog.ErrorInstallingBloomPack" approved="yes">
         <source xml:lang="en">Bloom was not able to install that Bloom Pack</source>
         <note>ID: BloomPackInstallDialog.ErrorInstallingBloomPack</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo instalar ese Paquete de Bloom</target>
+        <target xml:lang="es-ES">Bloom no pudo instalar ese Paquete de Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo instalar ese BloomPack</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.Extracting">
+      <trans-unit id="BloomPackInstallDialog.Extracting" approved="yes">
         <source xml:lang="en">Extracting...</source>
         <note>ID: BloomPackInstallDialog.Extracting</note>
         <note>Shown while Bloom Packs are being installed</note>
-        <target xml:lang="es-ES" state="translated">Extrayendo...</target>
+        <target xml:lang="es-ES">Extrayendo...</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya se está ejecutando, pero no se mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
+        <target xml:lang="es-ES" state="translated">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ya se está ejecutando, pero no se mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.NotInstalled">
         <source xml:lang="en">The Bloom collection will not be installed.</source>
         <note>ID: BloomPackInstallDialog.NotInstalled</note>
         <target xml:lang="es-ES" state="translated">No se instalará la colección Bloom.</target>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.Opening">
+      <trans-unit id="BloomPackInstallDialog.Opening" approved="yes">
         <source xml:lang="en">Opening {0}...</source>
         <note>ID: BloomPackInstallDialog.Opening</note>
-        <target xml:lang="es-ES" state="translated">Abriendo {0}...</target>
+        <target xml:lang="es-ES">Abriendo {0}...</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Replace">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
