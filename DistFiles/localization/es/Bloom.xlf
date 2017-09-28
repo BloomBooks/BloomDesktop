@@ -793,10 +793,16 @@
         <note>ID: CollectionTab.Health</note>
         <target xml:lang="es-ES" state="translated">Salud</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections">
+      <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="es-ES" state="translated">Porque este es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+        <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Debido a que esteaes una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Porque este es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección originaría, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
         </alt-trans>
@@ -805,12 +811,6 @@
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "libros shell" existentes como fuentes para nuevos "libros shell". Si desea agregar un idioma a un "libro shell", debe editar la colección que contiene el "libro shell", en vez de copiarlo. hacer una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "libro shell".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Porque este es una colección de origen, Bloom no está ofreciendo ninguna shells existentes como orígenes de nuevas shells. Si desea agregar un idioma a una shell, en cambio es necesario editar la colección que contiene la shell, en lugar de hacer una copia de la misma. Además, el calendario de pared no se puede utilizar para crear una nueva shell.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton">
@@ -1071,7 +1071,10 @@
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
-        <target xml:lang="es-ES" state="translated">Su descarga ({0}) esta completa. Lo puede ver en la sección de sus colecciones, "Libros de la biblioteca Bloom".</target>
+        <target xml:lang="es-ES" state="translated">Su descarga ({0}) está completada. La puede ver en la sección de sus Colecciones, "Libros de BloomLibrary.org".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Su descarga ({0}) esta completa. Lo puede ver en la sección de sus colecciones, "Libros de la biblioteca Bloom".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Su descarga ({0}) terminó. Lo puede ver en la sección de sus colecciones, "Libros de la biblioteca Bloom".</target>
         </alt-trans>
@@ -3165,10 +3168,13 @@
         <note>The {0} is replaced by the name of the language.</note>
         <target xml:lang="es-ES" state="translated">Libros en {0}</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.NewCollectionWindowTitle">
+      <trans-unit id="NewCollectionWizard.NewCollectionWindowTitle" approved="yes">
         <source xml:lang="en">Create New Bloom Collection</source>
         <note>ID: NewCollectionWizard.NewCollectionWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Crear nueva colección Bloom</target>
+        <target xml:lang="es-ES">Crear nueva Colección de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear nueva colección Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ProjectName">
         <source xml:lang="en">Project Name</source>
@@ -3206,10 +3212,16 @@
           <target xml:lang="es-ES">Haga clic en 'Próxima' para empezar.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="OpenCreateCloneControl.InDropboxMessage">
+      <trans-unit id="OpenCreateCloneControl.InDropboxMessage" approved="yes">
         <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
         <note>ID: OpenCreateCloneControl.InDropboxMessage</note>
-        <target xml:lang="es-ES" state="translated">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porquea veces Dropbox bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o que desactive Dropbox mientras que usa Bloom.</target>
+        <target xml:lang="es-ES">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porque a veces Dropbox bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o que desactive Dropbox mientras que utiliza Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porque a veces Dropbox bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o que desactive Dropbox mientras que usa Bloom.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porquea veces Dropbox bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o que desactive Dropbox mientras que usa Bloom.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porque Dropbox a veces bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o desactivar Dropbox durante el uso de Bloom.</target>
         </alt-trans>
@@ -3222,11 +3234,11 @@
           <target xml:lang="es-ES">Esta colección forma parte de sus "orígenes de nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No se puede abrir para su edición.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="OpenCreateNewCollectionsDialog.Bloom Collections">
+      <trans-unit id="OpenCreateNewCollectionsDialog.Bloom Collections" approved="yes">
         <source xml:lang="en">Bloom Collections</source>
         <note>ID: OpenCreateNewCollectionsDialog.Bloom Collections</note>
         <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
-        <target xml:lang="es-ES" state="translated">Colecciones de Bloom</target>
+        <target xml:lang="es-ES">Colecciones de Bloom</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
         <source xml:lang="en">Browse for another collection on this computer</source>
