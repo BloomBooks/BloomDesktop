@@ -5,7 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using Markdig;
+using MarkdownDeep;
 using SIL.IO;
 
 namespace Bloom.Registration
@@ -57,9 +57,9 @@ namespace Bloom.Registration
 				}
 			}
 			var markdown = prolog + RobustFile.ReadAllText(licenseFilePath, Encoding.UTF8);
-			// enable autolinks from text `http://`, `https://`, `ftp://`, `mailto:`, `www.xxx.yyy`
-			var pipeline = new MarkdownPipelineBuilder().UseAutoLinks().UseCustomContainers().UseGenericAttributes().Build();
-			var contents = Markdown.ToHtml(markdown, pipeline);
+			var md = new Markdown();
+			var mdtext = Book.Book.RemoveI18nAttributeMarkers(markdown);
+			var contents = md.Transform(markdown);
 			var html = string.Format("<html><head><head/><body style=\"font-family:sans-serif\">{0}</body></html>", contents);
 			_licenseBrowser.NavigateRawHtml(html);
 			_licenseBrowser.Visible = true;

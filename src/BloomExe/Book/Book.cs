@@ -19,7 +19,7 @@ using Bloom.Publish;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using Markdig;
+using MarkdownDeep;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -1461,14 +1461,38 @@ namespace Bloom.Book
 			return false; // not found
 		}
 
+		const string I18nAttributeMarker = "{i18n=";
+		/// <summary>
+		/// Remove any i18n attribute markers from the markdown text.  These are there for incomplete work
+		/// on changing the localization process.  MarkdownDeep doesn't understand this extension.
+		/// </summary>
+		/// <remarks>
+		/// This method (and the use of markdown in this file) are temporary at this point, but needed for
+		/// Bloom 4.0.
+		/// </remarks>
+		public static string RemoveI18nAttributeMarkers(string mdtext)
+		{
+			int idxAttr = mdtext.LastIndexOf(I18nAttributeMarker);
+			while (idxAttr > 0)
+			{
+				var idxEnd = mdtext.IndexOf("}", idxAttr);
+				if (idxEnd < 0)
+					break;
+				mdtext = mdtext.Remove(idxAttr, idxEnd - idxAttr + 1);
+				idxAttr = mdtext.LastIndexOf(I18nAttributeMarker);
+			}
+			// Some files are also marked with :: to signal local spans to receive attributes.
+			return mdtext.Replace("::", "");
+		}
 
 		public string GetAboutBookHtml
 		{
 			get
 			{
-				// enable autolinks from text `http://`, `https://`, `ftp://`, `mailto:`, `www.xxx.yyy`
-				var pipeline = new MarkdownPipelineBuilder().UseAutoLinks().UseCustomContainers().UseGenericAttributes().Build();
-				var contents = Markdown.ToHtml(RobustFile.ReadAllText(AboutBookMarkdownPath), pipeline);
+				var md = new Markdown();
+				var mdtext = RobustFile.ReadAllText(AboutBookMarkdownPath);
+				mdtext = RemoveI18nAttributeMarkers(mdtext);
+				var contents = md.Transform(mdtext);
 				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unnecessary.... do they scan .md files?
 
 				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");

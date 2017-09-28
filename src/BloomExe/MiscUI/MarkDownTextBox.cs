@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using Gecko;
-using Markdig;
+using MarkdownDeep;
 using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.MiscUI
@@ -23,9 +23,9 @@ namespace Bloom.MiscUI
 		{
 			if(this.DesignModeAtAll())
 				return;
-			// enable autolinks from text `http://`, `https://`, `ftp://`, `mailto:`, `www.xxx.yyy`
-			var pipeline = new MarkdownPipelineBuilder().UseAutoLinks().UseCustomContainers().UseGenericAttributes().Build();
-			_htmlLabel.HTML = Markdown.ToHtml(_markdown, pipeline);
+			var md = new Markdown();
+			var mdtext = Book.Book.RemoveI18nAttributeMarkers(_markdown);
+			_htmlLabel.HTML = md.Transform(mdtext);
 		}
 
 		[Browsable(true), Category("MarkDownText")]
