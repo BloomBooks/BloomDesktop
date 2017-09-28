@@ -176,10 +176,13 @@
           <target xml:lang="es-ES">Lo sentimos, plantillas de lectores no permiten cambios en el formato.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookStorage.CorruptBook">
+      <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo leer este libro y se recuperó restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles e informenos.</target>
+        <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando una copia del respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin una explicación, por favor haga click en Detalles e informenos del problema.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles e informenos.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo leer este libro y se recupero restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles y informenos.</target>
         </alt-trans>
