@@ -105,15 +105,21 @@
       <trans-unit id="BloomPackInstallDialog.Replace">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
         <note>ID: BloomPackInstallDialog.Replace</note>
-        <target xml:lang="es-ES" state="translated">Esta computadora ya tiene una colección Bloom llamado '{0}'. ¿Desea reemplazarlo por el de este Paquete de Bloom?</target>
+        <target xml:lang="es-ES" state="translated">Esta computadora ya tiene una colección Bloom llamada '{0}'. ¿Desea reemplazarla por la de este Paquete de Bloom?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta computadora ya tiene una colección Bloom llamado '{0}'. ¿Desea reemplazarlo por el de este Paquete de Bloom?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta computadora ya tiene una colección Bloom llamado '{0}'. ¿Desea reemplazarlo por el de esta BloomPack?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder">
+      <trans-unit id="BloomPackInstallDialog.SingleCollectionFolder" approved="yes">
         <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
         <note>ID: BloomPackInstallDialog.SingleCollectionFolder</note>
-        <target xml:lang="es-ES" state="translated">Los Paquetes de Bloom deben tener sólo una carpeta de colección en el nivel superior del archivo zip.</target>
+        <target xml:lang="es-ES">Los Paquetes de Bloom deben tener sólo una carpeta de colección en el nivel superior del archivo ZIP.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Los Paquetes de Bloom deben tener sólo una carpeta de colección en el nivel superior del archivo zip.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">BloomPacks deben tener sólo una carpeta de colección en el nivel superior del archivo zip.</target>
         </alt-trans>
