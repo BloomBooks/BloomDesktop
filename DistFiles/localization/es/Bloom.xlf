@@ -92,20 +92,23 @@
           <target xml:lang="es-ES">Bloom ya se está ejecutando, pero no se mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.NotInstalled">
+      <trans-unit id="BloomPackInstallDialog.NotInstalled" approved="yes">
         <source xml:lang="en">The Bloom collection will not be installed.</source>
         <note>ID: BloomPackInstallDialog.NotInstalled</note>
-        <target xml:lang="es-ES" state="translated">No se instalará la colección Bloom.</target>
+        <target xml:lang="es-ES">No se instalará la colección Bloom.</target>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.Opening" approved="yes">
         <source xml:lang="en">Opening {0}...</source>
         <note>ID: BloomPackInstallDialog.Opening</note>
         <target xml:lang="es-ES">Abriendo {0}...</target>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.Replace">
+      <trans-unit id="BloomPackInstallDialog.Replace" approved="yes">
         <source xml:lang="en">This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</source>
         <note>ID: BloomPackInstallDialog.Replace</note>
-        <target xml:lang="es-ES" state="translated">Esta computadora ya tiene una colección Bloom llamada '{0}'. ¿Desea reemplazarla por la de este Paquete de Bloom?</target>
+        <target xml:lang="es-ES">Esta computadora ya tiene una colección de Bloom llamada '{0}'. ¿Desea reemplazarla por la de este Paquete de Bloom?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta computadora ya tiene una colección Bloom llamada '{0}'. ¿Desea reemplazarla por la de este Paquete de Bloom?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta computadora ya tiene una colección Bloom llamado '{0}'. ¿Desea reemplazarlo por el de este Paquete de Bloom?</target>
         </alt-trans>
@@ -187,30 +190,36 @@
           <target xml:lang="es-ES">Bloom no pudo leer este libro y se recupero restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles y informenos.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BookStorage.FolderMoved">
+      <trans-unit id="BookStorage.FolderMoved" approved="yes">
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</source>
         <note>ID: BookStorage.FolderMoved</note>
-        <target xml:lang="es-ES" state="translated">Parece que alguna parte de la ruta de la carpeta de este libro se ha movido o cambiado de nombre. Como resultado, Bloom no puede guardar los cambios en esta página, y tendrá que salir ahora. Si usted no ha estado cambiando el nombre o moviendo las cosas, por favor haga clic en Detalles de abajo y reportar el problema a los programadores.</target>
+        <target xml:lang="es-ES">Parece que alguna parte de la ruta de la carpeta de este libro se ha movido o cambiado de nombre. Debido a esto, Bloom no puede guardar los cambios hechos en esta página, y tendrá que salir ahora. Si usted no ha estado cambiando el nombre o moviendo las cosas, por favor haga clic en Detalles, abajo, y reporte el problema a los programadores.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Parece que alguna parte de la ruta de la carpeta de este libro se ha movido o cambiado de nombre. Como resultado, Bloom no puede guardar los cambios en esta página, y tendrá que salir ahora. Si usted no ha estado cambiando el nombre o moviendo las cosas, por favor haga clic en Detalles de abajo y reportar el problema a los programadores.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Browser.CopyTroubleshootingInfo">
+      <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="es-ES" state="translated">Copiar información sobre solución de problemas</target>
+        <target xml:lang="es-ES">Copiar información sobre solución de problemas</target>
       </trans-unit>
-      <trans-unit id="Browser.OpenPageInFirefox">
+      <trans-unit id="Browser.OpenPageInFirefox" approved="yes">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
-        <target xml:lang="es-ES" state="translated">Abrir página en Firefox (debe estar en el variable etorno PATH)</target>
+        <target xml:lang="es-ES">Abrir una página en Firefox (debe estar en la variable de entorno PATH)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir página en Firefox (debe estar en el variable etorno PATH)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel" approved="yes">
         <source xml:lang="en">Advanced Program Settings</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel</note>
-        <target xml:lang="es-ES" state="translated">Configuración avanzada del programa</target>
+        <target xml:lang="es-ES">Configuración avanzada del programa</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate" approved="yes">
         <source xml:lang="en">Automatically update Bloom</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
-        <target xml:lang="es-ES" state="translated">Actualizar Bloom automáticamente</target>
+        <target xml:lang="es-ES">Actualizar Bloom automáticamente</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
         <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
