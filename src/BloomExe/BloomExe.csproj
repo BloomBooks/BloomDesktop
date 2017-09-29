@@ -161,9 +161,6 @@
     <Reference Include="HtmlXliff">
       <HintPath>..\..\lib\dotnet\HtmlXliff.exe</HintPath>
     </Reference>
-    <Reference Include="Markdig">
-      <HintPath>..\..\packages\Markdig.0.13.0\lib\net40\Markdig.dll</HintPath>
-    </Reference>
     <Reference Include="MarkdownDeep, Version=1.5.4615.26275, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\MarkdownDeep.NET.1.5\lib\.NetFramework 3.5\MarkdownDeep.dll</HintPath>
@@ -435,11 +432,11 @@
     <Compile Include="MiscUI\DontShowThisAgainButton.Designer.cs">
       <DependentUpon>DontShowThisAgainButton.cs</DependentUpon>
     </Compile>
-    <Compile Include="MiscUI\MarkDownTextBox.cs">
+    <Compile Include="MiscUI\HtmlTextBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="MiscUI\MarkDownTextBox.Designer.cs">
-      <DependentUpon>MarkDownTextBox.cs</DependentUpon>
+    <Compile Include="MiscUI\HtmlTextBox.Designer.cs">
+      <DependentUpon>HtmlTextBox.cs</DependentUpon>
     </Compile>
     <Compile Include="MiscUI\TipDialog.cs">
       <SubType>Form</SubType>
@@ -808,8 +805,8 @@
     <EmbeddedResource Include="MiscUI\LanguageFontDetails.resx">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\MarkDownTextBox.resx">
-      <DependentUpon>MarkDownTextBox.cs</DependentUpon>
+    <EmbeddedResource Include="MiscUI\HtmlTextBox.resx">
+      <DependentUpon>HtmlTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\ProblemReporterDialog.resx">
       <DependentUpon>ProblemReporterDialog.cs</DependentUpon>

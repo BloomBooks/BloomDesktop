@@ -1,6 +1,6 @@
 ﻿namespace Bloom.MiscUI
 {
-	partial class MarkDownTextBox
+	partial class HtmlTextBox
 	{
 		/// <summary> 
 		/// Required designer variable.
@@ -43,13 +43,13 @@
 			this._htmlLabel.Size = new System.Drawing.Size(150, 150);
 			this._htmlLabel.TabIndex = 0;
 			// 
-			// MarkDownTextBox
+			// HtmlTextBox
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this._htmlLabel);
-			this.Name = "MarkDownTextBox";
-			this.Load += new System.EventHandler(this.MarkDownTextBox_Load);
+			this.Name = "HtmlTextBox";
+			this.Load += new System.EventHandler(this.HtmlTextBox_Load);
 			this.ResumeLayout(false);
 
 		}

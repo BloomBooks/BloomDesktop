@@ -724,8 +724,11 @@ namespace Bloom.Workspace
 
 		private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
 		{
-			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.md");
+			//note: markdown processors pass raw html through unchanged.  Bloom's localization process
+			// is designed to produce HTML files, not Markdown files.
+			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.htm");
 			//enhance: change the name of this class in SIL.Windows.Forms to just "MarkDownDialog"
+			//enhance: also produce path for setting html specifically in that class.
 			using(var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.BloomIcon, path))
 			{
 				dlg.Text = LocalizationManager.GetString("HelpMenu.trainingVideos", "Training Videos");

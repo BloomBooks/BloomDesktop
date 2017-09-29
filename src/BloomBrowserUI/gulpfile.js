@@ -6,10 +6,12 @@ var gutil = require('gulp-util');
 var tap = require('gulp-tap');
 
 //set up markdown with the extensions that we use to mark lines for localization
-var MarkdownIt = require('markdown-it');
+var markdownIt = require('markdown-it')({
+    html: true,     // enable HTML tags in source
+    linkify: true   // autoconvert URL-like text to links
+    });
 var markdownItContainer = require('markdown-it-container');
 var markdownItAttrs = require('markdown-it-attrs');
-var markdownIt = new MarkdownIt();
 markdownIt.use(markdownItContainer);
 markdownIt.use(markdownItAttrs);
 
@@ -43,12 +45,14 @@ const leveledRTInfoPath = '../../DistFiles/leveledRTInfo';
 //todo: can remove these output exlusions now that output/ is now 2 levels up with the c# outpuuts
 var paths = {
     help: ['./help/**/*.md'],
-    less: ['./**/*.less', '!./node_modules/**/*.less', '!./output/**/*.*'],
-    pug: ['./**/*.pug', '!./node_modules/**/*.pug', '!./**/*mixins.pug', '!./output/**/*.*'],
-    //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*','!./output/**/*.*'],
+    templateReadme: ['./templates/**/ReadMe*.md'],
+    distInfo: [ '../../DistFiles/**/*.md', '!../../DistFiles/ReleaseNotes.md'],
+    less: ['./**/*.less', '!./node_modules/**/*.less'],
+    pug: ['./**/*.pug', '!./node_modules/**/*.pug', '!./**/*mixins.pug'],
+    //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*'],
 
     //files we are *not* running through some compiler that need to make it into the outputDir directory.
-    filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts', '!./**/*.pug', '!./**/*.less', '!./**/*.bat', '!./**/node_modules/**/*.*', '!./output/**/*.*'],
+    filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts', '!./**/*.pug', '!./**/*.md', '!./**/*.less', '!./**/*.bat', '!./**/node_modules/**/*.*'],
 };
 
 gulp.task('less', function () {
@@ -145,6 +149,12 @@ gulp.task('watchInner', function () {
     watch(paths.help, batch(function (events, done) {
         gulp.start('markdownHelp', done);
     }));
+    watch(paths.templateReadme, batch(function (events, done) {
+        gulp.start('markdownTemplateReadme', done);
+    }));
+    watch(paths.distInfo, batch(function (events, done) {
+        gulp.start('markdownDistInfo', done);
+    }));
 })
 
 gulp.task('watchlp', function () {
@@ -153,7 +163,7 @@ gulp.task('watchlp', function () {
 
 gulp.task('watch', function () {
     console.log('****** PLEASE run "webpack --watch" in a separate console *********');
-    runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp'], 'watchInner');
+    runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp', 'markdownTemplateReadme', 'markdownDistInfo'], 'watchInner');
 });
 
 gulp.task('markdownHelp', function () {
@@ -171,13 +181,39 @@ gulp.task('markdownHelp', function () {
         }))
         .pipe(gulpFlatten({ includeParents: 0 })) // number of parent folders to include
         .pipe(gulp.dest(outputDir + "/help"))
-        .pipe(debug({ title: '   --> ' }));
+        .pipe(debug({ title: ' md --> ' }));
+});
+
+gulp.task('markdownTemplateReadme', function () {
+    return gulp.src(paths.templateReadme)
+        .pipe(debug({ title: 'md:' }))
+        .pipe(tap(function (file) {
+            var result = markdownIt.render(file.contents.toString());
+            file.contents = new Buffer(result);
+            file.path = gutil.replaceExtension(file.path, '.htm');
+            return;
+        }))
+        .pipe(gulp.dest(outputDir + "/templates"))	// we lose this level somewhere
+        .pipe(debug({ title: ' md --> ' }));
+});
+
+gulp.task('markdownDistInfo', function () {
+    return gulp.src(paths.distInfo)
+        .pipe(debug({ title: 'md:' }))
+        .pipe(tap(function (file) {
+            var result = markdownIt.render(file.contents.toString());
+            file.contents = new Buffer(result);
+            file.path = gutil.replaceExtension(file.path, '.htm');
+            return;
+        }))
+        .pipe(gulp.dest("../../DistFiles"))
+        .pipe(debug({ title: ' md --> ' }));
 });
 
 gulp.task('default',
     function (callback) {
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
         //currently our webpack run is pure javascript, so do it only after the typescript is all done
-        runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp'], 'webpack', callback)
+        runSequence('clean', 'copy', ['less', 'pug', 'pugLRT', 'markdownHelp', 'markdownTemplateReadme', 'markdownDistInfo'], 'webpack', callback)
     });
 
