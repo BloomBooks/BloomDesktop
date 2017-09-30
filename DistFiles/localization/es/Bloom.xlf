@@ -682,7 +682,7 @@
       <trans-unit id="CollectionTab.BookMenu.ExportDocMessage">
         <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</source>
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
-        <target xml:lang="es-ES" state="translated">Bloom abrirá este documento HTML en su programa de procesador de textos (normalmente Word o LibreOffice). Usted podrá revisar el texto y las imágenes de este libro. Como estos programas tienden a no preservar los diseños de página, debe mantener las expectativas bajas.</target>
+        <target xml:lang="es-ES" state="translated">Bloom abrirá este documento HTML en su programa de procesador de textos (normalmente Word o LibreOffice). Usted podrá revisar el texto y las imágenes de este libro. Como estos programas tienden a no preservar los diseños de página, no debe tener muchas expectativas.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom abrirá este documento de HTML en su programa de procesamiento de textos (normalmente Word o LibreOffice). Usted podrá revisar el texto y las imágenes de este libro. Como estos programas tienden no preserar los diseños de página, debe mantener las expectativas bajas.</target>
         </alt-trans>
@@ -779,15 +779,15 @@
         <note>ID: CollectionTab.CollectionMenu.showNotes</note>
         <target xml:lang="es-ES" state="translated">Notas de la colección...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionTabLabel">
+      <trans-unit id="CollectionTab.CollectionTabLabel" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.CollectionTabLabel</note>
-        <target xml:lang="es-ES" state="translated">Colecciones</target>
+        <target xml:lang="es-ES">Colecciones</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Collections">
+      <trans-unit id="CollectionTab.Collections" approved="yes">
         <source xml:lang="en">Collections</source>
         <note>ID: CollectionTab.Collections</note>
-        <target xml:lang="es-ES" state="translated">Colecciones</target>
+        <target xml:lang="es-ES">Colecciones</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ConfiguringBookMessage">
         <source xml:lang="en">Building...</source>
@@ -923,10 +923,10 @@
         <note>ID: CollectionTab.SettingsButton</note>
         <target xml:lang="es-ES">Configuración</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.Source Collection</note>
-        <target xml:lang="es-ES" state="translated">Colección de libros originarios</target>
+        <target xml:lang="es-ES">Colección de libros originarios</target>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros fuentes</target>
         </alt-trans>
@@ -973,10 +973,10 @@
         <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
         <target xml:lang="es-ES">No se pudo conectar al servidor para comprobar si hay una actualización. ¿Está conectado a Internet?</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpToDate">
+      <trans-unit id="CollectionTab.UpToDate" approved="yes">
         <source xml:lang="en">Your Bloom is up to date.</source>
         <note>ID: CollectionTab.UpToDate</note>
-        <target xml:lang="es-ES" state="translated">Bloom está actualizado.</target>
+        <target xml:lang="es-ES">Bloom está actualizado.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateCheckInProgress" approved="yes">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
@@ -989,10 +989,13 @@
           <target xml:lang="es-ES">Bloom ya comprueba si hay actualizaciones.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateFailed">
+      <trans-unit id="CollectionTab.UpdateFailed" approved="yes">
         <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
         <note>ID: CollectionTab.UpdateFailed</note>
-        <target xml:lang="es-ES" state="translated">Una nueva versión parece estar disponible, pero Bloom no pudo instalarlo.</target>
+        <target xml:lang="es-ES">Una nueva versión parece estar disponible, pero Bloom no pudo instalarla.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Una nueva versión parece estar disponible, pero Bloom no pudo instalarlo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateInstalled">
         <source xml:lang="en">Update for {0} is ready.</source>
@@ -1008,10 +1011,10 @@
         <note>ID: CollectionTab.UpdateNow</note>
         <target xml:lang="es-ES" state="translated">Actualizar ahora</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdatesAvailable">
+      <trans-unit id="CollectionTab.UpdatesAvailable" approved="yes">
         <source xml:lang="en">A new version of Bloom is available.</source>
         <note>ID: CollectionTab.UpdatesAvailable</note>
-        <target xml:lang="es-ES" state="translated">Una nueva versión de Bloom está disponible.</target>
+        <target xml:lang="es-ES">Una nueva versión de Bloom está disponible.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Updating">
         <source xml:lang="en">Downloading update to {0} ({1}kb).</source>
@@ -3160,33 +3163,39 @@
         <note>ID: LoginDialog.WindowTitle</note>
         <target xml:lang="es-ES" state="translated">Inicie sesión en BloomLibrary.org</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
+      <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName" approved="yes">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
         <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName</note>
-        <target xml:lang="es-ES" state="translated">Ya hay una colección con ese nombre, en &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPor favor elija un nombre único.</target>
+        <target xml:lang="es-ES">Ya hay una colección con ese nombre, en &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPor favor elija un nombre único.</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
+      <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
         <source xml:lang="en">Choose the Main Language For This Collection</source>
         <note>ID: NewCollectionWizard.ChooseLanguagePage</note>
-        <target xml:lang="es-ES" state="translated">Elija el idioma principal para esta colección</target>
+        <target xml:lang="es-ES">Elija el idioma principal para esta Colección</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Elija el idioma principal para esta colección</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.ExampleText</note>
         <target xml:lang="es-ES" state="translated">Ejemplos: "Libros de salud", "Historias de animales de PNG"</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.NameCollectionLabel" approved="yes">
         <source xml:lang="en">What would you like to call this collection?</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
-        <target xml:lang="es-ES" state="translated">¿Qué desea nombrar esta colección?</target>
+        <target xml:lang="es-ES">¿Cómo desea nombrar esta colección?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Qué desea nombrar esta colección?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">¿Qué te gustaría denomino a esta colección?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNameProblem">
+      <trans-unit id="NewCollectionWizard.CollectionNameProblem" approved="yes">
         <source xml:lang="en">Collection Name Problem</source>
         <note>ID: NewCollectionWizard.CollectionNameProblem</note>
-        <target xml:lang="es-ES" state="translated">Problema con el nombre de la colección</target>
+        <target xml:lang="es-ES">Problema con el nombre de la colección</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt">
         <source xml:lang="en">Collection will be created at: {0}</source>
@@ -3225,10 +3234,10 @@
         <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
         <target xml:lang="es-ES">Si usted ya tiene una colección que desea abrir, haga clic en el botón "Cancelar".</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-        <target xml:lang="es-ES" state="translated">Colección de libros originarios</target>
+        <target xml:lang="es-ES">Colección de libros originarios</target>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros fuentes</target>
         </alt-trans>
@@ -3236,10 +3245,13 @@
           <target xml:lang="es-ES">Colección de origen</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-        <target xml:lang="es-ES" state="translated">Una colección de libros prediseñados o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede hacer un Paquete de Bloom para compartir con otros para que puedan hacer libros en su idioma local con sus libros prediseñados.</target>
+        <target xml:lang="es-ES">Una colección de libros prediseñados o de plantilla en uno o más idiomas de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede crear un Paquete de Bloom para compartir con otros para que puedan crear libros en su idioma local con los libros prediseñados.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Una colección de libros prediseñados o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede hacer un Paquete de Bloom para compartir con otros para que puedan hacer libros en su idioma local con sus libros prediseñados.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Una colección de libros "shell" o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus "shells".</target>
         </alt-trans>
@@ -3250,18 +3262,18 @@
           <target xml:lang="es-ES">Una colección de libros shell o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus shells.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
         <source xml:lang="en">Local Language Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-        <target xml:lang="es-ES" state="translated">Colección de idioma local</target>
+        <target xml:lang="es-ES">Colección de idioma local</target>
         <alt-trans>
           <target xml:lang="es-ES">Colección de lengua local</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription" approved="yes">
         <source xml:lang="en">A collection of books in a local language.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription</note>
-        <target xml:lang="es-ES" state="translated">Una colección de libros en un idioma local.</target>
+        <target xml:lang="es-ES">Una colección de libros en un idioma local.</target>
         <alt-trans>
           <target xml:lang="es-ES">Una colección de libros en el idioma local</target>
         </alt-trans>
@@ -3284,10 +3296,13 @@
         <note>ID: NewCollectionWizard.LocationPage.District</note>
         <target xml:lang="es-ES" state="translated">Distrito</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+      <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional" approved="yes">
         <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
         <note>ID: NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional</note>
-        <target xml:lang="es-ES" state="translated">Estos son opcionales. Bloom los colocará en los lugares apropiados en la portada en los libros que hace.</target>
+        <target xml:lang="es-ES">Estos son opcionales. Bloom los colocará en los lugares apropiados en la portada de los libros que usted cree.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estos son opcionales. Bloom los colocará en los lugares apropiados en la portada en los libros que hace.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Estos son opcionales. Bloom los colocará en los lugares apropiados en la página de título en los libros que hace.</target>
         </alt-trans>
@@ -3319,25 +3334,28 @@
         <note>ID: NewCollectionWizard.ProjectName</note>
         <target xml:lang="es-ES" state="translated">Nombre del proyecto</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+      <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName" approved="yes">
         <source xml:lang="en">Unable to create a new collection using that name.</source>
         <note>ID: NewCollectionWizard.UnableToCreateANewCollectionUsingThatName</note>
-        <target xml:lang="es-ES" state="translated">No se puede crear una nueva colección con ese nombre.</target>
+        <target xml:lang="es-ES">No se puede crear una nueva colección con ese nombre.</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.WelcomePage">
+      <trans-unit id="NewCollectionWizard.WelcomePage" approved="yes">
         <source xml:lang="en">Welcome To Bloom!</source>
         <note>ID: NewCollectionWizard.WelcomePage</note>
-        <target xml:lang="es-ES" state="translated">¡Bienvenido a Bloom!</target>
+        <target xml:lang="es-ES">¡Bienvenido a Bloom!</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1" approved="yes">
         <source xml:lang="en">You are almost ready to start making books.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine1</note>
         <target xml:lang="es-ES">Está casi listo para empezar a crear libros.</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2" approved="yes">
         <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2</note>
-        <target xml:lang="es-ES" state="translated">Con el propósito de mantener todo simple y organizado, Bloom mantiene todos los libros que realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Lo primero que temos que hacer es hacerle una colección.</target>
+        <target xml:lang="es-ES">Con el propósito de mantener todo simple y organizado, Bloom mantiene todos los libros que usted realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Lo primero que tenemos que hacer es crear una colección para usted.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Con el propósito de mantener todo simple y organizado, Bloom mantiene todos los libros que realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Lo primero que temos que hacer es hacerle una colección.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">A fin de mantener un proyecto que es simple y organizada, Bloom mantiene todos los libros que realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Así que lo primero que debemos hacer es crear un libro.</target>
         </alt-trans>
@@ -3364,10 +3382,10 @@
           <target xml:lang="es-ES">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porque Dropbox a veces bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o desactivar Dropbox durante el uso de Bloom.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage">
+      <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage" approved="yes">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
         <note>ID: OpenCreateCloneControl.InSourceCollectionMessage</note>
-        <target xml:lang="es-ES" state="translated">Esta colección forma parte de sus "fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <target xml:lang="es-ES">Esta colección forma parte de sus "fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esta colección forma parte de sus "orígenes de nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No se puede abrir para su edición.</target>
         </alt-trans>
@@ -3407,10 +3425,10 @@
           <target xml:lang="es-ES">Copia desde un USB</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection">
+      <trans-unit id="OpenCreateNewCollectionsDialog.CreateNewCollection" approved="yes">
         <source xml:lang="en">Create New Collection</source>
         <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
-        <target xml:lang="es-ES" state="translated">Crear nueva colección</target>
+        <target xml:lang="es-ES">Crear nueva colección</target>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
         <source xml:lang="en">Open/Create Collections</source>
