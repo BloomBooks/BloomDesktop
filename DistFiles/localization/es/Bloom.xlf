@@ -3067,10 +3067,13 @@
         <note>ID: HelpMenu.KeyBloomConceptsToolStripMenuItem</note>
         <target xml:lang="es-ES">Conceptos importantes de Bloom</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.AskAQuestionMenuItem">
+      <trans-unit id="HelpMenu.AskAQuestionMenuItem" approved="yes">
         <source xml:lang="en">Ask a Question (web)</source>
         <note>ID: HelpMenu.AskAQuestionMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Hacer una pregunta (web)</target>
+        <target xml:lang="es-ES">Hacer una pregunta (Web)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer una pregunta (web)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
         <source xml:lang="en">Request a Feature (web)</source>
@@ -3080,41 +3083,50 @@
           <target xml:lang="es-ES">Hacer una sugerencia</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="HelpMenu.RegistrationMenuItem">
+      <trans-unit id="HelpMenu.RegistrationMenuItem" approved="yes">
         <source xml:lang="en">Registration</source>
         <note>ID: HelpMenu.RegistrationMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Registración</target>
+        <target xml:lang="es-ES">Registro</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Registración</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="HelpMenu.ReleaseNotesMenuItem">
+      <trans-unit id="HelpMenu.ReleaseNotesMenuItem" approved="yes">
         <source xml:lang="en">Release Notes...</source>
         <note>ID: HelpMenu.ReleaseNotesMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Notas de versión (inglés)...</target>
+        <target xml:lang="es-ES">Notas de la versión (inglés)...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Notas de versión (inglés)...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Notas de la versión (ingles)...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem">
+      <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem" approved="yes">
         <source xml:lang="en">Report a Problem...</source>
         <note>ID: HelpMenu.ReportAProblemToolStripMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Reportar un problema...</target>
+        <target xml:lang="es-ES">Reportar un problema...</target>
         <alt-trans>
           <target xml:lang="es-ES">Informar sobre un problema...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="HelpMenu.ShowEventLogMenuItem">
+      <trans-unit id="HelpMenu.ShowEventLogMenuItem" approved="yes">
         <source xml:lang="en">Show Event Log</source>
         <note>ID: HelpMenu.ShowEventLogMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Mostrar el registro de eventos</target>
+        <target xml:lang="es-ES">Mostrar el registro de eventos</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
+      <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem" approved="yes">
         <source xml:lang="en">Using Reader Templates </source>
         <note>ID: HelpMenu.UsingReaderTemplatesMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Utilizando plantillas de libros </target>
+        <target xml:lang="es-ES">Utilizando Plantillas de Libros </target>
+        <alt-trans>
+          <target xml:lang="es-ES">Utilizando plantillas de libros </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="HelpMenu.WebSiteMenuItem">
+      <trans-unit id="HelpMenu.WebSiteMenuItem" approved="yes">
         <source xml:lang="en">Web Site</source>
         <note>ID: HelpMenu.WebSiteMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Sitio web</target>
+        <target xml:lang="es-ES">Sitio web</target>
       </trans-unit>
       <trans-unit id="HelpMenu.trainingVideos">
         <source xml:lang="en">Training Videos</source>
