@@ -224,10 +224,10 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate</note>
         <target xml:lang="es-ES">Actualizar Bloom automáticamente</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands" approved="yes">
         <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
-        <target xml:lang="es-ES" state="translated">Mostrar los comandos experimentales (p. ej. exportar XML para InDesign)</target>
+        <target xml:lang="es-ES">Mostrar los comandos experimentales (p. ej. exportar XML para InDesign)</target>
         <alt-trans>
           <target xml:lang="es-ES">Mostrar los comandos experimentales (e.g. exportar XML para InDesign)</target>
         </alt-trans>
@@ -1275,11 +1275,11 @@
           <target xml:lang="es-ES">Si usted necesita un lugar para poner más información sobre el libro, puede utilizar esta página, que es la parte exterior de la cubierta posterior.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Bilingual">
+      <trans-unit id="EditTab.Bilingual" approved="yes">
         <source xml:lang="en">Two Languages</source>
         <note>ID: EditTab.Bilingual</note>
         <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
-        <target xml:lang="es-ES" state="translated">Dos idiomas</target>
+        <target xml:lang="es-ES">Dos idiomas</target>
       </trans-unit>
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
@@ -1972,11 +1972,11 @@
         <note>ID: EditTab.LayoutMode.ChangeLayout</note>
         <target xml:lang="es-ES" state="translated">Cambiar el diseño</target>
       </trans-unit>
-      <trans-unit id="EditTab.Monolingual">
+      <trans-unit id="EditTab.Monolingual" approved="yes">
         <source xml:lang="en">One Language</source>
         <note>ID: EditTab.Monolingual</note>
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
-        <target xml:lang="es-ES" state="translated">Un idioma</target>
+        <target xml:lang="es-ES">Un idioma</target>
       </trans-unit>
       <trans-unit id="EditTab.NewBookName" approved="yes">
         <source xml:lang="en">Book</source>
@@ -2569,10 +2569,10 @@
           <target xml:lang="es-ES">Cuando haga clic en "Aggregar página" puede escoger entre páginas contenidas en los libros de plantilla. Para convertir este libro a un libro de plantilla, marque esta casilla.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allow changes to this shellbook</source>
         <note>ID: EditTab.Toolbox.Settings.Unlock</note>
-        <target xml:lang="es-ES" state="translated">Permitir cambios a este libro prediseñado</target>
+        <target xml:lang="es-ES">Permitir cambios a este libro prediseñado</target>
         <alt-trans>
           <target xml:lang="es-ES">Permitir cambios a este libro "shell"</target>
         </alt-trans>
@@ -2635,10 +2635,13 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
         <target xml:lang="es-ES" state="translated">4) Revisar</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
-        <target xml:lang="es-ES" state="translated">1) Averigue que está grabando al dispositivo correcto y que los niveles se ven azules:</target>
+        <target xml:lang="es-ES">1) Averigüe que esté grabando en el dispositivo correcto y que los siguientes niveles se muestren azules:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">1) Averigue que está grabando al dispositivo correcto y que los niveles se ven azules:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">1) Averiguar que está usando el dispositivo de grabación correcto y que el nivel de sonido aparece en la zona azul:</target>
         </alt-trans>
@@ -2707,11 +2710,11 @@
           <target xml:lang="es-ES">por frase</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Trilingual">
+      <trans-unit id="EditTab.Trilingual" approved="yes">
         <source xml:lang="en">Three Languages</source>
         <note>ID: EditTab.Trilingual</note>
         <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
-        <target xml:lang="es-ES" state="translated">Tres idiomas</target>
+        <target xml:lang="es-ES">Tres idiomas</target>
       </trans-unit>
       <trans-unit id="EditTab.UndoButton">
         <source xml:lang="en">Undo</source>
@@ -2809,10 +2812,13 @@
         <note>ID: Errors.ReportThisProblemButton</note>
         <target xml:lang="es-ES" state="translated">Informar sobre este problema a Apoyo Bloom</target>
       </trans-unit>
-      <trans-unit id="Errors.SomethingWentWrong">
+      <trans-unit id="Errors.SomethingWentWrong" approved="yes">
         <source xml:lang="en">Sorry, something went wrong.</source>
         <note>ID: Errors.SomethingWentWrong</note>
-        <target xml:lang="es-ES" state="translated">Lastimosamente, algo no funcionó.</target>
+        <target xml:lang="es-ES">Lo sentimos, algo no funcionó.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lastimosamente, algo no funcionó.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.SpecifiedXMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
@@ -4055,10 +4061,13 @@
         <note>ID: PublishTab.Upload.Credits</note>
         <target xml:lang="es-ES" state="translated">créditos</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ErrorUploading">
+      <trans-unit id="PublishTab.Upload.ErrorUploading" approved="yes">
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
         <note>ID: PublishTab.Upload.ErrorUploading</note>
-        <target xml:lang="es-ES" state="translated">Lastimosamente, no se pudo cargar {0}. Siguen algunos detalles. Puede ser que require ayuda técnica.</target>
+        <target xml:lang="es-ES">Lo sentimos, no fue posible cargar {0}. Al continuación, algunos detalles. Puede ser que requiera de ayuda técnica.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lastimosamente, no se pudo cargar {0}. Siguen algunos detalles. Puede ser que require ayuda técnica.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Lo sentimos, hubo un problema cargando {0}. Siguen algunos detalles. Puede que necesites ayuda técnica.</target>
         </alt-trans>
@@ -4071,10 +4080,13 @@
           <target xml:lang="es-ES">Uno o más campos anteriores necesitan su atención antes de cargar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
+      <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice" approved="yes">
         <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
         <note>ID: PublishTab.Upload.FinalUploadFailureNotice</note>
-        <target xml:lang="es-ES" state="translated">Lastimosamente, "{0}" no cargo exitosamente. Esto puede ser causada por problemas transitorios con nuestros servidores. Vale la pena intentarlo de nuevo en unas horas. Por favor, avisenos si este probleme suele repetir.</target>
+        <target xml:lang="es-ES">Lo sentimos, "{0}" no cargó exitosamente. Esto puede ser causado por problemas transitorios con nuestros servidores. Vale la pena intentarlo de nuevo en una o dos horas. Por favor, avísenos si este probleme suele repetirse.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lastimosamente, "{0}" no cargo exitosamente. Esto puede ser causada por problemas transitorios con nuestros servidores. Vale la pena intentarlo de nuevo en unas horas. Por favor, avisenos si este probleme suele repetir.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Lo sentimos, "{0}" se ha subido correctamente</target>
         </alt-trans>
@@ -4296,10 +4308,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">(No encontrado)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.OldVersion">
+      <trans-unit id="PublishTab.Upload.OldVersion" approved="yes">
         <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
         <note>ID: PublishTab.Upload.OldVersion</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
+        <target xml:lang="es-ES">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
         <alt-trans>
           <target xml:lang="es-ES">Lo sentimos, esta versión de escritorio de Bloom no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
         </alt-trans>
@@ -4492,7 +4504,13 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true">
         <source xml:lang="en">Click on letters to add them to this stage.</source>
         <note>ID: ReaderSetup.ClickLetter</note>
-        <target xml:lang="es-ES" state="translated">Haga clic en cada letra que desea añadir a esta etapa.</target>
+        <target xml:lang="es-ES" state="translated">Haga clic en cada letra para añadirla a esta etapa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haga clic en cada letra que desea añadirlas a esta etapa.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Haga clic en cada letra que desea añadir a esta etapa.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Haga clic en las letras para añadirlos a esta etapa.</target>
         </alt-trans>
@@ -5130,18 +5148,21 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Entiendo. No mostrar este mensaje de nuevo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SamplePrintNotification.PleaseNotice">
+      <trans-unit id="SamplePrintNotification.PleaseNotice" approved="yes">
         <source xml:lang="en">Please notice the sample printer settings below. Use them as a guide while you set up the printer.</source>
         <note>ID: SamplePrintNotification.PleaseNotice</note>
-        <target xml:lang="es-ES" state="translated">Fijese en la configuracion muestra para la impresora. Utilizelos como una guía mientras que configura la impresora.</target>
+        <target xml:lang="es-ES">Por favor, fíjese en la configuración muestra para la impresora. Utilícela como una guía mientras que configura la impresora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Fijese en la configuracion muestra para la impresora. Utilizelos como una guía mientras que configura la impresora.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Tenga en cuenta los valores de la impresora muestra abajo. Utilizarlos como una guía mientras configura la impresora.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing">
+      <trans-unit id="ScriptSettingsDialog.DefaultLineSpacing" approved="yes">
         <source xml:lang="en">Default line spacing</source>
         <note>ID: ScriptSettingsDialog.DefaultLineSpacing</note>
-        <target xml:lang="es-ES" state="translated">Interlineado predeterminado</target>
+        <target xml:lang="es-ES">Interlineado predeterminado</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
         <source xml:lang="en">Arithmetic</source>
