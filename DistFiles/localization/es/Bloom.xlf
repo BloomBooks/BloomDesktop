@@ -84,10 +84,10 @@
         <note>Shown while Bloom Packs are being installed</note>
         <target xml:lang="es-ES">Extrayendo...</target>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
+      <trans-unit id="BloomPackInstallDialog.MustRestartToSee" approved="yes">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que usted ejecute Bloom</target>
+        <target xml:lang="es-ES">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que usted ejecute Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
         </alt-trans>
@@ -271,7 +271,7 @@
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="es-ES" state="translated">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede vovler a cambiarlo en Configuración: Haciendo libros.</target>
+        <target xml:lang="es-ES" state="translated">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede volver a cambiarlo en Configuración: Haciendo libros.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede cambiar de nuevo en Configuración: Haciendo libros.</target>
         </alt-trans>
@@ -622,16 +622,16 @@
         <note>ID: CollectionTab.AdvancedToolStripMenuItem</note>
         <target xml:lang="es-ES" state="translated">Avanzado</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Applying">
+      <trans-unit id="CollectionTab.Applying" approved="yes">
         <source xml:lang="en">Applying updates</source>
         <note>ID: CollectionTab.Applying</note>
-        <target xml:lang="es-ES" state="translated">Aplicando actualizaciones</target>
+        <target xml:lang="es-ES">Aplicando actualizaciones</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
+      <trans-unit id="CollectionTab.BloomLibraryLinkLabel" approved="yes">
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-        <target xml:lang="es-ES" state="translated">Conseguir más libros originarios en BloomLibrary.org</target>
+        <target xml:lang="es-ES">Conseguir más libros originarios en BloomLibrary.org</target>
         <alt-trans>
           <target xml:lang="es-ES">Conseguir más libros de fuente en BloomLibrary.org</target>
         </alt-trans>
@@ -716,10 +716,10 @@
           <target xml:lang="es-ES">Esta colección está bloqueada,  no se puede agregar o eliminar nuevos libros.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
-        <target xml:lang="es-ES" state="translated">Libros de BloomLibrary.org</target>
+        <target xml:lang="es-ES">Libros de BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
         <source xml:lang="en">Do Updates of All Books</source>
@@ -1071,10 +1071,10 @@
         <note>Used to point the user to a web page. Put the '{0}' where the web page URL will go.</note>
         <target xml:lang="es-ES" state="translated">Ver {0}.</target>
       </trans-unit>
-      <trans-unit id="Download.Completed">
+      <trans-unit id="Download.Completed" approved="yes">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
-        <target xml:lang="es-ES" state="translated">Su descarga ({0}) está completada. La puede ver en la sección de sus Colecciones, "Libros de BloomLibrary.org".</target>
+        <target xml:lang="es-ES">Su descarga ({0}) está completada. La puede ver en la sección de sus Colecciones, "Libros de BloomLibrary.org".</target>
         <alt-trans>
           <target xml:lang="es-ES">Su descarga ({0}) esta completa. Lo puede ver en la sección de sus colecciones, "Libros de la biblioteca Bloom".</target>
         </alt-trans>
@@ -3397,10 +3397,13 @@
         <note>{0} is a the name of the device Bloom connected to</note>
         <target xml:lang="es-ES" state="translated">Conectado a {0} por USB...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader">
+      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" approved="yes">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
         <note>ID: PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader</note>
-        <target xml:lang="es-ES" state="translated">Los siguientes dispositivos estan conectados pero no estan ejecutando el LectorBloom:</target>
+        <target xml:lang="es-ES">Los siguientes dispositivos están conectados pero no están ejecutando el LectorBloom:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Los siguientes dispositivos estan conectados pero no estan ejecutando el LectorBloom:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Los siguientes dispositivos estan conectados pero no estan ejecutando BloomReader:</target>
         </alt-trans>
