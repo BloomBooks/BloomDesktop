@@ -185,7 +185,7 @@
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando una copia del respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin una explicación, por favor haga click en Detalles e informenos del problema.</target>
+        <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando una copia del respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin una explicación, por favor haga clic en Detalles e informenos del problema.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles e informenos.</target>
         </alt-trans>
@@ -958,11 +958,11 @@
         <note>ID: CollectionTab.Templates</note>
         <target xml:lang="es-ES">Plantillas</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.TitleMissing">
+      <trans-unit id="CollectionTab.TitleMissing" approved="yes">
         <source xml:lang="en">Title Missing</source>
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
-        <target xml:lang="es-ES" state="translated">Título ausente</target>
+        <target xml:lang="es-ES">Título ausente</target>
         <alt-trans>
           <target xml:lang="es-ES">Falta de título</target>
         </alt-trans>
@@ -1237,11 +1237,11 @@
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
         <target xml:lang="es-ES" state="translated">Convertir a este diseño causará algunas perdidas de contenido.</target>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">(no template file found)</source>
         <note>ID: EditTab.AddPageDialog.NoTemplate</note>
         <note>Seen when the book's main template page file is missing.</note>
-        <target xml:lang="es-ES" state="translated">(no se encontró el archivo de plantilla)</target>
+        <target xml:lang="es-ES">(no se encontró el archivo de plantilla)</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
@@ -1657,7 +1657,10 @@
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
-        <target xml:lang="es-ES" state="translated">Indentar</target>
+        <target xml:lang="es-ES" state="translated">Sangría</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Indentar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between lines of text</source>
@@ -1747,10 +1750,10 @@
           <target xml:lang="es-ES">Ajuste el el estilo del formato</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
         <note>ID: EditTab.FrontMatter.AuthorIllustratorPrompt</note>
-        <target xml:lang="es-ES" state="translated">Puede utilizar este espacio para el autor/ilustrador, o cualquier otra cosa.</target>
+        <target xml:lang="es-ES">Puede utilizar este espacio para el autor/ilustrador, o cualquier otra cosa.</target>
         <alt-trans>
           <target xml:lang="es-ES">Puede usar este espacio para el autor/ilustrador, o cualquier otra cosa.</target>
         </alt-trans>
@@ -1789,11 +1792,11 @@
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
         <target xml:lang="es-ES">Título del libro en {lang}</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name of the translator, in {lang}</source>
         <note>ID: EditTab.FrontMatter.CreditTranslator</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="es-ES" state="translated">Nombre del traductor, en {lang}</target>
+        <target xml:lang="es-ES">Nombre del traductor, en {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
@@ -1809,10 +1812,13 @@
           <target xml:lang="es-ES">Haga clic para editar derechos de autor &amp; licencia</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.FundingAgenciesPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use this to acknowledge any funding agencies.</source>
         <note>ID: EditTab.FrontMatter.FundingAgenciesPrompt</note>
-        <target xml:lang="es-ES" state="translated">Use esto para reconocer los organismos de financiamiento.</target>
+        <target xml:lang="es-ES">Utilice esto para reconocer los organismos de financiamiento.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Use esto para reconocer los organismos de financiamiento.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true">
         <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
@@ -1822,29 +1828,32 @@
           <target xml:lang="es-ES">Número Internacional Normalizado para Libros. Dejar en blanco si no tiene uno de estos.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.InsideFrontCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.</source>
         <note>ID: EditTab.FrontMatter.InsideFrontCoverTextPrompt</note>
-        <target xml:lang="es-ES" state="translated">Si require donde poner más información sobre el libro, puede usar esta página que es la parte interior de la tapa.</target>
+        <target xml:lang="es-ES">Si require de un espacio para poner más información sobre el libro, puede utilizar esta página que es la parte interior de la tapa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Si require donde poner más información sobre el libro, puede usar esta página que es la parte interior de la tapa.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Si require donde poner más información sobre el libro, puede usar esta página que es la parte interior de la cubierta.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.ListSeparator">
+      <trans-unit id="EditTab.FrontMatter.ListSeparator" approved="yes">
         <source xml:lang="en">, </source>
         <note>ID: EditTab.FrontMatter.ListSeparator</note>
         <note>This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.</note>
-        <target xml:lang="es-ES" state="translated">, </target>
+        <target xml:lang="es-ES">, </target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.NameofTranslatorPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Name of Translator, in {lang}</source>
         <note>ID: EditTab.FrontMatter.NameofTranslatorPrompt</note>
-        <target xml:lang="es-ES" state="translated">Nombre del traductor, en {lang}</target>
+        <target xml:lang="es-ES">Nombre del traductor, en {lang}</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
-        <target xml:lang="es-ES" state="translated">Reconocimientos de libros originales (o prediseñados) en {lang}</target>
+        <target xml:lang="es-ES">Reconocimientos de libros originales (o prediseñados) en {lang}</target>
         <alt-trans>
           <target xml:lang="es-ES">Reconocimientos de originales (o de "shell") en {lang}</target>
         </alt-trans>
@@ -1855,16 +1864,19 @@
           <target xml:lang="es-ES">Reconocimientos originales (o Shell) en {lang}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.OriginalContributorsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The contributions made by writers, illustrators, editors, etc., in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
-        <target xml:lang="es-ES" state="translated">Las contribuciones hechas por los escritores, ilustradores, editores, etc, en {lang}</target>
+        <target xml:lang="es-ES">Las contribuciones hechas por los escritores, ilustradores, editores, etc., en {lang}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Las contribuciones hechas por los escritores, ilustradores, editores, etc, en {lang}</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.OriginalHadNoCopyrightSentence">
+      <trans-unit id="EditTab.FrontMatter.OriginalHadNoCopyrightSentence" approved="yes">
         <source xml:lang="en">Adapted from original without a copyright notice.</source>
         <note>ID: EditTab.FrontMatter.OriginalHadNoCopyrightSentence</note>
         <note>On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.</note>
-        <target xml:lang="es-ES" state="translated">Adaptado de un original sin registro de derechos de autor.</target>
+        <target xml:lang="es-ES">Adaptado de un original sin registro de derechos de autor.</target>
         <alt-trans>
           <target xml:lang="es-ES">Adaptado de una obra sin registro de derechos de autor.</target>
         </alt-trans>
@@ -1878,21 +1890,21 @@
           <target xml:lang="es-ES">Licencia con código {0}.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
+      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence" approved="yes">
         <source xml:lang="en">Adapted from original, {0}.</source>
         <note>ID: EditTab.FrontMatter.OriginalCopyrightSentence</note>
         <note>On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.</note>
-        <target xml:lang="es-ES" state="translated">Adaptado del original, {0}.</target>
+        <target xml:lang="es-ES">Adaptado del original, {0}.</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.PasteImageCreditsLink" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.PasteImageCreditsLink" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste Image Credits</source>
         <note>ID: EditTab.FrontMatter.PasteImageCreditsLink</note>
-        <target xml:lang="es-ES" state="translated">Pegar los créditos de la imagen</target>
+        <target xml:lang="es-ES">Pegar los créditos de la imagen</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.PasteMissingCredits" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.PasteMissingCredits" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Missing credits:</source>
         <note>ID: EditTab.FrontMatter.PasteMissingCredits</note>
-        <target xml:lang="es-ES" state="translated">Créditos ausentes:</target>
+        <target xml:lang="es-ES">Créditos ausentes:</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
@@ -1909,13 +1921,10 @@
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
         <target xml:lang="es-ES" state="translated">Reconocimientos para la versión traducida, en {lang}</target>
       </trans-unit>
-      <trans-unit id="EditTab.HowToUnlockBook" approved="yes">
+      <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese a la caja de herramientas de la derecha, haga clic en el ícono de engranaje, y haga click en 'Permitir cambios en este libro prediseñado".</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
         <alt-trans>
           <target xml:lang="es-ES">Para desbloquear este libro "shell", ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro "shell".</target>
         </alt-trans>
@@ -1952,10 +1961,13 @@
           <target xml:lang="es-ES">Recortar imagen</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit Image Credits, Copyright, and License</source>
         <note>ID: EditTab.Image.EditMetadata</note>
-        <target xml:lang="es-ES" state="translated">Editar créditos de la imagen, derechos de autor, y licencia</target>
+        <target xml:lang="es-ES">Editar créditos de la imagen, derechos de autor y licencia</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Editar créditos de la imagen, derechos de autor, y licencia</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Editar créditos de imagen, derechos de autor, y Licencia</target>
         </alt-trans>
@@ -4096,10 +4108,13 @@
           <target xml:lang="es-ES">SolicitudesAdicionales: </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.AllReserved">
+      <trans-unit id="PublishTab.Upload.AllReserved" approved="yes">
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
         <note>ID: PublishTab.Upload.AllReserved</note>
-        <target xml:lang="es-ES" state="translated">Todos los derechos reservados (comuniquese con el titular de los derechos de autor para cualquier permiso.)</target>
+        <target xml:lang="es-ES">Todos los derechos reservados (comuníquese con el titular de los derechos de autor para cualquier permiso.)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Todos los derechos reservados (comuniquese con el titular de los derechos de autor para cualquier permiso.)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Todos los derechos reservados (Contacto el titular del Copyright para los permisos.)</target>
         </alt-trans>
@@ -4126,10 +4141,10 @@
           <target xml:lang="es-ES">BloomLibrary.org ya tiene una versión anterior de este libro.  Si lo subes otra vez, se sustituirá con su versión actual.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Copyright">
+      <trans-unit id="PublishTab.Upload.Copyright" approved="yes">
         <source xml:lang="en">Copyright</source>
         <note>ID: PublishTab.Upload.Copyright</note>
-        <target xml:lang="es-ES" state="translated">Derechos de autor</target>
+        <target xml:lang="es-ES">Derechos de autor</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Credits">
         <source xml:lang="en">credits</source>
