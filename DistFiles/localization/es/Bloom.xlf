@@ -967,21 +967,24 @@
           <target xml:lang="es-ES">Falta de título</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.UnableToCheckForUpdate">
+      <trans-unit id="CollectionTab.UnableToCheckForUpdate" approved="yes">
         <source xml:lang="en">Could not connect to the server to check for an update. Are you connected to the internet?</source>
         <note>ID: CollectionTab.UnableToCheckForUpdate</note>
         <note>Shown when Bloom tries to check for an update but can't, for example because it can't connect to the internet, or a problems with our server, etc.</note>
-        <target xml:lang="es-ES" state="translated">No se pudo conectar al servidor para comprobar si hay una actualización. ¿Está conectado a Internet?</target>
+        <target xml:lang="es-ES">No se pudo conectar al servidor para comprobar si hay una actualización. ¿Está conectado a Internet?</target>
       </trans-unit>
       <trans-unit id="CollectionTab.UpToDate">
         <source xml:lang="en">Your Bloom is up to date.</source>
         <note>ID: CollectionTab.UpToDate</note>
         <target xml:lang="es-ES" state="translated">Bloom está actualizado.</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.UpdateCheckInProgress">
+      <trans-unit id="CollectionTab.UpdateCheckInProgress" approved="yes">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
-        <target xml:lang="es-ES" state="translated">Bloom esta buscando actualizaciones.</target>
+        <target xml:lang="es-ES">Bloom ya está buscando actualizaciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom esta buscando actualizaciones.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ya comprueba si hay actualizaciones.</target>
         </alt-trans>
@@ -1040,11 +1043,11 @@
         <note>ID: Common.CancelButton</note>
         <target xml:lang="es-ES" state="translated">&amp;Cancelar</target>
       </trans-unit>
-      <trans-unit id="Common.Finish">
+      <trans-unit id="Common.Finish" approved="yes">
         <source xml:lang="en">&amp;Finish</source>
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
-        <target xml:lang="es-ES" state="translated">&amp;Terminar</target>
+        <target xml:lang="es-ES">&amp;Terminar</target>
         <alt-trans>
           <target xml:lang="es-ES">&amp;Acabar</target>
         </alt-trans>
@@ -1210,10 +1213,10 @@
           <target xml:lang="es-ES">Utilizar este diseño</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Continue anyway</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutContinueCheckbox</note>
-        <target xml:lang="es-ES" state="translated">Continuar de todos modos</target>
+        <target xml:lang="es-ES">Continuar de todos modos</target>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
         <source xml:lang="en">Choose Different Layout...</source>
@@ -1753,10 +1756,13 @@
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
         <target xml:lang="es-ES" state="translated">Nombre del traductor, en {lang}</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.CopyrightPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to Edit Copyright &amp; License</source>
         <note>ID: EditTab.FrontMatter.CopyrightPrompt</note>
-        <target xml:lang="es-ES" state="translated">Haga clic para editar los derechos de autor y licencia</target>
+        <target xml:lang="es-ES">Haga clic para editar los derechos de autor y la licencia</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haga clic para editar los derechos de autor y licencia</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Haga clic para editar los derechos de autor &amp; licencia</target>
         </alt-trans>
@@ -1854,10 +1860,10 @@
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
         <target xml:lang="es-ES" state="translated">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
-        <target xml:lang="es-ES" state="translated">Haga clic para elegir el tema</target>
+        <target xml:lang="es-ES">Haga clic para elegir el tema</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
@@ -2153,11 +2159,11 @@
         <note>ID: EditTab.TemplatePagesList.Heading</note>
         <target xml:lang="es-ES" state="translated">Páginas de plantilla</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.HintBubbles">
+      <trans-unit id="EditTab.TextBoxProperties.HintBubbles" approved="yes">
         <source xml:lang="en">Hint Bubbles</source>
         <note>ID: EditTab.TextBoxProperties.HintBubbles</note>
         <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
-        <target xml:lang="es-ES" state="translated">Burbujas de sugerencia</target>
+        <target xml:lang="es-ES">Burbujas de sugerencia</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.LanguageTab">
         <source xml:lang="en">Language</source>
@@ -2236,11 +2242,11 @@
         <note>ID: EditTab.TextBoxProperties.WhatToPut</note>
         <target xml:lang="es-ES" state="translated">Que deben incluir los autores en este cuadro?</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.ShowHintBubble">
+      <trans-unit id="EditTab.TextBoxProperties.ShowHintBubble" approved="yes">
         <source xml:lang="en">Show the hint bubble</source>
         <note>ID: EditTab.TextBoxProperties.ShowHintBubble</note>
         <note>Label above pull-down menu with options, ShowOnGroup/ShowOnEach</note>
-        <target xml:lang="es-ES" state="translated">Mostrar la burbuja de sugerencia</target>
+        <target xml:lang="es-ES">Mostrar la burbuja de sugerencia</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowOnGroup">
         <source xml:lang="en">Just once on the whole group</source>
@@ -2616,11 +2622,11 @@
           <target xml:lang="es-ES">Esta computadora no parece tener un micrófono. Se require micrófono para grabar el audio para un libro sonoro.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBook.PleaseHoldMessage">
+      <trans-unit id="EditTab.Toolbox.TalkingBook.PleaseHoldMessage" approved="yes">
         <source xml:lang="en">Please hold the button down until you have finished recording</source>
         <note>ID: EditTab.Toolbox.TalkingBook.PleaseHoldMessage</note>
         <note>Appears when the speak/record button is pressed very briefly</note>
-        <target xml:lang="es-ES" state="translated">Por favor, mantenga pulsado el botón hasta que haya terminado de grabar</target>
+        <target xml:lang="es-ES">Por favor, mantenga pulsado el botón hasta que haya terminado de grabar</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true">
         <source xml:lang="en">Back</source>
@@ -2667,10 +2673,10 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
         <target xml:lang="es-ES" state="translated">Escuchar la página entera</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2) Look at the highlighted sentence</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
-        <target xml:lang="es-ES" state="translated">2) Mirar la oración destacada</target>
+        <target xml:lang="es-ES">2) Mirar la oración destacada</target>
         <alt-trans>
           <target xml:lang="es-ES">2) Mirar la frase destacada</target>
         </alt-trans>
@@ -2893,10 +2899,10 @@
         <note>ID: HelpMenu.BuildingReaderTemplatesMenuItem</note>
         <target xml:lang="es-ES" state="translated">Creando plantillas de libros</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.CheckForNewVersionMenuItem">
+      <trans-unit id="HelpMenu.CheckForNewVersionMenuItem" approved="yes">
         <source xml:lang="en">Check For New Version</source>
         <note>ID: HelpMenu.CheckForNewVersionMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Buscar nueva versión</target>
+        <target xml:lang="es-ES">Buscar nueva versión</target>
       </trans-unit>
       <trans-unit id="HelpMenu.CreditsMenuItem">
         <source xml:lang="en">About Bloom</source>
@@ -2983,10 +2989,13 @@
           <target xml:lang="es-ES">Videos de capacitación</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="InstallProblem.BloomPdfMaker">
+      <trans-unit id="InstallProblem.BloomPdfMaker" approved="yes">
         <source xml:lang="en">A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</source>
         <note>ID: InstallProblem.BloomPdfMaker</note>
-        <target xml:lang="es-ES" state="translated">BloomPDFMaker.exe, un componente de Bloom, parece estar ausente. Esto previene la vista previa y impresión. Los programas de antivirus pueden causar esto. Puede requerir ayuda tecnica para reparar la instalación de Bloom y para proteger este archivo para que no se vuelve a eleminar.</target>
+        <target xml:lang="es-ES">BloomPDFMaker.exe, un componente de Bloom, parece estar ausente. Esto evita las vistas previas y la impresión. Los programas de antivirus pueden causar esto. Puede requerir de ayuda técnica para reparar la instalación de Bloom y para proteger este archivo de volver a ser eleminado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">BloomPDFMaker.exe, un componente de Bloom, parece estar ausente. Esto previene la vista previa y impresión. Los programas de antivirus pueden causar esto. Puede requerir ayuda tecnica para reparar la instalación de Bloom y para proteger este archivo para que no se vuelve a eleminar.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">BloomPDFMaker.exe, un componente de Bloom, parece esta ausente. Esto previene la vista previa y impresión. Los programas de antivirus pueden causar esto. Puede requerir ayuda tecnica para reparar la instalación de Bloom y para proteger este archivo para que no se vuelve a eleminar.</target>
         </alt-trans>
@@ -2997,15 +3006,18 @@
         <note>Appears in progress indicator</note>
         <target xml:lang="es-ES" state="translated">Convertiend a mp3</target>
       </trans-unit>
-      <trans-unit id="LanguageFontDetails.RightToLeftCheck">
+      <trans-unit id="LanguageFontDetails.RightToLeftCheck" approved="yes">
         <source xml:lang="en">This script is right to left</source>
         <note>ID: LanguageFontDetails.RightToLeftCheck</note>
-        <target xml:lang="es-ES" state="translated">Esta escritura es de derecha a izquierda</target>
+        <target xml:lang="es-ES">Esta escritura es de derecha a izquierda</target>
       </trans-unit>
-      <trans-unit id="LanguageFontDetails.TallerLinesCheck">
+      <trans-unit id="LanguageFontDetails.TallerLinesCheck" approved="yes">
         <source xml:lang="en">This script requires taller lines</source>
         <note>ID: LanguageFontDetails.TallerLinesCheck</note>
-        <target xml:lang="es-ES" state="translated">Esta escritura require liñas mas altas</target>
+        <target xml:lang="es-ES">Esta escritura require líneas más altas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta escritura require liñas mas altas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true">
         <source xml:lang="en">A3Landscape</source>
@@ -3181,16 +3193,22 @@
         <note>ID: NewCollectionWizard.CollectionWillBeCreatedAt</note>
         <target xml:lang="es-ES" state="translated">Colección se creará en: {0}</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.FinishPage">
+      <trans-unit id="NewCollectionWizard.FinishPage" approved="yes">
         <source xml:lang="en">Ready To Create New Collection</source>
         <note>ID: NewCollectionWizard.FinishPage</note>
-        <target xml:lang="es-ES" state="translated">Listo para crear nueva colección</target>
+        <target xml:lang="es-ES">Listo para crear nueva Colección</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Listo para crear nueva colección</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.FinishPageContent">
+      <trans-unit id="NewCollectionWizard.FinishPageContent" approved="yes">
         <source xml:lang="en">OK, that's all we need to get started with your new '{0}' collection.\nClick on the 'Finish' button.</source>
         <note>ID: NewCollectionWizard.FinishPageContent</note>
         <note>{0} is the name of the new collection</note>
-        <target xml:lang="es-ES" state="translated">Eso es todo lo que se requiere para empezar con su nueva colección '{0}'.\nHaga clic sobre el botón 'Termina'.</target>
+        <target xml:lang="es-ES">Eso es todo lo que se requiere para empezar con su nueva colección '{0}'.\nHaga clic sobre el botón 'Terminar'.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Eso es todo lo que se requiere para empezar con su nueva colección '{0}'.\nHaga clic sobre el botón 'Termina'.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.FontAndScriptPage">
         <source xml:lang="en">Font and Script</source>
@@ -3202,10 +3220,10 @@
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
         <target xml:lang="es-ES" state="translated">Elija el tipo de colección</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
         <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions</note>
-        <target xml:lang="es-ES" state="translated">Si usted ya tiene una colección que desea abrir, haga clic en el botón "Cancelar".</target>
+        <target xml:lang="es-ES">Si usted ya tiene una colección que desea abrir, haga clic en el botón "Cancelar".</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
         <source xml:lang="en">Source Collection</source>
@@ -3324,10 +3342,10 @@
           <target xml:lang="es-ES">A fin de mantener un proyecto que es simple y organizada, Bloom mantiene todos los libros que realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Así que lo primero que debemos hacer es crear un libro.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3" approved="yes">
         <source xml:lang="en">Click 'Next' to get started.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine3</note>
-        <target xml:lang="es-ES" state="translated">Haga clic en 'Siguiente' para empezar.</target>
+        <target xml:lang="es-ES">Haga clic en 'Siguiente' para empezar.</target>
         <alt-trans>
           <target xml:lang="es-ES">Haga clic en 'Próxima' para empezar.</target>
         </alt-trans>
@@ -3641,11 +3659,11 @@
           <target xml:lang="es-ES">Falló el envío de este libro. Posiblemente el dispositivo esta desconectado. Si no puede determinar porque sucedió esto, lo siguiente puede ser útil reportar a los desarrolladores:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.Finished">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.Finished" approved="yes">
         <source xml:lang="en">Finished sending "{0}" to device {1}</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Finished</note>
         <note>{0} is the name of the book, {1} is the name of the device</note>
-        <target xml:lang="es-ES" state="translated">Terminó el envío de "{0}" al dispositivo {1}</target>
+        <target xml:lang="es-ES">Terminó el envío de "{0}" al dispositivo {1}</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.Sending">
         <source xml:lang="en">Sending "{0}" to device {1}</source>
@@ -3905,11 +3923,11 @@
         <note>Message briefly displayed to the user in a toast</note>
         <target xml:lang="es-ES" state="translated">Error al crear, comprimir, o recolorear el archivo PDF</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Finished">
+      <trans-unit id="PublishTab.PdfMaker.Finished" approved="yes">
         <source xml:lang="en">Finished making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.Finished</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="translated">Se terminó la conversión de HTML a PDF</target>
+        <target xml:lang="es-ES">Se terminó la conversión de HTML a PDF</target>
         <alt-trans>
           <target xml:lang="es-ES">Conversión de HTML a PDF esta concluido</target>
         </alt-trans>
@@ -4144,10 +4162,13 @@
           <target xml:lang="es-ES">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. Le gustaría hacer login?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed">
+      <trans-unit id="PublishTab.Upload.Login.LoginConnectFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to verify your login. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.Login.LoginConnectFailed</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo conectar al servidor para verificar su nombre de usuario. Por favor, compruebe su conexión de red.</target>
+        <target xml:lang="es-ES">Bloom no se pudo conectar al servidor para verificar su nombre de usuario. Por favor, compruebe su conexión de red.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo conectar al servidor para verificar su nombre de usuario. Por favor, compruebe su conexión de red.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo conectar al servidor para verificar tu nombre de usuario. Por favor, compruebe su conexión de red.</target>
         </alt-trans>
@@ -4165,10 +4186,13 @@
           <target xml:lang="es-ES">Bloom no pudo conectar al servidor para completar su login o suscripción. Esto podría ser un problema con la conexión a internet, nuestro servidor o algún equipo en el medio.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.MustAgreeTerms">
+      <trans-unit id="PublishTab.Upload.Login.MustAgreeTerms" approved="yes">
         <source xml:lang="en">In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</source>
         <note>ID: PublishTab.Upload.Login.MustAgreeTerms</note>
-        <target xml:lang="es-ES" state="translated">Para inscribir una cuenta nueva en BloomLibrary.org, debe marcar el cuadro que indica que esta de acuerdo con los términos de uso de BloomLibrary.</target>
+        <target xml:lang="es-ES">Para inscribir una cuenta nueva en BloomLibrary.org, debe marcar el cuadro que indica que esta}á de acuerdo con los términos de uso de BloomLibrary.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para inscribir una cuenta nueva en BloomLibrary.org, debe marcar el cuadro que indica que esta de acuerdo con los términos de uso de BloomLibrary.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Con el fin de registrarse para una cuenta de BloomLibrary.org, debe marcar la casilla indicando que de acuerdo a los términos de uso de BloomLibrary.</target>
         </alt-trans>
@@ -4213,10 +4237,13 @@
           <target xml:lang="es-ES">Introduzca una dirección de correo electrónico válida. Le enviaremos un correo electrónico a esta dirección para que pueda restablecer su contraseña.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.ResetConnectFailed">
+      <trans-unit id="PublishTab.Upload.Login.ResetConnectFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to reset your password. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.Login.ResetConnectFailed</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo conectar al servidor para restablecer la contraseña. Por favor, compruebe su conexión de red.</target>
+        <target xml:lang="es-ES">Bloom no se pudo conectar al servidor para restablecer la contraseña. Por favor, compruebe su conexión de red.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo conectar al servidor para restablecer la contraseña. Por favor, compruebe su conexión de red.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.ResetFailed">
         <source xml:lang="en">Reset Password failed</source>
@@ -4272,10 +4299,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.Login.UnknownUser</note>
         <target xml:lang="es-ES" state="translated">Usuario desconocido</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.LoginFailure">
+      <trans-unit id="PublishTab.Upload.LoginFailure" approved="yes">
         <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.LoginFailure</note>
-        <target xml:lang="es-ES" state="translated">Bloom no podo entrar a BloomLibrary.org utilizando las credenciales guardadas. Por favor, compruebe su conexión de red.</target>
+        <target xml:lang="es-ES">Bloom no podo entrar a BloomLibrary.org utilizando las credenciales guardadas. Por favor, compruebe su conexión de red.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.LoginLink">
         <source xml:lang="en">Log in to BloomLibrary.org</source>
@@ -4501,16 +4528,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Elegir...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click on letters to add them to this stage.</source>
         <note>ID: ReaderSetup.ClickLetter</note>
-        <target xml:lang="es-ES" state="translated">Haga clic en cada letra para añadirla a esta etapa.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Haga clic en cada letra que desea añadirlas a esta etapa.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Haga clic en cada letra que desea añadir a esta etapa.</target>
-        </alt-trans>
+        <target xml:lang="es-ES">Haga clic en cada letra que desea añadir a esta etapa.</target>
         <alt-trans>
           <target xml:lang="es-ES">Haga clic en las letras para añadirlos a esta etapa.</target>
         </alt-trans>
@@ -5017,10 +5038,13 @@ Desea seguir?</target>
         <note>Place a {0} where the name of the program goes.</note>
         <target xml:lang="es-ES" state="translated">¿Cómo está usando {0}?</target>
       </trans-unit>
-      <trans-unit id="RegisterDialog.IAmStuckLabel">
+      <trans-unit id="RegisterDialog.IAmStuckLabel" approved="yes">
         <source xml:lang="en">I'm stuck, I'll finish this later.</source>
         <note>ID: RegisterDialog.IAmStuckLabel</note>
-        <target xml:lang="es-ES" state="translated">Estoy atascado, lo terminaré más tarde.</target>
+        <target xml:lang="es-ES">Estoy atascado, terminaré esto más tarde.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estoy atascado, lo terminaré más tarde.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Estoy atascado, voy a terminar esto más tarde.</target>
         </alt-trans>
