@@ -130,12 +130,12 @@
           <target xml:lang="es-ES">BloomPacks deben tener sólo una carpeta de colección en el nivel superior del archivo zip.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="BloomPackInstallDialog.UnableToReplace">
+      <trans-unit id="BloomPackInstallDialog.UnableToReplace" approved="yes">
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo eliminar la copia existente de '{0}'. Salga de Bloom si se está ejecutando y vuelva a intentarlo. De lo contrario, vuelva a intentarlo después de reiniciar la computadora.</target>
+        <target xml:lang="es-ES">Bloom no pudo eliminar la copia existente de '{0}'. Salga de Bloom si se está ejecutando y vuelva a intentarlo. Si esto no funciona, vuelva a intentarlo después de reiniciar la computadora.</target>
         <alt-trans>
-          <target xml:lang="es-ES">Bloom no pudo eliminar la copia existente de '{0}'. Salga de Bloom si se está ejecutando y vuelva a intentarlo. Si esto no funciona, vuelva a intentarlo después de reiniciar la computadora.</target>
+          <target xml:lang="es-ES">Bloom no pudo eliminar la copia existente de '{0}'. Salga de Bloom si se está ejecutando y vuelva a intentarlo. De lo contrario, vuelva a intentarlo después de reiniciar la computadora.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
@@ -4566,10 +4566,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.Logout</note>
         <target xml:lang="es-ES" state="translated">Cerrar sesión de BloomLibrary.org</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.MakingPdf">
+      <trans-unit id="PublishTab.Upload.MakingPdf" approved="yes">
         <source xml:lang="en">Making PDF Preview...</source>
         <note>ID: PublishTab.Upload.MakingPdf</note>
-        <target xml:lang="es-ES" state="translated">Haciendo una vista previa del PDF...</target>
+        <target xml:lang="es-ES">Haciendo una vista previa del PDF...</target>
         <alt-trans>
           <target xml:lang="es-ES">Haciendo una vista previa PDF...</target>
         </alt-trans>
@@ -4785,10 +4785,13 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.BookHeader</note>
         <target xml:lang="es-ES">Libro</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Words per Book</source>
         <note>ID: ReaderSetup.BookMaxWords</note>
-        <target xml:lang="es-ES" state="translated">Palabras máximas por libro</target>
+        <target xml:lang="es-ES">Cantidad máxima de palabras por libro</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Palabras máximas por libro</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Palabras como máximo por libro</target>
         </alt-trans>
@@ -4858,10 +4861,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Ayuda para la exportación y la conversión de los archivos que se utilizará como textos modelos</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Language" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Language" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Language</source>
         <note>ID: ReaderSetup.Language</note>
-        <target xml:lang="es-ES" state="translated">Idioma</target>
+        <target xml:lang="es-ES">Idioma</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true">
         <source xml:lang="en">List letters and word-forming characters in alphabetic order.</source>
@@ -4960,15 +4963,18 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Average Length of Sentences in Book</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
-        <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de oraciónes en el libro</target>
+        <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de oraciones en el libro</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Promedio máximo de longitud de oraciónes en el libro</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Promedio máximo de longitud de frases en el libro</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxUniqueWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Unique Words per Book</source>
         <note>ID: ReaderSetup.MaxUniqueWords</note>
-        <target xml:lang="es-ES" state="translated">Cantidad máxima de palabras únicas por libro</target>
+        <target xml:lang="es-ES">Cantidad máxima de palabras únicas por libro</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MoreWords" sil:dynamic="true">
         <source xml:lang="en">More Words</source>
@@ -4980,25 +4986,25 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.OpenSampleTexts</note>
         <target xml:lang="es-ES" state="translated">Abra la carpeta de textos de muestra para este idioma.</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
         <note>ID: ReaderSetup.PageHeader</note>
-        <target xml:lang="es-ES" state="translated">Página</target>
+        <target xml:lang="es-ES">Página</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.PageMaxWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Words on each Page</source>
         <note>ID: ReaderSetup.PageMaxWords</note>
-        <target xml:lang="es-ES" state="translated">Cantidad máxima de palabras en cada página</target>
+        <target xml:lang="es-ES">Cantidad máxima de palabras en cada página</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true">
         <source xml:lang="en">Powered by </source>
         <note>ID: ReaderSetup.PoweredBy</note>
         <target xml:lang="es-ES" state="translated">Con tecnología de</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Punctuation</source>
         <note>ID: ReaderSetup.Punctuation</note>
-        <target xml:lang="es-ES" state="translated">Puntuación</target>
+        <target xml:lang="es-ES">Puntuación</target>
         <alt-trans>
           <target xml:lang="es-ES">Punctuación</target>
         </alt-trans>
@@ -5076,10 +5082,13 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Frase</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SentenceMaxWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Words in each Sentence</source>
         <note>ID: ReaderSetup.SentenceMaxWords</note>
-        <target xml:lang="es-ES" state="translated">Palabras máximas en cada oración</target>
+        <target xml:lang="es-ES">Cantidad máxima de palabras en cada oración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Palabras máximas en cada oración</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Palabras máximas en cada frase</target>
         </alt-trans>
@@ -5246,10 +5255,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Estamos usando leteras con palabras de vista para determinar etapas</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.lettersHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters</source>
         <note>ID: ReaderSetup.lettersHeader</note>
-        <target xml:lang="es-ES" state="translated">Letras</target>
+        <target xml:lang="es-ES">Letras</target>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
