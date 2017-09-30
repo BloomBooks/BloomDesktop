@@ -918,10 +918,10 @@
         <note>ID: CollectionTab.SendReceive</note>
         <target xml:lang="es-ES">Enviar/Recibir</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.SettingsButton">
+      <trans-unit id="CollectionTab.SettingsButton" approved="yes">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionTab.SettingsButton</note>
-        <target xml:lang="es-ES" state="translated">Configuración</target>
+        <target xml:lang="es-ES">Configuración</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true">
         <source xml:lang="en">Source Collection</source>
@@ -1340,10 +1340,10 @@
           <target xml:lang="es-ES">Esta página se eliminará de forma permanente.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.ContentLanguagesDropdown">
+      <trans-unit id="EditTab.ContentLanguagesDropdown" approved="yes">
         <source xml:lang="en">Multilingual Settings</source>
         <note>ID: EditTab.ContentLanguagesDropdown</note>
-        <target xml:lang="es-ES" state="translated">Configuración multilingüe</target>
+        <target xml:lang="es-ES">Configuración multilingüe</target>
       </trans-unit>
       <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
@@ -1654,10 +1654,10 @@
           <target xml:lang="es-ES">Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "part2".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.ResetStyle" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.ResetStyle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reset this style to default settings</source>
         <note>ID: EditTab.FormatDialog.ResetStyle</note>
-        <target xml:lang="es-ES" state="translated">Restaurar este estilo a la configuración predeterminda</target>
+        <target xml:lang="es-ES">Restaurar este estilo a la configuración predeterminda</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true">
         <source xml:lang="en">Spacing</source>
@@ -2213,10 +2213,13 @@
         <note>ID: EditTab.TextBoxProperties.Normal</note>
         <target xml:lang="es-ES" state="translated">Normal</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.NormalLabel">
+      <trans-unit id="EditTab.TextBoxProperties.NormalLabel" approved="yes">
         <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
         <note>ID: EditTab.TextBoxProperties.NormalLabel</note>
-        <target xml:lang="es-ES" state="translated">"Normal" mostrará el idioma local, y posiblemente regional o nacional, dependiendo de la configuraciones multilingües del libro. Utilize esto para casi todo contenido.</target>
+        <target xml:lang="es-ES">"Normal" mostrará el idioma local, y posiblemente regional o nacional, dependiendo de la configuración multilingüe del libro. Utilice esto para la mayoría del contenido.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">"Normal" mostrará el idioma local, y posiblemente regional o nacional, dependiendo de la configuraciones multilingües del libro. Utilize esto para casi todo contenido.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.OtherLanguagesLabel">
         <source xml:lang="en">Use one of these for simple text boxes that are always in only one language.</source>
@@ -2761,7 +2764,10 @@
       <trans-unit id="Errors.DeniedAccess">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
         <note>ID: Errors.DeniedAccess</note>
-        <target xml:lang="es-ES" state="translated">Su computador nego que Bloom accesara el libro. Pide ayuda tecnica para cambiar la configuración de permisos del sistema operativo de este archivo.</target>
+        <target xml:lang="es-ES" state="translated">Su computadora no permitió que Bloom accesara al libro. Puede pedir ayuda técnica para cambiar la configuración de permisos del sistema operativo de este archivo.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Su computador nego que Bloom accesara el libro. Pide ayuda tecnica para cambiar la configuración de permisos del sistema operativo de este archivo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.ErrorSelecting" approved="yes">
         <source xml:lang="en">There was a problem selecting the book. Restarting Bloom may fix the problem. If not, please click the 'Details' button and report the problem to the Bloom Developers.</source>
@@ -4211,10 +4217,10 @@
           <target xml:lang="es-ES">No se pudo restablecer contraseña</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.ResetPassword">
+      <trans-unit id="PublishTab.Upload.Login.ResetPassword" approved="yes">
         <source xml:lang="en">Resetting Password</source>
         <note>ID: PublishTab.Upload.Login.ResetPassword</note>
-        <target xml:lang="es-ES" state="translated">Restableciendo contraseña</target>
+        <target xml:lang="es-ES">Restableciendo contraseña</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.SendingResetPassword">
         <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password.</source>
@@ -4921,10 +4927,13 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.lettersHeader</note>
         <target xml:lang="es-ES" state="translated">Letras</target>
       </trans-unit>
-      <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+      <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
-        <target xml:lang="es-ES" state="translated">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y por niveles para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y por niveles reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
+        <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros descifrables y libros por niveles para el idioma \"{0}\". Cualquiera que abra este Paquete de Bloom, y después abra una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y libros por niveles reemplazada por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y por niveles para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y por niveles reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y nivelados para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y nivelados reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
         </alt-trans>
