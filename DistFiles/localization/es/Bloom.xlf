@@ -724,7 +724,10 @@
       <trans-unit id="CollectionTab.BookSourceHeading">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="es-ES" state="translated">Fuentes para nuevos libros</target>
+        <target xml:lang="es-ES" state="translated">Libros originarios para nuevos libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Fuentes para nuevos libros</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Orígenes de nuevos libros</target>
         </alt-trans>
@@ -4540,10 +4543,10 @@ Desea seguir?</target>
 Desea seguir?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.UnknownUser">
+      <trans-unit id="PublishTab.Upload.Login.UnknownUser" approved="yes">
         <source xml:lang="en">Unknown user</source>
         <note>ID: PublishTab.Upload.Login.UnknownUser</note>
-        <target xml:lang="es-ES" state="translated">Usuario desconocido</target>
+        <target xml:lang="es-ES">Usuario desconocido</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.LoginFailure" approved="yes">
         <source xml:lang="en">Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
@@ -4670,10 +4673,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Hubo un problema cargando su libro. Probablemente su equipo está configurado para utilizar una zona horaria equivocada o la hora del sistema es incorrecta. Ver http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para ver cómo solucionar este problema.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Title">
+      <trans-unit id="PublishTab.Upload.Title" approved="yes">
         <source xml:lang="en">Title</source>
         <note>ID: PublishTab.Upload.Title</note>
-        <target xml:lang="es-ES" state="translated">Título</target>
+        <target xml:lang="es-ES">Título</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton">
         <source xml:lang="en">Upload Book</source>
@@ -4831,10 +4834,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.FileNeedsTxtExtension</note>
         <target xml:lang="es-ES" state="translated">Archivo necesita extensión .txt</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">First,</source>
         <note>ID: ReaderSetup.FirstSetupAlphabet</note>
-        <target xml:lang="es-ES" state="translated">Primero,</target>
+        <target xml:lang="es-ES">Primero,</target>
         <alt-trans>
           <target xml:lang="es-ES">En primer lugar,</target>
         </alt-trans>
@@ -4875,15 +4878,15 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.LetterHelp3</note>
         <target xml:lang="es-ES">p. ej. "a b c d"</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Letters" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Letters" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters</source>
         <note>ID: ReaderSetup.Letters</note>
-        <target xml:lang="es-ES" state="translated">Letras</target>
+        <target xml:lang="es-ES">Letras</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters and Letter Combinations</source>
         <note>ID: ReaderSetup.Letters.Header</note>
-        <target xml:lang="es-ES" state="translated">Letras y combinaciones de letras</target>
+        <target xml:lang="es-ES">Letras y combinaciones de letras</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
@@ -4899,7 +4902,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true">
         <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
         <note>ID: ReaderSetup.Letters.LetterHelp1</note>
-        <target xml:lang="es-ES" state="translated">Separe cada letra o combinación de letras con un espacio. Por ejemplo, podriamos usar los siguiente el idioma inglés:</target>
+        <target xml:lang="es-ES" state="translated">Separe cada letra o combinación de letras con un espacio. Por ejemplo, podríamos utilizar lo siguiente en el idioma inglés:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Separe cada letra o combinación de letras con un espacio. Por ejemplo, podriamos usar los siguiente el idioma inglés:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Separe cada letra o combinación de letras con un espacio. Por ejemplo, aquí es lo que podríamos utilizar para el idioma inglés:</target>
         </alt-trans>
@@ -4914,15 +4920,15 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.Letters.LetterHelp3</note>
         <target xml:lang="es-ES" state="translated">es</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true" approved="yes">
         <source xml:lang="en">.</source>
         <note>ID: ReaderSetup.Letters.LetterHelp4</note>
-        <target xml:lang="es-ES" state="translated">.</target>
+        <target xml:lang="es-ES">.</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.LevelHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level</source>
         <note>ID: ReaderSetup.LevelHeader</note>
-        <target xml:lang="es-ES" state="translated">Nivel</target>
+        <target xml:lang="es-ES">Nivel</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
         <source xml:lang="en">Level&amp;nbsp;</source>
@@ -4932,10 +4938,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Nivel</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Levels" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Levels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.Levels</note>
-        <target xml:lang="es-ES" state="translated">Niveles de libros</target>
+        <target xml:lang="es-ES">Niveles de libros</target>
         <alt-trans>
           <target xml:lang="es-ES">Niveles de lecturas</target>
         </alt-trans>
@@ -5599,32 +5605,32 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.2</note>
         <target xml:lang="es-ES" state="translated">2</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.2 Problems" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.2 Problems" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2 Problems</source>
         <note>ID: TemplateBooks.PageLabel.2 Problems</note>
         <note>This label indicates a page with two arithmetic problems on it.</note>
-        <target xml:lang="es-ES" state="translated">2 Problemas</target>
+        <target xml:lang="es-ES">2 Problemas</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.20" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.20" sil:dynamic="true" approved="yes">
         <source xml:lang="en">20</source>
         <note>ID: TemplateBooks.PageLabel.20</note>
-        <target xml:lang="es-ES" state="translated">20</target>
+        <target xml:lang="es-ES">20</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.21" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.21" sil:dynamic="true" approved="yes">
         <source xml:lang="en">21</source>
         <note>ID: TemplateBooks.PageLabel.21</note>
-        <target xml:lang="es-ES" state="translated">21</target>
+        <target xml:lang="es-ES">21</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.3" sil:dynamic="true">
         <source xml:lang="en">3</source>
         <note>ID: TemplateBooks.PageLabel.3</note>
         <target xml:lang="es-ES" state="translated">3</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.3 Problems" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.3 Problems" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3 Problems</source>
         <note>ID: TemplateBooks.PageLabel.3 Problems</note>
         <note>This label indicates a page with three arithmetic problems on it.</note>
-        <target xml:lang="es-ES" state="translated">3 Problemas</target>
+        <target xml:lang="es-ES">3 Problemas</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true">
         <source xml:lang="en">4</source>
