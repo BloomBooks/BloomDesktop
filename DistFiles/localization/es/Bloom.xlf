@@ -5674,25 +5674,25 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.16</note>
         <target xml:lang="es-ES">16</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.17" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.17" sil:dynamic="true" approved="yes">
         <source xml:lang="en">17</source>
         <note>ID: TemplateBooks.PageLabel.17</note>
-        <target xml:lang="es-ES" state="translated">17</target>
+        <target xml:lang="es-ES">17</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.18" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.18" sil:dynamic="true" approved="yes">
         <source xml:lang="en">18</source>
         <note>ID: TemplateBooks.PageLabel.18</note>
-        <target xml:lang="es-ES" state="translated">18</target>
+        <target xml:lang="es-ES">18</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.19" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.19" sil:dynamic="true" approved="yes">
         <source xml:lang="en">19</source>
         <note>ID: TemplateBooks.PageLabel.19</note>
-        <target xml:lang="es-ES" state="translated">19</target>
+        <target xml:lang="es-ES">19</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.2" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2</source>
         <note>ID: TemplateBooks.PageLabel.2</note>
-        <target xml:lang="es-ES" state="translated">2</target>
+        <target xml:lang="es-ES">2</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.2 Problems" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2 Problems</source>
@@ -5814,15 +5814,15 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.Day 4</note>
         <target xml:lang="es-ES" state="translated">Día 4</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 5a</source>
         <note>ID: TemplateBooks.PageLabel.Day 5a</note>
-        <target xml:lang="es-ES" state="translated">Día 5a</target>
+        <target xml:lang="es-ES">Día 5a</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Day 5b" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Day 5b" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 5b</source>
         <note>ID: TemplateBooks.PageLabel.Day 5b</note>
-        <target xml:lang="es-ES" state="translated">Día 5b</target>
+        <target xml:lang="es-ES">Día 5b</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Factory" sil:dynamic="true">
         <source xml:lang="en">Factory</source>
@@ -5834,10 +5834,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.Flyleaf</note>
         <target xml:lang="es-ES" state="translated">Guarda</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Front Cover</note>
-        <target xml:lang="es-ES" state="translated">Tapa</target>
+        <target xml:lang="es-ES">Tapa</target>
         <alt-trans>
           <target xml:lang="es-ES">Cubierta</target>
         </alt-trans>
@@ -5862,26 +5862,26 @@ Desea seguir?</target>
         <note>Caption of first page in books made from Template Starter</note>
         <target xml:lang="es-ES">Imagen para miniatura</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image On Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
-        <target xml:lang="es-ES" state="translated">Imagen en parte inferior</target>
+        <target xml:lang="es-ES">Imagen en parte inferior</target>
         <alt-trans>
           <target xml:lang="es-ES">Dibujo de fondo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
-        <target xml:lang="es-ES" state="translated">Imagen en el medio</target>
+        <target xml:lang="es-ES">Imagen en el medio</target>
         <alt-trans>
           <target xml:lang="es-ES">Dibujo en medio</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Back Cover</note>
-        <target xml:lang="es-ES" state="translated">Interior de la contratapa</target>
+        <target xml:lang="es-ES">Interior de la contratapa</target>
         <alt-trans>
           <target xml:lang="es-ES">Interior de la contraportada</target>
         </alt-trans>
@@ -5889,10 +5889,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Contraportada interior</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Inside Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Front Cover</source>
         <note>ID: TemplateBooks.PageLabel.Inside Front Cover</note>
-        <target xml:lang="es-ES" state="translated">Interior de la tapa</target>
+        <target xml:lang="es-ES">Interior de la tapa</target>
         <alt-trans>
           <target xml:lang="es-ES">Interior de la cubierta</target>
         </alt-trans>
@@ -5903,15 +5903,18 @@ Desea seguir?</target>
           <target xml:lang="es-ES">El interior de la portada</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Instructions</source>
         <note>ID: TemplateBooks.PageLabel.Instructions</note>
-        <target xml:lang="es-ES" state="translated">Instrucciones</target>
+        <target xml:lang="es-ES">Instrucciones</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Just Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just Text</source>
         <note>ID: TemplateBooks.PageLabel.Just Text</note>
-        <target xml:lang="es-ES" state="translated">Sólamente texto</target>
+        <target xml:lang="es-ES">Solamente texto</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sólamente texto</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Sólo texto</target>
         </alt-trans>
@@ -5924,10 +5927,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Sólo una imagen</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Just an Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just an Image</source>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
-        <target xml:lang="es-ES" state="translated">Solamente una imagen</target>
+        <target xml:lang="es-ES">Solamente una imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Solo una ilustración</target>
         </alt-trans>
@@ -5935,7 +5938,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
-        <target xml:lang="es-ES" state="translated">Interior de la contratapa</target>
+        <target xml:lang="es-ES" state="translated">Contratapa</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Interior de la contratapa</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Contracubierta</target>
         </alt-trans>
@@ -5946,10 +5952,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Contraportada exterior</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paper Saver</source>
         <note>ID: TemplateBooks.PageLabel.Paper Saver</note>
-        <target xml:lang="es-ES" state="translated">Economizador de Papel</target>
+        <target xml:lang="es-ES">Economizador de Papel</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Word</source>
@@ -5975,36 +5981,39 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Imagen de fondo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true" approved="yes">
         <source xml:lang="en">SIL-Cameroon</source>
         <note>ID: TemplateBooks.PageLabel.SIL-Cameroon</note>
-        <target xml:lang="es-ES" state="translated">SIL-Camerún</target>
+        <target xml:lang="es-ES">SIL-Camerún</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Super Paper Saver" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Super Paper Saver" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Super Paper Saver</source>
         <note>ID: TemplateBooks.PageLabel.Super Paper Saver</note>
-        <target xml:lang="es-ES" state="translated">Super-Economizador de Papel</target>
+        <target xml:lang="es-ES">Súper Economizador de Papel</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Super-Economizador de Papel</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.This Page Is Intentionally Blank" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Page Is Intentionally Blank</source>
         <note>ID: TemplateBooks.PageLabel.This Page Is Intentionally Blank</note>
-        <target xml:lang="es-ES" state="translated">Página intencionalmente en blanco</target>
+        <target xml:lang="es-ES">Página intencionalmente en blanco</target>
         <alt-trans>
           <target xml:lang="es-ES">Esta página se ha dejado en blanco intencionalmente</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Title Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Title Page</source>
         <note>ID: TemplateBooks.PageLabel.Title Page</note>
-        <target xml:lang="es-ES" state="translated">Portada</target>
+        <target xml:lang="es-ES">Portada</target>
         <alt-trans>
           <target xml:lang="es-ES">Página de título</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional</source>
         <note>ID: TemplateBooks.PageLabel.Traditional</note>
-        <target xml:lang="es-ES" state="translated">Tradicional</target>
+        <target xml:lang="es-ES">Tradicional</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
         <source xml:lang="en">Setup</source>
@@ -6015,11 +6024,11 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Configuración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Topics.Agriculture" sil:dynamic="true">
+      <trans-unit id="Topics.Agriculture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Agriculture</source>
         <note>ID: Topics.Agriculture</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Agricultura</target>
+        <target xml:lang="es-ES">Agricultura</target>
       </trans-unit>
       <trans-unit id="Topics.Animal Stories" sil:dynamic="true">
         <source xml:lang="en">Animal Stories</source>
@@ -6045,11 +6054,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES" state="translated">Cultura</target>
       </trans-unit>
-      <trans-unit id="Topics.Dictionary" sil:dynamic="true">
+      <trans-unit id="Topics.Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Dictionary</source>
         <note>ID: Topics.Dictionary</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Diccionario</target>
+        <target xml:lang="es-ES">Diccionario</target>
       </trans-unit>
       <trans-unit id="Topics.Environment" sil:dynamic="true">
         <source xml:lang="en">Environment</source>
@@ -6057,17 +6066,17 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES" state="translated">Medio ambiente</target>
       </trans-unit>
-      <trans-unit id="Topics.Fiction" sil:dynamic="true">
+      <trans-unit id="Topics.Fiction" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Fiction</source>
         <note>ID: Topics.Fiction</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Ficción</target>
+        <target xml:lang="es-ES">Ficción</target>
       </trans-unit>
-      <trans-unit id="Topics.Health" sil:dynamic="true">
+      <trans-unit id="Topics.Health" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Health</source>
         <note>ID: Topics.Health</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Salud</target>
+        <target xml:lang="es-ES">Salud</target>
       </trans-unit>
       <trans-unit id="Topics.How To" sil:dynamic="true">
         <source xml:lang="en">How To</source>
@@ -6075,11 +6084,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES" state="translated">Manuales</target>
       </trans-unit>
-      <trans-unit id="Topics.Math" sil:dynamic="true">
+      <trans-unit id="Topics.Math" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Math</source>
         <note>ID: Topics.Math</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Matemáticas</target>
+        <target xml:lang="es-ES">Matemáticas</target>
       </trans-unit>
       <trans-unit id="Topics.NoTopic" sil:dynamic="true">
         <source xml:lang="en">No Topic</source>
@@ -6107,17 +6116,17 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES" state="translated">Cartilla</target>
       </trans-unit>
-      <trans-unit id="Topics.Science" sil:dynamic="true">
+      <trans-unit id="Topics.Science" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Science</source>
         <note>ID: Topics.Science</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Ciencia</target>
+        <target xml:lang="es-ES">Ciencia</target>
       </trans-unit>
-      <trans-unit id="Topics.Spiritual" sil:dynamic="true">
+      <trans-unit id="Topics.Spiritual" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Spiritual</source>
         <note>ID: Topics.Spiritual</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Espiritual</target>
+        <target xml:lang="es-ES">Espiritual</target>
       </trans-unit>
       <trans-unit id="Topics.Story Book" sil:dynamic="true">
         <source xml:lang="en">Story Book</source>
@@ -6125,11 +6134,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES" state="translated">Libro de cuentos</target>
       </trans-unit>
-      <trans-unit id="Topics.Tradition" sil:dynamic="true">
+      <trans-unit id="Topics.Tradition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Tradition</source>
         <note>ID: Topics.Tradition</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Tradición</target>
+        <target xml:lang="es-ES">Tradición</target>
       </trans-unit>
       <trans-unit id="Topics.Traditional Story" sil:dynamic="true">
         <source xml:lang="en">Traditional Story</source>
@@ -6140,17 +6149,17 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Cuentos folklórico</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WebServer.Warning.NoImageFile">
+      <trans-unit id="WebServer.Warning.NoImageFile" approved="yes">
         <source xml:lang="en">Cannot Find Image File</source>
         <note>ID: WebServer.Warning.NoImageFile</note>
         <note>displays as a "toast"</note>
-        <target xml:lang="es-ES" state="translated">Archivo de imagen no encontrado</target>
+        <target xml:lang="es-ES">Archivo de imagen no encontrado</target>
       </trans-unit>
-      <trans-unit id="WebServer.Warning.NoFile">
+      <trans-unit id="WebServer.Warning.NoFile" approved="yes">
         <source xml:lang="en">Cannot Find File</source>
         <note>ID: WebServer.Warning.NoFile</note>
         <note>displays as a "toast"</note>
-        <target xml:lang="es-ES" state="translated">Archivo no encontrado</target>
+        <target xml:lang="es-ES">Archivo no encontrado</target>
       </trans-unit>
     </body>
   </file>
