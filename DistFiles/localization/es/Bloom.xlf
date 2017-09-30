@@ -1936,7 +1936,7 @@
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="es-ES" state="translated">Los dibujos de lÍneas simples se ven mejor. En vez de utilizar esta página, también puede crear su propia miniatura.png y márrquelo sólo para lectura (Read-only) para que Bloom no lo sobreescriba.</target>
+        <target xml:lang="es-ES" state="translated">Los dibujos de líneas simples se ven mejor. En vez de utilizar esta página, también puede crear su propia miniatura.png y marcarla sólo para lectura (Read-only) para que Bloom no lo sobrescriba.</target>
         <alt-trans>
           <target xml:lang="es-ES">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
         </alt-trans>
@@ -2960,7 +2960,10 @@
       <trans-unit id="Errors.ReportThisProblemButton">
         <source xml:lang="en">Report this problem to Bloom Support</source>
         <note>ID: Errors.ReportThisProblemButton</note>
-        <target xml:lang="es-ES" state="translated">Informar sobre este problema a Apoyo Bloom</target>
+        <target xml:lang="es-ES" state="translated">Reportar este problema a Apoyo Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Informar sobre este problema a Apoyo Bloom</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.SomethingWentWrong" approved="yes">
         <source xml:lang="en">Sorry, something went wrong.</source>
@@ -4281,10 +4284,10 @@
           <target xml:lang="es-ES">Todos los derechos reservados (contacto el titular del Copyright para los permisos</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.CcLink">
+      <trans-unit id="PublishTab.Upload.CcLink" approved="yes">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
-        <target xml:lang="es-ES" state="translated">CC-BY-NC</target>
+        <target xml:lang="es-ES">CC-BY-NC</target>
         <alt-trans>
           <target xml:lang="es-ES">CC BY-NC</target>
         </alt-trans>
@@ -4419,10 +4422,13 @@
           <target xml:lang="es-ES">Bloom no pudo conectar al servidor para verificar tu nombre de usuario. Por favor, compruebe su conexión de red.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.LoginFailed">
+      <trans-unit id="PublishTab.Upload.Login.LoginFailed" approved="yes">
         <source xml:lang="en">Login failed</source>
         <note>ID: PublishTab.Upload.Login.LoginFailed</note>
-        <target xml:lang="es-ES" state="translated">Error de inicio de sesión</target>
+        <target xml:lang="es-ES">Error al iniciar sesión</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Error de inicio de sesión</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
         <source xml:lang="en">Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</source>
@@ -4594,10 +4600,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Haciendo una vista previa PDF...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.MakingThumbnail">
+      <trans-unit id="PublishTab.Upload.MakingThumbnail" approved="yes">
         <source xml:lang="en">Making thumbnail image...</source>
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
-        <target xml:lang="es-ES" state="translated">Haciendo una imagen en miniatura...</target>
+        <target xml:lang="es-ES">Haciendo una imagen en miniatura...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.NoLangsFound">
         <source xml:lang="en">(None found)</source>
@@ -4688,10 +4694,13 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.TermsLink</note>
         <target xml:lang="es-ES" state="translated">Mostrar términos de uso</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.TimeProblem">
+      <trans-unit id="PublishTab.Upload.TimeProblem" approved="yes">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
         <note>ID: PublishTab.Upload.TimeProblem</note>
-        <target xml:lang="es-ES" state="translated">No se pudo cargar su libro. Probablemente su equipo está configurado a una zona horaria equivocada o la hora del sistema esta incorrecta. Ver http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para ver cómo resolver este problema.</target>
+        <target xml:lang="es-ES">No se pudo cargar su libro. Probablemente su equipo está configurado en una zona horaria equivocada o la hora del sistema está incorrecta. Ingresar a http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para ver cómo resolver este problema.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se pudo cargar su libro. Probablemente su equipo está configurado a una zona horaria equivocada o la hora del sistema esta incorrecta. Ver http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para ver cómo resolver este problema.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hubo un problema cargando su libro. Probablemente su equipo está configurado para utilizar una zona horaria equivocada o la hora del sistema es incorrecta. Ver http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html para ver cómo solucionar este problema.</target>
         </alt-trans>
@@ -4701,10 +4710,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.Title</note>
         <target xml:lang="es-ES">Título</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadButton">
+      <trans-unit id="PublishTab.Upload.UploadButton" approved="yes">
         <source xml:lang="en">Upload Book</source>
         <note>ID: PublishTab.Upload.UploadButton</note>
-        <target xml:lang="es-ES" state="translated">Cargar libro</target>
+        <target xml:lang="es-ES">Cargar libro</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadCompleteNotice">
         <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
@@ -4716,10 +4725,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.UploadNotAllowed</note>
         <target xml:lang="es-ES" state="translated">No se permite cargar</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadProblemNotice">
+      <trans-unit id="PublishTab.Upload.UploadProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: PublishTab.Upload.UploadProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">No se pudo cargar su libro. Es posible que necesite reiniciar Bloom o conseguir ayuda técnica.</target>
+        <target xml:lang="es-ES">No se pudo cargar su libro. Es posible que necesite reiniciar Bloom o conseguir ayuda técnica.</target>
         <alt-trans>
           <target xml:lang="es-ES">Hubo un problema cargando su libro. Es posible que necesite reiniciar Bloom o conseguir ayuda técnica.</target>
         </alt-trans>
@@ -4729,10 +4738,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.UploadProgress</note>
         <target xml:lang="es-ES" state="translated">Progreso de carga</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadSandbox">
+      <trans-unit id="PublishTab.Upload.UploadSandbox" approved="yes">
         <source xml:lang="en">Upload Book (to Sandbox)</source>
         <note>ID: PublishTab.Upload.UploadSandbox</note>
-        <target xml:lang="es-ES" state="translated">Cargar libro (a Sandbox)</target>
+        <target xml:lang="es-ES">Cargar libro (a Sandbox)</target>
         <alt-trans>
           <target xml:lang="es-ES">Cargar libro (a sandbox)</target>
         </alt-trans>
@@ -4746,10 +4755,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Carga de metadatos de libro</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadingStatus">
+      <trans-unit id="PublishTab.Upload.UploadingStatus" approved="yes">
         <source xml:lang="en">Uploading {0}</source>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
-        <target xml:lang="es-ES" state="translated">Cargando {0}</target>
+        <target xml:lang="es-ES">Cargando {0}</target>
       </trans-unit>
       <trans-unit id="PublishView._saveButton">
         <source xml:lang="en">Save stub</source>
@@ -4780,20 +4789,20 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Por favor, agregue textos a la carpeta de textos de muestra.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.AllowedWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.AllowedWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">allowed words</source>
         <note>ID: ReaderSetup.AllowedWords</note>
-        <target xml:lang="es-ES" state="translated">palabras permitidas</target>
+        <target xml:lang="es-ES">palabras permitidas</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.AllowedWordsFile" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.AllowedWordsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allowed Words File</source>
         <note>ID: ReaderSetup.AllowedWordsFile</note>
-        <target xml:lang="es-ES" state="translated">Archivo de palabras permitidas</target>
+        <target xml:lang="es-ES">Archivo de palabras permitidas</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.AllowedWordsFileHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.AllowedWordsFileHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allowed Words File</source>
         <note>ID: ReaderSetup.AllowedWordsFileHeader</note>
-        <target xml:lang="es-ES" state="translated">Archivo de palabras permitidas</target>
+        <target xml:lang="es-ES">Archivo de palabras permitidas</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.AverageHeader" sil:dynamic="true">
         <source xml:lang="en">Avg</source>
@@ -5425,29 +5434,32 @@ Desea seguir?</target>
         <source xml:lang="en">Retry</source>
         <note>ID: ReportProblemDialog.Retry</note>
         <note>Shown if there was an error submitting the report. Lets the user try submitting it again.</note>
-        <target xml:lang="es-ES">Vuelva a intentar</target>
+        <target xml:lang="es-ES">Volver a intentar</target>
         <alt-trans>
           <target xml:lang="es-ES">Reintentar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.SeeDetails">
+      <trans-unit id="ReportProblemDialog.SeeDetails" approved="yes">
         <source xml:lang="en">See what else will be submitted</source>
         <note>ID: ReportProblemDialog.SeeDetails</note>
-        <target xml:lang="es-ES" state="translated">Vea todo que será enviado</target>
+        <target xml:lang="es-ES">Vea todo lo que será enviado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Vea todo que será enviado</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Vea lo que se enviará</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.SubmitButton">
+      <trans-unit id="ReportProblemDialog.SubmitButton" approved="yes">
         <source xml:lang="en">&amp;Submit</source>
         <note>ID: ReportProblemDialog.SubmitButton</note>
-        <target xml:lang="es-ES" state="translated">&amp;Enviar</target>
+        <target xml:lang="es-ES">&amp;Enviar</target>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Submitting">
+      <trans-unit id="ReportProblemDialog.Submitting" approved="yes">
         <source xml:lang="en">Submitting to server...</source>
         <note>ID: ReportProblemDialog.Submitting</note>
         <note>This is shown while Bloom is sending the problem report to our server.</note>
-        <target xml:lang="es-ES" state="translated">Enviando al servidor...</target>
+        <target xml:lang="es-ES">Enviando al servidor...</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Success" approved="yes">
         <source xml:lang="en">We received your report, thanks for taking the time to help make Bloom better!</source>
@@ -5465,12 +5477,12 @@ Desea seguir?</target>
         <note>ID: ReportProblemDialog.WhatsTheProblem</note>
         <target xml:lang="es-ES">¿Cuál parece ser el problema?</target>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WindowTitle">
+      <trans-unit id="ReportProblemDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Report A Problem</source>
         <note>ID: ReportProblemDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Informar sobre un problema</target>
+        <target xml:lang="es-ES">Reportar un problema</target>
         <alt-trans>
-          <target xml:lang="es-ES">Reportar un problema</target>
+          <target xml:lang="es-ES">Informar sobre un problema</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Zipping">
@@ -5808,11 +5820,11 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Material inicial/final</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image For Thumbnail" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image For Thumbnail" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image For Thumbnail</source>
         <note>ID: TemplateBooks.PageLabel.Image For Thumbnail</note>
         <note>Caption of first page in books made from Template Starter</note>
-        <target xml:lang="es-ES" state="translated">Imagen para miniatura</target>
+        <target xml:lang="es-ES">Imagen para miniatura</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image On Bottom" sil:dynamic="true">
         <source xml:lang="en">Image On Bottom</source>
