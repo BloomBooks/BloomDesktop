@@ -1540,23 +1540,23 @@
           <target xml:lang="es-ES">No se puede cambiar estos porque esta no es la copia original.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord">
+      <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord" approved="yes">
         <source xml:lang="en">Sight Word</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord</note>
-        <target xml:lang="es-ES" state="translated">Palabra vista</target>
+        <target xml:lang="es-ES">Palabra vista</target>
         <alt-trans>
           <target xml:lang="es-ES">Palabra de vista</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable">
+      <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable" approved="yes">
         <source xml:lang="en">This word is not decodable in this stage.</source>
         <note>ID: EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable</note>
-        <target xml:lang="es-ES" state="translated">Esta palabra no es descifrable en esta etapa.</target>
+        <target xml:lang="es-ES">Esta palabra no es descifrable en esta etapa.</target>
       </trans-unit>
-      <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
+      <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
-        <target xml:lang="es-ES" state="translated">Esta oración es demasiada larga para este nivel.</target>
+        <target xml:lang="es-ES">Esta oración es demasiada larga para este nivel.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esta oración es demasiado larga para este nivel.</target>
         </alt-trans>
@@ -1564,26 +1564,29 @@
           <target xml:lang="es-ES">Esta frase es demasiado larga para este nivel.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true">
+      <trans-unit id="EditTab.ExperimentalNotice" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This page is an experimental prototype which may have many problems, for which we apologize.</source>
         <note>ID: EditTab.ExperimentalNotice</note>
-        <target xml:lang="es-ES" state="translated">Esta página es un prototipo experimental que puede tener muchos problemas, por lo cual pedimos disculpas.</target>
+        <target xml:lang="es-ES">Esta página es un prototipo experimental que puede tener muchos problemas, por lo cual pedimos disculpas.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esta página es un prototipo experimental que puede tener muchos problemas, para lo cual pedimos disculpas.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FontMissing">
+      <trans-unit id="EditTab.FontMissing" approved="yes">
         <source xml:lang="en">The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</source>
         <note>ID: EditTab.FontMissing</note>
-        <target xml:lang="es-ES" state="translated">La fuente seleccionada es '{0}', pero no está instalado en esta computadora. Otra fuente sera utilizada.</target>
+        <target xml:lang="es-ES">La fuente seleccionada es '{0}', pero no está instalada en esta computadora. Otra fuente será utilizada.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La fuente seleccionada es '{0}', pero no está instalado en esta computadora. Otra fuente sera utilizada.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">La fuente seleccionada es '{0}', pero no está instalado en este computadora. Otra fuente se utiliza.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Alignment" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.FormatDialog.Alignment</note>
-        <target xml:lang="es-ES" state="translated">Alineación</target>
+        <target xml:lang="es-ES">Alineación</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true">
         <source xml:lang="en">That style already exists. Please choose another name.</source>
@@ -1615,68 +1618,77 @@
         <note>ID: EditTab.FormatDialog.DontSeeNeed</note>
         <target xml:lang="es-ES" state="translated">¿No encuentra lo que necesita?</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Emphasis</source>
         <note>ID: EditTab.FormatDialog.Emphasis</note>
-        <target xml:lang="es-ES" state="translated">Énfasis</target>
+        <target xml:lang="es-ES">Énfasis</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Font" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Font</source>
         <note>ID: EditTab.FormatDialog.Font</note>
-        <target xml:lang="es-ES" state="translated">Fuente</target>
+        <target xml:lang="es-ES">Fuente</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font face</source>
         <note>ID: EditTab.FormatDialog.FontFaceToolTip</note>
         <target xml:lang="es-ES" state="translated">Cambiar el tipo de fuente</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
         <note>ID: EditTab.FormatDialog.FontSizeTip</note>
-        <target xml:lang="es-ES" state="translated">Cambia el tamaño del texto para todas los cuadros utilizando el estilo '{0}' y el idioma '{1}'.\nTamaño actual es {2}pt.</target>
+        <target xml:lang="es-ES">Cambia el tamaño del texto para todos los cuadros utilizando el estilo '{0}' y el idioma '{1}'.\nEl tamaño actual es de {2}pt.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cambia el tamaño del texto para todas los cuadros utilizando el estilo '{0}' y el idioma '{1}'.\nTamaño actual es {2}pt.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cambia el tamaño del texto para todas las cajas utilizando el estilo '{0}' y el idioma '{1}'.\nTamaño actual es {2} pt.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.FontSizeToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the font size</source>
         <note>ID: EditTab.FormatDialog.FontSizeToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el tamaño de la fuente</target>
+        <target xml:lang="es-ES">Cambiar el tamaño de la fuente</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Format" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Format" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Format</source>
         <note>ID: EditTab.FormatDialog.Format</note>
-        <target xml:lang="es-ES" state="translated">Formato</target>
+        <target xml:lang="es-ES">Formato</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
         <target xml:lang="es-ES" state="translated">Indentar</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.LineSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between lines of text</source>
         <note>ID: EditTab.FormatDialog.LineSpacingToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el espaciado entre líneas de texto</target>
+        <target xml:lang="es-ES">Cambiar el espaciado entre líneas del texto</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cambiar el espaciado entre líneas de texto</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.NewStyle" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.NewStyle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">New style</source>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
-        <target xml:lang="es-ES" state="translated">Nuevo estilo</target>
+        <target xml:lang="es-ES">Nuevo estilo</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphSpacing">
         <source xml:lang="en">Space Between Paragraphs</source>
         <note>ID: EditTab.FormatDialog.ParagraphSpacing</note>
         <target xml:lang="es-ES" state="translated">Espacio entre párrafos</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.ParagraphTab">
+      <trans-unit id="EditTab.FormatDialog.ParagraphTab" approved="yes">
         <source xml:lang="en">Paragraph</source>
         <note>ID: EditTab.FormatDialog.ParagraphTab</note>
-        <target xml:lang="es-ES" state="translated">Párrafo</target>
+        <target xml:lang="es-ES">Párrafo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.PleaseUseAlpha" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</source>
         <note>ID: EditTab.FormatDialog.PleaseUseAlpha</note>
-        <target xml:lang="es-ES" state="translated">Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
+        <target xml:lang="es-ES">Por favor, utilice sólo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "part2".</target>
         </alt-trans>
@@ -1691,15 +1703,15 @@
         <note>ID: EditTab.FormatDialog.Spacing</note>
         <target xml:lang="es-ES" state="translated">Espaciamiento</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style</source>
         <note>ID: EditTab.FormatDialog.Style</note>
-        <target xml:lang="es-ES" state="translated">Estilo</target>
+        <target xml:lang="es-ES">Estilo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style Name</source>
         <note>ID: EditTab.FormatDialog.StyleNameTab</note>
-        <target xml:lang="es-ES" state="translated">Nombre del estilo</target>
+        <target xml:lang="es-ES">Nombre del estilo</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
         <source xml:lang="en">Extra Wide</source>
@@ -1712,20 +1724,20 @@
           <target xml:lang="es-ES">Ancha extra</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.WordSpacingNormal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.FormatDialog.WordSpacingNormal</note>
-        <target xml:lang="es-ES" state="translated">Normal</target>
+        <target xml:lang="es-ES">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the spacing between words</source>
         <note>ID: EditTab.FormatDialog.WordSpacingToolTip</note>
         <target xml:lang="es-ES" state="translated">Cambiar el espacio entre las palabras</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Wide</source>
         <note>ID: EditTab.FormatDialog.WordSpacingWide</note>
-        <target xml:lang="es-ES" state="translated">Ancho</target>
+        <target xml:lang="es-ES">Ancho</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true">
         <source xml:lang="en">Adjust formatting for style</source>
@@ -1738,7 +1750,10 @@
       <trans-unit id="EditTab.FrontMatter.AuthorIllustratorPrompt" sil:dynamic="true">
         <source xml:lang="en">You may use this space for author/illustrator, or anything else.</source>
         <note>ID: EditTab.FrontMatter.AuthorIllustratorPrompt</note>
-        <target xml:lang="es-ES" state="translated">Puede usar este espacio para el autor/ilustrador, o cualquier otra cosa.</target>
+        <target xml:lang="es-ES" state="translated">Puede utilizar este espacio para el autor/ilustrador, o cualquier otra cosa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Puede usar este espacio para el autor/ilustrador, o cualquier otra cosa.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
