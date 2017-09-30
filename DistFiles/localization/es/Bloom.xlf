@@ -794,10 +794,10 @@
           <target xml:lang="es-ES">Construyendo...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.ConfirmRecycleDescription">
+      <trans-unit id="CollectionTab.ConfirmRecycleDescription" approved="yes">
         <source xml:lang="en">The book '{0}'</source>
         <note>ID: CollectionTab.ConfirmRecycleDescription</note>
-        <target xml:lang="es-ES" state="translated">El libro '{0}'</target>
+        <target xml:lang="es-ES">El libro '{0}'</target>
       </trans-unit>
       <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
         <source xml:lang="en">Open Folder on Disk</source>
@@ -2563,10 +2563,13 @@
         <note>ID: EditTab.Toolbox.TalkingBook.NoInput</note>
         <target xml:lang="es-ES" state="translated">Ningún dispositivo de entrada</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBook.NoMic">
+      <trans-unit id="EditTab.Toolbox.TalkingBook.NoMic" approved="yes">
         <source xml:lang="en">This computer appears to have no sound recording device available. You will need one to record audio for a talking book.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.NoMic</note>
-        <target xml:lang="es-ES" state="translated">Esta computadora no parece tener un micrófono. Se require micrófono para grabar el audio para un audiolibro.</target>
+        <target xml:lang="es-ES">Parece que esta computadora no tiene un micrófono. Se require de un micrófono para grabar el audio para un audiolibro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta computadora no parece tener un micrófono. Se require micrófono para grabar el audio para un audiolibro.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta computadora no parece tener un micrófono. Se require micrófono para grabar el audio para un libro sonoro.</target>
         </alt-trans>
@@ -2683,18 +2686,24 @@
         <note>ID: EditTab.UndoButton.ToolTipWhenDisabled</note>
         <target xml:lang="es-ES" state="translated">No hay nada que deshacer</target>
       </trans-unit>
-      <trans-unit id="Errors.BookProblem">
+      <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero significa que algo no está actualizada, hace falta, o ha fallado.</target>
+        <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, hace falta, o ha fallado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero significa que algo no está actualizada, hace falta, o ha fallado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que tu trabajo se haya perdido, pero significa que algo no está actualizada, que hace falta, o ha fallado.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.BrokenBook">
+      <trans-unit id="Errors.BrokenBook" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.</source>
         <note>ID: Errors.BrokenBook</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, no se encuentra, o ha fallado. Considere usar el comando 'Reportar un problema' en el menú "Ayuda".</target>
+        <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, no se encuentra, o ha fallado. Considere utilizar el comando 'Reportar un problema' en el menú "Ayuda".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, no se encuentra, o ha fallado. Considere usar el comando 'Reportar un problema' en el menú "Ayuda".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom tuvo un problema mostrando este libro. Esto no significa que su trabajo se perdió, pero sí significa que algo no está actualizado, no se encuentra, o se ha hecho mal. Considere el uso del comando 'reportar un problema' en el menú "Ayuda".</target>
         </alt-trans>
@@ -3369,11 +3378,11 @@
           <target xml:lang="es-ES">Las páginas no pueden ser reordenadas cuando está traduciendo un libro</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
+      <trans-unit id="PublishTab.Android.bloomdFileFormatLabel" approved="yes">
         <source xml:lang="en">Bloom Book for Devices</source>
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
-        <target xml:lang="es-ES" state="translated">Libro de Bloom para dispositivos</target>
+        <target xml:lang="es-ES">Libro de Bloom para dispositivos</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseFile">
         <source xml:lang="en">Save Bloom Reader File</source>
@@ -3470,17 +3479,20 @@
         <note>ID: PublishTab.Android.Usb.Progress.FailureToSend</note>
         <target xml:lang="es-ES" state="translated">Ocurrió un error y el libro no fue enviado a su dispositivo de Android.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice">
+      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice" approved="yes">
         <source xml:lang="en">Looking for an Android device connected by USB cable and set up for MTP...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForDevice</note>
         <note>This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.</note>
-        <target xml:lang="es-ES" state="translated">Buscando un dispositivo Android conecatado al cable USB y configurado para MTP...</target>
+        <target xml:lang="es-ES">Buscando un dispositivo Android conectado al cable USB y configurado para MTP...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Buscando un dispositivo Android conecatado al cable USB y configurado para MTP...</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting">
+      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting" approved="yes">
         <source xml:lang="en">Looking for an existing "{0}"...</source>
         <note>ID: PublishTab.Android.Usb.Progress.LookingForExisting</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">Buscando el libro "{0}" existente...</target>
+        <target xml:lang="es-ES">Buscando el libro "{0}" existente...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne">
         <source xml:lang="en">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</source>
@@ -3542,10 +3554,13 @@
         <note>ID: PublishTab.Android.Usb.Stop</note>
         <target xml:lang="es-ES" state="translated">Deje de intentar</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest" approved="yes">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
         <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
-        <target xml:lang="es-ES" state="translated">Recibimos una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de LectorBloom?</target>
+        <target xml:lang="es-ES">Recibimos una solicitud de libro que no pudimos procesar. ¿Será que el dispositivo está ejecutando una versión no compatible de LectorBloom?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Recibimos una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de LectorBloom?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Recibimos una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de BloomReader?</target>
         </alt-trans>
@@ -4354,11 +4369,11 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Cargar libro (a sandbox)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadingBookMetadata">
+      <trans-unit id="PublishTab.Upload.UploadingBookMetadata" approved="yes">
         <source xml:lang="en">Uploading book metadata</source>
         <note>ID: PublishTab.Upload.UploadingBookMetadata</note>
         <note>In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.</note>
-        <target xml:lang="es-ES" state="translated">Cargando los metadatos del libro</target>
+        <target xml:lang="es-ES">Cargando los metadatos del libro</target>
         <alt-trans>
           <target xml:lang="es-ES">Carga de metadatos de libro</target>
         </alt-trans>
@@ -4408,10 +4423,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.AverageHeader</note>
         <target xml:lang="es-ES" state="translated">Prom.</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book</source>
         <note>ID: ReaderSetup.BookHeader</note>
-        <target xml:lang="es-ES" state="translated">Libro</target>
+        <target xml:lang="es-ES">Libro</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.BookMaxWords" sil:dynamic="true">
         <source xml:lang="en">Maximum Words per Book</source>
@@ -4981,10 +4996,13 @@ Desea seguir?</target>
         <note>ID: ReportProblemDialog.Email</note>
         <target xml:lang="es-ES" state="translated">Correo electrónico</target>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.IncludeBookButton">
+      <trans-unit id="ReportProblemDialog.IncludeBookButton" approved="yes">
         <source xml:lang="en">Include Book '{0}'</source>
         <note>ID: ReportProblemDialog.IncludeBookButton</note>
-        <target xml:lang="es-ES" state="translated">Incluir libro '{0}'</target>
+        <target xml:lang="es-ES">Incluir el libro '{0}'</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Incluir libro '{0}'</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.IncludeScreenshotButton">
         <source xml:lang="en">Include this screenshot</source>
@@ -5046,7 +5064,10 @@ Desea seguir?</target>
         <source xml:lang="en">Zipping up book...</source>
         <note>ID: ReportProblemDialog.Zipping</note>
         <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
-        <target xml:lang="es-ES" state="translated">Creando un archivo zip del libro...</target>
+        <target xml:lang="es-ES" state="translated">Creando un archivo Zip del libro...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Creando un archivo zip del libro...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.linkLabel1">
         <source xml:lang="en">Will not be private</source>
@@ -5079,15 +5100,15 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.BookName.Arithmetic</note>
         <target xml:lang="es-ES" state="translated">Aritmética</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Book</source>
         <note>ID: TemplateBooks.BookName.Basic Book</note>
-        <target xml:lang="es-ES" state="translated">Libro básico</target>
+        <target xml:lang="es-ES">Libro básico</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Big Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Book</source>
         <note>ID: TemplateBooks.BookName.Big Book</note>
-        <target xml:lang="es-ES" state="translated">Libro grande</target>
+        <target xml:lang="es-ES">Libro grande</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader</source>
