@@ -3128,10 +3128,10 @@
         <note>ID: HelpMenu.WebSiteMenuItem</note>
         <target xml:lang="es-ES">Sitio web</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.trainingVideos">
+      <trans-unit id="HelpMenu.trainingVideos" approved="yes">
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
-        <target xml:lang="es-ES" state="translated">Vídeos de capacitación</target>
+        <target xml:lang="es-ES">Vídeos de capacitación</target>
         <alt-trans>
           <target xml:lang="es-ES">Videos de capacitación</target>
         </alt-trans>
@@ -3636,10 +3636,10 @@
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
         <target xml:lang="es-ES">Libro de Bloom para dispositivos</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseFile">
+      <trans-unit id="PublishTab.Android.ChooseFile" approved="yes">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
-        <target xml:lang="es-ES" state="translated">Guardar el archivo de LectorBloom</target>
+        <target xml:lang="es-ES">Guardar el archivo de LectorBloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Guardar archivo de LectorBloom</target>
         </alt-trans>
@@ -3703,11 +3703,11 @@
         <note>ID: PublishTab.Android.Troubleshooting</note>
         <target xml:lang="es-ES">Consejos para resolver problemas</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.BookSent">
+      <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" approved="yes">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
         <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">¡Ahora puede leer "{0}" en LectorBloom!</target>
+        <target xml:lang="es-ES">¡Ahora puede leer "{0}" en LectorBloom!</target>
         <alt-trans>
           <target xml:lang="es-ES">¡Ahora puede leer "{0}" en BloomReader!</target>
         </alt-trans>
@@ -3902,10 +3902,13 @@
         <note>dialog title for license agreement</note>
         <target xml:lang="es-ES" state="translated">Acuerdo de licencia de Perfil de Color de Adobe</target>
       </trans-unit>
-      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
+      <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled" approved="yes">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
-        <target xml:lang="es-ES" state="translated">Por favor instale a Adobe Reader para que Bloom puede mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        <target xml:lang="es-ES">Por favor instale Adobe Reader para que Bloom pueda mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo con otro programa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor instale a Adobe Reader para que Bloom puede mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Por favor instale a Adobe Reader para que Bloom pueda mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
         </alt-trans>
@@ -3918,10 +3921,13 @@
           <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error al intentar mostrar ese PDF. Todavía puede intentar salvar el libro PDF.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
+      <trans-unit id="PublishTab.AdobeReaderControl.UnknownError" approved="yes">
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
-        <target xml:lang="es-ES" state="translated">Lastimosamente, Bloom no fue capaz de abrir Adobe Reader, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva (re)instalar 'Adobe Reader'.\nHasta que lo resuelve, puede guardar el libro PDF y abrirlo con otro programa.</target>
+        <target xml:lang="es-ES">Lastimosamente, Bloom no fue capaz de abrir Adobe Reader, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y reinstale 'Adobe Reader'.\nHasta que lo resuelva, puede guardar el libro PDF y abrirlo con otro programa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lastimosamente, Bloom no fue capaz de abrir Adobe Reader, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva (re)instalar 'Adobe Reader'.\nHasta que lo resuelve, puede guardar el libro PDF y abrirlo con otro programa.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Noticia triste. Bloom no fue capaz de abrir Adobe Reader aquí, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva a instalar a 'Adobe Reader'.\nHasta que llegue ese fijo, puede guardar el libro PDF y abrirlo en otro programa.</target>
         </alt-trans>
@@ -4822,10 +4828,13 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.Letters.Header</note>
         <target xml:lang="es-ES" state="translated">Letras y combinaciones de letras</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
         <note>ID: ReaderSetup.Letters.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros descifrables, Bloom nesecita saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        <target xml:lang="es-ES">Para ayudarle a crear libros descifrables, Bloom necesita saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para ayudarle a crear libros descifrables, Bloom nesecita saber las letras y combinaciones de letras que usted va a enseñar.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para ayudarle a crear lectores decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
         </alt-trans>
@@ -5123,7 +5132,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage. There are two ways to give words to Bloom:</source>
         <note>ID: ReaderSetup.Words.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle con la creación de libros descifrables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
+        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros descifrables, Bloom puede sugerir palabras que encajan dentro de la etapa actual. Hay dos maneras de introducir palabras en Bloom:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para ayudarle con la creación de libros descifrables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para ayudarle a crear libros decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
         </alt-trans>
