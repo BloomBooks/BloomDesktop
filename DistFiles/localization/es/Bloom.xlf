@@ -371,18 +371,18 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari</note>
         <target xml:lang="es-ES" state="translated">devanagari</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian" approved="yes">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian">
         <source xml:lang="en">Georgian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian</note>
-        <target xml:lang="es-ES">Georgiano</target>
+        <target xml:lang="es-ES" state="translated">Georgiano</target>
         <alt-trans>
           <target xml:lang="es-ES">georgiano</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati" approved="yes">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati">
         <source xml:lang="en">Gujarati</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati</note>
-        <target xml:lang="es-ES">Gujarati</target>
+        <target xml:lang="es-ES" state="translated">Gujarati</target>
         <alt-trans>
           <target xml:lang="es-ES">gujarati</target>
         </alt-trans>
@@ -443,10 +443,10 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
         <target xml:lang="es-ES" state="translated">oriya</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel" approved="yes">
         <source xml:lang="en">Page Numbering Style</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
-        <target xml:lang="es-ES" state="translated">Estilo de numeración de páginas</target>
+        <target xml:lang="es-ES">Estilo de numeración de páginas</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" approved="yes">
         <source xml:lang="en">Persian</source>
@@ -484,15 +484,18 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
         <target xml:lang="es-ES" state="translated">armenio (upper)</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem" approved="yes">
         <source xml:lang="en">Right to Left Writing System</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem</note>
-        <target xml:lang="es-ES" state="translated">Escritura de derecha a izquirda</target>
+        <target xml:lang="es-ES">Escritura de derecha a izquierda</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Escritura de derecha a izquirda</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
-        <target xml:lang="es-ES" state="translated">Configuración de alfabeto especial</target>
+        <target xml:lang="es-ES">Configuración de alfabeto especial</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
         <source xml:lang="en">Settings</source>
@@ -1886,10 +1889,13 @@
         <note>ID: EditTab.JpegWarningDialog.Photograph</note>
         <target xml:lang="es-ES" state="translated">Utilice el archivo JPEG</target>
       </trans-unit>
-      <trans-unit id="EditTab.JpegWarningDialog.WarningText">
+      <trans-unit id="EditTab.JpegWarningDialog.WarningText" approved="yes">
         <source xml:lang="en">The file you’ve chosen is a “JPEG” file. JPEG files are perfect for photographs and color artwork. However, JPEG files are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</source>
         <note>ID: EditTab.JpegWarningDialog.WarningText</note>
-        <target xml:lang="es-ES" state="translated">El archivo elegido es un archivo "JPEG". Ilustraciones JPEG son perfectas para las fotografías y las ilustraciones a colores. Sin embargo, JPEG es un gran problema para arte de línea en blanco y negro. Los problemas incluyen:\n• Borrosidad y puntos grises.\n• Es dificil compartir los archivos grandes.\n• Si hay muchos archivos grandes de JPEG, es posible que Bloom no tendrá la memoria suficiente memoria para hacer PDFs.\n\n Nota: Debido a que JPEG es "lossy", la conversión de un archivo JPEG a PNG, TIFF o BMP empeora las cosas. Si esta es arte de línea en blanco y negro, debe obtener un escaneo original en uno de esos formatos.\n\n Por favor seleccione uno de los siguientes, y luego haga clic en "Aceptar":</target>
+        <target xml:lang="es-ES">El archivo elegido es un archivo "JPEG". Los archivos JPEG son perfectos para fotografías e ilustraciones a color. Sin embargo, los archivos JPEG son un gran problema para el arte de línea en blanco y negro. Los problemas incluyen:\n• Borrosidad y puntos grises.\n• Archivos de gran tamaño, haciendo el libro difícil de compartir.\n• Si hay muchos archivos JPEG de gran tamaño, es posible que Bloom no tenga suficiente memoria para hacer PDFs.\n\n Nota: Debido a que el formato JPEG genera "pérdidas", convertir un archivo JPEG a PNG, TIFF o BMP empeora las cosas. Si este archivo es un arte de línea en blanco y negro, debe obtener un escaneo original en uno de esos formatos.\n\n Por favor seleccione uno de los siguientes, y luego haga clic en "Aceptar":</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El archivo elegido es un archivo "JPEG". Ilustraciones JPEG son perfectas para las fotografías y las ilustraciones a colores. Sin embargo, JPEG es un gran problema para arte de línea en blanco y negro. Los problemas incluyen:\n• Borrosidad y puntos grises.\n• Es dificil compartir los archivos grandes.\n• Si hay muchos archivos grandes de JPEG, es posible que Bloom no tendrá la memoria suficiente memoria para hacer PDFs.\n\n Nota: Debido a que JPEG es "lossy", la conversión de un archivo JPEG a PNG, TIFF o BMP empeora las cosas. Si esta es arte de línea en blanco y negro, debe obtener un escaneo original en uno de esos formatos.\n\n Por favor seleccione uno de los siguientes, y luego haga clic en "Aceptar":</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">El archivo elegido es un archivo "JPEG". Ilustraciones JPEG son perfectas para las fotografías y las ilustraciones en color. Sin embargo, JPEG es un gran problema para arte de línea en blanco y negro. Los problemas incluyen: \n• Borrosidad y puntos grises. \n• Archivos de gran tamaño, esto hace un libro difícil a compartir. \n• Si hay muchos archivos JPEG de gran tamaño, Bloom no tiene suficiente memoria para hacer PDFs \n \n Nota: Debido a JPEG es "lossy", la conversión de un archivo JPEG a PNG, TIFF o BMP en realidad hace que las cosas aún peor. Si esta es arte de línea en blanco y negro, debe obtener un archivo original escaneado en uno de esos formatos \n\n Por favor seleccione uno de los siguientes, a continuación, haga clic en "Aceptar":</target>
         </alt-trans>
