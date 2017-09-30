@@ -271,7 +271,10 @@
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="es-ES" state="translated">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede volver a cambiarlo en Configuración: Haciendo libros.</target>
+        <target xml:lang="es-ES" state="translated">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede volver a cambiarlo en Configuración: Creando libros.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede volver a cambiarlo en Configuración: Haciendo libros.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede cambiar de nuevo en Configuración: Haciendo libros.</target>
         </alt-trans>
@@ -590,16 +593,19 @@
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
         <target xml:lang="es-ES">Provincia</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.Restart">
+      <trans-unit id="CollectionSettingsDialog.Restart" approved="yes">
         <source xml:lang="en">Restart</source>
         <note>ID: CollectionSettingsDialog.Restart</note>
         <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
-        <target xml:lang="es-ES" state="translated">Reiniciar</target>
+        <target xml:lang="es-ES">Reiniciar</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RestartMessage">
+      <trans-unit id="CollectionSettingsDialog.RestartMessage" approved="yes">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
-        <target xml:lang="es-ES" state="translated">Bloom cerrará y abrirá este proyecto con la nuevas configuraciónes.</target>
+        <target xml:lang="es-ES">Bloom cerrará y abrirá nuevamente este proyecto con la nuevas configuraciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom cerrará y abrirá este proyecto con la nuevas configuraciónes.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom se cierre y vuelva a abrir este proyecto con la nueva configuración.</target>
         </alt-trans>
@@ -679,10 +685,10 @@
         <note>ID: CollectionTab.BookMenu.ExportToXMLForInDesign</note>
         <target xml:lang="es-ES" state="translated">Exportar a XML para InDesign...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
+      <trans-unit id="CollectionTab.BookMenu.MakeBloomPack" approved="yes">
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
-        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom...</target>
+        <target xml:lang="es-ES">Crear un Paquete de Bloom...</target>
         <alt-trans>
           <target xml:lang="es-ES">Crear BloomPack...</target>
         </alt-trans>
@@ -816,10 +822,10 @@
           <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MakeBloomPackButton">
+      <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
-        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom</target>
+        <target xml:lang="es-ES">Crear un Paquete de Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Crear BloomPack</target>
         </alt-trans>
@@ -1650,10 +1656,13 @@
         <note>ID: EditTab.FrontMatter.AuthorIllustratorPrompt</note>
         <target xml:lang="es-ES" state="translated">Puede usar este espacio para el autor/ilustrador, o cualquier otra cosa.</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.BigBook.Contributions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Contributions</note>
-        <target xml:lang="es-ES" state="translated">Cuando esta creando un libro original, use este cuadro para registrar las contribuciones hechas por los escritores, ilustradores, editores, etc.</target>
+        <target xml:lang="es-ES">Cuando está creando un libro original, use este cuadro para registrar las contribuciones hechas por los escritores, ilustradores, editores, etc.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuando esta creando un libro original, use este cuadro para registrar las contribuciones hechas por los escritores, ilustradores, editores, etc.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cuando vaya a crear un libro original, use este cuadro para registrar las contribuciones hechas por los escritores, ilustradores, editores, etc.</target>
         </alt-trans>
@@ -2000,10 +2009,13 @@
         <note>ID: EditTab.Position</note>
         <target xml:lang="es-ES" state="translated">Posición</target>
       </trans-unit>
-      <trans-unit id="EditTab.ReadOnlyInAuthorMode" sil:dynamic="true">
+      <trans-unit id="EditTab.ReadOnlyInAuthorMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You cannot put anything in there while making an original book.</source>
         <note>ID: EditTab.ReadOnlyInAuthorMode</note>
-        <target xml:lang="es-ES" state="translated">No se puede poner nada allí mientras que está haciendo un libro original.</target>
+        <target xml:lang="es-ES">No se puede colocar nada allí mientras que está haciendo un libro original.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se puede poner nada allí mientras que está haciendo un libro original.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se puede poner nada allí mientras usted está haciendo un libro original.</target>
         </alt-trans>
@@ -3194,10 +3206,10 @@
         <note>ID: NewCollectionWizard.WelcomePage</note>
         <target xml:lang="es-ES" state="translated">¡Bienvenido a Bloom!</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1">
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine1" approved="yes">
         <source xml:lang="en">You are almost ready to start making books.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine1</note>
-        <target xml:lang="es-ES" state="translated">Está casi listo para empezar a crear libros.</target>
+        <target xml:lang="es-ES">Está casi listo para empezar a crear libros.</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
         <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
@@ -4829,10 +4841,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Los siguientes libros se harán en las plantillas:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+      <trans-unit id="ReaderTemplateBloomPackDialog.SaveBloomPackButton" approved="yes">
         <source xml:lang="en">Save Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.SaveBloomPackButton</note>
-        <target xml:lang="es-ES" state="translated">Guardar el Paquete de Bloom</target>
+        <target xml:lang="es-ES">Guardar el Paquete de Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Guardar Paquete de Bloom</target>
         </alt-trans>
