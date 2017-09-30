@@ -232,10 +232,13 @@
           <target xml:lang="es-ES">Mostrar los comandos experimentales (e.g. exportar XML para InDesign)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates" approved="yes">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="es-ES" state="translated">Mostrar las plantillas experimentales (p. ej. Diccionario del cuadro, calendario)</target>
+        <target xml:lang="es-ES">Mostrar las plantillas experimentales (p. ej. Diccionario ilustrado)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Mostrar las plantillas experimentales (p. ej. Diccionario del cuadro, calendario)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Mostrar las plantillas experimentales (e.g. Diccionario del cuadro, calendario)</target>
         </alt-trans>
@@ -1128,31 +1131,37 @@
           <target xml:lang="es-ES">Bloom ha descargado el libro, pero tuvo problemas haciéndolo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje de nuevo, por favor haga clic en el botón "Detalles" y reportar el problema a los programadores de Bloom</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.DownloadingDialogTitle">
+      <trans-unit id="Download.DownloadingDialogTitle" approved="yes">
         <source xml:lang="en">Downloading book</source>
         <note>ID: Download.DownloadingDialogTitle</note>
-        <target xml:lang="es-ES" state="translated">Descargando libro</target>
+        <target xml:lang="es-ES">Descargando el libro</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Descargando libro</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.GenericNetworkProblemNotice">
+      <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book.</source>
         <note>ID: Download.GenericNetworkProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">No se pudo descargar su libro.</target>
+        <target xml:lang="es-ES">No se pudo descargar su libro.</target>
         <alt-trans>
           <target xml:lang="es-ES">Hubo un problema al descargar su libro.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.ProblemNotice">
+      <trans-unit id="Download.ProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading your book. You may need to restart Bloom or get technical help.</source>
         <note>ID: Download.ProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">No se pudo descargar su libro. Es posible que necesite reiniciar Bloom u obtener ayuda técnica.</target>
+        <target xml:lang="es-ES">No se pudo descargar su libro. Es posible que necesite reiniciar Bloom u obtener ayuda técnica.</target>
         <alt-trans>
           <target xml:lang="es-ES">Hubo un problema al descargar su libro. Es posible que necesite reiniciar Bloom u obtener ayuda técnica.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Download.TimeoutProblemNotice">
+      <trans-unit id="Download.TimeoutProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.TimeoutProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">No se pudo descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar de su ubicación, escríbanos a la dirección issues@bloomlibrary.org.</target>
+        <target xml:lang="es-ES">No fue posible descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar desde su ubicación, escríbanos a la dirección issues@bloomlibrary.org.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se pudo descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar de su ubicación, escríbanos a la dirección issues@bloomlibrary.org.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se pudo descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar de su ubicación, escríbanos a la dirección issues@bloomlibrary.org</target>
         </alt-trans>
@@ -1226,10 +1235,13 @@
         <note>ID: EditTab.AddTextBoxToImage</note>
         <target xml:lang="es-ES" state="translated">Añadir cuadro de texto a la imagen</target>
       </trans-unit>
-      <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
         <note>ID: EditTab.BackMatter.InsideBackCoverTextPrompt</note>
-        <target xml:lang="es-ES" state="translated">Si require un lugar donde agregar más información sobre el libro, puede utilizar esta página, que es la parte interior de la contratapa.</target>
+        <target xml:lang="es-ES">Si usted necesita un lugar donde agregar más información sobre el libro, puede utilizar esta página, que es la parte interior de la contratapa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Si require un lugar donde agregar más información sobre el libro, puede utilizar esta página, que es la parte interior de la contratapa.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Si require un lugar donde agregar más información sobre el libro, puede utilizar esta página, que es la parte interior de la contracubierta.</target>
         </alt-trans>
@@ -1240,10 +1252,13 @@
           <target xml:lang="es-ES">Si usted necesita un lugar para poner más información sobre el libro, puede utilizar esta página, que es la parte interior de la cubierta posterior.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.BackMatter.OutsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</source>
         <note>ID: EditTab.BackMatter.OutsideBackCoverTextPrompt</note>
-        <target xml:lang="es-ES" state="translated">Si usted necesita un lugar donde poner más información sobre el libro, puede utilizar esta página, que es la contratapa.</target>
+        <target xml:lang="es-ES">Si usted necesita un lugar donde agregar más información sobre el libro, puede utilizar esta página, que es la contratapa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Si usted necesita un lugar donde poner más información sobre el libro, puede utilizar esta página, que es la contratapa.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Si usted necesita un lugar donde poner más información sobre el libro, puede utilizar esta página, que es la contracubierta.</target>
         </alt-trans>
@@ -1265,18 +1280,24 @@
           <target xml:lang="es-ES">Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino).</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.CannotChangeCopyright">
+      <trans-unit id="EditTab.CannotChangeCopyright" approved="yes">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
         <note>ID: EditTab.CannotChangeCopyright</note>
-        <target xml:lang="es-ES" state="translated">No se puede cambiar los derechos de autor o licencia de este libro.</target>
+        <target xml:lang="es-ES">Lo sentimos, no se puede cambiar los derechos de autor ni la licencia de este libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se puede cambiar los derechos de autor o licencia de este libro.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Lo sentimos, no se puede cambiar los derechos de autor y la licencia de este libro.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.CantPasteImageLocked">
+      <trans-unit id="EditTab.CantPasteImageLocked" approved="yes">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
-        <target xml:lang="es-ES" state="translated">Este libro está bloqueado para que las imágenes no puedan ser cambiadas.</target>
+        <target xml:lang="es-ES">Lo sentimos, este libro está bloqueado para que las imágenes no puedan ser cambiadas.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro está bloqueado para que las imágenes no puedan ser cambiadas.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro está bloqueado para que las ilustraciones no puedan ser cambiadas.</target>
         </alt-trans>
@@ -1315,10 +1336,13 @@
         <note>ID: EditTab.ContentLanguagesDropdown</note>
         <target xml:lang="es-ES" state="translated">Configuración multilingüe</target>
       </trans-unit>
-      <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip">
+      <trans-unit id="EditTab.ContentLanguagesDropdown.ToolTip" approved="yes">
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown.ToolTip</note>
-        <target xml:lang="es-ES" state="translated">Selecciona idioma para crear un libro bilingüe o trilingüe</target>
+        <target xml:lang="es-ES">Seleccione un idioma para hacer este libro un libro bilingüe o trilingüe</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Selecciona idioma para crear un libro bilingüe o trilingüe</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CopyButton">
         <source xml:lang="en">Copy</source>
@@ -1335,11 +1359,14 @@
         <note>ID: EditTab.CopyButton.ToolTipWhenDisabled</note>
         <target xml:lang="es-ES" state="translated">Antes debe seleccionar el texto para poder copiarlo</target>
       </trans-unit>
-      <trans-unit id="EditTab.CopyImageIPMetadataQuestion">
+      <trans-unit id="EditTab.CopyImageIPMetadataQuestion" approved="yes">
         <source xml:lang="en">Copy this information to all other pictures in this book?</source>
         <note>ID: EditTab.CopyImageIPMetadataQuestion</note>
         <note>get this after you edit the metadata of an image</note>
-        <target xml:lang="es-ES" state="translated">¿Copiar esta información a todas las otras ilustraciones de este libro?</target>
+        <target xml:lang="es-ES">¿Copiar esta información a todas las otras imágenes de este libro?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Copiar esta información a todas las otras ilustraciones de este libro?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.CopyPage">
         <source xml:lang="en">Copy Page</source>
@@ -1357,10 +1384,10 @@
         <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
         <target xml:lang="es-ES" state="translated"> o </target>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture</source>
         <note>ID: EditTab.CustomPage.Picture</note>
-        <target xml:lang="es-ES" state="translated">Imagen</target>
+        <target xml:lang="es-ES">Imagen</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true">
         <source xml:lang="en">Text</source>
@@ -2230,10 +2257,13 @@
         <note>Label above the set of options, Top/Center/Bottom</note>
         <target xml:lang="es-ES" state="translated">Alineación vertical</target>
       </trans-unit>
-      <trans-unit id="EditTab.ThumbnailCaptions.Picture On Bottom">
+      <trans-unit id="EditTab.ThumbnailCaptions.Picture On Bottom" approved="yes">
         <source xml:lang="en">Picture On Bottom</source>
         <note>ID: EditTab.ThumbnailCaptions.Picture On Bottom</note>
-        <target xml:lang="es-ES" state="translated">Imagen en inferior de la página</target>
+        <target xml:lang="es-ES">Imagen en la parte inferior de la página</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Imagen en inferior de la página</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Imagen en el fondo</target>
         </alt-trans>
@@ -2754,10 +2784,10 @@
         <note>ID: Errors.ProblemDeletingFile</note>
         <target xml:lang="es-ES" state="translated">Bloom no pudo eliminar este archivo {0}</target>
       </trans-unit>
-      <trans-unit id="Errors.ProblemImportingPicture">
+      <trans-unit id="Errors.ProblemImportingPicture" approved="yes">
         <source xml:lang="en">Bloom had a problem importing this picture.</source>
         <note>ID: Errors.ProblemImportingPicture</note>
-        <target xml:lang="es-ES" state="translated">Bloom tuvo un problema al importar esta imagen.</target>
+        <target xml:lang="es-ES">Bloom tuvo un problema al importar esta imagen.</target>
       </trans-unit>
       <trans-unit id="Errors.ReportThisProblemButton">
         <source xml:lang="en">Report this problem to Bloom Support</source>
@@ -5123,10 +5153,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
         <target xml:lang="es-ES" state="translated">Libro nivelado</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
-        <target xml:lang="es-ES" state="translated">Diccionario ilustrado</target>
+        <target xml:lang="es-ES">Diccionario ilustrado</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true">
         <source xml:lang="en">Vaccinations</source>
@@ -5312,10 +5342,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Texto básico &amp; ilustración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Text &amp; Picture</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Picture</note>
-        <target xml:lang="es-ES" state="translated">Texto básico e imagen</target>
+        <target xml:lang="es-ES">Texto básico e imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Texto Básico e imagen</target>
         </alt-trans>
@@ -5452,10 +5482,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Sólo texto</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Just a Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just a Picture</source>
         <note>ID: TemplateBooks.PageLabel.Just a Picture</note>
-        <target xml:lang="es-ES" state="translated">Solamente una imagen</target>
+        <target xml:lang="es-ES">Solamente una imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Sólo una imagen</target>
         </alt-trans>
@@ -5487,26 +5517,26 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.Paper Saver</note>
         <target xml:lang="es-ES" state="translated">Economizador de Papel</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Word</source>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
-        <target xml:lang="es-ES" state="translated">Imagen y palabra</target>
+        <target xml:lang="es-ES">Imagen y palabra</target>
         <alt-trans>
           <target xml:lang="es-ES">Imagen &amp; Palabra</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture in Middle</source>
         <note>ID: TemplateBooks.PageLabel.Picture in Middle</note>
-        <target xml:lang="es-ES" state="translated">Imagen en el medio</target>
+        <target xml:lang="es-ES">Imagen en el medio</target>
         <alt-trans>
           <target xml:lang="es-ES">Imagen en medio</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture on Bottom</source>
         <note>ID: TemplateBooks.PageLabel.Picture on Bottom</note>
-        <target xml:lang="es-ES" state="translated">Imagen en la parte inferior</target>
+        <target xml:lang="es-ES">Imagen en la parte inferior</target>
         <alt-trans>
           <target xml:lang="es-ES">Imagen de fondo</target>
         </alt-trans>
