@@ -1602,10 +1602,10 @@
         <note>ID: EditTab.FormatDialog.AlreadyExists</note>
         <target xml:lang="es-ES">Ya existe ese estilo. Por favor elija otro nombre.</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the border and background</source>
         <note>ID: EditTab.FormatDialog.BorderToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el borde y el fondo</target>
+        <target xml:lang="es-ES">Cambiar el borde y el fondo</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true">
         <source xml:lang="en">Characters</source>
@@ -1663,10 +1663,10 @@
         <note>ID: EditTab.FormatDialog.Format</note>
         <target xml:lang="es-ES">Formato</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
-        <target xml:lang="es-ES" state="translated">Sangría</target>
+        <target xml:lang="es-ES">Sangría</target>
         <alt-trans>
           <target xml:lang="es-ES">Indentar</target>
         </alt-trans>
@@ -2147,15 +2147,15 @@
         <note>ID: EditTab.PasteButton.ToolTip</note>
         <target xml:lang="es-ES">Pegar (Ctrl+V)</target>
       </trans-unit>
-      <trans-unit id="EditTab.PastePage">
+      <trans-unit id="EditTab.PastePage" approved="yes">
         <source xml:lang="en">Paste Page</source>
         <note>ID: EditTab.PastePage</note>
-        <target xml:lang="es-ES" state="translated">Pegar página</target>
+        <target xml:lang="es-ES">Pegar página</target>
       </trans-unit>
-      <trans-unit id="EditTab.PasteButton.ToolTipWhenDisabled">
+      <trans-unit id="EditTab.PasteButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">There is nothing on the Clipboard that you can paste here.</source>
         <note>ID: EditTab.PasteButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="translated">No hay nada en el portapapeles que pueda pegar aquí.</target>
+        <target xml:lang="es-ES">No hay nada en el portapapeles que pueda pegar aquí.</target>
         <alt-trans>
           <target xml:lang="es-ES">No hay nada en el portapapeles que se puede pegar aquí.</target>
         </alt-trans>
@@ -2181,20 +2181,20 @@
         <note>ID: EditTab.SavingNotification</note>
         <target xml:lang="es-ES">Guardando...</target>
       </trans-unit>
-      <trans-unit id="EditTab.StyleEditor.BorderToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.StyleEditor.BorderToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the border and background</source>
         <note>ID: EditTab.StyleEditor.BorderToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el borde y el fondo</target>
+        <target xml:lang="es-ES">Cambiar el borde y el fondo</target>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.FontFaceToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the font face</source>
         <note>ID: EditTab.StyleEditor.FontFaceToolTip</note>
         <target xml:lang="es-ES" state="translated">Cambiar el tipo de fuente</target>
       </trans-unit>
-      <trans-unit id="EditTab.StyleEditor.FontSizeToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.StyleEditor.FontSizeToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the font size</source>
         <note>ID: EditTab.StyleEditor.FontSizeToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el tamaño de la fuente</target>
+        <target xml:lang="es-ES">Cambiar el tamaño de la fuente</target>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.LineSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between lines of text</source>
@@ -2236,7 +2236,10 @@
       <trans-unit id="EditTab.StyleEditorTip" sil:dynamic="true">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.StyleEditorTip</note>
-        <target xml:lang="es-ES" state="translated">Ajuste el esitilo del formato</target>
+        <target xml:lang="es-ES" state="translated">Ajuste el estilo del formato</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ajuste el esitilo del formato</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Ajuste el formato de estilo</target>
         </alt-trans>
@@ -2262,15 +2265,15 @@
         <note>ID: EditTab.TextBoxProperties.Alignment</note>
         <target xml:lang="es-ES">Alineación</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.Background" sil:dynamic="true">
+      <trans-unit id="EditTab.TextBoxProperties.Background" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Background</source>
         <note>ID: EditTab.TextBoxProperties.Background</note>
-        <target xml:lang="es-ES" state="translated">Fondo</target>
+        <target xml:lang="es-ES">Fondo</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.BordersAndBackground" sil:dynamic="true">
+      <trans-unit id="EditTab.TextBoxProperties.BordersAndBackground" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Borders &amp; Background</source>
         <note>ID: EditTab.TextBoxProperties.BordersAndBackground</note>
-        <target xml:lang="es-ES" state="translated">Bordes y fondo</target>
+        <target xml:lang="es-ES">Bordes y fondo</target>
         <alt-trans>
           <target xml:lang="es-ES">Bordes &amp; fondo</target>
         </alt-trans>
@@ -2341,18 +2344,21 @@
         <note>Label above pull-down menu with options, ShowOnGroup/ShowOnEach</note>
         <target xml:lang="es-ES">Mostrar la burbuja de sugerencia</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.ShowOnGroup">
+      <trans-unit id="EditTab.TextBoxProperties.ShowOnGroup" approved="yes">
         <source xml:lang="en">Just once on the whole group</source>
         <note>ID: EditTab.TextBoxProperties.ShowOnGroup</note>
-        <target xml:lang="es-ES" state="translated">Sólo una vez en todo el grupo</target>
+        <target xml:lang="es-ES">Sólo una vez en todo el grupo</target>
         <alt-trans>
           <target xml:lang="es-ES">Sólo una vez para todo el grupo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.ShowOnEach">
+      <trans-unit id="EditTab.TextBoxProperties.ShowOnEach" approved="yes">
         <source xml:lang="en">On each language-field in the group</source>
         <note>ID: EditTab.TextBoxProperties.ShowOnEach</note>
-        <target xml:lang="es-ES" state="translated">En cada campo de idioma en el grupo</target>
+        <target xml:lang="es-ES">En cada campo de "idioma" en el grupo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">En cada campo de idioma en el grupo</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">En cada campo de la lengua en el grupo</target>
         </alt-trans>
@@ -2362,11 +2368,11 @@
         <note>ID: EditTab.TextBoxProperties.Title</note>
         <target xml:lang="es-ES">Propiedades del cuadro de texto</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.VerticalAlignment">
+      <trans-unit id="EditTab.TextBoxProperties.VerticalAlignment" approved="yes">
         <source xml:lang="en">Vertical Alignment</source>
         <note>ID: EditTab.TextBoxProperties.VerticalAlignment</note>
         <note>Label above the set of options, Top/Center/Bottom</note>
-        <target xml:lang="es-ES" state="translated">Alineación vertical</target>
+        <target xml:lang="es-ES">Alineación vertical</target>
       </trans-unit>
       <trans-unit id="EditTab.ThumbnailCaptions.Picture On Bottom" approved="yes">
         <source xml:lang="en">Picture On Bottom</source>
@@ -2387,10 +2393,10 @@
           <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Herramienta para libros descifrables</target>
+        <target xml:lang="es-ES">Herramienta para libros descifrables</target>
         <alt-trans>
           <target xml:lang="es-ES">Herramienta para libros decodificables</target>
         </alt-trans>
@@ -2398,7 +2404,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
-        <target xml:lang="es-ES" state="translated">Bloom solo puede utilazar las primeras {0} palabras.</target>
+        <target xml:lang="es-ES" state="translated">Bloom sólo puede manejar las primeras {0} palabras.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom solo puede utilazar las primeras {0} palabras.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Allowed words in this stage</source>
@@ -2607,10 +2616,10 @@
           <target xml:lang="es-ES">frase más larga</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Predictability" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Predictability</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Predictability</note>
-        <target xml:lang="es-ES" state="translated">Previsibilidad</target>
+        <target xml:lang="es-ES">Previsibilidad</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true">
         <source xml:lang="en">Set up Levels</source>
@@ -2790,7 +2799,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
-        <target xml:lang="es-ES" state="translated">Hacer un e-libro que reproduce las grabaciones mientras que destaca las oraciónes.</target>
+        <target xml:lang="es-ES" state="translated">Hacer un libro electrónico que reproduce las grabaciones mientras que destaca las oraciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un e-libro que reproduce las grabaciones mientras que destaca las oraciónes.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un e-libro que reproduce las grabaciones mientras que destaca las frases.</target>
         </alt-trans>
@@ -3020,10 +3032,10 @@
         <note>ID: HelpMenu.Help Menu_ToolTip_</note>
         <target xml:lang="es-ES" state="translated">Conseguir ayuda</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem">
+      <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem" approved="yes">
         <source xml:lang="en">Key Bloom Concepts</source>
         <note>ID: HelpMenu.KeyBloomConceptsToolStripMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Conceptos importantes de Bloom</target>
+        <target xml:lang="es-ES">Conceptos importantes de Bloom</target>
       </trans-unit>
       <trans-unit id="HelpMenu.AskAQuestionMenuItem">
         <source xml:lang="en">Ask a Question (web)</source>
@@ -3591,10 +3603,10 @@
           <target xml:lang="es-ES">Control</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.CopyToClipboard">
+      <trans-unit id="PublishTab.Android.CopyToClipboard" approved="yes">
         <source xml:lang="en">Copy to Clipboard</source>
         <note>ID: PublishTab.Android.CopyToClipboard</note>
-        <target xml:lang="es-ES" state="translated">Copiar al portapapeles</target>
+        <target xml:lang="es-ES">Copiar al portapapeles</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader">
         <source xml:lang="en">Get Bloom Reader App</source>
