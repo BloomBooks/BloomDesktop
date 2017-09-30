@@ -268,10 +268,10 @@
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
         <target xml:lang="es-ES">Bloom está cambiando la fuente predeterminada para "{0}" a la nueva fuente "Andika New Basic".</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true">
+      <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
-        <target xml:lang="es-ES" state="translated">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede volver a cambiarlo en Configuración: Creando libros.</target>
+        <target xml:lang="es-ES">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede volver a cambiarlo en Configuración: Creando libros.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede volver a cambiarlo en Configuración: Haciendo libros.</target>
         </alt-trans>
