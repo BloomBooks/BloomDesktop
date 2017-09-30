@@ -1931,10 +1931,10 @@
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
         <target xml:lang="es-ES">Haga clic para elegir el tema</target>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
-        <target xml:lang="es-ES" state="translated">Reconocimientos para la versión traducida, en {lang}</target>
+        <target xml:lang="es-ES">Reconocimientos para la versión traducida, en {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.HowToUnlockBook" approved="yes">
         <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
@@ -2640,38 +2640,41 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisBook</note>
         <target xml:lang="es-ES">Este libro</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisPage</note>
-        <target xml:lang="es-ES" state="translated">Esta página</target>
+        <target xml:lang="es-ES">Esta página</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Total" sil:dynamic="true" approved="yes">
         <source xml:lang="en">total</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Total</note>
-        <target xml:lang="es-ES" state="translated">total</target>
+        <target xml:lang="es-ES">total</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Unique" sil:dynamic="true" approved="yes">
         <source xml:lang="en">unique</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Unique</note>
-        <target xml:lang="es-ES" state="translated">único</target>
+        <target xml:lang="es-ES">único</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Vocabulary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Vocabulary</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Vocabulary</note>
-        <target xml:lang="es-ES" state="translated">Vocabulario</target>
+        <target xml:lang="es-ES">Vocabulario</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
         <source xml:lang="en">Word Counts</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WordCounts</note>
-        <target xml:lang="es-ES" state="translated">Numero de palabras</target>
+        <target xml:lang="es-ES" state="translated">Número de palabras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Numero de palabras</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Conteo de palabras</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.More" sil:dynamic="true" approved="yes">
         <source xml:lang="en">More...</source>
         <note>ID: EditTab.Toolbox.More</note>
-        <target xml:lang="es-ES" state="translated">Más...</target>
+        <target xml:lang="es-ES">Más...</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.IsTemplateBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is a template book.</source>
@@ -2711,16 +2714,19 @@
           <target xml:lang="es-ES">Bloom normalmente previene la mayoría de los cambios a los libros shell. Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBook.BadState">
+      <trans-unit id="EditTab.Toolbox.TalkingBook.BadState" approved="yes">
         <source xml:lang="en">Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart.</source>
         <note>ID: EditTab.Toolbox.TalkingBook.BadState</note>
         <note>This is very low priority for translation.</note>
-        <target xml:lang="es-ES" state="translated">La grabación no esta funcionando bien. De repente, el micrófono esta desenchufado. Tendra que empezar de nuevo.</target>
+        <target xml:lang="es-ES">La grabación de Bloom no está funcionando bien. Puede ser que el micrófono esté desenchufado. Tendrá que empezar de nuevo.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La grabación no esta funcionando bien. De repente, el micrófono esta desenchufado. Tendra que empezar de nuevo.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput">
+      <trans-unit id="EditTab.Toolbox.TalkingBook.NoInput" approved="yes">
         <source xml:lang="en">No input device</source>
         <note>ID: EditTab.Toolbox.TalkingBook.NoInput</note>
-        <target xml:lang="es-ES" state="translated">Ningún dispositivo de entrada</target>
+        <target xml:lang="es-ES">Ningún dispositivo de entrada</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBook.NoMic" approved="yes">
         <source xml:lang="en">This computer appears to have no sound recording device available. You will need one to record audio for a talking book.</source>
@@ -2739,10 +2745,10 @@
         <note>Appears when the speak/record button is pressed very briefly</note>
         <target xml:lang="es-ES">Por favor, mantenga pulsado el botón hasta que haya terminado de grabar</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Back" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Back</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Back</note>
-        <target xml:lang="es-ES" state="translated">Regresar</target>
+        <target xml:lang="es-ES">Regresar</target>
         <alt-trans>
           <target xml:lang="es-ES">Atrás</target>
         </alt-trans>
@@ -2763,10 +2769,10 @@
           <target xml:lang="es-ES">1) Averiguar que está usando el dispositivo de grabación correcto y que el nivel de sonido aparece en la zona azul:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Clear</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
-        <target xml:lang="es-ES" state="translated">Borrar</target>
+        <target xml:lang="es-ES">Borrar</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
@@ -2779,10 +2785,10 @@
           <target xml:lang="es-ES">Herramienta de libros parlantes</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Listen to the whole page</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
-        <target xml:lang="es-ES" state="translated">Escuchar la página entera</target>
+        <target xml:lang="es-ES">Escuchar la página entera</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2) Look at the highlighted sentence</source>
@@ -2797,10 +2803,10 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
         <target xml:lang="es-ES">5) Siguiente</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3) Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Speak</note>
-        <target xml:lang="es-ES" state="translated">3) Hablar</target>
+        <target xml:lang="es-ES">3) Hablar</target>
         <alt-trans>
           <target xml:lang="es-ES">3) Grabar</target>
         </alt-trans>
@@ -2836,20 +2842,20 @@
         <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
         <target xml:lang="es-ES">Tres idiomas</target>
       </trans-unit>
-      <trans-unit id="EditTab.UndoButton">
+      <trans-unit id="EditTab.UndoButton" approved="yes">
         <source xml:lang="en">Undo</source>
         <note>ID: EditTab.UndoButton</note>
-        <target xml:lang="es-ES" state="translated">Deshacer</target>
+        <target xml:lang="es-ES">Deshacer</target>
       </trans-unit>
-      <trans-unit id="EditTab.UndoButton.ToolTip">
+      <trans-unit id="EditTab.UndoButton.ToolTip" approved="yes">
         <source xml:lang="en">Undo (Ctrl+Z)</source>
         <note>ID: EditTab.UndoButton.ToolTip</note>
-        <target xml:lang="es-ES" state="translated">Deshacer (Ctrl+Z)</target>
+        <target xml:lang="es-ES">Deshacer (Ctrl+Z)</target>
       </trans-unit>
-      <trans-unit id="EditTab.UndoButton.ToolTipWhenDisabled">
+      <trans-unit id="EditTab.UndoButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">There is nothing to undo</source>
         <note>ID: EditTab.UndoButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="translated">No hay nada que deshacer</target>
+        <target xml:lang="es-ES">No hay nada que deshacer</target>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -2877,7 +2883,10 @@
         <source xml:lang="en">Cannot access {0}</source>
         <note>ID: Errors.CannotAccessFile</note>
         <note>displays as a "toast", {0} is the URL/filename</note>
-        <target xml:lang="es-ES" state="translated">No puede acceder a {0}</target>
+        <target xml:lang="es-ES" state="translated">No se puede acceder a {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No puede acceder a {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</source>
@@ -3218,10 +3227,10 @@
         <note>ID: LayoutChoices.QuarterLetterLandscape</note>
         <target xml:lang="es-ES" state="translated">QuartoTamañoCartaHorizontal</target>
       </trans-unit>
-      <trans-unit id="LicenseDialog.WindowTitle">
+      <trans-unit id="LicenseDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Bloom {0}</target>
+        <target xml:lang="es-ES">Bloom {0}</target>
       </trans-unit>
       <trans-unit id="LicenseDialog._acceptButton">
         <source xml:lang="en">I accept the terms of the license agreement</source>
@@ -3231,48 +3240,54 @@
       <trans-unit id="LoginDialog.AgreeToTerms">
         <source xml:lang="en">I agree to the Bloom Library's Terms of Use</source>
         <note>ID: LoginDialog.AgreeToTerms</note>
-        <target xml:lang="es-ES" state="translated">Acepto los términos de uso de la biblioteca Bloom</target>
+        <target xml:lang="es-ES" state="translated">Acepto los términos de uso de la Biblioteca Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Acepto los términos de uso de la biblioteca Bloom</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Estoy de acuerdo con los términos de uso de la Bloom Library</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="LoginDialog.Email">
+      <trans-unit id="LoginDialog.Email" approved="yes">
         <source xml:lang="en">Email Address</source>
         <note>ID: LoginDialog.Email</note>
-        <target xml:lang="es-ES" state="translated">Dirección de correo electrónico</target>
+        <target xml:lang="es-ES">Dirección de correo electrónico</target>
       </trans-unit>
-      <trans-unit id="LoginDialog.ForgotPassword">
+      <trans-unit id="LoginDialog.ForgotPassword" approved="yes">
         <source xml:lang="en">Forgot Password</source>
         <note>ID: LoginDialog.ForgotPassword</note>
-        <target xml:lang="es-ES" state="translated">Olvidó su contraseña</target>
+        <target xml:lang="es-ES">Olvidó su contraseña</target>
       </trans-unit>
-      <trans-unit id="LoginDialog.LoginButton">
+      <trans-unit id="LoginDialog.LoginButton" approved="yes">
         <source xml:lang="en">&amp;Login</source>
         <note>ID: LoginDialog.LoginButton</note>
-        <target xml:lang="es-ES" state="translated">&amp;Iniciar sesión</target>
+        <target xml:lang="es-ES">&amp;Iniciar sesión</target>
         <alt-trans>
           <target xml:lang="es-ES">Conectar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="LoginDialog.Password">
+      <trans-unit id="LoginDialog.Password" approved="yes">
         <source xml:lang="en">Password</source>
         <note>ID: LoginDialog.Password</note>
-        <target xml:lang="es-ES" state="translated">Contraseña</target>
+        <target xml:lang="es-ES">Contraseña</target>
       </trans-unit>
-      <trans-unit id="LoginDialog.ShowPassword">
+      <trans-unit id="LoginDialog.ShowPassword" approved="yes">
         <source xml:lang="en">&amp;Show Password</source>
         <note>ID: LoginDialog.ShowPassword</note>
-        <target xml:lang="es-ES" state="translated">Mostrar contraseña</target>
+        <target xml:lang="es-ES">&amp;Mostrar contraseña</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Mostrar contraseña</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="LoginDialog.ShowTerms">
+      <trans-unit id="LoginDialog.ShowTerms" approved="yes">
         <source xml:lang="en">Show Terms of Use</source>
         <note>ID: LoginDialog.ShowTerms</note>
-        <target xml:lang="es-ES" state="translated">Mostrar términos de uso</target>
+        <target xml:lang="es-ES">Mostrar términos de uso</target>
       </trans-unit>
-      <trans-unit id="LoginDialog.WindowTitle">
+      <trans-unit id="LoginDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Log in to BloomLibrary.org</source>
         <note>ID: LoginDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Inicie sesión en BloomLibrary.org</target>
+        <target xml:lang="es-ES">Inicie sesión en BloomLibrary.org</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName" approved="yes">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
@@ -3308,10 +3323,13 @@
         <note>ID: NewCollectionWizard.CollectionNameProblem</note>
         <target xml:lang="es-ES">Problema con el nombre de la colección</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt">
+      <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt" approved="yes">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <note>ID: NewCollectionWizard.CollectionWillBeCreatedAt</note>
-        <target xml:lang="es-ES" state="translated">Colección se creará en: {0}</target>
+        <target xml:lang="es-ES">La Colección se creará en: {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección se creará en: {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.FinishPage" approved="yes">
         <source xml:lang="en">Ready To Create New Collection</source>
@@ -3335,10 +3353,13 @@
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
         <target xml:lang="es-ES" state="translated">Fuente y Escritura</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.KindOfCollectionPage">
+      <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
         <source xml:lang="en">Choose the Collection Type</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage</note>
-        <target xml:lang="es-ES" state="translated">Elija el tipo de colección</target>
+        <target xml:lang="es-ES">Elija el tipo de Colección</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Elija el tipo de colección</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions" approved="yes">
         <source xml:lang="en">If you already have a collection you want to open, click  the 'Cancel' button.</source>
@@ -3389,23 +3410,23 @@
           <target xml:lang="es-ES">Una colección de libros en el idioma local</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.LocationPage">
+      <trans-unit id="NewCollectionWizard.LocationPage" approved="yes">
         <source xml:lang="en">Give Language Location</source>
         <note>ID: NewCollectionWizard.LocationPage</note>
-        <target xml:lang="es-ES" state="translated">Dar la ubicación del idioma</target>
+        <target xml:lang="es-ES">Dar la ubicación del idioma</target>
         <alt-trans>
           <target xml:lang="es-ES">Dale la ubicación del idioma</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.LocationPage.Country">
+      <trans-unit id="NewCollectionWizard.LocationPage.Country" approved="yes">
         <source xml:lang="en">Country</source>
         <note>ID: NewCollectionWizard.LocationPage.Country</note>
-        <target xml:lang="es-ES" state="translated">País</target>
+        <target xml:lang="es-ES">País</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.LocationPage.District">
+      <trans-unit id="NewCollectionWizard.LocationPage.District" approved="yes">
         <source xml:lang="en">District</source>
         <note>ID: NewCollectionWizard.LocationPage.District</note>
-        <target xml:lang="es-ES" state="translated">Distrito</target>
+        <target xml:lang="es-ES">Distrito</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional" approved="yes">
         <source xml:lang="en">These are optional. Bloom will place them in the right places on title page of books you create.</source>
@@ -3421,10 +3442,10 @@
           <target xml:lang="es-ES">Estos son opcionales. Bloom colocarlos en los lugares correctos en la página del título del libro que cree.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.LocationPage.Province">
+      <trans-unit id="NewCollectionWizard.LocationPage.Province" approved="yes">
         <source xml:lang="en">Province</source>
         <note>ID: NewCollectionWizard.LocationPage.Province</note>
-        <target xml:lang="es-ES" state="translated">Provincia</target>
+        <target xml:lang="es-ES">Provincia</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.NewBookPattern">
         <source xml:lang="en">{0} Books</source>
@@ -3440,10 +3461,10 @@
           <target xml:lang="es-ES">Crear nueva colección Bloom</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.ProjectName">
+      <trans-unit id="NewCollectionWizard.ProjectName" approved="yes">
         <source xml:lang="en">Project Name</source>
         <note>ID: NewCollectionWizard.ProjectName</note>
-        <target xml:lang="es-ES" state="translated">Nombre del proyecto</target>
+        <target xml:lang="es-ES">Nombre del proyecto</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName" approved="yes">
         <source xml:lang="en">Unable to create a new collection using that name.</source>
@@ -3507,10 +3528,13 @@
         <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
         <target xml:lang="es-ES">Colecciones de Bloom</target>
       </trans-unit>
-      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseForOtherCollections" approved="yes">
         <source xml:lang="en">Browse for another collection on this computer</source>
         <note>ID: OpenCreateNewCollectionsDialog.BrowseForOtherCollections</note>
-        <target xml:lang="es-ES" state="translated">Busque otra colección en esta computadora</target>
+        <target xml:lang="es-ES">Busque otra Colección en esta computadora</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Busque otra colección en esta computadora</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
         <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
@@ -3541,10 +3565,13 @@
         <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
         <target xml:lang="es-ES">Crear nueva colección</target>
       </trans-unit>
-      <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
+      <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle" approved="yes">
         <source xml:lang="en">Open/Create Collections</source>
         <note>ID: OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Abrir/Crear colecciones</target>
+        <target xml:lang="es-ES">Abrir/Crear Colecciones</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir/Crear colecciones</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink" approved="yes">
         <source xml:lang="en">Read More</source>
@@ -3552,10 +3579,13 @@
         <note>This opens the Chorus Help to learn more about send/receive.</note>
         <target xml:lang="es-ES">Leer más</target>
       </trans-unit>
-      <trans-unit id="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
+      <trans-unit id="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus" approved="yes">
         <source xml:lang="en">Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</source>
         <note>ID: OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus</note>
-        <target xml:lang="es-ES" state="translated">¿Alguien le ha compartido una colección por medio de la función Enviar/Recibir?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utilice Enviar/Recibir para compartir su trabajo con ellos.</target>
+        <target xml:lang="es-ES">¿Alguien más le ha compartido una colección por medio de la opción Enviar/Recibir?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utilice Enviar/Recibir para compartir su trabajo con ellos.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Alguien le ha compartido una colección por medio de la función Enviar/Recibir?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utilice Enviar/Recibir para compartir su trabajo con ellos.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">¿Ha utilizado alguien el "Enviar/Recibir" para compartir una colección con usted?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utilice Enviar/Recibir para compartir su trabajo con ellos.</target>
         </alt-trans>
@@ -3565,10 +3595,10 @@
         <note>ID: OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_</note>
         <target xml:lang="es-ES">Cambiar el idioma de la interfaz</target>
       </trans-unit>
-      <trans-unit id="PageList.CantMoveWhenTranslating">
+      <trans-unit id="PageList.CantMoveWhenTranslating" approved="yes">
         <source xml:lang="en">Pages can not be re-ordered when you are translating a book.</source>
         <note>ID: PageList.CantMoveWhenTranslating</note>
-        <target xml:lang="es-ES" state="translated">Mientras que traduce un libro las páginas no pueden ser reordenadas.</target>
+        <target xml:lang="es-ES">Mientras que traduce un libro las páginas no pueden ser reordenadas.</target>
         <alt-trans>
           <target xml:lang="es-ES">Las páginas no pueden ser reordenadas cuando está traduciendo un libro.</target>
         </alt-trans>
@@ -3585,7 +3615,10 @@
       <trans-unit id="PublishTab.Android.ChooseFile">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
-        <target xml:lang="es-ES" state="translated">Guardar archivo de LectorBloom</target>
+        <target xml:lang="es-ES" state="translated">Guardar el archivo de LectorBloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Guardar archivo de LectorBloom</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Guardar archivo de BloomReader</target>
         </alt-trans>
@@ -3593,10 +3626,13 @@
           <target xml:lang="es-ES">Guardar archivo del libro Bloom</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseUSB">
+      <trans-unit id="PublishTab.Android.ChooseUSB" approved="yes">
         <source xml:lang="en">Send over USB Cable</source>
         <note>ID: PublishTab.Android.ChooseUSB</note>
-        <target xml:lang="es-ES" state="translated">Enviar a través de cable USB</target>
+        <target xml:lang="es-ES">Enviar a través del cable USB</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Enviar a través de cable USB</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseWifi">
         <source xml:lang="en">Serve on WiFi Network</source>
@@ -3617,31 +3653,31 @@
         <note>ID: PublishTab.Android.CopyToClipboard</note>
         <target xml:lang="es-ES">Copiar al portapapeles</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.GetBloomReader">
+      <trans-unit id="PublishTab.Android.GetBloomReader" approved="yes">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
         <note>Link to find Bloom Reader on Google Play Store</note>
-        <target xml:lang="es-ES" state="translated">Obtenga la aplicación LectorBloom (BloomReader)</target>
+        <target xml:lang="es-ES">Obtenga la aplicación LectorBloom (BloomReader)</target>
         <alt-trans>
           <target xml:lang="es-ES">Obtenga la aplicación BloomReader</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Method">
+      <trans-unit id="PublishTab.Android.Method" approved="yes">
         <source xml:lang="en">Method</source>
         <note>ID: PublishTab.Android.Method</note>
         <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
-        <target xml:lang="es-ES" state="translated">Método</target>
+        <target xml:lang="es-ES">Método</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Save">
+      <trans-unit id="PublishTab.Android.Save" approved="yes">
         <source xml:lang="en">Save...</source>
         <note>ID: PublishTab.Android.Save</note>
         <note>Button that tells Bloom to save the book as a .bloomD file.</note>
-        <target xml:lang="es-ES" state="translated">Guardar...</target>
+        <target xml:lang="es-ES">Guardar...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Troubleshooting">
+      <trans-unit id="PublishTab.Android.Troubleshooting" approved="yes">
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
-        <target xml:lang="es-ES" state="translated">Consejos para resolver problemas</target>
+        <target xml:lang="es-ES">Consejos para resolver problemas</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
