@@ -804,10 +804,10 @@
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
         <target xml:lang="es-ES" state="translated">Abrir carpeta en el disco</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.EditBookButton">
+      <trans-unit id="CollectionTab.EditBookButton" approved="yes">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
-        <target xml:lang="es-ES" state="translated">Editar este libro</target>
+        <target xml:lang="es-ES">Editar este libro</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Health" sil:dynamic="true">
         <source xml:lang="en">Health</source>
@@ -845,18 +845,24 @@
           <target xml:lang="es-ES">Crear Paquete de Bloom</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="es-ES" state="translated">Crear un libro con este libro originario</target>
+        <target xml:lang="es-ES">Crear un libro utilizando este libro originario</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un libro con este libro originario</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un libro con esta plantilla</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
+      <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_" approved="yes">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="es-ES" state="translated">Crear un libro en mi idioma usando este libro originario</target>
+        <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este libro originario</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un libro en mi idioma usando este libro originario</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un libro en mi idioma usando este libro de fuente</target>
         </alt-trans>
@@ -1068,15 +1074,15 @@
           <target xml:lang="es-ES">Próxima</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.OK" sil:dynamic="true">
+      <trans-unit id="Common.OK" sil:dynamic="true" approved="yes">
         <source xml:lang="en">OK</source>
         <note>ID: Common.OK</note>
-        <target xml:lang="es-ES" state="translated">Aceptar</target>
+        <target xml:lang="es-ES">Aceptar</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="es-ES" state="translated">&amp;Aceptar</target>
+        <target xml:lang="es-ES">&amp;Aceptar</target>
       </trans-unit>
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
@@ -1682,10 +1688,13 @@
           <target xml:lang="es-ES">Cuando vaya a crear un libro original, use este cuadro para registrar las contribuciones hechas por los escritores, ilustradores, editores, etc.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.BigBook.Translator" sil:dynamic="true" approved="yes">
         <source xml:lang="en">When you make a book from a shell, use this box to tell who did the translation.</source>
         <note>ID: EditTab.FrontMatter.BigBook.Translator</note>
-        <target xml:lang="es-ES" state="translated">Cuando crea un libro a base de un libro prediseñado, utilice este cuadro para indicar quien hizo la traducción.</target>
+        <target xml:lang="es-ES">Cuando crea un libro con base en un libro prediseñado, utilice este cuadro para indicar quién realizó la traducción.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuando crea un libro a base de un libro prediseñado, utilice este cuadro para indicar quien hizo la traducción.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cuando crea un libro a base de un libro "shell", utilice este cuadro para indicar quien hizo la traducción.</target>
         </alt-trans>
@@ -1696,11 +1705,11 @@
           <target xml:lang="es-ES">Cuando haces un libro desde un shell, utilice este cuadro para decir quién hizo la traducción.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.BookTitlePrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book title in {lang}</source>
         <note>ID: EditTab.FrontMatter.BookTitlePrompt</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-        <target xml:lang="es-ES" state="translated">Título del libro en {lang}</target>
+        <target xml:lang="es-ES">Título del libro en {lang}</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.CreditTranslator" sil:dynamic="true">
         <source xml:lang="en">Name of the translator, in {lang}</source>
@@ -1819,10 +1828,13 @@
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
         <target xml:lang="es-ES" state="translated">Reconocimientos para la versión traducida, en {lang}</target>
       </trans-unit>
-      <trans-unit id="EditTab.HowToUnlockBook">
+      <trans-unit id="EditTab.HowToUnlockBook" approved="yes">
         <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="es-ES" state="translated">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
+        <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese a la caja de herramientas de la derecha, haga clic en el ícono de engranaje, y haga click en 'Permitir cambios en este libro prediseñado".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para desbloquear este libro "shell", ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro "shell".</target>
         </alt-trans>
@@ -1930,11 +1942,11 @@
         <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
         <target xml:lang="es-ES" state="translated">Un idioma</target>
       </trans-unit>
-      <trans-unit id="EditTab.NewBookName">
+      <trans-unit id="EditTab.NewBookName" approved="yes">
         <source xml:lang="en">Book</source>
         <note>ID: EditTab.NewBookName</note>
         <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
-        <target xml:lang="es-ES" state="translated">Libro</target>
+        <target xml:lang="es-ES">Libro</target>
       </trans-unit>
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
@@ -2464,10 +2476,10 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.SetUpLevels</note>
         <target xml:lang="es-ES" state="translated">Establecer niveles</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Book</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ThisBook</note>
-        <target xml:lang="es-ES" state="translated">Este libro</target>
+        <target xml:lang="es-ES">Este libro</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisPage" sil:dynamic="true">
         <source xml:lang="en">This Page</source>
@@ -2502,15 +2514,18 @@
         <note>ID: EditTab.Toolbox.More</note>
         <target xml:lang="es-ES" state="translated">Más...</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Settings.IsTemplateBook" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Settings.IsTemplateBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This is a template book.</source>
         <note>ID: EditTab.Toolbox.Settings.IsTemplateBook</note>
-        <target xml:lang="es-ES" state="translated">Esto es un libro de plantilla.</target>
+        <target xml:lang="es-ES">Esto es un libro de plantilla.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Settings.IsTemplateBookIntroductionText" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Settings.IsTemplateBookIntroductionText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">When you click "Add Page", you can choose from pages contained in template books. To make this a template book, tick this checkbox.</source>
         <note>ID: EditTab.Toolbox.Settings.IsTemplateBookIntroductionText</note>
-        <target xml:lang="es-ES" state="translated">Cuando haga clic en "Aggregar página" puede escoger entre páginas contenidas en los libros de plantilla. Para convertir este libro a un libro de plantilla, marque esta casilla.</target>
+        <target xml:lang="es-ES">Cuando haga clic en "Agregar página" puede escoger entre páginas contenidas en los libros de plantilla. Para convertir este libro en un libro de plantilla, marque esta casilla.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuando haga clic en "Aggregar página" puede escoger entre páginas contenidas en los libros de plantilla. Para convertir este libro a un libro de plantilla, marque esta casilla.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Settings.Unlock" sil:dynamic="true">
         <source xml:lang="en">Allow changes to this shellbook</source>
@@ -2523,10 +2538,13 @@
           <target xml:lang="es-ES">Permitir cambios a este libro shell</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
-        <target xml:lang="es-ES" state="translated">Bloom normalmente previene la mayoría de los cambios a los libros prediseñados. Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
+        <target xml:lang="es-ES">Bloom normalmente evita la mayoría de los cambios a los libros prediseñados. Si desea agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom normalmente previene la mayoría de los cambios a los libros prediseñados. Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom normalmente previene la mayoría de los cambios a los libros "shell". Si dese agregar páginas, cambiar imágenes, etc., marque la casilla de abajo.</target>
         </alt-trans>
@@ -2585,10 +2603,10 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
         <target xml:lang="es-ES" state="translated">Borrar</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Heading</note>
-        <target xml:lang="es-ES" state="translated">Herramienta de audiolibros</target>
+        <target xml:lang="es-ES">Herramienta de audiolibros</target>
         <alt-trans>
           <target xml:lang="es-ES">Herramienta de libros sonoros</target>
         </alt-trans>
