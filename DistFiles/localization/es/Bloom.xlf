@@ -758,10 +758,10 @@
           <target xml:lang="es-ES">Hacer verificaciones de todos los libros</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages">
+      <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages" approved="yes">
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
-        <target xml:lang="es-ES" state="translated">Rescatar imágenes ausentes...</target>
+        <target xml:lang="es-ES">Rescatar imágenes ausentes...</target>
         <alt-trans>
           <target xml:lang="es-ES">Rescatar ilustraciones ausentes...</target>
         </alt-trans>
@@ -802,20 +802,20 @@
         <note>ID: CollectionTab.ConfirmRecycleDescription</note>
         <target xml:lang="es-ES">El libro '{0}'</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
+      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk" approved="yes">
         <source xml:lang="en">Open Folder on Disk</source>
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
-        <target xml:lang="es-ES" state="translated">Abrir carpeta en el disco</target>
+        <target xml:lang="es-ES">Abrir carpeta en el disco</target>
       </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton" approved="yes">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
         <target xml:lang="es-ES">Editar este libro</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Health" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Health" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Health</source>
         <note>ID: CollectionTab.Health</note>
-        <target xml:lang="es-ES" state="translated">Salud</target>
+        <target xml:lang="es-ES">Salud</target>
       </trans-unit>
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
@@ -870,33 +870,42 @@
           <target xml:lang="es-ES">Crear un libro en mi idioma usando este libro de fuente</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.MoreLanguagesMenuItem">
+      <trans-unit id="CollectionTab.MoreLanguagesMenuItem" approved="yes">
         <source xml:lang="en">More...</source>
         <note>ID: CollectionTab.MoreLanguagesMenuItem</note>
         <note>Brings up the localization dialog</note>
-        <target xml:lang="es-ES" state="translated">Más...</target>
+        <target xml:lang="es-ES">Más...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.Open/CreateCollectionButton">
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton" approved="yes">
         <source xml:lang="en">Other Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton</note>
         <note>This is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="es-ES" state="translated">Otra colección</target>
+        <target xml:lang="es-ES">Otra Colección</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Otra colección</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_">
+      <trans-unit id="CollectionTab.Open/CreateCollectionButton_ToolTip_" approved="yes">
         <source xml:lang="en">Open/Create/Get Collection</source>
         <note>ID: CollectionTab.Open/CreateCollectionButton_ToolTip_</note>
         <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere.</note>
-        <target xml:lang="es-ES" state="translated">Abrir/crear/obtener colección</target>
+        <target xml:lang="es-ES">Abrir/Crear/Obtener Colección</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir/crear/obtener colección</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem">
+      <trans-unit id="CollectionTab.OpenCreateCollectionMenuItem" approved="yes">
         <source xml:lang="en">Open or Create Another Collection</source>
         <note>ID: CollectionTab.OpenCreateCollectionMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Abrir o crear otra colección</target>
+        <target xml:lang="es-ES">Abrir o Crear otra Colección</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir o crear otra colección</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true">
+      <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Shells</source>
         <note>ID: CollectionTab.Sample Shells</note>
-        <target xml:lang="es-ES" state="translated">Libros prediseñados de muestra</target>
+        <target xml:lang="es-ES">Libros prediseñados de muestra</target>
         <alt-trans>
           <target xml:lang="es-ES">"Shells" de muestra</target>
         </alt-trans>
@@ -904,10 +913,10 @@
           <target xml:lang="es-ES">Shells de muestra</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.SendReceive">
+      <trans-unit id="CollectionTab.SendReceive" approved="yes">
         <source xml:lang="en">Send/Receive</source>
         <note>ID: CollectionTab.SendReceive</note>
-        <target xml:lang="es-ES" state="translated">Enviar/Recibir</target>
+        <target xml:lang="es-ES">Enviar/Recibir</target>
       </trans-unit>
       <trans-unit id="CollectionTab.SettingsButton">
         <source xml:lang="en">Settings</source>
@@ -1378,11 +1387,11 @@
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
         <target xml:lang="es-ES" state="translated">Cambiar el diseño</target>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomPage.Or" sil:dynamic="true" approved="yes">
         <source xml:lang="en"> or </source>
         <note>ID: EditTab.CustomPage.Or</note>
         <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
-        <target xml:lang="es-ES" state="translated"> o </target>
+        <target xml:lang="es-ES"> o </target>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture</source>
@@ -2268,10 +2277,10 @@
           <target xml:lang="es-ES">Imagen en el fondo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog">
+      <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog" approved="yes">
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
-        <target xml:lang="es-ES" state="translated">Información de propiedad intelectual de la imagen</target>
+        <target xml:lang="es-ES">Información de propiedad intelectual de la imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
         </alt-trans>
