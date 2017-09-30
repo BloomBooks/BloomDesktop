@@ -1144,7 +1144,10 @@
       <trans-unit id="Download.CopyFailed" approved="yes">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</source>
         <note>ID: Download.CopyFailed</note>
-        <target xml:lang="es-ES">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje nuevamente, por favor haga clic en el botón "Detalles" y reporte el problema a los desarolladores de Bloom.</target>
+        <target xml:lang="es-ES">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje nuevamente, por favor haga clic en el botón "Detalles" y reporte el problema a los programadores de Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje nuevamente, por favor haga clic en el botón "Detalles" y reporte el problema a los desarolladores de Bloom.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si nuevamente recibe este mensaje, por favor haga clic en el botón "Detalles" y reportar el problema a los desarolladores de Bloom.</target>
         </alt-trans>
@@ -3852,7 +3855,10 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.Failed" approved="yes">
         <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Failed</note>
-        <target xml:lang="es-ES">El envío de este libro falló. ¿Será que el dispositivo está desconectado? Si no puede determinar porque sucedió esto, puede ser útil reportar a los desarrolladores lo siguiente:</target>
+        <target xml:lang="es-ES">El envío de este libro falló. ¿Será que el dispositivo está desconectado? Si no puede determinar porque sucedió esto, puede ser útil reportar a los programadores lo siguiente:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El envío de este libro falló. ¿Será que el dispositivo está desconectado? Si no puede determinar porque sucedió esto, puede ser útil reportar a los desarrolladores lo siguiente:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Falló el envío de este libro. ¿Será que el dispositivo esta desconectado? Si no puede determinar porque sucedió esto, lo siguiente puede ser útil reportar a los desarrolladores:</target>
         </alt-trans>
@@ -4092,7 +4098,10 @@
       <trans-unit id="PublishTab.PdfMaker.BadPdf" approved="yes">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
-        <target xml:lang="es-ES">Bloom no pudo crear un PDF de este libro. Tal vez debe conseguir ayuda técnica o contactar a los desarrolladores. Pero puede intentar lo siguiente:</target>
+        <target xml:lang="es-ES">Bloom no pudo crear un PDF de este libro. Tal vez debe conseguir ayuda técnica o contactar a los programadores. Pero puede intentar lo siguiente:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo crear un PDF de este libro. Tal vez debe conseguir ayuda técnica o contactar a los desarrolladores. Pero puede intentar lo siguiente:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo crear un PDF de este libro. Tal vez debe consequir ayuda técnica o contactar los desarrolladores. Pero puede intentar lo siguiente:</target>
         </alt-trans>
@@ -4352,10 +4361,10 @@
           <target xml:lang="es-ES">(parcial)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Languages">
+      <trans-unit id="PublishTab.Upload.Languages" approved="yes">
         <source xml:lang="en">Languages</source>
         <note>ID: PublishTab.Upload.Languages</note>
-        <target xml:lang="es-ES" state="translated">Idiomas</target>
+        <target xml:lang="es-ES">Idiomas</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.License">
         <source xml:lang="en">Usage/License</source>
@@ -4416,10 +4425,13 @@
           <target xml:lang="es-ES">Con el fin de registrarse para una cuenta de BloomLibrary.org, debe marcar la casilla indicando que de acuerdo a los términos de uso de BloomLibrary.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.Need Email">
+      <trans-unit id="PublishTab.Upload.Login.Need Email" approved="yes">
         <source xml:lang="en">Email Needed</source>
         <note>ID: PublishTab.Upload.Login.Need Email</note>
-        <target xml:lang="es-ES" state="translated">Require dirección de correo electrónico</target>
+        <target xml:lang="es-ES">Ser requiere de una dirección de correo electrónico</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Require dirección de correo electrónico</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Dirección de correo electrónico necesario</target>
         </alt-trans>
@@ -4435,18 +4447,21 @@
           <target xml:lang="es-ES">No tenemos un usuario registrado con ese email. ¿Le gustaría registrarse?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.PasswordMismatch">
+      <trans-unit id="PublishTab.Upload.Login.PasswordMismatch" approved="yes">
         <source xml:lang="en">Password and user ID did not match</source>
         <note>ID: PublishTab.Upload.Login.PasswordMismatch</note>
-        <target xml:lang="es-ES" state="translated">Contraseña y nombre de usuario no coincidieron</target>
+        <target xml:lang="es-ES">La contraseña y el nombre de usuario no coincidieron</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Contraseña y nombre de usuario no coincidieron</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Contraseña y nombre de usuario no coincide</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms">
+      <trans-unit id="PublishTab.Upload.Login.PleaseAgreeTerms" approved="yes">
         <source xml:lang="en">Please agree to terms of use</source>
         <note>ID: PublishTab.Upload.Login.PleaseAgreeTerms</note>
-        <target xml:lang="es-ES" state="translated">Por favor, acepte los términos de uso</target>
+        <target xml:lang="es-ES">Por favor, acepte los términos de uso</target>
         <alt-trans>
           <target xml:lang="es-ES">Por favor, de acuerdo a los términos de uso</target>
         </alt-trans>
