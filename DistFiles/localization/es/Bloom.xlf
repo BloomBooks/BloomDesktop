@@ -279,10 +279,13 @@
           <target xml:lang="es-ES">Esto mejorará el resultado impreso para la mayoría de los idiomas. Si su idioma es uno de los pocos que necesitan "Andika", puede cambiar de nuevo en Configuración: Haciendo libros.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel" approved="yes">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="es-ES" state="translated">Haciendo libros</target>
+        <target xml:lang="es-ES">Creando libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haciendo libros</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
         <source xml:lang="en">Branding</source>
@@ -422,10 +425,10 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam</note>
         <target xml:lang="es-ES" state="translated">malabar</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian" approved="yes">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian">
         <source xml:lang="en">Mongolian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian</note>
-        <target xml:lang="es-ES">Mongol</target>
+        <target xml:lang="es-ES" state="translated">Mongol</target>
         <alt-trans>
           <target xml:lang="es-ES">mongol</target>
         </alt-trans>
@@ -1096,10 +1099,13 @@
         <note>ID: Download.CompletedCaption</note>
         <target xml:lang="es-ES" state="translated">Descarga completa</target>
       </trans-unit>
-      <trans-unit id="Download.CopyFailed">
+      <trans-unit id="Download.CopyFailed" approved="yes">
         <source xml:lang="en">Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers.</source>
         <note>ID: Download.CopyFailed</note>
-        <target xml:lang="es-ES" state="translated">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si nuevamente recibe este mensaje, por favor haga clic en el botón "Detalles" y reportar el problema a los desarolladores de Bloom.</target>
+        <target xml:lang="es-ES">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje nuevamente, por favor haga clic en el botón "Detalles" y reporte el problema a los desarolladores de Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ha descargado el libro, pero no pudo hacerlo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si nuevamente recibe este mensaje, por favor haga clic en el botón "Detalles" y reportar el problema a los desarolladores de Bloom.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ha descargado el libro, pero tuvo problemas haciéndolo disponible en Bloom. Por favor, reinicie la computadora y vuelva a intentarlo. Si recibe este mensaje de nuevo, por favor haga clic en el botón "Detalles" y reportar el problema a los programadores de Bloom.</target>
         </alt-trans>
@@ -2741,7 +2747,10 @@
       <trans-unit id="Errors.XMatterNotFound">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
         <note>ID: Errors.XMatterNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro utiliza el paquete de material preliminar/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de material preliminar/final.</target>
+        <target xml:lang="es-ES" state="translated">Este libro utiliza el Paquete de Material Preliminar/Final llamado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Creando Libros y cambiar a otro Paquete de Material Preliminar/Final.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro utiliza el paquete de material preliminar/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de material preliminar/final.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro utiliza el paquete de materia preliminar/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia preliminar/final.</target>
         </alt-trans>
@@ -3747,10 +3756,13 @@
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
         <target xml:lang="es-ES" state="translated">Aviso</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.BadPdf">
+      <trans-unit id="PublishTab.PdfMaker.BadPdf" approved="yes">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
         <note>ID: PublishTab.PdfMaker.BadPdf</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo crear un PDF de este libro. Tal vez debe consequir ayuda técnica o contactar los desarrolladores. Pero puede intentar lo siguiente:</target>
+        <target xml:lang="es-ES">Bloom no pudo crear un PDF de este libro. Tal vez debe conseguir ayuda técnica o contactar a los desarrolladores. Pero puede intentar lo siguiente:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo crear un PDF de este libro. Tal vez debe consequir ayuda técnica o contactar los desarrolladores. Pero puede intentar lo siguiente:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom tenía un problema al realizar un PDF de este libro. Tal vez necesite ayuda técnica o si necesita contactar los desarrolladores. Pero aquí hay algunas cosas que puede probar:</target>
         </alt-trans>
