@@ -2440,15 +2440,15 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles</note>
         <target xml:lang="es-ES">Archivos de texto</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters" approved="yes">
         <source xml:lang="en">Letters: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters</note>
-        <target xml:lang="es-ES" state="translated">Letras: {0}</target>
+        <target xml:lang="es-ES">Letras: {0}</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage" approved="yes">
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage</note>
-        <target xml:lang="es-ES" state="translated">El siguiente es un informe generado sobre las etapas descifrables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
+        <target xml:lang="es-ES">El siguiente es un informe generado sobre las etapas descifrables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
         <alt-trans>
           <target xml:lang="es-ES">El siguiente es un informe generado de las etapas decodificables para {0}. Usted puede hacer los cambios que desee a este archivo, pero Bloom no notará los cambios. Es sólo un informe.</target>
         </alt-trans>
@@ -3983,10 +3983,10 @@
         <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
         <target xml:lang="es-ES" state="translated">Cargar</target>
       </trans-unit>
-      <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
+      <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Upload to BloomLibrary.org, where others can download and localize into their own language.</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Cargar a BloomLibrary.org, donde otros pueden descargarlo para traducirlo a su propio idioma.</target>
+        <target xml:lang="es-ES">Cargar a BloomLibrary.org, donde otros pueden descargarlo para traducirlo a su propio idioma.</target>
         <alt-trans>
           <target xml:lang="es-ES">Cargar a BloomLibrary.org, donde otros pueden descargar y localizar a su propia lengua.</target>
         </alt-trans>
@@ -4115,26 +4115,29 @@
           <target xml:lang="es-ES">Bloom tenía un problema al realizar un PDF de este libro. Tal vez necesite ayuda técnica o si necesita contactar los desarrolladores. Pero aquí hay algunas cosas que puede probar:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Compress">
+      <trans-unit id="PublishTab.PdfMaker.Compress" approved="yes">
         <source xml:lang="en">Compressing PDF</source>
         <note>ID: PublishTab.PdfMaker.Compress</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="translated">Comprimiendo el PDF</target>
+        <target xml:lang="es-ES">Comprimiendo el PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.CompressConvertColor">
         <source xml:lang="en">Compressing PDF &amp; Converting Color to CMYK</source>
         <note>ID: PublishTab.PdfMaker.CompressConvertColor</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="translated">Comprimiendo el PDF y Covirtiendo Color a CMYK</target>
+        <target xml:lang="es-ES" state="translated">Comprimiendo el PDF y Covirtiendo el color a CMYK</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Comprimiendo el PDF y Covirtiendo Color a CMYK</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Comprimiendo el PDF &amp; Covirtiendo Color a CMYK</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Creating">
+      <trans-unit id="PublishTab.PdfMaker.Creating" approved="yes">
         <source xml:lang="en">Creating PDF ...</source>
         <note>ID: PublishTab.PdfMaker.Creating</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="translated">Creando PDF...</target>
+        <target xml:lang="es-ES">Creando PDF...</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithRGB">
         <source xml:lang="en">PDF with RGB color</source>
@@ -4157,17 +4160,17 @@
           <target xml:lang="es-ES">Conversión de HTML a PDF esta concluido</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
+      <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
         <source xml:lang="en">Making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>
         <note>Message displayed in a progress report dialog box, a partial step of "Creating PDF"</note>
-        <target xml:lang="es-ES" state="translated">Convertiendo HMTL a PDF</target>
+        <target xml:lang="es-ES">Convertiendo HMTL a PDF</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.MakingPageOfPdf">
+      <trans-unit id="PublishTab.PdfMaker.MakingPageOfPdf" approved="yes">
         <source xml:lang="en">Making Page {0} of the PDF</source>
         <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
-        <target xml:lang="es-ES" state="translated">Creando página {0} del PDF</target>
+        <target xml:lang="es-ES">Creando página {0} del PDF</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
         <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
@@ -4289,7 +4292,10 @@
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you. If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
-        <target xml:lang="es-ES" state="translated">BloomLibrary.org ya tiene una versión anterior de este libro. Si lo cargas otra vez, se sustituirá con su versión actual.</target>
+        <target xml:lang="es-ES" state="translated">BloomLibrary.org ya tiene una versión anterior de este libro. Si lo carga otra vez, se sustituirá con su versión actual.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">BloomLibrary.org ya tiene una versión anterior de este libro. Si lo cargas otra vez, se sustituirá con su versión actual.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">BloomLibrary.org ya tiene una versión anterior de este libro. Si lo subes otra vez, se sustituirá con su versión actual.</target>
         </alt-trans>
@@ -4318,10 +4324,13 @@
           <target xml:lang="es-ES">Lo sentimos, hubo un problema cargando {0}. Siguen algunos detalles. Puede que necesites ayuda técnica.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
+      <trans-unit id="PublishTab.Upload.FieldsNeedAttention" approved="yes">
         <source xml:lang="en">One or more fields above need your attention before uploading.</source>
         <note>ID: PublishTab.Upload.FieldsNeedAttention</note>
-        <target xml:lang="es-ES" state="translated">Por lo menos uno de los campos arriba requiere su atención antes de poder cargar.</target>
+        <target xml:lang="es-ES">Por lo menos uno de los campos arriba requiere de su atención antes de poder cargar.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por lo menos uno de los campos arriba requiere su atención antes de poder cargar.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Uno o más campos anteriores necesitan su atención antes de cargar</target>
         </alt-trans>
@@ -4340,7 +4349,10 @@
       <trans-unit id="PublishTab.Upload.Gaurantee">
         <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>
         <note>ID: PublishTab.Upload.Gaurantee</note>
-        <target xml:lang="es-ES" state="translated">Al cargar, usted confirma su acuerdo con los términos de uso de la biblioteca Bloom (Bloom Library) y concede los derechos que describe.</target>
+        <target xml:lang="es-ES" state="translated">Al cargar, usted confirma que está de acuerdo con los términos de uso de la Biblioteca Bloom (Bloom Library) y concede los derechos que se describen.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Al cargar, usted confirma su acuerdo con los términos de uso de la biblioteca Bloom (Bloom Library) y concede los derechos que describe.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Al cargar, usted confirma su acuerdo con los términos de uso de la Bloom Library y concede los derechos que describe.</target>
         </alt-trans>
@@ -4348,10 +4360,13 @@
           <target xml:lang="es-ES">Al cargar, usted confirma su acuerdo con los términos de uso de la Bloom Library y concede los derechos que describe</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
+      <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem uploading your book.</source>
         <note>ID: PublishTab.Upload.GenericUploadProblemNotice</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema cargando su libro.</target>
+        <target xml:lang="es-ES">Hubo un problema al cargar su libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hubo un problema cargando su libro.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.GiveBack">
         <source xml:lang="en">It’s easy to “give back”</source>
@@ -4532,14 +4547,19 @@
           <target xml:lang="es-ES">Inscríbete en la Bloom Library.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Template">
+      <trans-unit id="PublishTab.Upload.Template" approved="yes">
         <source xml:lang="en">This book seems to be a template, that is, it contains blank pages for authoring a new book rather than content to translate into other languages. If that is not what you intended, you should get expert help before uploading this book.
 
 Do you want to go ahead?</source>
         <note>ID: PublishTab.Upload.Template</note>
-        <target xml:lang="es-ES" state="translated">Este libro parece ser una plantilla porque tiene páginas en blanco para escribir un libro nuevo en vez de contenido que debe ser traducido a otros idiomas. Si eso no es lo que deseaba, debe conseguir ayuda experta antes de cargar este libro.
+        <target xml:lang="es-ES">Este libro parece ser una plantilla ya que tiene páginas en blanco para escribir un libro nuevo en vez de contenido que debe ser traducido a otros idiomas. Si eso no es lo que deseaba, debe conseguir ayuda experta antes de cargar este libro.
+
+¿Desea continuar?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro parece ser una plantilla porque tiene páginas en blanco para escribir un libro nuevo en vez de contenido que debe ser traducido a otros idiomas. Si eso no es lo que deseaba, debe conseguir ayuda experta antes de cargar este libro.
 
 Desea seguir?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro parece ser una plantilla porque tiene páginas en blanco para escrivir un libro nuevo en vez de contenido para traducir a otros idiomas. Si eso no es lo que deseaba, debe conseguir ayuda eperta antes de cargar este libro.
 
@@ -4637,10 +4657,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.Step1</note>
         <target xml:lang="es-ES" state="translated">Paso 1: Confirmar metadatos</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Step2">
+      <trans-unit id="PublishTab.Upload.Step2" approved="yes">
         <source xml:lang="en">Step 2: Upload</source>
         <note>ID: PublishTab.Upload.Step2</note>
-        <target xml:lang="es-ES" state="translated">Paso 2: Cargar</target>
+        <target xml:lang="es-ES">Paso 2: Cargar</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SuggestAssignCC">
         <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
@@ -5343,10 +5363,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Estoy atascado, voy a terminar esto más tarde.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="RegisterDialog.Organization">
+      <trans-unit id="RegisterDialog.Organization" approved="yes">
         <source xml:lang="en">Organization</source>
         <note>ID: RegisterDialog.Organization</note>
-        <target xml:lang="es-ES" state="translated">Organización</target>
+        <target xml:lang="es-ES">Organización</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.RegisterButton">
         <source xml:lang="en">&amp;Register</source>
@@ -5364,21 +5384,24 @@ Desea seguir?</target>
         <note>Place a {0} where the name of the program goes.</note>
         <target xml:lang="es-ES" state="translated">Registrar {0}</target>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Close">
+      <trans-unit id="ReportProblemDialog.Close" approved="yes">
         <source xml:lang="en">Close</source>
         <note>ID: ReportProblemDialog.Close</note>
         <note>Shown in the button that closes the dialog after a successful report submission.</note>
-        <target xml:lang="es-ES" state="translated">Cerrar</target>
+        <target xml:lang="es-ES">Cerrar</target>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
+      <trans-unit id="ReportProblemDialog.CouldNotSendToServer" approved="yes">
         <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
         <note>ID: ReportProblemDialog.CouldNotSendToServer</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo enviar su informe directamente a nuestro servidor. Vuelva a intentarlo o enviar un correo electrónico {0} a {1}.</target>
+        <target xml:lang="es-ES">Bloom no pudo enviar su informe directamente a nuestro servidor. Por favor, vuelva a intentarlo o envíe un correo electrónico {0} a {1}.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo enviar su informe directamente a nuestro servidor. Vuelva a intentarlo o enviar un correo electrónico {0} a {1}.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Email">
+      <trans-unit id="ReportProblemDialog.Email" approved="yes">
         <source xml:lang="en">Email</source>
         <note>ID: ReportProblemDialog.Email</note>
-        <target xml:lang="es-ES" state="translated">Correo electrónico</target>
+        <target xml:lang="es-ES">Correo electrónico</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.IncludeBookButton" approved="yes">
         <source xml:lang="en">Include Book '{0}'</source>
@@ -5388,21 +5411,24 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Incluir libro '{0}'</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.IncludeScreenshotButton">
+      <trans-unit id="ReportProblemDialog.IncludeScreenshotButton" approved="yes">
         <source xml:lang="en">Include this screenshot</source>
         <note>ID: ReportProblemDialog.IncludeScreenshotButton</note>
-        <target xml:lang="es-ES" state="translated">Incluir esta captura de pantalla</target>
+        <target xml:lang="es-ES">Incluir esta captura de pantalla</target>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Name">
+      <trans-unit id="ReportProblemDialog.Name" approved="yes">
         <source xml:lang="en">Name</source>
         <note>ID: ReportProblemDialog.Name</note>
-        <target xml:lang="es-ES" state="translated">Nombre</target>
+        <target xml:lang="es-ES">Nombre</target>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Retry">
+      <trans-unit id="ReportProblemDialog.Retry" approved="yes">
         <source xml:lang="en">Retry</source>
         <note>ID: ReportProblemDialog.Retry</note>
         <note>Shown if there was an error submitting the report. Lets the user try submitting it again.</note>
-        <target xml:lang="es-ES" state="translated">Reintentar</target>
+        <target xml:lang="es-ES">Vuelva a intentar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reintentar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.SeeDetails">
         <source xml:lang="en">See what else will be submitted</source>
@@ -5423,18 +5449,21 @@ Desea seguir?</target>
         <note>This is shown while Bloom is sending the problem report to our server.</note>
         <target xml:lang="es-ES" state="translated">Enviando al servidor...</target>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Success">
+      <trans-unit id="ReportProblemDialog.Success" approved="yes">
         <source xml:lang="en">We received your report, thanks for taking the time to help make Bloom better!</source>
         <note>ID: ReportProblemDialog.Success</note>
-        <target xml:lang="es-ES" state="translated">Hemos recibido su informe. Gracias por contribuir a la mejora de Bloom!</target>
+        <target xml:lang="es-ES">Hemos recibido su informe. ¡Gracias por contribuir al mejoramiento de Bloom!</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hemos recibido su informe. Gracias por contribuir a la mejora de Bloom!</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hemos recibido su informe. Gracias por tomarse el tiempo para ayudar a mejorar Bloom!</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.WhatsTheProblem">
+      <trans-unit id="ReportProblemDialog.WhatsTheProblem" approved="yes">
         <source xml:lang="en">What seems to be the problem?</source>
         <note>ID: ReportProblemDialog.WhatsTheProblem</note>
-        <target xml:lang="es-ES" state="translated">¿Cuál parece ser el problema?</target>
+        <target xml:lang="es-ES">¿Cuál parece ser el problema?</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.WindowTitle">
         <source xml:lang="en">Report A Problem</source>
@@ -5453,10 +5482,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Creando un archivo zip del libro...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.linkLabel1">
+      <trans-unit id="ReportProblemDialog.linkLabel1" approved="yes">
         <source xml:lang="en">Will not be private</source>
         <note>ID: ReportProblemDialog.linkLabel1</note>
-        <target xml:lang="es-ES" state="translated">No será privado</target>
+        <target xml:lang="es-ES">No será privado</target>
       </trans-unit>
       <trans-unit id="SamplePrintNotification.IGetIt">
         <source xml:lang="en">I get it. Do not show this again.</source>
