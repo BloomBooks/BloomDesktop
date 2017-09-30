@@ -134,6 +134,9 @@
         <source xml:lang="en">Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</source>
         <note>ID: BloomPackInstallDialog.UnableToReplace</note>
         <target xml:lang="es-ES" state="translated">Bloom no pudo eliminar la copia existente de '{0}'. Salga de Bloom si se está ejecutando y vuelva a intentarlo. De lo contrario, vuelva a intentarlo después de reiniciar la computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo eliminar la copia existente de '{0}'. Salga de Bloom si se está ejecutando y vuelva a intentarlo. Si esto no funciona, vuelva a intentarlo después de reiniciar la computadora.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, then release the key.</source>
