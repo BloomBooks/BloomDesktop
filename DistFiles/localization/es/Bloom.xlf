@@ -4019,23 +4019,23 @@
           <target xml:lang="es-ES">Hacer un PDF de sólo la anverso y reverso (ambos lados), para que pueda imprimir en papel de color.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.EpubButton">
+      <trans-unit id="PublishTab.EpubButton" approved="yes">
         <source xml:lang="en">ePUB</source>
         <note>ID: PublishTab.EpubButton</note>
-        <target xml:lang="es-ES" state="translated">ePUB</target>
+        <target xml:lang="es-ES">ePUB</target>
       </trans-unit>
-      <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true">
+      <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leído en varios dispositivos de lectura electrónica.</target>
+        <target xml:lang="es-ES">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leído en varios dispositivos de lectura electrónica.</target>
         <alt-trans>
           <target xml:lang="es-ES">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leido en varios dispositivos de lectura electrónica.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
+      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton" approved="yes">
         <source xml:lang="en">Don't Show This Again</source>
         <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
-        <target xml:lang="es-ES" state="translated">No volver a mostrar</target>
+        <target xml:lang="es-ES">No volver a mostrar</target>
       </trans-unit>
       <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
         <source xml:lang="en">InDesign XML Information</source>
@@ -4047,18 +4047,24 @@
         <source xml:lang="en">Use less memory (slower)</source>
         <note>ID: PublishTab.LessMemoryPdfMode</note>
         <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
-        <target xml:lang="es-ES" state="translated">Utilize menos memoria (más lento)</target>
+        <target xml:lang="es-ES" state="translated">Utilizar menos memoria (más lento)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Utilize menos memoria (más lento)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
+      <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation" approved="yes">
         <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
         <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
-        <target xml:lang="es-ES" state="translated">Este visualizadaor PDF puede ser mejorado con la instalación del Adobe Reader gratuito en esta computadora.</target>
+        <target xml:lang="es-ES">Este visualizadaor de PDF puede ser mejorado con la instalación gratuita de Adobe Reader en esta computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este visualizadaor PDF puede ser mejorado con la instalación del Adobe Reader gratuito en esta computadora.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.OnePagePerPaperRadio">
+      <trans-unit id="PublishTab.OnePagePerPaperRadio" approved="yes">
         <source xml:lang="en">Simple</source>
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
         <note>Instead of making a booklet, just make normal pages</note>
-        <target xml:lang="es-ES" state="translated">Simple</target>
+        <target xml:lang="es-ES">Simple</target>
         <alt-trans>
           <target xml:lang="es-ES">Una página por hoja</target>
         </alt-trans>
@@ -4066,16 +4072,19 @@
       <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
         <note>ID: PublishTab.OnePagePerPaperRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Hacer un PDF de cada página del libro, una página por hojal.</target>
+        <target xml:lang="es-ES" state="translated">Hacer un PDF de cada página del libro, una página por hoja.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un PDF de cada página del libro, una página por hojal.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un PDF de cada página del libro, una página por hoja de papel.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Options">
+      <trans-unit id="PublishTab.Options" approved="yes">
         <source xml:lang="en">Options</source>
         <note>ID: PublishTab.Options</note>
         <note>menu header in the Publish tab</note>
-        <target xml:lang="es-ES" state="translated">Opciones</target>
+        <target xml:lang="es-ES">Opciones</target>
       </trans-unit>
       <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
         <source xml:lang="en">Size/Layout</source>
@@ -4091,18 +4100,18 @@
           <target xml:lang="es-ES">Abra el PDF en el visor predeterminado de archivos PDF</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
+      <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton" approved="yes">
         <source xml:lang="en">Replace Existing</source>
         <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
-        <target xml:lang="es-ES" state="translated">Reemplazar lo existente</target>
+        <target xml:lang="es-ES">Reemplazar lo existente</target>
         <alt-trans>
           <target xml:lang="es-ES">Reemplazar los existentes</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
+      <trans-unit id="PublishTab.OverwriteWarning.WindowTitle" approved="yes">
         <source xml:lang="en">Notice</source>
         <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Aviso</target>
+        <target xml:lang="es-ES">Aviso</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.BadPdf" approved="yes">
         <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
@@ -4142,17 +4151,20 @@
         <note>Message displayed in a progress report dialog box</note>
         <target xml:lang="es-ES">Creando PDF...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.PdfWithRGB">
+      <trans-unit id="PublishTab.PdfMaker.PdfWithRGB" approved="yes">
         <source xml:lang="en">PDF with RGB color</source>
         <note>ID: PublishTab.PdfMaker.PdfWithRGB</note>
         <note>displayed as file type for Save File dialog.  'RGB' may not be translatable, it is a standard.</note>
-        <target xml:lang="es-ES" state="translated">PDF con color RGB</target>
+        <target xml:lang="es-ES">PDF con color RGB</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
         <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <target xml:lang="es-ES" state="translated">Error al crear, comprimir, o recolorear el archivo PDF</target>
+        <target xml:lang="es-ES" state="translated">Error al crear, comprimir, o volver a colorear el archivo PDF</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Error al crear, comprimir, o recolorear el archivo PDF</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Finished" approved="yes">
         <source xml:lang="en">Finished making PDF from HTML</source>
@@ -4175,21 +4187,24 @@
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
         <target xml:lang="es-ES">Creando página {0} del PDF</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
+      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2" approved="yes">
         <source xml:lang="en">PDF with CMYK color (U.S. Web Coated (SWOP) v2)</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
         <note>displayed as file type for Save File dialog, the content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
-        <target xml:lang="es-ES" state="translated">PDF con color CMYK (U.S. Web Coated (SWORP) v2)</target>
+        <target xml:lang="es-ES">PDF con color CMYK (U.S. Web Coated (SWORP) v2)</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.TryMoreMemory">
+      <trans-unit id="PublishTab.PdfMaker.TryMoreMemory" approved="yes">
         <source xml:lang="en">Try doing this on a computer with more memory</source>
         <note>ID: PublishTab.PdfMaker.TryMoreMemory</note>
-        <target xml:lang="es-ES" state="translated">Trate de hacer esto en una computadora con más memoria</target>
+        <target xml:lang="es-ES">Trate de hacer esto en una computadora con más memoria</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.TryRestart">
+      <trans-unit id="PublishTab.PdfMaker.TryRestart" approved="yes">
         <source xml:lang="en">Restart your computer and try this again right away</source>
         <note>ID: PublishTab.PdfMaker.TryRestart</note>
-        <target xml:lang="es-ES" state="translated">Reiniciar su computadora e inténtelo de nuevo</target>
+        <target xml:lang="es-ES">Reinicie su computadora e inténtelo de nuevo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reiniciar su computadora e inténtelo de nuevo</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Reiniciar la computadora e inténtelo de nuevo</target>
         </alt-trans>
@@ -4851,15 +4866,18 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.CombinationHelp2</note>
         <target xml:lang="es-ES">p. ej. "ai oo sh ng th ing"</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Combinations" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Combinations" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letter Combinations (Graphemes)</source>
         <note>ID: ReaderSetup.Combinations</note>
-        <target xml:lang="es-ES" state="translated">Combinaciones de letras (grafemas)</target>
+        <target xml:lang="es-ES">Combinaciones de letras (Grafemas)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Combinaciones de letras (grafemas)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Stages</source>
         <note>ID: ReaderSetup.DecodableStages</note>
-        <target xml:lang="es-ES" state="translated">Etapas descifrables</target>
+        <target xml:lang="es-ES">Etapas descifrables</target>
         <alt-trans>
           <target xml:lang="es-ES">Etapas decodificables</target>
         </alt-trans>
@@ -4898,7 +4916,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true">
         <source xml:lang="en">List letters and word-forming characters in alphabetic order.</source>
         <note>ID: ReaderSetup.LetterHelp1</note>
-        <target xml:lang="es-ES" state="translated">Ingrese las letras y otros carácteres que se usan para formar palabras en orden alfabético.</target>
+        <target xml:lang="es-ES" state="translated">Ingrese en orden alfabético las letras y otros caracteres que se usan para formar palabras.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ingrese las letras y otros carácteres que se usan para formar palabras en orden alfabético.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Liste las letras y otros carácteres que se usan para formar palabras en orden alfabético.</target>
         </alt-trans>
@@ -4934,10 +4955,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Para ayudarle a crear lectores decodificables, Bloom debe saber las letras y combinaciones de letras que usted va a enseñar.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Letters.LetterHelp1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</source>
         <note>ID: ReaderSetup.Letters.LetterHelp1</note>
-        <target xml:lang="es-ES" state="translated">Separe cada letra o combinación de letras con un espacio. Por ejemplo, podríamos utilizar lo siguiente en el idioma inglés:</target>
+        <target xml:lang="es-ES">Separe cada letra o combinación de letras con un espacio. Por ejemplo, podríamos utilizar lo siguiente en el idioma inglés:</target>
         <alt-trans>
           <target xml:lang="es-ES">Separe cada letra o combinación de letras con un espacio. Por ejemplo, podriamos usar los siguiente el idioma inglés:</target>
         </alt-trans>
@@ -4945,10 +4966,13 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Separe cada letra o combinación de letras con un espacio. Por ejemplo, aquí es lo que podríamos utilizar para el idioma inglés:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Letters.LetterHelp2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Letters.LetterHelp2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Notice that the English list includes symbols that are used to make words, like ' in </source>
         <note>ID: ReaderSetup.Letters.LetterHelp2</note>
-        <target xml:lang="es-ES" state="translated">Observe que la lista inglés incluye símbolos que se utilizan para crear palabras, como ' en</target>
+        <target xml:lang="es-ES">Observe que la lista en inglés incluye símbolos que se utilizan para crear palabras, como ' en</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Observe que la lista inglés incluye símbolos que se utilizan para crear palabras, como ' en</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true">
         <source xml:lang="en">it's</source>
@@ -4989,10 +5013,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.MatchingWords</note>
         <target xml:lang="es-ES" state="translated">palabras coincidentes</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Average Length of Sentences in Book</source>
         <note>ID: ReaderSetup.MaxAverageWords</note>
-        <target xml:lang="es-ES" state="translated">Promedio máximo de longitud de oraciones en el libro</target>
+        <target xml:lang="es-ES">Promedio máximo de longitud de las oraciones en el libro</target>
         <alt-trans>
           <target xml:lang="es-ES">Promedio máximo de longitud de oraciónes en el libro</target>
         </alt-trans>
