@@ -934,10 +934,13 @@
           <target xml:lang="es-ES">Colección de origen</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+      <trans-unit id="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections" approved="yes">
         <source xml:lang="en">Open Additional Collections Folder</source>
         <note>ID: CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections</note>
-        <target xml:lang="es-ES" state="translated">Abrir carpeta de colecciones adicionales</target>
+        <target xml:lang="es-ES">Abrir una carpeta adicional de Colecciones</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir carpeta de colecciones adicionales</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading" approved="yes">
         <source xml:lang="en">Sources For New Shells</source>
@@ -1224,18 +1227,21 @@
         <note>ID: EditTab.AddPageDialog.ChooseLayoutContinueCheckbox</note>
         <target xml:lang="es-ES">Continuar de todos modos</target>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Different Layout...</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
-        <target xml:lang="es-ES" state="translated">Elegir un diseño diferente...</target>
+        <target xml:lang="es-ES">Elegir un diseño diferente...</target>
         <alt-trans>
           <target xml:lang="es-ES">Elija un diseño diferente...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
-        <target xml:lang="es-ES" state="translated">Convertir a este diseño causará algunas perdidas de contenido.</target>
+        <target xml:lang="es-ES">Convertir a este diseño causará algunas pérdidas de contenido.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Convertir a este diseño causará algunas perdidas de contenido.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.NoTemplate" sil:dynamic="true" approved="yes">
         <source xml:lang="en">(no template file found)</source>
@@ -1326,10 +1332,10 @@
           <target xml:lang="es-ES">Lo sentimos, este libro está bloqueado para que las ilustraciones no se puedan cambiar.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.ChooseLayoutButton">
+      <trans-unit id="EditTab.ChooseLayoutButton" approved="yes">
         <source xml:lang="en">Choose Different Layout</source>
         <note>ID: EditTab.ChooseLayoutButton</note>
-        <target xml:lang="es-ES" state="translated">Elija un diseño diferente</target>
+        <target xml:lang="es-ES">Elija un diseño diferente</target>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle" approved="yes">
         <source xml:lang="en">Really Delete Page?</source>
@@ -1482,17 +1488,17 @@
         <note>ID: EditTab.DeleteTextBoxFromImage</note>
         <target xml:lang="es-ES">Eliminar cuadro de texto de la imagen</target>
       </trans-unit>
-      <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true">
+      <trans-unit id="EditTab.DirectFormatting.Bold" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bold</source>
         <note>ID: EditTab.DirectFormatting.Bold</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="es-ES" state="translated">Negrita</target>
+        <target xml:lang="es-ES">Negrita</target>
       </trans-unit>
-      <trans-unit id="EditTab.DirectFormatting.Italic" sil:dynamic="true">
+      <trans-unit id="EditTab.DirectFormatting.Italic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Italic</source>
         <note>ID: EditTab.DirectFormatting.Italic</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="es-ES" state="translated">Cursiva</target>
+        <target xml:lang="es-ES">Cursiva</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true">
         <source xml:lang="en">Superscript</source>
@@ -1500,16 +1506,16 @@
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
         <target xml:lang="es-ES" state="translated">Superíndice</target>
       </trans-unit>
-      <trans-unit id="EditTab.DirectFormatting.Underline" sil:dynamic="true">
+      <trans-unit id="EditTab.DirectFormatting.Underline" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Underline</source>
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="es-ES" state="translated">Subrayado</target>
+        <target xml:lang="es-ES">Subrayado</target>
       </trans-unit>
-      <trans-unit id="EditTab.DuplicatePageButton">
+      <trans-unit id="EditTab.DuplicatePageButton" approved="yes">
         <source xml:lang="en">Duplicate\n  Page</source>
         <note>ID: EditTab.DuplicatePageButton</note>
-        <target xml:lang="es-ES" state="translated">Duplicar\n  Página</target>
+        <target xml:lang="es-ES">Duplicar\n  Página</target>
         <alt-trans>
           <target xml:lang="es-ES">Duplicado\n  Página</target>
         </alt-trans>
@@ -1527,15 +1533,18 @@
         <note>ID: EditTab.DuplicatePageButton.ToolTipWhenDisabled</note>
         <target xml:lang="es-ES" state="translated">Esta página no puede ser duplicada</target>
       </trans-unit>
-      <trans-unit id="EditTab.Edit">
+      <trans-unit id="EditTab.Edit" approved="yes">
         <source xml:lang="en">Edit</source>
         <note>ID: EditTab.Edit</note>
-        <target xml:lang="es-ES" state="translated">Editar</target>
+        <target xml:lang="es-ES">Editar</target>
       </trans-unit>
-      <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true">
+      <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You cannot change these because this is not the original copy.</source>
         <note>ID: EditTab.EditNotAllowed</note>
-        <target xml:lang="es-ES" state="translated">No puede hacer cambios porque esta no es la copia original.</target>
+        <target xml:lang="es-ES">No puede hacer cambios aquí porque esta no es la copia original.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No puede hacer cambios porque esta no es la copia original.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se puede cambiar estos porque esta no es la copia original.</target>
         </alt-trans>
@@ -1588,10 +1597,10 @@
         <note>ID: EditTab.FormatDialog.Alignment</note>
         <target xml:lang="es-ES">Alineación</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.AlreadyExists" sil:dynamic="true" approved="yes">
         <source xml:lang="en">That style already exists. Please choose another name.</source>
         <note>ID: EditTab.FormatDialog.AlreadyExists</note>
-        <target xml:lang="es-ES" state="translated">Ya existe ese estilo. Por favor elija otro nombre.</target>
+        <target xml:lang="es-ES">Ya existe ese estilo. Por favor elija otro nombre.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the border and background</source>
@@ -1921,10 +1930,13 @@
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
         <target xml:lang="es-ES" state="translated">Reconocimientos para la versión traducida, en {lang}</target>
       </trans-unit>
-      <trans-unit id="EditTab.HowToUnlockBook">
+      <trans-unit id="EditTab.HowToUnlockBook" approved="yes">
         <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="es-ES" state="translated">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
+        <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga clic en 'permitir cambios en este libro prediseñado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para desbloquear este libro "shell", ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro "shell".</target>
         </alt-trans>
@@ -1935,23 +1947,26 @@
           <target xml:lang="es-ES">Para desbloquear este libro de fuente, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro de fuente'.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.ChangeImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Image</source>
         <note>ID: EditTab.Image.ChangeImage</note>
-        <target xml:lang="es-ES" state="translated">Cambiar la imagen</target>
+        <target xml:lang="es-ES">Cambiar la imagen</target>
       </trans-unit>
-      <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.CopyImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copy Image</source>
         <note>ID: EditTab.Image.CopyImage</note>
-        <target xml:lang="es-ES" state="translated">Copiar la imagen</target>
+        <target xml:lang="es-ES">Copiar la imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Copiar imagen</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.CopyImageFailed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom had problems using your computer's clipboard. Some other program may be interfering.</source>
         <note>ID: EditTab.Image.CopyImageFailed</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo usar el portapapeles de su computadora. Es posible que hay un conflicto con otro programa.</target>
+        <target xml:lang="es-ES">Bloom no pudo utilizar el portapapeles de su computadora. Es posible que haya un conflicto con otro programa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo usar el portapapeles de su computadora. Es posible que hay un conflicto con otro programa.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cut Image</source>
@@ -1972,18 +1987,18 @@
           <target xml:lang="es-ES">Editar créditos de imagen, derechos de autor, y Licencia</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.PasteImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Paste Image</source>
         <note>ID: EditTab.Image.PasteImage</note>
-        <target xml:lang="es-ES" state="translated">Pegar la imagen</target>
+        <target xml:lang="es-ES">Pegar la imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Pegar imagen</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
         <note>ID: EditTab.Image.TryRestart</note>
-        <target xml:lang="es-ES" state="translated">Intente cerrar otros programs y reiniciar su computadora si es necesario.</target>
+        <target xml:lang="es-ES">Intente cerrar otros programs y reiniciar su computadora si es necesario.</target>
       </trans-unit>
       <trans-unit id="EditTab.Instructions.DeleteAllowed" approved="yes">
         <source xml:lang="en">Feel free to modify or delete this page.</source>
@@ -1995,10 +2010,10 @@
         <note>ID: EditTab.JpegWarningDialog.DoNotUse</note>
         <target xml:lang="es-ES" state="translated">Cancelar esta importación</target>
       </trans-unit>
-      <trans-unit id="EditTab.JpegWarningDialog.Photograph">
+      <trans-unit id="EditTab.JpegWarningDialog.Photograph" approved="yes">
         <source xml:lang="en">Use the JPEG file</source>
         <note>ID: EditTab.JpegWarningDialog.Photograph</note>
-        <target xml:lang="es-ES" state="translated">Utilice el archivo JPEG</target>
+        <target xml:lang="es-ES">Utilice el archivo JPEG</target>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.WarningText" approved="yes">
         <source xml:lang="en">The file you’ve chosen is a “JPEG” file. JPEG files are perfect for photographs and color artwork. However, JPEG files are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</source>
@@ -2016,10 +2031,13 @@
         <note>ID: EditTab.JpegWarningDialog.WindowTitle</note>
         <target xml:lang="es-ES" state="translated">Advertencia de JPEG</target>
       </trans-unit>
-      <trans-unit id="EditTab.LayoutInPublishTabOnlyNotice">
+      <trans-unit id="EditTab.LayoutInPublishTabOnlyNotice" approved="yes">
         <source xml:lang="en">This option is only available in the Publish tab.</source>
         <note>ID: EditTab.LayoutInPublishTabOnlyNotice</note>
-        <target xml:lang="es-ES" state="translated">Esta opción sólo es disponible en la pestaña publicar.</target>
+        <target xml:lang="es-ES">Esta opción sólo está disponible en la pestaña "Publicar".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta opción sólo es disponible en la pestaña publicar.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta opción sólo está disponible en la pestaña publicar.</target>
         </alt-trans>
@@ -2732,10 +2750,10 @@
           <target xml:lang="es-ES">2) Mirar la frase destacada</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
-        <target xml:lang="es-ES" state="translated">5) Siguiente</target>
+        <target xml:lang="es-ES">5) Siguiente</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Speak" sil:dynamic="true">
         <source xml:lang="en">3) Speak</source>
@@ -4317,10 +4335,10 @@
           <target xml:lang="es-ES">Bloom no pudo conectar al servidor para restablecer la contraseña. Por favor, compruebe su conexión de red.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.ResetFailed">
+      <trans-unit id="PublishTab.Upload.Login.ResetFailed" approved="yes">
         <source xml:lang="en">Reset Password failed</source>
         <note>ID: PublishTab.Upload.Login.ResetFailed</note>
-        <target xml:lang="es-ES" state="translated">No se pudo restablecer la contraseña</target>
+        <target xml:lang="es-ES">No se pudo restablecer la contraseña</target>
         <alt-trans>
           <target xml:lang="es-ES">No se pudo restablecer su contraseña</target>
         </alt-trans>
@@ -4333,10 +4351,13 @@
         <note>ID: PublishTab.Upload.Login.ResetPassword</note>
         <target xml:lang="es-ES">Restableciendo contraseña</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.SendingResetPassword">
+      <trans-unit id="PublishTab.Upload.Login.SendingResetPassword" approved="yes">
         <source xml:lang="en">We are sending an email to {0} with instructions for how to reset your password.</source>
         <note>ID: PublishTab.Upload.Login.SendingResetPassword</note>
-        <target xml:lang="es-ES" state="translated">Estamos enviandole un correo electrónico a {0} con instrucciones sobre como restablecer su contraseña.</target>
+        <target xml:lang="es-ES">Estamos enviando un correo electrónico a {0} con instrucciones sobre cómo restablecer su contraseña.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estamos enviandole un correo electrónico a {0} con instrucciones sobre como restablecer su contraseña.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Estamos enviando un correo electrónico a {0} con instrucciones para restablecer la contraseña.</target>
         </alt-trans>
@@ -4423,11 +4444,17 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Por favor, Inicia sesión para BloomLibrary.org (o registrarse) antes de cargar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.PleaseSetThis">
+      <trans-unit id="PublishTab.Upload.PleaseSetThis" approved="yes">
         <source xml:lang="en">Please set this from the edit tab</source>
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
-        <target xml:lang="es-ES" state="translated">Configure esto desde la pestaña "editar"</target>
+        <target xml:lang="es-ES">Por favor, configure esto desde la pestaña "Editar"</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor, configure esto desde la pestaña "editar"</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Configure esto desde la pestaña "editar"</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Configure esto desde la pestaña Editar</target>
         </alt-trans>
