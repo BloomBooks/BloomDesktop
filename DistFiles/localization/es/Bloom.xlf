@@ -3718,11 +3718,14 @@
           <target xml:lang="es-ES">¡Ahora puede leer "{0}" en Bloom!</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.Connected">
+      <trans-unit id="PublishTab.Android.Usb.Progress.Connected" approved="yes">
         <source xml:lang="en">Connected to {0} via USB...</source>
         <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
         <note>{0} is a the name of the device Bloom connected to</note>
-        <target xml:lang="es-ES" state="translated">Conectado a {0} por USB...</target>
+        <target xml:lang="es-ES">Conectado a {0} por vía USB...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Conectado a {0} por USB...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" approved="yes">
         <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
@@ -3735,10 +3738,13 @@
           <target xml:lang="es-ES">Los siguientes dispositivos estan conectados pero no estan ejecutando BloomReader:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend">
+      <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend" approved="yes">
         <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
         <note>ID: PublishTab.Android.Usb.Progress.FailureToSend</note>
-        <target xml:lang="es-ES" state="translated">Ocurrió un error y el libro no fue enviado a su dispositivo de Android.</target>
+        <target xml:lang="es-ES">Ocurrió un error y el libro no fue enviado a su dispositivo Android.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ocurrió un error y el libro no fue enviado a su dispositivo de Android.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice" approved="yes">
         <source xml:lang="en">Looking for an Android device connected by USB cable and set up for MTP...</source>
@@ -3755,11 +3761,14 @@
         <note>{0} is a book title</note>
         <target xml:lang="es-ES">Buscando el libro "{0}" existente...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne">
+      <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne" approved="yes">
         <source xml:lang="en">The following connected devices all have Bloom Reader installed. Please connect only one of these devices.</source>
         <note>ID: PublishTab.Android.Usb.Progress.MoreThanOne</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">LectorBloom esta instalado en todos los siguientes dispositivos conectados. Por favor conecte solamente uno de ellos.</target>
+        <target xml:lang="es-ES">El LectorBloom está instalado en todos los siguientes dispositivos conectados. Por favor, conecte solamente uno de ellos.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">LectorBloom esta instalado en todos los siguientes dispositivos conectados. Por favor conecte solamente uno de ellos.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">BloomReader esta instalado en todos los siguientes dispositivos conectados. Por favor conecte solamente uno de ellos.</target>
         </alt-trans>
@@ -4358,10 +4367,10 @@
         <note>ID: PublishTab.Upload.Login.AccountAlreadyExists</note>
         <target xml:lang="es-ES" state="translated">La cuenta ya existe</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
+      <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount" approved="yes">
         <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</source>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
-        <target xml:lang="es-ES" state="translated">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. ¿Le gustaría iniciar sesión con su cuenta actual?</target>
+        <target xml:lang="es-ES">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. ¿Le gustaría iniciar sesión con su cuenta actual?</target>
         <alt-trans>
           <target xml:lang="es-ES">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. Le gustaría entrar con su cuenta actual?</target>
         </alt-trans>
@@ -4494,7 +4503,10 @@
       <trans-unit id="PublishTab.Upload.Login.Signup">
         <source xml:lang="en">Sign up for Bloom Library.</source>
         <note>ID: PublishTab.Upload.Login.Signup</note>
-        <target xml:lang="es-ES" state="translated">Inscríbese a la Biblioteca Bloom (Bloom Library).</target>
+        <target xml:lang="es-ES" state="translated">Inscríbase en la Biblioteca Bloom (Bloom Library).</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Inscríbese a la Biblioteca Bloom (Bloom Library).</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Inscríbete en la Bloom Library.</target>
         </alt-trans>
@@ -4591,7 +4603,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.SignupLink">
         <source xml:lang="en">Sign up for BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignupLink</note>
-        <target xml:lang="es-ES" state="translated">Inscríbese en BloomLibrary.org</target>
+        <target xml:lang="es-ES" state="translated">Inscríbase en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Inscríbese en BloomLibrary.org</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Inscríbete en la BloomLibrary.org</target>
         </alt-trans>
