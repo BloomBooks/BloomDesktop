@@ -2042,10 +2042,10 @@
           <target xml:lang="es-ES">Esta opción sólo está disponible en la pestaña publicar.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.LayoutMode.ChangeLayout" sil:dynamic="true">
+      <trans-unit id="EditTab.LayoutMode.ChangeLayout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.LayoutMode.ChangeLayout</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el diseño</target>
+        <target xml:lang="es-ES">Cambiar el diseño</target>
       </trans-unit>
       <trans-unit id="EditTab.Monolingual" approved="yes">
         <source xml:lang="en">One Language</source>
@@ -2059,35 +2059,47 @@
         <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
         <target xml:lang="es-ES">Libro</target>
       </trans-unit>
-      <trans-unit id="EditTab.NoImageFoundOnClipboard">
+      <trans-unit id="EditTab.NoImageFoundOnClipboard" approved="yes">
         <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
-        <target xml:lang="es-ES" state="translated">Antes de poder pegar una imagen, copie uno a su "portapapeles" desde de otro programa.</target>
+        <target xml:lang="es-ES">Antes de poder pegar una imagen, copie una en su "portapapeles" desde de otro programa.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Antes de poder pegar una imagen, copie uno a su "portapapeles" desde de otro programa.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Antes de que usted pueda pegar una ilustración, copiar uno de otro programa en su "portapapeles".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.NoOtherLayouts">
+      <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
         <source xml:lang="en">There are no other layout options for this template.</source>
         <note>ID: EditTab.NoOtherLayouts</note>
         <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
-        <target xml:lang="es-ES" state="translated">No hay otras opciones de diseño para esta plantilla.</target>
+        <target xml:lang="es-ES">No hay otras opciones de diseño para esta plantilla.</target>
       </trans-unit>
-      <trans-unit id="EditTab.Overflow" sil:dynamic="true">
+      <trans-unit id="EditTab.Overflow" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This box has more text than will fit</source>
         <note>ID: EditTab.Overflow</note>
-        <target xml:lang="es-ES" state="translated">Este cuadro contiene mas texto de lo que cabe</target>
+        <target xml:lang="es-ES">Este cuadro contiene más texto del que cabe</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este cuadro contiene mas texto de lo que cabe</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true">
+      <trans-unit id="EditTab.OverflowContainer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A container on this page is overflowing</source>
         <note>ID: EditTab.OverflowContainer</note>
         <note>This shows up in pages like the cover where sizing is very flexible. No one thing is too big, but not everything on the page will fit. To see it, put a lot of text on a cover page, until a red bar appears at the bottom; then hover over the bar. </note>
-        <target xml:lang="es-ES" state="translated">Un contenedor en esta página se esta desbordando</target>
+        <target xml:lang="es-ES">Un contenedor en esta página se está desbordando</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Un contenedor en esta página se esta desbordando</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.PageList.CantMoveXMatter">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
-        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Páginas de material preliminar y final deben permanecer donde están.</target>
+        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Las páginas del material preliminar y final deben permanecer donde están.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se permite ese cambio. Páginas de material preliminar y final deben permanecer donde están.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se permite ese cambio. Páginas de materia inicial y final deben permanecer donde están.</target>
         </alt-trans>
@@ -2101,39 +2113,39 @@
           <target xml:lang="es-ES">No se permite ese cambio. Páginas del material inicial y final deben permanecer donde están</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.PageList.CantMoveXMatterCaption">
+      <trans-unit id="EditTab.PageList.CantMoveXMatterCaption" approved="yes">
         <source xml:lang="en">Invalid Move</source>
         <note>ID: EditTab.PageList.CantMoveXMatterCaption</note>
-        <target xml:lang="es-ES" state="translated">Movimiento no permitido</target>
+        <target xml:lang="es-ES">Movimiento no permitido</target>
         <alt-trans>
           <target xml:lang="es-ES">Movimiento no válido</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.PageList.Heading">
+      <trans-unit id="EditTab.PageList.Heading" approved="yes">
         <source xml:lang="en">Pages</source>
         <note>ID: EditTab.PageList.Heading</note>
-        <target xml:lang="es-ES" state="translated">Páginas</target>
+        <target xml:lang="es-ES">Páginas</target>
         <alt-trans>
           <target xml:lang="es-ES">Páginas de plantilla</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip">
+      <trans-unit id="EditTab.PageSizeAndOrientation.Tooltip" approved="yes">
         <source xml:lang="en">Choose a page size and orientation</source>
         <note>ID: EditTab.PageSizeAndOrientation.Tooltip</note>
-        <target xml:lang="es-ES" state="translated">Elija el tamaño y orientación de página</target>
+        <target xml:lang="es-ES">Elija el tamaño y orientación de página</target>
         <alt-trans>
           <target xml:lang="es-ES">Elija un tamaño de página y orientación</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.PasteButton">
+      <trans-unit id="EditTab.PasteButton" approved="yes">
         <source xml:lang="en">Paste</source>
         <note>ID: EditTab.PasteButton</note>
-        <target xml:lang="es-ES" state="translated">Pegar</target>
+        <target xml:lang="es-ES">Pegar</target>
       </trans-unit>
-      <trans-unit id="EditTab.PasteButton.ToolTip">
+      <trans-unit id="EditTab.PasteButton.ToolTip" approved="yes">
         <source xml:lang="en">Paste (Ctrl+V)</source>
         <note>ID: EditTab.PasteButton.ToolTip</note>
-        <target xml:lang="es-ES" state="translated">Pegar (Ctrl+V)</target>
+        <target xml:lang="es-ES">Pegar (Ctrl+V)</target>
       </trans-unit>
       <trans-unit id="EditTab.PastePage">
         <source xml:lang="en">Paste Page</source>
@@ -2143,12 +2155,15 @@
       <trans-unit id="EditTab.PasteButton.ToolTipWhenDisabled">
         <source xml:lang="en">There is nothing on the Clipboard that you can paste here.</source>
         <note>ID: EditTab.PasteButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="translated">No hay nada en el portapapeles que se puede pegar aquí.</target>
+        <target xml:lang="es-ES" state="translated">No hay nada en el portapapeles que pueda pegar aquí.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No hay nada en el portapapeles que se puede pegar aquí.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Position" sil:dynamic="true">
+      <trans-unit id="EditTab.Position" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Position</source>
         <note>ID: EditTab.Position</note>
-        <target xml:lang="es-ES" state="translated">Posición</target>
+        <target xml:lang="es-ES">Posición</target>
       </trans-unit>
       <trans-unit id="EditTab.ReadOnlyInAuthorMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You cannot put anything in there while making an original book.</source>
@@ -2161,10 +2176,10 @@
           <target xml:lang="es-ES">No se puede poner nada allí mientras usted está haciendo un libro original.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.SavingNotification" sil:dynamic="true">
+      <trans-unit id="EditTab.SavingNotification" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Saving...</source>
         <note>ID: EditTab.SavingNotification</note>
-        <target xml:lang="es-ES" state="translated">Guardando...</target>
+        <target xml:lang="es-ES">Guardando...</target>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.BorderToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the border and background</source>
@@ -2181,10 +2196,13 @@
         <note>ID: EditTab.StyleEditor.FontSizeToolTip</note>
         <target xml:lang="es-ES" state="translated">Cambiar el tamaño de la fuente</target>
       </trans-unit>
-      <trans-unit id="EditTab.StyleEditor.LineSpacingToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.StyleEditor.LineSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between lines of text</source>
         <note>ID: EditTab.StyleEditor.LineSpacingToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el interlineado de texto</target>
+        <target xml:lang="es-ES">Cambiar el interlineado del texto</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cambiar el interlineado de texto</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cambiar el espaciado entre líneas de texto</target>
         </alt-trans>
@@ -2197,23 +2215,23 @@
           <target xml:lang="es-ES">Ancha extra</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.StyleEditor.WordSpacingNormal" sil:dynamic="true">
+      <trans-unit id="EditTab.StyleEditor.WordSpacingNormal" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.StyleEditor.WordSpacingNormal</note>
-        <target xml:lang="es-ES" state="translated">Normal</target>
+        <target xml:lang="es-ES">Normal</target>
       </trans-unit>
-      <trans-unit id="EditTab.StyleEditor.WordSpacingToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.StyleEditor.WordSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between words</source>
         <note>ID: EditTab.StyleEditor.WordSpacingToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el espacio entre palabras</target>
+        <target xml:lang="es-ES">Cambiar el espacio entre palabras</target>
         <alt-trans>
           <target xml:lang="es-ES">Cambiar el espacio entre las palabras</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.StyleEditor.WordSpacingWide" sil:dynamic="true">
+      <trans-unit id="EditTab.StyleEditor.WordSpacingWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Wide</source>
         <note>ID: EditTab.StyleEditor.WordSpacingWide</note>
-        <target xml:lang="es-ES" state="translated">Ancho</target>
+        <target xml:lang="es-ES">Ancho</target>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditorTip" sil:dynamic="true">
         <source xml:lang="en">Adjust formatting for style</source>
@@ -2223,10 +2241,10 @@
           <target xml:lang="es-ES">Ajuste el formato de estilo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.TemplatePagesList.Heading">
+      <trans-unit id="EditTab.TemplatePagesList.Heading" approved="yes">
         <source xml:lang="en">Template Pages</source>
         <note>ID: EditTab.TemplatePagesList.Heading</note>
-        <target xml:lang="es-ES" state="translated">Páginas de plantilla</target>
+        <target xml:lang="es-ES">Páginas de plantilla</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.HintBubbles" approved="yes">
         <source xml:lang="en">Hint Bubbles</source>
@@ -2234,15 +2252,15 @@
         <note>This is the label of a tab in the text properties dialog that appears when you click a cog icon in a text box while changing the layout of a page</note>
         <target xml:lang="es-ES">Burbujas de sugerencia</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.LanguageTab">
+      <trans-unit id="EditTab.TextBoxProperties.LanguageTab" approved="yes">
         <source xml:lang="en">Language</source>
         <note>ID: EditTab.TextBoxProperties.LanguageTab</note>
-        <target xml:lang="es-ES" state="translated">Idioma</target>
+        <target xml:lang="es-ES">Idioma</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.Alignment" sil:dynamic="true">
+      <trans-unit id="EditTab.TextBoxProperties.Alignment" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alignment</source>
         <note>ID: EditTab.TextBoxProperties.Alignment</note>
-        <target xml:lang="es-ES" state="translated">Alineación</target>
+        <target xml:lang="es-ES">Alineación</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Background" sil:dynamic="true">
         <source xml:lang="en">Background</source>
@@ -2257,36 +2275,39 @@
           <target xml:lang="es-ES">Bordes &amp; fondo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.BorderSides" sil:dynamic="true">
+      <trans-unit id="EditTab.TextBoxProperties.BorderSides" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Border Sides</source>
         <note>ID: EditTab.TextBoxProperties.BorderSides</note>
-        <target xml:lang="es-ES" state="translated">Lados del borde</target>
+        <target xml:lang="es-ES">Lados del borde</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.BorderStyle" sil:dynamic="true">
+      <trans-unit id="EditTab.TextBoxProperties.BorderStyle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Border Style</source>
         <note>ID: EditTab.TextBoxProperties.BorderStyle</note>
-        <target xml:lang="es-ES" state="translated">Estilo de borde</target>
+        <target xml:lang="es-ES">Estilo del borde</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estilo de borde</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.IncludeLang">
+      <trans-unit id="EditTab.TextBoxProperties.IncludeLang" approved="yes">
         <source xml:lang="en">Include the name of the language using {lang}. For example: "Enter color in {lang}".</source>
         <note>ID: EditTab.TextBoxProperties.IncludeLang</note>
         <note>Becomes visible when "Show on each" option is chosen in combo. Do NOT translate {lang}.</note>
-        <target xml:lang="es-ES" state="translated">Incluya el nombre del idioma usando {lang}. Por ejemplo: "Ingrese color en {lang}".</target>
+        <target xml:lang="es-ES">Incluya el nombre del idioma usando {lang}. Por ejemplo: "Ingrese color en {lang}".</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.LocalLanguage">
+      <trans-unit id="EditTab.TextBoxProperties.LocalLanguage" approved="yes">
         <source xml:lang="en">Local Language</source>
         <note>ID: EditTab.TextBoxProperties.LocalLanguage</note>
-        <target xml:lang="es-ES" state="translated">Idioma local</target>
+        <target xml:lang="es-ES">Idioma local</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.NationalLanguage">
+      <trans-unit id="EditTab.TextBoxProperties.NationalLanguage" approved="yes">
         <source xml:lang="en">National Language</source>
         <note>ID: EditTab.TextBoxProperties.NationalLanguage</note>
-        <target xml:lang="es-ES" state="translated">Idioma nacional</target>
+        <target xml:lang="es-ES">Idioma nacional</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.Normal">
+      <trans-unit id="EditTab.TextBoxProperties.Normal" approved="yes">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.TextBoxProperties.Normal</note>
-        <target xml:lang="es-ES" state="translated">Normal</target>
+        <target xml:lang="es-ES">Normal</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.NormalLabel" approved="yes">
         <source xml:lang="en">"Normal" will show local language, and potentially regional or national, depending on the multilingual settings of the book. Use this for most content.</source>
@@ -2301,15 +2322,18 @@
         <note>ID: EditTab.TextBoxProperties.OtherLanguagesLabel</note>
         <target xml:lang="es-ES" state="translated">Utilice uno de estos para cuadros básicos de texto limitado a solamente un idioma.</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.RegionalLanguage">
+      <trans-unit id="EditTab.TextBoxProperties.RegionalLanguage" approved="yes">
         <source xml:lang="en">Regional Language</source>
         <note>ID: EditTab.TextBoxProperties.RegionalLanguage</note>
-        <target xml:lang="es-ES" state="translated">Idioma regional</target>
+        <target xml:lang="es-ES">Idioma regional</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.WhatToPut">
+      <trans-unit id="EditTab.TextBoxProperties.WhatToPut" approved="yes">
         <source xml:lang="en">What should authors put in this box?</source>
         <note>ID: EditTab.TextBoxProperties.WhatToPut</note>
-        <target xml:lang="es-ES" state="translated">Que deben incluir los autores en este cuadro?</target>
+        <target xml:lang="es-ES">¿Qué deben incluir los autores en este cuadro?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Que deben incluir los autores en este cuadro?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.ShowHintBubble" approved="yes">
         <source xml:lang="en">Show the hint bubble</source>
@@ -2333,10 +2357,10 @@
           <target xml:lang="es-ES">En cada campo de la lengua en el grupo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.Title">
+      <trans-unit id="EditTab.TextBoxProperties.Title" approved="yes">
         <source xml:lang="en">Text Box Properties</source>
         <note>ID: EditTab.TextBoxProperties.Title</note>
-        <target xml:lang="es-ES" state="translated">Propiedades del cuadro de texto</target>
+        <target xml:lang="es-ES">Propiedades del cuadro de texto</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.VerticalAlignment">
         <source xml:lang="en">Vertical Alignment</source>
