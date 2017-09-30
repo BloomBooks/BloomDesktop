@@ -1243,18 +1243,18 @@
         <note>Seen when the book's main template page file is missing.</note>
         <target xml:lang="es-ES" state="translated">(no se encontró el archivo de plantilla)</target>
       </trans-unit>
-      <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
+      <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
-        <target xml:lang="es-ES" state="translated">Agregar página...</target>
+        <target xml:lang="es-ES">Agregar página...</target>
         <alt-trans>
           <target xml:lang="es-ES">Añandir pagina...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.AddTextBoxToImage" sil:dynamic="true">
+      <trans-unit id="EditTab.AddTextBoxToImage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Text Box To Image</source>
         <note>ID: EditTab.AddTextBoxToImage</note>
-        <target xml:lang="es-ES" state="translated">Añadir cuadro de texto a la imagen</target>
+        <target xml:lang="es-ES">Añadir cuadro de texto a la imagen</target>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>
@@ -1469,7 +1469,10 @@
       <trans-unit id="EditTab.DeletePageButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">This page cannot be removed</source>
         <note>ID: EditTab.DeletePageButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES">Esta página no puede ser eleminada</target>
+        <target xml:lang="es-ES">Esta página no se puede eliminar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta página no puede ser eleminada</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta página no puede ser removida</target>
         </alt-trans>
@@ -4070,10 +4073,10 @@
         <note>ID: PublishTab.Upload.Acknowledgments</note>
         <target xml:lang="es-ES" state="translated">Agradecimientos</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.AdditionalRequests">
+      <trans-unit id="PublishTab.Upload.AdditionalRequests" approved="yes">
         <source xml:lang="en">Additional Requests: </source>
         <note>ID: PublishTab.Upload.AdditionalRequests</note>
-        <target xml:lang="es-ES" state="translated">Solicitudes Adicionales: </target>
+        <target xml:lang="es-ES">Solicitudes Adicionales: </target>
         <alt-trans>
           <target xml:lang="es-ES">SolicitudesAdicionales: </target>
         </alt-trans>
