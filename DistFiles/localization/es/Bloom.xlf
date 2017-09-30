@@ -1832,7 +1832,10 @@
       <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true">
         <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
         <note>ID: EditTab.FrontMatter.ISBNPrompt</note>
-        <target xml:lang="es-ES" state="translated">Número Internacional Normalizado para Libros. Dejar en blanco si no lo tiene.</target>
+        <target xml:lang="es-ES" state="translated">Código Normalizado Internacional para lLibros. Deje en blanco si no lo tiene.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Número Internacional Normalizado para Libros. Dejar en blanco si no lo tiene.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Número Internacional Normalizado para Libros. Dejar en blanco si no tiene uno de estos.</target>
         </alt-trans>
@@ -1918,7 +1921,10 @@
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="es-ES" state="translated">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
+        <target xml:lang="es-ES" state="translated">Los dibujos de lÍneas simples se ven mejor. En vez de utilizar esta página, también puede crear su propia miniatura.png y márrquelo sólo para lectura (Read-only) para que Bloom no lo sobreescriba.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
@@ -2414,10 +2420,10 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage</note>
         <target xml:lang="es-ES" state="translated">Palabras permitidas en esta etapa</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles" approved="yes">
         <source xml:lang="en">Text files</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles</note>
-        <target xml:lang="es-ES" state="translated">Archivos de texto</target>
+        <target xml:lang="es-ES">Archivos de texto</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters">
         <source xml:lang="en">Letters: {0}</source>
@@ -2432,111 +2438,111 @@
           <target xml:lang="es-ES">El siguiente es un informe generado de las etapas decodificables para {0}. Usted puede hacer los cambios que desee a este archivo, pero Bloom no notará los cambios. Es sólo un informe.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords" approved="yes">
         <source xml:lang="en">New Decodable Words: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords</note>
-        <target xml:lang="es-ES" state="translated">Nuevas palabras descifrables: {0}</target>
+        <target xml:lang="es-ES">Nuevas palabras descifrables: {0}</target>
         <alt-trans>
           <target xml:lang="es-ES">Nuevas palabras decodificables: {0}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords" approved="yes">
         <source xml:lang="en">New Sight Words: {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords</note>
-        <target xml:lang="es-ES" state="translated">Nuevas palabras vistas: {0}</target>
+        <target xml:lang="es-ES">Nuevas palabras vistas: {0}</target>
         <alt-trans>
           <target xml:lang="es-ES">Nuevas palabras de vista: {0}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage" approved="yes">
         <source xml:lang="en">Stage {0}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage</note>
-        <target xml:lang="es-ES" state="translated">Etapa {0}</target>
+        <target xml:lang="es-ES">Etapa {0}</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList" approved="yes">
         <source xml:lang="en">Complete Word List</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList</note>
-        <target xml:lang="es-ES" state="translated">Lista completa de palabras</target>
+        <target xml:lang="es-ES">Lista completa de palabras</target>
         <alt-trans>
           <target xml:lang="es-ES">Lista de palabras completa</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LettersInThisStage</note>
-        <target xml:lang="es-ES" state="translated">Letras en esta etapa</target>
+        <target xml:lang="es-ES">Letras en esta etapa</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Open a Letter and Word List File</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList</note>
-        <target xml:lang="es-ES" state="translated">Abrir un archivo que contiene una lista de letras y palabras</target>
+        <target xml:lang="es-ES">Abrir un archivo que contiene una lista de letras y palabras</target>
         <alt-trans>
           <target xml:lang="es-ES">Abrir un archivo de lista de letras y palabras</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Generate a letter and word list report</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
-        <target xml:lang="es-ES" state="translated">Generar un informe que contiene una lista de letras y palabras</target>
+        <target xml:lang="es-ES">Generar un informe que contiene una lista de letras y palabras</target>
         <alt-trans>
           <target xml:lang="es-ES">Generar un informe de letras y palabras</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample words in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage</note>
-        <target xml:lang="es-ES" state="translated">Palabras de muestra en esta etapa</target>
+        <target xml:lang="es-ES">Palabras de muestra en esta etapa</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true">
         <source xml:lang="en">Set up Stages</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SetUpStages</note>
         <target xml:lang="es-ES" state="translated">Establecer etapas</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically" approved="yes">
         <source xml:lang="en">Sort alphabetically</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortAlphabetically</note>
-        <target xml:lang="es-ES" state="translated">Ordenar alfabéticamente</target>
+        <target xml:lang="es-ES">Ordenar alfabéticamente</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByFrequency">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByFrequency" approved="yes">
         <source xml:lang="en">Sort by frequency</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortByFrequency</note>
-        <target xml:lang="es-ES" state="translated">Ordenar por frecuencia</target>
+        <target xml:lang="es-ES">Ordenar por frecuencia</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByWordLength">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortByWordLength" approved="yes">
         <source xml:lang="en">Sort by word length</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortByWordLength</note>
-        <target xml:lang="es-ES" state="translated">Ordenar por longitud de palabra</target>
+        <target xml:lang="es-ES">Ordenar por longitud de palabra</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
-        <target xml:lang="es-ES" state="translated">Etapa</target>
+        <target xml:lang="es-ES">Etapa</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
-        <target xml:lang="es-ES" state="translated">de</target>
+        <target xml:lang="es-ES">de</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Words in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.WordsInThisStage</note>
-        <target xml:lang="es-ES" state="translated">Palabras en esta etapa</target>
+        <target xml:lang="es-ES">Palabras en esta etapa</target>
         <alt-trans>
           <target xml:lang="es-ES">Las palabras en esta etapa</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Herramienta para libros por niveles</target>
+        <target xml:lang="es-ES">Herramienta para libros por niveles</target>
         <alt-trans>
           <target xml:lang="es-ES">Herramienta para libros nivelados</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Actual" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Actual</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Actual</note>
-        <target xml:lang="es-ES" state="translated">Actual</target>
+        <target xml:lang="es-ES">Actual</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
         <source xml:lang="en">avg per sentence</source>
@@ -2546,10 +2552,10 @@
           <target xml:lang="es-ES">prom. por frase</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic</note>
-        <target xml:lang="es-ES" state="translated">Elección del tema</target>
+        <target xml:lang="es-ES">Elección del tema</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true">
         <source xml:lang="en">For this Level</source>
@@ -2567,15 +2573,18 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true">
         <source xml:lang="en">Illustration Support</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.IllustrationSupport</note>
-        <target xml:lang="es-ES" state="translated">Apoyo para ilustraciones</target>
+        <target xml:lang="es-ES" state="translated">Apoyo para las ilustraciones</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Apoyo para ilustraciones</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Soporte para imágenes</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.KeepInMind" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Keep in mind</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.KeepInMind</note>
-        <target xml:lang="es-ES" state="translated">Tenga en mente</target>
+        <target xml:lang="es-ES">Tenga en mente</target>
         <alt-trans>
           <target xml:lang="es-ES">Tenga en cuenta</target>
         </alt-trans>
@@ -2583,30 +2592,30 @@
           <target xml:lang="es-ES">Tener en mente</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
         <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
-        <target xml:lang="es-ES" state="translated">Nivel</target>
+        <target xml:lang="es-ES">Nivel</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">of</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelOf</note>
         <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
-        <target xml:lang="es-ES" state="translated">de</target>
+        <target xml:lang="es-ES">de</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
-        <target xml:lang="es-ES" state="translated">Máx.</target>
+        <target xml:lang="es-ES">Máx.</target>
         <alt-trans>
           <target xml:lang="es-ES">Máximo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">per page</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.PerPage</note>
-        <target xml:lang="es-ES" state="translated">por página</target>
+        <target xml:lang="es-ES">por página</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerSentence" sil:dynamic="true">
         <source xml:lang="en">longest sentence</source>
@@ -2875,10 +2884,10 @@
         <note>ID: Errors.CannotConnectToBloomServer</note>
         <target xml:lang="es-ES" state="translated">Bloom no pudo empezar su propio HTTP listener que usa para comunicar con el busqueador itegrado de Firefox. Si esto sucede apesar de recien haber reiniciado su computadora, debe pedir que alguien investigue si tiene instalado un producto agresivo de cortafuegos. Es posible que tendra que desinstalar el cortafuegos para poder usar Bloom.</target>
       </trans-unit>
-      <trans-unit id="Errors.DeniedAccess">
+      <trans-unit id="Errors.DeniedAccess" approved="yes">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
         <note>ID: Errors.DeniedAccess</note>
-        <target xml:lang="es-ES" state="translated">Su computadora no permitió que Bloom accesara al libro. Puede pedir ayuda técnica para cambiar la configuración de permisos del sistema operativo de este archivo.</target>
+        <target xml:lang="es-ES">Su computadora no permitió que Bloom accesara al libro. Puede pedir ayuda técnica para cambiar la configuración de permisos del sistema operativo de este archivo.</target>
         <alt-trans>
           <target xml:lang="es-ES">Su computador nego que Bloom accesara el libro. Pide ayuda tecnica para cambiar la configuración de permisos del sistema operativo de este archivo.</target>
         </alt-trans>
