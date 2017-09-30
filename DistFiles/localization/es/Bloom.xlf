@@ -87,7 +87,10 @@
       <trans-unit id="BloomPackInstallDialog.MustRestartToSee">
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
+        <target xml:lang="es-ES" state="translated">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que usted ejecute Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ya se está ejecutando, pero no se mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
         </alt-trans>
