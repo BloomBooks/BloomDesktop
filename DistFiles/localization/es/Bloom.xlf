@@ -622,7 +622,10 @@
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom de plantilla de libro...</target>
+        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom de Plantilla de Libro...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un Paquete de Bloom de plantilla de libro...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear una plantilla de libro para BloomPack...</target>
         </alt-trans>
@@ -4331,11 +4334,11 @@
         <note>ID: PublishTab.Upload.GiveBack</note>
         <target xml:lang="es-ES" state="translated">Es fácil "contribuir"</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.IncompleteTranslation">
+      <trans-unit id="PublishTab.Upload.IncompleteTranslation" approved="yes">
         <source xml:lang="en">(incomplete translation)</source>
         <note>ID: PublishTab.Upload.IncompleteTranslation</note>
         <note>This is added after the language name, in order to indicate that some parts of the book have not been translated into this language yet.</note>
-        <target xml:lang="es-ES" state="translated">(traducción incompleta)</target>
+        <target xml:lang="es-ES">(traducción incompleta)</target>
         <alt-trans>
           <target xml:lang="es-ES">(parcial)</target>
         </alt-trans>
@@ -4358,7 +4361,10 @@
       <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount">
         <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</source>
         <note>ID: PublishTab.Upload.Login.AlreadyHaveAccount</note>
-        <target xml:lang="es-ES" state="translated">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. Le gustaría entrar con su cuenta actual?</target>
+        <target xml:lang="es-ES" state="translated">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. ¿Le gustaría entrar con su cuenta actual?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. Le gustaría entrar con su cuenta actual?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. Le gustaría hacer login?</target>
         </alt-trans>
@@ -4409,7 +4415,10 @@
       <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser">
         <source xml:lang="en">We don't have a user on record with that email. Would you like to sign up?</source>
         <note>ID: PublishTab.Upload.Login.NoRecordOfUser</note>
-        <target xml:lang="es-ES" state="translated">No tenemos un usuario registrado con ese correo electrónico. ¿Gustaría inscribirse?</target>
+        <target xml:lang="es-ES" state="translated">No tenemos un usuario registrado con ese correo electrónico. ¿Le gustaría inscribirse?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No tenemos un usuario registrado con ese correo electrónico. ¿Gustaría inscribirse?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No tenemos un usuario registrado con ese email. ¿Le gustaría registrarse?</target>
         </alt-trans>
@@ -4430,10 +4439,13 @@
           <target xml:lang="es-ES">Por favor, de acuerdo a los términos de uso</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail">
+      <trans-unit id="PublishTab.Upload.Login.PleaseProvideEmail" approved="yes">
         <source xml:lang="en">Please enter a valid email address. We will send an email to this address so you can reset your password.</source>
         <note>ID: PublishTab.Upload.Login.PleaseProvideEmail</note>
-        <target xml:lang="es-ES" state="translated">Favord de introducir una dirección de correo electrónico válida. Le enviaremos un correo electrónico a esa dirección para que pueda restablecer su contraseña.</target>
+        <target xml:lang="es-ES">Por favor, introduzca una dirección de correo electrónico válida. Le enviaremos un correo electrónico a esa dirección para que pueda restablecer su contraseña.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Favord de introducir una dirección de correo electrónico válida. Le enviaremos un correo electrónico a esa dirección para que pueda restablecer su contraseña.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Introduzca una dirección de correo electrónico válida. Le enviaremos un correo electrónico a esta dirección para que pueda restablecer su contraseña.</target>
         </alt-trans>
@@ -4682,20 +4694,29 @@ Desea seguir?</target>
         <note>ID: PublishView._saveButton</note>
         <target xml:lang="es-ES" state="translated">Guardar el stub (trozo)</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Level</source>
         <note>ID: ReaderSetup.AddLevel</note>
-        <target xml:lang="es-ES" state="translated">Agregar nivel</target>
+        <target xml:lang="es-ES">Agregar Nivel</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Agregar nivel</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.AddStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Stage</source>
         <note>ID: ReaderSetup.AddStage</note>
-        <target xml:lang="es-ES" state="translated">Agregar etapa</target>
+        <target xml:lang="es-ES">Agregar Etapa</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Agregar etapa</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.AddTexts" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.AddTexts" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Please add texts to the Sample Texts folder.</source>
         <note>ID: ReaderSetup.AddTexts</note>
-        <target xml:lang="es-ES" state="translated">Por favor, agregue textos a la carpeta de textos de muestra.</target>
+        <target xml:lang="es-ES">Por favor, agregue textos a la carpeta de Textos de Muestra.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor, agregue textos a la carpeta de textos de muestra.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.AllowedWords" sil:dynamic="true">
         <source xml:lang="en">allowed words</source>
@@ -5029,7 +5050,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya conoce que caracteres se usan en los idiomas del mundo para marcar el final de oraciones. Para agregar otros, ingrese los "Unicode character escapes" aqui. For ejemplo para tailandes, ingrese \U0020 para indicar a Bloom que en tailandes se usa espacios normales para terminar las oraciones.</target>
+        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "Unicode character escapes" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ya conoce que caracteres se usan en los idiomas del mundo para marcar el final de oraciones. Para agregar otros, ingrese los "Unicode character escapes" aqui. For ejemplo para tailandes, ingrese \U0020 para indicar a Bloom que en tailandes se usa espacios normales para terminar las oraciones.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
@@ -5232,10 +5256,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Crear BloomPack plantilla de lectores</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="RegisterDialog.Email">
+      <trans-unit id="RegisterDialog.Email" approved="yes">
         <source xml:lang="en">Email Address</source>
         <note>ID: RegisterDialog.Email</note>
-        <target xml:lang="es-ES" state="translated">Dirección de correo electrónico</target>
+        <target xml:lang="es-ES">Dirección de correo electrónico</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.FirstName">
         <source xml:lang="en">First Name</source>
@@ -5455,10 +5479,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Calendario de pared</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A blank page that allows you to add items.</source>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
-        <target xml:lang="es-ES" state="translated">Una página en blanco que le permite agregar elementos.</target>
+        <target xml:lang="es-ES">Una página en blanco que le permite agregar elementos.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">This page was automatically inserted because the following page is marked as part of a two page spread.</source>
