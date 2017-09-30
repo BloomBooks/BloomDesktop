@@ -726,10 +726,10 @@
           <target xml:lang="es-ES">Orígenes de nuevos libros</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookSourcesLockNotice">
+      <trans-unit id="CollectionTab.BookSourcesLockNotice" approved="yes">
         <source xml:lang="en">This collection is locked, so new books cannot be added/removed.</source>
         <note>ID: CollectionTab.BookSourcesLockNotice</note>
-        <target xml:lang="es-ES" state="translated">Esta colección está bloqueada, no se puede agregar o eliminar libros nuevos.</target>
+        <target xml:lang="es-ES">Esta colección está bloqueada, no se puede agregar o eliminar libros nuevos.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esta colección está bloqueada, no se puede agregar o eliminar nuevos libros.</target>
         </alt-trans>
@@ -774,10 +774,10 @@
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>
         <target xml:lang="es-ES" state="translated">Historia de la colección...</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.showNotes">
+      <trans-unit id="CollectionTab.CollectionMenu.showNotes" approved="yes">
         <source xml:lang="en">Collection Notes...</source>
         <note>ID: CollectionTab.CollectionMenu.showNotes</note>
-        <target xml:lang="es-ES" state="translated">Notas de la colección...</target>
+        <target xml:lang="es-ES">Notas de la colección...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionTabLabel" approved="yes">
         <source xml:lang="en">Collections</source>
@@ -1520,18 +1520,21 @@
           <target xml:lang="es-ES">Duplicado\n  Página</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.DuplicatePageButton.ToolTip">
+      <trans-unit id="EditTab.DuplicatePageButton.ToolTip" approved="yes">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTip</note>
-        <target xml:lang="es-ES" state="translated">Insertar una nueva página que es una duplicada de éste</target>
+        <target xml:lang="es-ES">Insertar una nueva página que es un duplicado de ésta</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Insertar una nueva página que es una duplicada de éste</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Insertar una nueva página que es un duplicado de éste</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
+      <trans-unit id="EditTab.DuplicatePageButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">This page cannot be duplicated</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES" state="translated">Esta página no puede ser duplicada</target>
+        <target xml:lang="es-ES">Esta página no puede ser duplicada</target>
       </trans-unit>
       <trans-unit id="EditTab.Edit" approved="yes">
         <source xml:lang="en">Edit</source>
@@ -1607,25 +1610,25 @@
         <note>ID: EditTab.FormatDialog.BorderToolTip</note>
         <target xml:lang="es-ES">Cambiar el borde y el fondo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.CharactersTab" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Characters</source>
         <note>ID: EditTab.FormatDialog.CharactersTab</note>
-        <target xml:lang="es-ES" state="translated">Caracteres</target>
+        <target xml:lang="es-ES">Caracteres</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Create</source>
         <note>ID: EditTab.FormatDialog.Create</note>
-        <target xml:lang="es-ES" state="translated">Crear</target>
+        <target xml:lang="es-ES">Crear</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.CreateStyle" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.CreateStyle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Create a new style</source>
         <note>ID: EditTab.FormatDialog.CreateStyle</note>
-        <target xml:lang="es-ES" state="translated">Crear un nuevo estilo</target>
+        <target xml:lang="es-ES">Crear un nuevo estilo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Don't see what you need?</source>
         <note>ID: EditTab.FormatDialog.DontSeeNeed</note>
-        <target xml:lang="es-ES" state="translated">¿No encuentra lo que necesita?</target>
+        <target xml:lang="es-ES">¿No encuentra lo que necesita?</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Emphasis" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Emphasis</source>
@@ -2663,7 +2666,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
         <source xml:lang="en">Word Counts</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WordCounts</note>
-        <target xml:lang="es-ES" state="translated">Número de palabras</target>
+        <target xml:lang="es-ES" state="translated">Contar palabras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Número de palabras</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Numero de palabras</target>
         </alt-trans>
@@ -2879,11 +2885,11 @@
           <target xml:lang="es-ES">Bloom tuvo un problema mostrando este libro. Esto no significa que su trabajo se perdió, pero sí significa que algo no está actualizado, no se encuentra, o se ha hecho mal. Considere el uso del comando 'reportar un problema' en el menú "Ayuda".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.CannotAccessFile">
+      <trans-unit id="Errors.CannotAccessFile" approved="yes">
         <source xml:lang="en">Cannot access {0}</source>
         <note>ID: Errors.CannotAccessFile</note>
         <note>displays as a "toast", {0} is the URL/filename</note>
-        <target xml:lang="es-ES" state="translated">No se puede acceder a {0}</target>
+        <target xml:lang="es-ES">No se puede acceder a {0}</target>
         <alt-trans>
           <target xml:lang="es-ES">No puede acceder a {0}</target>
         </alt-trans>
@@ -2924,12 +2930,15 @@
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</source>
         <note>ID: Errors.NeedNewerVersion</note>
         <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
-        <target xml:lang="es-ES" state="translated">{0} requiere una nueva versión de Bloom. Descargue la versión más reciente de {1}.</target>
+        <target xml:lang="es-ES" state="translated">{0} requiere una nueva versión de Bloom. Descargue la versión más reciente en {1}.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">{0} requiere una nueva versión de Bloom. Descargue la versión más reciente de {1}.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.ProblemDeletingFile">
+      <trans-unit id="Errors.ProblemDeletingFile" approved="yes">
         <source xml:lang="en">Bloom had a problem deleting this file: {0}</source>
         <note>ID: Errors.ProblemDeletingFile</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo eliminar este archivo {0}</target>
+        <target xml:lang="es-ES">Bloom no pudo eliminar este archivo {0}</target>
       </trans-unit>
       <trans-unit id="Errors.ProblemImportingPicture" approved="yes">
         <source xml:lang="en">Bloom had a problem importing this picture.</source>
@@ -3027,10 +3036,10 @@
         <note>ID: HelpMenu.CheckForNewVersionMenuItem</note>
         <target xml:lang="es-ES">Buscar nueva versión</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.CreditsMenuItem">
+      <trans-unit id="HelpMenu.CreditsMenuItem" approved="yes">
         <source xml:lang="en">About Bloom</source>
         <note>ID: HelpMenu.CreditsMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Acerca de Bloom</target>
+        <target xml:lang="es-ES">Acerca de Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Sobre Bloom</target>
         </alt-trans>
@@ -3038,17 +3047,20 @@
       <trans-unit id="HelpMenu.DocumentationMenuItem">
         <source xml:lang="en">Documentation</source>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Documentación (ingles)</target>
+        <target xml:lang="es-ES" state="translated">Documentación (inglés)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Documentación (ingles)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="HelpMenu.Help Menu" sil:dynamic="true">
+      <trans-unit id="HelpMenu.Help Menu" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
         <note>ID: HelpMenu.Help Menu</note>
-        <target xml:lang="es-ES" state="translated">Ayuda</target>
+        <target xml:lang="es-ES">Ayuda</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.Help Menu_ToolTip_" sil:dynamic="true">
+      <trans-unit id="HelpMenu.Help Menu_ToolTip_" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Get Help</source>
         <note>ID: HelpMenu.Help Menu_ToolTip_</note>
-        <target xml:lang="es-ES" state="translated">Conseguir ayuda</target>
+        <target xml:lang="es-ES">Conseguir ayuda</target>
       </trans-unit>
       <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem" approved="yes">
         <source xml:lang="en">Key Bloom Concepts</source>
@@ -4752,10 +4764,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">En primer lugar,</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.FormatNotSupported" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.FormatNotSupported" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Cannot read this format</source>
         <note>ID: ReaderSetup.FormatNotSupported</note>
-        <target xml:lang="es-ES" state="translated">No se puede leer este formato</target>
+        <target xml:lang="es-ES">No se puede leer este formato</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true">
         <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
