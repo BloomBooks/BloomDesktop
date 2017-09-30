@@ -2829,10 +2829,10 @@
           <target xml:lang="es-ES">3) Grabar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
-        <target xml:lang="es-ES" state="translated">Hacer un libro electrónico que reproduce las grabaciones mientras que destaca las oraciones.</target>
+        <target xml:lang="es-ES">Hacer un libro electrónico que reproduce las grabaciones mientras que destaca las oraciones.</target>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un e-libro que reproduce las grabaciones mientras que destaca las oraciónes.</target>
         </alt-trans>
@@ -4209,19 +4209,22 @@
           <target xml:lang="es-ES">Reiniciar la computadora e inténtelo de nuevo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.TrySmallerImages">
+      <trans-unit id="PublishTab.PdfMaker.TrySmallerImages" approved="yes">
         <source xml:lang="en">Replace large, high-resolution images in your document with lower-resolution ones</source>
         <note>ID: PublishTab.PdfMaker.TrySmallerImages</note>
-        <target xml:lang="es-ES" state="translated">Sustituya imágenes grandes y de alta resolución en su documento con imágenes de menor resolución</target>
+        <target xml:lang="es-ES">Sustituya las imágenes grandes y de alta resolución en su documento con imágenes de menor resolución</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sustituya imágenes grandes y de alta resolución en su documento con imágenes de menor resolución</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Sustituya imágenes grandes y de alta resolución en el documento con los de resolución más baja</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfNotSaved">
+      <trans-unit id="PublishTab.PdfNotSaved" approved="yes">
         <source xml:lang="en">PDF Not Saved</source>
         <note>ID: PublishTab.PdfNotSaved</note>
         <note>title for the message box</note>
-        <target xml:lang="es-ES" state="translated">PDF no guardado</target>
+        <target xml:lang="es-ES">PDF no guardado</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfNotSavedWhy">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
@@ -4232,10 +4235,10 @@
           <target xml:lang="es-ES">No se guardol archivo PDF porque elegió no permitir la producción de "PDF para la imprenta".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.PrintButton">
+      <trans-unit id="PublishTab.PrintButton" approved="yes">
         <source xml:lang="en">&amp;Print...</source>
         <note>ID: PublishTab.PrintButton</note>
-        <target xml:lang="es-ES" state="translated">&amp;Imprimir...</target>
+        <target xml:lang="es-ES">&amp;Imprimir...</target>
         <alt-trans>
           <target xml:lang="es-ES">Imprimir...</target>
         </alt-trans>
@@ -4246,23 +4249,23 @@
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
         <target xml:lang="es-ES" state="translated">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de la preparación de un "PDF para la imprenta".  Debes aceptar la siguiente licencia para hacerlo en Bloom.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Publish">
+      <trans-unit id="PublishTab.Publish" approved="yes">
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
-        <target xml:lang="es-ES" state="translated">Publicar</target>
+        <target xml:lang="es-ES">Publicar</target>
       </trans-unit>
-      <trans-unit id="PublishTab.SaveButton">
+      <trans-unit id="PublishTab.SaveButton" approved="yes">
         <source xml:lang="en">&amp;Save PDF...</source>
         <note>ID: PublishTab.SaveButton</note>
-        <target xml:lang="es-ES" state="translated">&amp;Guardar como PDF...</target>
+        <target xml:lang="es-ES">&amp;Guardar como PDF...</target>
         <alt-trans>
           <target xml:lang="es-ES">Guarde como PDF...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.SaveEpub">
+      <trans-unit id="PublishTab.SaveEpub" approved="yes">
         <source xml:lang="en">&amp;Save ePUB...</source>
         <note>ID: PublishTab.SaveEpub</note>
-        <target xml:lang="es-ES" state="translated">&amp;Guardar como ePUB...</target>
+        <target xml:lang="es-ES">&amp;Guardar como ePUB...</target>
         <alt-trans>
           <target xml:lang="es-ES">&amp;Guarde como ePUB...</target>
         </alt-trans>
@@ -4620,10 +4623,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
         <target xml:lang="es-ES">Haciendo una imagen en miniatura...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.NoLangsFound">
+      <trans-unit id="PublishTab.Upload.NoLangsFound" approved="yes">
         <source xml:lang="en">(None found)</source>
         <note>ID: PublishTab.Upload.NoLangsFound</note>
-        <target xml:lang="es-ES" state="translated">(Ninguno encontrado)</target>
+        <target xml:lang="es-ES">(Ninguno encontrado)</target>
         <alt-trans>
           <target xml:lang="es-ES">(No encontrado)</target>
         </alt-trans>
@@ -4704,10 +4707,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.Summary</note>
         <target xml:lang="es-ES" state="translated">Resumen</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.TermsLink">
+      <trans-unit id="PublishTab.Upload.TermsLink" approved="yes">
         <source xml:lang="en">Show Terms of Use</source>
         <note>ID: PublishTab.Upload.TermsLink</note>
-        <target xml:lang="es-ES" state="translated">Mostrar términos de uso</target>
+        <target xml:lang="es-ES">Mostrar términos de uso</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TimeProblem" approved="yes">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
@@ -4730,10 +4733,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.UploadButton</note>
         <target xml:lang="es-ES">Cargar libro</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadCompleteNotice">
+      <trans-unit id="PublishTab.Upload.UploadCompleteNotice" approved="yes">
         <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
         <note>ID: PublishTab.Upload.UploadCompleteNotice</note>
-        <target xml:lang="es-ES" state="translated">Felicidades, "{0}" ya está disponible en BloomLibrary.org ({1})</target>
+        <target xml:lang="es-ES">Felicidades, "{0}" ya está disponible en BloomLibrary.org ({1})</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadNotAllowed">
         <source xml:lang="en">Upload Not Allowed</source>
@@ -5029,10 +5032,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.MaxUniqueWords</note>
         <target xml:lang="es-ES">Cantidad máxima de palabras únicas por libro</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MoreWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MoreWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">More Words</source>
         <note>ID: ReaderSetup.MoreWords</note>
-        <target xml:lang="es-ES" state="translated">Más palabras</target>
+        <target xml:lang="es-ES">Más palabras</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.OpenSampleTexts" sil:dynamic="true">
         <source xml:lang="en">Open the sample texts folder for this language.</source>
@@ -5062,10 +5065,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Punctuación</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.ReaderLevels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Reader Levels</source>
         <note>ID: ReaderSetup.ReaderLevels</note>
-        <target xml:lang="es-ES" state="translated">Niveles de libros</target>
+        <target xml:lang="es-ES">Niveles de libros</target>
         <alt-trans>
           <target xml:lang="es-ES">Niveles de lecturas</target>
         </alt-trans>
@@ -5073,26 +5076,26 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Niveles de lectores</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.RemoveLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove Level {0}</source>
         <note>ID: ReaderSetup.RemoveLevel</note>
-        <target xml:lang="es-ES" state="translated">Eliminar el nivel {0}</target>
+        <target xml:lang="es-ES">Eliminar el nivel {0}</target>
         <alt-trans>
           <target xml:lang="es-ES">Quitar el nivel {0}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.RemoveStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove Stage {0}</source>
         <note>ID: ReaderSetup.RemoveStage</note>
-        <target xml:lang="es-ES" state="translated">Eliminar la etapa {0}</target>
+        <target xml:lang="es-ES">Eliminar la etapa {0}</target>
         <alt-trans>
           <target xml:lang="es-ES">Quitar la etapa {0}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.RemoveWordList" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.RemoveWordList" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Remove from this stage</source>
         <note>ID: ReaderSetup.RemoveWordList</note>
-        <target xml:lang="es-ES" state="translated">Eliminar de esta etapa</target>
+        <target xml:lang="es-ES">Eliminar de esta etapa</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.ReorderLevels" sil:dynamic="true">
         <source xml:lang="en">Drag rows to reorder levels.</source>
@@ -5200,10 +5203,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">¿Qúe son palabras de vista?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SightWordLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">New Sight Words</source>
         <note>ID: ReaderSetup.SightWordLabel</note>
-        <target xml:lang="es-ES" state="translated">Nuevas palabras vistas</target>
+        <target xml:lang="es-ES">Nuevas palabras vistas</target>
         <alt-trans>
           <target xml:lang="es-ES">Nuevas palabras de vista</target>
         </alt-trans>
@@ -5211,10 +5214,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Nuevas palabras de uso frecuente</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SightWordsHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sight Words</source>
         <note>ID: ReaderSetup.SightWordsHeader</note>
-        <target xml:lang="es-ES" state="translated">Palabras vistas</target>
+        <target xml:lang="es-ES">Palabras vistas</target>
         <alt-trans>
           <target xml:lang="es-ES">Palabras de vista</target>
         </alt-trans>
@@ -5222,20 +5225,20 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Palabras de uso frecuente</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.StageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage</source>
         <note>ID: ReaderSetup.StageHeader</note>
-        <target xml:lang="es-ES" state="translated">Etapa</target>
+        <target xml:lang="es-ES">Etapa</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stage </source>
         <note>ID: ReaderSetup.StageLabel</note>
-        <target xml:lang="es-ES" state="translated">Etapa</target>
+        <target xml:lang="es-ES">Etapa</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Stages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Stages</source>
         <note>ID: ReaderSetup.Stages</note>
-        <target xml:lang="es-ES" state="translated">Etapas</target>
+        <target xml:lang="es-ES">Etapas</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Synphony" sil:dynamic="true">
         <source xml:lang="en">SynPhony</source>
@@ -5250,20 +5253,20 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Cosas para recordar para este nivel:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.UniqueHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Unique</source>
         <note>ID: ReaderSetup.UniqueHeader</note>
-        <target xml:lang="es-ES" state="translated">Único</target>
+        <target xml:lang="es-ES">Único</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Words" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Words" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Words</source>
         <note>ID: ReaderSetup.Words</note>
-        <target xml:lang="es-ES" state="translated">Palabras</target>
+        <target xml:lang="es-ES">Palabras</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Words.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To help you make decodable readers, Bloom can suggest words that fit within the current stage. There are two ways to give words to Bloom:</source>
         <note>ID: ReaderSetup.Words.Intro</note>
-        <target xml:lang="es-ES" state="translated">Para ayudarle a crear libros descifrables, Bloom puede sugerir palabras que encajan dentro de la etapa actual. Hay dos maneras de introducir palabras en Bloom:</target>
+        <target xml:lang="es-ES">Para ayudarle a crear libros descifrables, Bloom puede sugerir palabras que encajan dentro de la etapa actual. Hay dos maneras de introducir palabras en Bloom:</target>
         <alt-trans>
           <target xml:lang="es-ES">Para ayudarle con la creación de libros descifrables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras a Bloom:</target>
         </alt-trans>
@@ -5292,7 +5295,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Words.UseAllowedWords" sil:dynamic="true">
         <source xml:lang="en">We are using lists of allowed words to define stages</source>
         <note>ID: ReaderSetup.Words.UseAllowedWords</note>
-        <target xml:lang="es-ES" state="translated">Estamos usando listas de palabras permitidas para definir etapas</target>
+        <target xml:lang="es-ES" state="translated">Estamos utilizando listas de palabras permitidas para definir etapas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estamos usando listas de palabras permitidas para definir etapas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.UseLetters" sil:dynamic="true">
         <source xml:lang="en">We are using letters with sight words to define stages</source>
@@ -5368,22 +5374,25 @@ Desea seguir?</target>
         <note>ID: RegisterDialog.Email</note>
         <target xml:lang="es-ES">Dirección de correo electrónico</target>
       </trans-unit>
-      <trans-unit id="RegisterDialog.FirstName">
+      <trans-unit id="RegisterDialog.FirstName" approved="yes">
         <source xml:lang="en">First Name</source>
         <note>ID: RegisterDialog.FirstName</note>
-        <target xml:lang="es-ES" state="translated">Nombre</target>
+        <target xml:lang="es-ES">Nombre</target>
       </trans-unit>
-      <trans-unit id="RegisterDialog.Heading">
+      <trans-unit id="RegisterDialog.Heading" approved="yes">
         <source xml:lang="en">Please take a minute to register {0}</source>
         <note>ID: RegisterDialog.Heading</note>
         <note>Place a {0} where the name of the program goes.</note>
-        <target xml:lang="es-ES" state="translated">Por favor tome un momento para registrar {0}</target>
+        <target xml:lang="es-ES">Por favor, tome un momento para registrar {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor tome un momento para registrar {0}</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="RegisterDialog.HowAreYouUsing">
+      <trans-unit id="RegisterDialog.HowAreYouUsing" approved="yes">
         <source xml:lang="en">How are you using {0}?</source>
         <note>ID: RegisterDialog.HowAreYouUsing</note>
         <note>Place a {0} where the name of the program goes.</note>
-        <target xml:lang="es-ES" state="translated">¿Cómo está usando {0}?</target>
+        <target xml:lang="es-ES">¿Cómo está usando {0}?</target>
       </trans-unit>
       <trans-unit id="RegisterDialog.IAmStuckLabel" approved="yes">
         <source xml:lang="en">I'm stuck, I'll finish this later.</source>
@@ -5401,21 +5410,21 @@ Desea seguir?</target>
         <note>ID: RegisterDialog.Organization</note>
         <target xml:lang="es-ES">Organización</target>
       </trans-unit>
-      <trans-unit id="RegisterDialog.RegisterButton">
+      <trans-unit id="RegisterDialog.RegisterButton" approved="yes">
         <source xml:lang="en">&amp;Register</source>
         <note>ID: RegisterDialog.RegisterButton</note>
-        <target xml:lang="es-ES" state="translated">&amp;Registrar</target>
+        <target xml:lang="es-ES">&amp;Registrar</target>
       </trans-unit>
-      <trans-unit id="RegisterDialog.Surname">
+      <trans-unit id="RegisterDialog.Surname" approved="yes">
         <source xml:lang="en">Surname</source>
         <note>ID: RegisterDialog.Surname</note>
-        <target xml:lang="es-ES" state="translated">Apellido</target>
+        <target xml:lang="es-ES">Apellido</target>
       </trans-unit>
-      <trans-unit id="RegisterDialog.WindowTitle">
+      <trans-unit id="RegisterDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Register {0}</source>
         <note>ID: RegisterDialog.WindowTitle</note>
         <note>Place a {0} where the name of the program goes.</note>
-        <target xml:lang="es-ES" state="translated">Registrar {0}</target>
+        <target xml:lang="es-ES">Registrar {0}</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.Close" approved="yes">
         <source xml:lang="en">Close</source>
@@ -5550,7 +5559,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
         <source xml:lang="en">Arithmetic</source>
         <note>ID: TemplateBooks.BookName.Arithmetic</note>
-        <target xml:lang="es-ES" state="translated">Aritmética</target>
+        <target xml:lang="es-ES" state="translated">Aritmético</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Aritmética</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Basic Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Book</source>
@@ -5562,28 +5574,28 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.BookName.Big Book</note>
         <target xml:lang="es-ES">Libro grande</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
-        <target xml:lang="es-ES" state="translated">Libro descifrable</target>
+        <target xml:lang="es-ES">Libro descifrable</target>
         <alt-trans>
           <target xml:lang="es-ES">Libro decodificable</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
-        <target xml:lang="es-ES" state="translated">Libro nivelado</target>
+        <target xml:lang="es-ES">Libro nivelado</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
         <target xml:lang="es-ES">Diccionario ilustrado</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Vaccinations</source>
         <note>ID: TemplateBooks.BookName.Vaccinations</note>
-        <target xml:lang="es-ES" state="translated">Vacunas</target>
+        <target xml:lang="es-ES">Vacunas</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
         <source xml:lang="en">Template Starter</source>
@@ -5603,10 +5615,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageDescription.Custom</note>
         <target xml:lang="es-ES">Una página en blanco que le permite agregar elementos.</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Flyleaf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This page was automatically inserted because the following page is marked as part of a two page spread.</source>
         <note>ID: TemplateBooks.PageDescription.Flyleaf</note>
-        <target xml:lang="es-ES" state="translated">Esta página fue automáticamente insertada porque la siguiente página forma parte de una página doble.</target>
+        <target xml:lang="es-ES">Esta página fue automáticamente insertada porque la siguiente página forma parte de una página doble.</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Page with a picture on top and a large, centered word below.</source>
@@ -5616,51 +5628,51 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Página con una imagen en la parte superior y una palabra grande, centrada debajo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1</source>
         <note>ID: TemplateBooks.PageLabel.1</note>
-        <target xml:lang="es-ES" state="translated">1</target>
+        <target xml:lang="es-ES">1</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.1 Problem" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.1 Problem" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1 Problem</source>
         <note>ID: TemplateBooks.PageLabel.1 Problem</note>
         <note>This label indicates a page with one arithmetic problem on it.</note>
-        <target xml:lang="es-ES" state="translated">1 Problema</target>
+        <target xml:lang="es-ES">1 Problema</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.10" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.10" sil:dynamic="true" approved="yes">
         <source xml:lang="en">10</source>
         <note>ID: TemplateBooks.PageLabel.10</note>
-        <target xml:lang="es-ES" state="translated">10</target>
+        <target xml:lang="es-ES">10</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.11" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.11" sil:dynamic="true" approved="yes">
         <source xml:lang="en">11</source>
         <note>ID: TemplateBooks.PageLabel.11</note>
-        <target xml:lang="es-ES" state="translated">11</target>
+        <target xml:lang="es-ES">11</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.12" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.12" sil:dynamic="true" approved="yes">
         <source xml:lang="en">12</source>
         <note>ID: TemplateBooks.PageLabel.12</note>
-        <target xml:lang="es-ES" state="translated">12</target>
+        <target xml:lang="es-ES">12</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.13" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.13" sil:dynamic="true" approved="yes">
         <source xml:lang="en">13</source>
         <note>ID: TemplateBooks.PageLabel.13</note>
-        <target xml:lang="es-ES" state="translated">13</target>
+        <target xml:lang="es-ES">13</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.14" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.14" sil:dynamic="true" approved="yes">
         <source xml:lang="en">14</source>
         <note>ID: TemplateBooks.PageLabel.14</note>
-        <target xml:lang="es-ES" state="translated">14</target>
+        <target xml:lang="es-ES">14</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.15" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.15" sil:dynamic="true" approved="yes">
         <source xml:lang="en">15</source>
         <note>ID: TemplateBooks.PageLabel.15</note>
-        <target xml:lang="es-ES" state="translated">15</target>
+        <target xml:lang="es-ES">15</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.16" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.16" sil:dynamic="true" approved="yes">
         <source xml:lang="en">16</source>
         <note>ID: TemplateBooks.PageLabel.16</note>
-        <target xml:lang="es-ES" state="translated">16</target>
+        <target xml:lang="es-ES">16</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.17" sil:dynamic="true">
         <source xml:lang="en">17</source>
