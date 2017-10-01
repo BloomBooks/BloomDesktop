@@ -293,10 +293,10 @@
           <target xml:lang="es-ES">Haciendo libros</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding" approved="yes">
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
-        <target xml:lang="es-ES" state="translated">Marcacíon (Branding)</target>
+        <target xml:lang="es-ES">Marcacíon (Branding)</target>
         <alt-trans>
           <target xml:lang="es-ES">Branding/Marcacíon</target>
         </alt-trans>
