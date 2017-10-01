@@ -807,7 +807,10 @@
       <trans-unit id="CollectionTab.ConfiguringBookMessage">
         <source xml:lang="en">Building...</source>
         <note>ID: CollectionTab.ConfiguringBookMessage</note>
-        <target xml:lang="es-ES" state="translated">Compilando...</target>
+        <target xml:lang="es-ES" state="translated">Creando...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Compilando...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Construyendo...</target>
         </alt-trans>
@@ -2924,7 +2927,10 @@
       <trans-unit id="Errors.CannotConnectToBloomServer">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo empezar su propio HTTP listener que usa para comunicar con el busqueador itegrado de Firefox. Si esto sucede apesar de recien haber reiniciado su computadora, debe pedir que alguien investigue si tiene instalado un producto agresivo de cortafuegos. Es posible que tendra que desinstalar el cortafuegos para poder usar Bloom.</target>
+        <target xml:lang="es-ES" state="translated">Bloom no pudo empezar su propio HTTP Listener, utilizado para comunicarse con el navegador integrado de Firefox. Si esto sucede a pesar de que acaba de reiniciar su computadora, debe pedir que alguien investigue si tiene instalado un producto cortafuegos agresivo. Es posible que tenga que desinstalar el cortafuegos para poder utilizar Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pudo empezar su propio HTTP listener que usa para comunicar con el busqueador itegrado de Firefox. Si esto sucede apesar de recien haber reiniciado su computadora, debe pedir que alguien investigue si tiene instalado un producto agresivo de cortafuegos. Es posible que tendra que desinstalar el cortafuegos para poder usar Bloom.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.DeniedAccess" approved="yes">
         <source xml:lang="en">Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.</source>
@@ -3065,10 +3071,10 @@
           <target xml:lang="es-ES">Bloom no pued iniciar correctamente. Esta síntoma ha sido obersvado en computadoras con ZoneAlarm instalado. Nota: desactivando ZoneAlarm no resuelve este problema. Reiniciando con ZoneAlarm apagado tampoco. Para resolver el problema hay que desinstalarlo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
+      <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem" approved="yes">
         <source xml:lang="en">Building Reader Templates</source>
         <note>ID: HelpMenu.BuildingReaderTemplatesMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Creando plantillas de libros</target>
+        <target xml:lang="es-ES">Creando plantillas de libros</target>
       </trans-unit>
       <trans-unit id="HelpMenu.CheckForNewVersionMenuItem" approved="yes">
         <source xml:lang="en">Check For New Version</source>
@@ -3423,10 +3429,10 @@
           <target xml:lang="es-ES">Eso es todo lo que se requiere para empezar con su nueva colección '{0}'.\nHaga clic sobre el botón 'Termina'.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.FontAndScriptPage">
+      <trans-unit id="NewCollectionWizard.FontAndScriptPage" approved="yes">
         <source xml:lang="en">Font and Script</source>
         <note>ID: NewCollectionWizard.FontAndScriptPage</note>
-        <target xml:lang="es-ES" state="translated">Fuente y Escritura</target>
+        <target xml:lang="es-ES">Fuente y Escritura</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage" approved="yes">
         <source xml:lang="en">Choose the Collection Type</source>
@@ -3957,13 +3963,19 @@
         <source xml:lang="en">Start Serving</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-        <target xml:lang="es-ES" state="translated">Comenzar a servir</target>
+        <target xml:lang="es-ES" state="translated">Comenzar a entregar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Comenzar a servir</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Stop">
         <source xml:lang="en">Stop Serving</source>
         <note>ID: PublishTab.Android.Wifi.Stop</note>
         <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
-        <target xml:lang="es-ES" state="translated">Parar de servir</target>
+        <target xml:lang="es-ES" state="translated">Parar de entregar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Parar de servir</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeEulaTitle">
         <source xml:lang="en">Adobe Color Profile License Agreement</source>
@@ -4395,10 +4407,10 @@
         <note>ID: PublishTab.Upload.Copyright</note>
         <target xml:lang="es-ES">Derechos de autor</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Credits">
+      <trans-unit id="PublishTab.Upload.Credits" approved="yes">
         <source xml:lang="en">credits</source>
         <note>ID: PublishTab.Upload.Credits</note>
-        <target xml:lang="es-ES" state="translated">créditos</target>
+        <target xml:lang="es-ES">créditos</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ErrorUploading" approved="yes">
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
@@ -4761,7 +4773,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.SuggestAssignCC">
         <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
         <note>ID: PublishTab.Upload.SuggestAssignCC</note>
-        <target xml:lang="es-ES" state="translated">Sugerencia: Asignar una licencia Creative Commons le facilita conceder claramente determinados permisos a todo el mundo.</target>
+        <target xml:lang="es-ES" state="translated">Sugerencia: Asignar una Licencia Creative Commons le facilita conceder ciertos permisos a quien usted quiera.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sugerencia: Asignar una licencia Creative Commons le facilita conceder claramente determinados permisos a todo el mundo.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Sugerencia: Asignar una licencia Creative Commons facilita para que usted pueda conceder claramente determinados permisos a todo el mundo.</target>
         </alt-trans>
@@ -4810,10 +4825,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.UploadCompleteNotice</note>
         <target xml:lang="es-ES">Felicidades, "{0}" ya está disponible en BloomLibrary.org ({1})</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadNotAllowed">
+      <trans-unit id="PublishTab.Upload.UploadNotAllowed" approved="yes">
         <source xml:lang="en">Upload Not Allowed</source>
         <note>ID: PublishTab.Upload.UploadNotAllowed</note>
-        <target xml:lang="es-ES" state="translated">No se permite cargar</target>
+        <target xml:lang="es-ES">No se permite cargar</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
