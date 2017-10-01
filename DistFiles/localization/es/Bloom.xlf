@@ -310,7 +310,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="es-ES">Paquete de material preliminar/final</target>
+        <target xml:lang="es-ES">Paquete de Material Preliminar/Final</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Paquete de material preliminar/final</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Paquete de materia inicial/final</target>
         </alt-trans>
@@ -1912,7 +1915,10 @@
         <source xml:lang="en">Licensed under {0}.</source>
         <note>ID: EditTab.FrontMatter.OriginalLicenseSentence</note>
         <note>On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.</note>
-        <target xml:lang="es-ES" state="translated">Licenciado bajo {0}.</target>
+        <target xml:lang="es-ES" state="translated">Bajo licencia de {0}.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Licenciado bajo {0}.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Licencia con código {0}.</target>
         </alt-trans>
@@ -2114,10 +2120,10 @@
           <target xml:lang="es-ES">Un contenedor en esta página se esta desbordando</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.PageList.CantMoveXMatter">
+      <trans-unit id="EditTab.PageList.CantMoveXMatter" approved="yes">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
-        <target xml:lang="es-ES" state="translated">No se permite ese cambio. Las páginas del material preliminar y final deben permanecer donde están.</target>
+        <target xml:lang="es-ES">No se permite ese cambio. Las páginas del material preliminar y final deben permanecer donde están.</target>
         <alt-trans>
           <target xml:lang="es-ES">No se permite ese cambio. Páginas de material preliminar y final deben permanecer donde están.</target>
         </alt-trans>
@@ -2425,7 +2431,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
-        <target xml:lang="es-ES" state="translated">Bloom sólo puede manejar las primeras {0} palabras.</target>
+        <target xml:lang="es-ES" state="translated">Bloom sólo puede utilizar las primeras {0} palabras.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom sólo puede manejar las primeras {0} palabras.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom solo puede utilazar las primeras {0} palabras.</target>
         </alt-trans>
@@ -2973,10 +2982,13 @@
           <target xml:lang="es-ES">Lastimosamente, algo no funcionó.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.SpecifiedXMatterNotFound">
+      <trans-unit id="Errors.SpecifiedXMatterNotFound" approved="yes">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
         <note>ID: Errors.SpecifiedXMatterNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del paquete de material preliminar/final del libro.</target>
+        <target xml:lang="es-ES">Este libro utiliza un Paquete de Material Preliminar/Final llamado'{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del Paquete de Material Preliminar/Final del libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del paquete de material preliminar/final del libro.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del paquete de materia preliminar/final del libro.</target>
         </alt-trans>
@@ -2989,14 +3001,11 @@
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero Bloom no logro conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Materia Inicial/Final del libro.</target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Este libro pidió un Paquete de Material Inicial/Final nombrado '{0}', pero Bloom no logro conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Material Inicial/Final del libro.</target>
-        </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.XMatterNotFound">
+      <trans-unit id="Errors.XMatterNotFound" approved="yes">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
         <note>ID: Errors.XMatterNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro utiliza el Paquete de Material Preliminar/Final llamado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Creando Libros y cambiar a otro Paquete de Material Preliminar/Final.</target>
+        <target xml:lang="es-ES">Este libro utiliza el Paquete de Material Preliminar/Final llamado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Creando Libros y cambiar a otro Paquete de Material Preliminar/Final.</target>
         <alt-trans>
           <target xml:lang="es-ES">Este libro utiliza el paquete de material preliminar/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de material preliminar/final.</target>
         </alt-trans>
@@ -3013,11 +3022,14 @@
           <target xml:lang="es-ES">Este libro utiliza el paquete de materia frontal/posterior nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia frontal/posterior.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.XMatterProblemLabel">
+      <trans-unit id="Errors.XMatterProblemLabel" approved="yes">
         <source xml:lang="en">Front/Back Matter Problem</source>
         <note>ID: Errors.XMatterProblemLabel</note>
         <note>This shows in the 'toast' that pops up to notify the user of a non-fatal problem.</note>
-        <target xml:lang="es-ES" state="translated">Problema con material preliminar/final</target>
+        <target xml:lang="es-ES">Problema con el Material Preliminar/Final</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Problema con material preliminar/final</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Problema con materia inicial/final</target>
         </alt-trans>
@@ -3028,7 +3040,10 @@
       <trans-unit id="Errors.XMatterSpecifiedByBookNotFound">
         <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
         <note>ID: Errors.XMatterSpecifiedByBookNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de material preliminar/final de la configuación de la colección.</target>
+        <target xml:lang="es-ES" state="translated">Este libro utiliza un Paquete de Material Preliminar/Final llamado '{0}', pero esta versión de Bloom no lo tiene y Bloom no pudo encontrarlo en esta computadora. El libro ha sido modificado para utilizar las páginas del Material Preliminar/Final de la "Configuración de la Colección".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de material preliminar/final de la configuación de la colección.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un paquete de materia inicial/final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de materia inicial/final de la configuación de la colección.</target>
         </alt-trans>
