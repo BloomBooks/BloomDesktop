@@ -2998,11 +2998,11 @@
           <target xml:lang="es-ES">No se pudo actualizar el lbro. Reiniciar Bloom puede resolver el problema. Si no lo resuelve, por favor haga clic en el botón "Detalles" y informenos del problema.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.NeedNewerVersion">
+      <trans-unit id="Errors.NeedNewerVersion" approved="yes">
         <source xml:lang="en">{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}.</source>
         <note>ID: Errors.NeedNewerVersion</note>
         <note>{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.</note>
-        <target xml:lang="es-ES" state="translated">{0} requiere una nueva versión de Bloom. Descargue la versión más reciente en {1}.</target>
+        <target xml:lang="es-ES">{0} requiere una nueva versión de Bloom. Descargue la versión más reciente en {1}.</target>
         <alt-trans>
           <target xml:lang="es-ES">{0} requiere una nueva versión de Bloom. Descargue la versión más reciente de {1}.</target>
         </alt-trans>
@@ -3878,11 +3878,14 @@
         <note>{0} is a book title</note>
         <target xml:lang="es-ES" state="translated">Dispositivo no ubicado. Sigue buscando...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.PackagingBook">
+      <trans-unit id="PublishTab.Android.Usb.Progress.PackagingBook" approved="yes">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.Usb.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">Preparando el libro "{0}" para uso con el LectorBloom...</target>
+        <target xml:lang="es-ES">Preparando el libro "{0}" para utilizarlo con el LectorBloom...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Preparando el libro "{0}" para uso con el LectorBloom...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Preparando el libro "{0}" para uso con BloomReader...</target>
         </alt-trans>
@@ -5419,7 +5422,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
         <source xml:lang="en">Things to remember for this level:</source>
         <note>ID: ReaderSetup.ToRemember</note>
-        <target xml:lang="es-ES" state="translated">Tener en cuenta en este nivel:</target>
+        <target xml:lang="es-ES" state="translated">Cosas importantes en este nivel:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Tener en cuenta en este nivel:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cosas para recordar para este nivel:</target>
         </alt-trans>
