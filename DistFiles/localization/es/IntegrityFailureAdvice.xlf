@@ -2,40 +2,49 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="IntegrityFailureAdvice-en.md" datatype="html" source-language="en" target-language="es-ES">
     <body>
-      <trans-unit id="integrity.title">
+      <trans-unit id="integrity.title" approved="yes">
         <source xml:lang="en">Bloom cannot find some of its own files, and cannot continue</source>
         <note>ID: integrity.title</note>
-        <target xml:lang="es-ES" state="translated">Bloom no puede encontrar algunos de sus propios archivos y no puede continuar</target>
+        <target xml:lang="es-ES">Bloom no puede encontrar algunos de sus propios archivos y no puede continuar</target>
       </trans-unit>
-      <trans-unit id="integrity.causes">
+      <trans-unit id="integrity.causes" approved="yes">
         <source xml:lang="en">Possible Causes</source>
         <note>ID: integrity.causes</note>
-        <target xml:lang="es-ES" state="translated">Causas posibles</target>
+        <target xml:lang="es-ES">Posibles causas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Causas posibles</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.causes.1">
+      <trans-unit id="integrity.causes.1" approved="yes">
         <source xml:lang="en">Your antivirus may have "quarantined" one or more Bloom files. </source>
         <note>ID: integrity.causes.1</note>
-        <target xml:lang="es-ES" state="translated">Su antivirus puede haber "puesto en cuarentena" uno o más archivos de Bloom. </target>
+        <target xml:lang="es-ES">Su antivirus pudo haber "puesto en cuarentena" a uno o más archivos de Bloom. </target>
+        <alt-trans>
+          <target xml:lang="es-ES">Su antivirus puede haber "puesto en cuarentena" uno o más archivos de Bloom. </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.causes.2">
         <source xml:lang="en">Your computer administrator may have your computer "locked down" to prevent bad things, but in such a way that Bloom could not place these files where they belong.  </source>
         <note>ID: integrity.causes.2</note>
         <target xml:lang="es-ES" state="translated">Puede ser que el administrador de su computadora lo ha bloqueado para prevenir cosas malas, pero de tal manera que Bloom no pudo colocar estos archivos corectamente.  </target>
       </trans-unit>
-      <trans-unit id="integrity.todo">
+      <trans-unit id="integrity.todo" approved="yes">
         <source xml:lang="en">What To Do</source>
         <note>ID: integrity.todo</note>
-        <target xml:lang="es-ES" state="translated">Qué hacer</target>
+        <target xml:lang="es-ES">Qué hacer</target>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas">
+      <trans-unit id="integrity.todo.ideas" approved="yes">
         <source xml:lang="en">After you submit this report, we will contact you and help you work this out. In the meantime, here are some ideas: </source>
         <note>ID: integrity.todo.ideas</note>
-        <target xml:lang="es-ES" state="translated">Después de enviar este informe, le contactaremos para ayudarle. Mientras tanto, aquí hay varias ideas: </target>
+        <target xml:lang="es-ES">Después de enviar este informe, le contactaremos para ayudarle. Mientras tanto, aquí hay algunas ideas: </target>
+        <alt-trans>
+          <target xml:lang="es-ES">Después de enviar este informe, le contactaremos para ayudarle. Mientras tanto, aquí hay varias ideas: </target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="integrity.todo.ideas.Reinstall">
+      <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time. </source>
         <note>ID: integrity.todo.ideas.Reinstall</note>
-        <target xml:lang="es-ES" state="translated">Vuelva a ejecutar el instalador de Bloom para ver si esta vez inicia corectamente. </target>
+        <target xml:lang="es-ES">Vuelva a ejecutar el instalador de Bloom para ver si esta vez inicia corectamente. </target>
         <alt-trans>
           <target xml:lang="es-ES">Vuelva a ejecutar el instalador de Bloom para ver si esta vez inicie corectamente. </target>
         </alt-trans>
