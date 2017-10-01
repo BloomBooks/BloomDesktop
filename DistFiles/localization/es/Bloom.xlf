@@ -3946,7 +3946,10 @@
       <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
         <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
         <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
-        <target xml:lang="es-ES" state="translated">Eso es extraño... Adobe Reader le dio un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro PDF.</target>
+        <target xml:lang="es-ES" state="translated">¡Qué extraño!... Adobe Reader encontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro PDF.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error al intentar mostrar ese PDF. Todavía puede intentar salvar el libro PDF.</target>
         </alt-trans>
@@ -4072,10 +4075,10 @@
           <target xml:lang="es-ES">Una página por hoja</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
+      <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
         <note>ID: PublishTab.OnePagePerPaperRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Hacer un PDF de cada página del libro, una página por hoja.</target>
+        <target xml:lang="es-ES">Hacer un PDF de cada página del libro, una página por hoja.</target>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un PDF de cada página del libro, una página por hojal.</target>
         </alt-trans>
@@ -4089,11 +4092,14 @@
         <note>menu header in the Publish tab</note>
         <target xml:lang="es-ES">Opciones</target>
       </trans-unit>
-      <trans-unit id="PublishTab.OptionsMenu.SizeLayout">
+      <trans-unit id="PublishTab.OptionsMenu.SizeLayout" approved="yes">
         <source xml:lang="en">Size/Layout</source>
         <note>ID: PublishTab.OptionsMenu.SizeLayout</note>
         <note>Header for a region of the menu which lists various standard page layout sizes</note>
-        <target xml:lang="es-ES" state="translated">Tamaño/diseño</target>
+        <target xml:lang="es-ES">Tamaño/Diseño</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Tamaño/diseño</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
         <source xml:lang="en">Open the PDF in the default system PDF viewer</source>
@@ -4136,11 +4142,11 @@
         <note>Message displayed in a progress report dialog box</note>
         <target xml:lang="es-ES">Comprimiendo el PDF</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.CompressConvertColor">
+      <trans-unit id="PublishTab.PdfMaker.CompressConvertColor" approved="yes">
         <source xml:lang="en">Compressing PDF &amp; Converting Color to CMYK</source>
         <note>ID: PublishTab.PdfMaker.CompressConvertColor</note>
         <note>Message displayed in a progress report dialog box</note>
-        <target xml:lang="es-ES" state="translated">Comprimiendo el PDF y Covirtiendo el color a CMYK</target>
+        <target xml:lang="es-ES">Comprimiendo el PDF y Convirtiendo el color a CMYK</target>
         <alt-trans>
           <target xml:lang="es-ES">Comprimiendo el PDF y Covirtiendo Color a CMYK</target>
         </alt-trans>
@@ -4160,11 +4166,11 @@
         <note>displayed as file type for Save File dialog.  'RGB' may not be translatable, it is a standard.</note>
         <target xml:lang="es-ES">PDF con color RGB</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
+      <trans-unit id="PublishTab.PdfMaker.ErrorProcessing" approved="yes">
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
         <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <target xml:lang="es-ES" state="translated">Error al crear, comprimir, o volver a colorear el archivo PDF</target>
+        <target xml:lang="es-ES">Error al crear, comprimir, o volver a colorear el archivo PDF</target>
         <alt-trans>
           <target xml:lang="es-ES">Error al crear, comprimir, o recolorear el archivo PDF</target>
         </alt-trans>
@@ -4233,7 +4239,10 @@
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
-        <target xml:lang="es-ES" state="translated">No se guardo el archivo PDF porque elegió no permitir la producción de "PDF para la imprenta".</target>
+        <target xml:lang="es-ES" state="translated">No se guardó el archivo PDF porque usted no permitió la producción de un "PDF para la imprenta".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se guardo el archivo PDF porque elegió no permitir la producción de "PDF para la imprenta".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se guardol archivo PDF porque elegió no permitir la producción de "PDF para la imprenta".</target>
         </alt-trans>
