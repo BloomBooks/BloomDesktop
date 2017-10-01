@@ -48,10 +48,13 @@
           
 <g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría despues. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
       </trans-unit>
-      <trans-unit id="leveled.reader.repetition">
+      <trans-unit id="leveled.reader.repetition" approved="yes">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
         <note>ID: leveled.reader.repetition</note>
-        <target xml:lang="es-ES" state="translated">Repetición - repetición de partes del texto. Por ejemplo, usar la misma oración en cada página y simplemente cambiar una palabra en la frase</target>
+        <target xml:lang="es-ES">Repetición - repetición de partes del texto. Por ejemplo, usar la misma oración en cada página y simplemente cambiar una palabra en la oración</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Repetición - repetición de partes del texto. Por ejemplo, usar la misma oración en cada página y simplemente cambiar una palabra en la frase</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Repetición - repetición de partes del texto. Por ejemplo, usar la misma frase en cada página y simplemente cambiar una palabra en la frase</target>
         </alt-trans>
@@ -119,21 +122,24 @@ que la luna te va a oír</g>
         <target xml:lang="es-ES" state="translated">Para los <g id="genid-8" ctype="x-html-strong">Lectores fluidos</g> las ilustraciones deben ofrecer poco o ningún apoyo a la trama. La comprensión del lector depende más del texto que las ilustraciones. Las ilustraciones pueden ser todavía más complejas.      
       </target>
       </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice">
+      <trans-unit id="leveled.reader.topic.choice" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
         <note>ID: leveled.reader.topic.choice</note>
-        <target xml:lang="es-ES" state="translated">Elección del tema</target>
+        <target xml:lang="es-ES">Elección del tema</target>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
         <note>ID: leveled.reader.topic.choice.discussion</note>
-        <target xml:lang="es-ES" state="translated">Los libros pueden tratar de muchos temas. En el desarrollo de libros para nuevos lectores, elige temas que son familiares. Los lectores desearán leer y leerán más si leyen algo que les parece interesante y familiar. Para los lectores más avanzados, se puede incluir información no conocido al lector.</target>
+        <target xml:lang="es-ES" state="translated">Los libros pueden tratar de muchos temas. En el desarrollo de libros para nuevos lectores, elija temas que les son familiares. Los lectores desearán leer y leerán más si leen algo que les parece interesante y familiar. Para los lectores más avanzados, se puede incluir información no conocida por el lector.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Los libros pueden tratar de muchos temas. En el desarrollo de libros para nuevos lectores, elige temas que son familiares. Los lectores desearán leer y leerán más si leyen algo que les parece interesante y familiar. Para los lectores más avanzados, se puede incluir información no conocido al lector.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice.emergent.reader">
+      <trans-unit id="leveled.reader.topic.choice.emergent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-9" ctype="x-html-strong">Emergent Readers</g> the book should be concrete, should focus on one idea/theme, and should be familiar and easy to understand.
       </source>
         <note>ID: leveled.reader.topic.choice.emergent.reader</note>
-        <target xml:lang="es-ES" state="translated">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipientes</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.      
+        <target xml:lang="es-ES">Para los <g id="genid-9" ctype="x-html-strong"> Lectores incipientes</g> el libro debe ser concreto, debe centrarse en una idea o tema, y debe ser familiar y fácil de entender.      
       </target>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.early.reader">
