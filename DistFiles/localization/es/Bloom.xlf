@@ -4259,7 +4259,10 @@
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-        <target xml:lang="es-ES" state="translated">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de la preparación de un "PDF para la imprenta".  Debes aceptar la siguiente licencia para hacerlo en Bloom.</target>
+        <target xml:lang="es-ES" state="translated">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de preparar un "PDF para la imprenta".  Debe aceptar la siguiente licencia para realizar este proceso en Bloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de la preparación de un "PDF para la imprenta".  Debes aceptar la siguiente licencia para hacerlo en Bloom.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Publish" approved="yes">
         <source xml:lang="en">Publish</source>
@@ -4420,15 +4423,21 @@
         <note>ID: PublishTab.Upload.Languages</note>
         <target xml:lang="es-ES">Idiomas</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.License">
+      <trans-unit id="PublishTab.Upload.License" approved="yes">
         <source xml:lang="en">Usage/License</source>
         <note>ID: PublishTab.Upload.License</note>
-        <target xml:lang="es-ES" state="translated">Uso/licencia</target>
+        <target xml:lang="es-ES">Uso/Licencia</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Uso/licencia</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists">
+      <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists" approved="yes">
         <source xml:lang="en">Account Already Exists</source>
         <note>ID: PublishTab.Upload.Login.AccountAlreadyExists</note>
-        <target xml:lang="es-ES" state="translated">La cuenta ya existe</target>
+        <target xml:lang="es-ES">Esa cuenta ya existe</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La cuenta ya existe</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.AlreadyHaveAccount" approved="yes">
         <source xml:lang="en">We cannot sign you up with that address, because we already have an account with that address. Would you like to log in instead?</source>
@@ -4460,10 +4469,10 @@
           <target xml:lang="es-ES">Error de inicio de sesión</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+      <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</source>
         <note>ID: PublishTab.Upload.Login.LoginOrSignupConnectionFailed</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo conectarse al servidor para completar su inicio de sesión o inscripción. Esto podría ser un problema con su conexión al internet, nuestro servidor o algún equipo intermediario.</target>
+        <target xml:lang="es-ES">Bloom no pudo conectarse al servidor para completar su inicio de sesión o inscripción. Esto podría ser un problema con su conexión al internet, nuestro servidor o con algún equipo intermediario.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo conectar al servidor para completar su login o suscripción. Esto podría ser un problema con su conexión al internet, nuestro servidor o algún equipo intermediario.</target>
         </alt-trans>
@@ -4493,10 +4502,10 @@
           <target xml:lang="es-ES">Dirección de correo electrónico necesario</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser">
+      <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser" approved="yes">
         <source xml:lang="en">We don't have a user on record with that email. Would you like to sign up?</source>
         <note>ID: PublishTab.Upload.Login.NoRecordOfUser</note>
-        <target xml:lang="es-ES" state="translated">No tenemos un usuario registrado con ese correo electrónico. ¿Le gustaría inscribirse?</target>
+        <target xml:lang="es-ES">No tenemos un usuario registrado con ese correo electrónico. ¿Le gustaría inscribirse?</target>
         <alt-trans>
           <target xml:lang="es-ES">No tenemos un usuario registrado con ese correo electrónico. ¿Gustaría inscribirse?</target>
         </alt-trans>
@@ -4714,10 +4723,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Sugerencia: Las licencias Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Summary">
+      <trans-unit id="PublishTab.Upload.Summary" approved="yes">
         <source xml:lang="en">Summary</source>
         <note>ID: PublishTab.Upload.Summary</note>
-        <target xml:lang="es-ES" state="translated">Resumen</target>
+        <target xml:lang="es-ES">Resumen</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TermsLink" approved="yes">
         <source xml:lang="en">Show Terms of Use</source>
@@ -5004,10 +5013,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.LevelHeader</note>
         <target xml:lang="es-ES">Nivel</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.LevelLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Level&amp;nbsp;</source>
         <note>ID: ReaderSetup.LevelLabel</note>
-        <target xml:lang="es-ES" state="translated">Nivel&amp;nbsp;</target>
+        <target xml:lang="es-ES">Nivel&amp;nbsp;</target>
         <alt-trans>
           <target xml:lang="es-ES">Nivel</target>
         </alt-trans>
@@ -5161,10 +5170,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Palabras máximas en cada frase</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
-        <target xml:lang="es-ES" state="translated">Puntuación especial para finales de oración</target>
+        <target xml:lang="es-ES">Puntuación especial para finales de oración</target>
         <alt-trans>
           <target xml:lang="es-ES">Puntuación especial para finales de frase</target>
         </alt-trans>
@@ -5207,10 +5216,13 @@ Desea seguir?</target>
           <target xml:lang="es-ES">configurar el alfabeto para este nivel:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">What are sight words?</source>
         <note>ID: ReaderSetup.SightWordHelp</note>
-        <target xml:lang="es-ES" state="translated">¿Qúe son palabras vistas?</target>
+        <target xml:lang="es-ES">¿Qúe son las palabras vistas?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Qúe son palabras vistas?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">¿Qúe son palabras de vista?</target>
         </alt-trans>
@@ -5289,20 +5301,20 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Para ayudarle a crear lectores decodificables, Bloom puede sugerir palabras que caben dentro de la etapa actual. Hay dos maneras de introducir palabras para Bloom:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Words.PlaceTextFiles" sil:dynamic="true" approved="yes">
         <source xml:lang="en">2) Place Text Files in Your</source>
         <note>ID: ReaderSetup.Words.PlaceTextFiles</note>
-        <target xml:lang="es-ES" state="translated">2) Coloque los archivos de texto en su</target>
+        <target xml:lang="es-ES">2) Coloque los archivos de texto en su</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Words.SampleTextFolder" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Texts Folder</source>
         <note>ID: ReaderSetup.Words.SampleTextFolder</note>
-        <target xml:lang="es-ES" state="translated">Carpeta de textos de muestra</target>
+        <target xml:lang="es-ES">Carpeta de textos de muestra</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Words.TypeWordsHere" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Words.TypeWordsHere" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Type Words Here</source>
         <note>ID: ReaderSetup.Words.TypeWordsHere</note>
-        <target xml:lang="es-ES" state="translated">1) Escriba las palabras aquí</target>
+        <target xml:lang="es-ES">1) Escriba las palabras aquí</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Words.UseAllowedWords" sil:dynamic="true">
         <source xml:lang="en">We are using lists of allowed words to define stages</source>
@@ -5315,7 +5327,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Words.UseLetters" sil:dynamic="true">
         <source xml:lang="en">We are using letters with sight words to define stages</source>
         <note>ID: ReaderSetup.Words.UseLetters</note>
-        <target xml:lang="es-ES" state="translated">Estamos usando letras con palabras vistas para definir etapas</target>
+        <target xml:lang="es-ES" state="translated">Estamos usando letras con "palabras vistas" para definir etapas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estamos usando letras con palabras vistas para definir etapas</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Estamos usando letras con palabras de vista para definir etapas</target>
         </alt-trans>
@@ -5351,10 +5366,13 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Además, este BloomPack llevará su última configuración para lectores decodificables y nivelado para el idioma \"{0}\". Cualquiera que abre este BloomPack, que entonces se abre una colección en el idioma \"{0}\", tendrá su configuración actual para lectores decodificables y nivelado reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en lectores decodificables.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
+      <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel" approved="yes">
         <source xml:lang="en">The following books will be made into templates:</source>
         <note>ID: ReaderTemplateBloomPackDialog.IntroLabel</note>
-        <target xml:lang="es-ES" state="translated">Los siguientes libros serán convertidos a plantillas:</target>
+        <target xml:lang="es-ES">Los siguientes libros serán convertidos en plantillas:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Los siguientes libros serán convertidos a plantillas:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Los siguientes libros se harán en las plantillas:</target>
         </alt-trans>
@@ -5544,10 +5562,13 @@ Desea seguir?</target>
         <note>ID: ReportProblemDialog.linkLabel1</note>
         <target xml:lang="es-ES">No será privado</target>
       </trans-unit>
-      <trans-unit id="SamplePrintNotification.IGetIt">
+      <trans-unit id="SamplePrintNotification.IGetIt" approved="yes">
         <source xml:lang="en">I get it. Do not show this again.</source>
         <note>ID: SamplePrintNotification.IGetIt</note>
-        <target xml:lang="es-ES" state="translated">Entendido. No me muestre el mensaje de nuevo.</target>
+        <target xml:lang="es-ES">Entendido. No mostrar el mensaje nuevamente.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Entendido. No me muestre el mensaje de nuevo.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Entiendo. No mostrar este mensaje de nuevo.</target>
         </alt-trans>
@@ -5722,10 +5743,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.21</note>
         <target xml:lang="es-ES">21</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.3" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3</source>
         <note>ID: TemplateBooks.PageLabel.3</note>
-        <target xml:lang="es-ES" state="translated">3</target>
+        <target xml:lang="es-ES">3</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.3 Problems" sil:dynamic="true" approved="yes">
         <source xml:lang="en">3 Problems</source>
@@ -5733,57 +5754,60 @@ Desea seguir?</target>
         <note>This label indicates a page with three arithmetic problems on it.</note>
         <target xml:lang="es-ES">3 Problemas</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.4" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4</source>
         <note>ID: TemplateBooks.PageLabel.4</note>
-        <target xml:lang="es-ES" state="translated">4</target>
+        <target xml:lang="es-ES">4</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.4 Problems" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.4 Problems" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4 Problems</source>
         <note>ID: TemplateBooks.PageLabel.4 Problems</note>
         <note>This label indicates a page with four arithmetic problems on it.</note>
-        <target xml:lang="es-ES" state="translated">4 Problemas</target>
+        <target xml:lang="es-ES">4 Problemas</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.5" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.5" sil:dynamic="true" approved="yes">
         <source xml:lang="en">5</source>
         <note>ID: TemplateBooks.PageLabel.5</note>
-        <target xml:lang="es-ES" state="translated">5</target>
+        <target xml:lang="es-ES">5</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.6" sil:dynamic="true" approved="yes">
         <source xml:lang="en">6</source>
         <note>ID: TemplateBooks.PageLabel.6</note>
-        <target xml:lang="es-ES" state="translated">6</target>
+        <target xml:lang="es-ES">6</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.7" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.7" sil:dynamic="true" approved="yes">
         <source xml:lang="en">7</source>
         <note>ID: TemplateBooks.PageLabel.7</note>
-        <target xml:lang="es-ES" state="translated">7</target>
+        <target xml:lang="es-ES">7</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.8" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.8" sil:dynamic="true" approved="yes">
         <source xml:lang="en">8</source>
         <note>ID: TemplateBooks.PageLabel.8</note>
-        <target xml:lang="es-ES" state="translated">8</target>
+        <target xml:lang="es-ES">8</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.9" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.9" sil:dynamic="true" approved="yes">
         <source xml:lang="en">9</source>
         <note>ID: TemplateBooks.PageLabel.9</note>
-        <target xml:lang="es-ES" state="translated">9</target>
+        <target xml:lang="es-ES">9</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.About" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.About" sil:dynamic="true" approved="yes">
         <source xml:lang="en">About</source>
         <note>ID: TemplateBooks.PageLabel.About</note>
         <note>Caption of 2nd page in books made from Template Starter</note>
-        <target xml:lang="es-ES" state="translated">Acerca de</target>
+        <target xml:lang="es-ES">Acerca de</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Alphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Alphabet</source>
         <note>ID: TemplateBooks.PageLabel.Alphabet</note>
-        <target xml:lang="es-ES" state="translated">Alfabeto</target>
+        <target xml:lang="es-ES">Alfabeto</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Basic Text &amp; Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Basic Text &amp; Image</source>
         <note>ID: TemplateBooks.PageLabel.Basic Text &amp; Image</note>
-        <target xml:lang="es-ES" state="translated">Texto básico y imagen</target>
+        <target xml:lang="es-ES">Texto básico e imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Texto básico y imagen</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Texto básico &amp; ilustración</target>
         </alt-trans>
@@ -5796,35 +5820,35 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Texto Básico e imagen</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
-        <target xml:lang="es-ES" state="translated">Página de créditos</target>
+        <target xml:lang="es-ES">Página de créditos</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
         <source xml:lang="en">Custom</source>
         <note>ID: TemplateBooks.PageLabel.Custom</note>
         <target xml:lang="es-ES" state="translated">Personalizado</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 1</source>
         <note>ID: TemplateBooks.PageLabel.Day 1</note>
-        <target xml:lang="es-ES" state="translated">Día 1</target>
+        <target xml:lang="es-ES">Día 1</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Day 2" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Day 2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 2</source>
         <note>ID: TemplateBooks.PageLabel.Day 2</note>
-        <target xml:lang="es-ES" state="translated">Día 2</target>
+        <target xml:lang="es-ES">Día 2</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Day 3" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Day 3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 3</source>
         <note>ID: TemplateBooks.PageLabel.Day 3</note>
-        <target xml:lang="es-ES" state="translated">Día 3</target>
+        <target xml:lang="es-ES">Día 3</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Day 4" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Day 4" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 4</source>
         <note>ID: TemplateBooks.PageLabel.Day 4</note>
-        <target xml:lang="es-ES" state="translated">Día 4</target>
+        <target xml:lang="es-ES">Día 4</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 5a" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 5a</source>
