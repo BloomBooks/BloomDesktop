@@ -812,7 +812,10 @@
       <trans-unit id="CollectionTab.CollectionMenu.rescueMissingImages" approved="yes">
         <source xml:lang="en">Rescue Missing Images...</source>
         <note>ID: CollectionTab.CollectionMenu.rescueMissingImages</note>
-        <target xml:lang="es-ES">Rescatar imágenes ausentes...</target>
+        <target xml:lang="es-ES">Rescatar imágenes faltantes...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Rescatar imágenes ausentes...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Rescatar ilustraciones ausentes...</target>
         </alt-trans>
@@ -1019,7 +1022,10 @@
         <source xml:lang="en">Title Missing</source>
         <note>ID: CollectionTab.TitleMissing</note>
         <note>Shown as the thumbnail caption when the book doesn't have a title.</note>
-        <target xml:lang="es-ES">Título ausente</target>
+        <target xml:lang="es-ES">Título faltante</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Título ausente</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Falta de título</target>
         </alt-trans>
@@ -1982,7 +1988,10 @@
       <trans-unit id="EditTab.FrontMatter.PasteMissingCredits" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Missing credits:</source>
         <note>ID: EditTab.FrontMatter.PasteMissingCredits</note>
-        <target xml:lang="es-ES">Créditos ausentes:</target>
+        <target xml:lang="es-ES">Créditos faltantes:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Créditos ausentes:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
