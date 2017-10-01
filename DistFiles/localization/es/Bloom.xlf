@@ -307,10 +307,10 @@
         <note>{0} is a language name.</note>
         <target xml:lang="es-ES">Fuente predeterminada para {0}</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
-        <target xml:lang="es-ES" state="translated">Paquete de material preliminar/final</target>
+        <target xml:lang="es-ES">Paquete de material preliminar/final</target>
         <alt-trans>
           <target xml:lang="es-ES">Paquete de materia inicial/final</target>
         </alt-trans>
@@ -5181,7 +5181,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "Unicode character escapes" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "escapes de carracter Unicode" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "Unicode character escapes" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ya conoce que caracteres se usan en los idiomas del mundo para marcar el final de oraciones. Para agregar otros, ingrese los "Unicode character escapes" aqui. For ejemplo para tailandes, ingrese \U0020 para indicar a Bloom que en tailandes se usa espacios normales para terminar las oraciones.</target>
         </alt-trans>
@@ -5316,18 +5319,18 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.Words.TypeWordsHere</note>
         <target xml:lang="es-ES">1) Escriba las palabras aquí</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Words.UseAllowedWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Words.UseAllowedWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">We are using lists of allowed words to define stages</source>
         <note>ID: ReaderSetup.Words.UseAllowedWords</note>
-        <target xml:lang="es-ES" state="translated">Estamos utilizando listas de palabras permitidas para definir etapas</target>
+        <target xml:lang="es-ES">Estamos utilizando listas de palabras permitidas para definir etapas</target>
         <alt-trans>
           <target xml:lang="es-ES">Estamos usando listas de palabras permitidas para definir etapas</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Words.UseLetters" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Words.UseLetters" sil:dynamic="true" approved="yes">
         <source xml:lang="en">We are using letters with sight words to define stages</source>
         <note>ID: ReaderSetup.Words.UseLetters</note>
-        <target xml:lang="es-ES" state="translated">Estamos usando letras con "palabras vistas" para definir etapas</target>
+        <target xml:lang="es-ES">Estamos ustilizando letras con "palabras vistas" para definir etapas</target>
         <alt-trans>
           <target xml:lang="es-ES">Estamos usando letras con palabras vistas para definir etapas</target>
         </alt-trans>
@@ -5388,10 +5391,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Guardar BloomPack</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle">
+      <trans-unit id="ReaderTemplateBloomPackDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack</source>
         <note>ID: ReaderTemplateBloomPackDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom de plantilla de libros</target>
+        <target xml:lang="es-ES">Crear un Paquete de Bloom de plantilla de libros</target>
         <alt-trans>
           <target xml:lang="es-ES">Crear un BloomPack de plantilla de libros</target>
         </alt-trans>
@@ -5635,10 +5638,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.BookName.Template Starter</note>
         <target xml:lang="es-ES" state="translated">Plantilla de inicio</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Wall Calendar</source>
         <note>ID: TemplateBooks.BookName.Wall Calendar</note>
-        <target xml:lang="es-ES" state="translated">Calendario</target>
+        <target xml:lang="es-ES">Calendario</target>
         <alt-trans>
           <target xml:lang="es-ES">Calendario de pared</target>
         </alt-trans>
@@ -5653,10 +5656,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageDescription.Flyleaf</note>
         <target xml:lang="es-ES">Esta página fue automáticamente insertada porque la siguiente página forma parte de una página doble.</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Picture &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with a picture on top and a large, centered word below.</source>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
-        <target xml:lang="es-ES" state="translated">Página con una imagen en la parte superior y una palabra grande, centrada debajo.</target>
+        <target xml:lang="es-ES">Página con una imagen en la parte superior y una palabra grande, centrada debajo.</target>
         <alt-trans>
           <target xml:lang="es-ES">Página con una imagen en la parte superior y una palabra grande, centrada debajo</target>
         </alt-trans>
@@ -5881,10 +5884,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Portada</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.FrontBackMatter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front/Back Matter</source>
         <note>ID: TemplateBooks.PageLabel.FrontBackMatter</note>
-        <target xml:lang="es-ES" state="translated">Material preliminar/final</target>
+        <target xml:lang="es-ES">Material preliminar/final</target>
         <alt-trans>
           <target xml:lang="es-ES">Materia inicial/final</target>
         </alt-trans>
@@ -5971,10 +5974,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Solo una ilustración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Outside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outside Back Cover</source>
         <note>ID: TemplateBooks.PageLabel.Outside Back Cover</note>
-        <target xml:lang="es-ES" state="translated">Contratapa</target>
+        <target xml:lang="es-ES">Contratapa</target>
         <alt-trans>
           <target xml:lang="es-ES">Interior de la contratapa</target>
         </alt-trans>
@@ -6078,17 +6081,17 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES" state="translated">Negocios</target>
       </trans-unit>
-      <trans-unit id="Topics.Community Living" sil:dynamic="true">
+      <trans-unit id="Topics.Community Living" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Community Living</source>
         <note>ID: Topics.Community Living</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Vida comunitaria</target>
+        <target xml:lang="es-ES">Vida comunitaria</target>
       </trans-unit>
-      <trans-unit id="Topics.Culture" sil:dynamic="true">
+      <trans-unit id="Topics.Culture" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Culture</source>
         <note>ID: Topics.Culture</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Cultura</target>
+        <target xml:lang="es-ES">Cultura</target>
       </trans-unit>
       <trans-unit id="Topics.Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Dictionary</source>
@@ -6096,11 +6099,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">Diccionario</target>
       </trans-unit>
-      <trans-unit id="Topics.Environment" sil:dynamic="true">
+      <trans-unit id="Topics.Environment" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Environment</source>
         <note>ID: Topics.Environment</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Medio ambiente</target>
+        <target xml:lang="es-ES">Medio ambiente</target>
       </trans-unit>
       <trans-unit id="Topics.Fiction" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Fiction</source>
@@ -6126,19 +6129,19 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">Matemáticas</target>
       </trans-unit>
-      <trans-unit id="Topics.NoTopic" sil:dynamic="true">
+      <trans-unit id="Topics.NoTopic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">No Topic</source>
         <note>ID: Topics.NoTopic</note>
-        <target xml:lang="es-ES" state="translated">Sin tema</target>
+        <target xml:lang="es-ES">Sin tema</target>
         <alt-trans>
           <target xml:lang="es-ES">No hay temas</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Topics.Non Fiction" sil:dynamic="true">
+      <trans-unit id="Topics.Non Fiction" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Non Fiction</source>
         <note>ID: Topics.Non Fiction</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">No ficción</target>
+        <target xml:lang="es-ES">No ficción</target>
       </trans-unit>
       <trans-unit id="Topics.Personal Development" sil:dynamic="true">
         <source xml:lang="en">Personal Development</source>
