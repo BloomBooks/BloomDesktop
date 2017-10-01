@@ -483,10 +483,13 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai</note>
         <target xml:lang="es-ES" state="translated">tailandés</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan" approved="yes">
         <source xml:lang="en">Tibetan</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan</note>
-        <target xml:lang="es-ES" state="translated">tibetano</target>
+        <target xml:lang="es-ES">Tibetano</target>
+        <alt-trans>
+          <target xml:lang="es-ES">tibetano</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian">
         <source xml:lang="en">Upper-Armenian</source>
@@ -2644,10 +2647,10 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.PerPage</note>
         <target xml:lang="es-ES">por página</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerSentence" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.PerSentence</note>
-        <target xml:lang="es-ES" state="translated">oración más larga</target>
+        <target xml:lang="es-ES">oración más larga</target>
         <alt-trans>
           <target xml:lang="es-ES">frase más larga</target>
         </alt-trans>
@@ -3040,10 +3043,10 @@
           <target xml:lang="es-ES">Problema con material inicial/final</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.XMatterSpecifiedByBookNotFound">
+      <trans-unit id="Errors.XMatterSpecifiedByBookNotFound" approved="yes">
         <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
         <note>ID: Errors.XMatterSpecifiedByBookNotFound</note>
-        <target xml:lang="es-ES" state="translated">Este libro utiliza un Paquete de Material Preliminar/Final llamado '{0}', pero esta versión de Bloom no lo tiene y Bloom no pudo encontrarlo en esta computadora. El libro ha sido modificado para utilizar las páginas del Material Preliminar/Final de la "Configuración de la Colección".</target>
+        <target xml:lang="es-ES">Este libro utiliza un Paquete de Material Preliminar/Final llamado '{0}', pero esta versión de Bloom no lo tiene y Bloom no pudo encontrarlo en esta computadora. El libro ha sido modificado para utilizar las páginas del Material Preliminar/Final de la "Configuración de la Colección".</target>
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de material preliminar/final de la configuación de la colección.</target>
         </alt-trans>
@@ -3839,11 +3842,11 @@
         <note>{0} is a book title</note>
         <target xml:lang="es-ES" state="translated">Reemplazar el libro "{0}" actual...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook">
+      <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook" approved="yes">
         <source xml:lang="en">Sending "{0}" to your Android device...</source>
         <note>ID: PublishTab.Android.Usb.Progress.SendingBook</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">Enviando "{0}" a su dispositivo Android...</target>
+        <target xml:lang="es-ES">Enviando "{0}" a su dispositivo Android...</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.Stopped">
         <source xml:lang="en">Stopped</source>
@@ -3853,16 +3856,19 @@
       <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect">
         <source xml:lang="en">Unable to connect to any Android device which has Bloom Reader.</source>
         <note>ID: PublishTab.Android.Usb.Progress.UnableToConnect</note>
-        <target xml:lang="es-ES" state="translated">No se puede conectar a cualquier dispositivo Android que tiene el LectorBloom.</target>
+        <target xml:lang="es-ES" state="translated">No se puede conectar a cualquier dispositivo Android que tenga el LectorBloom.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se puede conectar a cualquier dispositivo Android que tiene el LectorBloom.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se puede conectar a cualquier dispositivo Android que tiene BloomReader.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Start">
+      <trans-unit id="PublishTab.Android.Usb.Start" approved="yes">
         <source xml:lang="en">Connect with USB cable</source>
         <note>ID: PublishTab.Android.Usb.Start</note>
         <note>Button that tells Bloom to send the book to a device via USB cable.</note>
-        <target xml:lang="es-ES" state="translated">Conectar con cable USB</target>
+        <target xml:lang="es-ES">Conectar con cable USB</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Stop">
         <source xml:lang="en">Stop Trying</source>
@@ -3976,10 +3982,10 @@
           <target xml:lang="es-ES">Por favor instale a Adobe Reader para que Bloom pueda mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+      <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF" approved="yes">
         <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
         <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
-        <target xml:lang="es-ES" state="translated">¡Qué extraño!... Adobe Reader encontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
+        <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
         <alt-trans>
           <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro PDF.</target>
         </alt-trans>
@@ -3998,10 +4004,10 @@
           <target xml:lang="es-ES">Noticia triste. Bloom no fue capaz de abrir Adobe Reader aquí, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva a instalar a 'Adobe Reader'.\nHasta que llegue ese fijo, puede guardar el libro PDF y abrirlo en otro programa.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.BodyOnlyRadio">
+      <trans-unit id="PublishTab.BodyOnlyRadio" approved="yes">
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
-        <target xml:lang="es-ES" state="translated">Interior del librito</target>
+        <target xml:lang="es-ES">Interior del librito</target>
         <alt-trans>
           <target xml:lang="es-ES">Interior del libro</target>
         </alt-trans>
@@ -4009,10 +4015,13 @@
           <target xml:lang="es-ES">Interior del folleto</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
+      <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
-        <target xml:lang="es-ES" state="translated">Hacer un librito de las páginas interiores del libro. Las páginas serán formateadas y reordenadas de tal manera que solo tiene que doblarlas para tener un librito.\n</target>
+        <target xml:lang="es-ES">Hacer un librito de las páginas interiores del libro. Las páginas serán distribuidas y reordenadas de tal manera que sólo tiene que doblarlas para tener un librito.\n</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un librito de las páginas interiores del libro. Las páginas serán formateadas y reordenadas de tal manera que solo tiene que doblarlas para tener un librito.\n</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un folleto de las páginas interiores del libro. Las páginas se distribuido y reordenado de manera que cuando la doblará, tendrá un folleto.\n</target>
         </alt-trans>
@@ -4033,10 +4042,13 @@
           <target xml:lang="es-ES">Cargar a BloomLibrary.org, donde otros pueden descargar y localizar a su propia lengua.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.CoverOnlyRadio">
+      <trans-unit id="PublishTab.CoverOnlyRadio" approved="yes">
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
-        <target xml:lang="es-ES" state="translated">Tapa del libro</target>
+        <target xml:lang="es-ES">Tapa del librito</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Tapa del libro</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cubierta del librito</target>
         </alt-trans>
@@ -4076,11 +4088,17 @@
         <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
         <target xml:lang="es-ES">No volver a mostrar</target>
       </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
+      <trans-unit id="PublishTab.InDesignDialog.WindowTitle" approved="yes">
         <source xml:lang="en">InDesign XML Information</source>
         <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
         <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
-        <target xml:lang="es-ES" state="translated">Información XML de InDesign</target>
+        <target xml:lang="es-ES">Información de XML en InDesign</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Información XML en InDesign</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Información XML de InDesign</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
