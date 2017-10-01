@@ -3059,10 +3059,10 @@
           <target xml:lang="es-ES">Sobre Bloom</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="HelpMenu.DocumentationMenuItem">
+      <trans-unit id="HelpMenu.DocumentationMenuItem" approved="yes">
         <source xml:lang="en">Documentation</source>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Documentación (inglés)</target>
+        <target xml:lang="es-ES">Documentación (inglés)</target>
         <alt-trans>
           <target xml:lang="es-ES">Documentación (ingles)</target>
         </alt-trans>
@@ -3271,10 +3271,10 @@
         <note>ID: LicenseDialog.WindowTitle</note>
         <target xml:lang="es-ES">Bloom {0}</target>
       </trans-unit>
-      <trans-unit id="LicenseDialog._acceptButton">
+      <trans-unit id="LicenseDialog._acceptButton" approved="yes">
         <source xml:lang="en">I accept the terms of the license agreement</source>
         <note>ID: LicenseDialog._acceptButton</note>
-        <target xml:lang="es-ES" state="translated">Acepto las condiciones del acuerdo de licencia</target>
+        <target xml:lang="es-ES">Acepto las condiciones del acuerdo de licencia</target>
       </trans-unit>
       <trans-unit id="LoginDialog.AgreeToTerms">
         <source xml:lang="en">I agree to the Bloom Library's Terms of Use</source>
@@ -3906,7 +3906,10 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions2</note>
-        <target xml:lang="es-ES" state="translated">Puede hacer esto en tantos dispositivos que guste. Asegure que cada dispositivo está conectado a la misma red que la computadora.</target>
+        <target xml:lang="es-ES" state="translated">Puede hacer esto en todos los dispositivos que guste. Asegúrese que cada dispositivo esté conectado a la misma red que la computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Puede hacer esto en tantos dispositivos que guste. Asegure que cada dispositivo está conectado a la misma red que la computadora.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Puede hacer esto en tantos dispositivos que guste. Asegure que cada dispositivo está conectado a la misma red que esta computadora.</target>
         </alt-trans>
