@@ -2,15 +2,18 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="leveledReaderInfo-en.html" datatype="html" source-language="en" target-language="es-ES">
     <body>
-      <trans-unit id="leveled.reader.vocabulary">
+      <trans-unit id="leveled.reader.vocabulary" approved="yes">
         <source xml:lang="en">Vocabulary</source>
         <note>ID: leveled.reader.vocabulary</note>
-        <target xml:lang="es-ES" state="translated">Vocabulario</target>
+        <target xml:lang="es-ES">Vocabulario</target>
       </trans-unit>
       <trans-unit id="leveled.reader.start.simple">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
         <note>ID: leveled.reader.start.simple</note>
-        <target xml:lang="es-ES" state="translated">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a los niveles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciónes cercanas, y por las ilustraciones.</target>
+        <target xml:lang="es-ES" state="translated">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A medida que los niños avanzan a los niveles superiores, puede utilizar palabras con más sílabas. Y puede comenzar a utilizar palabras menos conocidas. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciones cercanas, y por las ilustraciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a los niveles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciónes cercanas, y por las ilustraciones.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting">
         <source xml:lang="en">Formatting</source>
@@ -20,22 +23,28 @@
       <trans-unit id="leveled.reader.start.large">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
         <note>ID: leveled.reader.start.large</note>
-        <target xml:lang="es-ES" state="translated">Lectores nuevos beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras o oraciónes en el mismo lugar en cada página. A la medida que los lectores avanzan, los fuentes y espacios entre palabras pueden disminuir y las oraciónes pueden ser ubicadas en distintos lugares.</target>
+        <target xml:lang="es-ES" state="translated">Los lectores nuevos se beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras u oraciones en el mismo lugar en cada página. A medida que los lectores avanzan, las fuentes y espacios entre palabras pueden disminuir y las oraciones pueden ser ubicadas en distintos lugares.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lectores nuevos beneficiarán del uso de fuentes grandes y espacios más amplios entre palabras. También se recomienda ubicar las palabras o oraciónes en el mismo lugar en cada página. A la medida que los lectores avanzan, los fuentes y espacios entre palabras pueden disminuir y las oraciónes pueden ser ubicadas en distintos lugares.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.increase.sizes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
         <note>ID: leveled.reader.increase.sizes</note>
-        <target xml:lang="es-ES" state="translated">Para incrementar el tamaño de fuente, interlineado, y espacio entre palabras, haga clic en un cuadro de texto y despues en el icono de "engranage" gris en la esquina inferior izquierda. Si despues hace un libro de plantilla, los libros hechos con esa plantilla tambien usarán estas configuraciones.</target>
+        <target xml:lang="es-ES" state="translated">Para incrementar el tamaño de fuente, interlineado, y espacio entre palabras, haga clic en un cuadro de texto y después en el ícono de "engranage" gris en la esquina inferior izquierda. Si después hace un libro de plantilla, los libros hechos con esa plantilla tambien utilizarán esas configuraciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para incrementar el tamaño de fuente, interlineado, y espacio entre palabras, haga clic en un cuadro de texto y despues en el icono de "engranage" gris en la esquina inferior izquierda. Si despues hace un libro de plantilla, los libros hechos con esa plantilla tambien usarán estas configuraciones.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.predictability">
+      <trans-unit id="leveled.reader.predictability" approved="yes">
         <source xml:lang="en">Predictability</source>
         <note>ID: leveled.reader.predictability</note>
-        <target xml:lang="es-ES" state="translated">Previsibilidad</target>
+        <target xml:lang="es-ES">Previsibilidad</target>
       </trans-unit>
-      <trans-unit id="leveled.reader.repeat.patterns">
+      <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
         <note>ID: leveled.reader.repeat.patterns</note>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES">
           
 <g id="genid-1" ctype="x-html-em"> Previsibilidad</g> en un texto significa que un lector puede adivinar lo que vendría despues. El uso de patrones repetidos puede aumentar la previsibilidad. Aquí hay algunos patrones que usted puede utilizar:</target>
       </trans-unit>
