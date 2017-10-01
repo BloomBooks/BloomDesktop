@@ -1749,10 +1749,10 @@
         <note>ID: EditTab.FormatDialog.StyleNameTab</note>
         <target xml:lang="es-ES">Nombre del estilo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Extra Wide</source>
         <note>ID: EditTab.FormatDialog.WordSpacingExtraWide</note>
-        <target xml:lang="es-ES" state="translated">Más ancho</target>
+        <target xml:lang="es-ES">Más ancho</target>
         <alt-trans>
           <target xml:lang="es-ES">Más ancha</target>
         </alt-trans>
@@ -2445,10 +2445,10 @@
           <target xml:lang="es-ES">Bloom solo puede utilazar las primeras {0} palabras.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allowed words in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage</note>
-        <target xml:lang="es-ES" state="translated">Palabras permitidas en esta etapa</target>
+        <target xml:lang="es-ES">Palabras permitidas en esta etapa</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles" approved="yes">
         <source xml:lang="en">Text files</source>
@@ -2587,10 +2587,10 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic</note>
         <target xml:lang="es-ES">Elección del tema</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.FoThisLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For this Level</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.FoThisLevel</note>
-        <target xml:lang="es-ES" state="translated">Para este nivel</target>
+        <target xml:lang="es-ES">Para este nivel</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
         <source xml:lang="en">Formatting</source>
@@ -2858,10 +2858,10 @@
           <target xml:lang="es-ES">Hacer un e-book que pueda reproducir las grabaciones y al mismo tiempo destacar el texto correspondiente.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true" approved="yes">
         <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox._bookSelection.LongestSentence</note>
-        <target xml:lang="es-ES" state="translated">oración más larga</target>
+        <target xml:lang="es-ES">oración más larga</target>
         <alt-trans>
           <target xml:lang="es-ES">frase más larga</target>
         </alt-trans>
@@ -3611,10 +3611,10 @@
           <target xml:lang="es-ES">Busque otra colección en esta computadora</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
+      <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub" approved="yes">
         <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromChorusHub</note>
-        <target xml:lang="es-ES" state="translated">Copiar de Chorus Hub en la red local</target>
+        <target xml:lang="es-ES">Copiar de Chorus Hub en la red local</target>
         <alt-trans>
           <target xml:lang="es-ES">Copia desde Chorus Hub en la red local</target>
         </alt-trans>
