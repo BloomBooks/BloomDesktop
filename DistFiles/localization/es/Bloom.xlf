@@ -336,10 +336,13 @@
         <note>Name of the default Front/Back Matter Pack</note>
         <target xml:lang="es-ES">Tradicional</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" approved="yes">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
-        <target xml:lang="es-ES" state="translated">Indo-Arabe</target>
+        <target xml:lang="es-ES">Indo-Arábigo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Indo-Arabe</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian" approved="yes">
         <source xml:lang="en">Armenian</source>
@@ -468,10 +471,10 @@
           <target xml:lang="es-ES">birmano</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya" approved="yes">
         <source xml:lang="en">Oriya</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya</note>
-        <target xml:lang="es-ES" state="translated">Oriya</target>
+        <target xml:lang="es-ES">Oriya</target>
         <alt-trans>
           <target xml:lang="es-ES">oriya</target>
         </alt-trans>
@@ -497,15 +500,21 @@
           <target xml:lang="es-ES">tamil</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu" approved="yes">
         <source xml:lang="en">Telugu</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu</note>
-        <target xml:lang="es-ES" state="translated">télugu</target>
+        <target xml:lang="es-ES">Télugu</target>
+        <alt-trans>
+          <target xml:lang="es-ES">télugu</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai" approved="yes">
         <source xml:lang="en">Thai</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai</note>
-        <target xml:lang="es-ES" state="translated">tailandés</target>
+        <target xml:lang="es-ES">Tailandés</target>
+        <alt-trans>
+          <target xml:lang="es-ES">tailandés</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan" approved="yes">
         <source xml:lang="en">Tibetan</source>
