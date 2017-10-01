@@ -23,10 +23,13 @@
         <note>ID: epubpreview.preview</note>
         <target xml:lang="es-ES">Vista previa</target>
       </trans-unit>
-      <trans-unit id="epubpreview.resizing">
+      <trans-unit id="epubpreview.resizing" approved="yes">
         <source xml:lang="en">You can resize the preview by dragging the lower right corner of this simulated device. See how your book will look on screens of various sizes.</source>
         <note>ID: epubpreview.resizing</note>
-        <target xml:lang="es-ES" state="translated">Para cambiar el tamaño la vista previa, arrastre la esquina inferior derecha de este dispositivo simulado. Asi se puede ver cómo su libro se verá en diversas pantallas.</target>
+        <target xml:lang="es-ES">Para cambiar el tamaño de vista previa, arrastre la esquina inferior derecha de este dispositivo simulado. Así podrá visualizar cómo se verá su libro en diversas pantallas.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para cambiar el tamaño la vista previa, arrastre la esquina inferior derecha de este dispositivo simulado. Asi se puede ver cómo su libro se verá en diversas pantallas.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.readium" approved="yes">
         <source xml:lang="en">This page uses the <g id="genid-3" ctype="x-html-a" html:href="http://readium.org/">Readium</g> ePUB reader. Books will likely look different on different readers.
@@ -67,34 +70,46 @@
           <target xml:lang="es-ES">Cargar este libro a su dispositivo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="epubpreview.usingdropbox">
+      <trans-unit id="epubpreview.usingdropbox" approved="yes">
         <source xml:lang="en">A handy way to get books to your phone is to set up Dropbox or similar service on both your computer and your phone/tablet. Just click Save ePUB and then choose your Dropbox folder. On your phone, open the Dropbox app and select your book. If you are using a laptop, you can also try the free <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> program to send files from your laptop to a phone or tablet.
       </source>
         <note>ID: epubpreview.usingdropbox</note>
-        <target xml:lang="es-ES" state="translated">Una manera práctica decargar libros en su celular es utilizando un servicio como Dropbox en su computadora y celular/dispositivo. Haga clic en "Guardar ePub". Seleccione su carpeta de Dropbox. En su celular, abra Dropbox y seleccione su libro. Si esta usando una computadora portátil, también puede probar el programa gratuito <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> para enviar archivos de su computadora a su celular o dispositivo.      
+        <target xml:lang="es-ES">Una manera práctica decargar libros en su celular es utilizando un servicio como Dropbox en su computadora y celular/dispositivo. Haga clic en "Guardar como ePub". Seleccione su carpeta de Dropbox. En su celular, abra Dropbox y seleccione su libro. Si esta usando una computadora portátil, también puede probar el programa gratuito <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> para enviar archivos de su computadora a su celular o dispositivo.      
       </target>
+        <alt-trans>
+          <target xml:lang="es-ES">Una manera práctica decargar libros en su celular es utilizando un servicio como Dropbox en su computadora y celular/dispositivo. Haga clic en "Guardar ePub". Seleccione su carpeta de Dropbox. En su celular, abra Dropbox y seleccione su libro. Si esta usando una computadora portátil, también puede probar el programa gratuito <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> para enviar archivos de su computadora a su celular o dispositivo.      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para cargar libros en su celular, se puede usar un servicio como Dropbox en su computadora y celular/dispositivo. Haga clic en "Save ePub". Seleccione su carpeta de Dropbox. En su celular, abre Dropbox y seleccione su libro. Si esta usando una computadora portátil, tambien puede probar el programa gratuito <g id="genid-5" ctype="x-html-a" html:href="http://www.ushareit.com/">ShareIt</g> para enviar archivos de su computadora a su celular o dispositivo.      
       </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="epubpreview.recommended.reader">
+      <trans-unit id="epubpreview.recommended.reader" approved="yes">
         <source xml:lang="en">Recommended Reader</source>
         <note>ID: epubpreview.recommended.reader</note>
-        <target xml:lang="es-ES" state="translated">Lector recomendado</target>
+        <target xml:lang="es-ES">Lector recomendado</target>
       </trans-unit>
-      <trans-unit id="epubpreview.gitden.okay">
+      <trans-unit id="epubpreview.gitden.okay" approved="yes">
         <source xml:lang="en">Our testing has shown <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
       </source>
         <note>ID: epubpreview.gitden.okay</note>
-        <target xml:lang="es-ES" state="translated">Nuestras pruebas han mostrado que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> es una buena opción para dispositivos Android y IOS (IPhone &amp; IPad).
+        <target xml:lang="es-ES">Nuestras pruebas han mostrado que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> es una buena opción para dispositivos Android y IOS (dispositivos IPhone y IPad).
       
       </target>
+        <alt-trans>
+          <target xml:lang="es-ES">Nuestras pruebas han mostrado que <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> es una buena opción para dispositivos Android y IOS (IPhone &amp; IPad).
+      
+      </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.gitden.limits">
         <source xml:lang="en">To listen to this Talking Book using Gitden on a phone or tablet, you will need to disable Gitden's "Text To Speech" feature. Then it will show you the audio controls.</source>
         <note>ID: epubpreview.gitden.limits</note>
-        <target xml:lang="es-ES" state="translated">Para escuchar este audiolibro con Gitden en su celular o dispositivo, debe desactivar la función de "texto a voz". En seguida los controles de audio serán mostradas.</target>
+        <target xml:lang="es-ES" state="translated">Para escuchar este audiolibro con Gitden en su celular o dispositivo, debe desactivar la función de "Texto a Voz". En seguida los controles de audio serán mostrados.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para escuchar este audiolibro con Gitden en su celular o dispositivo, debe desactivar la función de "texto a voz". En seguida los controles de audio serán mostradas.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para escuchar este libro sonoro con Gitden en su celular o dispositivo, debe desactivar la función de "texto a voz". En seguida los controles de audio serán mostradas.</target>
         </alt-trans>
@@ -102,31 +117,44 @@
       <trans-unit id="epubpreview.make.it.talk">
         <source xml:lang="en">Make it Talk</source>
         <note>ID: epubpreview.make.it.talk</note>
-        <target xml:lang="es-ES" state="translated">Hacerlo hablar</target>
+        <target xml:lang="es-ES" state="translated">Reproducir audio</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacerlo hablar</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="epubpreview.talking.book.tool">
+      <trans-unit id="epubpreview.talking.book.tool" approved="yes">
         <source xml:lang="en">If you want to make a "Talking Book" that new readers can read-along with, use Bloom's <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> to add voice recordings.
       </source>
         <note>ID: epubpreview.talking.book.tool</note>
-        <target xml:lang="es-ES" state="translated">Si desea crear un "audiolibro" que los lectores pueden escuchar mientras que leen, use 
+        <target xml:lang="es-ES">Si desea crear un "Audiolibro" que los lectores pueden escuchar mientras leen, use la herramienta de Bloom <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Herramienta de Audiolibros</g> para agregar grabaciones.      
+      </target>
+        <alt-trans>
+          <target xml:lang="es-ES">Si desea crear un "audiolibro" que los lectores pueden escuchar mientras que leen, use 
 <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Herramienta de audiolibros</g> para agregar grabaciones.      
       </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Si desea crear un "libro sonor" que los lectores pueden escuchar mientras que leen, use 
 <g id="genid-7" ctype="x-html-a" html:href="/bloom/api/help/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm">Talking Book Tool</g> para agregar grabaciones.      
       </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="epubpreview.write.us">
+      <trans-unit id="epubpreview.write.us" approved="yes">
         <source xml:lang="en">Write to us!</source>
         <note>ID: epubpreview.write.us</note>
-        <target xml:lang="es-ES" state="translated">¡Escribenos!</target>
+        <target xml:lang="es-ES">¡Escríbanos!</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¡Escribenos!</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.use.help.report">
         <source xml:lang="en">Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!</source>
         <note>ID: epubpreview.use.help.report</note>
-        <target xml:lang="es-ES" state="translated">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos?
+        <target xml:lang="es-ES" state="translated">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos? ¿Hay algo que podemos hacer antes para hacerlo mas útil para usted? Por favor, utilice la función Ayuda: Reportar un Problema para compartirnos sus comentarios. ¡Gracias!</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos?
 algo que podemos hacer para hacerlo mas útil para usted? Favor de usar la función Ayuda: Reportar problema para compartir sus comentarios. ¡Gracias!</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos?
 Si hay algo que podemos hacer para hacerlo mas útil para usted, favor de usar la función Ayuda; Reportar problema (Help: Report a Problem) para compartir sus comentarios. ¡Gracias!</target>
