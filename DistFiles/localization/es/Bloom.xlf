@@ -768,7 +768,10 @@
       <trans-unit id="CollectionTab.CollectionMenu.doChecksOfAllBooks" approved="yes">
         <source xml:lang="en">Do Checks of All Books</source>
         <note>ID: CollectionTab.CollectionMenu.doChecksOfAllBooks</note>
-        <target xml:lang="es-ES">Verificar todos los libros</target>
+        <target xml:lang="es-ES">Revisar todos los libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Verificar todos los libros</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacer verificaciones de todos los libros</target>
         </alt-trans>
@@ -2789,15 +2792,18 @@
           <target xml:lang="es-ES">Atrás</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Check" sil:dynamic="true" approved="yes">
         <source xml:lang="en">4) Check</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Check</note>
-        <target xml:lang="es-ES" state="translated">4) Revisar</target>
+        <target xml:lang="es-ES">4) Revisar</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">1) Check that you are recording into the correct device and that these levels are showing blue:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettings</note>
-        <target xml:lang="es-ES">1) Averigüe que esté grabando en el dispositivo correcto y que los siguientes niveles se muestren azules:</target>
+        <target xml:lang="es-ES">1) Averigüe si está grabando en el dispositivo correcto y que los siguientes niveles se muestren azules:</target>
+        <alt-trans>
+          <target xml:lang="es-ES">1) Averigüe que esté grabando en el dispositivo correcto y que los siguientes niveles se muestren azules:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">1) Averigue que está grabando al dispositivo correcto y que los niveles se ven azules:</target>
         </alt-trans>
@@ -4760,10 +4766,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Inscríbete en la BloomLibrary.org</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Step1">
+      <trans-unit id="PublishTab.Upload.Step1" approved="yes">
         <source xml:lang="en">Step 1: Confirm Metadata</source>
         <note>ID: PublishTab.Upload.Step1</note>
-        <target xml:lang="es-ES" state="translated">Paso 1: Confirmar metadatos</target>
+        <target xml:lang="es-ES">Paso 1: Confirmar metadatos</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step2" approved="yes">
         <source xml:lang="en">Step 2: Upload</source>
@@ -4784,7 +4790,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.SuggestChangeCC">
         <source xml:lang="en">Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</source>
         <note>ID: PublishTab.Upload.SuggestChangeCC</note>
-        <target xml:lang="es-ES" state="translated">Sugerencia: Las licencias de Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</target>
+        <target xml:lang="es-ES" state="translated">Sugerencia: Las Licencias Creative Commons hacen que sea mucho más fácil que otros utilicen su libro, incluso si ellos no tienen fluidez en el idioma de su licencia personalizada.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sugerencia: Las licencias de Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Sugerencia: Las licencias Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</target>
         </alt-trans>
@@ -4838,10 +4847,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Hubo un problema cargando su libro. Es posible que necesite reiniciar Bloom o conseguir ayuda técnica.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadProgress">
+      <trans-unit id="PublishTab.Upload.UploadProgress" approved="yes">
         <source xml:lang="en">Upload Progress</source>
         <note>ID: PublishTab.Upload.UploadProgress</note>
-        <target xml:lang="es-ES" state="translated">Progreso de carga</target>
+        <target xml:lang="es-ES">Progreso de carga</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadSandbox" approved="yes">
         <source xml:lang="en">Upload Book (to Sandbox)</source>
@@ -4868,7 +4877,10 @@ Desea seguir?</target>
       <trans-unit id="PublishView._saveButton">
         <source xml:lang="en">Save stub</source>
         <note>ID: PublishView._saveButton</note>
-        <target xml:lang="es-ES" state="translated">Guardar el stub (trozo)</target>
+        <target xml:lang="es-ES" state="translated">Guardar el fragmento</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Guardar el stub (trozo)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.AddLevel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add Level</source>
@@ -4930,10 +4942,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Palabras como máximo por libro</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose...</source>
         <note>ID: ReaderSetup.ChooseAllowedWordsFile</note>
-        <target xml:lang="es-ES" state="translated">Escoger...</target>
+        <target xml:lang="es-ES">Escoger...</target>
         <alt-trans>
           <target xml:lang="es-ES">Elegir...</target>
         </alt-trans>
@@ -4946,10 +4958,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Haga clic en las letras para añadirlos a esta etapa.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.CombinationHelp1" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.CombinationHelp1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Separate by spaces</source>
         <note>ID: ReaderSetup.CombinationHelp1</note>
-        <target xml:lang="es-ES" state="translated">Separar con espacios</target>
+        <target xml:lang="es-ES">Separar con espacios</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.CombinationHelp2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">E.g. "ai oo sh ng th ing"</source>
@@ -4972,10 +4984,13 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Etapas decodificables</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.FileNeedsTxtExtension" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.FileNeedsTxtExtension" sil:dynamic="true" approved="yes">
         <source xml:lang="en">File needs .TXT extension</source>
         <note>ID: ReaderSetup.FileNeedsTxtExtension</note>
-        <target xml:lang="es-ES" state="translated">Archivo necesita extensión .txt</target>
+        <target xml:lang="es-ES">El archivo necesita la extensión .txt</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Archivo necesita extensión .txt</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.FirstSetupAlphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">First,</source>
@@ -4990,10 +5005,13 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.FormatNotSupported</note>
         <target xml:lang="es-ES">No se puede leer este formato</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
         <note>ID: ReaderSetup.HowToExport</note>
-        <target xml:lang="es-ES" state="translated">Ayuda para la exportación y conversión de archivos que serán usadas como muestras de texto</target>
+        <target xml:lang="es-ES">Ayuda en la exportación y conversión de archivos que serán usados como muestras de texto</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ayuda para la exportación y conversión de archivos que serán usadas como muestras de texto</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Ayuda para la exportación y la conversión de los archivos que se utilizará como textos modelos</target>
         </alt-trans>
@@ -5003,10 +5021,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.Language</note>
         <target xml:lang="es-ES">Idioma</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.LetterHelp1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">List letters and word-forming characters in alphabetic order.</source>
         <note>ID: ReaderSetup.LetterHelp1</note>
-        <target xml:lang="es-ES" state="translated">Ingrese en orden alfabético las letras y otros caracteres que se usan para formar palabras.</target>
+        <target xml:lang="es-ES">Ingrese en orden alfabético las letras y otros caracteres que se usan para formar palabras.</target>
         <alt-trans>
           <target xml:lang="es-ES">Ingrese las letras y otros carácteres que se usan para formar palabras en orden alfabético.</target>
         </alt-trans>
@@ -5014,10 +5032,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Liste las letras y otros carácteres que se usan para formar palabras en orden alfabético.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.LetterHelp2" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.LetterHelp2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Separate by spaces</source>
         <note>ID: ReaderSetup.LetterHelp2</note>
-        <target xml:lang="es-ES" state="translated">Separar con espacios</target>
+        <target xml:lang="es-ES">Separar con espacios</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.LetterHelp3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">E.g. "a b c d"</source>
@@ -5064,10 +5082,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Observe que la lista inglés incluye símbolos que se utilizan para crear palabras, como ' en</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.Letters.LetterHelp3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">it's</source>
         <note>ID: ReaderSetup.Letters.LetterHelp3</note>
-        <target xml:lang="es-ES" state="translated">es</target>
+        <target xml:lang="es-ES">es</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.LetterHelp4" sil:dynamic="true" approved="yes">
         <source xml:lang="en">.</source>
@@ -5098,10 +5116,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Niveles de lectores</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.MatchingWords" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.MatchingWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">matching words</source>
         <note>ID: ReaderSetup.MatchingWords</note>
-        <target xml:lang="es-ES" state="translated">palabras coincidentes</target>
+        <target xml:lang="es-ES">palabras coincidentes</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Maximum Average Length of Sentences in Book</source>
@@ -5894,10 +5912,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
         <target xml:lang="es-ES">Página de créditos</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: TemplateBooks.PageLabel.Custom</note>
-        <target xml:lang="es-ES" state="translated">Personalizado</target>
+        <target xml:lang="es-ES">Personalizado</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 1</source>
