@@ -1655,10 +1655,10 @@
         <note>ID: EditTab.FormatDialog.Font</note>
         <target xml:lang="es-ES">Fuente</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.FontFaceToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the font face</source>
         <note>ID: EditTab.FormatDialog.FontFaceToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el tipo de fuente</target>
+        <target xml:lang="es-ES">Cambiar el tipo de fuente</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.FontSizeTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</source>
@@ -1702,10 +1702,10 @@
         <note>ID: EditTab.FormatDialog.NewStyle</note>
         <target xml:lang="es-ES">Nuevo estilo</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.ParagraphSpacing">
+      <trans-unit id="EditTab.FormatDialog.ParagraphSpacing" approved="yes">
         <source xml:lang="en">Space Between Paragraphs</source>
         <note>ID: EditTab.FormatDialog.ParagraphSpacing</note>
-        <target xml:lang="es-ES" state="translated">Espacio entre párrafos</target>
+        <target xml:lang="es-ES">Espacio entre párrafos</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.ParagraphTab" approved="yes">
         <source xml:lang="en">Paragraph</source>
@@ -1728,10 +1728,13 @@
         <note>ID: EditTab.FormatDialog.ResetStyle</note>
         <target xml:lang="es-ES">Restaurar este estilo a la configuración predeterminda</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Spacing" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Spacing</source>
         <note>ID: EditTab.FormatDialog.Spacing</note>
-        <target xml:lang="es-ES" state="translated">Espaciamiento</target>
+        <target xml:lang="es-ES">Espaciado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Espaciamiento</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Style</source>
@@ -1759,10 +1762,10 @@
         <note>ID: EditTab.FormatDialog.WordSpacingNormal</note>
         <target xml:lang="es-ES">Normal</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.WordSpacingToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the spacing between words</source>
         <note>ID: EditTab.FormatDialog.WordSpacingToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el espacio entre las palabras</target>
+        <target xml:lang="es-ES">Cambiar el espacio entre las palabras</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Wide</source>
@@ -1847,10 +1850,10 @@
           <target xml:lang="es-ES">Use esto para reconocer los organismos de financiamiento.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.ISBNPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">International Standard Book Number. Leave blank if you don't have one of these.</source>
         <note>ID: EditTab.FrontMatter.ISBNPrompt</note>
-        <target xml:lang="es-ES" state="translated">Código Normalizado Internacional para lLibros. Deje en blanco si no lo tiene.</target>
+        <target xml:lang="es-ES">Código Normalizado Internacional para Libros. Deje en blanco si no lo tiene.</target>
         <alt-trans>
           <target xml:lang="es-ES">Número Internacional Normalizado para Libros. Dejar en blanco si no lo tiene.</target>
         </alt-trans>
@@ -2213,10 +2216,10 @@
         <note>ID: EditTab.StyleEditor.BorderToolTip</note>
         <target xml:lang="es-ES">Cambiar el borde y el fondo</target>
       </trans-unit>
-      <trans-unit id="EditTab.StyleEditor.FontFaceToolTip" sil:dynamic="true">
+      <trans-unit id="EditTab.StyleEditor.FontFaceToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the font face</source>
         <note>ID: EditTab.StyleEditor.FontFaceToolTip</note>
-        <target xml:lang="es-ES" state="translated">Cambiar el tipo de fuente</target>
+        <target xml:lang="es-ES">Cambiar el tipo de fuente</target>
       </trans-unit>
       <trans-unit id="EditTab.StyleEditor.FontSizeToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the font size</source>
@@ -2234,10 +2237,10 @@
           <target xml:lang="es-ES">Cambiar el espaciado entre líneas de texto</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.StyleEditor.WordSpacingExtraWide" sil:dynamic="true">
+      <trans-unit id="EditTab.StyleEditor.WordSpacingExtraWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Extra Wide</source>
         <note>ID: EditTab.StyleEditor.WordSpacingExtraWide</note>
-        <target xml:lang="es-ES" state="translated">Más ancho</target>
+        <target xml:lang="es-ES">Más ancho</target>
         <alt-trans>
           <target xml:lang="es-ES">Ancha extra</target>
         </alt-trans>
