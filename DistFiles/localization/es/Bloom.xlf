@@ -3054,10 +3054,13 @@
           <target xml:lang="es-ES">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de Materia Inicial/Final de la configuación de la colección.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.ZoneAlarm">
+      <trans-unit id="Errors.ZoneAlarm" approved="yes">
         <source xml:lang="en">Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</source>
         <note>ID: Errors.ZoneAlarm</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pued iniciar correctamente. Esta síntoma ha sido obersvado en computadoras con ZoneAlarm instalado. Nota: desactivando ZoneAlarm no resuelve este problema. Reiniciando con ZoneAlarm apagado tampoco. Para resolver el problema hay que desinstalarlo.</target>
+        <target xml:lang="es-ES">Bloom no puede iniciar correctamente. Este síntoma ha sido observado en computadoras con ZoneAlarm instalado. Nota: Desactivar ZoneAlarm no resuelve este problema. Reiniciar el programa con ZoneAlarm apagado tampoco resuelve el problema. Para resolverlo hay que desinstalar ZoneAlarm.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom no pued iniciar correctamente. Esta síntoma ha sido obersvado en computadoras con ZoneAlarm instalado. Nota: desactivando ZoneAlarm no resuelve este problema. Reiniciando con ZoneAlarm apagado tampoco. Para resolver el problema hay que desinstalarlo.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
         <source xml:lang="en">Building Reader Templates</source>
@@ -3180,11 +3183,14 @@
           <target xml:lang="es-ES">BloomPDFMaker.exe, un componente de Bloom, parece esta ausente. Esto previene la vista previa y impresión. Los programas de antivirus pueden causar esto. Puede requerir ayuda tecnica para reparar la instalación de Bloom y para proteger este archivo para que no se vuelve a eleminar.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="LameEncoder.Progress">
+      <trans-unit id="LameEncoder.Progress" approved="yes">
         <source xml:lang="en">Converting to mp3</source>
         <note>ID: LameEncoder.Progress</note>
         <note>Appears in progress indicator</note>
-        <target xml:lang="es-ES" state="translated">Convertiend a mp3</target>
+        <target xml:lang="es-ES">Convirtiendo a mp3</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Convertiend a mp3</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageFontDetails.RightToLeftCheck" approved="yes">
         <source xml:lang="en">This script is right to left</source>
@@ -3199,90 +3205,99 @@
           <target xml:lang="es-ES">Esta escritura require liñas mas altas</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A3Landscape</source>
         <note>ID: LayoutChoices.A3Landscape</note>
-        <target xml:lang="es-ES" state="translated">A3Horizontal</target>
+        <target xml:lang="es-ES">A3Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A4Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape</source>
         <note>ID: LayoutChoices.A4Landscape</note>
-        <target xml:lang="es-ES" state="translated">A4Horizontal</target>
+        <target xml:lang="es-ES">A4Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A4Landscape SideBySide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape SideBySide</source>
         <note>ID: LayoutChoices.A4Landscape SideBySide</note>
-        <target xml:lang="es-ES" state="translated">A4Horizontal LadoALado</target>
+        <target xml:lang="es-ES">A4Horizontal LadoALado</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
         <source xml:lang="en">A4Landscape SplitAcrossPages</source>
         <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
-        <target xml:lang="es-ES" state="translated">A4Horizontal DividirEnPáginas</target>
+        <target xml:lang="es-ES" state="translated">A4Horizontal DividirEntrePáginas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">A4Horizontal DividirEnPáginas</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A4Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Portrait</source>
         <note>ID: LayoutChoices.A4Portrait</note>
-        <target xml:lang="es-ES" state="translated">A4Vertical</target>
+        <target xml:lang="es-ES">A4Vertical</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A5Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5Landscape</source>
         <note>ID: LayoutChoices.A5Landscape</note>
-        <target xml:lang="es-ES" state="translated">A5Horizontal</target>
+        <target xml:lang="es-ES">A5Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A5Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5Portrait</source>
         <note>ID: LayoutChoices.A5Portrait</note>
-        <target xml:lang="es-ES" state="translated">A5Vertical</target>
+        <target xml:lang="es-ES">A5Vertical</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.A5Portrait BottomAlign" sil:dynamic="true">
         <source xml:lang="en">A5Portrait BottomAlign</source>
         <note>ID: LayoutChoices.A5Portrait BottomAlign</note>
         <target xml:lang="es-ES" state="translated">A5Vertical AlinearAbajo</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6Landscape</source>
         <note>ID: LayoutChoices.A6Landscape</note>
-        <target xml:lang="es-ES" state="translated">A6Horizontal</target>
+        <target xml:lang="es-ES">A6Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A6Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6Portrait</source>
         <note>ID: LayoutChoices.A6Portrait</note>
-        <target xml:lang="es-ES" state="translated">A6Vertical</target>
+        <target xml:lang="es-ES">A6Vertical</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">B5Portrait</source>
         <note>ID: LayoutChoices.B5Portrait</note>
-        <target xml:lang="es-ES" state="translated">B5Vertical</target>
+        <target xml:lang="es-ES">B5Vertical</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device16x9Landscape</source>
         <note>ID: LayoutChoices.Device16x9Landscape</note>
-        <target xml:lang="es-ES" state="translated">Dispositivo16x9Horizontal</target>
+        <target xml:lang="es-ES">Dispositivo16x9Horizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Device16x9Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
-        <target xml:lang="es-ES" state="translated">Dispositivo16x9Vertical</target>
+        <target xml:lang="es-ES">Dispositivo16x9Vertical</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true">
         <source xml:lang="en">HalfLetterPortrait</source>
         <note>ID: LayoutChoices.HalfLetterPortrait</note>
-        <target xml:lang="es-ES" state="translated">MedioTamañoCartaVertical</target>
+        <target xml:lang="es-ES" state="translated">TamañoMedioCartaVertical</target>
+        <alt-trans>
+          <target xml:lang="es-ES">MedioTamañoCartaVertical</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="LayoutChoices.LetterLandscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.LetterLandscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">LetterLandscape</source>
         <note>ID: LayoutChoices.LetterLandscape</note>
-        <target xml:lang="es-ES" state="translated">CartaHorizontal</target>
+        <target xml:lang="es-ES">CartaHorizontal</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.LetterPortrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.LetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">LetterPortrait</source>
         <note>ID: LayoutChoices.LetterPortrait</note>
-        <target xml:lang="es-ES" state="translated">CartaVertical</target>
+        <target xml:lang="es-ES">CartaVertical</target>
       </trans-unit>
       <trans-unit id="LayoutChoices.QuarterLetterLandscape" sil:dynamic="true">
         <source xml:lang="en">QuarterLetterLandscape</source>
         <note>ID: LayoutChoices.QuarterLetterLandscape</note>
-        <target xml:lang="es-ES" state="translated">QuartoTamañoCartaHorizontal</target>
+        <target xml:lang="es-ES" state="translated">TamañoCuartoCartaHorizontal</target>
+        <alt-trans>
+          <target xml:lang="es-ES">QuartoTamañoCartaHorizontal</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LicenseDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom {0}</source>
