@@ -408,7 +408,7 @@ namespace Bloom.Publish
 				var prolog = L10NSharp.LocalizationManager.GetString(@"PublishTab.PrologToAdobeEula",
 					"Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a \"PDF for Printshop\".  You must agree to the following license in order to perform this task in Bloom.",
 					@"Brief explanation of what this license is and why the user needs to agree to it");
-				using (var dlg = new Bloom.Registration.LicenseDialog("AdobeColorProfileEULA.md", prolog))
+				using (var dlg = new Bloom.Registration.LicenseDialog("AdobeColorProfileEULA.htm", prolog))
 				{
 					dlg.Text = L10NSharp.LocalizationManager.GetString(@"PublishTab.AdobeEulaTitle",
 						"Adobe Color Profile License Agreement", @"dialog title for license agreement");

@@ -19,7 +19,6 @@ using Bloom.Publish;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using Markdig;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -1466,24 +1465,21 @@ namespace Bloom.Book
 		{
 			get
 			{
-				// enable autolinks from text `http://`, `https://`, `ftp://`, `mailto:`, `www.xxx.yyy`
-				var pipeline = new MarkdownPipelineBuilder().UseAutoLinks().UseCustomContainers().UseGenericAttributes().Build();
-				var contents = Markdown.ToHtml(RobustFile.ReadAllText(AboutBookMarkdownPath), pipeline);
-				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unnecessary.... do they scan .md files?
+				var contents = RobustFile.ReadAllText(AboutBookHtmlPath);
+				contents = contents.Replace("remove", "");//used to hide email addresses in the html from scanners (probably unnecessary.... do they scan .htm files?
 
 				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
-				var pathAsUrl = "file://" + AboutBookMarkdownPath.Replace('\\', '/').Replace(" ", "%20");
+				var pathAsUrl = "file://" + AboutBookHtmlPath.Replace('\\', '/').Replace(" ", "%20");
 				var html = $"<html><head><base href='{pathAsUrl}'><link rel='stylesheet' href='file://{pathToCss}' type='text/css'><head/><body>{contents}</body></html>";
 				return html;
-
-			} //todo add other ui languages
+			}
 		}
 
-		public bool HasAboutBookInformationToShow { get { return _storage!=null && RobustFile.Exists(AboutBookMarkdownPath); } }
-		public string AboutBookMarkdownPath  {
+		public bool HasAboutBookInformationToShow { get { return _storage!=null && RobustFile.Exists(AboutBookHtmlPath); } }
+		public string AboutBookHtmlPath  {
 			get
 			{
-				return BloomFileLocator.GetBestLocalizedFile(_storage.FolderPath.CombineForPath("ReadMe-en.md"));
+				return BloomFileLocator.GetBestLocalizedFile(_storage.FolderPath.CombineForPath("ReadMe-en.htm"));
 			}
 		}
 

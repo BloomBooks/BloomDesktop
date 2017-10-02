@@ -32,7 +32,7 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BloomIntegrityDialog));
 			this._reportButton = new System.Windows.Forms.Button();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this.markDownTextBox1 = new Bloom.MiscUI.MarkDownTextBox();
+			this.htmlTextBox1 = new Bloom.MiscUI.HtmlTextBox();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -57,17 +57,17 @@
 			// 
 			// markDownTextBox1
 			// 
-			this.markDownTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this.htmlTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this.markDownTextBox1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.markDownTextBox1, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this.markDownTextBox1, L10NSharp.LocalizationPriority.NotLocalizable);
-			this.markDownTextBox1.Location = new System.Drawing.Point(12, 12);
-			this.markDownTextBox1.MarkDownText = "Need to set the property \"MarkDownText\"";
-			this.markDownTextBox1.Name = "markDownTextBox1";
-			this.markDownTextBox1.Size = new System.Drawing.Size(494, 511);
-			this.markDownTextBox1.TabIndex = 1;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.htmlTextBox1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.htmlTextBox1, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this.htmlTextBox1, L10NSharp.LocalizationPriority.NotLocalizable);
+			this.htmlTextBox1.Location = new System.Drawing.Point(12, 12);
+			this.htmlTextBox1.HtmlText = "Need to set the property \"MarkDownText\"";
+			this.htmlTextBox1.Name = "markDownTextBox1";
+			this.htmlTextBox1.Size = new System.Drawing.Size(494, 511);
+			this.htmlTextBox1.TabIndex = 1;
 			// 
 			// BloomIntegrityDialog
 			// 
@@ -75,7 +75,7 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(518, 574);
-			this.Controls.Add(this.markDownTextBox1);
+			this.Controls.Add(this.htmlTextBox1);
 			this.Controls.Add(this._reportButton);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
@@ -95,6 +95,6 @@
 
 		private System.Windows.Forms.Button _reportButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private MiscUI.MarkDownTextBox markDownTextBox1;
+		private MiscUI.HtmlTextBox htmlTextBox1;
 	}
 }

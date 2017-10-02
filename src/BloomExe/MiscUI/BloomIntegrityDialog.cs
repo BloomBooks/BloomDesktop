@@ -53,7 +53,7 @@ namespace Bloom.MiscUI
 						{
 							continue;
 						}
-						errors.AppendFormat("Missing File: {0}{1}{1}", fileName, Environment.NewLine);
+						errors.AppendFormat("<p>Missing File: {0}</p>{1}", fileName, Environment.NewLine);
 					}
 				}
 			}
@@ -61,7 +61,7 @@ namespace Bloom.MiscUI
 			{
 				if(FileLocator.GetDirectoryDistributedWithApplication(true, directory) == null)
 				{
-					errors.AppendFormat("Missing Directory: {0}{1}{1}", directory, Environment.NewLine);
+					errors.AppendFormat("<p>Missing Directory: {0}</p>{1}", directory, Environment.NewLine);
 				}
 			}
 			if(errors.Length == 0)
@@ -69,7 +69,7 @@ namespace Bloom.MiscUI
 
 			using(var dlg = new BloomIntegrityDialog())
 			{
-				var messagePath = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false,"IntegrityFailureAdvice-en.md");
+				var messagePath = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false,"IntegrityFailureAdvice-en.htm");
 				string message;
 				if(messagePath == null) // maybe we can't even get at this file we need for a good description of the problem
 				{
@@ -84,7 +84,7 @@ namespace Bloom.MiscUI
 				}
 
 				message = message + Environment.NewLine + Environment.NewLine + errors.ToString();
-				dlg.markDownTextBox1.MarkDownText = message;
+				dlg.htmlTextBox1.HtmlText = message;
 				dlg.ShowDialog();
 			}
 			using(var dlg = new ProblemReporterDialog())
