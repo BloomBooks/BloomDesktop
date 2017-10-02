@@ -4,15 +4,15 @@
     <body>
       <trans-unit id="missing.lame.please.install">
         <source xml:lang="en">Please Install LAME</source>
-        <note>ID: missing.lame.please.install</note>
         <target xml:lang="es-ES" state="translated">Por favor, instale LAME</target>
+        <note>ID: missing.lame.please.install</note>
       </trans-unit>
       <trans-unit id="missing.lame.bloom.needs.lame">
         <source xml:lang="en">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
       </source>
-        <note>ID: missing.lame.bloom.needs.lame</note>
         <target xml:lang="es-ES" state="translated">Este libro tiene grabaciones de audio. Bloom puede utilizarlos para hacer un "audiolibro". Pero, Bloom require un programa llamado "LAME para Audacity" para crear los archivos mp3 que utilizará el libro. Configurarlo es fácil. Primero descarga y ejecuta <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl"> "Lame_v3.99 para Windows.exe"</g>. Después, reinicie Bloom.      
       </target>
+        <note>ID: missing.lame.bloom.needs.lame</note>
         <alt-trans>
           <target xml:lang="es-ES">Este libro tiene grabaciones de audio. Bloom puede utilizarlos para hacer un e-libro que es un "libro sonoro". Pero, Bloom require un programa llamado "LAME para Audacity" para crear los archivos mp3 que utilizará el libro. Configurarlo es fácil. Primero descarga y ejecuta <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl"> "Lame_v3.99 para Windows.exe"</g>. Despues, reinicie Bloom.      
       </target>
@@ -21,9 +21,9 @@
       <trans-unit id="missing.lame.audio.optional">
         <source xml:lang="en">If you prefer to go ahead and publish your book without audio, click <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">here</g>.
       </source>
-        <note>ID: missing.lame.audio.optional</note>
         <target xml:lang="es-ES" state="translated">Si usted prefiere publicar su libro sin audio, haga click <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">aquí</g>.      
       </target>
+        <note>ID: missing.lame.audio.optional</note>
       </trans-unit>
     </body>
   </file>
