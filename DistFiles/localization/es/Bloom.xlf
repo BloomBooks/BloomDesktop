@@ -442,10 +442,10 @@
           <target xml:lang="es-ES">laosiano</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" approved="yes">
         <source xml:lang="en">Lower-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
-        <target xml:lang="es-ES" state="translated">Armenio (bajo)</target>
+        <target xml:lang="es-ES">Armenio (bajo)</target>
         <alt-trans>
           <target xml:lang="es-ES">armenio (bajo)</target>
         </alt-trans>
@@ -1572,11 +1572,11 @@
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
         <target xml:lang="es-ES">Cursiva</target>
       </trans-unit>
-      <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true">
+      <trans-unit id="EditTab.DirectFormatting.Superscript" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Superscript</source>
         <note>ID: EditTab.DirectFormatting.Superscript</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
-        <target xml:lang="es-ES" state="translated">Superíndice</target>
+        <target xml:lang="es-ES">Superíndice</target>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.Underline" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Underline</source>
@@ -1829,10 +1829,10 @@
         <note>ID: EditTab.FormatDialog.WordSpacingWide</note>
         <target xml:lang="es-ES">Ancho</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.FormatDialogTip</note>
-        <target xml:lang="es-ES" state="translated">Ajuste el estilo del formato</target>
+        <target xml:lang="es-ES">Ajuste el estilo del formato</target>
         <alt-trans>
           <target xml:lang="es-ES">Ajuste el el estilo del formato</target>
         </alt-trans>
@@ -1971,11 +1971,11 @@
           <target xml:lang="es-ES">Adaptado de una obra sin registro de derechos de autor.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.OriginalLicenseSentence">
+      <trans-unit id="EditTab.FrontMatter.OriginalLicenseSentence" approved="yes">
         <source xml:lang="en">Licensed under {0}.</source>
         <note>ID: EditTab.FrontMatter.OriginalLicenseSentence</note>
         <note>On the Credits page of a book being translated, Bloom puts texts like 'Licensed under CC-BY', so that we have a record of what the license was for the original book. Put {0} in the translation, where the license should go in the sentence.</note>
-        <target xml:lang="es-ES" state="translated">Bajo licencia de {0}.</target>
+        <target xml:lang="es-ES">Bajo licencia de {0}.</target>
         <alt-trans>
           <target xml:lang="es-ES">Licenciado bajo {0}.</target>
         </alt-trans>
