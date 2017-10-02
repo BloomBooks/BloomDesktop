@@ -5443,7 +5443,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
         <source xml:lang="en">Things to remember for this level:</source>
         <note>ID: ReaderSetup.ToRemember</note>
-        <target xml:lang="es-ES" state="translated">Cosas importantes en este nivel:</target>
+        <target xml:lang="es-ES" state="translated">Cosas para recordar en este nivel</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cosas importantes en este nivel:</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Tener en cuenta en este nivel:</target>
         </alt-trans>
