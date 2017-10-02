@@ -670,10 +670,10 @@
           <target xml:lang="es-ES">Bloom se cierre y vuelva a abrir este proyecto con la nueva configuración.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
+      <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Crear un Paquete de Bloom de Plantilla de Libro...</target>
+        <target xml:lang="es-ES">Crear un Paquete de Bloom de Plantilla de Libro...</target>
         <alt-trans>
           <target xml:lang="es-ES">Crear un Paquete de Bloom de plantilla de libro...</target>
         </alt-trans>
@@ -852,10 +852,10 @@
         <note>ID: CollectionTab.Collections</note>
         <target xml:lang="es-ES">Colecciones</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.ConfiguringBookMessage">
+      <trans-unit id="CollectionTab.ConfiguringBookMessage" approved="yes">
         <source xml:lang="en">Building...</source>
         <note>ID: CollectionTab.ConfiguringBookMessage</note>
-        <target xml:lang="es-ES" state="translated">Creando...</target>
+        <target xml:lang="es-ES">Creando...</target>
         <alt-trans>
           <target xml:lang="es-ES">Compilando...</target>
         </alt-trans>
