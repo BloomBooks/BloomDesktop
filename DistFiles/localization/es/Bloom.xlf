@@ -533,7 +533,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian">
         <source xml:lang="en">Upper-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
-        <target xml:lang="es-ES" state="translated">armenio (upper)</target>
+        <target xml:lang="es-ES" state="translated">armenio (alto)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">armenio (upper)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem" approved="yes">
         <source xml:lang="en">Right to Left Writing System</source>
