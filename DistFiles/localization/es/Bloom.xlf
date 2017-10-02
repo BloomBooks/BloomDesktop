@@ -2116,10 +2116,10 @@
           <target xml:lang="es-ES">El archivo elegido es un archivo "JPEG". Ilustraciones JPEG son perfectas para las fotografías y las ilustraciones en color. Sin embargo, JPEG es un gran problema para arte de línea en blanco y negro. Los problemas incluyen: \n• Borrosidad y puntos grises. \n• Archivos de gran tamaño, esto hace un libro difícil a compartir. \n• Si hay muchos archivos JPEG de gran tamaño, Bloom no tiene suficiente memoria para hacer PDFs \n \n Nota: Debido a JPEG es "lossy", la conversión de un archivo JPEG a PNG, TIFF o BMP en realidad hace que las cosas aún peor. Si esta es arte de línea en blanco y negro, debe obtener un archivo original escaneado en uno de esos formatos \n\n Por favor seleccione uno de los siguientes, a continuación, haga clic en "Aceptar":</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.JpegWarningDialog.WindowTitle">
+      <trans-unit id="EditTab.JpegWarningDialog.WindowTitle" approved="yes">
         <source xml:lang="en">JPEG Warning</source>
         <note>ID: EditTab.JpegWarningDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Advertencia de JPEG</target>
+        <target xml:lang="es-ES">Advertencia de JPEG</target>
       </trans-unit>
       <trans-unit id="EditTab.LayoutInPublishTabOnlyNotice" approved="yes">
         <source xml:lang="en">This option is only available in the Publish tab.</source>
@@ -2649,12 +2649,12 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.FoThisLevel</note>
         <target xml:lang="es-ES">Para este nivel</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Formatting</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Formatting</note>
-        <target xml:lang="es-ES" state="translated">Formateo</target>
+        <target xml:lang="es-ES">Formateando</target>
         <alt-trans>
-          <target xml:lang="es-ES">Formateando</target>
+          <target xml:lang="es-ES">Formateo</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true">
@@ -5238,10 +5238,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.PageMaxWords</note>
         <target xml:lang="es-ES">Cantidad máxima de palabras en cada página</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.PoweredBy" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Powered by </source>
         <note>ID: ReaderSetup.PoweredBy</note>
-        <target xml:lang="es-ES" state="translated">Con tecnología de</target>
+        <target xml:lang="es-ES">Con tecnología de</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.Punctuation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Punctuation</source>
@@ -5296,10 +5296,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.ReorderStages</note>
         <target xml:lang="es-ES">Arrastrar filas para reordenar etapas.</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SampleTexts" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SampleTexts" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Word Lists and Sample Texts</source>
         <note>ID: ReaderSetup.SampleTexts</note>
-        <target xml:lang="es-ES" state="translated">Listas de palabras y textos de muestra</target>
+        <target xml:lang="es-ES">Listas de palabras y textos de muestra</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SampleWords" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Words</source>
