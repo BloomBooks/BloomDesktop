@@ -4,24 +4,24 @@
     <body>
       <trans-unit id="missing.lame.please.install">
         <source xml:lang="en">Please Install LAME</source>
-        <note>ID: missing.lame.please.install</note>
         <target xml:lang="fr" state="needs-translation">Please Install LAME</target>
+        <note>ID: missing.lame.please.install</note>
       </trans-unit>
       <trans-unit id="missing.lame.bloom.needs.lame">
         <source xml:lang="en">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
       </source>
-        <note>ID: missing.lame.bloom.needs.lame</note>
         <target xml:lang="fr" state="needs-translation">This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <g id="genid-1" ctype="x-html-a" html:href="http://lame.buanzo.org/#lamewindl">'Lame_v3.99 for Windows.exe'</g>. Next, restart Bloom.
       
       </target>
+        <note>ID: missing.lame.bloom.needs.lame</note>
       </trans-unit>
       <trans-unit id="missing.lame.audio.optional">
         <source xml:lang="en">If you prefer to go ahead and publish your book without audio, click <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">here</g>.
       </source>
-        <note>ID: missing.lame.audio.optional</note>
         <target xml:lang="fr" state="needs-translation">If you prefer to go ahead and publish your book without audio, click <g id="genid-2" ctype="x-html-a" html:id="proceedWithoutAudio" html:href="javascript:void(0)">here</g>.
       
       </target>
+        <note>ID: missing.lame.audio.optional</note>
       </trans-unit>
     </body>
   </file>
