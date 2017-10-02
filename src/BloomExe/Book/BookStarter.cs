@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Collection;
 using L10NSharp;
@@ -84,7 +85,8 @@ namespace Bloom.Book
 			// already returns both *.htm and *.html, but NOT *.htm.xyz [returns *.html only for Windows]
 			// For both, "*.htm?" should work, but it doesn't return *.htm on Linux [Mono4 bug?].
 			var candidates = from x in Directory.GetFiles(folder, "*.htm")
-							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.htm"))
+							 where !(Path.GetFileName(x).ToLowerInvariant().StartsWith("configuration.htm") ||
+									 Regex.IsMatch(Path.GetFileName(x), "^ReadMe-[a-z]{2,3}(-[A-Z]{2})?\\.htm$"))
 							 select x;
 			if (!candidates.Any())
 				candidates = from x in Directory.GetFiles(folder, "*.html")
@@ -95,7 +97,7 @@ namespace Bloom.Book
 			else
 			{
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-					"There should only be a single htm(l) file in each folder ({0}). [not counting configuration.html]", folder);
+					"There should only be a single htm(l) file in each folder ({0}). [not counting configuration.html or ReadMe-*.htm]", folder);
 				throw new ApplicationException();
 			}
 
