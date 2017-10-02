@@ -5440,10 +5440,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.Synphony</note>
         <target xml:lang="es-ES">SynPhony</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Things to remember for this level:</source>
         <note>ID: ReaderSetup.ToRemember</note>
-        <target xml:lang="es-ES" state="translated">Cosas para recordar en este nivel</target>
+        <target xml:lang="es-ES">Cosas para recordar en este nivel</target>
         <alt-trans>
           <target xml:lang="es-ES">Cosas importantes en este nivel:</target>
         </alt-trans>
@@ -5725,11 +5725,11 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Informar sobre un problema</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReportProblemDialog.Zipping">
+      <trans-unit id="ReportProblemDialog.Zipping" approved="yes">
         <source xml:lang="en">Zipping up book...</source>
         <note>ID: ReportProblemDialog.Zipping</note>
         <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
-        <target xml:lang="es-ES" state="translated">Creando un archivo Zip del libro...</target>
+        <target xml:lang="es-ES">Creando un archivo Zip del libro...</target>
         <alt-trans>
           <target xml:lang="es-ES">Creando un archivo zip del libro...</target>
         </alt-trans>
@@ -5766,10 +5766,10 @@ Desea seguir?</target>
         <note>ID: ScriptSettingsDialog.DefaultLineSpacing</note>
         <target xml:lang="es-ES">Interlineado predeterminado</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Arithmetic</source>
         <note>ID: TemplateBooks.BookName.Arithmetic</note>
-        <target xml:lang="es-ES" state="translated">Aritmético</target>
+        <target xml:lang="es-ES">Aritmético</target>
         <alt-trans>
           <target xml:lang="es-ES">Aritmética</target>
         </alt-trans>
@@ -5807,10 +5807,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.BookName.Vaccinations</note>
         <target xml:lang="es-ES">Vacunas</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Template Starter" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Template Starter</source>
         <note>ID: TemplateBooks.BookName.Template Starter</note>
-        <target xml:lang="es-ES" state="translated">Plantilla de inicio</target>
+        <target xml:lang="es-ES">Plantilla de inicio</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Wall Calendar" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Wall Calendar</source>
@@ -6037,10 +6037,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.Day 5b</note>
         <target xml:lang="es-ES">Día 5b</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Factory" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Factory" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Factory</source>
         <note>ID: TemplateBooks.PageLabel.Factory</note>
-        <target xml:lang="es-ES" state="translated">Fábrica</target>
+        <target xml:lang="es-ES">Fábrica</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Flyleaf" sil:dynamic="true">
         <source xml:lang="en">Flyleaf</source>
