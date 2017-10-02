@@ -755,6 +755,9 @@ namespace BloomTests.Book
 
 			Assert.AreEqual(existingPage.Id, newDivNode.Attributes["data-pagelineage"].Value);
 			Assert.AreEqual(existingDivNode.InnerXml, newDivNode.InnerXml);
+
+			Assert.AreEqual(original.ToString(), existingDivNode.Attributes["data-page-number"].Value);
+			Assert.AreEqual((original+1).ToString(), newDivNode.Attributes["data-page-number"].Value);
 		}
 
 		[Test]
@@ -830,6 +833,20 @@ namespace BloomTests.Book
 			}
 			AssertPageCount(book, 1);
 		}
+
+		[Test]
+		public void DeletePage_OnFirstPage_Renumbers()
+		{
+			var book = CreateBook();
+			var original = book.GetPages().Count();
+			var firstPage = book.GetPages().First();
+			book.DeletePage(firstPage);
+			AssertPageCount(book, original-1);
+			var newFirstPage = book.GetPages().First();
+			var newFirstDiv = newFirstPage.GetDivNodeForThisPage();
+			Assert.AreEqual("1", newFirstDiv.Attributes["data-page-number"].Value);
+		}
+
 		[Test]
 		public void RelocatePage_FirstPageToSecond_DoesRelocate()
 		{

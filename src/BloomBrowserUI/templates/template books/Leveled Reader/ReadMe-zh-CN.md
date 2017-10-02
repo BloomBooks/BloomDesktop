@@ -6,9 +6,9 @@
 
 要了解在Bloom中如何使用“分级读物”，您可以： {i18n="leveled.learn"}
 
-- ::观看[这些教学视频] (http://tiny.cc/8vbwux)。::{i18n="leveled.learn.videos"}
-- ::找到“帮助”菜单，选择“帮助”，再查看“分级读物”下面的索引。::{i18n="leveled.learn.helpindex"}
-- ::找到帮助菜单，选择：“创建读物模板”。::{i18n="leveled.learn.helpmenu"}
+- 观看[这些教学视频] (http://tiny.cc/8vbwux)。{i18n="leveled.learn.videos"}
+- 找到“帮助”菜单，选择“帮助”，再查看“分级读物”下面的索引。{i18n="leveled.learn.helpindex"}
+- 找到帮助菜单，选择：“创建读物模板”。{i18n="leveled.learn.helpmenu"}
 
 ### 和拼读读物的关系 {i18n="leveled.vs.decodable"}
 

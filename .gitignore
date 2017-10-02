@@ -104,3 +104,8 @@ Bloom/
 build/Bloom*.nupkg
 src/BloomBrowserUI/filesToFix.lst
 src/BloomBrowserUI/npm-debug.log
+DistFiles/bloomPagePlayer.js
+DistFiles/license.htm
+DistFiles/AdobeColorProfileEULA.htm
+DistFiles/IntegrityFailureAdvice-*.htm
+DistFiles/infoPages/TrainingVideos-*.htm

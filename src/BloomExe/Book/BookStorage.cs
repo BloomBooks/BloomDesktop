@@ -281,11 +281,28 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Determine whether the folder contains static content that might be read-only.
+		/// For example, template books are read-only on Linux and Windows --allUsers.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-5061.
+		/// </remarks>
+		public static bool IsStaticContent(string folderPath)
+		{
+			// Checking just /browser/ or just /templates/ might accidently trigger on
+			// a book named "browser" or "templates".
+			// Convert \ to / for Window's sake.  It shouldn't exist in a Linux folder path.
+			return folderPath.Replace('\\','/').Contains("/browser/templates/");
+		}
+
+		/// <summary>
 		/// Compare the images we find in the top level of the book folder to those referenced
 		/// in the dom, and remove any unreferenced on
 		/// </summary>
 		public void CleanupUnusedImageFiles()
 		{
+			if (IsStaticContent(_folderPath))
+				return;
 			//Collect up all the image files in our book's directory
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });

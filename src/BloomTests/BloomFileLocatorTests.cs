@@ -117,16 +117,16 @@ namespace BloomTests
 		[Test]
 		public void GetLocalizableFileDistributedWithApplication_CurrentlyInEnglish_FindsIt()
 		{
-			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.md");
-			Assert.IsTrue(path.EndsWith("TrainingVideos-en.md"));
+			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.htm");
+			Assert.IsTrue(path.EndsWith("TrainingVideos-en.htm"));
 		}
 
 		[Test]
 		public void GetLocalizableFileDistributedWithApplication_DontHaveThatTranslation_GetEnglishOne()
 		{
 			LocalizationManager.SetUILanguage("gd", false);
-			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.md");
-			Assert.IsTrue(path.EndsWith("TrainingVideos-en.md"));
+			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.htm");
+			Assert.IsTrue(path.EndsWith("TrainingVideos-en.htm"));
 		}
 
 		[Test]

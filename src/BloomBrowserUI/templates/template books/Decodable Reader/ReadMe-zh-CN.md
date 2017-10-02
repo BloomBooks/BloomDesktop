@@ -6,6 +6,6 @@ Bloom能帮您定义这些渐进的*细分阶段*。 您创建的每本书都将
 
 要了解在Bloom中如何使用“拼读读物”，您可以： {i18n="decodable.learn"}
 
-- ::观看[这些教学视频](http://tiny.cc/8vbwux)。::{i18n="decodable.learn.videos"}
-- ::找到“帮助”菜单，选择“帮助”，然后查看“拼读读物”下面的索引。::{i18n="decodable.learn.helpindex"}
-- ::找到帮助菜单，然后选择：“创建读物模板”。::{i18n="decodable.learn.helpmenu"}
+- 观看[这些教学视频](http://tiny.cc/8vbwux)。{i18n="decodable.learn.videos"}
+- 找到“帮助”菜单，选择“帮助”，然后查看“拼读读物”下面的索引。{i18n="decodable.learn.helpindex"}
+- 找到帮助菜单，然后选择：“创建读物模板”。{i18n="decodable.learn.helpmenu"}

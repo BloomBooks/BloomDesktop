@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -20,10 +20,31 @@ namespace Bloom.web.controllers
 	public class ImageApi
 	{
 		private readonly BookSelection _bookSelection;
+		private readonly string[] _doNotPasteArray;
 
 		public ImageApi(BookSelection bookSelection)
 		{
 			_bookSelection = bookSelection;
+			// The following is a list of image files that we don't want to paste image credits for.
+			// It includes CC license image, placeholder and branding images.
+			_doNotPasteArray = GetImageFilesToNotPasteCreditsFor().ToArray();
+		}
+
+		private static IEnumerable<string> GetImageFilesToNotPasteCreditsFor()
+		{
+			var imageFiles = new HashSet<string> {"license.png", "placeholder.png"};
+			var brandingDirectory = FileLocator.GetDirectoryDistributedWithApplication("branding");
+			foreach (var brandDirectory in Directory.GetDirectories(brandingDirectory))
+			{
+				imageFiles.AddRange(Directory.EnumerateFiles(brandDirectory).Where(IsSvgOrPng).Select(Path.GetFileName));
+			}
+			return imageFiles;
+		}
+
+		private static bool IsSvgOrPng(string filename)
+		{
+			var lcFilename = filename.ToLowerInvariant();
+			return Path.GetExtension(lcFilename) == ".svg" || Path.GetExtension(lcFilename) == ".png";
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -54,9 +75,9 @@ namespace Bloom.web.controllers
 					var meta = Metadata.FromFile(path);
 					string id;
 					var credit = meta.MinimalCredits(langs, out id);
-					if (String.IsNullOrEmpty(credit) && name.ToLowerInvariant() != "license.png" && name.ToLowerInvariant() != "placeholder.png")
+					if (string.IsNullOrEmpty(credit) && !DoNotPasteCreditsImages(name))
 						missingCredits.Add(name);
-					if (!String.IsNullOrEmpty(credit) && !credits.Contains(credit))
+					if (!string.IsNullOrEmpty(credit) && !credits.Contains(credit))
 						credits.Add(credit);
 				}
 			}
@@ -78,6 +99,13 @@ namespace Bloom.web.controllers
 				total.AppendFormat("</p>{0}", System.Environment.NewLine);
 			}
 			request.ReplyWithText(total.ToString());
+		}
+
+		private bool DoNotPasteCreditsImages(string name)
+		{
+			// returns 'true' if 'name' is among the list of ones we don't want to paste image credits for
+			// includes CC license image, placeholder and branding images
+			return _doNotPasteArray.Contains(name.ToLowerInvariant());
 		}
 
 		/// <summary>

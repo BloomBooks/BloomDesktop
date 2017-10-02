@@ -4,30 +4,37 @@
     <body>
       <trans-unit id="picture.dictionary">
         <source xml:lang="en">About the Picture Dictionary Template</source>
+        <target />
         <note>ID: picture.dictionary</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.use">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual. </source>
+        <target />
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.limits">
         <source xml:lang="en">Limitations of this version</source>
+        <target />
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience. </source>
+        <target />
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.feedback">
         <source xml:lang="en">Feedback</source>
+        <target />
         <note>ID: picture.dictionary.feedback</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.feedbackvoting">
         <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g> </source>
+        <target />
         <note>ID: picture.dictionary.feedbackvoting</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.reportbugs">
         <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>. </source>
+        <target />
         <note>ID: picture.dictionary.reportbugs</note>
       </trans-unit>
     </body>
