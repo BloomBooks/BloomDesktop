@@ -5306,10 +5306,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.SampleWords</note>
         <target xml:lang="es-ES">Palabras de muestra</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SearchEngine" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SearchEngine" sil:dynamic="true" approved="yes">
         <source xml:lang="en">, the Search Engine for Literacy.</source>
         <note>ID: ReaderSetup.SearchEngine</note>
-        <target xml:lang="es-ES" state="translated">, el motor de búsqueda de la alfabetización</target>
+        <target xml:lang="es-ES">, el motor de búsqueda de la alfabetización</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.SelectedLetters" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Previous and New Letters</source>
@@ -5357,10 +5357,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Bloom ya conoce que caracteres se usan en los idiomas del mundo para marcar el final de oraciones. Para agregar otros, ingrese los "Unicode character escapes" aqui. For ejemplo para tailandes, ingrese \U0020 para indicar a Bloom que en tailandes se usa espacios normales para terminar las oraciones.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
         <note>ID: ReaderSetup.SetUpDecodableReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros descifrables</target>
+        <target xml:lang="es-ES">Configurar la herramienta de libros descifrables</target>
         <alt-trans>
           <target xml:lang="es-ES">Configurar la herramienta de lectores decodificables</target>
         </alt-trans>
@@ -5379,10 +5379,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Configurar la herramienta de lectores nivelados</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true" approved="yes">
         <source xml:lang="en">set up the alphabet for this language.</source>
         <note>ID: ReaderSetup.SetupAlphabet</note>
-        <target xml:lang="es-ES" state="translated">configurar el alfabeto para este idioma.</target>
+        <target xml:lang="es-ES">configurar el alfabeto para este idioma.</target>
         <alt-trans>
           <target xml:lang="es-ES">configurar el alfabeto para este nivel:</target>
         </alt-trans>
