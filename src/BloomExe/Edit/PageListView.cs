@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -39,7 +39,7 @@ namespace Bloom.Edit
 			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec() {
 					Label = LocalizationManager.GetString("EditTab.DuplicatePageButton", "Duplicate Page"), // same ID as button in toolbar));
-					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
+					EnableFunction = (page) => page != null && !page.Required && _model.CanAddPages,
 					ExecuteCommand = (page) => _model.DuplicatePage(page)});
 			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec()
@@ -52,7 +52,7 @@ namespace Bloom.Edit
 				new WebThumbNailList.MenuItemSpec()
 				{
 					Label = LocalizationManager.GetString("EditTab.PastePage", "Paste Page"),
-					EnableFunction = (page) => page != null && _model.GetClipboardHasPage(),
+					EnableFunction = (page) => page != null && _model.CanAddPages && _model.GetClipboardHasPage(),
 					ExecuteCommand = (page) => _model.PastePage(page)
 				});
 			menuItems.Add(
