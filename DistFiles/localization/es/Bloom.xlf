@@ -733,10 +733,10 @@
           <target xml:lang="es-ES">Eliminar libro</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage">
+      <trans-unit id="CollectionTab.BookMenu.ExportDocMessage" approved="yes">
         <source xml:lang="en">Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much.</source>
         <note>ID: CollectionTab.BookMenu.ExportDocMessage</note>
-        <target xml:lang="es-ES" state="translated">Bloom abrirá este documento HTML en su programa de procesador de textos (normalmente Word o LibreOffice). Usted podrá revisar el texto y las imágenes de este libro. Como estos programas tienden a no preservar los diseños de página, no debe tener muchas expectativas.</target>
+        <target xml:lang="es-ES">Bloom abrirá este documento HTML en su programa de procesador de textos (normalmente Word o LibreOffice). Usted podrá revisar el texto y las imágenes de este libro. Como estos programas tienden a no preservar los diseños de página, no debe tener muchas expectativas.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom abrirá este documento de HTML en su programa de procesamiento de textos (normalmente Word o LibreOffice). Usted podrá revisar el texto y las imágenes de este libro. Como estos programas tienden no preserar los diseños de página, debe mantener las expectativas bajas.</target>
         </alt-trans>
