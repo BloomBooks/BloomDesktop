@@ -1377,7 +1377,10 @@
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
         <note>ID: EditTab.BookContextMenu.openHtmlInBrowser</note>
-        <target xml:lang="es-ES" state="translated">Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino)</target>
+        <target xml:lang="es-ES" state="translated">Abrir el HTML utilizado para hacer este PDF, en Firefox (debe estar en camino)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino).</target>
         </alt-trans>
@@ -3921,7 +3924,10 @@
         <source xml:lang="en">No device found. Still looking...</source>
         <note>ID: PublishTab.Android.Usb.Progress.NoDeviceFound</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">Dispositivo no ubicado. Sigue buscando...</target>
+        <target xml:lang="es-ES" state="translated">Dispositivo no ubicado. Todavía estamos buscando...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Dispositivo no ubicado. Sigue buscando...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.PackagingBook" approved="yes">
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
@@ -4050,10 +4056,10 @@
           <target xml:lang="es-ES">En el dispositivo de Android, ejecute BloomReader, abra el menú y elija 'Recibir libros por WiFi'.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2" approved="yes">
         <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions2</note>
-        <target xml:lang="es-ES" state="translated">Puede hacer esto en todos los dispositivos que guste. Asegúrese que cada dispositivo esté conectado a la misma red que la computadora.</target>
+        <target xml:lang="es-ES">Puede hacer esto en todos los dispositivos que guste. Asegúrese que cada dispositivo esté conectado a la misma red que la computadora.</target>
         <alt-trans>
           <target xml:lang="es-ES">Puede hacer esto en tantos dispositivos que guste. Asegure que cada dispositivo está conectado a la misma red que la computadora.</target>
         </alt-trans>
@@ -4278,10 +4284,10 @@
           <target xml:lang="es-ES">Tamaño/diseño</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
+      <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer" approved="yes">
         <source xml:lang="en">Open the PDF in the default system PDF viewer</source>
         <note>ID: PublishTab.OpenThePDFInTheSystemPDFViewer</note>
-        <target xml:lang="es-ES" state="translated">Abra el PDF en el visualizador de PDF predeterminado</target>
+        <target xml:lang="es-ES">Abra el PDF en el visualizador de PDF predeterminado</target>
         <alt-trans>
           <target xml:lang="es-ES">Abra el PDF en el visualizador PDF predeterminado</target>
         </alt-trans>
@@ -4415,11 +4421,11 @@
         <note>title for the message box</note>
         <target xml:lang="es-ES">PDF no guardado</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfNotSavedWhy">
+      <trans-unit id="PublishTab.PdfNotSavedWhy" approved="yes">
         <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for Printshop".</source>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
-        <target xml:lang="es-ES" state="translated">No se guardó el archivo PDF porque usted no permitió la producción de un "PDF para la imprenta".</target>
+        <target xml:lang="es-ES">No se guardó el archivo PDF porque usted no permitió la producción de un "PDF para la imprenta".</target>
         <alt-trans>
           <target xml:lang="es-ES">No se guardo el archivo PDF porque elegió no permitir la producción de "PDF para la imprenta".</target>
         </alt-trans>
@@ -4435,11 +4441,11 @@
           <target xml:lang="es-ES">Imprimir...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.PrologToAdobeEula">
+      <trans-unit id="PublishTab.PrologToAdobeEula" approved="yes">
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-        <target xml:lang="es-ES" state="translated">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de preparar un "PDF para la imprenta".  Debe aceptar la siguiente licencia para realizar este proceso en Bloom.</target>
+        <target xml:lang="es-ES">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de preparar un "PDF para la imprenta".  Debe aceptar la siguiente licencia para realizar este proceso en Bloom.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de la preparación de un "PDF para la imprenta".  Debes aceptar la siguiente licencia para hacerlo en Bloom.</target>
         </alt-trans>
@@ -6339,11 +6345,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">Salud</target>
       </trans-unit>
-      <trans-unit id="Topics.How To" sil:dynamic="true">
+      <trans-unit id="Topics.How To" sil:dynamic="true" approved="yes">
         <source xml:lang="en">How To</source>
         <note>ID: Topics.How To</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Manuales</target>
+        <target xml:lang="es-ES">Manuales</target>
       </trans-unit>
       <trans-unit id="Topics.Math" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Math</source>
