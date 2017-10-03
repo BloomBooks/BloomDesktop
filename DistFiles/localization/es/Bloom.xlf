@@ -442,10 +442,10 @@
           <target xml:lang="es-ES">laosiano</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" approved="yes">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian">
         <source xml:lang="en">Lower-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
-        <target xml:lang="es-ES">Armenio (bajo)</target>
+        <target xml:lang="es-ES" state="translated">Armenio (bajo)</target>
         <alt-trans>
           <target xml:lang="es-ES">armenio (bajo)</target>
         </alt-trans>
@@ -2005,10 +2005,7 @@
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="es-ES" state="translated">Los dibujos de líneas simples se ven mejor. En vez de utilizar esta página, también puede crear su propia miniatura.png y marcarla sólo para lectura (Read-only) para que Bloom no lo sobrescriba.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
-        </alt-trans>
+        <target xml:lang="es-ES" state="translated">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
@@ -2580,10 +2577,13 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage</note>
         <target xml:lang="es-ES">Palabras de muestra en esta etapa</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SetUpStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Stages</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SetUpStages</note>
-        <target xml:lang="es-ES" state="translated">Establecer etapas</target>
+        <target xml:lang="es-ES">Configurar Etapas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Establecer etapas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SortAlphabetically" approved="yes">
         <source xml:lang="en">Sort alphabetically</source>
@@ -2717,10 +2717,16 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Predictability</note>
         <target xml:lang="es-ES">Previsibilidad</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.SetUpLevels" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Levels</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.SetUpLevels</note>
-        <target xml:lang="es-ES" state="translated">Establecer niveles</target>
+        <target xml:lang="es-ES">Configurar Niveles</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configurar niveles</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Establecer niveles</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.ThisBook" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This Book</source>
@@ -5365,10 +5371,13 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Configurar la herramienta de lectores decodificables</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Leveled Reader Tool</source>
         <note>ID: ReaderSetup.SetUpLeveledReaderTool</note>
-        <target xml:lang="es-ES" state="translated">Configurar la herramienta de libros por niveles</target>
+        <target xml:lang="es-ES">Configurar la herramienta de "Libros por Niveles"</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configurar la herramienta de libros por niveles</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Configurar la herramienta de libros nivelados</target>
         </alt-trans>
@@ -6228,11 +6237,11 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.Traditional</note>
         <target xml:lang="es-ES">Tradicional</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
+      <trans-unit id="TemplateBooks.Wall Calendar.TitleOfSetupDialog" approved="yes">
         <source xml:lang="en">Setup</source>
         <note>ID: TemplateBooks.Wall Calendar.TitleOfSetupDialog</note>
         <note>This is the dialog used to set up the wall calendar</note>
-        <target xml:lang="es-ES" state="translated">Configurar</target>
+        <target xml:lang="es-ES">Configurar</target>
         <alt-trans>
           <target xml:lang="es-ES">Configuración</target>
         </alt-trans>
