@@ -4575,10 +4575,10 @@
           <target xml:lang="es-ES">Hubo un problema cargando su libro.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.GiveBack">
+      <trans-unit id="PublishTab.Upload.GiveBack" approved="yes">
         <source xml:lang="en">It’s easy to “give back”</source>
         <note>ID: PublishTab.Upload.GiveBack</note>
-        <target xml:lang="es-ES" state="translated">Es fácil "contribuir"</target>
+        <target xml:lang="es-ES">Es fácil "contribuir"</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.IncompleteTranslation" approved="yes">
         <source xml:lang="en">(incomplete translation)</source>
@@ -4884,10 +4884,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.Step2</note>
         <target xml:lang="es-ES">Paso 2: Cargar</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SuggestAssignCC">
+      <trans-unit id="PublishTab.Upload.SuggestAssignCC" approved="yes">
         <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
         <note>ID: PublishTab.Upload.SuggestAssignCC</note>
-        <target xml:lang="es-ES" state="translated">Sugerencia: Asignar una Licencia Creative Commons le facilita conceder ciertos permisos a quien usted quiera.</target>
+        <target xml:lang="es-ES">Sugerencia: Asignar una Licencia Creative Commons le facilita conceder ciertos permisos a quien usted quiera.</target>
         <alt-trans>
           <target xml:lang="es-ES">Sugerencia: Asignar una licencia Creative Commons le facilita conceder claramente determinados permisos a todo el mundo.</target>
         </alt-trans>
@@ -4895,10 +4895,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Sugerencia: Asignar una licencia Creative Commons facilita para que usted pueda conceder claramente determinados permisos a todo el mundo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SuggestChangeCC">
+      <trans-unit id="PublishTab.Upload.SuggestChangeCC" approved="yes">
         <source xml:lang="en">Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</source>
         <note>ID: PublishTab.Upload.SuggestChangeCC</note>
-        <target xml:lang="es-ES" state="translated">Sugerencia: Las Licencias Creative Commons hacen que sea mucho más fácil que otros utilicen su libro, incluso si ellos no tienen fluidez en el idioma de su licencia personalizada.</target>
+        <target xml:lang="es-ES">Sugerencia: Las Licencias Creative Commons hacen que sea mucho más fácil que otros utilicen su libro, incluso si ellos no tienen fluidez en el idioma de su licencia personalizada.</target>
         <alt-trans>
           <target xml:lang="es-ES">Sugerencia: Las licencias de Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</target>
         </alt-trans>
@@ -4982,10 +4982,10 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.UploadingStatus</note>
         <target xml:lang="es-ES">Cargando {0}</target>
       </trans-unit>
-      <trans-unit id="PublishView._saveButton">
+      <trans-unit id="PublishView._saveButton" approved="yes">
         <source xml:lang="en">Save stub</source>
         <note>ID: PublishView._saveButton</note>
-        <target xml:lang="es-ES" state="translated">Guardar el fragmento</target>
+        <target xml:lang="es-ES">Guardar el fragmento</target>
         <alt-trans>
           <target xml:lang="es-ES">Guardar el stub (trozo)</target>
         </alt-trans>
@@ -5250,10 +5250,13 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.MoreWords</note>
         <target xml:lang="es-ES">Más palabras</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.OpenSampleTexts" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.OpenSampleTexts" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Open the sample texts folder for this language.</source>
         <note>ID: ReaderSetup.OpenSampleTexts</note>
-        <target xml:lang="es-ES" state="translated">Abra la carpeta de textos de muestra para este idioma.</target>
+        <target xml:lang="es-ES">Abrir la carpeta de "textos de muestra" para este idioma.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abra la carpeta de textos de muestra para este idioma.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.PageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page</source>
@@ -5376,7 +5379,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "escapes de carracter Unicode" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "códigos únicos de caracter" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "escapes de carracter Unicode" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "Unicode character escapes" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
         </alt-trans>
@@ -6279,11 +6285,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">Cuentos de animales</target>
       </trans-unit>
-      <trans-unit id="Topics.Business" sil:dynamic="true">
+      <trans-unit id="Topics.Business" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Business</source>
         <note>ID: Topics.Business</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Negocios</target>
+        <target xml:lang="es-ES">Negocios</target>
       </trans-unit>
       <trans-unit id="Topics.Community Living" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Community Living</source>
@@ -6347,17 +6353,17 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">No ficción</target>
       </trans-unit>
-      <trans-unit id="Topics.Personal Development" sil:dynamic="true">
+      <trans-unit id="Topics.Personal Development" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Personal Development</source>
         <note>ID: Topics.Personal Development</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Desarrollo personal</target>
+        <target xml:lang="es-ES">Desarrollo personal</target>
       </trans-unit>
-      <trans-unit id="Topics.Primer" sil:dynamic="true">
+      <trans-unit id="Topics.Primer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Primer</source>
         <note>ID: Topics.Primer</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Cartilla</target>
+        <target xml:lang="es-ES">Cartilla</target>
       </trans-unit>
       <trans-unit id="Topics.Science" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Science</source>
