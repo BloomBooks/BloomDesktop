@@ -1,0 +1,28 @@
+@import '../bloom-xmatter-common.less';
+
+@XMatterPackName: "Device";
+
+//ok, this is embarrassing, but we're in a precedence fight with the html itself
+div.bloom-page.coverColor {
+    // I haven't decided what to do about cover colors...
+    //background-color: white !important;
+}
+
+.theEndPage{
+    .marginBox{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    [data-book="end-of-book-label"]{
+        width: 100%;
+        font-size: 3em;
+        line-height: 100%;
+        text-align: center;
+        // put in the middle, pushing branding to bottom
+        margin-bottom: auto;
+        margin-top: auto;
+    }
+}

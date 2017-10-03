@@ -1,0 +1,1 @@
+This is automatically applied when publishing to Bloom Reader (Android).
