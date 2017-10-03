@@ -1,0 +1,36 @@
+include ../bloom-xmatter-mixins
+
+doctype html
+html
+	head
+		meta(charset="UTF-8")
+		meta(name="BloomFormatVersion", content="2.0")
+		title Device Front &amp; Back Matter
+		// NB: this has no effect on books using this stylesheet; it only does anything if you're viewing the xmatter html by itself
+		+stylesheets("Device-XMatter.css")
+
+	body
+
+	+factoryStandard-outsideFrontCover
+
+	// Credits at the end
+
+	+page-xmatter("Title Page").titlePage.bloom-backMatter&attributes(attributes)#5ecd48df-e9ab-4a07-afd4-6a24d03983ee
+		+title-page-contents
+
+	+page-xmatter("Credits Page").bloom-backMatter.credits&attributes(attributes)#CCDB9CCC-5DCC-4D55-86B5-6DD2A5303ACC
+		+credits-contents
+
+	+page-xmatter("The End").bloom-backMatter.theEndPage#aaa140ba-981a-44d4-a0cf-510f7367aaaa
+		//- would be nice to use data-collection instead of data-book, but that isn't working in Bloom these
+		//- days (was a version 1-ish feature that never got used, and atrophied).
+		//- When we do have it, that would save typing it in for each book in the Local Language... and ideally it would also overwrite
+		//- the national language here, since typically someone would enter the vernacular and delete the national language.
+		+field("auto")(data-book="end-of-book-label",data-default-languages="V N1", data-hint="Something to tell the reader viewer that this is the end of the book.")
+			+editable("en")
+				p The End
+			+editable("fr")
+				p FIN
+			+editable("es")
+				p Fin
+		+field-back-cover-branding
