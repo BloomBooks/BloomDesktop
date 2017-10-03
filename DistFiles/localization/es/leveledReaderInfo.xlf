@@ -7,10 +7,13 @@
         <target xml:lang="es-ES">Vocabulario</target>
         <note>ID: leveled.reader.vocabulary</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.start.simple">
+      <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="es-ES" state="translated">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A medida que los niños avanzan a los niveles superiores, puede utilizar palabras con más sílabas. Y puede comenzar a utilizar palabras menos conocidas. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciones cercanas, y por las ilustraciones.</target>
+        <target xml:lang="es-ES">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A medida que los niños avanzan a los niveles superiores, puede utilizar palabras con más sílabas. Y puede comenzar a utilizar palabras menos conocidas. Los niños deberían poder adivinar el significado de estas palabras por el contexto y las oraciones cercanas, y por las ilustraciones.</target>
         <note>ID: leveled.reader.start.simple</note>
+        <alt-trans>
+          <target xml:lang="es-ES">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A medida que los niños avanzan a los niveles superiores, puede utilizar palabras con más sílabas. Y puede comenzar a utilizar palabras menos conocidas. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciones cercanas, y por las ilustraciones.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a los niveles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciónes cercanas, y por las ilustraciones.</target>
         </alt-trans>
@@ -59,15 +62,18 @@
           <target xml:lang="es-ES">Repetición - repetición de partes del texto. Por ejemplo, usar la misma frase en cada página y simplemente cambiar una palabra en la frase</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.sequencing">
+      <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
-        <target xml:lang="es-ES" state="translated">Secuenciación - un cuento con una secuencia conocida como los días de la semana o que utiliza números en un patrón</target>
+        <target xml:lang="es-ES">Secuenciación - un cuento con una secuencia conocida como los días de la semana o que utiliza números en un patrón</target>
         <note>ID: leveled.reader.sequencing</note>
       </trans-unit>
       <trans-unit id="leveled.reader.building.sequence">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
-        <target xml:lang="es-ES" state="translated">Secuencia creciente - un cuento con un patrón que se repite y a lo cual se agrega en cada nueva página</target>
+        <target xml:lang="es-ES" state="translated">Secuencia creciente - un cuento con un patrón que se repite y se añade a cada nueva página</target>
         <note>ID: leveled.reader.building.sequence</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Secuencia creciente - un cuento con un patrón que se repite y a lo cual se agrega en cada nueva página</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.rhyme">
         <source xml:lang="en">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
@@ -77,7 +83,7 @@ Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
-        <target xml:lang="es-ES" state="translated">Rima - una historia con un patrón o secuencia que también incluye rima. Por ejemplo:
+        <target xml:lang="es-ES" state="translated">Rima - una cuento con un patrón o secuencia que también incluye rima. Por ejemplo:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre">El elefante lloraba
 porque no quería dormir
@@ -88,18 +94,34 @@ que la luna te va a oír</g>
       
       </target>
         <note>ID: leveled.reader.rhyme</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Rima - una historia con un patrón o secuencia que también incluye rima. Por ejemplo:
+        <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
+          <g id="genid-3" ctype="x-html-pre">El elefante lloraba
+porque no quería dormir
+Duerme elefantito mío
+que la luna te va a oír</g>
+          <g id="genid-4" ctype="x-html-div" html:class="author">- Adriano del Valle</g>
+        </g>
+      
+      </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations">
         <source xml:lang="en">Illustration Support</source>
         <target xml:lang="es-ES" state="translated">Apoyo para ilustraciones</target>
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.illustrations.help">
+      <trans-unit id="leveled.reader.illustrations.help" approved="yes">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
     </source>
-        <target xml:lang="es-ES" state="translated">Las ilustraciones pueden apoyar a un cuento. Las ilustraciones se relacionan al cuento en distintos modos a distintos <g id="genid-5" ctype="x-html-em"> niveles</g> y para diferentes tipos de lectores (véase abajo). Recuerde que en muchas culturas que no tienen mucho material impreso, puede ser difícil entender las ilustraciones complejas.    
+        <target xml:lang="es-ES">Las ilustraciones pueden ser material de apoyo para un cuento. Las ilustraciones se relacionan con el cuento en distintos modos en distintos <g id="genid-5" ctype="x-html-em"> niveles</g> y para diferentes tipos de lectores (ver abajo). Recuerde que en muchas culturas que no tienen mucho material impreso, puede ser difícil entender las ilustraciones complejas.    
     </target>
         <note>ID: leveled.reader.illustrations.help</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Las ilustraciones pueden apoyar a un cuento. Las ilustraciones se relacionan al cuento en distintos modos a distintos <g id="genid-5" ctype="x-html-em"> niveles</g> y para diferentes tipos de lectores (véase abajo). Recuerde que en muchas culturas que no tienen mucho material impreso, puede ser difícil entender las ilustraciones complejas.    
+    </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader">
         <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.
