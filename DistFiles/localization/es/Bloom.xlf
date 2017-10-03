@@ -1254,7 +1254,7 @@
       <trans-unit id="Download.TimeoutProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@BloomLibrary.org if you cannot get the download to work from your location.</source>
         <note>ID: Download.TimeoutProblemNotice</note>
-        <target xml:lang="es-ES">No fue posible descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar desde su ubicación, escríbanos a la dirección issues@bloomlibrary.org.</target>
+        <target xml:lang="es-ES">No fue posible descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar desde su ubicación, escríbanos a la dirección issues@BloomLibrary.org.</target>
         <alt-trans>
           <target xml:lang="es-ES">No se pudo descargar el libro: se demoró demasiado. Puede volver a intentarlo en otra oportunidad. Si no logra descargar de su ubicación, escríbanos a la dirección issues@bloomlibrary.org.</target>
         </alt-trans>
@@ -4544,10 +4544,13 @@
           <target xml:lang="es-ES">Lo sentimos, "{0}" se ha subido correctamente</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Gaurantee">
+      <trans-unit id="PublishTab.Upload.Gaurantee" approved="yes">
         <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>
         <note>ID: PublishTab.Upload.Gaurantee</note>
-        <target xml:lang="es-ES" state="translated">Al cargar, usted confirma que está de acuerdo con los términos de uso de la Biblioteca Bloom (Bloom Library) y concede los derechos que se describen.</target>
+        <target xml:lang="es-ES">Al cargar, usted confirma que está de acuerdo con los términos de uso de la Biblioteca Bloom (Bloom Library) y concede los derechos que se describen allí.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Al cargar, usted confirma que está de acuerdo con los términos de uso de la Biblioteca Bloom (Bloom Library) y concede los derechos que se describen.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Al cargar, usted confirma su acuerdo con los términos de uso de la biblioteca Bloom (Bloom Library) y concede los derechos que describe.</target>
         </alt-trans>
@@ -4645,7 +4648,7 @@
       <trans-unit id="PublishTab.Upload.Login.MustAgreeTerms" approved="yes">
         <source xml:lang="en">In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</source>
         <note>ID: PublishTab.Upload.Login.MustAgreeTerms</note>
-        <target xml:lang="es-ES">Para inscribir una cuenta nueva en BloomLibrary.org, debe marcar el cuadro que indica que esta}á de acuerdo con los términos de uso de BloomLibrary.</target>
+        <target xml:lang="es-ES">Para crear una cuenta nueva en BloomLibrary.org, debe marcar el cuadro que indica que está de acuerdo con los términos de uso de la Biblioteca Bloom (BloomLibrary).</target>
         <alt-trans>
           <target xml:lang="es-ES">Para inscribir una cuenta nueva en BloomLibrary.org, debe marcar el cuadro que indica que esta de acuerdo con los términos de uso de BloomLibrary.</target>
         </alt-trans>
@@ -4667,7 +4670,7 @@
       <trans-unit id="PublishTab.Upload.Login.NoRecordOfUser" approved="yes">
         <source xml:lang="en">We don't have a user on record with that email. Would you like to sign up?</source>
         <note>ID: PublishTab.Upload.Login.NoRecordOfUser</note>
-        <target xml:lang="es-ES">No tenemos un usuario registrado con ese correo electrónico. ¿Le gustaría inscribirse?</target>
+        <target xml:lang="es-ES">No tenemos un usuario registrado con ese correo electrónico. ¿Le gustaría crear una cuenta?</target>
         <alt-trans>
           <target xml:lang="es-ES">No tenemos un usuario registrado con ese correo electrónico. ¿Gustaría inscribirse?</target>
         </alt-trans>
@@ -4743,13 +4746,10 @@
           <target xml:lang="es-ES">Estamos enviando un correo electrónico a {0} con instrucciones para restablecer la contraseña</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Login.Signup">
+      <trans-unit id="PublishTab.Upload.Login.Signup" approved="yes">
         <source xml:lang="en">Sign up for Bloom Library.</source>
         <note>ID: PublishTab.Upload.Login.Signup</note>
-        <target xml:lang="es-ES" state="translated">Inscribirse en la Biblioteca Bloom (Bloom Library).</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Inscríbase en la Biblioteca Bloom (Bloom Library).</target>
-        </alt-trans>
+        <target xml:lang="es-ES">Crear una cuenta en la Biblioteca Bloom (Bloom Library).</target>
         <alt-trans>
           <target xml:lang="es-ES">Inscríbese a la Biblioteca Bloom (Bloom Library).</target>
         </alt-trans>
@@ -4791,10 +4791,13 @@ Desea seguir?</target>
         <note>ID: PublishTab.Upload.LoginLink</note>
         <target xml:lang="es-ES">Inicie sesión en BloomLibrary.org</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Logout">
+      <trans-unit id="PublishTab.Upload.Logout" approved="yes">
         <source xml:lang="en">Log out of BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.Logout</note>
-        <target xml:lang="es-ES" state="translated">Cerrar sesión de BloomLibrary.org</target>
+        <target xml:lang="es-ES">Cerrar sesión en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Cerrar sesión de BloomLibrary.org</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.MakingPdf" approved="yes">
         <source xml:lang="en">Making PDF Preview...</source>
@@ -4828,7 +4831,7 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.PleaseLogIn" approved="yes">
         <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
         <note>ID: PublishTab.Upload.PleaseLogIn</note>
-        <target xml:lang="es-ES">Por favor, inicie sesión en BloomLibrary.org (o inscríbase) antes de cargar</target>
+        <target xml:lang="es-ES">Por favor, inicie sesión en BloomLibrary.org (o cree una cuenta) antes de cargar</target>
         <alt-trans>
           <target xml:lang="es-ES">Por favor, ingrese a BloomLibrary.org (o inscribese) antes de cargar</target>
         </alt-trans>
@@ -4854,7 +4857,7 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.SignupLink" approved="yes">
         <source xml:lang="en">Sign up for BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignupLink</note>
-        <target xml:lang="es-ES">Inscribirse en BloomLibrary.org</target>
+        <target xml:lang="es-ES">Cree una cuenta en BloomLibrary.org</target>
         <alt-trans>
           <target xml:lang="es-ES">Inscríbase en BloomLibrary.org</target>
         </alt-trans>
