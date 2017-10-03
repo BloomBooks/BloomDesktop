@@ -2416,7 +2416,10 @@
       <trans-unit id="EditTab.TextBoxProperties.OtherLanguagesLabel">
         <source xml:lang="en">Use one of these for simple text boxes that are always in only one language.</source>
         <note>ID: EditTab.TextBoxProperties.OtherLanguagesLabel</note>
-        <target xml:lang="es-ES" state="translated">Utilice uno de estos para cuadros básicos de texto limitado a solamente un idioma.</target>
+        <target xml:lang="es-ES" state="translated">Utilice uno de estos para cuadros básicos de texto limitados a un idioma solamente.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Utilice uno de estos para cuadros básicos de texto limitado a solamente un idioma.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.RegionalLanguage" approved="yes">
         <source xml:lang="en">Regional Language</source>
@@ -3597,11 +3600,11 @@
         <note>ID: NewCollectionWizard.LocationPage.Province</note>
         <target xml:lang="es-ES">Provincia</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.NewBookPattern">
+      <trans-unit id="NewCollectionWizard.NewBookPattern" approved="yes">
         <source xml:lang="en">{0} Books</source>
         <note>ID: NewCollectionWizard.NewBookPattern</note>
         <note>The {0} is replaced by the name of the language.</note>
-        <target xml:lang="es-ES" state="translated">Libros en {0}</target>
+        <target xml:lang="es-ES">Libros en {0}</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.NewCollectionWindowTitle" approved="yes">
         <source xml:lang="en">Create New Bloom Collection</source>
@@ -3940,10 +3943,10 @@
           <target xml:lang="es-ES">Parado</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect">
+      <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect" approved="yes">
         <source xml:lang="en">Unable to connect to any Android device which has Bloom Reader.</source>
         <note>ID: PublishTab.Android.Usb.Progress.UnableToConnect</note>
-        <target xml:lang="es-ES" state="translated">No se puede conectar a ningún dispositivo Android que tenga el LectorBloom.</target>
+        <target xml:lang="es-ES">No es posible conectarse a ningún dispositivo Android que tenga el LectorBloom.</target>
         <alt-trans>
           <target xml:lang="es-ES">No se puede conectar a cualquier dispositivo Android que tiene el LectorBloom.</target>
         </alt-trans>
@@ -3957,10 +3960,13 @@
         <note>Button that tells Bloom to send the book to a device via USB cable.</note>
         <target xml:lang="es-ES">Conectar con cable USB</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Stop">
+      <trans-unit id="PublishTab.Android.Usb.Stop" approved="yes">
         <source xml:lang="en">Stop Trying</source>
         <note>ID: PublishTab.Android.Usb.Stop</note>
-        <target xml:lang="es-ES" state="translated">Deje de intentar</target>
+        <target xml:lang="es-ES">Dejar de intentar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Deje de intentar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest" approved="yes">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
