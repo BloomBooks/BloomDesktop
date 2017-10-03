@@ -6377,11 +6377,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">Desarrollo personal</target>
       </trans-unit>
-      <trans-unit id="Topics.Primer" sil:dynamic="true" approved="yes">
+      <trans-unit id="Topics.Primer" sil:dynamic="true">
         <source xml:lang="en">Primer</source>
         <note>ID: Topics.Primer</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES">Cartilla</target>
+        <target xml:lang="es-ES" state="translated">Cartilla</target>
       </trans-unit>
       <trans-unit id="Topics.Science" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Science</source>
@@ -6395,11 +6395,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">Espiritual</target>
       </trans-unit>
-      <trans-unit id="Topics.Story Book" sil:dynamic="true" approved="yes">
+      <trans-unit id="Topics.Story Book" sil:dynamic="true">
         <source xml:lang="en">Story Book</source>
         <note>ID: Topics.Story Book</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES">Libro de cuentos</target>
+        <target xml:lang="es-ES" state="translated">Libro de cuentos</target>
       </trans-unit>
       <trans-unit id="Topics.Tradition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Tradition</source>
