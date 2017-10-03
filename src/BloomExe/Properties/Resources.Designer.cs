@@ -19,7 +19,7 @@ namespace Bloom.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -227,9 +227,9 @@ namespace Bloom.Properties {
         ///		{id:&quot;parseSandbox&quot;, url: &quot;https://bloom-parse-server-develop.azurewebsites.net/parse/&quot;},
         ///		{id:&quot;librarySite&quot;, url: &quot;http://bloomlibrary.org&quot;},
         ///		{id:&quot;librarySiteSandbox&quot;, url: &quot;http://dev.bloomlibrary.org&quot;},
-        ///		{id:&quot;userSuggestions&quot;, url: &quot;http://bloombooks.uservoice.com/forums/153625-general&quot;},
-        ///		{id:&quot;issueTrackingSystem&quot;, url: &quot;https://silbloom.myjetbrains.com&quot;},
-        ///		{id:&quot;issueTrackingSystemBackend&quot;, ur [rest of string was truncated]&quot;;.
+        ///        {id:&quot;userSuggestions&quot;, url: &quot;https://community.software.sil.org/c/bloom/featurerequests&quot;},
+        ///        {id:&quot;support&quot;,&quot;url&quot;: &quot;https://community.software.sil.org/c/bloom&quot;},
+        ///		{id:&quot;issueTrackingSy [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string CurrentServiceUrls {
             get {
@@ -423,6 +423,16 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap help16x16 {
             get {
                 object obj = ResourceManager.GetObject("help16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap help16x16Darker {
+            get {
+                object obj = ResourceManager.GetObject("help16x16Darker", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
