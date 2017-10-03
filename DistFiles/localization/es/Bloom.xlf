@@ -2939,10 +2939,10 @@
           <target xml:lang="es-ES">Hacer un e-book que pueda reproducir las grabaciones y al mismo tiempo destacar el texto correspondiente.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox._bookSelection.LongestSentence" sil:dynamic="true">
         <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox._bookSelection.LongestSentence</note>
-        <target xml:lang="es-ES">oración más larga</target>
+        <target xml:lang="es-ES" state="translated">oración más larga</target>
         <alt-trans>
           <target xml:lang="es-ES">frase más larga</target>
         </alt-trans>
