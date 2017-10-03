@@ -2329,7 +2329,10 @@
       <trans-unit id="EditTab.StyleEditorTip" sil:dynamic="true">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.StyleEditorTip</note>
-        <target xml:lang="es-ES" state="translated">Ajuste el estilo del formato</target>
+        <target xml:lang="es-ES" state="translated">Ajustar el formato del estilo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ajuste el estilo del formato</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Ajuste el esitilo del formato</target>
         </alt-trans>
@@ -2413,10 +2416,10 @@
           <target xml:lang="es-ES">"Normal" mostrará el idioma local, y posiblemente regional o nacional, dependiendo de la configuraciones multilingües del libro. Utilize esto para casi todo contenido.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.OtherLanguagesLabel">
+      <trans-unit id="EditTab.TextBoxProperties.OtherLanguagesLabel" approved="yes">
         <source xml:lang="en">Use one of these for simple text boxes that are always in only one language.</source>
         <note>ID: EditTab.TextBoxProperties.OtherLanguagesLabel</note>
-        <target xml:lang="es-ES" state="translated">Utilice uno de estos para cuadros básicos de texto limitados a un idioma solamente.</target>
+        <target xml:lang="es-ES">Utilice uno de estos para cuadros básicos de texto que están en un idioma solamente.</target>
         <alt-trans>
           <target xml:lang="es-ES">Utilice uno de estos para cuadros básicos de texto limitado a solamente un idioma.</target>
         </alt-trans>
@@ -2996,10 +2999,10 @@
           <target xml:lang="es-ES">No puede acceder a {0}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Errors.CannotConnectToBloomServer">
+      <trans-unit id="Errors.CannotConnectToBloomServer" approved="yes">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
-        <target xml:lang="es-ES" state="translated">Bloom no pudo empezar su propio HTTP Listener, utilizado para comunicarse con el navegador integrado de Firefox. Si esto sucede a pesar de que acaba de reiniciar su computadora, debe pedir que alguien investigue si tiene instalado un producto cortafuegos agresivo. Es posible que tenga que desinstalar el cortafuegos para poder utilizar Bloom.</target>
+        <target xml:lang="es-ES">Bloom no pudo empezar su propio HTTP Listener, utilizado para comunicarse con el navegador integrado de Firefox. Si esto sucede a pesar de que acaba de reiniciar su computadora, debe pedir que alguien investigue si tiene instalado un producto cortafuegos agresivo. Es posible que tenga que desinstalar el cortafuegos para poder utilizar Bloom.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo empezar su propio HTTP listener que usa para comunicar con el busqueador itegrado de Firefox. Si esto sucede apesar de recien haber reiniciado su computadora, debe pedir que alguien investigue si tiene instalado un producto agresivo de cortafuegos. Es posible que tendra que desinstalar el cortafuegos para poder usar Bloom.</target>
         </alt-trans>
@@ -3053,7 +3056,7 @@
       <trans-unit id="Errors.ReportThisProblemButton">
         <source xml:lang="en">Report this problem to Bloom Support</source>
         <note>ID: Errors.ReportThisProblemButton</note>
-        <target xml:lang="es-ES" state="translated">Reportar este problema a Apoyo Bloom</target>
+        <target xml:lang="es-ES" state="translated">Reportar este problema al Apoyo Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Informar sobre este problema a Apoyo Bloom</target>
         </alt-trans>
@@ -3301,10 +3304,10 @@
         <note>ID: LayoutChoices.A4Landscape SideBySide</note>
         <target xml:lang="es-ES">A4Horizontal LadoALado</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A4Landscape SplitAcrossPages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A4Landscape SplitAcrossPages</source>
         <note>ID: LayoutChoices.A4Landscape SplitAcrossPages</note>
-        <target xml:lang="es-ES" state="translated">A4Horizontal DividirEntrePáginas</target>
+        <target xml:lang="es-ES">A4Horizontal DividirEntrePáginas</target>
         <alt-trans>
           <target xml:lang="es-ES">A4Horizontal DividirEnPáginas</target>
         </alt-trans>
@@ -3324,10 +3327,13 @@
         <note>ID: LayoutChoices.A5Portrait</note>
         <target xml:lang="es-ES">A5Vertical</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.A5Portrait BottomAlign" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.A5Portrait BottomAlign" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A5Portrait BottomAlign</source>
         <note>ID: LayoutChoices.A5Portrait BottomAlign</note>
-        <target xml:lang="es-ES" state="translated">A5Vertical AlinearAbajo</target>
+        <target xml:lang="es-ES">A5Vertical AlinearDebajo</target>
+        <alt-trans>
+          <target xml:lang="es-ES">A5Vertical AlinearAbajo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LayoutChoices.A6Landscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A6Landscape</source>
@@ -3354,10 +3360,13 @@
         <note>ID: LayoutChoices.Device16x9Portrait</note>
         <target xml:lang="es-ES">Dispositivo16x9Vertical</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.HalfLetterPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">HalfLetterPortrait</source>
         <note>ID: LayoutChoices.HalfLetterPortrait</note>
-        <target xml:lang="es-ES" state="translated">TamañoMedioCartaVertical</target>
+        <target xml:lang="es-ES">TamañoMediaCartaVertical</target>
+        <alt-trans>
+          <target xml:lang="es-ES">TamañoMedioCartaVertical</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">MedioTamañoCartaVertical</target>
         </alt-trans>
@@ -3372,10 +3381,13 @@
         <note>ID: LayoutChoices.LetterPortrait</note>
         <target xml:lang="es-ES">CartaVertical</target>
       </trans-unit>
-      <trans-unit id="LayoutChoices.QuarterLetterLandscape" sil:dynamic="true">
+      <trans-unit id="LayoutChoices.QuarterLetterLandscape" sil:dynamic="true" approved="yes">
         <source xml:lang="en">QuarterLetterLandscape</source>
         <note>ID: LayoutChoices.QuarterLetterLandscape</note>
-        <target xml:lang="es-ES" state="translated">TamañoCuartoCartaHorizontal</target>
+        <target xml:lang="es-ES">TamañoCuartodeCartaHorizontal</target>
+        <alt-trans>
+          <target xml:lang="es-ES">TamañoCuartoCartaHorizontal</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">QuartoTamañoCartaHorizontal</target>
         </alt-trans>
@@ -3935,10 +3947,10 @@
         <note>{0} is a book title</note>
         <target xml:lang="es-ES">Enviando "{0}" a su dispositivo Android...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.Stopped">
+      <trans-unit id="PublishTab.Android.Usb.Progress.Stopped" approved="yes">
         <source xml:lang="en">Stopped</source>
         <note>ID: PublishTab.Android.Usb.Progress.Stopped</note>
-        <target xml:lang="es-ES" state="translated">Detenido</target>
+        <target xml:lang="es-ES">Detenido</target>
         <alt-trans>
           <target xml:lang="es-ES">Parado</target>
         </alt-trans>
@@ -4022,10 +4034,10 @@
         <note>{0} is the name of the book, {1} is the name of the device</note>
         <target xml:lang="es-ES">Enviando "{0}" al dispositivo {1}</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.Stopped">
+      <trans-unit id="PublishTab.Android.Wifi.Progress.Stopped" approved="yes">
         <source xml:lang="en">Stopped Advertising.</source>
         <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
-        <target xml:lang="es-ES" state="translated">Paró de anunciar.</target>
+        <target xml:lang="es-ES">Paró de anunciar.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1" approved="yes">
         <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books over WiFi'.</source>
