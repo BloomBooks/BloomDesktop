@@ -169,9 +169,9 @@ que la luna te va a oír</g>
         <target xml:lang="es-ES">Elección del tema</target>
         <note>ID: leveled.reader.topic.choice</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice.discussion">
+      <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
         <source xml:lang="en">Books can be on many topics. When developing books for beginning readers, choose topics that are familiar to them. Readers will be eager to read and will read more if they are reading about things they find interesting and familiar. For more experienced readers, topics can include information that the reader is not already familiar with.</source>
-        <target xml:lang="es-ES" state="translated">Los libros pueden tratar de muchos temas. En el desarrollo de libros para nuevos lectores, elija temas que les son familiares. Los lectores desearán leer y leerán más si leen algo que les parece interesante y familiar. Para los lectores más avanzados, se puede incluir información no conocida por el lector.</target>
+        <target xml:lang="es-ES">Los libros pueden tratar de muchos temas. En el desarrollo de libros para los lectores incipientes, elija temas que les son familiares. Los lectores desearán leer y leerán más si leen algo que les parece interesante y familiar. Para los lectores más avanzados, se puede incluir información no conocida por el lector.</target>
         <note>ID: leveled.reader.topic.choice.discussion</note>
         <alt-trans>
           <target xml:lang="es-ES">Los libros pueden tratar de muchos temas. En el desarrollo de libros para nuevos lectores, elige temas que son familiares. Los lectores desearán leer y leerán más si leyen algo que les parece interesante y familiar. Para los lectores más avanzados, se puede incluir información no conocido al lector.</target>
@@ -191,12 +191,16 @@ que la luna te va a oír</g>
       </target>
         <note>ID: leveled.reader.topic.choice.early.reader</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice.fluent.reader">
+      <trans-unit id="leveled.reader.topic.choice.fluent.reader" approved="yes">
         <source xml:lang="en">For <g id="genid-11" ctype="x-html-strong">Fluent Readers</g> the concepts can expand beyond what is familiar, be more varied, and be abstract.
       </source>
-        <target xml:lang="es-ES" state="translated">Para los <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> los conceptos no tienen que ser familiares, y pueden ser más variados y abstractos.      
+        <target xml:lang="es-ES">Para los <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> los conceptos no tienen que ser familiares, pueden ser más variados y pueden ser abstractos.      
       </target>
         <note>ID: leveled.reader.topic.choice.fluent.reader</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Para los <g id="genid-11" ctype="x-html-strong">Lectores fluidos</g> los conceptos no tienen que ser familiares, y pueden ser más variados y abstractos.      
+      </target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
