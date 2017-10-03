@@ -4,8 +4,11 @@
     <body>
       <trans-unit id="training.videos">
         <source xml:lang="en">Bloom Training Videos</source>
-        <target xml:lang="es-ES" state="translated">Vídeos de capacitación Bloom</target>
+        <target xml:lang="es-ES" state="translated">Vídeos de capacitación de Bloom</target>
         <note>ID: training.videos</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Vídeos de capacitación Bloom</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Videos de capacitación Bloom</target>
         </alt-trans>
