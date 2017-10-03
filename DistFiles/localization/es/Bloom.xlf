@@ -835,7 +835,10 @@
       <trans-unit id="CollectionTab.CollectionMenu.showHistory">
         <source xml:lang="en">Collection History...</source>
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>
-        <target xml:lang="es-ES" state="translated">Historia de la colección...</target>
+        <target xml:lang="es-ES" state="translated">Historial de la colección...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Historia de la colección...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.showNotes" approved="yes">
         <source xml:lang="en">Collection Notes...</source>
@@ -2002,10 +2005,13 @@
           <target xml:lang="es-ES">Créditos ausentes:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true">
+      <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="es-ES" state="translated">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
+        <target xml:lang="es-ES">Los dibujos de líneas simples se ven mejor. En vez de usar esta página, también puede crear su propia thumbnail.png (miniatura) y marcar la opción de sólo lectura (Read-only) para que Bloom no escriba sobre la miniatura.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Click to choose topic</source>
@@ -3381,10 +3387,10 @@
         <note>ID: LicenseDialog._acceptButton</note>
         <target xml:lang="es-ES">Acepto las condiciones del acuerdo de licencia</target>
       </trans-unit>
-      <trans-unit id="LoginDialog.AgreeToTerms">
+      <trans-unit id="LoginDialog.AgreeToTerms" approved="yes">
         <source xml:lang="en">I agree to the Bloom Library's Terms of Use</source>
         <note>ID: LoginDialog.AgreeToTerms</note>
-        <target xml:lang="es-ES" state="translated">Acepto los términos de uso de la Biblioteca Bloom</target>
+        <target xml:lang="es-ES">Acepto los términos de uso de la Biblioteca Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Acepto los términos de uso de la biblioteca Bloom</target>
         </alt-trans>
@@ -4740,7 +4746,10 @@
       <trans-unit id="PublishTab.Upload.Login.Signup">
         <source xml:lang="en">Sign up for Bloom Library.</source>
         <note>ID: PublishTab.Upload.Login.Signup</note>
-        <target xml:lang="es-ES" state="translated">Inscríbase en la Biblioteca Bloom (Bloom Library).</target>
+        <target xml:lang="es-ES" state="translated">Inscribirse en la Biblioteca Bloom (Bloom Library).</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Inscríbase en la Biblioteca Bloom (Bloom Library).</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Inscríbese a la Biblioteca Bloom (Bloom Library).</target>
         </alt-trans>
@@ -4816,10 +4825,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Lo sentimos, esta versión de escritorio de Bloom no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.PleaseLogIn">
+      <trans-unit id="PublishTab.Upload.PleaseLogIn" approved="yes">
         <source xml:lang="en">Please log in to BloomLibrary.org (or sign up) before uploading</source>
         <note>ID: PublishTab.Upload.PleaseLogIn</note>
-        <target xml:lang="es-ES" state="translated">Por favor, inicie sesión en BloomLibrary.org (o inscríbase) antes de cargar</target>
+        <target xml:lang="es-ES">Por favor, inicie sesión en BloomLibrary.org (o inscríbase) antes de cargar</target>
         <alt-trans>
           <target xml:lang="es-ES">Por favor, ingrese a BloomLibrary.org (o inscribese) antes de cargar</target>
         </alt-trans>
@@ -4842,10 +4851,13 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Configure esto desde la pestaña Editar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignupLink">
+      <trans-unit id="PublishTab.Upload.SignupLink" approved="yes">
         <source xml:lang="en">Sign up for BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignupLink</note>
-        <target xml:lang="es-ES" state="translated">Inscríbase en BloomLibrary.org</target>
+        <target xml:lang="es-ES">Inscribirse en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Inscríbase en BloomLibrary.org</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Inscríbese en BloomLibrary.org</target>
         </alt-trans>
@@ -6252,11 +6264,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">Agricultura</target>
       </trans-unit>
-      <trans-unit id="Topics.Animal Stories" sil:dynamic="true">
+      <trans-unit id="Topics.Animal Stories" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Animal Stories</source>
         <note>ID: Topics.Animal Stories</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Cuentos de animales</target>
+        <target xml:lang="es-ES">Cuentos de animales</target>
       </trans-unit>
       <trans-unit id="Topics.Business" sil:dynamic="true">
         <source xml:lang="en">Business</source>
@@ -6350,11 +6362,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">Espiritual</target>
       </trans-unit>
-      <trans-unit id="Topics.Story Book" sil:dynamic="true">
+      <trans-unit id="Topics.Story Book" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Story Book</source>
         <note>ID: Topics.Story Book</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Libro de cuentos</target>
+        <target xml:lang="es-ES">Libro de cuentos</target>
       </trans-unit>
       <trans-unit id="Topics.Tradition" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Tradition</source>
@@ -6362,11 +6374,11 @@ Desea seguir?</target>
         <note>shows in the topics chooser in the edit tab</note>
         <target xml:lang="es-ES">Tradición</target>
       </trans-unit>
-      <trans-unit id="Topics.Traditional Story" sil:dynamic="true">
+      <trans-unit id="Topics.Traditional Story" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Traditional Story</source>
         <note>ID: Topics.Traditional Story</note>
         <note>shows in the topics chooser in the edit tab</note>
-        <target xml:lang="es-ES" state="translated">Cuento tradicional</target>
+        <target xml:lang="es-ES">Cuento tradicional</target>
         <alt-trans>
           <target xml:lang="es-ES">Cuentos folklórico</target>
         </alt-trans>
