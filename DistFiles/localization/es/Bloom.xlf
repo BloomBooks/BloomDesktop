@@ -4477,7 +4477,10 @@
       <trans-unit id="PublishTab.ShowCropMarks">
         <source xml:lang="en">Crop Marks</source>
         <note>ID: PublishTab.ShowCropMarks</note>
-        <target xml:lang="es-ES" state="translated">Marcas de recorte</target>
+        <target xml:lang="es-ES" state="translated">Marcas de corte</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Marcas de recorte</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Acknowledgments">
         <source xml:lang="en">Acknowledgments</source>
