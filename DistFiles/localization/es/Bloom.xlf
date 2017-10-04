@@ -3802,10 +3802,10 @@
           <target xml:lang="es-ES">Enviar a través de cable USB</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseWifi">
+      <trans-unit id="PublishTab.Android.ChooseWifi" approved="yes">
         <source xml:lang="en">Serve on WiFi Network</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
-        <target xml:lang="es-ES" state="translated">Compartir en red WiFi</target>
+        <target xml:lang="es-ES">Compartir en red WiFi</target>
         <alt-trans>
           <target xml:lang="es-ES">Entregar en red WiFi</target>
         </alt-trans>
@@ -4067,11 +4067,11 @@
           <target xml:lang="es-ES">Puede hacer esto en tantos dispositivos que guste. Asegure que cada dispositivo está conectado a la misma red que esta computadora.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Start">
+      <trans-unit id="PublishTab.Android.Wifi.Start" approved="yes">
         <source xml:lang="en">Start Serving</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-        <target xml:lang="es-ES" state="translated">Comenzar a compartir</target>
+        <target xml:lang="es-ES">Comenzar a compartir</target>
         <alt-trans>
           <target xml:lang="es-ES">Comenzar a entregar</target>
         </alt-trans>
@@ -4079,11 +4079,14 @@
           <target xml:lang="es-ES">Comenzar a servir</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Stop">
+      <trans-unit id="PublishTab.Android.Wifi.Stop" approved="yes">
         <source xml:lang="en">Stop Serving</source>
         <note>ID: PublishTab.Android.Wifi.Stop</note>
         <note>Button that tells Bloom to stop offering this book on the wifi network.</note>
-        <target xml:lang="es-ES" state="translated">Parar de compartir</target>
+        <target xml:lang="es-ES">Dejar de compartir</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Parar de compartir</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Parar de entregar</target>
         </alt-trans>
