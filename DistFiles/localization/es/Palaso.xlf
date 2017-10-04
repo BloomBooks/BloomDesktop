@@ -5,7 +5,10 @@
       <trans-unit id="AboutDialog.BuiltOnDate">
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
-        <target xml:lang="es-ES" state="translated">Compilado el {0}</target>
+        <target xml:lang="es-ES" state="translated">Compilado en {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Compilado el {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="AboutDialog.NoUpdates">
         <source xml:lang="en">No Updates</source>
