@@ -7,7 +7,6 @@ using Bloom.Properties;
 using Bloom.Publish.BloomLibrary;
 using L10NSharp;
 using SIL.Code;
-using SIL.Reporting;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -57,7 +56,7 @@ namespace Bloom.WebLibraryIntegration
 			catch (Exception)
 			{
 				MessageBox.Show(this, LocalizationManager.GetString("PublishTab.Upload.Login.LoginConnectFailed", "Bloom could not connect to the server to verify your login. Please check your network connection."),
-					LocalizationManager.GetString("PublishTab.Upload.Login.LoginFailed", "Login failed"),
+					LoginFailureString,
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
 				return;
@@ -70,13 +69,21 @@ namespace Bloom.WebLibraryIntegration
 			else
 			{
 				MessageBox.Show(this, LocalizationManager.GetString("PublishTab.Upload.Login.PasswordMismatch", "Password and user ID did not match"),
-					LocalizationManager.GetString("PublishTab.Upload.Login.LoginFailed", "Login failed"),
+					LoginFailureString,
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
 			}
 		}
 
-		private string LoginOrSignupConnectionFailedString
+
+		private static string LoginFailureString
+		{
+			get
+			{
+				return LocalizationManager.GetString("PublishTab.Upload.Login.LoginFailed", "Login failed");
+			}
+		}
+		private static string LoginOrSignupConnectionFailedString
 		{
 			get
 			{
@@ -103,7 +110,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, LoginFailureString, LoginOrSignupConnectionFailedString, e);
 				return;
 			}
 			if (userExists)
@@ -128,7 +135,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, LoginFailureString, LoginOrSignupConnectionFailedString, e);
 			}
 		}
 
