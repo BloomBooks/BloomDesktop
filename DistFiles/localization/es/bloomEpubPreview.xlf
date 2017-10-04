@@ -2,12 +2,16 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="bloomEpubPreview-en.html" datatype="html" source-language="en" target-language="es-ES">
     <body>
-      <trans-unit id="epubpreview.describe" approved="yes">
+      <trans-unit id="epubpreview.describe">
         <source xml:lang="en">This is an <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) version of your book. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">It contains audio, so that new readers can listen as they read.</g>
       </source>
-        <target xml:lang="es-ES">Esto es un <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book), una versión electrónica de su libro. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Contiene audio para que los lectores nuevos pueden escucharlo mientras que lo leen.</g>      
+        <target xml:lang="es-ES" state="translated">Esto es un <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book), una versión electrónica de su libro. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Contiene audio para que los lectores nuevos puedan escucharlo mientras que lo leen.</g>      
       </target>
         <note>ID: epubpreview.describe</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Esto es un <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book), una versión electrónica de su libro. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Contiene audio para que los lectores nuevos pueden escucharlo mientras que lo leen.</g>      
+      </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esto es una versión <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) de su libro. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Contiene audio para que lectores iniciales pueden escucharlo mientras que lo leyan.</g>      
       </target>
@@ -118,9 +122,9 @@
           <target xml:lang="es-ES">Para escuchar este libro sonoro con Gitden en su celular o dispositivo, debe desactivar la función de "texto a voz". En seguida los controles de audio serán mostradas.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="epubpreview.make.it.talk">
+      <trans-unit id="epubpreview.make.it.talk" approved="yes">
         <source xml:lang="en">Make it Talk</source>
-        <target xml:lang="es-ES" state="translated">Reproducir audio</target>
+        <target xml:lang="es-ES">Reproducir audio</target>
         <note>ID: epubpreview.make.it.talk</note>
         <alt-trans>
           <target xml:lang="es-ES">Hacerlo hablar</target>
@@ -151,9 +155,9 @@
           <target xml:lang="es-ES">¡Escribenos!</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="epubpreview.use.help.report">
+      <trans-unit id="epubpreview.use.help.report" approved="yes">
         <source xml:lang="en">Are you interested in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!</source>
-        <target xml:lang="es-ES" state="translated">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos? ¿Hay algo que podemos hacer antes para hacerlo mas útil para usted? Por favor, utilice la función Ayuda: Reportar un Problema para compartirnos sus comentarios. ¡Gracias!</target>
+        <target xml:lang="es-ES">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos? ¿Hay algo que podemos hacer antes para hacerlo mas útil para usted? Por favor, utilice la función Ayuda: Reportar un Problema para compartirnos sus comentarios. ¡Gracias!</target>
         <note>ID: epubpreview.use.help.report</note>
         <alt-trans>
           <target xml:lang="es-ES">¿Desea distribuir libros Bloom para uso en celulares y otros lectores electrónicos?
