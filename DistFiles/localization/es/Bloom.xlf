@@ -1844,7 +1844,10 @@
       <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.FormatDialogTip</note>
-        <target xml:lang="es-ES">Ajuste el estilo del formato</target>
+        <target xml:lang="es-ES">Ajustar el estilo del formato</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Ajuste el estilo del formato</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Ajuste el el estilo del formato</target>
         </alt-trans>
@@ -2670,12 +2673,12 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.FoThisLevel</note>
         <target xml:lang="es-ES">Para este nivel</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
         <source xml:lang="en">Formatting</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Formatting</note>
-        <target xml:lang="es-ES">Formateando</target>
+        <target xml:lang="es-ES" state="translated">Formateo</target>
         <alt-trans>
-          <target xml:lang="es-ES">Formateo</target>
+          <target xml:lang="es-ES">Formateando</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true" approved="yes">
