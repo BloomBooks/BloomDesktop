@@ -160,10 +160,10 @@
           <target xml:lang="es-ES">Art Of Reading (Arte de la lectura)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.Camera">
+      <trans-unit id="ImageToolbox.Camera" approved="yes">
         <source xml:lang="en">Camera</source>
         <note>ID: ImageToolbox.Camera</note>
-        <target xml:lang="es-ES" state="translated">Cámara</target>
+        <target xml:lang="es-ES">Cámara</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.CopyExemplarMetadata">
         <source xml:lang="en">Use {0}</source>
