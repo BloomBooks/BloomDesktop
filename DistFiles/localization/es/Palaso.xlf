@@ -503,25 +503,25 @@
         <note>ID: MetadataDisplay.CreatorLabel</note>
         <target xml:lang="es-ES">Creador</target>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.LicenseInfo">
+      <trans-unit id="MetadataDisplay.LicenseInfo" approved="yes">
         <source xml:lang="en">License Info</source>
         <note>ID: MetadataDisplay.LicenseInfo</note>
-        <target xml:lang="es-ES" state="translated">Información de la licencia</target>
+        <target xml:lang="es-ES">Información de la licencia</target>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc.</target>
+        <target xml:lang="es-ES">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc.</target>
         <alt-trans>
           <target xml:lang="es-ES">Debe mantener el derecho de autor y créditos de autores, ilustradores, etc...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Puede hacer uso comercial de esta obra.</target>
+        <target xml:lang="es-ES">Puede hacer uso comercial de esta obra.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work.</source>
