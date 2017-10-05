@@ -1377,7 +1377,10 @@
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
         <note>ID: EditTab.BookContextMenu.openHtmlInBrowser</note>
-        <target xml:lang="es-ES" state="translated">Abrir el HTML utilizado para hacer este PDF, en Firefox (debe estar en camino)</target>
+        <target xml:lang="es-ES" state="translated">Abrir el HTML utilizado para hacer este PDF, en Firefox (debe estar en la ruta)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir el HTML utilizado para hacer este PDF, en Firefox (debe estar en camino)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Abrir el HTML utilizado para hacer este PDF, en Chrome (debe estar en camino)</target>
         </alt-trans>
