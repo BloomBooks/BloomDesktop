@@ -2,10 +2,10 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Palaso.dll" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="es-ES">
     <body>
-      <trans-unit id="AboutDialog.BuiltOnDate">
+      <trans-unit id="AboutDialog.BuiltOnDate" approved="yes">
         <source xml:lang="en">Built on {0}</source>
         <note>ID: AboutDialog.BuiltOnDate</note>
-        <target xml:lang="es-ES" state="translated">Compilado en {0}</target>
+        <target xml:lang="es-ES">Compilado en {0}</target>
         <alt-trans>
           <target xml:lang="es-ES">Compilado el {0}</target>
         </alt-trans>
@@ -45,7 +45,10 @@
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="es-ES" state="translated">Se está ejecutando otra copia de {0}. Si no lo encuentra, reinicie su computadora.</target>
+        <target xml:lang="es-ES" state="translated">Ya se está ejecutando otra copia de {0}. Si no la encuentra, reinicie su computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Se está ejecutando otra copia de {0}. Si no lo encuentra, reinicie su computadora.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Otra copia de {0} ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</target>
         </alt-trans>
