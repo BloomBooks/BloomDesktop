@@ -73,12 +73,12 @@
           <target xml:lang="es-ES">Hubo un problema al iniciar {0} que puede que tenga que reiniciar el equipo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.WaitingFinish.General">
+      <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="es-ES" state="translated">Esperando que otra aplicación termine...</target>
+        <target xml:lang="es-ES">Esperando a otra aplicación para finalizar...</target>
         <alt-trans>
-          <target xml:lang="es-ES">Esperando a otra aplicación para finalizar...</target>
+          <target xml:lang="es-ES">Esperando que otra aplicación termine...</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific">
@@ -185,7 +185,7 @@
       <trans-unit id="ImageToolbox.DownloadArtOfReading" approved="yes">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="es-ES">Descargar el instalador de Arte de la Lectura</target>
+        <target xml:lang="es-ES">Descargar el instalador de Arte de la Lectura (Art of Reading)</target>
         <alt-trans>
           <target xml:lang="es-ES">Descargar el instalador de Arte de la lectura</target>
         </alt-trans>
@@ -195,10 +195,13 @@
         <note>ID: ImageToolbox.EditMetadataLink</note>
         <target xml:lang="es-ES">Editar...</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.EnterSearchTerms">
+      <trans-unit id="ImageToolbox.EnterSearchTerms" approved="yes">
         <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
         <note>ID: ImageToolbox.EnterSearchTerms</note>
-        <target xml:lang="es-ES" state="translated">Esto es la galería de 'arte de la lectura' (Art of Reading). En el cuadro superior, escriba lo que está buscando. A continuación pulse INTRO. Puede escribir palabras en inglés e indonesio.</target>
+        <target xml:lang="es-ES">Esto es la galería de 'Arte de la Lectura' (Art of Reading). En el cuadro superior, escriba lo que está buscando. A continuación pulse INTRO. Puede escribir palabras en inglés e indonesio.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esto es la galería de 'arte de la lectura' (Art of Reading). En el cuadro superior, escriba lo que está buscando. A continuación pulse INTRO. Puede escribir palabras en inglés e indonesio.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta es la galería de "Art of Reading" (Arte de la lectura). En el cuadro anterior, escriba lo que está buscando, a continuación, pulse ENTER. Puede escribir palabras en inglés e indonesio.</target>
         </alt-trans>
@@ -255,7 +258,7 @@
       <trans-unit id="ImageToolbox.InstallArtOfReading" approved="yes">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="es-ES">Instalar el paquete de Arte de la Lectura (esto se puede demorar)</target>
+        <target xml:lang="es-ES">Instalar el paquete de Arte de la Lectura (Art of Reading), (esto puede tardar)</target>
         <alt-trans>
           <target xml:lang="es-ES">Instalar el paquete de Arte de la lectura (puede demorar)</target>
         </alt-trans>
@@ -266,23 +269,32 @@
         <note>The {0} will be replaced by the number of matching images</note>
         <target xml:lang="es-ES">Encontró {0} imágenes</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.NewMultilingual">
+      <trans-unit id="ImageToolbox.NewMultilingual" approved="yes">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</source>
         <note>ID: ImageToolbox.NewMultilingual</note>
-        <target xml:lang="es-ES" state="translated">¿Sabía que hay una nueva versión de esta colección que le permite buscar en árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés, o suajili? Es gratuito y disponible para descargar.</target>
+        <target xml:lang="es-ES">¿Sabía que hay una nueva versión de esta colección que le permite buscar en arábe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés, o suajili? Es gratuita y está disponible para ser descargada.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Sabía que hay una nueva versión de esta colección que le permite buscar en árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés, o suajili? Es gratuito y disponible para descargar.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">¿Sabía que hay una nueva versión de esta colección que le permite buscar en árabe, bengalí, chino, inglés, francés, indonesio, hindi, portugués, español, tailandés o suajili? Es gratuito y disponible para descargar.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.NoArtOfReading">
+      <trans-unit id="ImageToolbox.NoArtOfReading" approved="yes">
         <source xml:lang="en">This computer doesn't appear to have the 'Art Of Reading' gallery installed yet.</source>
         <note>ID: ImageToolbox.NoArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Esta computadora no parece tener instalada la galería de 'Arte de la lectura' (Art of Reading).</target>
+        <target xml:lang="es-ES">Esta computadora no parece tener instalada la galería de 'Arte de la Lectura' (Art of Reading).</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta computadora no parece tener instalada la galería de 'Arte de la lectura' (Art of Reading).</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.NoMatchingImages">
+      <trans-unit id="ImageToolbox.NoMatchingImages" approved="yes">
         <source xml:lang="en">Found no matching images</source>
         <note>ID: ImageToolbox.NoMatchingImages</note>
-        <target xml:lang="es-ES" state="translated">No se encontraron imágenes que coinciden</target>
+        <target xml:lang="es-ES">No se encontraron imágenes que coincidan</target>
+        <alt-trans>
+          <target xml:lang="es-ES">No se encontraron imágenes que coinciden</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">No se encontraron ilustraciones que coinciden</target>
         </alt-trans>
@@ -290,35 +302,38 @@
           <target xml:lang="es-ES">No se encontraron ilustraciones que coincidan</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.PictureFiles">
+      <trans-unit id="ImageToolbox.PictureFiles" approved="yes">
         <source xml:lang="en">picture files</source>
         <note>ID: ImageToolbox.PictureFiles</note>
         <note>Shown in the file-picking dialog to describe what kind of files the dialog is filtering for</note>
-        <target xml:lang="es-ES" state="translated">archivos de imágenes</target>
+        <target xml:lang="es-ES">archivos de imágenes</target>
         <alt-trans>
           <target xml:lang="es-ES">archivos de ilustraciones</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice">
+      <trans-unit id="ImageToolbox.ProblemGettingImageFromDevice" approved="yes">
         <source xml:lang="en">Problem Getting Image</source>
         <note>ID: ImageToolbox.ProblemGettingImageFromDevice</note>
-        <target xml:lang="es-ES" state="translated">No se pudo obtener la imagen</target>
+        <target xml:lang="es-ES">No se pudo obtener la imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Problema obteniendo la ilustración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.ProblemLoadingImage">
+      <trans-unit id="ImageToolbox.ProblemLoadingImage" approved="yes">
         <source xml:lang="en">Sorry, there was a problem loading that image.</source>
         <note>ID: ImageToolbox.ProblemLoadingImage</note>
-        <target xml:lang="es-ES" state="translated">Lastimosamente, no se pudo cargar esa imagen.</target>
+        <target xml:lang="es-ES">Lastimosamente, no se pudo cargar esa imagen.</target>
         <alt-trans>
           <target xml:lang="es-ES">Lo sentimos, hubo un problema al cargar la ilustración.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.PromptForMissingMetadata">
+      <trans-unit id="ImageToolbox.PromptForMissingMetadata" approved="yes">
         <source xml:lang="en">This image does not know:\n\nWho created it?\nWho can use it?</source>
         <note>ID: ImageToolbox.PromptForMissingMetadata</note>
-        <target xml:lang="es-ES" state="translated">Esta imagen no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
+        <target xml:lang="es-ES">Esta imagen no sabe:\n\n¿Quién la creó?\n¿Quién puede utilizarla?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta imagen no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta ilustración no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
         </alt-trans>
@@ -326,15 +341,18 @@
           <target xml:lang="es-ES">La ilustración no sabe:\n\n¿Quién lo creó?\n¿Quién puede utilizarlo?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.Scanner">
+      <trans-unit id="ImageToolbox.Scanner" approved="yes">
         <source xml:lang="en">Scanner</source>
         <note>ID: ImageToolbox.Scanner</note>
-        <target xml:lang="es-ES" state="translated">Escáner</target>
+        <target xml:lang="es-ES">Escáner</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.SearchArtOfReading">
+      <trans-unit id="ImageToolbox.SearchArtOfReading" approved="yes">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Búsqueda de la galería de la Arte de la lectura</target>
+        <target xml:lang="es-ES">Búsqueda de la galería de Arte de la Lectura (Art of Reading)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Búsqueda de la galería de la Arte de la lectura</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ImageToolbox.SearchLanguage">
         <source xml:lang="en">The search box is currently set to {0}</source>
@@ -342,20 +360,23 @@
         <note>The {0} will be replaced by the name of the language used in the searches.</note>
         <target xml:lang="es-ES" state="translated">Actualmente el cuadro de búsqueda esta en {0}</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.SetUpMetadataLink">
+      <trans-unit id="ImageToolbox.SetUpMetadataLink" approved="yes">
         <source xml:lang="en">Set up metadata...</source>
         <note>ID: ImageToolbox.SetUpMetadataLink</note>
-        <target xml:lang="es-ES" state="translated">Configurar metadatos...</target>
+        <target xml:lang="es-ES">Configurar metadatos...</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.AlternateNamesHeader">
+      <trans-unit id="LanguageLookup.AlternateNamesHeader" approved="yes">
         <source xml:lang="en">Other Names</source>
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
-        <target xml:lang="es-ES" state="translated">Otros nombres</target>
+        <target xml:lang="es-ES">Otros nombres</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2" approved="yes">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="es-ES" state="translated">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no enumerado", que será seleccionado ahora.</target>
+        <target xml:lang="es-ES">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no Enumerado", esta opción será seleccionada ahora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no enumerado", que será seleccionado ahora.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
         <source xml:lang="en">Ethnologue.com</source>
@@ -431,10 +452,13 @@
         <note>ID: LanguageLookup._cannotFindLanguageLink</note>
         <target xml:lang="es-ES" state="translated">¿No encuentra su idioma?</target>
       </trans-unit>
-      <trans-unit id="MemoryWarning">
+      <trans-unit id="MemoryWarning" approved="yes">
         <source xml:lang="en">Unfortunately, {0} is starting to get short of memory, and may soon slow down or experience other problems. We recommend that you quit and restart it when convenient.</source>
         <note>ID: MemoryWarning</note>
-        <target xml:lang="es-ES" state="translated">Desafortunadamente, {0} no tiene memoria suficiente y podrá desaceler o experimentar otros problemas. Recomendamos que cierre y reinicie cuando sea conveniente.</target>
+        <target xml:lang="es-ES">Desafortunadamente, {0} no tiene memoria suficiente y podrá desacelerarse o experimentar otros problemas. Recomendamos que cierre y reinicie cuando sea conveniente.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Desafortunadamente, {0} no tiene memoria suficiente y podrá desaceler o experimentar otros problemas. Recomendamos que cierre y reinicie cuando sea conveniente.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Desafortunadamente, {0} está empezando a quedarse sin memoria, y pronto puede ralentizar o si experimenta otros problemas. Le recomendamos que cierre y reinicie.</target>
         </alt-trans>
