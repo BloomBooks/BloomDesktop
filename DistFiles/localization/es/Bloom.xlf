@@ -1374,10 +1374,13 @@
         <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
         <target xml:lang="es-ES">Dos idiomas</target>
       </trans-unit>
-      <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
+      <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser" approved="yes">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
         <note>ID: EditTab.BookContextMenu.openHtmlInBrowser</note>
-        <target xml:lang="es-ES" state="translated">Abrir el HTML utilizado para hacer este PDF, en Firefox (debe estar en la ruta)</target>
+        <target xml:lang="es-ES">Abrir el HTML utilizado para crear este PDF, en Firefox (debe estar la en ruta)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir el HTML utilizado para hacer este PDF, en Firefox (debe estar en la ruta)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Abrir el HTML utilizado para hacer este PDF, en Firefox (debe estar en camino)</target>
         </alt-trans>
@@ -2104,10 +2107,10 @@
         <note>ID: EditTab.Instructions.DeleteAllowed</note>
         <target xml:lang="es-ES">Puede modificar o eliminar esta página.</target>
       </trans-unit>
-      <trans-unit id="EditTab.JpegWarningDialog.DoNotUse">
+      <trans-unit id="EditTab.JpegWarningDialog.DoNotUse" approved="yes">
         <source xml:lang="en">Cancel this import</source>
         <note>ID: EditTab.JpegWarningDialog.DoNotUse</note>
-        <target xml:lang="es-ES" state="translated">Cancelar esta importación</target>
+        <target xml:lang="es-ES">Cancelar esta importación</target>
       </trans-unit>
       <trans-unit id="EditTab.JpegWarningDialog.Photograph" approved="yes">
         <source xml:lang="en">Use the JPEG file</source>
@@ -2675,10 +2678,10 @@
           <target xml:lang="es-ES">Formateo</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Illustration Support</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.IllustrationSupport</note>
-        <target xml:lang="es-ES" state="translated">Apoyo para las ilustraciones</target>
+        <target xml:lang="es-ES">Apoyo para las ilustraciones</target>
         <alt-trans>
           <target xml:lang="es-ES">Apoyo para ilustraciones</target>
         </alt-trans>
@@ -2771,10 +2774,13 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Vocabulary</note>
         <target xml:lang="es-ES">Vocabulario</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WordCounts" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Word Counts</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WordCounts</note>
-        <target xml:lang="es-ES" state="translated">Contar palabras</target>
+        <target xml:lang="es-ES">Conteo de Palabras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Contar palabras</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Número de palabras</target>
         </alt-trans>
@@ -3059,10 +3065,13 @@
         <note>ID: Errors.ProblemImportingPicture</note>
         <target xml:lang="es-ES">Bloom tuvo un problema al importar esta imagen.</target>
       </trans-unit>
-      <trans-unit id="Errors.ReportThisProblemButton">
+      <trans-unit id="Errors.ReportThisProblemButton" approved="yes">
         <source xml:lang="en">Report this problem to Bloom Support</source>
         <note>ID: Errors.ReportThisProblemButton</note>
-        <target xml:lang="es-ES" state="translated">Reportar este problema al Apoyo Bloom</target>
+        <target xml:lang="es-ES">Reportar este problema al Servicio de Apoyo de Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reportar este problema al Apoyo Bloom</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Informar sobre este problema a Apoyo Bloom</target>
         </alt-trans>
@@ -3201,10 +3210,10 @@
           <target xml:lang="es-ES">Hacer una pregunta (web)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
+      <trans-unit id="HelpMenu.MakeASuggestionMenuItem" approved="yes">
         <source xml:lang="en">Request a Feature (web)</source>
         <note>ID: HelpMenu.MakeASuggestionMenuItem</note>
-        <target xml:lang="es-ES" state="translated">Solicitar una función (web)</target>
+        <target xml:lang="es-ES">Solicitar una función (web)</target>
         <alt-trans>
           <target xml:lang="es-ES">Hacer una sugerencia</target>
         </alt-trans>
@@ -3473,10 +3482,10 @@
           <target xml:lang="es-ES">Elija el idioma principal para esta colección</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText">
+      <trans-unit id="NewCollectionWizard.CollectionNamePage.ExampleText" approved="yes">
         <source xml:lang="en">Examples: "Health Books", "PNG Animal Stories"</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.ExampleText</note>
-        <target xml:lang="es-ES" state="translated">Ejemplos: "Libros de salud", "Historias de animales de PNG"</target>
+        <target xml:lang="es-ES">Ejemplos: "Libros de salud", "Historias de animales de PNG"</target>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionNamePage.NameCollectionLabel" approved="yes">
         <source xml:lang="en">What would you like to call this collection?</source>
@@ -3816,13 +3825,13 @@
           <target xml:lang="es-ES">Servir en red WiFi</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Control">
+      <trans-unit id="PublishTab.Android.Control" approved="yes">
         <source xml:lang="en">Control</source>
         <note>ID: PublishTab.Android.Control</note>
         <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
-        <target xml:lang="es-ES" state="translated">Controlar</target>
+        <target xml:lang="es-ES">Control</target>
         <alt-trans>
-          <target xml:lang="es-ES">Control</target>
+          <target xml:lang="es-ES">Controlar</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CopyToClipboard" approved="yes">
@@ -4477,18 +4486,18 @@
           <target xml:lang="es-ES">&amp;Guarde como ePUB...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.ShowCropMarks">
+      <trans-unit id="PublishTab.ShowCropMarks" approved="yes">
         <source xml:lang="en">Crop Marks</source>
         <note>ID: PublishTab.ShowCropMarks</note>
-        <target xml:lang="es-ES" state="translated">Marcas de corte</target>
+        <target xml:lang="es-ES">Marcas de corte</target>
         <alt-trans>
           <target xml:lang="es-ES">Marcas de recorte</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Acknowledgments">
+      <trans-unit id="PublishTab.Upload.Acknowledgments" approved="yes">
         <source xml:lang="en">Acknowledgments</source>
         <note>ID: PublishTab.Upload.Acknowledgments</note>
-        <target xml:lang="es-ES" state="translated">Agradecimientos</target>
+        <target xml:lang="es-ES">Agradecimientos</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AdditionalRequests" approved="yes">
         <source xml:lang="en">Additional Requests: </source>
@@ -5406,7 +5415,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "códigos Unicode" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "caracteres Unicode" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "códigos únicos de caracter" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
         </alt-trans>
