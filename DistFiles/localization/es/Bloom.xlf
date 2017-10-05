@@ -775,7 +775,10 @@
       <trans-unit id="CollectionTab.BookSourceHeading">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="es-ES" state="translated">Libros originarios para nuevos libros</target>
+        <target xml:lang="es-ES" state="translated">Recursos para nuevos libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Libros originarios para nuevos libros</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Fuentes para nuevos libros</target>
         </alt-trans>
