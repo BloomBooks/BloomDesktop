@@ -4135,9 +4135,12 @@
       <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF" approved="yes">
         <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
         <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
-        <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
+        <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encrontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
         <alt-trans>
           <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontró un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Eso es extraño... Adobe Reader le dio un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro PDF.</target>
@@ -4868,10 +4871,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">(No encontrado)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.OldVersion" approved="yes">
+      <trans-unit id="PublishTab.Upload.OldVersion">
         <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
         <note>ID: PublishTab.Upload.OldVersion</note>
-        <target xml:lang="es-ES">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
+        <target xml:lang="es-ES" state="translated">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
         <alt-trans>
           <target xml:lang="es-ES">Lo sentimos, esta versión de escritorio de Bloom no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
         </alt-trans>
