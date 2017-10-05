@@ -2,10 +2,10 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="bloomEpubPreview-en.html" datatype="html" source-language="en" target-language="es-ES">
     <body>
-      <trans-unit id="epubpreview.describe">
+      <trans-unit id="epubpreview.describe" approved="yes">
         <source xml:lang="en">This is an <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book) version of your book. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">It contains audio, so that new readers can listen as they read.</g>
       </source>
-        <target xml:lang="es-ES" state="translated">Esto es un <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book), una versión electrónica de su libro. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Contiene audio para que los lectores nuevos puedan escucharlo mientras que lo leen.</g>      
+        <target xml:lang="es-ES">Esto es un <g id="genid-1" ctype="x-html-a" html:href="https://en.wikipedia.org/wiki/ePUB">ePUB</g> (e-book), una versión electrónica de su libro. <g id="genid-2" ctype="x-html-span" html:class="showForTalkingBooks">Contiene audio para que los lectores nuevos puedan escucharlo mientras que lo leen.</g>      
       </target>
         <note>ID: epubpreview.describe</note>
         <alt-trans>
