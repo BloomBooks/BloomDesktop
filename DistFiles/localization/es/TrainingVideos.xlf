@@ -177,8 +177,11 @@
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
         <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: </source>
-        <target xml:lang="es-ES">Si desea descargar alguno de estos videos para mostrar y compartir fuera de línea, puede descargarlos a su computadora: </target>
+        <target xml:lang="es-ES">Si desea descargar alguno de estos vídeos para mostrar y compartir fuera de línea, puede descargarlos a su computadora: </target>
         <note>ID: training.videos.download</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Si desea descargar alguno de estos videos para mostrar y compartir fuera de línea, puede descargarlos a su computadora: </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Si desea descargar alguno de estos videos para mostrar y compartir fuera de liña, puede descargarlos a su computadora: </target>
         </alt-trans>
