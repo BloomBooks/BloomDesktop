@@ -6111,10 +6111,10 @@ Desea seguir?</target>
         <note>ID: TemplateBooks.PageLabel.Factory</note>
         <target xml:lang="es-ES">Fábrica</target>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Flyleaf" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Flyleaf" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Flyleaf</source>
         <note>ID: TemplateBooks.PageLabel.Flyleaf</note>
-        <target xml:lang="es-ES" state="translated">Guarda</target>
+        <target xml:lang="es-ES">Guarda</target>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Front Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Front Cover</source>
