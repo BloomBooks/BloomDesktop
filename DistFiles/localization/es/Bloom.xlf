@@ -832,10 +832,10 @@
           <target xml:lang="es-ES">Rescatar las ilustraciones que faltan...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionTab.CollectionMenu.showHistory">
+      <trans-unit id="CollectionTab.CollectionMenu.showHistory" approved="yes">
         <source xml:lang="en">Collection History...</source>
         <note>ID: CollectionTab.CollectionMenu.showHistory</note>
-        <target xml:lang="es-ES" state="translated">Historial de la colección...</target>
+        <target xml:lang="es-ES">Historial de la colección...</target>
         <alt-trans>
           <target xml:lang="es-ES">Historia de la colección...</target>
         </alt-trans>
@@ -2332,10 +2332,10 @@
         <note>ID: EditTab.StyleEditor.WordSpacingWide</note>
         <target xml:lang="es-ES">Ancho</target>
       </trans-unit>
-      <trans-unit id="EditTab.StyleEditorTip" sil:dynamic="true">
+      <trans-unit id="EditTab.StyleEditorTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.StyleEditorTip</note>
-        <target xml:lang="es-ES" state="translated">Ajustar el formato del estilo</target>
+        <target xml:lang="es-ES">Ajustar el formato del estilo</target>
         <alt-trans>
           <target xml:lang="es-ES">Ajuste el estilo del formato</target>
         </alt-trans>
@@ -2506,10 +2506,10 @@
           <target xml:lang="es-ES">Herramienta para libros decodificables</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
-        <target xml:lang="es-ES" state="translated">Bloom sólo puede utilizar las primeras {0} palabras.</target>
+        <target xml:lang="es-ES">Bloom sólo puede utilizar las primeras {0} palabras.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom sólo puede manejar las primeras {0} palabras.</target>
         </alt-trans>
@@ -2649,10 +2649,10 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Actual</note>
         <target xml:lang="es-ES">Actual</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Average" sil:dynamic="true" approved="yes">
         <source xml:lang="en">avg per sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Average</note>
-        <target xml:lang="es-ES" state="translated">prom. por oración</target>
+        <target xml:lang="es-ES">prom. por oración</target>
         <alt-trans>
           <target xml:lang="es-ES">prom. por frase</target>
         </alt-trans>
@@ -3923,11 +3923,11 @@
           <target xml:lang="es-ES">BloomReader esta instalado en todos los siguientes dispositivos conectados. Por favor conecte solamente uno de ellos.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound">
+      <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound" approved="yes">
         <source xml:lang="en">No device found. Still looking...</source>
         <note>ID: PublishTab.Android.Usb.Progress.NoDeviceFound</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES" state="translated">Dispositivo no ubicado. Todavía estamos buscando...</target>
+        <target xml:lang="es-ES">Dispositivo no encontrado. Seguimos buscando...</target>
         <alt-trans>
           <target xml:lang="es-ES">Dispositivo no ubicado. Sigue buscando...</target>
         </alt-trans>
@@ -5056,10 +5056,10 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.AllowedWordsFileHeader</note>
         <target xml:lang="es-ES">Archivo de palabras permitidas</target>
       </trans-unit>
-      <trans-unit id="ReaderSetup.AverageHeader" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.AverageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Avg</source>
         <note>ID: ReaderSetup.AverageHeader</note>
-        <target xml:lang="es-ES" state="translated">Prom.</target>
+        <target xml:lang="es-ES">Prom.</target>
       </trans-unit>
       <trans-unit id="ReaderSetup.BookHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book</source>
@@ -5406,12 +5406,9 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "códigos únicos de caracter" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "códigos Unicode" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
         <alt-trans>
-          <target xml:lang="es-ES">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "escapes de carracter Unicode" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "Unicode character escapes" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+          <target xml:lang="es-ES">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "códigos únicos de caracter" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ya conoce que caracteres se usan en los idiomas del mundo para marcar el final de oraciones. Para agregar otros, ingrese los "Unicode character escapes" aqui. For ejemplo para tailandes, ingrese \U0020 para indicar a Bloom que en tailandes se usa espacios normales para terminar las oraciones.</target>
