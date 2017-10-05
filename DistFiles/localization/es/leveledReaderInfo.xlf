@@ -67,15 +67,15 @@
         <target xml:lang="es-ES">Secuenciación - un cuento con una secuencia conocida como los días de la semana o que utiliza números en un patrón</target>
         <note>ID: leveled.reader.sequencing</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.building.sequence">
+      <trans-unit id="leveled.reader.building.sequence" approved="yes">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
-        <target xml:lang="es-ES" state="translated">Secuencia creciente - un cuento con un patrón que se repite y se añade a cada nueva página</target>
+        <target xml:lang="es-ES">Secuencia creciente - un cuento con un patrón que se repite y se añade a cada nueva página</target>
         <note>ID: leveled.reader.building.sequence</note>
         <alt-trans>
           <target xml:lang="es-ES">Secuencia creciente - un cuento con un patrón que se repite y a lo cual se agrega en cada nueva página</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.rhyme">
+      <trans-unit id="leveled.reader.rhyme" approved="yes">
         <source xml:lang="en">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry"><g id="genid-3" ctype="x-html-pre">Brown Bear, Brown Bear, What do you see?
 I see a red bird looking at me.
@@ -83,7 +83,7 @@ Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g>
       </source>
-        <target xml:lang="es-ES" state="translated">Rima - una cuento con un patrón o secuencia que también incluye rima. Por ejemplo:
+        <target xml:lang="es-ES">Rima - una cuento con un patrón o secuencia que también incluye rima. Por ejemplo:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry">
           <g id="genid-3" ctype="x-html-pre">El elefante lloraba
 porque no quería dormir
@@ -107,10 +107,13 @@ que la luna te va a oír</g>
       </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.illustrations">
+      <trans-unit id="leveled.reader.illustrations" approved="yes">
         <source xml:lang="en">Illustration Support</source>
-        <target xml:lang="es-ES" state="translated">Apoyo para ilustraciones</target>
+        <target xml:lang="es-ES">Apoyo para las ilustraciones</target>
         <note>ID: leveled.reader.illustrations</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Apoyo para ilustraciones</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
         <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.
