@@ -10,20 +10,23 @@
           <target xml:lang="es-ES">Compilado el {0}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="AboutDialog.NoUpdates">
+      <trans-unit id="AboutDialog.NoUpdates" approved="yes">
         <source xml:lang="en">No Updates</source>
         <note>ID: AboutDialog.NoUpdates</note>
-        <target xml:lang="es-ES" state="translated">No hay actualizaciones</target>
+        <target xml:lang="es-ES">No hay actualizaciones</target>
       </trans-unit>
-      <trans-unit id="AboutDialog.WindowTitle">
+      <trans-unit id="AboutDialog.WindowTitle" approved="yes">
         <source xml:lang="en">About {0}</source>
         <note>ID: AboutDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Sobre {0}</target>
+        <target xml:lang="es-ES">A cerca de {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sobre {0}</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="AboutDialog._checkForUpdates">
+      <trans-unit id="AboutDialog._checkForUpdates" approved="yes">
         <source xml:lang="en">Check For Updates</source>
         <note>ID: AboutDialog._checkForUpdates</note>
-        <target xml:lang="es-ES" state="translated">Buscar actualizaciones</target>
+        <target xml:lang="es-ES">Buscar actualizaciones</target>
       </trans-unit>
       <trans-unit id="AboutDialog._releaseNotesLabel">
         <source xml:lang="en">Release Notes</source>
