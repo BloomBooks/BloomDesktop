@@ -28,24 +28,27 @@
         <note>ID: AboutDialog._checkForUpdates</note>
         <target xml:lang="es-ES">Buscar actualizaciones</target>
       </trans-unit>
-      <trans-unit id="AboutDialog._releaseNotesLabel">
+      <trans-unit id="AboutDialog._releaseNotesLabel" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: AboutDialog._releaseNotesLabel</note>
-        <target xml:lang="es-ES" state="translated">Notas de la versión</target>
+        <target xml:lang="es-ES">Notas de la versión</target>
       </trans-unit>
-      <trans-unit id="Application.AlreadyRunning.General">
+      <trans-unit id="Application.AlreadyRunning.General" approved="yes">
         <source xml:lang="en">Another copy of the application is already running. If you cannot find it, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.General</note>
-        <target xml:lang="es-ES" state="translated">Se está ejecutando otra copia del programa. Si no lo encuentra, reinicie su computadora.</target>
+        <target xml:lang="es-ES">Ya se está ejecutando otra copia del programa. Si no la encuentra, reinicie su computadora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Se está ejecutando otra copia del programa. Si no lo encuentra, reinicie su computadora.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Otra copia del programa ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.AlreadyRunning.Specific">
+      <trans-unit id="Application.AlreadyRunning.Specific" approved="yes">
         <source xml:lang="en">Another copy of {0} is already running. If you cannot find that copy of {0}, restart your computer.</source>
         <note>ID: Application.AlreadyRunning.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="es-ES" state="translated">Ya se está ejecutando otra copia de {0}. Si no la encuentra, reinicie su computadora.</target>
+        <target xml:lang="es-ES">Ya se está ejecutando otra copia de {0}. Si no la encuentra, reinicie su computadora.</target>
         <alt-trans>
           <target xml:lang="es-ES">Se está ejecutando otra copia de {0}. Si no lo encuentra, reinicie su computadora.</target>
         </alt-trans>
@@ -53,19 +56,19 @@
           <target xml:lang="es-ES">Otra copia de {0} ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.ProblemStarting.General">
+      <trans-unit id="Application.ProblemStarting.General" approved="yes">
         <source xml:lang="en">There was a problem starting the application which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.General</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema al iniciar el programa. Posiblemente tendrá que reiniciar su computadora.</target>
+        <target xml:lang="es-ES">Hubo un problema al iniciar el programa. Posiblemente tendrá que reiniciar su computadora.</target>
         <alt-trans>
           <target xml:lang="es-ES">Hubo un problema al iniciar el programa que puede que tenga que reiniciar el equipo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Application.ProblemStarting.Specific">
+      <trans-unit id="Application.ProblemStarting.Specific" approved="yes">
         <source xml:lang="en">There was a problem starting {0} which might require that you restart your computer.</source>
         <note>ID: Application.ProblemStarting.Specific</note>
         <note>{0} is the application name</note>
-        <target xml:lang="es-ES" state="translated">Hubo un problema al iniciar {0}. Posiblemente tendrá que reiniciar su computadora.</target>
+        <target xml:lang="es-ES">Hubo un problema al iniciar {0}. Posiblemente tendrá que reiniciar su computadora.</target>
         <alt-trans>
           <target xml:lang="es-ES">Hubo un problema al iniciar {0} que puede que tenga que reiniciar el equipo.</target>
         </alt-trans>
@@ -90,55 +93,55 @@
           <target xml:lang="es-ES">Esperando a otra {0} para finalizar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.CancelButton">
+      <trans-unit id="Common.CancelButton" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
-        <target xml:lang="es-ES" state="translated">&amp;Cancelar</target>
+        <target xml:lang="es-ES">&amp;Cancelar</target>
       </trans-unit>
-      <trans-unit id="Common.No">
+      <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
-        <target xml:lang="es-ES" state="translated">No</target>
+        <target xml:lang="es-ES">No</target>
       </trans-unit>
-      <trans-unit id="Common.OKButton">
+      <trans-unit id="Common.OKButton" approved="yes">
         <source xml:lang="en">&amp;OK</source>
         <note>ID: Common.OKButton</note>
-        <target xml:lang="es-ES" state="translated">&amp;Aceptar</target>
+        <target xml:lang="es-ES">&amp;Aceptar</target>
         <alt-trans>
           <target xml:lang="es-ES">Aceptar</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Common.Yes">
+      <trans-unit id="Common.Yes" approved="yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
-        <target xml:lang="es-ES" state="translated">Si</target>
+        <target xml:lang="es-ES">Si</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems</note>
         <note>Parameter {0} is a description of the things being deleted (e.g., "The selected files")</note>
-        <target xml:lang="es-ES" state="translated">{0} se moverá a la papelera de reciclaje.</target>
+        <target xml:lang="es-ES">{0} se moverá a la papelera de reciclaje.</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem" approved="yes">
         <source xml:lang="en">{0} will be moved to the Recycle Bin.</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem</note>
         <note>Parameter {0} is a file name</note>
-        <target xml:lang="es-ES" state="translated">{0} se moverá a la papelera de reciclaje.</target>
+        <target xml:lang="es-ES">{0} se moverá a la papelera de reciclaje.</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
         <target xml:lang="es-ES" state="translated">Confirmar eliminación</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
-        <target xml:lang="es-ES" state="translated">&amp;Cancelar</target>
+        <target xml:lang="es-ES">&amp;Cancelar</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn" approved="yes">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="es-ES" state="translated">&amp;Eliminar</target>
+        <target xml:lang="es-ES">&amp;Eliminar</target>
         <alt-trans>
           <target xml:lang="es-ES">Eliminar</target>
         </alt-trans>
