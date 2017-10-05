@@ -325,6 +325,9 @@
   <data name="help16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\help16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="help16x16Darker" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\help16x16Darker.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="OpenCreateLibrary16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OpenCreateLibrary16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Bloom.Workspace
@@ -11,6 +12,11 @@ namespace Bloom.Workspace
 		{
 			InitializeComponent();
 			Zoom = 100;
+			_plusButton.ForeColor = Color.FromKnownColor(KnownColor.MenuText);
+			_plusButton.FlatAppearance.MouseOverBackColor = SystemColors.GradientActiveCaption;
+			_minusButton.ForeColor = Color.FromKnownColor(KnownColor.MenuText);
+			_minusButton.FlatAppearance.MouseOverBackColor = SystemColors.GradientActiveCaption;
+			_percentLabel.ForeColor = Color.FromKnownColor(KnownColor.MenuText);
 		}
 
 		public int Zoom
