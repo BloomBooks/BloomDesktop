@@ -128,10 +128,10 @@
         <note>Parameter {0} is a file name</note>
         <target xml:lang="es-ES">{0} se moverá a la papelera de reciclaje.</target>
       </trans-unit>
-      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
+      <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Confirmar eliminación</target>
+        <target xml:lang="es-ES">Confirmar eliminación</target>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
         <source xml:lang="en">&amp;Cancel</source>
@@ -152,10 +152,13 @@
         <note>The {0} will be replaced by the number of images found.  The {1} will be replaced with the search string.</note>
         <target xml:lang="es-ES" state="translated">Encontro {0} imágenes con nombres parecidas a {1}</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.ArtOfReading">
+      <trans-unit id="ImageToolbox.ArtOfReading" approved="yes">
         <source xml:lang="en">Art Of Reading</source>
         <note>ID: ImageToolbox.ArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Arte de la lectura</target>
+        <target xml:lang="es-ES">Arte de la Lectura</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Arte de la lectura</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Art Of Reading (Arte de la lectura)</target>
         </alt-trans>
@@ -165,26 +168,32 @@
         <note>ID: ImageToolbox.Camera</note>
         <target xml:lang="es-ES">Cámara</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.CopyExemplarMetadata">
+      <trans-unit id="ImageToolbox.CopyExemplarMetadata" approved="yes">
         <source xml:lang="en">Use {0}</source>
         <note>ID: ImageToolbox.CopyExemplarMetadata</note>
         <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
-        <target xml:lang="es-ES" state="translated">Usar {0}</target>
+        <target xml:lang="es-ES">Utilizar {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Usar {0}</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.Crop">
+      <trans-unit id="ImageToolbox.Crop" approved="yes">
         <source xml:lang="en">Crop</source>
         <note>ID: ImageToolbox.Crop</note>
-        <target xml:lang="es-ES" state="translated">Recortar</target>
+        <target xml:lang="es-ES">Recortar</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.DownloadArtOfReading">
+      <trans-unit id="ImageToolbox.DownloadArtOfReading" approved="yes">
         <source xml:lang="en">Download Art Of Reading Installer</source>
         <note>ID: ImageToolbox.DownloadArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Descargar el instalador de Arte de la lectura</target>
+        <target xml:lang="es-ES">Descargar el instalador de Arte de la Lectura</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Descargar el instalador de Arte de la lectura</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.EditMetadataLink">
+      <trans-unit id="ImageToolbox.EditMetadataLink" approved="yes">
         <source xml:lang="en">Edit...</source>
         <note>ID: ImageToolbox.EditMetadataLink</note>
-        <target xml:lang="es-ES" state="translated">Editar...</target>
+        <target xml:lang="es-ES">Editar...</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.EnterSearchTerms">
         <source xml:lang="en">This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</source>
@@ -194,23 +203,29 @@
           <target xml:lang="es-ES">Esta es la galería de "Art of Reading" (Arte de la lectura). En el cuadro anterior, escriba lo que está buscando, a continuación, pulse ENTER. Puede escribir palabras en inglés e indonesio.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.FileButton">
+      <trans-unit id="ImageToolbox.FileButton" approved="yes">
         <source xml:lang="en">File</source>
         <note>ID: ImageToolbox.FileButton</note>
-        <target xml:lang="es-ES" state="translated">Archivo</target>
+        <target xml:lang="es-ES">Archivo</target>
       </trans-unit>
-      <trans-unit id="ImageToolbox.GenericGettingImageProblem">
+      <trans-unit id="ImageToolbox.GenericGettingImageProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong while getting the image.</source>
         <note>ID: ImageToolbox.GenericGettingImageProblem</note>
-        <target xml:lang="es-ES" state="translated">Lastima, algo falló al tratar de obtener el imagen.</target>
+        <target xml:lang="es-ES">Lo sentimos, algo falló al tratar de obtener la imagen.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lastima, algo falló al tratar de obtener el imagen.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Lo siento, algo salió mal al tratar de obtener la ilustración.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.GenericProblem">
+      <trans-unit id="ImageToolbox.GenericProblem" approved="yes">
         <source xml:lang="en">Sorry, something went wrong with the ImageToolbox</source>
         <note>ID: ImageToolbox.GenericProblem</note>
-        <target xml:lang="es-ES" state="translated">Lastimosamente, algo falló con el ImageToolbox (caja de herramientas de imágenes)</target>
+        <target xml:lang="es-ES">Lo sentimos, algo falló con la Caja de Herramientas de Imágenes (ImageToolbox)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lastimosamente, algo falló con el ImageToolbox (caja de herramientas de imágenes)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Lastimosamente, algo falló con el ImageToolbox (caja de herramientas de ilustraciones)</target>
         </alt-trans>
@@ -218,32 +233,38 @@
           <target xml:lang="es-ES">Lo siento, algo salió mal con el cuadro de herramientas de ilustraciones</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.GetPicture">
+      <trans-unit id="ImageToolbox.GetPicture" approved="yes">
         <source xml:lang="en">Get Picture</source>
         <note>ID: ImageToolbox.GetPicture</note>
-        <target xml:lang="es-ES" state="translated">Obtener imagen</target>
+        <target xml:lang="es-ES">Obtener imagen</target>
         <alt-trans>
           <target xml:lang="es-ES">Obtener ilustración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.ImageToolboxWindowTitle">
+      <trans-unit id="ImageToolbox.ImageToolboxWindowTitle" approved="yes">
         <source xml:lang="en">Image Toolbox</source>
         <note>ID: ImageToolbox.ImageToolboxWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Image Toolbox (caja de herramientas de imágenes)</target>
+        <target xml:lang="es-ES">Caja de Herramientas de Imágenes (Image Toolbox)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Image Toolbox (caja de herramientas de imágenes)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cuadro de herramientas de ilustraciones</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.InstallArtOfReading">
+      <trans-unit id="ImageToolbox.InstallArtOfReading" approved="yes">
         <source xml:lang="en">Install the Art Of Reading package (this may be very slow)</source>
         <note>ID: ImageToolbox.InstallArtOfReading</note>
-        <target xml:lang="es-ES" state="translated">Instalar el paquete de Arte de la lectura (puede demorar)</target>
+        <target xml:lang="es-ES">Instalar el paquete de Arte de la Lectura (esto se puede demorar)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Instalar el paquete de Arte de la lectura (puede demorar)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="ImageToolbox.MatchingImages">
+      <trans-unit id="ImageToolbox.MatchingImages" approved="yes">
         <source xml:lang="en">Found {0} images</source>
         <note>ID: ImageToolbox.MatchingImages</note>
         <note>The {0} will be replaced by the number of matching images</note>
-        <target xml:lang="es-ES" state="translated">Encontró {0} imágenes</target>
+        <target xml:lang="es-ES">Encontró {0} imágenes</target>
       </trans-unit>
       <trans-unit id="ImageToolbox.NewMultilingual">
         <source xml:lang="en">Did you know that there is a new version of this collection which lets you search in Arabic, Bengali, Chinese, English, French, Indonesian, Hindi, Portuguese, Spanish, Thai, or Swahili? It is free and available for downloading.</source>
