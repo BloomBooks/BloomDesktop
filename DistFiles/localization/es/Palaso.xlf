@@ -670,19 +670,22 @@
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
         <target xml:lang="es-ES">más información</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
+      <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
         <source xml:lang="en">Not Enforceable</source>
         <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
         <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
-        <target xml:lang="es-ES" state="translated">No exigible</target>
+        <target xml:lang="es-ES">No aplicable</target>
         <alt-trans>
-          <target xml:lang="es-ES">No aplicable</target>
+          <target xml:lang="es-ES">No exigible</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="es-ES" state="translated">Esto también puede ocultar otros botones que no sean necesarios por parte del usuario no avanzado.</target>
+        <target xml:lang="es-ES" state="translated">Esto también puede ocultar otros botones que no son necesarios para el usuario no avanzado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esto también puede ocultar otros botones que no sean necesarios por parte del usuario no avanzado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esto puede también ocultar otros botones que no sean necesarios por parte del usuario no avanzado.</target>
         </alt-trans>
@@ -690,7 +693,10 @@
       <trans-unit id="SettingsProtection.CtrlShiftHint">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="es-ES" state="translated">El botón se mostrará cuando juntamente se presiona las teclas Ctrl y Mayús.</target>
+        <target xml:lang="es-ES" state="translated">El botón se mostrará cuando se mantengan presionadas juntas las teclas Ctrl y Mayús.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El botón se mostrará cuando juntamente se presiona las teclas Ctrl y Mayús.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">El botón se mostrará cuando se mantiene presionada juntos las teclas Ctrl y Mayús.</target>
         </alt-trans>
@@ -708,10 +714,10 @@
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
         <target xml:lang="es-ES">Ocultar el botón que abre la configuración.</target>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword">
+      <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword" approved="yes">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
-        <target xml:lang="es-ES" state="translated">Contraseña de fábrica</target>
+        <target xml:lang="es-ES">Contraseña de fábrica</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
@@ -741,38 +747,44 @@
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <target xml:lang="es-ES" state="translated">Contraseña de fábrica para estos ajustes es "{0}". Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}".</target>
+        <target xml:lang="es-ES" state="translated">La contraseña de fábrica para estos ajustes es "{0}". Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Contraseña de fábrica para estos ajustes es "{0}". Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Contraseña de fábrica para estos ajustes es "{0}".  Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}"</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
+      <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="es-ES" state="translated">Requerir la contraseña de fábrica para entrar a la configuración.</target>
+        <target xml:lang="es-ES">Requiere la contraseña de fábrica para entrar en la configuración.</target>
         <alt-trans>
-          <target xml:lang="es-ES">Requiere la contraseña de fábrica para entrar en la configuración.</target>
+          <target xml:lang="es-ES">Requerir la contraseña de fábrica para entrar a la configuración.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.SettingProtectionDialogTitle">
+      <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
         <source xml:lang="en">Settings Protection</source>
         <note>ID: SettingsProtection.SettingProtectionDialogTitle</note>
-        <target xml:lang="es-ES" state="translated">Protección de configuración</target>
+        <target xml:lang="es-ES">Protección de configuración</target>
       </trans-unit>
-      <trans-unit id="ShowReleaseNotesDialog.WindowTitle">
+      <trans-unit id="ShowReleaseNotesDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Release Notes</source>
         <note>ID: ShowReleaseNotesDialog.WindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Notas de la versión</target>
+        <target xml:lang="es-ES">Notas de la versión</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.Font">
+      <trans-unit id="WSFontControl.Font" approved="yes">
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
-        <target xml:lang="es-ES" state="translated">&amp;Fuente:</target>
+        <target xml:lang="es-ES">&amp;Fuente:</target>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Usando el fuente predeterminado.)</target>
+        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Use la fuente predeterminada.)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Usando el fuente predeterminado.)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Usando fuente predeterminado.)</target>
         </alt-trans>
