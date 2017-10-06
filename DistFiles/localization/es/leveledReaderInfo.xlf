@@ -18,10 +18,13 @@
           <target xml:lang="es-ES">En los niveles iniciales, utilice palabras simples que los niños conocen. Si es posible en su idioma, utilice palabras monosilábicas. A la medida que los niños avanzan a los niveles superiores, se puede usar palabras con más sílabas. Y se puede comenzar el uso de palabras menos conocidos. Los niños deberían poder adivinar los significados de estas palabras por el contexto de las palabras y oraciónes cercanas, y por las ilustraciones.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="leveled.reader.formatting">
+      <trans-unit id="leveled.reader.formatting" approved="yes">
         <source xml:lang="en">Formatting</source>
-        <target xml:lang="es-ES" state="translated">Formateo</target>
+        <target xml:lang="es-ES">Formato</target>
         <note>ID: leveled.reader.formatting</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Formateo</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.reader.start.large" approved="yes">
         <source xml:lang="en">Beginner readers will benefit from a larger font with clear spacing between words. Having the words or sentences in the same location on each page is also helpful. As readers progress to higher levels, font size and spacing will decrease and sentences can appear in different locations on the page.</source>
