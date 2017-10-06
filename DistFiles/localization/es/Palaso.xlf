@@ -532,11 +532,11 @@
           <target xml:lang="es-ES">Puede adaptar y añadir a este trabajo.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Usted puede adaptar y añadir a esta obra, pero debe distribuir el trabajo resultante sólo bajo una licencia igual o similar a ésta.</target>
+        <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero debe distribuir el trabajo resultante sólo bajo una licencia igual o similar a ésta.</target>
         <alt-trans>
           <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir el trabajo resultante sólo bajo una licencia igual o similar a ésta.</target>
         </alt-trans>
@@ -547,31 +547,34 @@
           <target xml:lang="es-ES">Usted puede adaptar y añadir a este trabajo, pero usted puede distribuir el trabajo resultante sólo bajo licencia igual o similar a ésta.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">No puede hacer cambios o ampliar este trabajo sin permiso.</target>
+        <target xml:lang="es-ES">No puede hacer cambios o ampliar este trabajo sin permiso.</target>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">No puede utilizar esta obra para fines comerciales.</target>
+        <target xml:lang="es-ES">No puede utilizar esta obra para fines comerciales.</target>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
+      <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
-        <target xml:lang="es-ES" state="translated">Para obtener permiso para la reutilización, comuniquese con el titular de los derechos de autor.</target>
+        <target xml:lang="es-ES">Para obtener permiso para la reutilización, comuníquese con el titular de los derechos de autor.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Para obtener permiso para la reutilización, comuniquese con el titular de los derechos de autor.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para obtener permiso para la reutilización, comunicarse con el titular de los derechos de autor.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataDisplay.NoLicense">
+      <trans-unit id="MetadataDisplay.NoLicense" approved="yes">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="es-ES" state="translated">Ninguna licencia especificada</target>
+        <target xml:lang="es-ES">Ninguna licencia especificada</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse">
         <source xml:lang="en">Allow commercial uses of your work?</source>
@@ -581,17 +584,23 @@
       <trans-unit id="MetadataEditor.AllowDerivatives">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="es-ES" state="translated">¿Permite modificaciones de su trabajo?</target>
+        <target xml:lang="es-ES" state="translated">¿Permite hacer modificaciones a su trabajo?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Permite modificaciones de su trabajo?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.CopyrightHolder">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="es-ES" state="translated">Titular de derechos de autor</target>
+        <target xml:lang="es-ES" state="translated">Titular de los derechos de autor</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Titular de derechos de autor</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CreativeCommons">
+      <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
         <source xml:lang="en">Creative Commons</source>
         <note>ID: MetadataEditor.CreativeCommons</note>
-        <target xml:lang="es-ES" state="translated">Creative Commons</target>
+        <target xml:lang="es-ES">Creative Commons</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
         <source xml:lang="en">Intergovernmental Version</source>
