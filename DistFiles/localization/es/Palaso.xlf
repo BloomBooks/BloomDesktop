@@ -679,10 +679,10 @@
           <target xml:lang="es-ES">No exigible</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.AlsoHideOthersNotice">
+      <trans-unit id="SettingsProtection.AlsoHideOthersNotice" approved="yes">
         <source xml:lang="en">This may also hide other buttons which are not needed by the non-advanced user.</source>
         <note>ID: SettingsProtection.AlsoHideOthersNotice</note>
-        <target xml:lang="es-ES" state="translated">Esto también puede ocultar otros botones que no son necesarios para el usuario no avanzado.</target>
+        <target xml:lang="es-ES">Esto también puede ocultar otros botones que no son necesarios para el usuario no avanzado.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esto también puede ocultar otros botones que no sean necesarios por parte del usuario no avanzado.</target>
         </alt-trans>
