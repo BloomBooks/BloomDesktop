@@ -792,20 +792,20 @@
           <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Usando fuente por defecto.)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSFontControl.RightToLeftWS">
+      <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="es-ES" state="translated">Esto es una &amp;escritura de derecha a izquierda.</target>
+        <target xml:lang="es-ES">Esto es una &amp;escritura de derecha a izquierda.</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.Size">
+      <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
-        <target xml:lang="es-ES" state="translated">&amp;Tamaño:</target>
+        <target xml:lang="es-ES">&amp;Tamaño:</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.TestArea">
+      <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="es-ES" state="translated">&amp;Área de prueba:</target>
+        <target xml:lang="es-ES">&amp;Área de prueba:</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
