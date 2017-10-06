@@ -576,23 +576,23 @@
         <note>ID: MetadataDisplay.NoLicense</note>
         <target xml:lang="es-ES">Ninguna licencia especificada</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.AllowCommercialUse">
+      <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="es-ES" state="translated">¿Permite usos comerciales de su trabajo?</target>
+        <target xml:lang="es-ES">¿Permite usos comerciales de su trabajo?</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.AllowDerivatives">
+      <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
         <note>ID: MetadataEditor.AllowDerivatives</note>
-        <target xml:lang="es-ES" state="translated">¿Permite hacer modificaciones a su trabajo?</target>
+        <target xml:lang="es-ES">¿Permite hacer modificaciones a su trabajo?</target>
         <alt-trans>
           <target xml:lang="es-ES">¿Permite modificaciones de su trabajo?</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CopyrightHolder">
+      <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: MetadataEditor.CopyrightHolder</note>
-        <target xml:lang="es-ES" state="translated">Titular de los derechos de autor</target>
+        <target xml:lang="es-ES">Titular de los derechos de autor</target>
         <alt-trans>
           <target xml:lang="es-ES">Titular de derechos de autor</target>
         </alt-trans>
@@ -602,20 +602,20 @@
         <note>ID: MetadataEditor.CreativeCommons</note>
         <target xml:lang="es-ES">Creative Commons</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental">
+      <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
         <source xml:lang="en">Intergovernmental Version</source>
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-        <target xml:lang="es-ES" state="translated">Versión Intergubernamental</target>
+        <target xml:lang="es-ES">Versión Intergubernamental</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
         <target xml:lang="es-ES">Creador</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CustomLicense">
+      <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
-        <target xml:lang="es-ES" state="translated">Personalizado</target>
+        <target xml:lang="es-ES">Personalizado</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -647,10 +647,10 @@
           <target xml:lang="es-ES">Póngase en contacto con el titular del copyright para los permisos</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.YesShareAlike">
+      <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="es-ES" state="translated">Sí, mientras que otros compartan igualmente</target>
+        <target xml:lang="es-ES">Sí, mientras que otros compartan igualmente</target>
         <alt-trans>
           <target xml:lang="es-ES">Sí, mientras que otros comparten igualmente</target>
         </alt-trans>
@@ -664,11 +664,11 @@
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
         <target xml:lang="es-ES">Solicitudes adicionales</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.betterLinkLabel1">
+      <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
         <source xml:lang="en">more info</source>
         <note>ID: MetadataEditor.betterLinkLabel1</note>
         <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
-        <target xml:lang="es-ES" state="translated">más información</target>
+        <target xml:lang="es-ES">más información</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
         <source xml:lang="en">Not Enforceable</source>
