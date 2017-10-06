@@ -690,10 +690,10 @@
           <target xml:lang="es-ES">Esto puede también ocultar otros botones que no sean necesarios por parte del usuario no avanzado.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.CtrlShiftHint">
+      <trans-unit id="SettingsProtection.CtrlShiftHint" approved="yes">
         <source xml:lang="en">The button will show up when you hold down the Ctrl and Shift keys together.</source>
         <note>ID: SettingsProtection.CtrlShiftHint</note>
-        <target xml:lang="es-ES" state="translated">El botón se mostrará cuando se mantengan presionadas juntas las teclas Ctrl y Mayús.</target>
+        <target xml:lang="es-ES">El botón se mostrará cuando se mantengan presionadas juntas las teclas Ctrl y Mayús.</target>
         <alt-trans>
           <target xml:lang="es-ES">El botón se mostrará cuando juntamente se presiona las teclas Ctrl y Mayús.</target>
         </alt-trans>
@@ -781,7 +781,10 @@
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Use la fuente predeterminada.)</target>
+        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Se usará la fuente predeterminada.)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Use la fuente predeterminada.)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Usando el fuente predeterminado.)</target>
         </alt-trans>
@@ -807,35 +810,41 @@
         <note>ID: WSFontControl.TestArea</note>
         <target xml:lang="es-ES">&amp;Área de prueba:</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardNotListed">
+      <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
-        <target xml:lang="es-ES" state="translated">Si el teclado que necesita no está en la lista, haga clic en el enlace apropiado abajo para configurarlo</target>
+        <target xml:lang="es-ES">Si el teclado que necesita no está en la lista, haga clic en el enlace apropiado abajo para configurarlo</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardSettingsLink">
+      <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="es-ES" state="translated">Configuración de teclado de Windows</target>
+        <target xml:lang="es-ES">Configuración del teclado de Windows</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configuración de teclado de Windows</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
+      <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="es-ES" state="translated">Teclados disponibles</target>
+        <target xml:lang="es-ES">Teclados disponibles</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
+      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="es-ES" state="translated">Teclados utilizado anteriormente</target>
+        <target xml:lang="es-ES">Teclados utilizados anteriormente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Teclados utilizado anteriormente</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
+      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="es-ES" state="translated">Configuración de Keyman</target>
+        <target xml:lang="es-ES">Configuración de Keyman</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
+      <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="es-ES" state="translated">Keyman 5.0 o más reciente no está instalado.</target>
+        <target xml:lang="es-ES">Keyman 5.0 o más reciente no está instalado.</target>
         <alt-trans>
           <target xml:lang="es-ES">Keyman 5.0 o posterior no está instalado.</target>
         </alt-trans>
@@ -843,7 +852,10 @@
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="es-ES" state="translated">Seleccione el &amp;teclado con lo cual desea ingresar texto {0}</target>
+        <target xml:lang="es-ES" state="translated">Seleccione el &amp;teclado con el cual desea ingresar texto {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Seleccione el &amp;teclado con lo cual desea ingresar texto {0}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Seleccione el teclado con lo cual desea ingresar texto {0}</target>
         </alt-trans>
@@ -851,18 +863,21 @@
           <target xml:lang="es-ES">Seleccione el teclado con la cual escribir texto {0}</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.TestAreaCaption">
+      <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="es-ES" state="translated">&amp;Área de prueba (utilice esta zona para escribir algo para probar el teclado.)</target>
+        <target xml:lang="es-ES">&amp;Área de prueba (Utilice esta zona para escribir algo para probar el teclado.)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">&amp;Área de prueba (utilice esta zona para escribir algo para probar el teclado.)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Área de prueba (utilice esta zona para escribir algo para probar el teclado.)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="Warning">
+      <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
-        <target xml:lang="es-ES" state="translated">Advertencia</target>
+        <target xml:lang="es-ES">Advertencia</target>
         <alt-trans>
           <target xml:lang="es-ES">ADVERTENCIA</target>
         </alt-trans>
