@@ -536,7 +536,10 @@
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="translated">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir el trabajo resultante sólo bajo una licencia igual o similar a ésta.</target>
+        <target xml:lang="es-ES" state="translated">Usted puede adaptar y añadir a esta obra, pero debe distribuir el trabajo resultante sólo bajo una licencia igual o similar a ésta.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir el trabajo resultante sólo bajo una licencia igual o similar a ésta.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Usted puede adaptar y añadir a esta obra, pero usted puede distribuir el trabajo resultante sólo bajo licencia igual o similar a ésta.</target>
         </alt-trans>
@@ -842,10 +845,13 @@
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
         <target xml:lang="es-ES" state="translated">No se puede conectar al SLDR</target>
       </trans-unit>
-      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText">
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
-        <target xml:lang="es-ES" state="translated">La aplicación no puede conectarse con el base datos para obtener la información más reciente acerca de este idioma. Si usted crea esta escritura, la configuración predeterminada podría ser incorrecta o obseleto. ¿Realmente desea crear una nueva escritura?</target>
+        <target xml:lang="es-ES">La aplicación no puede conectarse con la base datos de SIL para obtener la información más reciente acerca de este idioma. Si usted crea este sistema escritura, la configuración predeterminada podría ser incorrecta u obsoleta. ¿Realmente desea crear un nuevo sistema de escritura?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La aplicación no puede conectarse con el base datos para obtener la información más reciente acerca de este idioma. Si usted crea esta escritura, la configuración predeterminada podría ser incorrecta o obseleto. ¿Realmente desea crear una nueva escritura?</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
