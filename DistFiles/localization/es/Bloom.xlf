@@ -442,10 +442,10 @@
           <target xml:lang="es-ES">laosiano</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian" approved="yes">
         <source xml:lang="en">Lower-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian</note>
-        <target xml:lang="es-ES" state="translated">Armenio (bajo)</target>
+        <target xml:lang="es-ES">Armenio (Bajo)</target>
         <alt-trans>
           <target xml:lang="es-ES">armenio (bajo)</target>
         </alt-trans>
@@ -530,10 +530,13 @@
           <target xml:lang="es-ES">tibetano</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian" approved="yes">
         <source xml:lang="en">Upper-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
-        <target xml:lang="es-ES" state="translated">armenio (alto)</target>
+        <target xml:lang="es-ES">Armenio (Alto)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">armenio (alto)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">armenio (upper)</target>
         </alt-trans>
@@ -772,13 +775,10 @@
         <note>ID: CollectionTab.BookMenu.UpdateThumbnail</note>
         <target xml:lang="es-ES">Actualizar la miniatura</target>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookSourceHeading">
+      <trans-unit id="CollectionTab.BookSourceHeading" approved="yes">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="es-ES" state="translated">Recursos para nuevos libros</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Libros originarios para nuevos libros</target>
-        </alt-trans>
+        <target xml:lang="es-ES">Recursos para nuevos libros</target>
         <alt-trans>
           <target xml:lang="es-ES">Fuentes para nuevos libros</target>
         </alt-trans>
@@ -1017,7 +1017,10 @@
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading" approved="yes">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="es-ES">Fuentes para nuevos libros prediseñados</target>
+        <target xml:lang="es-ES">Recursos para nuevos libros prediseñados</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Fuentes para nuevos libros prediseñados</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Fuentes para nuevos "shells"</target>
         </alt-trans>
@@ -2676,10 +2679,13 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.FoThisLevel</note>
         <target xml:lang="es-ES">Para este nivel</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Formatting" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Formatting</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Formatting</note>
-        <target xml:lang="es-ES" state="translated">Formateo</target>
+        <target xml:lang="es-ES">Formato</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Formateo</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Formateando</target>
         </alt-trans>
@@ -3703,7 +3709,10 @@
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage" approved="yes">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
         <note>ID: OpenCreateCloneControl.InSourceCollectionMessage</note>
-        <target xml:lang="es-ES">Esta colección forma parte de sus "fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <target xml:lang="es-ES">Esta colección forma parte de sus "Recursos para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta colección forma parte de sus "fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta colección forma parte de sus "orígenes de nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No se puede abrir para su edición.</target>
         </alt-trans>
@@ -4871,10 +4880,13 @@ Desea seguir?</target>
           <target xml:lang="es-ES">(No encontrado)</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.OldVersion">
+      <trans-unit id="PublishTab.Upload.OldVersion" approved="yes">
         <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
         <note>ID: PublishTab.Upload.OldVersion</note>
-        <target xml:lang="es-ES" state="translated">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
+        <target xml:lang="es-ES">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor, actualice a una versión más reciente.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Lo sentimos, esta versión de escritorio de Bloom no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</target>
         </alt-trans>
@@ -5421,10 +5433,10 @@ Desea seguir?</target>
           <target xml:lang="es-ES">Puntuación especial para finales de frase</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true">
+      <trans-unit id="ReaderSetup.SentencePunctuation.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom already knows which characters in the world's languages always mark the end of sentences. To add others, enter the Unicode character escapes here. For example for Thai script languages, enter \U0020 to tell Bloom that normal spaces are used to break sentences.</source>
         <note>ID: ReaderSetup.SentencePunctuation.Help</note>
-        <target xml:lang="es-ES" state="translated">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "caracteres Unicode" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
+        <target xml:lang="es-ES">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "caracteres Unicode" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ya conoce qué caracteres se usan en los idiomas del mundo para marcar el final de las oraciones. Para agregar otros, ingrese los "códigos únicos de caracter" aquí. Por ejemplo, para tailandés, ingrese \U0020 para indicarle a Bloom que en tailandés se usan espacios normales para finalizar las oraciones.</target>
         </alt-trans>
