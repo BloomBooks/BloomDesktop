@@ -207,7 +207,7 @@
 			// _uiLanguageMenu
 			// 
 			this._uiLanguageMenu.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._uiLanguageMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+			this._uiLanguageMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._uiLanguageMenu.Image = global::Bloom.Properties.Resources.multilingualSettings;
 			this._uiLanguageMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._uiLanguageMenu, null);
@@ -238,8 +238,8 @@
             this._divider2,
             this._webSiteMenuItem,
             this._aboutBloomMenuItem});
-			this._helpMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this._helpMenu.Image = global::Bloom.Properties.Resources.help16x16;
+			this._helpMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
+			this._helpMenu.Image = global::Bloom.Properties.Resources.help16x16Darker;
 			this._helpMenu.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this._helpMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._helpMenu, "Get Help");

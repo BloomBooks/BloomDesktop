@@ -1,19 +1,17 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Properties;
-using Bloom.Publish;
 using Bloom.Publish.BloomLibrary;
 using L10NSharp;
 using SIL.Code;
-using SIL.Reporting;
 
 namespace Bloom.WebLibraryIntegration
 {
 	/// <summary>
-	/// this class manages a the login process for Bloom, including signing up for new accounts.
+	/// this class manages the login process for Bloom, including signing up for new accounts.
 	/// (This is a bit clumsy, but makes it easy to switch to login if the user enters a known address,
 	/// or switch to signup if the user tries to log in with an unknown email.
 	/// It also saves passing another object around.)
@@ -58,7 +56,7 @@ namespace Bloom.WebLibraryIntegration
 			catch (Exception)
 			{
 				MessageBox.Show(this, LocalizationManager.GetString("PublishTab.Upload.Login.LoginConnectFailed", "Bloom could not connect to the server to verify your login. Please check your network connection."),
-					LocalizationManager.GetString("PublishTab.Upload.Login.LoginFailed", "Login failed"),
+					LoginFailureString,
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
 				return;
@@ -71,13 +69,21 @@ namespace Bloom.WebLibraryIntegration
 			else
 			{
 				MessageBox.Show(this, LocalizationManager.GetString("PublishTab.Upload.Login.PasswordMismatch", "Password and user ID did not match"),
-					LocalizationManager.GetString("PublishTab.Upload.Login.LoginFailed", "Login failed"),
+					LoginFailureString,
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
 			}
 		}
 
-		private string LoginOrSignupConnectionFailedString
+
+		private static string LoginFailureString
+		{
+			get
+			{
+				return LocalizationManager.GetString("PublishTab.Upload.Login.LoginFailed", "Login failed");
+			}
+		}
+		private static string LoginOrSignupConnectionFailedString
 		{
 			get
 			{
@@ -104,7 +110,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, LoginFailureString, LoginOrSignupConnectionFailedString, e);
 				return;
 			}
 			if (userExists)
@@ -129,7 +135,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, LoginOrSignupConnectionFailedString);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, LoginFailureString, LoginOrSignupConnectionFailedString, e);
 			}
 		}
 

@@ -940,6 +940,10 @@ namespace Bloom.Workspace
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
 	{
+		public NoBorderToolStripRenderer() : base(new NoBorderToolStripColorTable())
+		{
+			
+		}
 		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { }
 
 		protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
@@ -976,5 +980,11 @@ namespace Bloom.Workspace
 				}
 			}
 		}
+	}
+
+	public class NoBorderToolStripColorTable : ProfessionalColorTable
+	{
+		// BL-5071 Make the border the same color as the button when selected/hovered
+		public override Color ButtonSelectedBorder => SystemColors.GradientActiveCaption;
 	}
 }
