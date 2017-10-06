@@ -388,7 +388,10 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="es-ES" state="translated">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no Enumerado", esta opción será seleccionada ahora.</target>
+        <target xml:lang="es-ES" state="translated">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no Listado", esta opción será seleccionada ahora.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no Enumerado", esta opción será seleccionada ahora.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no enumerado", que será seleccionado ahora.</target>
         </alt-trans>
@@ -743,11 +746,14 @@
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
         <target xml:lang="es-ES">Mostrar caracteres</target>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordNotice">
+      <trans-unit id="SettingsProtection.PasswordNotice" approved="yes">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <target xml:lang="es-ES" state="translated">La contraseña de fábrica para estos ajustes es "{0}". Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}".</target>
+        <target xml:lang="es-ES">La contraseña de fábrica para estos ajustes es "{0}". Si la olvida, siempre puede usar Google para buscar "{1}" y "{2}".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">La contraseña de fábrica para estos ajustes es "{0}". Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Contraseña de fábrica para estos ajustes es "{0}". Si lo olvida, siempre puedes usar Google para buscar "{1}" y "{2}".</target>
         </alt-trans>
@@ -758,9 +764,12 @@
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox" approved="yes">
         <source xml:lang="en">Require the factory password to get into settings.</source>
         <note>ID: SettingsProtection.RequirePasswordCheckBox</note>
-        <target xml:lang="es-ES">Requiere la contraseña de fábrica para entrar en la configuración.</target>
+        <target xml:lang="es-ES">Se requiere la contraseña de fábrica para entrar en la configuración.</target>
         <alt-trans>
           <target xml:lang="es-ES">Requerir la contraseña de fábrica para entrar a la configuración.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Requiere la contraseña de fábrica para entrar en la configuración.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.SettingProtectionDialogTitle" approved="yes">
@@ -778,10 +787,10 @@
         <note>ID: WSFontControl.Font</note>
         <target xml:lang="es-ES">&amp;Fuente:</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.FontNotAvailable">
+      <trans-unit id="WSFontControl.FontNotAvailable" approved="yes">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="es-ES" state="translated">(La fuente seleccionada no está disponible en esta computadora. Se usará la fuente predeterminada.)</target>
+        <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Se usará la fuente predeterminada.)</target>
         <alt-trans>
           <target xml:lang="es-ES">(La fuente seleccionada no está disponible en esta computadora. Use la fuente predeterminada.)</target>
         </alt-trans>
@@ -882,10 +891,10 @@
           <target xml:lang="es-ES">ADVERTENCIA</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="es-ES" state="translated">No se puede conectar al SLDR</target>
+        <target xml:lang="es-ES">No se puede conectar al SLDR</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
