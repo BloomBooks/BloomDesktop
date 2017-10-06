@@ -607,36 +607,39 @@
         <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
         <target xml:lang="es-ES" state="translated">Versión Intergubernamental</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.CreatorLabel">
+      <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
         <source xml:lang="en">Creator</source>
         <note>ID: MetadataEditor.CreatorLabel</note>
-        <target xml:lang="es-ES" state="translated">Creador</target>
+        <target xml:lang="es-ES">Creador</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.CustomLicense">
         <source xml:lang="en">Custom</source>
         <note>ID: MetadataEditor.CustomLicense</note>
         <target xml:lang="es-ES" state="translated">Personalizado</target>
       </trans-unit>
-      <trans-unit id="MetadataEditor.TitleNoCredit">
+      <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
         <source xml:lang="en">Copyright and License</source>
         <note>ID: MetadataEditor.TitleNoCredit</note>
-        <target xml:lang="es-ES" state="translated">Derechos de autor y licencia</target>
+        <target xml:lang="es-ES">Derechos de autor y licencia</target>
         <alt-trans>
           <target xml:lang="es-ES">Derechos de autor &amp; licencia</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.TitleWithCredit">
+      <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
         <source xml:lang="en">Credit, Copyright, and License</source>
         <note>ID: MetadataEditor.TitleWithCredit</note>
-        <target xml:lang="es-ES" state="translated">Crédito, derechos de autor y licencia</target>
+        <target xml:lang="es-ES">Crédito, derechos de autor y licencia</target>
         <alt-trans>
           <target xml:lang="es-ES">Crédito, derechos de autor &amp; licencia</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.UnknownLicense">
+      <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
         <source xml:lang="en">Contact the copyright holder for any permissions</source>
         <note>ID: MetadataEditor.UnknownLicense</note>
-        <target xml:lang="es-ES" state="translated">Comuniquese con el titular de derechos de autor para solicitar permisos</target>
+        <target xml:lang="es-ES">Comuníquese con el titular de los derechos de autor para solicitar permisos</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Comuniquese con el titular de derechos de autor para solicitar permisos</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Comuniquese con el titular del copyright para los permisos</target>
         </alt-trans>
@@ -647,16 +650,19 @@
       <trans-unit id="MetadataEditor.YesShareAlike">
         <source xml:lang="en">Yes, as long as others share alike</source>
         <note>ID: MetadataEditor.YesShareAlike</note>
-        <target xml:lang="es-ES" state="translated">Sí, mientras que otros comparten igualmente</target>
+        <target xml:lang="es-ES" state="translated">Sí, mientras que otros compartan igualmente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sí, mientras que otros comparten igualmente</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Sí, mientras otros comparten por igual</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="MetadataEditor.additionalRequestsLabel">
+      <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
         <source xml:lang="en">Additional Requests</source>
         <note>ID: MetadataEditor.additionalRequestsLabel</note>
         <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-        <target xml:lang="es-ES" state="translated">Solicitudes adicionales</target>
+        <target xml:lang="es-ES">Solicitudes adicionales</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.betterLinkLabel1">
         <source xml:lang="en">more info</source>
@@ -689,36 +695,36 @@
           <target xml:lang="es-ES">El botón se mostrará cuando se mantiene presionada juntos las teclas Ctrl y Mayús.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.LauncherButtonLabel">
+      <trans-unit id="SettingsProtection.LauncherButtonLabel" approved="yes">
         <source xml:lang="en">Settings...</source>
         <note>ID: SettingsProtection.LauncherButtonLabel</note>
-        <target xml:lang="es-ES" state="translated">Configuración...</target>
+        <target xml:lang="es-ES">Configuración...</target>
         <alt-trans>
           <target xml:lang="es-ES">Protección de configuración...</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.NormallyHiddenCheckbox">
+      <trans-unit id="SettingsProtection.NormallyHiddenCheckbox" approved="yes">
         <source xml:lang="en">Hide the button that opens settings.</source>
         <note>ID: SettingsProtection.NormallyHiddenCheckbox</note>
-        <target xml:lang="es-ES" state="translated">Ocultar el botón que abre la configuración.</target>
+        <target xml:lang="es-ES">Ocultar el botón que abre la configuración.</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordDialog.FactoryPassword">
         <source xml:lang="en">Factory Password</source>
         <note>ID: SettingsProtection.PasswordDialog.FactoryPassword</note>
         <target xml:lang="es-ES" state="translated">Contraseña de fábrica</target>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation">
+      <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="es-ES" state="translated">Estas configuraciones han sido bloquedas para prevenir modificaciones accidentales que podrían impedir el funcionamiento de esta herramienta.</target>
+        <target xml:lang="es-ES">Estas configuraciones han sido bloquedas para prevenir modificaciones accidentales que podrían impedir el funcionamiento de esta herramienta.</target>
         <alt-trans>
           <target xml:lang="es-ES">Para evitar modificaciones accidentales que podrían causar esta herramienta de dejar de funcionar, estas configuraciones han sido bloqueadas.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle">
+      <trans-unit id="SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle" approved="yes">
         <source xml:lang="en">Settings Protection Password</source>
         <note>ID: SettingsProtection.PasswordDialog.SettingsPasswordWindowTitle</note>
-        <target xml:lang="es-ES" state="translated">Contraseña para proteger la configuración</target>
+        <target xml:lang="es-ES">Contraseña para proteger la configuración</target>
         <alt-trans>
           <target xml:lang="es-ES">Contraseña para proteger las configuraciones</target>
         </alt-trans>
@@ -726,10 +732,10 @@
           <target xml:lang="es-ES">Contraseña para protección de la configuración</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox">
+      <trans-unit id="SettingsProtection.PasswordDialog.ShowCharactersCheckbox" approved="yes">
         <source xml:lang="en">Show Characters</source>
         <note>ID: SettingsProtection.PasswordDialog.ShowCharactersCheckbox</note>
-        <target xml:lang="es-ES" state="translated">Mostrar caracteres</target>
+        <target xml:lang="es-ES">Mostrar caracteres</target>
       </trans-unit>
       <trans-unit id="SettingsProtection.PasswordNotice">
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
