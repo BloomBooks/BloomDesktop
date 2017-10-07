@@ -2086,7 +2086,7 @@
       <trans-unit id="EditTab.HowToUnlockBook" approved="yes">
         <source xml:lang="en">To unlock this shellbook, go into the toolbox on the right, find the gear icon, and click 'Allow changes to this shellbook'.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
-        <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga clic en 'permitir cambios en este libro prediseñado.</target>
+        <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese a la caja de herramientas a la derecha, haga clic en el ícono del engranaje, y haga clic en 'Permitir cambios en este libro prediseñado'.</target>
         <alt-trans>
           <target xml:lang="es-ES">Para desbloquear este libro prediseñado, ingrese la caja de herramientas a la derecha, haga clic en el icono de engranaje, y haga click en 'permitir cambios en este libro prediseñado.</target>
         </alt-trans>
@@ -2151,7 +2151,10 @@
       <trans-unit id="EditTab.Image.TryRestart" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Try closing other programs and restart your computer if necessary.</source>
         <note>ID: EditTab.Image.TryRestart</note>
-        <target xml:lang="es-ES">Intente cerrar otros programs y reiniciar su computadora si es necesario.</target>
+        <target xml:lang="es-ES">Intente cerrar otros programas y reiniciar su computadora si es necesario.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Intente cerrar otros programs y reiniciar su computadora si es necesario.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.Instructions.DeleteAllowed" approved="yes">
         <source xml:lang="en">Feel free to modify or delete this page.</source>
@@ -2171,7 +2174,10 @@
       <trans-unit id="EditTab.JpegWarningDialog.WarningText" approved="yes">
         <source xml:lang="en">The file you’ve chosen is a “JPEG” file. JPEG files are perfect for photographs and color artwork. However, JPEG files are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDF files.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or BMP actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</source>
         <note>ID: EditTab.JpegWarningDialog.WarningText</note>
-        <target xml:lang="es-ES">El archivo elegido es un archivo "JPEG". Los archivos JPEG son perfectos para fotografías e ilustraciones a color. Sin embargo, los archivos JPEG son un gran problema para el arte de línea en blanco y negro. Los problemas incluyen:\n• Borrosidad y puntos grises.\n• Archivos de gran tamaño, haciendo el libro difícil de compartir.\n• Si hay muchos archivos JPEG de gran tamaño, es posible que Bloom no tenga suficiente memoria para hacer PDFs.\n\n Nota: Debido a que el formato JPEG genera "pérdidas", convertir un archivo JPEG a PNG, TIFF o BMP empeora las cosas. Si este archivo es un arte de línea en blanco y negro, debe obtener un escaneo original en uno de esos formatos.\n\n Por favor seleccione uno de los siguientes, y luego haga clic en "Aceptar":</target>
+        <target xml:lang="es-ES">El archivo elegido es un archivo "JPEG". Los archivos JPEG son perfectos para fotografías e ilustraciones a color. Sin embargo, son un gran problema para el arte de línea en blanco y negro. Los problemas incluyen:\n• Borrosidad y puntos grises.\n• Archivos de gran tamaño, causando que el libro sea difícil de compartir.\n• Si hay muchos archivos JPEG de gran tamaño, es posible que Bloom no tenga suficiente memoria para hacer PDFs.\n\n Nota: Debido a que el formato JPEG genera "pérdidas", convertir un archivo JPEG a PNG, TIFF o BMP empeora las cosas. Si este archivo es un arte de línea en blanco y negro, debe obtener un escaneo original en uno de esos formatos.\n\n Por favor seleccione uno de los siguientes, y luego haga clic en "Aceptar":</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El archivo elegido es un archivo "JPEG". Los archivos JPEG son perfectos para fotografías e ilustraciones a color. Sin embargo, los archivos JPEG son un gran problema para el arte de línea en blanco y negro. Los problemas incluyen:\n• Borrosidad y puntos grises.\n• Archivos de gran tamaño, haciendo el libro difícil de compartir.\n• Si hay muchos archivos JPEG de gran tamaño, es posible que Bloom no tenga suficiente memoria para hacer PDFs.\n\n Nota: Debido a que el formato JPEG genera "pérdidas", convertir un archivo JPEG a PNG, TIFF o BMP empeora las cosas. Si este archivo es un arte de línea en blanco y negro, debe obtener un escaneo original en uno de esos formatos.\n\n Por favor seleccione uno de los siguientes, y luego haga clic en "Aceptar":</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">El archivo elegido es un archivo "JPEG". Ilustraciones JPEG son perfectas para las fotografías y las ilustraciones a colores. Sin embargo, JPEG es un gran problema para arte de línea en blanco y negro. Los problemas incluyen:\n• Borrosidad y puntos grises.\n• Es dificil compartir los archivos grandes.\n• Si hay muchos archivos grandes de JPEG, es posible que Bloom no tendrá la memoria suficiente memoria para hacer PDFs.\n\n Nota: Debido a que JPEG es "lossy", la conversión de un archivo JPEG a PNG, TIFF o BMP empeora las cosas. Si esta es arte de línea en blanco y negro, debe obtener un escaneo original en uno de esos formatos.\n\n Por favor seleccione uno de los siguientes, y luego haga clic en "Aceptar":</target>
         </alt-trans>
@@ -2232,7 +2238,7 @@
       <trans-unit id="EditTab.Overflow" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This box has more text than will fit</source>
         <note>ID: EditTab.Overflow</note>
-        <target xml:lang="es-ES">Este cuadro contiene más texto del que cabe</target>
+        <target xml:lang="es-ES">Este cuadro contiene más texto del que cabe en él</target>
         <alt-trans>
           <target xml:lang="es-ES">Este cuadro contiene mas texto de lo que cabe</target>
         </alt-trans>
@@ -2308,7 +2314,7 @@
       <trans-unit id="EditTab.PasteButton.ToolTipWhenDisabled" approved="yes">
         <source xml:lang="en">There is nothing on the Clipboard that you can paste here.</source>
         <note>ID: EditTab.PasteButton.ToolTipWhenDisabled</note>
-        <target xml:lang="es-ES">No hay nada en el portapapeles que pueda pegar aquí.</target>
+        <target xml:lang="es-ES">No hay nada en el Portapapeles que pueda pegar aquí.</target>
         <alt-trans>
           <target xml:lang="es-ES">No hay nada en el portapapeles que se puede pegar aquí.</target>
         </alt-trans>
@@ -2321,7 +2327,7 @@
       <trans-unit id="EditTab.ReadOnlyInAuthorMode" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You cannot put anything in there while making an original book.</source>
         <note>ID: EditTab.ReadOnlyInAuthorMode</note>
-        <target xml:lang="es-ES">No se puede colocar nada allí mientras que está haciendo un libro original.</target>
+        <target xml:lang="es-ES">No puede colocar nada allí mientras que está creando un libro original.</target>
         <alt-trans>
           <target xml:lang="es-ES">No se puede poner nada allí mientras que está haciendo un libro original.</target>
         </alt-trans>
@@ -2403,7 +2409,10 @@
       <trans-unit id="EditTab.TemplatePagesList.Heading" approved="yes">
         <source xml:lang="en">Template Pages</source>
         <note>ID: EditTab.TemplatePagesList.Heading</note>
-        <target xml:lang="es-ES">Páginas de plantilla</target>
+        <target xml:lang="es-ES">Páginas de Plantillas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Páginas de plantilla</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.HintBubbles" approved="yes">
         <source xml:lang="en">Hint Bubbles</source>
