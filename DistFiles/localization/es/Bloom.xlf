@@ -204,12 +204,15 @@
       <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
-        <target xml:lang="es-ES">Copiar información sobre solución de problemas</target>
+        <target xml:lang="es-ES">Copiar Información sobre Solución de Problemas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Copiar información sobre solución de problemas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Browser.OpenPageInFirefox" approved="yes">
         <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
         <note>ID: Browser.OpenPageInFirefox</note>
-        <target xml:lang="es-ES">Abrir una página en Firefox (debe estar en la variable de entorno PATH)</target>
+        <target xml:lang="es-ES">Abrir página en Firefox (debe estar en la variable de entorno PATH)</target>
         <alt-trans>
           <target xml:lang="es-ES">Abrir página en Firefox (debe estar en el variable etorno PATH)</target>
         </alt-trans>
@@ -235,10 +238,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates" approved="yes">
         <source xml:lang="en">Show Experimental Templates (e.g. Picture Dictionary)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates</note>
-        <target xml:lang="es-ES">Mostrar las plantillas experimentales (p. ej. Diccionario ilustrado)</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Mostrar las plantillas experimentales (p. ej. Diccionario del cuadro, calendario)</target>
-        </alt-trans>
+        <target xml:lang="es-ES">Mostrar las Plantillas Experimentales (p. ej. Diccionario Ilustrado)</target>
         <alt-trans>
           <target xml:lang="es-ES">Mostrar las plantillas experimentales (e.g. Diccionario del cuadro, calendario)</target>
         </alt-trans>
@@ -256,9 +256,6 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer</note>
         <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
         <target xml:lang="es-ES">Utilice el Servidor de Imágenes para reducir el uso de memoria en imágenes de gran tamaño.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Utilice el Servidor de Imágenes para reducir el uso de memoria con imágenes de gran tamaño.</target>
-        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Use el servidor de im; ágenes para reducir el uso de memoria con imágenes de tamño grande.</target>
         </alt-trans>
@@ -293,7 +290,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding" approved="yes">
         <source xml:lang="en">Branding</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding</note>
-        <target xml:lang="es-ES">Marcacíon (Branding)</target>
+        <target xml:lang="es-ES">Marcación (Branding)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Marcacíon (Branding)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Branding/Marcacíon</target>
         </alt-trans>
@@ -302,7 +302,10 @@
         <source xml:lang="en">Default Font for {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
-        <target xml:lang="es-ES">Fuente predeterminada para {0}</target>
+        <target xml:lang="es-ES">Fuente Predeterminada para {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Fuente predeterminada para {0}</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
