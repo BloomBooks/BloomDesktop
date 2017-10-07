@@ -664,7 +664,10 @@
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel" approved="yes">
         <source xml:lang="en">Project Information</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel</note>
-        <target xml:lang="es-ES">Información del proyecto</target>
+        <target xml:lang="es-ES">Información del Proyecto</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Información del proyecto</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.ProjectInformationTab.Province" approved="yes">
         <source xml:lang="en">Province</source>
@@ -691,7 +694,10 @@
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem" approved="yes">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
-        <target xml:lang="es-ES">Crear un Paquete de Bloom de Plantilla de Libro...</target>
+        <target xml:lang="es-ES">Crear un Paquete de Bloom de Plantillas de Libro...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un Paquete de Bloom de Plantilla de Libro...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un Paquete de Bloom de plantilla de libro...</target>
         </alt-trans>
@@ -861,7 +867,10 @@
       <trans-unit id="CollectionTab.CollectionMenu.showNotes" approved="yes">
         <source xml:lang="en">Collection Notes...</source>
         <note>ID: CollectionTab.CollectionMenu.showNotes</note>
-        <target xml:lang="es-ES">Notas de la colección...</target>
+        <target xml:lang="es-ES">Notas de la Colección...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Notas de la colección...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionTabLabel" approved="yes">
         <source xml:lang="en">Collections</source>
@@ -907,7 +916,10 @@
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+        <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como recursos para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Debido a que esteaes una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
         </alt-trans>
@@ -919,9 +931,6 @@
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
@@ -992,7 +1001,10 @@
       <trans-unit id="CollectionTab.Sample Shells" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Shells</source>
         <note>ID: CollectionTab.Sample Shells</note>
-        <target xml:lang="es-ES">Libros prediseñados de muestra</target>
+        <target xml:lang="es-ES">Libros Prediseñados de muestra</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Libros prediseñados de muestra</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">"Shells" de muestra</target>
         </alt-trans>
@@ -1013,7 +1025,10 @@
       <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.Source Collection</note>
-        <target xml:lang="es-ES">Colección de libros originarios</target>
+        <target xml:lang="es-ES">Colección de Libros Originarios</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros originarios</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros fuentes</target>
         </alt-trans>
@@ -1032,7 +1047,10 @@
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading" approved="yes">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="es-ES">Recursos para nuevos libros prediseñados</target>
+        <target xml:lang="es-ES">Recursos para nuevos Libros Prediseñados</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Recursos para nuevos libros prediseñados</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Fuentes para nuevos libros prediseñados</target>
         </alt-trans>
