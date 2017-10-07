@@ -5865,7 +5865,10 @@ Desea seguir?</target>
       <trans-unit id="ReportProblemDialog.SeeDetails" approved="yes">
         <source xml:lang="en">See what else will be submitted</source>
         <note>ID: ReportProblemDialog.SeeDetails</note>
-        <target xml:lang="es-ES">Vea todo lo que será enviado</target>
+        <target xml:lang="es-ES">Ver todo lo que será enviado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Vea todo lo que será enviado</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Vea todo que será enviado</target>
         </alt-trans>
