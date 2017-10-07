@@ -861,7 +861,10 @@
       <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="es-ES" state="translated">Seleccione el &amp;teclado con el cual desea ingresar texto {0}</target>
+        <target xml:lang="es-ES" state="translated">Seleccione el &amp;teclado con el cual desea ingresar el texto {0}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Seleccione el &amp;teclado con el cual desea ingresar texto {0}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Seleccione el &amp;teclado con lo cual desea ingresar texto {0}</target>
         </alt-trans>
