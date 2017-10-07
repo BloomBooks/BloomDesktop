@@ -5537,7 +5537,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SetUpDecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Decodable Reader Tool</source>
         <note>ID: ReaderSetup.SetUpDecodableReaderTool</note>
-        <target xml:lang="es-ES">Configurar la herramienta de libros descifrables</target>
+        <target xml:lang="es-ES">Configurar la herramienta de los Libros Descifrables</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configurar la herramienta de libros descifrables</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Configurar la herramienta de lectores decodificables</target>
         </alt-trans>
@@ -5545,7 +5548,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Leveled Reader Tool</source>
         <note>ID: ReaderSetup.SetUpLeveledReaderTool</note>
-        <target xml:lang="es-ES">Configurar la herramienta de "Libros por Niveles"</target>
+        <target xml:lang="es-ES">Configurar la herramienta de los Libros por Niveles</target>
         <alt-trans>
           <target xml:lang="es-ES">Configurar la herramienta de libros por niveles</target>
         </alt-trans>
@@ -5623,9 +5626,9 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.ToRemember" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Things to remember for this level:</source>
         <note>ID: ReaderSetup.ToRemember</note>
-        <target xml:lang="es-ES">Cosas para recordar en este nivel</target>
+        <target xml:lang="es-ES">Cosas para recordar en este nivel:</target>
         <alt-trans>
-          <target xml:lang="es-ES">Cosas importantes en este nivel:</target>
+          <target xml:lang="es-ES">Cosas para recordar en este nivel</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Tener en cuenta en este nivel:</target>
@@ -5706,7 +5709,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
-        <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros descifrables y libros por niveles para el idioma \"{0}\". Cualquiera que abra este Paquete de Bloom, y después abra una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y libros por niveles reemplazada por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
+        <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros descifrables y libros por niveles para el idioma \"{0}\". Cualquiera que abra este Paquete de Bloom, y después abra una colección en el idioma \"{0}\", tendrá su configuración actual para libros descifrables y libros por niveles reemplazada por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros descifrables.</target>
         <alt-trans>
           <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y por niveles para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y por niveles reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
         </alt-trans>
