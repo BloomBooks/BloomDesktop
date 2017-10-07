@@ -3159,7 +3159,10 @@
       <trans-unit id="Errors.SpecifiedXMatterNotFound" approved="yes">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or change the book's Front/Back Matter pack setting.</source>
         <note>ID: Errors.SpecifiedXMatterNotFound</note>
-        <target xml:lang="es-ES">Este libro utiliza un Paquete de Material Preliminar/Final llamado'{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del Paquete de Material Preliminar/Final del libro.</target>
+        <target xml:lang="es-ES">Este libro utiliza el Paquete de Material Preliminar/Final llamado'{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del Paquete de Material Preliminar/Final del libro.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro utiliza un Paquete de Material Preliminar/Final llamado'{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del Paquete de Material Preliminar/Final del libro.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o puede cambiar la configuración del paquete de material preliminar/final del libro.</target>
         </alt-trans>
@@ -3172,14 +3175,14 @@
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero Bloom no logró conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Materia Inicial/Final del libro.</target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Este libro pidió un Paquete de Materia Inicial/Final nombrado '{0}', pero Bloom no logro conseguirlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o puede cambiar la configuración de Paquete de Materia Inicial/Final del libro.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.XMatterNotFound" approved="yes">
         <source xml:lang="en">This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a Bloom Pack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</source>
         <note>ID: Errors.XMatterNotFound</note>
-        <target xml:lang="es-ES">Este libro utiliza el Paquete de Material Preliminar/Final llamado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Creando Libros y cambiar a otro Paquete de Material Preliminar/Final.</target>
+        <target xml:lang="es-ES">Este libro utiliza el Paquete de Material Preliminar/Final llamado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración:Creando Libros y cambiar a otro Paquete de Material Preliminar/Final.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro utiliza el Paquete de Material Preliminar/Final llamado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Creando Libros y cambiar a otro Paquete de Material Preliminar/Final.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro utiliza el paquete de material preliminar/final nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un Paquete de Bloom que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de material preliminar/final.</target>
         </alt-trans>
@@ -3191,9 +3194,6 @@
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro utiliza el paquete de páginas iniciales/finales nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de páginas iniciales/finales.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Este libro utiliza el paquete de materia frontal/posterior nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia frontal/posterior.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="Errors.XMatterProblemLabel" approved="yes">
@@ -3214,7 +3214,10 @@
       <trans-unit id="Errors.XMatterSpecifiedByBookNotFound" approved="yes">
         <source xml:lang="en">This book called for a Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The book has been changed to use the Front/Back Matter pages from the Collection Settings.</source>
         <note>ID: Errors.XMatterSpecifiedByBookNotFound</note>
-        <target xml:lang="es-ES">Este libro utiliza un Paquete de Material Preliminar/Final llamado '{0}', pero esta versión de Bloom no lo tiene y Bloom no pudo encontrarlo en esta computadora. El libro ha sido modificado para utilizar las páginas del Material Preliminar/Final de la "Configuración de la Colección".</target>
+        <target xml:lang="es-ES">Este libro utiliza el Paquete de Material Preliminar/Final llamado '{0}', pero esta versión de Bloom no lo tiene y Bloom no pudo encontrarlo en esta computadora. El libro ha sido modificado para utilizar las páginas del Material Preliminar/Final de la "Configuración de la Colección".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Este libro utiliza un Paquete de Material Preliminar/Final llamado '{0}', pero esta versión de Bloom no lo tiene y Bloom no pudo encontrarlo en esta computadora. El libro ha sido modificado para utilizar las páginas del Material Preliminar/Final de la "Configuración de la Colección".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Este libro pidió un paquete de material preliminar/final nombrado '{0}', pero esta versión de Bloom no lo tiene y Bloom no logró conseguirlo en esta computadora. El libro ha sido modificado para usar las páginas de material preliminar/final de la configuación de la colección.</target>
         </alt-trans>
@@ -3236,7 +3239,10 @@
       <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem" approved="yes">
         <source xml:lang="en">Building Reader Templates</source>
         <note>ID: HelpMenu.BuildingReaderTemplatesMenuItem</note>
-        <target xml:lang="es-ES">Creando plantillas de libros</target>
+        <target xml:lang="es-ES">Creando Plantillas de Libros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Creando plantillas de libros</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="HelpMenu.CheckForNewVersionMenuItem" approved="yes">
         <source xml:lang="en">Check For New Version</source>
