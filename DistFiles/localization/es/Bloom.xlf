@@ -4457,11 +4457,11 @@
         <note>displayed as file type for Save File dialog.  'RGB' may not be translatable, it is a standard.</note>
         <target xml:lang="es-ES">PDF con color RGB</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
+      <trans-unit id="PublishTab.PdfMaker.ErrorProcessing" approved="yes">
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
         <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <target xml:lang="es-ES" state="translated">Error al crear, comprimir o volver a colorear el archivo PDF</target>
+        <target xml:lang="es-ES">Error al crear, comprimir o volver a colorear el archivo PDF</target>
         <alt-trans>
           <target xml:lang="es-ES">Error al crear, comprimir, o recolorear el archivo PDF</target>
         </alt-trans>
@@ -4496,7 +4496,10 @@
       <trans-unit id="PublishTab.PdfMaker.TryMoreMemory" approved="yes">
         <source xml:lang="en">Try doing this on a computer with more memory</source>
         <note>ID: PublishTab.PdfMaker.TryMoreMemory</note>
-        <target xml:lang="es-ES">Trate de hacer esto en una computadora con más memoria</target>
+        <target xml:lang="es-ES">Intente hacer esto en una computadora con más memoria</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Trate de hacer esto en una computadora con más memoria</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.TryRestart" approved="yes">
         <source xml:lang="en">Restart your computer and try this again right away</source>
@@ -4550,7 +4553,7 @@
         <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for Printshop".  You must agree to the following license in order to perform this task in Bloom.</source>
         <note>ID: PublishTab.PrologToAdobeEula</note>
         <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-        <target xml:lang="es-ES">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de preparar un "PDF para la imprenta".  Debe aceptar la siguiente licencia para realizar este proceso en Bloom.</target>
+        <target xml:lang="es-ES">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de preparar un "PDF para la imprenta". Debe aceptar la siguiente licencia para realizar este proceso en Bloom.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom utiliza perfiles de color del programa Adobe para convertir los archivos PDF a color CMYK en vez de color RGB.  Esto es parte de la preparación de un "PDF para la imprenta".  Debes aceptar la siguiente licencia para hacerlo en Bloom.</target>
         </alt-trans>
@@ -4769,7 +4772,7 @@
       <trans-unit id="PublishTab.Upload.Login.LoginOrSignupConnectionFailed" approved="yes">
         <source xml:lang="en">Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</source>
         <note>ID: PublishTab.Upload.Login.LoginOrSignupConnectionFailed</note>
-        <target xml:lang="es-ES">Bloom no pudo conectarse al servidor para completar su inicio de sesión o inscripción. Esto podría ser un problema con su conexión al internet, nuestro servidor o con algún equipo intermediario.</target>
+        <target xml:lang="es-ES">Bloom no pudo conectarse al servidor para completar su inicio de sesión o creación de una cuenta. Esto podría ser un problema con su conexión al internet, nuestro servidor o con algún equipo intermediario.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo conectar al servidor para completar su login o suscripción. Esto podría ser un problema con su conexión al internet, nuestro servidor o algún equipo intermediario.</target>
         </alt-trans>
