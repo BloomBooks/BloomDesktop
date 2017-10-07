@@ -76,9 +76,9 @@
       <trans-unit id="Application.WaitingFinish.General" approved="yes">
         <source xml:lang="en">Waiting for other application to finish...</source>
         <note>ID: Application.WaitingFinish.General</note>
-        <target xml:lang="es-ES">Esperando a otra aplicación para finalizar...</target>
+        <target xml:lang="es-ES">Esperando que otra aplicación termine...</target>
         <alt-trans>
-          <target xml:lang="es-ES">Esperando que otra aplicación termine...</target>
+          <target xml:lang="es-ES">Esperando a otra aplicación para finalizar...</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="Application.WaitingFinish.Specific" approved="yes">
@@ -134,9 +134,9 @@
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Confirm Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.WindowTitle</note>
-        <target xml:lang="es-ES">Confirmar borrar</target>
+        <target xml:lang="es-ES">Confirmar eliminación</target>
         <alt-trans>
-          <target xml:lang="es-ES">Confirmar eliminación</target>
+          <target xml:lang="es-ES">Confirmar borrar</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.cancelBtn" approved="yes">
