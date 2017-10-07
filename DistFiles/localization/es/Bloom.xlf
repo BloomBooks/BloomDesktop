@@ -4924,7 +4924,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.LoginLink" approved="yes">
         <source xml:lang="en">Log in to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.LoginLink</note>
-        <target xml:lang="es-ES">Inicie sesión en BloomLibrary.org</target>
+        <target xml:lang="es-ES">Iniciar sesión en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Inicie sesión en BloomLibrary.org</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Logout" approved="yes">
         <source xml:lang="en">Log out of BloomLibrary.org</source>
@@ -4937,7 +4940,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.MakingPdf" approved="yes">
         <source xml:lang="en">Making PDF Preview...</source>
         <note>ID: PublishTab.Upload.MakingPdf</note>
-        <target xml:lang="es-ES">Haciendo una vista previa del PDF...</target>
+        <target xml:lang="es-ES">Creando una vista previa del PDF...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haciendo una vista previa del PDF...</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Haciendo una vista previa PDF...</target>
         </alt-trans>
@@ -4945,7 +4951,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.MakingThumbnail" approved="yes">
         <source xml:lang="en">Making thumbnail image...</source>
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
-        <target xml:lang="es-ES">Haciendo una imagen en miniatura...</target>
+        <target xml:lang="es-ES">Creando una imagen en miniatura...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haciendo una imagen en miniatura...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.NoLangsFound" approved="yes">
         <source xml:lang="en">(None found)</source>
@@ -5206,7 +5215,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.CombinationHelp2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">E.g. "ai oo sh ng th ing"</source>
         <note>ID: ReaderSetup.CombinationHelp2</note>
-        <target xml:lang="es-ES">p. ej. "ai oo sh ng th ing"</target>
+        <target xml:lang="es-ES">P. ej. "ai oo sh ng th ing"</target>
+        <alt-trans>
+          <target xml:lang="es-ES">p. ej. "ai oo sh ng th ing"</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Combinations" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letter Combinations (Graphemes)</source>
@@ -5280,7 +5292,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.LetterHelp3" sil:dynamic="true" approved="yes">
         <source xml:lang="en">E.g. "a b c d"</source>
         <note>ID: ReaderSetup.LetterHelp3</note>
-        <target xml:lang="es-ES">p. ej. "a b c d"</target>
+        <target xml:lang="es-ES">P. ej. "a b c d"</target>
+        <alt-trans>
+          <target xml:lang="es-ES">p. ej. "a b c d"</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters</source>
