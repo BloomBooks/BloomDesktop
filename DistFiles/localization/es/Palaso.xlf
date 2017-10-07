@@ -385,13 +385,10 @@
         <note>ID: LanguageLookup.AlternateNamesHeader</note>
         <target xml:lang="es-ES">Otros nombres</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
+      <trans-unit id="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2" approved="yes">
         <source xml:lang="en">This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2</note>
-        <target xml:lang="es-ES" state="translated">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no Listado", esta opción será seleccionada ahora.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no Enumerado", esta opción será seleccionada ahora.</target>
-        </alt-trans>
+        <target xml:lang="es-ES">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no enlistado", esta opción será seleccionada ahora.</target>
         <alt-trans>
           <target xml:lang="es-ES">Esta lista debe incluir todos los idiomas de ISO-639, incluidos todos los nombres alternativos conocidos por ethnologue.com.\n\nSi es necesario, utilice la opción "Idioma no enumerado", que será seleccionado ahora.</target>
         </alt-trans>
@@ -405,7 +402,7 @@
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
-        <target xml:lang="es-ES">Acerca de Códigos de Idioma 639-3 &amp; Cómo solicitar nuevos</target>
+        <target xml:lang="es-ES">Acerca de Códigos de Idioma 639-3 y Cómo solicitar nuevos</target>
         <alt-trans>
           <target xml:lang="es-ES">Acerca de códigos de idioma 639-3 &amp; Cómo solicitar nuevos</target>
         </alt-trans>
@@ -469,10 +466,13 @@
         <note>ID: LanguageLookup.ShowRegionalDialectsLabel</note>
         <target xml:lang="es-ES">Mostrar dialectos regionales</target>
       </trans-unit>
-      <trans-unit id="LanguageLookup.UnlistedLanguage">
+      <trans-unit id="LanguageLookup.UnlistedLanguage" approved="yes">
         <source xml:lang="en">Unlisted Language</source>
         <note>ID: LanguageLookup.UnlistedLanguage</note>
-        <target xml:lang="es-ES" state="translated">Idioma no listado</target>
+        <target xml:lang="es-ES">Idioma no enlistado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Idioma no listado</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Idioma no listada</target>
         </alt-trans>
@@ -582,7 +582,10 @@
       <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
         <source xml:lang="en">Allow commercial uses of your work?</source>
         <note>ID: MetadataEditor.AllowCommercialUse</note>
-        <target xml:lang="es-ES">¿Permite usos comerciales de su trabajo?</target>
+        <target xml:lang="es-ES">¿Permite hacer uso comercial de su trabajo?</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¿Permite usos comerciales de su trabajo?</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
         <source xml:lang="en">Allow modifications of your work?</source>
@@ -725,7 +728,10 @@
       <trans-unit id="SettingsProtection.PasswordDialog.Password.Explanation" approved="yes">
         <source xml:lang="en">To prevent accidental changes which could cause this tool to stop working for you, these settings have been locked.</source>
         <note>ID: SettingsProtection.PasswordDialog.Password.Explanation</note>
-        <target xml:lang="es-ES">Estas configuraciones han sido bloquedas para prevenir modificaciones accidentales que podrían impedir el funcionamiento de esta herramienta.</target>
+        <target xml:lang="es-ES">Estas configuraciones han sido bloquedas para prevenir cambios accidentales que podrían impedir el funcionamiento de esta herramienta.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estas configuraciones han sido bloquedas para prevenir modificaciones accidentales que podrían impedir el funcionamiento de esta herramienta.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para evitar modificaciones accidentales que podrían causar esta herramienta de dejar de funcionar, estas configuraciones han sido bloqueadas.</target>
         </alt-trans>
@@ -858,13 +864,10 @@
           <target xml:lang="es-ES">Keyman 5.0 o posterior no está instalado.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
+      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="es-ES" state="translated">Seleccione el &amp;teclado con el cual desea ingresar el texto {0}</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Seleccione el &amp;teclado con el cual desea ingresar texto {0}</target>
-        </alt-trans>
+        <target xml:lang="es-ES">Seleccione el &amp;teclado con el cual desea ingresar texto {0}</target>
         <alt-trans>
           <target xml:lang="es-ES">Seleccione el &amp;teclado con lo cual desea ingresar texto {0}</target>
         </alt-trans>
