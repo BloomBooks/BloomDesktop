@@ -2556,7 +2556,10 @@
       <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog" approved="yes">
         <source xml:lang="en">Picture Intellectual Property Information</source>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
-        <target xml:lang="es-ES">Información de propiedad intelectual de la imagen</target>
+        <target xml:lang="es-ES">Información de la propiedad intelectual de la imagen</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Información de propiedad intelectual de la imagen</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Información de propiedad intelectual de la ilustración</target>
         </alt-trans>
@@ -2564,7 +2567,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader Tool</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool</note>
-        <target xml:lang="es-ES">Herramienta para libros descifrables</target>
+        <target xml:lang="es-ES">Herramienta para Libros Descifrables</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Herramienta para libros descifrables</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Herramienta para libros decodificables</target>
         </alt-trans>
@@ -2573,9 +2579,6 @@
         <source xml:lang="en">Bloom can handle only the first {0} words.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
         <target xml:lang="es-ES">Bloom sólo puede utilizar las primeras {0} palabras.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Bloom sólo puede manejar las primeras {0} palabras.</target>
-        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom solo puede utilazar las primeras {0} palabras.</target>
         </alt-trans>
@@ -2640,7 +2643,10 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Open a Letter and Word List File</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList</note>
-        <target xml:lang="es-ES">Abrir un archivo que contiene una lista de letras y palabras</target>
+        <target xml:lang="es-ES">Abrir un archivo que contenga una lista de letras y palabras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Abrir un archivo que contiene una lista de letras y palabras</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Abrir un archivo de lista de letras y palabras</target>
         </alt-trans>
@@ -2648,7 +2654,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Generate a letter and word list report</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
-        <target xml:lang="es-ES">Generar un informe que contiene una lista de letras y palabras</target>
+        <target xml:lang="es-ES">Generar un informe que contenga una lista de letras y palabras</target>
         <alt-trans>
           <target xml:lang="es-ES">Generar un informe de letras y palabras</target>
         </alt-trans>
@@ -2702,7 +2708,10 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
-        <target xml:lang="es-ES">Herramienta para libros por niveles</target>
+        <target xml:lang="es-ES">Herramienta para los Libros por Niveles</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Herramienta para libros por niveles</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Herramienta para libros nivelados</target>
         </alt-trans>
@@ -2963,7 +2972,10 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Talking Book Tool</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Heading</note>
-        <target xml:lang="es-ES">Herramienta de audiolibros</target>
+        <target xml:lang="es-ES">Herramienta de Audiolibros</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Herramienta de audiolibros</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Herramienta de libros sonoros</target>
         </alt-trans>
@@ -3000,7 +3012,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make an e-book that can play recordings while highlighting sentences.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
-        <target xml:lang="es-ES">Hacer un libro electrónico que reproduce las grabaciones mientras que destaca las oraciones.</target>
+        <target xml:lang="es-ES">Hacer un libro electrónico que reproduzca las grabaciones mientras que destaca las oraciones.</target>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un e-libro que reproduce las grabaciones mientras que destaca las oraciónes.</target>
         </alt-trans>
@@ -3046,7 +3058,7 @@
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
-        <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, hace falta, o ha fallado.</target>
+        <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, hace falta o ha fallado.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero significa que algo no está actualizada, hace falta, o ha fallado.</target>
         </alt-trans>
@@ -3057,7 +3069,7 @@
       <trans-unit id="Errors.BrokenBook" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.</source>
         <note>ID: Errors.BrokenBook</note>
-        <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, no se encuentra, o ha fallado. Considere utilizar el comando 'Reportar un problema' en el menú "Ayuda".</target>
+        <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, no se encuentra o ha fallado. Considere utilizar el comando 'Reportar un problema' en el menú "Ayuda".</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo mostrar este libro. Esto no significa que su trabajo se haya perdido, pero sí significa que algo no está actualizado, no se encuentra, o ha fallado. Considere usar el comando 'Reportar un problema' en el menú "Ayuda".</target>
         </alt-trans>
@@ -3132,9 +3144,6 @@
         <source xml:lang="en">Report this problem to Bloom Support</source>
         <note>ID: Errors.ReportThisProblemButton</note>
         <target xml:lang="es-ES">Reportar este problema al Servicio de Apoyo de Bloom</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Reportar este problema al Apoyo Bloom</target>
-        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Informar sobre este problema a Apoyo Bloom</target>
         </alt-trans>
