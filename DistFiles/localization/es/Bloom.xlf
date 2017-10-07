@@ -488,7 +488,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel" approved="yes">
         <source xml:lang="en">Page Numbering Style</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel</note>
-        <target xml:lang="es-ES">Estilo de numeración de páginas</target>
+        <target xml:lang="es-ES">Estilo de Numeración de Páginas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Estilo de numeración de páginas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian" approved="yes">
         <source xml:lang="en">Persian</source>
@@ -552,7 +555,10 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
-        <target xml:lang="es-ES">Configuración de alfabeto especial</target>
+        <target xml:lang="es-ES">Configuración de Alfabeto Especial</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Configuración de alfabeto especial</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle" approved="yes">
         <source xml:lang="en">Settings</source>
@@ -599,17 +605,23 @@
         <source xml:lang="en">Set...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink</note>
         <note>If there is no third language specified, the link changes to this.</note>
-        <target xml:lang="es-ES">Establecer...</target>
+        <target xml:lang="es-ES">Configurar...</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Establecer...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel" approved="yes">
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
-        <target xml:lang="es-ES">Idioma local</target>
+        <target xml:lang="es-ES">Idioma Local</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Idioma local</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label" approved="yes">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language2Label</note>
-        <target xml:lang="es-ES">Idioma 2 (p. ej. idioma nacional)</target>
+        <target xml:lang="es-ES">Idioma 2 (p. ej. Idioma Nacional)</target>
         <alt-trans>
           <target xml:lang="es-ES">Idioma 2 (p. ej. - idioma nacional)</target>
         </alt-trans>
@@ -620,7 +632,10 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language3Label" approved="yes">
         <source xml:lang="en">Language 3 (e.g. Regional Language)  (Optional)</source>
         <note>ID: CollectionSettingsDialog.LanguageTab._language3Label</note>
-        <target xml:lang="es-ES">Idioma 3 (p. ej. idioma regional)  (opcional)</target>
+        <target xml:lang="es-ES">Idioma 3 (p. ej. Idioma Regional)  (Opcional)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Idioma 3 (p. ej. idioma regional)  (opcional)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Idioma 3 (p. ej. - idioma regional)  (opcional)</target>
         </alt-trans>
