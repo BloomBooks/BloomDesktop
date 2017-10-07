@@ -1458,7 +1458,10 @@
       <trans-unit id="EditTab.ChooseLayoutButton" approved="yes">
         <source xml:lang="en">Choose Different Layout</source>
         <note>ID: EditTab.ChooseLayoutButton</note>
-        <target xml:lang="es-ES">Elija un diseño diferente</target>
+        <target xml:lang="es-ES">Elegir un diseño diferente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Elija un diseño diferente</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle" approved="yes">
         <source xml:lang="en">Really Delete Page?</source>
