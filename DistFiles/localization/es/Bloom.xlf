@@ -4216,10 +4216,7 @@
       <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF" approved="yes">
         <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
         <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
-        <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encrontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontró un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
-        </alt-trans>
+        <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontró un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
         <alt-trans>
           <target xml:lang="es-ES">¡Qué extraño!... Adobe Reader encontó un error cuando intentó mostrar ese PDF. Todavía puede intentar guardar el libro en formato PDF.</target>
         </alt-trans>
@@ -4315,7 +4312,10 @@
       <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
-        <target xml:lang="es-ES">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leído en varios dispositivos de lectura electrónica.</target>
+        <target xml:lang="es-ES">Convierte este libro en un ePUB (libro electrónico). Esto permitirá que pueda ser leído en varios dispositivos de lectura electrónica.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leído en varios dispositivos de lectura electrónica.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Convierte este libro a un ePUB (libro electrónico). Esto permitirá que sea leido en varios dispositivos de lectura electrónica.</target>
         </alt-trans>
@@ -4457,11 +4457,11 @@
         <note>displayed as file type for Save File dialog.  'RGB' may not be translatable, it is a standard.</note>
         <target xml:lang="es-ES">PDF con color RGB</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ErrorProcessing" approved="yes">
+      <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
         <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
         <note>Message briefly displayed to the user in a toast</note>
-        <target xml:lang="es-ES">Error al crear, comprimir, o volver a colorear el archivo PDF</target>
+        <target xml:lang="es-ES" state="translated">Error al crear, comprimir o volver a colorear el archivo PDF</target>
         <alt-trans>
           <target xml:lang="es-ES">Error al crear, comprimir, o recolorear el archivo PDF</target>
         </alt-trans>
