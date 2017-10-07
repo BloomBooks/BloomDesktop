@@ -3545,7 +3545,10 @@
       <trans-unit id="LoginDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Log in to BloomLibrary.org</source>
         <note>ID: LoginDialog.WindowTitle</note>
-        <target xml:lang="es-ES">Inicie sesión en BloomLibrary.org</target>
+        <target xml:lang="es-ES">Iniciar sesión en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Inicie sesión en BloomLibrary.org</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName" approved="yes">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
@@ -3638,7 +3641,10 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription" approved="yes">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-        <target xml:lang="es-ES">Una colección de libros prediseñados o de plantilla en uno o más idiomas de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede crear un Paquete de Bloom para compartir con otros para que puedan crear libros en su idioma local con los libros prediseñados.</target>
+        <target xml:lang="es-ES">Una colección de libros prediseñados o de plantilla en uno o más idiomas de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede crear un Paquete de Bloom para compartir con otros para que puedan crear libros en su idioma local con los libros prediseñados que usted creará.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Una colección de libros prediseñados o de plantilla en uno o más idiomas de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede crear un Paquete de Bloom para compartir con otros para que puedan crear libros en su idioma local con los libros prediseñados.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Una colección de libros prediseñados o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede hacer un Paquete de Bloom para compartir con otros para que puedan hacer libros en su idioma local con sus libros prediseñados.</target>
         </alt-trans>
@@ -3742,7 +3748,7 @@
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2" approved="yes">
         <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2</note>
-        <target xml:lang="es-ES">Con el propósito de mantener todo simple y organizado, Bloom mantiene todos los libros que usted realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Lo primero que tenemos que hacer es crear una colección para usted.</target>
+        <target xml:lang="es-ES">Con el propósito de mantener todo simple y organizado, Bloom mantiene todos los libros que usted crea en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Lo primero que tenemos que hacer es crear una colección para usted.</target>
         <alt-trans>
           <target xml:lang="es-ES">Con el propósito de mantener todo simple y organizado, Bloom mantiene todos los libros que realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Lo primero que temos que hacer es hacerle una colección.</target>
         </alt-trans>
@@ -3762,9 +3768,6 @@
         <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
         <note>ID: OpenCreateCloneControl.InDropboxMessage</note>
         <target xml:lang="es-ES">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porque a veces Dropbox bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o que desactive Dropbox mientras que utiliza Bloom.</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porque a veces Dropbox bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o que desactive Dropbox mientras que usa Bloom.</target>
-        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ha detectado que esta colección se encuentra en una carpeta de Dropbox. Esto puede causar problemas porquea veces Dropbox bloquea Bloom de sus propios archivos. Si tiene problemas, le recomendamos que mueva su colección a otro lugar o que desactive Dropbox mientras que usa Bloom.</target>
         </alt-trans>
