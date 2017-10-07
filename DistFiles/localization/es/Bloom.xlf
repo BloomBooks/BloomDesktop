@@ -3953,7 +3953,10 @@
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
         <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
         <note>{0} is a book title</note>
-        <target xml:lang="es-ES">¡Ahora puede leer "{0}" en LectorBloom!</target>
+        <target xml:lang="es-ES">¡Ahora puede leer "{0}" en el LectorBloom!</target>
+        <alt-trans>
+          <target xml:lang="es-ES">¡Ahora puede leer "{0}" en LectorBloom!</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">¡Ahora puede leer "{0}" en BloomReader!</target>
         </alt-trans>
@@ -4085,7 +4088,7 @@
       <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest" approved="yes">
         <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
         <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
-        <target xml:lang="es-ES">Recibimos una solicitud de libro que no pudimos procesar. ¿Será que el dispositivo está ejecutando una versión no compatible de LectorBloom?</target>
+        <target xml:lang="es-ES">Recibimos una solicitud de libro que no pudimos procesar. ¿Será que el dispositivo está ejecutando una versión no compatible del LectorBloom?</target>
         <alt-trans>
           <target xml:lang="es-ES">Recibimos una solicitud de libro que no podimos procesar. ¿Será que el dispositivo está ejecutando una versión incompatible de LectorBloom?</target>
         </alt-trans>
