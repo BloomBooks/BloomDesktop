@@ -1649,7 +1649,10 @@
       <trans-unit id="EditTab.DuplicatePageButton.ToolTip" approved="yes">
         <source xml:lang="en">Insert a new page which is a duplicate of this one</source>
         <note>ID: EditTab.DuplicatePageButton.ToolTip</note>
-        <target xml:lang="es-ES">Insertar una nueva página que es un duplicado de ésta</target>
+        <target xml:lang="es-ES">Insertar una nueva página (un duplicado de ésta)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Insertar una nueva página que es un duplicado de ésta</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Insertar una nueva página que es una duplicada de éste</target>
         </alt-trans>
@@ -1886,7 +1889,7 @@
       <trans-unit id="EditTab.FormatDialogTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.FormatDialogTip</note>
-        <target xml:lang="es-ES">Ajustar el estilo del formato</target>
+        <target xml:lang="es-ES">Ajustar el formato del estilo</target>
         <alt-trans>
           <target xml:lang="es-ES">Ajuste el estilo del formato</target>
         </alt-trans>
@@ -2000,7 +2003,10 @@
       <trans-unit id="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Original (or Shell) Acknowledgments in {lang}</source>
         <note>ID: EditTab.FrontMatter.OriginalAcknowledgmentsPrompt</note>
-        <target xml:lang="es-ES">Reconocimientos de libros originales (o prediseñados) en {lang}</target>
+        <target xml:lang="es-ES">Reconocimientos de Libros Originales (o Prediseñados) en {lang}</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Reconocimientos de libros originales (o prediseñados) en {lang}</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Reconocimientos de originales (o de "shell") en {lang}</target>
         </alt-trans>
@@ -2384,9 +2390,6 @@
         <source xml:lang="en">Adjust formatting for style</source>
         <note>ID: EditTab.StyleEditorTip</note>
         <target xml:lang="es-ES">Ajustar el formato del estilo</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Ajuste el estilo del formato</target>
-        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Ajuste el esitilo del formato</target>
         </alt-trans>
