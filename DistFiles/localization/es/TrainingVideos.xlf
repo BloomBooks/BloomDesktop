@@ -15,7 +15,7 @@
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser: </source>
-        <target xml:lang="es-ES">Si su computadora está conectada al internet, puede ver videos por medio de su navegador: </target>
+        <target xml:lang="es-ES">Si su computadora está conectada al internet, puede ver vídeos por medio de su navegador: </target>
         <note>ID: training.videos.watch</note>
         <alt-trans>
           <target xml:lang="es-ES">Si su computadora esta conectada al internet, puede ver videos por medio de su navegador: </target>
