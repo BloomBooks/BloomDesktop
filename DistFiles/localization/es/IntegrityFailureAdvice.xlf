@@ -28,6 +28,9 @@
         <target xml:lang="es-ES">Puede ser que el administrador de su computadora lo ha "bloqueado" para prevenir cosas malas, pero lo hizo de tal manera que Bloom no pudo colocar estos archivos corectamente.  </target>
         <note>ID: integrity.causes.2</note>
         <alt-trans>
+          <target xml:lang="es-ES">Puede ser que el administrador de su computadora lo ha "bloqueado" para prevenir cosas malas, pero lo hizo de tal manera que Bloom no pudo colocar estos archivos correctamente.  </target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Puede ser que el administrador de su computadora lo ha bloqueado para prevenir cosas malas, pero de tal manera que Bloom no pudo colocar estos archivos corectamente.  </target>
         </alt-trans>
       </trans-unit>
@@ -46,16 +49,22 @@
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Reinstall" approved="yes">
         <source xml:lang="en">Run the Bloom installer again, and see if it starts up OK this time. </source>
-        <target xml:lang="es-ES">Vuelva a ejecutar el instalador de Bloom para ver si esta vez inicia corectamente. </target>
+        <target xml:lang="es-ES">Vuelva a ejecutar el instalador de Bloom para ver si esta vez inicia correctamente. </target>
         <note>ID: integrity.todo.ideas.Reinstall</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Vuelva a ejecutar el instalador de Bloom para ver si esta vez inicia corectamente. </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Vuelva a ejecutar el instalador de Bloom para ver si esta vez inicie corectamente. </target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="integrity.todo.ideas.Antivirus" approved="yes">
         <source xml:lang="en">If that doesn't fix it, it's time to talk to your anti-virus program. If the "Missing Files" section below shows any files which end in ".exe",  consider "whitelisting" the Bloom program folder, which is at <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>. </source>
-        <target xml:lang="es-ES">Si eso no lo resueve, es tiempo investigar su programa de antivirus. Si la sección de "Archivos Faltantes" ("Missing Files") muestra archivos que terminan en ".exe", considere poner la carpeta del programa Bloom en la "lista blanca" ("white list"), ubicada en <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.  </target>
+        <target xml:lang="es-ES">Si eso no lo resuelve, es tiempo investigar su programa de antivirus. Si la sección de "Archivos Faltantes" ("Missing Files") muestra archivos que terminan en ".exe", considere poner la carpeta del programa Bloom en la "lista blanca" ("white list"), ubicada en <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.  </target>
         <note>ID: integrity.todo.ideas.Antivirus</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Si eso no lo resueve, es tiempo investigar su programa de antivirus. Si la sección de "Archivos Faltantes" ("Missing Files") muestra archivos que terminan en ".exe", considere poner la carpeta del programa Bloom en la "lista blanca" ("white list"), ubicada en <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.  </target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Si eso no lo resueve, es tiempo investigar su programa de antivirus. Si la sección de "Missing Files" (archivos faltantes) muestra archivos que terminan en ".exe", considere poner la carpeta del programa Bloom en la "lista blanca" (white list), ubicada en <g id="genid-1" ctype="x-html-strong">{{installFolder}}</g>.  </target>
         </alt-trans>
