@@ -83,8 +83,11 @@
       </trans-unit>
       <trans-unit id="epubpreview.recommended.reader">
         <source xml:lang="en">Recommended Reader</source>
-        <target xml:lang="es-ES" state="translated">Lector recomendado</target>
+        <target xml:lang="es-ES" state="translated">Lector electrónico recomendado</target>
         <note>ID: epubpreview.recommended.reader</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Lector recomendado</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="epubpreview.gitden.okay" approved="yes">
         <source xml:lang="en">Our testing has shown <g id="genid-6" ctype="x-html-a" html:href="/bloom/api/help/Concepts/Gitden_Reader.htm">Gitden Reader</g> to be a good choice for Android and IOS (IPhone &amp; IPad) devices.
