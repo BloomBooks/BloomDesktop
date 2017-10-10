@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -919,6 +919,9 @@ namespace Bloom
 											Resources.BloomIcon, "issues@bloomlibrary.org", "SIL");
 
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
+
+				// If this is removed, change code in WorkspaceView.OnSettingsProtectionChanged
+				LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = false; // BL-5111
 			}
 			catch (Exception error)
 			{
