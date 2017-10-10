@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -288,25 +288,27 @@ namespace Bloom.Workspace
 		{
 			//when we need to use Ctrl+Shift to display stuff, we don't want it also firing up the localization dialog (which shouldn't be done by a user under settings protection anyhow)
 
-			LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = !SettingsProtectionSettings.Default.NormallyHidden;
+			// Commented out due to BL-5111
+			//LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = !SettingsProtectionSettings.Default.NormallyHidden;
 		}
 
 		private void SetupUiLanguageMenu()
 		{
 			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick);
 
-			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
-			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.MoreLanguagesMenuItem", "More..."));
-			menu.Click += new EventHandler((a, b) =>
-			{
-				_localizationManager.ShowLocalizationDialogBox(false);
-				SetupUiLanguageMenu();
-				LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
-				_localizationChangedEvent.Raise(null);
-				// The following is needed for proper display on Linux, and doesn't hurt anything on Windows.
-				// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
-				AdjustButtonTextsForLocale();
-			});
+			// Removing this for now (BL-5111)
+			//_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
+			//var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.MoreLanguagesMenuItem", "More..."));
+			//menu.Click += new EventHandler((a, b) =>
+			//{
+			//	_localizationManager.ShowLocalizationDialogBox(false);
+			//	SetupUiLanguageMenu();
+			//	LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
+			//	_localizationChangedEvent.Raise(null);
+			//	// The following is needed for proper display on Linux, and doesn't hurt anything on Windows.
+			//	// See http://issues.bloomlibrary.org/youtrack/issue/BL-3444.
+			//	AdjustButtonTextsForLocale();
+			//});
 		}
 
 		/// <summary>
@@ -942,7 +944,7 @@ namespace Bloom.Workspace
 	{
 		public NoBorderToolStripRenderer() : base(new NoBorderToolStripColorTable())
 		{
-			
+
 		}
 		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { }
 
