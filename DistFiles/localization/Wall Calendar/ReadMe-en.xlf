@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
-  <file original="ReadMe-en.md" datatype="html" source-language="en">
+  <file original="ReadMe-en.htm" datatype="html" source-language="en">
     <body>
       <trans-unit id="wall.calendar">
         <source xml:lang="en">About the Wall Calendar Template</source>
@@ -8,7 +8,7 @@
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">
-        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language. </source>
+        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
         <target />
         <note>ID: wall.calendar.use</note>
       </trans-unit>
@@ -18,7 +18,7 @@
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
-        <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use. </source>
+        <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
         <target />
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
@@ -28,7 +28,7 @@
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">
-        <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started. </source>
+        <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
         <target />
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
@@ -38,12 +38,12 @@
         <note>ID: wall.calendar.feedback</note>
       </trans-unit>
       <trans-unit id="wall.calendar.feedbackvoting">
-        <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g> </source>
+        <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
         <target />
         <note>ID: wall.calendar.feedbackvoting</note>
       </trans-unit>
       <trans-unit id="wall.calendar.reportbugs">
-        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>. </source>
+        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
         <target />
         <note>ID: wall.calendar.reportbugs</note>
       </trans-unit>
