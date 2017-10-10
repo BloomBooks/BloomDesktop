@@ -6,6 +6,9 @@
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
         <target xml:lang="es-ES">Problema con Bloom</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Haciendo PDF...</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="BloomIntegrityDialog.ReportProblem" approved="yes">
         <source xml:lang="en">Report Problem</source>
@@ -614,6 +617,9 @@
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
         <target xml:lang="es-ES">Idioma Local</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Idioma vernáculo</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Idioma local</target>
         </alt-trans>
@@ -3646,6 +3652,9 @@
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
         <target xml:lang="es-ES">Una colección de libros prediseñados o de plantilla en uno o más idiomas de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede crear un Paquete de Bloom para compartir con otros para que puedan crear libros en su idioma local con los libros prediseñados que usted creará.</target>
         <alt-trans>
+          <target xml:lang="es-ES">Una colección de armazón o plantilla de libros en uno o más idiomas de comunicación más amplia. De esto, usted puede hacer una BloomPack para dar a otros para que hagan libros vernáculos.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Una colección de libros prediseñados o de plantilla en uno o más idiomas de mayor comunicación. Podrá cargar estos libros prediseñados a BloomLibrary.org. También puede crear un Paquete de Bloom para compartir con otros para que puedan crear libros en su idioma local con los libros prediseñados.</target>
         </alt-trans>
         <alt-trans>
@@ -3657,14 +3666,14 @@
         <alt-trans>
           <target xml:lang="es-ES">Una colección de libros shell o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus "shells".</target>
         </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Una colección de libros shell o de plantilla en por lo menos un idioma de mayor comunicación. Podrá cargar estos shells a BloomLibrary.org. También puede hacer un BloomPack para compartir con otros para que puedan hacer libros en su idioma local con sus shells.</target>
-        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection" approved="yes">
         <source xml:lang="en">Local Language Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
         <target xml:lang="es-ES">Colección de idioma local</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección vernácula</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de lengua local</target>
         </alt-trans>
