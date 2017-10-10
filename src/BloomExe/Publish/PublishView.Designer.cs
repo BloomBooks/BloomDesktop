@@ -76,6 +76,7 @@ namespace Bloom.Publish
 			// _makePdfBackgroundWorker
 			//
 			this._makePdfBackgroundWorker.WorkerSupportsCancellation = true;
+			this._makePdfBackgroundWorker.WorkerReportsProgress = true;
 			this._makePdfBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this._makePdfBackgroundWorker_DoWork);
 			//
 			// _workingIndicator
