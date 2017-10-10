@@ -64,6 +64,9 @@
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: Common.CancelButton</note>
         <target xml:lang="pt-PT">&amp;Cancelar</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">&amp; Cancelar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Common.No" approved="yes">
         <source xml:lang="en">No</source>
@@ -101,11 +104,17 @@
         <source xml:lang="en">&amp;Cancel</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.cancelBtn</note>
         <target xml:lang="pt-PT">&amp;Cancelar</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">&amp; Cancelar</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
         <source xml:lang="en">&amp;Delete</source>
         <note>ID: DialogBoxes.ConfirmRecycleDialog.deleteBtn</note>
-        <target xml:lang="pt-PT" state="translated">&amp; Excluir</target>
+        <target xml:lang="pt-PT" state="translated">&amp; Deletar</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">&amp; Excluir</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="pt-PT">&amp;Deletar</target>
         </alt-trans>
@@ -507,7 +516,10 @@
         <source xml:lang="en">Factory password for these settings is "{0}". If you forget it, you can always google for "{1}" and "{2}".</source>
         <note>ID: SettingsProtection.PasswordNotice</note>
         <note>Don't forget to have the {0}, {1} and {2} in your translated string!</note>
-        <target xml:lang="pt-PT" state="translated">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e "{2}" no Google.</target>
+        <target xml:lang="pt-PT" state="translated">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e "{2}" no Google</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Senha de fábrica para estas configurações é "{0}". Se você esquecer, você sempre pode buscar "{1}" e "{2}" no Google.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="SettingsProtection.RequirePasswordCheckBox">
         <source xml:lang="en">Require the factory password to get into settings.</source>
@@ -528,6 +540,9 @@
         <source xml:lang="en">&amp;Font:</source>
         <note>ID: WSFontControl.Font</note>
         <target xml:lang="pt-PT">&amp;Fonte:</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">&amp; Fonte:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.FontNotAvailable">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
@@ -537,17 +552,26 @@
       <trans-unit id="WSFontControl.RightToLeftWS">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="pt-PT" state="translated">Este é um sistema de escrita di&amp;reito para esquerda.</target>
+        <target xml:lang="pt-PT" state="translated">Este é um &amp;sistema de escrita direito para esquerda.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Este é um sistema de escrita di&amp;reito para esquerda.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
         <target xml:lang="pt-PT">&amp;Tamanho:</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">&amp; Tamanho:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSFontControl.TestArea">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="pt-PT" state="translated">Área de &amp;teste:</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Área de teste:</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Área de &amp;teste:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
@@ -587,7 +611,10 @@
       <trans-unit id="WSKeyboardControl.TestAreaCaption">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="pt-PT" state="translated">Área de &amp;teste (Use esta área para digitar algo para testar o teclado.)</target>
+        <target xml:lang="pt-PT" state="translated">&amp;Área de teste (Use esta área para digitar algo para testar o teclado.)</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Área de &amp;teste (Use esta área para digitar algo para testar o teclado.)</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
