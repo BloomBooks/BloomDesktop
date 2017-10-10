@@ -494,6 +494,9 @@
         <source xml:lang="en">Local Language</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel</note>
         <target xml:lang="pt-PT">Idioma local</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Idioma vernácula</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab._language2Label" approved="yes">
         <source xml:lang="en">Language 2 (e.g. National Language)</source>
@@ -2654,12 +2657,18 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
         <source xml:lang="en">A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org. You may also make a Bloom Pack to give to others so that they can make local language books with your shells.</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription</note>
-        <target xml:lang="pt-PT" state="translated">Uma coleção de livros shell ou livros modelos numa ou mais idiomas de comunicação mais ampla. Você poderá fazer o upload dessas shells para BloomLibrary.org. Você também pode fazer um Bloom Pack para dar aos outros para que eles podem fazer livros vernáculos com suas shells.</target>
+        <target xml:lang="pt-PT" state="translated">Uma coleção de livros shell ou livros modelos numa ou mais idiomas de comunicação mais ampla. Você poderá fazer o upload dessas Shells para BloomLibrary.org. Você também pode fazer um Bloom Pack para dar aos outros para que eles podem fazer livros vernáculos com suas shells.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Uma coleção de livros shell ou livros modelos numa ou mais idiomas de comunicação mais ampla. Você poderá fazer o upload dessas shells para BloomLibrary.org. Você também pode fazer um Bloom Pack para dar aos outros para que eles podem fazer livros vernáculos com suas shells.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
         <source xml:lang="en">Local Language Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.vernacularCollection</note>
-        <target xml:lang="pt-PT" state="translated">Coleção de idioma local</target>
+        <target xml:lang="pt-PT" state="translated">Coleção de Idioma Vernácula/Local</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">Coleção de idioma local</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
         <source xml:lang="en">A collection of books in a local language.</source>
@@ -3839,7 +3848,10 @@ Deseja continuar?</target>
       <trans-unit id="ReaderSetup.SetupAlphabet" sil:dynamic="true">
         <source xml:lang="en">set up the alphabet for this language.</source>
         <note>ID: ReaderSetup.SetupAlphabet</note>
-        <target xml:lang="pt-PT" state="translated">configurar o alfabeto para este idioma.</target>
+        <target xml:lang="pt-PT" state="translated">Configurar o alfabeto para este idioma.</target>
+        <alt-trans>
+          <target xml:lang="pt-PT">configurar o alfabeto para este idioma.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.SightWordHelp" sil:dynamic="true">
         <source xml:lang="en">What are sight words?</source>
