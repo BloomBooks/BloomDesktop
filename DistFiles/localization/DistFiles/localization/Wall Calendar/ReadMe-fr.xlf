@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="wall.calendar.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="fr" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="fr" state="translated">Limites de cette version</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="wall.calendar.credits">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="fr" state="needs-translation">Credits</target>
+        <target xml:lang="fr" state="translated">Crédits</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">
