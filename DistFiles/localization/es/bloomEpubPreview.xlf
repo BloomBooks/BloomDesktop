@@ -81,9 +81,9 @@
       </target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="epubpreview.recommended.reader">
+      <trans-unit id="epubpreview.recommended.reader" approved="yes">
         <source xml:lang="en">Recommended Reader</source>
-        <target xml:lang="es-ES" state="translated">Lector de ePUB recomendado</target>
+        <target xml:lang="es-ES">Lector de ePUB recomendado</target>
         <note>ID: epubpreview.recommended.reader</note>
         <alt-trans>
           <target xml:lang="es-ES">Lector recomendado</target>
