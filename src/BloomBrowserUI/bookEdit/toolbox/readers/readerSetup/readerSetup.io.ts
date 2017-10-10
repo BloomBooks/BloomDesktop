@@ -1,6 +1,6 @@
 /// <reference path="../readerSettings.ts" />
 /// <reference path="readerSetup.ui.ts" />
-import { enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue } from './readerSetup.ui';
+import { enableSampleWords, displayLetters, selectLetters, selectLevel, forcePlainTextPaste, selectStage, setLevelValue } from './readerSetup.ui';
 import { ReaderStage, ReaderLevel, ReaderSettings } from '../ReaderSettings';
 import "../../../../lib/jquery.onSafe.js";
 import axios from "axios";
@@ -102,6 +102,11 @@ function loadReaderSetupData(jsonData: string): void {
     tbodyLevels.find('tr').onSafe('click', function () {
         selectLevel(this);
     });
+
+    // Prevent pasting HTML markup (or anything else but plain text) anywhere.
+    // Note that anything that creates new contenteditable elements (e.g., when selecting a level
+    // or stage) needs to call this on the appropriate parent.
+    forcePlainTextPaste(document);
 }
 
 function saveClicked(): void {
