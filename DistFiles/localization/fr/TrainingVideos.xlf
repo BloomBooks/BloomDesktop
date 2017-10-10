@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-  <file original="TrainingVideos-en.md" datatype="html" source-language="en" target-language="fr">
+  <file original="TrainingVideos-en.htm" datatype="html" source-language="en" target-language="fr">
     <body>
       <trans-unit id="training.videos">
         <source xml:lang="en">Bloom Training Videos</source>
@@ -8,8 +8,8 @@
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch">
-        <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser: </source>
-        <target xml:lang="fr" state="needs-translation">If you are connected to the internet now, you can watch videos in your web browser: </target>
+        <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
+        <target xml:lang="fr" state="needs-translation">If you are connected to the internet now, you can watch videos in your web browser:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all">
@@ -109,8 +109,8 @@
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download">
-        <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: </source>
-        <target xml:lang="fr" state="needs-translation">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: </target>
+        <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
+        <target xml:lang="fr" state="needs-translation">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires">
