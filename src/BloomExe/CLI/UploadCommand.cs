@@ -10,14 +10,14 @@ namespace Bloom.CLI
 	/// <summary>
 	/// Uploads a book or folder of books to BloomLibrary
 	/// usage:
-	///		upload --path {path to book or collection directory}
+	///		upload [--excludeAudio/-x] {path to book or collection directory}
 	/// </summary>
 	class UploadCommand
 	{
 		public static int Handle(UploadParameters options)
 		{
 			// This task will be all the program does. We need to do enough setup so that
-			// the download code can work, then tear it down.
+			// the upload code can work, then tear it down.
 			Program.SetUpErrorHandling();
 			try
 			{
@@ -32,7 +32,7 @@ namespace Bloom.CLI
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
 					Console.WriteLine("\nstarting upload");
-					transfer.UploadFolder(options.Path, applicationContainer);
+					transfer.UploadFolder(options.Path, applicationContainer, options.ExcludeAudio);
 					Console.WriteLine(("\nupload complete\n"));
 				}
 				return 0;
@@ -54,6 +54,9 @@ namespace Bloom.CLI
 [Verb("upload", HelpText = "Upload a book or folder of books to bloomlibrary.org.")]
 public class UploadParameters
 {
-	[Option("path", HelpText = "path to the book or folder, determined automatically", Required = true)]
+	[Value(0, MetaName = "path", HelpText = "Path to the book or folder, determined automatically.", Required = true)]
 	public string Path { get; set; }
+
+	[Option('x', "excludeAudio", HelpText = "Option excludes audio files from upload", Required = false)]
+	public bool ExcludeAudio { get; set; }
 }

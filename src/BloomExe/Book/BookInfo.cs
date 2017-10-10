@@ -25,6 +25,7 @@ namespace Bloom.Book
 	public class BookInfo
 	{
 		private const string kTopicPrefix = "topic:";
+		private const string kBookshelfPrefix = "bookshelf:";
 
 		private BookMetaData _metadata;
 
@@ -313,6 +314,24 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Allow mass uploader to set a bookshelf tag before uploading.
+		/// </summary>
+		public string SetBookshelf
+		{
+			set
+			{
+				var bookshelvesToSet = SplitList(value); // we're only ever setting one at this point, but that could change
+				EnsureBookshelfPrefixes(bookshelvesToSet);
+				if (MetaData.Tags == null)
+					MetaData.Tags = bookshelvesToSet;
+				else
+					// Leave all the non-bookshelf tags intact. Replace all existing bookshelves.
+					MetaData.Tags = MetaData.Tags.Where(t => !TagIsBookshelf(t)).Union(bookshelvesToSet).ToArray();
+				Save();
+			}
+		}
+
 		public int PageCount
 		{
 			get { return MetaData.PageCount; }
@@ -408,22 +427,36 @@ namespace Bloom.Book
 			}
 		}
 
-		private bool TagIsTopic(string tag)
+		private static bool TagIsTopic(string tag)
 		{
 			return tag.StartsWith(kTopicPrefix) || !tag.Contains(":");
 		}
 
-		private string GetTopicNameFromTag(string tag)
+		private static string GetTopicNameFromTag(string tag)
 		{
 			return tag.StartsWith(kTopicPrefix) ? tag.Substring(kTopicPrefix.Length) : tag;
 		}
 
-		private void EnsureTopicPrefixes(string[] topics)
+		private static void EnsureTopicPrefixes(string[] topics)
 		{
 			for (int i = 0; i < topics.Length; i++)
 			{
 				if (!topics[i].StartsWith(kTopicPrefix))
 					topics[i] = kTopicPrefix + topics[i];
+			}
+		}
+
+		private static bool TagIsBookshelf(string tag)
+		{
+			return tag.StartsWith(kBookshelfPrefix) || !tag.Contains(":");
+		}
+
+		private static void EnsureBookshelfPrefixes(string[] bookshelfs)
+		{
+			for (int i = 0; i < bookshelfs.Length; i++)
+			{
+				if (!bookshelfs[i].StartsWith(kBookshelfPrefix))
+					bookshelfs[i] = kBookshelfPrefix + bookshelfs[i];
 			}
 		}
 	}
