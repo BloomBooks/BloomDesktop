@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="training.videos.watch">
         <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
-        <target xml:lang="fr" state="needs-translation">If you are connected to the internet now, you can watch videos in your web browser:</target>
+        <target xml:lang="fr" state="translated">Si vous êtes connectez à internet, vous pouvez regarder les vidéos dans votre navigateur:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all">
