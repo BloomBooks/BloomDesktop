@@ -80,6 +80,9 @@ namespace Bloom
 			// We use crowdin for localizing, and they require a directory per language setup.
 			LocalizationManager.UseLanguageCodeFolders = true;
 
+#if DEBUG
+			//MessageBox.Show("Attach debugger now");
+#endif
 			// Bloom has several command line scenarios, without a coherent system for them.
 			// The following is how we will do things from now on, and things can be moved
 			// into this as time allows. See CommandLineOptions.cs.
@@ -112,7 +115,6 @@ namespace Bloom
 				return exitCode; // we're done
 			}
 
-			//Debug.Fail("Attach Now");
 			try
 			{
 				Application.EnableVisualStyles();
@@ -253,21 +255,6 @@ namespace Bloom
 
 					using (_applicationContainer = new ApplicationContainer())
 					{
-						if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
-						{
-							// A special path to upload chunks of stuff. This is not currently documented and is not very robust.
-							// - User must log in before running this
-							// - For best results each bloom book needs to be part of a collection in its parent folder
-							// - little error checking (e.g., we don't apply the usual constraints that a book must have title and licence info)
-							SetUpLocalization();
-							Browser.SetUpXulRunner();
-							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
-							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-								_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
-							transfer.UploadFolder(args[1], _applicationContainer);
-							return 1;
-						}
-
 						InstallerSupport.MakeBloomRegistryEntries(args);
 						BookDownloadSupport.EnsureDownloadFolderExists();
 
