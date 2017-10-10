@@ -309,7 +309,20 @@ export function selectLevel(tr: HTMLTableRowElement) {
     // things to remember
     var vals = getCellInnerHTML(tr, 6).split('\n');
     var val = vals.join('</li><li contenteditable="true">');
-    document.getElementById('things-to-remember').innerHTML = '<li contenteditable="true">' + val + '</li>';
+    let thingsToRemember = document.getElementById('things-to-remember');
+    thingsToRemember.innerHTML = '<li contenteditable="true">' + val + '</li>';
+    forcePlainTextPaste(thingsToRemember);
+}
+
+// prevent pasting anything but plain text into the contenteditable children of the argument
+export function forcePlainTextPaste(parent: NodeSelector): void {
+    [].forEach.call(parent.querySelectorAll('[contenteditable="true"]'), function (el) {
+        el.addEventListener('paste', function (e) {
+            e.preventDefault();
+            var text = e.clipboardData.getData("text/plain");
+            document.execCommand("insertHTML", false, text);
+        }, false);
+    });
 }
 
 function getCellInnerHTML(tr: HTMLTableRowElement, cellIndex: number): string {
