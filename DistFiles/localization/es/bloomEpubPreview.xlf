@@ -113,10 +113,13 @@
           <target xml:lang="es-ES">Para escuchar este libro sonoro con Gitden en su celular o dispositivo, debe desactivar la función de "texto a voz". En seguida los controles de audio serán mostradas.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="epubpreview.make.it.talk" approved="yes">
+      <trans-unit id="epubpreview.make.it.talk">
         <source xml:lang="en">Make it Talk</source>
-        <target xml:lang="es-ES">Reproducir audio</target>
+        <target xml:lang="es-ES" state="translated">Reproducir audio</target>
         <note>ID: epubpreview.make.it.talk</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear Audiolibro</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacerlo hablar</target>
         </alt-trans>
