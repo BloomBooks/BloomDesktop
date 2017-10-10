@@ -28,7 +28,7 @@ Just take your A4 PDF to a printer and ask them to enlarge it to A3.</target>
       </trans-unit>
       <trans-unit id="bigbook.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="fr" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="fr" state="translated">Limites de cette version</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen">
