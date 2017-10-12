@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff">
+  <file original="ReadMe-zh-CN.htm" datatype="html" source-language="en" target-language="zh-CN">
+    <body>
+      <trans-unit id="wall.calendar">
+        <source xml:lang="en">About the Wall Calendar Template</source>
+        <target xml:lang="zh-CN">关于挂历模板</target>
+        <note>ID: wall.calendar</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.use">
+        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
+        <target xml:lang="zh-CN">使用此模板，您可以制作A5尺寸的全年挂历，图片和引用语句在页面上方，页面下方显示日期。 将用您的语言显示日历上的月份和日期。</target>
+        <note>ID: wall.calendar.use</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.limits">
+        <source xml:lang="en">Limitations of this version</source>
+        <target xml:lang="zh-CN">本版本的局限性</target>
+        <note>ID: wall.calendar.limits</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.noshells">
+        <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
+        <target xml:lang="zh-CN">目前无法制作可供其他语言使用的日历“壳”。</target>
+        <note>ID: wall.calendar.noshells</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.credits">
+        <source xml:lang="en">Credits</source>
+        <target xml:lang="zh-CN">致谢</target>
+        <note>ID: wall.calendar.credits</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.thanks">
+        <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
+        <target xml:lang="zh-CN">感谢Bruce Cox（SIL喀麦隆）启动了模板的创制工作。</target>
+        <note>ID: wall.calendar.thanks</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.feedback">
+        <source xml:lang="en">Feedback</source>
+        <target xml:lang="zh-CN">反馈	</target>
+        <note>ID: wall.calendar.feedback</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.feedbackvoting">
+        <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
+        <target xml:lang="zh-CN">请提<g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">建议</g>并参与投票</target>
+        <note>ID: wall.calendar.feedbackvoting</note>
+      </trans-unit>
+      <trans-unit id="wall.calendar.reportbugs">
+        <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
+        <target xml:lang="zh-CN">请报告问题 <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <note>ID: wall.calendar.reportbugs</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

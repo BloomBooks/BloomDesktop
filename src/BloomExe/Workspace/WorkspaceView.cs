@@ -729,10 +729,9 @@ namespace Bloom.Workspace
 			//note: markdown processors pass raw html through unchanged.  Bloom's localization process
 			// is designed to produce HTML files, not Markdown files.
 			var path = BloomFileLocator.GetBestLocalizableFileDistributedWithApplication(false, "infoPages", "TrainingVideos-en.htm");
-			//enhance: change the name of this class in SIL.Windows.Forms to just "MarkDownDialog"
-			//enhance: also produce path for setting html specifically in that class.
-			using(var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.BloomIcon, path))
+			using (var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.BloomIcon, path))
 			{
+				dlg.ApplyMarkdown = false;
 				dlg.Text = LocalizationManager.GetString("HelpMenu.trainingVideos", "Training Videos");
 				dlg.ShowDialog();
 			}
