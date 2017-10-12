@@ -5043,7 +5043,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.SuggestAssignCC" approved="yes">
         <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
         <note>ID: PublishTab.Upload.SuggestAssignCC</note>
-        <target xml:lang="es-ES">Sugerencia: Asignar una Licencia Creative Commons le facilita conceder ciertos permisos a quien usted quiera.</target>
+        <target xml:lang="es-ES">Sugerencia: Asignar una Licencia de Bienes Comunes Creativos le facilita conceder ciertos permisos a quien usted quiera.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sugerencia: Asignar una Licencia Creative Commons le facilita conceder ciertos permisos a quien usted quiera.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Sugerencia: Asignar una licencia Creative Commons le facilita conceder claramente determinados permisos a todo el mundo.</target>
         </alt-trans>
@@ -5054,7 +5057,10 @@ Desea seguir?</target>
       <trans-unit id="PublishTab.Upload.SuggestChangeCC" approved="yes">
         <source xml:lang="en">Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</source>
         <note>ID: PublishTab.Upload.SuggestChangeCC</note>
-        <target xml:lang="es-ES">Sugerencia: Las Licencias Creative Commons hacen que sea mucho más fácil que otros utilicen su libro, incluso si ellos no tienen fluidez en el idioma de su licencia personalizada.</target>
+        <target xml:lang="es-ES">Sugerencia: Las Licencias de Bienes Comunes Creativos hacen que sea mucho más fácil que otros utilicen su libro, incluso si ellos no tienen fluidez en el idioma de su licencia personalizada.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Sugerencia: Las Licencias Creative Commons hacen que sea mucho más fácil que otros utilicen su libro, incluso si ellos no tienen fluidez en el idioma de su licencia personalizada.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Sugerencia: Las licencias de Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</target>
         </alt-trans>
