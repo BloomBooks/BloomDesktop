@@ -953,7 +953,10 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="es-ES">Crear un libro utilizando este esta fuente</target>
+        <target xml:lang="es-ES">Crear un libro utilizando esta fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un libro utilizando este esta fuente</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un libro utilizando este libro originario</target>
         </alt-trans>
