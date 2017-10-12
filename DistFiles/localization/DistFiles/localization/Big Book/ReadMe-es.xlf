@@ -4,30 +4,40 @@
     <body>
       <trans-unit id="bigbook.title">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="es-ES" state="translated">Acerca de Libros Grandes</target>
+        <target xml:lang="es-ES" state="translated">Acerca de los Libros Grandes</target>
         <note>ID: bigbook.title</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Acerca de Libros Grandes</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.use">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="es-ES" state="translated">Los Libros Grandes están diseñados para que los profesores pueden mostrarlos y leerlos en frente de los estudiantes. Para obtener más información, lea <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Scholastic</g>.</target>
+        <target xml:lang="es-ES" state="translated">Los Libros Grandes están diseñados para que los profesores pueden mostrarlos y leerlos en frente de los estudiantes. Para obtener más información, lea este <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Los Libros Grandes están diseñados para que los profesores pueden mostrarlos y leerlos en frente de los estudiantes. Para obtener más información, lea <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/bigbooks/AGuidetoUsingBigBooksintheClassroom.pdf"> PDF de Scholastic</g>.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="bigbook.printing">
         <source xml:lang="en">Printing a Big Book</source>
         <target xml:lang="es-ES" state="translated">Imprimiendo un Libro Grande</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
-      <trans-unit id="bigbook.printing.enlargeA4">
+      <trans-unit id="bigbook.printing.enlargeA4" approved="yes">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="es-ES" state="translated">Para hacer las cosas más manejables, esta plantilla usa el tamaño A4 Horizontal, con fuentes grandes. Fácilmente puede producir libros que son A3 (dos veces más grande).
-Toma su PDF A4 a una imprenta y pide que lo agrande a A3.</target>
+        <target xml:lang="es-ES">Para hacer las cosas más manejables, esta plantilla usa el tamaño A4 Horizontal, con fuentes grandes. Fácilmente puede producir libros que son A3 (dos veces más grande).
+Sólo lleve su PDF tamaño A4 a una imprenta y pida que lo agranden a uno de tamaño A3.</target>
         <note>ID: bigbook.printing.enlargeA4</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Para hacer las cosas más manejables, esta plantilla usa el tamaño A4 Horizontal, con fuentes grandes. Fácilmente puede producir libros que son A3 (dos veces más grande).
+Toma su PDF A4 a una imprenta y pide que lo agrande a A3.</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="bigbook.limits">
+      <trans-unit id="bigbook.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="es-ES" state="translated">Limitaciones de esta versión</target>
+        <target xml:lang="es-ES">Limitaciones de esta versión</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen">
