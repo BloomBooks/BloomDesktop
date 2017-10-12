@@ -52,9 +52,12 @@
         <source xml:lang="en">Bloom Pack Installer</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstaller</note>
         <note>Displayed as the message box title</note>
-        <target xml:lang="es-ES">Instalador para Paquetes de Bloom</target>
+        <target xml:lang="es-ES">Instalador de Paquetes de Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Instalador de los Paquetes de Bloom</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Instalador para Paquetes de Bloom</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Instalador para BloomPack</target>
@@ -91,9 +94,6 @@
         <source xml:lang="en">Bloom is already running, but the contents will not show up until the next time you run Bloom</source>
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
         <target xml:lang="es-ES">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que usted ejecute Bloom</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
-        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Bloom ya se está ejecutando, pero no se mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
         </alt-trans>
@@ -730,7 +730,10 @@
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-        <target xml:lang="es-ES">Conseguir más libros originarios en BloomLibrary.org</target>
+        <target xml:lang="es-ES">Conseguir más libros fuentes en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Conseguir más libros originarios en BloomLibrary.org</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Conseguir más libros de fuente en BloomLibrary.org</target>
         </alt-trans>
@@ -922,7 +925,10 @@
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como recursos para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
+        <target xml:lang="es-ES">Debido a que esta es una colección fuente, Bloom no está ofreciendo libros prediseñados existentes como recursos para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como recursos para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
         </alt-trans>
@@ -934,9 +940,6 @@
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección originaría, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
@@ -970,7 +973,10 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_" approved="yes">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este libro originario</target>
+        <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este libro Fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este libro originario</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un libro en mi idioma usando este libro originario</target>
         </alt-trans>
