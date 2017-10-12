@@ -8,8 +8,8 @@
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
-        <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser: </source>
-        <target xml:lang="es-ES">Si su computadora está conectada al internet, puede ver vídeos por medio de su navegador: </target>
+        <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
+        <target xml:lang="es-ES">Si su computadora está conectada al internet, puede ver vídeos por medio de su navegador:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all" approved="yes">
@@ -58,9 +58,19 @@
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
         <target xml:lang="es-ES">
-          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizado las plantillas de Libros Descifrables y Libros por Niveles (varios vídeos)</g>
+          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizando las plantillas de Libros Descifrables y Libros Graduados (varios vídeos)</g>
         </target>
         <note>ID: training.videos.readers</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizado las plantillas de libros descifrables y graduados (varios vídeos)</g>
+        </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizado las plantillas de Libros Descifrables y Libros por Niveles (varios vídeos)</g>
+        </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
@@ -99,9 +109,19 @@
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
         <target xml:lang="es-ES">
-          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para Libros Descifrables y Libros por Niveles (varios vídeos)</g>
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para Libros Descifrables y Libros Graduados (varios vídeos)</g>
         </target>
         <note>ID: training.videos.readertemplates</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para libros descifrables y graduados (varios vídeos)</g>
+        </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para Libros Descifrables y Libros por Niveles (varios vídeos)</g>
+        </target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
@@ -109,8 +129,8 @@
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
-        <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: </source>
-        <target xml:lang="es-ES">Si desea descargar alguno de estos vídeos para mostrar y compartir fuera de línea, puede descargarlos a su computadora: </target>
+        <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
+        <target xml:lang="es-ES">Si desea descargar alguno de estos vídeos para mostrar y compartir fuera de línea, puede descargarlos a su computadora:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">

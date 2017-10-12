@@ -52,9 +52,12 @@
         <source xml:lang="en">Bloom Pack Installer</source>
         <note>ID: BloomPackInstallDialog.BloomPackInstaller</note>
         <note>Displayed as the message box title</note>
-        <target xml:lang="es-ES">Instalador para Paquetes de Bloom</target>
+        <target xml:lang="es-ES">Instalador de Paquetes de Bloom</target>
         <alt-trans>
           <target xml:lang="es-ES">Instalador de los Paquetes de Bloom</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Instalador para Paquetes de Bloom</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Instalador para BloomPack</target>
@@ -92,9 +95,6 @@
         <note>ID: BloomPackInstallDialog.MustRestartToSee</note>
         <target xml:lang="es-ES">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que usted ejecute Bloom</target>
         <alt-trans>
-          <target xml:lang="es-ES">Bloom ya se está siendo ejecutado, pero no mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
-        </alt-trans>
-        <alt-trans>
           <target xml:lang="es-ES">Bloom ya se está ejecutando, pero no se mostrará los contenidos hasta la próxima vez que ejecute Bloom</target>
         </alt-trans>
       </trans-unit>
@@ -123,6 +123,9 @@
         <source xml:lang="en">Bloom Packs should have only a single collection folder at the top level of the .ZIP file.</source>
         <note>ID: BloomPackInstallDialog.SingleCollectionFolder</note>
         <target xml:lang="es-ES">Los Paquetes de Bloom deben tener sólo una carpeta de colección en el nivel superior del archivo ZIP.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Los Paquetes de Bloom deben tener solo una carpeta de colección en el nivel superior del archivo ZIP.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Los Paquetes de Bloom deben tener sólo una carpeta de colección en el nivel superior del archivo zip.</target>
         </alt-trans>
@@ -188,7 +191,7 @@
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando una copia del respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin una explicación, por favor haga clic en Detalles e informenos del problema.</target>
+        <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando una copia del respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin una explicación, por favor haga clic en Detalles e infórmenos del problema.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles e informenos.</target>
         </alt-trans>
@@ -233,7 +236,7 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands" approved="yes">
         <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
-        <target xml:lang="es-ES">Mostrar los comandos experimentales (p. ej. exportar XML para InDesign)</target>
+        <target xml:lang="es-ES">Mostrar los Comandos Experimentales (p. ej. exportar XML para InDesign)</target>
         <alt-trans>
           <target xml:lang="es-ES">Mostrar los comandos experimentales (e.g. exportar XML para InDesign)</target>
         </alt-trans>
@@ -285,7 +288,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel" approved="yes">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="es-ES">Creando libros</target>
+        <target xml:lang="es-ES">Creando Libros</target>
         <alt-trans>
           <target xml:lang="es-ES">Haciendo libros</target>
         </alt-trans>
@@ -558,7 +561,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink</note>
-        <target xml:lang="es-ES">Configuración de Alfabeto Especial</target>
+        <target xml:lang="es-ES">Configuración de los Caracteres Especiales</target>
         <alt-trans>
           <target xml:lang="es-ES">Configuración de alfabeto especial</target>
         </alt-trans>
@@ -599,7 +602,10 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink" approved="yes">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
-        <target xml:lang="es-ES">Remover</target>
+        <target xml:lang="es-ES">Eliminar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Remover</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Quitar</target>
         </alt-trans>
@@ -730,7 +736,19 @@
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-        <target xml:lang="es-ES">Conseguir más libros originarios en BloomLibrary.org</target>
+        <target xml:lang="es-ES">Conseguir más Libros Fuente en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Conseguir más Libros Fuentes en BloomLibrary.org</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Conseguir más libros fuente en BloomLibrary.org</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Conseguir más libros fuentes en BloomLibrary.org</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Conseguir más libros originarios en BloomLibrary.org</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Conseguir más libros de fuente en BloomLibrary.org</target>
         </alt-trans>
@@ -739,7 +757,16 @@
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="es-ES">Colección de libros originarios</target>
+        <target xml:lang="es-ES">Colección de Libros Fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de Libros fuente.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros fuente.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros originarios</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros fuentes</target>
         </alt-trans>
@@ -805,12 +832,12 @@
       <trans-unit id="CollectionTab.BookSourceHeading" approved="yes">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="es-ES">Recursos para nuevos libros</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Fuentes para nuevos libros</target>
-        </alt-trans>
+        <target xml:lang="es-ES">Fuentes para nuevos libros</target>
         <alt-trans>
           <target xml:lang="es-ES">Orígenes de nuevos libros</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Recursos para nuevos libros</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourcesLockNotice" approved="yes">
@@ -922,12 +949,9 @@
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como recursos para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
+        <target xml:lang="es-ES">Debido a que esta es una colección de libros fuente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
         <alt-trans>
-          <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Debido a que esteaes una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+          <target xml:lang="es-ES">Debido a que esta es una colección fuente, Bloom no está ofreciendo libros prediseñados existentes como recursos para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
@@ -937,6 +961,9 @@
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
@@ -953,7 +980,10 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="es-ES">Crear un libro utilizando esta fuente</target>
+        <target xml:lang="es-ES">Crear un libro utilizando este Libro Fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un libro utilizando esta fuente</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un libro utilizando este esta fuente</target>
         </alt-trans>
@@ -970,7 +1000,10 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_" approved="yes">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este libro originario</target>
+        <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este Libro Fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este libro originario</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un libro en mi idioma usando este libro originario</target>
         </alt-trans>
@@ -1037,7 +1070,10 @@
       <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.Source Collection</note>
-        <target xml:lang="es-ES">Colección de Libros Originarios</target>
+        <target xml:lang="es-ES">Colección de Libros Fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de Libros Originarios</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros originarios</target>
         </alt-trans>
@@ -1059,9 +1095,9 @@
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading" approved="yes">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="es-ES">Recursos para nuevos Libros Prediseñados</target>
+        <target xml:lang="es-ES">Fuentes para nuevos Libros Prediseñados</target>
         <alt-trans>
-          <target xml:lang="es-ES">Recursos para nuevos libros prediseñados</target>
+          <target xml:lang="es-ES">Recursos para nuevos Libros Prediseñados</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Fuentes para nuevos libros prediseñados</target>
@@ -1843,6 +1879,9 @@
         <note>ID: EditTab.FormatDialog.PleaseUseAlpha</note>
         <target xml:lang="es-ES">Por favor, utilice sólo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
         <alt-trans>
+          <target xml:lang="es-ES">Por favor, utilice solo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
         </alt-trans>
         <alt-trans>
@@ -2080,7 +2119,13 @@
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="es-ES">Los dibujos de líneas simples se ven mejor. En vez de usar esta página, usted puede crear su propio thumbnail.png (miniatura) y marcar la opción de sólo lectura (Read-only) para que Bloom no escriba sobre la miniatura.</target>
+        <target xml:lang="es-ES">Los dibujos de líneas simples se ven mejor. En vez de usar esta página, usted puede crear su propio thumbnail.png (miniatura) y marcar la opción de Sólo Lectura (Read-only) para que Bloom no escriba sobre la miniatura.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Los dibujos de líneas simples se ven mejor. En vez de usar esta página, usted puede crear su propio thumbnail.png (miniatura) y marcar la opción de Solo Lectura (Read-only) para que Bloom no escriba sobre la miniatura.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo solo lectura (read-only) para que Bloom no lo sobreescribe.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
         </alt-trans>
@@ -2206,6 +2251,9 @@
         <source xml:lang="en">This option is only available in the Publish tab.</source>
         <note>ID: EditTab.LayoutInPublishTabOnlyNotice</note>
         <target xml:lang="es-ES">Esta opción sólo está disponible en la pestaña "Publicar".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta opción solo está disponible en la pestaña "Publicar".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta opción sólo es disponible en la pestaña publicar.</target>
         </alt-trans>
@@ -2529,6 +2577,9 @@
         <note>ID: EditTab.TextBoxProperties.ShowOnGroup</note>
         <target xml:lang="es-ES">Sólo una vez en todo el grupo</target>
         <alt-trans>
+          <target xml:lang="es-ES">Solo una vez en todo el grupo</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Sólo una vez para todo el grupo</target>
         </alt-trans>
       </trans-unit>
@@ -2592,6 +2643,9 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
         <target xml:lang="es-ES">Bloom sólo puede utilizar las primeras {0} palabras.</target>
         <alt-trans>
+          <target xml:lang="es-ES">Bloom solo puede utilizar las primeras {0} palabras.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Bloom solo puede utilazar las primeras {0} palabras.</target>
         </alt-trans>
       </trans-unit>
@@ -2614,6 +2668,9 @@
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage</note>
         <target xml:lang="es-ES">El siguiente es un informe generado sobre las etapas descifrables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El siguiente es un informe generado sobre las etapas descifrables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es solo un informe.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">El siguiente es un informe generado de las etapas decodificables para {0}. Usted puede hacer los cambios que desee a este archivo, pero Bloom no notará los cambios. Es sólo un informe.</target>
         </alt-trans>
@@ -2720,7 +2777,7 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
-        <target xml:lang="es-ES">Herramienta para los Libros por Niveles</target>
+        <target xml:lang="es-ES">Herramienta para los Libros Graduados</target>
         <alt-trans>
           <target xml:lang="es-ES">Herramienta para libros por niveles</target>
         </alt-trans>
@@ -3642,7 +3699,13 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-        <target xml:lang="es-ES">Colección de libros originarios</target>
+        <target xml:lang="es-ES">Colección de Libros Fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros Fuente</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros originarios</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros fuentes</target>
         </alt-trans>
@@ -3793,7 +3856,13 @@
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage" approved="yes">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
         <note>ID: OpenCreateCloneControl.InSourceCollectionMessage</note>
-        <target xml:lang="es-ES">Esta colección forma parte de sus "Recursos para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <target xml:lang="es-ES">Esta colección forma parte de sus "Fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta colección forma parte de sus " Fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta colección forma parte de sus "Recursos para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta colección forma parte de sus "fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
         </alt-trans>
@@ -3962,7 +4031,10 @@
       <trans-unit id="PublishTab.Android.Troubleshooting" approved="yes">
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
-        <target xml:lang="es-ES">Consejos para resolver problemas</target>
+        <target xml:lang="es-ES">Consejos para la Solución de Problemas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Consejos para resolver problemas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" approved="yes">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
@@ -4271,6 +4343,9 @@
         <source xml:lang="en">Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
         <target xml:lang="es-ES">Hacer un librito de las páginas interiores del libro. Las páginas serán distribuidas y reordenadas de tal manera que sólo tiene que doblarlas para tener un librito.\n</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un librito de las páginas interiores del libro. Las páginas serán distribuidas y reordenadas de tal manera que solo tiene que doblarlas para tener un librito.\n</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un librito de las páginas interiores del libro. Las páginas serán formateadas y reordenadas de tal manera que solo tiene que doblarlas para tener un librito.\n</target>
         </alt-trans>
@@ -5187,12 +5262,18 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.AllowedWordsFile" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allowed Words File</source>
         <note>ID: ReaderSetup.AllowedWordsFile</note>
-        <target xml:lang="es-ES">Archivo de palabras permitidas</target>
+        <target xml:lang="es-ES">Archivo de Palabras Permitidas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Archivo de palabras permitidas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.AllowedWordsFileHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Allowed Words File</source>
         <note>ID: ReaderSetup.AllowedWordsFileHeader</note>
-        <target xml:lang="es-ES">Archivo de palabras permitidas</target>
+        <target xml:lang="es-ES">Archivo de Palabras Permitidas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Archivo de palabras permitidas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.AverageHeader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Avg</source>
@@ -5255,7 +5336,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.DecodableStages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Stages</source>
         <note>ID: ReaderSetup.DecodableStages</note>
-        <target xml:lang="es-ES">Etapas descifrables</target>
+        <target xml:lang="es-ES">Etapas Descifrables</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Etapas descifrables</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Etapas decodificables</target>
         </alt-trans>
@@ -5284,7 +5368,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.HowToExport" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help exporting and converting files to use as sample texts</source>
         <note>ID: ReaderSetup.HowToExport</note>
-        <target xml:lang="es-ES">Ayuda en la exportación y conversión de archivos que serán usados como muestras de texto</target>
+        <target xml:lang="es-ES">Ayuda en la exportación y conversión de archivos que serán usados como textos de muestra</target>
         <alt-trans>
           <target xml:lang="es-ES">Ayuda para la exportación y conversión de archivos que serán usadas como muestras de texto</target>
         </alt-trans>
@@ -5329,7 +5413,10 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.Letters.Header" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Letters and Letter Combinations</source>
         <note>ID: ReaderSetup.Letters.Header</note>
-        <target xml:lang="es-ES">Letras y combinaciones de letras</target>
+        <target xml:lang="es-ES">Letras y Combinaciones de Letras</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Letras y combinaciones de letras</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderSetup.Letters.Intro" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</source>
@@ -5572,7 +5659,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderSetup.SetUpLeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set up Leveled Reader Tool</source>
         <note>ID: ReaderSetup.SetUpLeveledReaderTool</note>
-        <target xml:lang="es-ES">Configurar la herramienta de los Libros por Niveles</target>
+        <target xml:lang="es-ES">Configurar la herramienta de los Libros Graduados</target>
         <alt-trans>
           <target xml:lang="es-ES">Configurar la herramienta de libros por niveles</target>
         </alt-trans>
@@ -5733,7 +5820,7 @@ Desea seguir?</target>
       <trans-unit id="ReaderTemplateBloomPackDialog.ExplanationParagraph" approved="yes">
         <source xml:lang="en">In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</source>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
-        <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros descifrables y libros por niveles para el idioma \"{0}\". Cualquiera que abra este Paquete de Bloom, y después abra una colección en el idioma \"{0}\", tendrá su configuración actual para libros descifrables y libros por niveles reemplazada por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros descifrables.</target>
+        <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros descifrables y libros graduados para el idioma \"{0}\". Cualquiera que abra este Paquete de Bloom, y después abra una colección en el idioma \"{0}\", tendrá su configuración actual para libros descifrables y libros graduados reemplazada por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros descifrables.</target>
         <alt-trans>
           <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y por niveles para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y por niveles reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
         </alt-trans>
@@ -5997,7 +6084,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.BookName.Decodable Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Decodable Reader</source>
         <note>ID: TemplateBooks.BookName.Decodable Reader</note>
-        <target xml:lang="es-ES">Libro descifrable</target>
+        <target xml:lang="es-ES">Libro Descifrable</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Libro descifrable</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Libro decodificable</target>
         </alt-trans>
@@ -6005,12 +6095,21 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.BookName.Leveled Reader" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
-        <target xml:lang="es-ES">Libro nivelado</target>
+        <target xml:lang="es-ES">Libro Graduado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Libro por Niveles</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Libro nivelado</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
-        <target xml:lang="es-ES">Diccionario ilustrado</target>
+        <target xml:lang="es-ES">Diccionario Ilustrado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Diccionario ilustrado</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Vaccinations</source>
@@ -6210,12 +6309,18 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
-        <target xml:lang="es-ES">Página de créditos</target>
+        <target xml:lang="es-ES">Página de Créditos</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Página de créditos</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Custom</source>
         <note>ID: TemplateBooks.PageLabel.Custom</note>
-        <target xml:lang="es-ES">Personalizado</target>
+        <target xml:lang="es-ES">Personalizada</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Personalizado</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Day 1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Day 1</source>
