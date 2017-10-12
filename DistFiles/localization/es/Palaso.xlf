@@ -361,7 +361,10 @@
       <trans-unit id="ImageToolbox.SearchArtOfReading" approved="yes">
         <source xml:lang="en">Search the Art of Reading Gallery</source>
         <note>ID: ImageToolbox.SearchArtOfReading</note>
-        <target xml:lang="es-ES">Búsqueda de la galería de Arte de la Lectura (Art of Reading)</target>
+        <target xml:lang="es-ES">Búsqueda de la Galería de Arte de la Lectura (Art of Reading)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Búsqueda de la galería de Arte de la Lectura (Art of Reading)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Búsqueda de la galería de la Arte de la lectura</target>
         </alt-trans>
