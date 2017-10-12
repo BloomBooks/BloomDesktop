@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="android.publish.trouble.tips">
         <source xml:lang="en">Troubleshooting Tips for Android Publishing</source>
-        <target xml:lang="es-ES" state="needs-translation">Troubleshooting Tips for Android Publishing</target>
+        <target xml:lang="es-ES" state="translated">Consejos para la publicación en Android</target>
         <note>ID: android.publish.trouble.tips</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi">
         <source xml:lang="en">Serve on WiFi Network</source>
-        <target xml:lang="es-ES" state="needs-translation">Serve on WiFi Network</target>
+        <target xml:lang="es-ES" state="translated">Compartir en red WiFi</target>
         <note>ID: android.publish.wifi</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.unseen">
         <source xml:lang="en">Problem: Android Device is not seeing book advertisements</source>
-        <target xml:lang="es-ES" state="needs-translation">Problem: Android Device is not seeing book advertisements</target>
+        <target xml:lang="es-ES" state="translated">Problema: El dispositivo Android no está recibiendo anuncios del libro</target>
         <note>ID: android.publish.wifi.unseen</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.run.receive">
         <source xml:lang="en">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</source>
-        <target xml:lang="es-ES" state="needs-translation">When using this method, you need to run Bloom Reader, open its menu, and choose "Receive from WiFi".</target>
+        <target xml:lang="es-ES" state="translated">Cuando se utiliza este método, necesita ejecutar el Lector Bloom. Abra el menú y elige "Recibir de WiFi".</target>
         <note>ID: android.publish.wifi.run.receive</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.receive.from">
         <source xml:lang="en">Make sure the device is in the "Receive from WiFi" screen</source>
-        <target xml:lang="es-ES" state="needs-translation">Make sure the device is in the "Receive from WiFi" screen</target>
+        <target xml:lang="es-ES" state="translated">Asegúre que el dispositivo esté en la pantalla de "Recibir de WiFi"</target>
         <note>ID: android.publish.wifi.receive.from</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.same.network">
         <source xml:lang="en">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</source>
-        <target xml:lang="es-ES" state="needs-translation">Make sure the computer and device are on the same WiFi network. A computer plugged in via cable to the WiFi router still may be on its own network. It is technically possible to connect wired networks to be able to be on the same local subnet as WiFi, but the Bloom team will not be able to provide any help in setting that up, sorry.</target>
+        <target xml:lang="es-ES" state="translated">Asegúre que la computadora y el dispositivo estén en la misma red WiFi. Una computadora conectada por cable al enrutador (router) WiFi todavía puede estar en su propia red. Es técnicamente posible conectar redes por cable para poder estar en la misma subred local como WiFi, pero los desarolladores de Bloom no pueden ayudarle a configurar esto.</target>
         <note>ID: android.publish.wifi.same.network</note>
       </trans-unit>
       <trans-unit id="android.publish.wifi.firewalls">
