@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Web;
 using System.Windows.Forms;
@@ -36,6 +35,9 @@ namespace Bloom.WebLibraryIntegration
 		private BloomS3Client _s3Client;
 		private readonly BookThumbNailer _thumbnailer;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
+
+		// The full path of the log text file used to restart failed bulk uploads.
+		private string _uploadLogPath;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
@@ -591,6 +593,8 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
+
 		/// <summary>
 		/// Worker function for a background thread task. See first lines for required args passed to RunWorkerAsync, which triggers this.
 		/// </summary>
@@ -603,15 +607,42 @@ namespace Bloom.WebLibraryIntegration
 			var dlg = (BulkUploadProgressDlg) args[1];
 			var appContext = (ApplicationContainer)args[2];
 			var excludeAudio = (bool)args[3];
+			var alreadyUploaded = GetUploadLogIfPresent(folder);
 			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 			try
 			{
-				UploadInternal(folder, dlg, appContext, excludeAudio, ref context);
+				UploadInternal(folder, dlg, appContext, excludeAudio, alreadyUploaded, ref context);
+
+				// If we make it here, append a "finished" note to our log file
+				AppendBookToUploadLogFile("\n\nAll finished!\nIn order to repeat the uploading, this file will need to be deleted.");
 			}
 			finally
 			{
 				context?.Dispose();
 			}
+		}
+
+		private string GetUploadFilePath()
+		{
+			return _uploadLogPath ?? string.Empty;
+		}
+
+		private void AppendBookToUploadLogFile(string newBook)
+		{
+			Debug.Assert(GetUploadFilePath().Length > 0);
+			File.AppendAllLines(GetUploadFilePath(), new []{ newBook });
+		}
+
+		private string[] GetUploadLogIfPresent(string folder)
+		{
+			var results = new string[0];
+			var fullFilepath = Path.Combine(folder, UploadLogFilename);
+			if (RobustFile.Exists(fullFilepath)) // this is just looking in the same directory that we're uploading from
+			{
+				results = RobustFile.ReadAllLines(fullFilepath);
+			}
+			_uploadLogPath = fullFilepath;
+			return results;
 		}
 
 		private static string GetBookshelfName(string folder)
@@ -636,15 +667,20 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="dlg"></param>
 		/// <param name="container"></param>
 		/// <param name="excludeAudio"></param>
+		/// <param name="alreadyUploaded"></param>
 		/// <param name="context"></param>
-		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, bool excludeAudio, ref ProjectContext context)
+		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, bool excludeAudio, string[] alreadyUploaded, ref ProjectContext context)
 		{
-			var fileName = Path.GetFileName(folder);
-			if (fileName != null && fileName.StartsWith("."))
+			var lastFolderPart = Path.GetFileName(folder);
+			if (lastFolderPart != null && lastFolderPart.StartsWith("."))
 				return; // secret folder, probably .hg
 
 			if (Directory.GetFiles(folder, "*.htm").Length == 1)
 			{
+				if (alreadyUploaded.Contains(folder))
+				{
+					return; // skip this one; we already successfully uploaded it at some point
+				}
 				// Exactly one htm file, assume this is a bloom book folder.
 				dlg.Progress.WriteMessage("Starting to upload " + folder);
 
@@ -669,7 +705,7 @@ namespace Bloom.WebLibraryIntegration
 				}
 				var server = context.BookServer;
 				var bookInfo = new BookInfo(folder, true);
-				bookInfo.SetBookshelf = GetBookshelfName(folder);
+				bookInfo.BookshelfList = GetBookshelfName(folder);
 				var book = server.GetBookFromBookInfo(bookInfo);
 				book.BringBookUpToDate(new NullProgress());
 
@@ -690,12 +726,15 @@ namespace Bloom.WebLibraryIntegration
 				var langDict = book.AllLanguages;
 				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToArray();
 				if (languagesToUpload.Any())
+				{
 					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, dlg, excludeAudio);
+					AppendBookToUploadLogFile(folder);
+				}
 				return;
 			}
 			foreach (var sub in Directory.GetDirectories(folder))
 			{
-				UploadInternal(sub, dlg, container, excludeAudio, ref context);
+				UploadInternal(sub, dlg, container, excludeAudio, alreadyUploaded, ref context);
 			}
 		}
 
