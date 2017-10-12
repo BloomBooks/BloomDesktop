@@ -188,7 +188,7 @@
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please click Details below and report it to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
-        <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando una copia del respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin una explicación, por favor haga clic en Detalles e informenos del problema.</target>
+        <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando una copia del respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin una explicación, por favor haga clic en Detalles e infórmenos del problema.</target>
         <alt-trans>
           <target xml:lang="es-ES">Bloom no pudo leer este libro y se recuperó restaurando un copia de respaldo reciente. Recomendamos revisar los cambios recientes a este libro. Si esto vuelve suceder sin buena explicación, favor haga click en Detalles e informenos.</target>
         </alt-trans>
@@ -233,7 +233,10 @@
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands" approved="yes">
         <source xml:lang="en">Show Experimental Commands (e.g. Export XML for InDesign)</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
-        <target xml:lang="es-ES">Mostrar los comandos experimentales (p. ej. exportar XML para InDesign)</target>
+        <target xml:lang="es-ES">Mostrar los Comandos Experimentales (p. ej. exportar XML para InDesign)</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Mostrar los comandos experimentales (p. ej. exportar XML para InDesign)</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Mostrar los comandos experimentales (e.g. exportar XML para InDesign)</target>
         </alt-trans>
