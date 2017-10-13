@@ -4,8 +4,11 @@
     <body>
       <trans-unit id="decodable.definition">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Decodable Reader</g> is a book that carefully limits the letters and words used so that it fits what a new reader is ready to read. Typically a language may have 5 - 10 <g id="genid-2" ctype="x-html-em">decodable stages</g> through which learners progress.</source>
-        <target xml:lang="es-ES" state="translated">Un <g id="genid-1" ctype="x-html-strong">Libro Descifrable</g> es un libro que limita cuidadosamente el uso de letras y palabras para asegurar que conforme a lo que un nuevo lector está listo para leer. Generalmente, un idioma puede tener 5 a 10 <g id="genid-2" ctype="x-html-em">etapas descifrables</g> por los cuales progresan los alumnos.</target>
+        <target xml:lang="es-ES" state="translated">Un <g id="genid-1" ctype="x-html-strong">Libro Descifrable</g> es un libro que limita cuidadosamente el uso de letras y palabras para asegurarse de que se ajuste a lo que un nuevo lector está listo para leer. Generalmente, un idioma puede tener 5 - 10 <g id="genid-2" ctype="x-html-em">etapas descifrables</g> por las cuales progresan los alumnos.</target>
         <note>ID: decodable.definition</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Un <g id="genid-1" ctype="x-html-strong">Libro Descifrable</g> es un libro que limita cuidadosamente el uso de letras y palabras para asegurar que conforme a lo que un nuevo lector está listo para leer. Generalmente, un idioma puede tener 5 a 10 <g id="genid-2" ctype="x-html-em">etapas descifrables</g> por los cuales progresan los alumnos.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stages">
         <source xml:lang="en">Bloom helps you to define this sequence of <g id="genid-3" ctype="x-html-em">stages</g> that readers work through. Each book you create will be targeted at one of those stages, and Bloom helps you to make sure that your book is <g id="genid-4" ctype="x-html-em">decodable</g> (figure out-able) by learners at that <g id="genid-5" ctype="x-html-em">stage</g>.</source>
