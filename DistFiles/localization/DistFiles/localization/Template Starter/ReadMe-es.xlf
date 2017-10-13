@@ -110,8 +110,11 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
-        <target xml:lang="es-ES" state="translated">Para colegas locales, una manera fácil de distribuir su plantilla es a través de un Paquete Bloom. En la pestaña de Colecciones, haga clic derecho en la miniatura de la plantilla. Elija 'Hacer Paquete Bloom'. Guardalo en algun lugar, por ejemplo en una llave USB. Luego enchúfalo en otra computadora, haga doble clic sobre el archivo que hizo, y su plantilla será añadida a las "Fuentes para libros nuevos" en esa computadora.</target>
+        <target xml:lang="es-ES" state="translated">Para colegas locales, una manera fácil de distribuir su plantilla es a través de un Paquete Bloom. En la pestaña de Colecciones, haga clic derecho en la miniatura de la plantilla. Elija 'Hacer Paquete Bloom'. Guárdelo en algún lugar, por ejemplo en una memoria USB. Luego conéctelo en otra computadora, haga doble clic sobre el archivo que hizo, y su plantilla será añadida a las "Fuentes para nuevos libros " en esa computadora.</target>
         <note>ID: template.starter.share.bloompack</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Para colegas locales, una manera fácil de distribuir su plantilla es a través de un Paquete Bloom. En la pestaña de Colecciones, haga clic derecho en la miniatura de la plantilla. Elija 'Hacer Paquete Bloom'. Guardalo en algun lugar, por ejemplo en una llave USB. Luego enchúfalo en otra computadora, haga doble clic sobre el archivo que hizo, y su plantilla será añadida a las "Fuentes para libros nuevos" en esa computadora.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.notes" approved="yes">
         <source xml:lang="en">Notes</source>
@@ -122,15 +125,25 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom 3.9 does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
         <target xml:lang="es-ES" state="translated">
           
-<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluido automaticamente en los libros nuevos; el autor tendrá que agregar cada página desde el cuadro de diálogo de Agregar página.</target>
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo de "Agregar Página".</target>
         <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluido automaticamente en los libros nuevos; el autor tendrá que agregar cada página desde el cuadro de diálogo de Agregar página.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.nametonotaddpage">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="es-ES" state="translated">
           
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestran en el cuadro de diálogo Agregar página, usted puede indicar esto a Bloom mediante la creación de un archivo en la carpeta de plantillas del libro llamado NotForAddPage.txt.</target>
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo en la carpeta de Plantillas del Libro llamado NotForAddPage.txt.</target>
         <note>ID: template.starter.nametonotaddpage</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestran en el cuadro de diálogo Agregar página, usted puede indicar esto a Bloom mediante la creación de un archivo en la carpeta de plantillas del libro llamado NotForAddPage.txt.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.labelsnottranslatable">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
