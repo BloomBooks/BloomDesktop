@@ -23,17 +23,17 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
       </trans-unit>
       <trans-unit id="template.starter.secondusage">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note1">2</g></g></source>
-        <target xml:lang="es-ES" state="needs-translation">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note1">2</g></g></target>
+        <target xml:lang="es-ES" state="translated">La segunda manera que la gente puede utilizar las plantillas es como fuente de nuevas páginas, a pesar de cómo comenzaron el libro. Por ejemplo, en algunos lugares, cada libro requiere una página específica como parte de un proceso de aprobación del gobierno. Puede crear una plantilla que contiene esa página y entregarlo a otros en su país. Luego, cuando otros traducen un libro de plantilla, pueden ir al final del libro y hacer clic en "Agregar página". La página que usted hizo aparecerá en la lista de opciones. Algunas otras ideas para plantillas incluyen tablas del alfabeto, glosarios y instrucciones sobre cómo usar el libro en una aula. <g id="genid-3" ctype="x-html-sup"> <g id="genid-4" ctype="x-html-a" html:href="#note1">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
       </trans-unit>
       <trans-unit id="template.starter.waystohelp">
         <source xml:lang="en">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</source>
-        <target xml:lang="es-ES" state="needs-translation">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</target>
+        <target xml:lang="es-ES" state="translated">Se hacen las plantillas del mismo modo que cualquier otro libro personalizado; todos los mismos controles están disponibles para hacer y personalizar páginas. Pero dado que probablemente estará compartiendo las plantillas con otras personas, hay varias cosas que puedes hacer para ayudar a los usuarios de su plantilla:</target>
         <note>ID: template.starter.waystohelp</note>
       </trans-unit>
       <trans-unit id="template.starter.labelpages">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="es-ES" state="needs-translation">Label Your Pages</target>
+        <target xml:lang="es-ES" state="translated">Etiquetar sus páginas</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage">
