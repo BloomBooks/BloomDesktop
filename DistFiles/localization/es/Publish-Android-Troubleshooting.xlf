@@ -95,19 +95,25 @@
           <target xml:lang="es-ES">Mientra que utiliz este método, no tienes que entrar ningún modo especial para recibir libros. Basta con ejecutar el Lector Bloom. Los libros deben aparecer automáticamente cuando se transfieran.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.usb.uses.mtp">
+      <trans-unit id="android.publish.usb.uses.mtp" approved="yes">
         <source xml:lang="en">Some Android devices have multiple modes they can be in when connected to a computer. Some will ask you as soon as you connect the cable to the computer. Bloom will be trying to talk to the device using a protocol called "MTP". If you're not sure that your device is connecting using MTP, try googling the name of your device + "MTP".</source>
-        <target xml:lang="es-ES" state="translated">Algunos dispositivos Android pueden estar en varios modos cuando estan conectados a una computadora. Algunos le preguntarán en cuanto se conecta el cable a la computadora. Bloom estará tratando de hablar con el dispositivo mediante un protocolo llamado "MTP". Si no estás seguro que su dispositivo esta conectando mediante MTP, intente googlear el nombre de su dispositivo y "MTP".</target>
+        <target xml:lang="es-ES">Algunos dispositivos Android pueden estar en varios modos cuando están conectados a una computadora. Algunos le preguntarán tan pronto como usted conecte el cable a la computadora. Bloom estará tratando de comunicarse con el dispositivo mediante un protocolo llamado "MTP". Si no está seguro que su dispositivo está conectando mediante MTP, intente buscar en Google el nombre de su dispositivo y "MTP".</target>
         <note>ID: android.publish.usb.uses.mtp</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Algunos dispositivos Android pueden estar en varios modos cuando estan conectados a una computadora. Algunos le preguntarán en cuanto se conecta el cable a la computadora. Bloom estará tratando de hablar con el dispositivo mediante un protocolo llamado "MTP". Si no estás seguro que su dispositivo esta conectando mediante MTP, intente googlear el nombre de su dispositivo y "MTP".</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.usb.windows">
+      <trans-unit id="android.publish.usb.windows" approved="yes">
         <source xml:lang="en">The device should be showing up in Windows File Explorer (this feature is Windows-only)</source>
-        <target xml:lang="es-ES" state="translated">El dispositivo debe estar mostrado en el Explorador de Archivos de Windows (esta característica se encuentra solamente en Windows)</target>
+        <target xml:lang="es-ES">El dispositivo debe mostrarse en el Explorador de Archivos de Windows (esta característica se encuentra solamente en Windows)</target>
         <note>ID: android.publish.usb.windows</note>
+        <alt-trans>
+          <target xml:lang="es-ES">El dispositivo debe estar mostrado en el Explorador de Archivos de Windows (esta característica se encuentra solamente en Windows)</target>
+        </alt-trans>
       </trans-unit>
-      <trans-unit id="android.publish.usb.cable.or.port">
+      <trans-unit id="android.publish.usb.cable.or.port" approved="yes">
         <source xml:lang="en">Try a different cable, or a different USB port.</source>
-        <target xml:lang="es-ES" state="translated">Pruebe un cable diferente o un puerto USB diferente.</target>
+        <target xml:lang="es-ES">Pruebe un cable diferente o un puerto USB diferente.</target>
         <note>ID: android.publish.usb.cable.or.port</note>
       </trans-unit>
     </body>
