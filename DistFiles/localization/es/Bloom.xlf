@@ -3992,7 +3992,10 @@
       <trans-unit id="PublishTab.Android.Troubleshooting" approved="yes">
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
-        <target xml:lang="es-ES">Consejos para resolver problemas</target>
+        <target xml:lang="es-ES">Consejos para la Solución de Problemas</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Consejos para resolver problemas</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" approved="yes">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
