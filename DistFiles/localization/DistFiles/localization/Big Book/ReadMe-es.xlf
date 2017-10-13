@@ -84,6 +84,9 @@ Si nos envía el texto traducido, podemos incluirlo en una futura versión de la
         <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
         <note>ID: bigbook.reportsbugs</note>
         <alt-trans>
+          <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-3" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Big%C2%A0Book%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
         </alt-trans>
         <alt-trans>
