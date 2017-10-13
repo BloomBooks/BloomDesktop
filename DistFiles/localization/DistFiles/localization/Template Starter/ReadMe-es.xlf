@@ -4,8 +4,11 @@
     <body>
       <trans-unit id="template.starter">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="es-ES" state="translated">Cómo usar la Plantilla Iniciador</target>
+        <target xml:lang="es-ES" state="translated">Cómo usar la Plantilla Inicial</target>
         <note>ID: template.starter</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Cómo usar la Plantilla Iniciador</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Cómo usar la Plantilla de Arranque</target>
         </alt-trans>
