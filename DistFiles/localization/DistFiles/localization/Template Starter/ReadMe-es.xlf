@@ -71,9 +71,9 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           <target xml:lang="es-ES">Si luego usted hace un cambio a la página, la imagen será obsoleta. Para corregirlo, haga clic en el botón "Añadir página", y Bloom regenerará las miniaturas. Si la miniatura automáticamente generada no comunica bien el propósito de la página, usted puede hacer su propia miniatura. Pero es importante marcar ese archivo con "Sólo lectura" para que Bloom no lo sobrescribe. Si prefiere, también puede hacer sus miniaturas como archivos svgs. (Esto es lo que hacemos para las plantillas que enviamos con Bloom).  En cualquier caso, hay que hacer clic en "Añadir página" por lo menos una vez antes de distribuir su plantilla para que todas las miniaturas se generan.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.document">
+      <trans-unit id="template.starter.document" approved="yes">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="es-ES" state="translated">Documentar su plantilla</target>
+        <target xml:lang="es-ES">Documentar su plantilla</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours">
