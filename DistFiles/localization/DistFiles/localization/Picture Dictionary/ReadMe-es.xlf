@@ -4,37 +4,37 @@
     <body>
       <trans-unit id="picture.dictionary">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="es-ES" state="needs-translation">About the Picture Dictionary Template</target>
+        <target xml:lang="es-ES" state="translated">Acerca de la Plantilla de Diccionario Ilustrado</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.use">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="es-ES" state="needs-translation">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</target>
+        <target xml:lang="es-ES" state="translated">Utilice esta plantilla para hacer un diccionario que es monolingüe, bilingüe o trilingüe.</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="es-ES" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="es-ES" state="translated">Limitaciones de esta versión</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental">
         <source xml:lang="en">This book is currently marked "experimental" because we know of several problems in layout and convenience.</source>
-        <target xml:lang="es-ES" state="needs-translation">This book is currently marked "experimental" because we know of several problems in layout and convenience.</target>
+        <target xml:lang="es-ES" state="translated">Este libro actualmente está marcado "experimental" porque conocemos varios problemas de diseño y comodidad.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.feedback">
         <source xml:lang="en">Feedback</source>
-        <target xml:lang="es-ES" state="needs-translation">Feedback</target>
+        <target xml:lang="es-ES" state="translated">Sugerencias</target>
         <note>ID: picture.dictionary.feedback</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.feedbackvoting">
         <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="es-ES" state="needs-translation">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></target>
+        <target xml:lang="es-ES" state="translated">Por favor dé y vote en <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">sugerencias</g></target>
         <note>ID: picture.dictionary.feedbackvoting</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.reportbugs">
         <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="es-ES" state="needs-translation">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <target xml:lang="es-ES" state="translated">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
         <note>ID: picture.dictionary.reportbugs</note>
       </trans-unit>
     </body>
