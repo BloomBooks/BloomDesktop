@@ -730,7 +730,16 @@
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-        <target xml:lang="es-ES">Conseguir más libros fuentes en BloomLibrary.org</target>
+        <target xml:lang="es-ES">Conseguir más Libros Fuente en BloomLibrary.org</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Conseguir más Libros Fuentes en BloomLibrary.org</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Conseguir más libros fuente en BloomLibrary.org</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Conseguir más libros fuentes en BloomLibrary.org</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Conseguir más libros originarios en BloomLibrary.org</target>
         </alt-trans>
@@ -962,7 +971,10 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate" approved="yes">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
-        <target xml:lang="es-ES">Crear un libro utilizando esta fuente</target>
+        <target xml:lang="es-ES">Crear un libro utilizando este Libro Fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Crear un libro utilizando esta fuente</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Crear un libro utilizando este esta fuente</target>
         </alt-trans>
@@ -979,7 +991,7 @@
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate_ToolTip_" approved="yes">
         <source xml:lang="en">Create a book in my language using this source book</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate_ToolTip_</note>
-        <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este libro Fuente</target>
+        <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este Libro Fuente</target>
         <alt-trans>
           <target xml:lang="es-ES">Crear un libro en mi idioma utilizando este libro originario</target>
         </alt-trans>
