@@ -52,9 +52,9 @@
         <target xml:lang="es-ES" state="translated">Nivel de Libro por Niveles</target>
         <note>ID: leveled.reader.level</note>
       </trans-unit>
-      <trans-unit id="decodable.stage">
+      <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
-        <target xml:lang="es-ES" state="translated">Etapa Descifrable</target>
+        <target xml:lang="es-ES">Etapa Descifrable</target>
         <note>ID: decodable.stage</note>
       </trans-unit>
     </body>
