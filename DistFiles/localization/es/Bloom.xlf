@@ -753,6 +753,9 @@
         <note>get this clicking on BloomLibrary.org link in source collection</note>
         <target xml:lang="es-ES">Colección de Libros fuente.</target>
         <alt-trans>
+          <target xml:lang="es-ES">Colección de Libros Fuente</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Colección de libros fuente.</target>
         </alt-trans>
         <alt-trans>
