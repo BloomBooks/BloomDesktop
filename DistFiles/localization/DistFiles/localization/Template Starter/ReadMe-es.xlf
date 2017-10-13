@@ -63,22 +63,25 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
       </trans-unit>
       <trans-unit id="template.starter.describeyours">
         <source xml:lang="en">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</source>
-        <target xml:lang="es-ES" state="needs-translation">Also consider adding a description of your template, like the one you are reading now. To do this, put a text file named <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> in your template's folder. This file should follow the <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. To provide your instructions in other languages, make versions of that file that change the "en" to each language's two letter code. For example <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-fr.md">ReadMe-fr.md</g> would be shown when Bloom is set to show labels in French. You can also include screenshots, like we have in this document. Place any images you use in a folder named "ReadMeImages", so that images are referenced like this:</target>
+        <target xml:lang="es-ES" state="translated">También considere agregar una descripción de su plantilla, como la que estás leyendo ahorita. Para hacer esto, coloque un archivo de texto llamado <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> en la carpeta que contiene su plantilla. Este archivo debe seguir el protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para proporcionar las instrucciones en otros idiomas, debe hacer versiones de ese archivo que cambian el "en" a dos letras del código de cada idioma. Por ejemplo <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-es.md">ReadMe-es.md</g> se mostrará cuando Bloom esta configurado para mostrar etiquetas en español. También puede incluir capturas de pantallas, como las que tenemos en este documento. Coloque todas las imágenes que usas en una carpeta llamada "ReadMeImages", para que las imágenes serán referenciadas como esto:</target>
         <note>ID: template.starter.describeyours</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnailsshown">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
-        <target xml:lang="es-ES" state="needs-translation">When the Add Page dialog box shows your template pages, it will show a thumbnail:</target>
+        <target xml:lang="es-ES" state="translated">Cuando el cuadro de diálogo "Agregar página" muestra sus páginas de plantilla, mostrará una miniatura:</target>
         <note>ID: template.starter.thumbnailsshown</note>
       </trans-unit>
       <trans-unit id="template.starter.share">
         <source xml:lang="en">Share Your Template</source>
-        <target xml:lang="es-ES" state="translated">Comparta su Plantilla</target>
+        <target xml:lang="es-ES" state="translated">Comparta su plantilla</target>
         <note>ID: template.starter.share</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Comparta su Plantilla</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.share.publish">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="es-ES" state="needs-translation">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</target>
+        <target xml:lang="es-ES" state="translated">Recuerde que Bloom se trata de plantar semillas y compartirlas. Así que planea compartir su plantilla en la Biblioteca Bloom para que personas en todo el mundo lo pueden encontrar. Esto solamente requiere varios clics en la pestaña "Publicar".</target>
         <note>ID: template.starter.share.publish</note>
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack">
