@@ -235,9 +235,6 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands</note>
         <target xml:lang="es-ES">Mostrar los Comandos Experimentales (p. ej. exportar XML para InDesign)</target>
         <alt-trans>
-          <target xml:lang="es-ES">Mostrar los comandos experimentales (p. ej. exportar XML para InDesign)</target>
-        </alt-trans>
-        <alt-trans>
           <target xml:lang="es-ES">Mostrar los comandos experimentales (e.g. exportar XML para InDesign)</target>
         </alt-trans>
       </trans-unit>
@@ -288,7 +285,7 @@
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel" approved="yes">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
-        <target xml:lang="es-ES">Creando libros</target>
+        <target xml:lang="es-ES">Creando Libros</target>
         <alt-trans>
           <target xml:lang="es-ES">Haciendo libros</target>
         </alt-trans>
@@ -745,7 +742,13 @@
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="es-ES">Colección de libros originarios</target>
+        <target xml:lang="es-ES">Colección de Libros fuente.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros fuente.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros originarios</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros fuentes</target>
         </alt-trans>
@@ -1046,7 +1049,10 @@
       <trans-unit id="CollectionTab.Source Collection" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.Source Collection</note>
-        <target xml:lang="es-ES">Colección de Libros Originarios</target>
+        <target xml:lang="es-ES">Colección de Libros Fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de Libros Originarios</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros originarios</target>
         </alt-trans>
@@ -1069,9 +1075,6 @@
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
         <target xml:lang="es-ES">Recursos para nuevos Libros Prediseñados</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Recursos para nuevos libros prediseñados</target>
-        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Fuentes para nuevos libros prediseñados</target>
         </alt-trans>
@@ -3651,7 +3654,13 @@
       <trans-unit id="NewCollectionWizard.KindOfCollectionPage.sourceCollection" approved="yes">
         <source xml:lang="en">Source Collection</source>
         <note>ID: NewCollectionWizard.KindOfCollectionPage.sourceCollection</note>
-        <target xml:lang="es-ES">Colección de libros originarios</target>
+        <target xml:lang="es-ES">Colección de Libros Fuente</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros Fuente</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Colección de libros originarios</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros fuentes</target>
         </alt-trans>
