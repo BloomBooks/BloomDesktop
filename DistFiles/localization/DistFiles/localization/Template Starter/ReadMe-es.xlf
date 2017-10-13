@@ -38,17 +38,17 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage">
         <source xml:lang="en">When you add pages to your template, make sure to give each one useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note2">3</g>,<g id="genid-7" ctype="x-html-a" html:href="@note3">4</g></g>:</source>
-        <target xml:lang="es-ES" state="needs-translation">When you add pages to your template, make sure to give each one useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note2">3</g>,<g id="genid-7" ctype="x-html-a" html:href="@note3">4</g></g>:</target>
+        <target xml:lang="es-ES" state="translated">Cuando agrega páginas a su plantilla, dé a cada una una etiqueta útil <g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails">
         <source xml:lang="en">Check Your Thumbnails</source>
-        <target xml:lang="es-ES" state="needs-translation">Check Your Thumbnails</target>
+        <target xml:lang="es-ES" state="translated">Revisa sus miniaturas</target>
         <note>ID: template.starter.thumbnails</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.onlyonce">
         <source xml:lang="en">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</source>
-        <target xml:lang="es-ES" state="needs-translation">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</target>
+        <target xml:lang="es-ES" state="translated">Para ser mas eficiente, Bloom solamente hace esta miniatura una vez y lo guarda en el subdirectorio "plantilla" de su plantilla:</target>
         <note>ID: template.starter.thumbnails.onlyonce</note>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails.update">
