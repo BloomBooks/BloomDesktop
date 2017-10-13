@@ -4,8 +4,11 @@
     <body>
       <trans-unit id="leveled.definition">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="es-ES" state="translated">Un <g id="genid-1" ctype="x-html-strong">Libro por Niveles</g> es un libro escrito específicamente para un estudiante que está en un cierto nivel de desarrollo de lectura. Los niveles definen metas para la longitud de palabras, longitud de frases, etcetera. También determinan el apropiado formato, vocabulario, soporte de ilustración y tema.</target>
+        <target xml:lang="es-ES" state="translated">Un <g id="genid-1" ctype="x-html-strong">Libro por Niveles</g> es un libro escrito específicamente para un estudiante que está en un cierto nivel de desarrollo de lectura. Los niveles definen metas para la longitud de palabras, longitud de frases, etcetera. También determinan el apropiado formato, vocabulario, apoyo para ilustraciónes y tema.</target>
         <note>ID: leveled.definition</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Un <g id="genid-1" ctype="x-html-strong">Libro por Niveles</g> es un libro escrito específicamente para un estudiante que está en un cierto nivel de desarrollo de lectura. Los niveles definen metas para la longitud de palabras, longitud de frases, etcetera. También determinan el apropiado formato, vocabulario, soporte de ilustración y tema.</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="leveled.levels">
         <source xml:lang="en">After you have defined a sequence of <g id="genid-2" ctype="x-html-em">levels</g>, you can assign a level to books you create either with this template or the "Decodable Reader Template". As you type into the book, Bloom will help you keep the level in mind and point out when you exceed the limits of the level.</source>
