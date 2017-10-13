@@ -34,8 +34,11 @@
       </trans-unit>
       <trans-unit id="picture.dictionary.reportbugs">
         <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="es-ES" state="translated">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
+        <target xml:lang="es-ES" state="translated">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
         <note>ID: picture.dictionary.reportbugs</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
+        </alt-trans>
       </trans-unit>
     </body>
   </file>
