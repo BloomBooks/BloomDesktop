@@ -4,47 +4,47 @@
     <body>
       <trans-unit id="wall.calendar">
         <source xml:lang="en">About the Wall Calendar Template</source>
-        <target xml:lang="es-ES" state="needs-translation">About the Wall Calendar Template</target>
+        <target xml:lang="es-ES" state="translated">Acerca de la Plantilla de Calendario</target>
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="es-ES" state="needs-translation">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</target>
+        <target xml:lang="es-ES" state="translated">Con esta plantilla, puede realizar un calendario de 12 meses de tamaño A5, con una imagen y una cita en la parte superior de cada página y los días del mes en la parte inferior. El calendario utilizará los nombres de meses y días de su idioma.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="es-ES" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="es-ES" state="translated">Limitaciones de esta versión</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.noshells">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="es-ES" state="needs-translation">Currently, you cannot make a "shell" for other languages to use.</target>
+        <target xml:lang="es-ES" state="translated">Actualmente, no se puede hacer un "calendario prediseñado" para ser usadao por otros idiomas.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits">
         <source xml:lang="en">Credits</source>
-        <target xml:lang="es-ES" state="needs-translation">Credits</target>
+        <target xml:lang="es-ES" state="translated">Créditos</target>
         <note>ID: wall.calendar.credits</note>
       </trans-unit>
       <trans-unit id="wall.calendar.thanks">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="es-ES" state="needs-translation">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</target>
+        <target xml:lang="es-ES" state="translated">Gracias a Bruce Cox (SIL Camerún) por iniciar esta plantilla.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
       <trans-unit id="wall.calendar.feedback">
         <source xml:lang="en">Feedback</source>
-        <target xml:lang="es-ES" state="needs-translation">Feedback</target>
+        <target xml:lang="es-ES" state="translated">Sugerencias</target>
         <note>ID: wall.calendar.feedback</note>
       </trans-unit>
       <trans-unit id="wall.calendar.feedbackvoting">
         <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="es-ES" state="needs-translation">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></target>
+        <target xml:lang="es-ES" state="translated">Por favor dé y vote en <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">sugerencias</g></target>
         <note>ID: wall.calendar.feedbackvoting</note>
       </trans-unit>
       <trans-unit id="wall.calendar.reportbugs">
         <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="es-ES" state="needs-translation">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <target xml:lang="es-ES" state="translated">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Wall%C2%A0Calendar%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
         <note>ID: wall.calendar.reportbugs</note>
       </trans-unit>
     </body>
