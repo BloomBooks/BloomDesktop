@@ -183,9 +183,9 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
 <g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Otras personas no serán capazes de traducir sus etiquetas y descripciones a otros idiomas nacionales. Si esto es problemático, póngase en contacto con el equipo técnico de Bloom.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.editrawhtml">
+      <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: If you want to the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES">
           
 <g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salirse de Bloom y editar el archivo html de la plantilla en Notepad, de esta manera: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
