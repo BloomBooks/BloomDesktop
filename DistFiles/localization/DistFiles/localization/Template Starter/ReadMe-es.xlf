@@ -97,9 +97,9 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           <target xml:lang="es-ES">También considere agregar una descripción de su plantilla, como la que estás leyendo ahorita. Para hacer esto, coloque un archivo de texto llamado <g id="genid-8" ctype="x-html-a" html:href="http://ReadMe-en.md">ReadMe-en.md</g> en la carpeta que contiene su plantilla. Este archivo debe seguir el protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para proporcionar las instrucciones en otros idiomas, debe hacer versiones de ese archivo que cambian el "en" a dos letras del código de cada idioma. Por ejemplo <g id="genid-10" ctype="x-html-a" html:href="http://ReadMe-es.md">ReadMe-es.md</g> se mostrará cuando Bloom esta configurado para mostrar etiquetas en español. También puede incluir capturas de pantallas, como las que tenemos en este documento. Coloque todas las imágenes que usas en una carpeta llamada "ReadMeImages", para que las imágenes serán referenciadas como esto:</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnailsshown">
+      <trans-unit id="template.starter.thumbnailsshown" approved="yes">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
-        <target xml:lang="es-ES" state="translated">Cuando el cuadro de diálogo "Agregar página" muestre sus páginas de plantilla, mostrará una miniatura:</target>
+        <target xml:lang="es-ES">Cuando el cuadro de diálogo "Agregar página" muestre sus páginas de plantilla, mostrará una miniatura:</target>
         <note>ID: template.starter.thumbnailsshown</note>
         <alt-trans>
           <target xml:lang="es-ES">Cuando el cuadro de diálogo "Agregar página" muestra sus páginas de plantilla, mostrará una miniatura:</target>
@@ -113,18 +113,21 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
           <target xml:lang="es-ES">Comparta su Plantilla</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.share.publish">
+      <trans-unit id="template.starter.share.publish" approved="yes">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="es-ES" state="translated">Recuerde que Bloom se trata de plantar semillas y compartirlas. Así que planee compartir su plantilla en la Biblioteca de Bloom para que personas en todo el mundo las puedan encontrar. Esto solamente requiere algunos clics en la pestaña "Publicar".</target>
+        <target xml:lang="es-ES">Recuerde que Bloom se trata de plantar semillas y compartirlas. Así que planee compartir su plantilla en la Biblioteca de Bloom para que personas en todo el mundo las puedan encontrar. Esto solamente requiere algunos clics en la pestaña "Publicar".</target>
         <note>ID: template.starter.share.publish</note>
         <alt-trans>
           <target xml:lang="es-ES">Recuerde que Bloom se trata de plantar semillas y compartirlas. Así que planea compartir su plantilla en la Biblioteca Bloom para que personas en todo el mundo lo pueden encontrar. Esto solamente requiere varios clics en la pestaña "Publicar".</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.share.bloompack">
+      <trans-unit id="template.starter.share.bloompack" approved="yes">
         <source xml:lang="en">For local colleagues, an easy way to distribute your template is via a Bloom Pack. In the collections tab, right-click on your template's thumbnail. Choose 'Make Bloom Pack'. Save that somewhere, for example to a USB Key. Then take it to another computer, double click on the file you made, and your template will be added to the "Sources for New Books" on that computer.</source>
-        <target xml:lang="es-ES" state="translated">Para colegas locales, una manera fácil de distribuir su plantilla es a través de un Paquete Bloom. En la pestaña de Colecciones, haga clic derecho en la miniatura de la plantilla. Elija 'Hacer Paquete Bloom'. Guárdelo en algún lugar, por ejemplo en una memoria USB. Luego conéctelo en otra computadora, haga doble clic sobre el archivo que hizo, y su plantilla será añadida a las "Fuentes para nuevos libros " en esa computadora.</target>
+        <target xml:lang="es-ES">Para colegas locales, una manera fácil de distribuir su plantilla es a través de un Paquete Bloom. En la pestaña de Colecciones, haga clic derecho en la miniatura de la plantilla. Elija 'Crear un Paquete de Bloom'. Guárdelo en algún lugar, por ejemplo en una memoria USB. Luego conéctelo en otra computadora, haga doble clic sobre el archivo que hizo, y su plantilla será añadida a las "Fuentes para nuevos libros " en esa computadora.</target>
         <note>ID: template.starter.share.bloompack</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Para colegas locales, una manera fácil de distribuir su plantilla es a través de un Paquete Bloom. En la pestaña de Colecciones, haga clic derecho en la miniatura de la plantilla. Elija 'Hacer Paquete Bloom'. Guárdelo en algún lugar, por ejemplo en una memoria USB. Luego conéctelo en otra computadora, haga doble clic sobre el archivo que hizo, y su plantilla será añadida a las "Fuentes para nuevos libros " en esa computadora.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Para colegas locales, una manera fácil de distribuir su plantilla es a través de un Paquete Bloom. En la pestaña de Colecciones, haga clic derecho en la miniatura de la plantilla. Elija 'Hacer Paquete Bloom'. Guardalo en algun lugar, por ejemplo en una llave USB. Luego enchúfalo en otra computadora, haga doble clic sobre el archivo que hizo, y su plantilla será añadida a las "Fuentes para libros nuevos" en esa computadora.</target>
         </alt-trans>
@@ -134,12 +137,17 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
         <target xml:lang="es-ES">Notas</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
-      <trans-unit id="template.starter.nothingautomatic">
+      <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom 3.9 does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES">
+          
+<g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo "Agregar Página".</target>
+        <note>ID: template.starter.nothingautomatic</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
           
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluida automáticamente en los nuevos libros; el autor tendrá que agregar cada página desde el cuadro de diálogo de "Agregar Página".</target>
-        <note>ID: template.starter.nothingautomatic</note>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">
           
@@ -150,27 +158,42 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
         <target xml:lang="es-ES" state="translated">
           
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo en la carpeta de Plantillas del Libro llamado NotForAddPage.txt.</target>
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo en la carpeta de Plantillas del Libro, nombrando el archivo "NotForAddPage.txt.".</target>
         <note>ID: template.starter.nametonotaddpage</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo en la carpeta de Plantillas del Libro llamado NotForAddPage.txt.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">
           
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestran en el cuadro de diálogo Agregar página, usted puede indicar esto a Bloom mediante la creación de un archivo en la carpeta de plantillas del libro llamado NotForAddPage.txt.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.labelsnottranslatable">
+      <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES">
+          
+<g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Otras personas no serán capaces de traducir sus etiquetas y descripciones a otros idiomas nacionales. Si esto es problemático, póngase en contacto con el equipo técnico de Bloom.</target>
+        <note>ID: template.starter.labelsnottranslatable</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
           
 <g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Otras personas no serán capazes de traducir sus etiquetas y descripciones a otros idiomas nacionales. Si esto es problemático, póngase en contacto con el equipo técnico de Bloom.</target>
-        <note>ID: template.starter.labelsnottranslatable</note>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.editrawhtml">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: If you want to the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
         <target xml:lang="es-ES" state="translated">
           
-<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salir de Bloom y editar el archivo html de la plantilla en Notepad, como esto: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salirse de Bloom y editar el archivo html de la plantilla en Notepad, de esta manera: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          
+<g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Si desea que la pantalla de "Agregar Página" también proporcione una descripción breve de la página, tendrá que salir de Bloom y editar el archivo html de la plantilla en Notepad, como esto: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">
           
