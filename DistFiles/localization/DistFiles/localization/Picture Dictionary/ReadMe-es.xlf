@@ -2,19 +2,19 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="es-ES">
     <body>
-      <trans-unit id="picture.dictionary">
+      <trans-unit id="picture.dictionary" approved="yes">
         <source xml:lang="en">About the Picture Dictionary Template</source>
-        <target xml:lang="es-ES" state="translated">Acerca de la Plantilla de Diccionario Ilustrado</target>
+        <target xml:lang="es-ES">Acerca de la Plantilla de Diccionario Ilustrado</target>
         <note>ID: picture.dictionary</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.use">
+      <trans-unit id="picture.dictionary.use" approved="yes">
         <source xml:lang="en">Use this template to make a picture dictionary that is monolingual, bilingual, or trilingual.</source>
-        <target xml:lang="es-ES" state="translated">Utilice esta plantilla para hacer un diccionario que es monolingüe, bilingüe o trilingüe.</target>
+        <target xml:lang="es-ES">Utilice esta plantilla para hacer un diccionario que es monolingüe, bilingüe o trilingüe.</target>
         <note>ID: picture.dictionary.use</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.limits">
+      <trans-unit id="picture.dictionary.limits" approved="yes">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="es-ES" state="translated">Limitaciones de esta versión</target>
+        <target xml:lang="es-ES">Limitaciones de esta versión</target>
         <note>ID: picture.dictionary.limits</note>
       </trans-unit>
       <trans-unit id="picture.dictionary.stillexperimental">
@@ -22,19 +22,19 @@
         <target xml:lang="es-ES" state="translated">Este libro actualmente está marcado "experimental" porque conocemos varios problemas de diseño y comodidad.</target>
         <note>ID: picture.dictionary.stillexperimental</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.feedback">
+      <trans-unit id="picture.dictionary.feedback" approved="yes">
         <source xml:lang="en">Feedback</source>
-        <target xml:lang="es-ES" state="translated">Sugerencias</target>
+        <target xml:lang="es-ES">Sugerencias</target>
         <note>ID: picture.dictionary.feedback</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.feedbackvoting">
+      <trans-unit id="picture.dictionary.feedbackvoting" approved="yes">
         <source xml:lang="en">Please give and vote on <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">suggestions</g></source>
-        <target xml:lang="es-ES" state="translated">Por favor dé y vote en <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">sugerencias</g></target>
+        <target xml:lang="es-ES">Por favor dé y vote en <g id="genid-1" ctype="x-html-a" html:href="http://bloomlibrary.org/suggestions">sugerencias</g></target>
         <note>ID: picture.dictionary.feedbackvoting</note>
       </trans-unit>
-      <trans-unit id="picture.dictionary.reportbugs">
+      <trans-unit id="picture.dictionary.reportbugs" approved="yes">
         <source xml:lang="en">Please report problems to <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</source>
-        <target xml:lang="es-ES" state="translated">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
+        <target xml:lang="es-ES">Por favor repórtenos los problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem">issues@bloomremovelibrary.org</g>.</target>
         <note>ID: picture.dictionary.reportbugs</note>
         <alt-trans>
           <target xml:lang="es-ES">Por favor infórmenos sobre problemas por medio de un correo electrónico a <g id="genid-2" ctype="x-html-a" html:href="mailto:issues@bloomremovelibrary.org?subject=Picture%C2%A0Dictionary%C2%A0Problem"> issues@bloomremovelibrary.org</g>.</target>
