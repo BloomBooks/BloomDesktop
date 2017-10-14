@@ -751,9 +751,9 @@
         <source xml:lang="en">Source Collection</source>
         <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
         <note>get this clicking on BloomLibrary.org link in source collection</note>
-        <target xml:lang="es-ES">Colección de Libros fuente.</target>
+        <target xml:lang="es-ES">Colección de Libros Fuente</target>
         <alt-trans>
-          <target xml:lang="es-ES">Colección de Libros Fuente</target>
+          <target xml:lang="es-ES">Colección de Libros fuente.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Colección de libros fuente.</target>
@@ -826,12 +826,12 @@
       <trans-unit id="CollectionTab.BookSourceHeading" approved="yes">
         <source xml:lang="en">Sources For New Books</source>
         <note>ID: CollectionTab.BookSourceHeading</note>
-        <target xml:lang="es-ES">Recursos para nuevos libros</target>
-        <alt-trans>
-          <target xml:lang="es-ES">Fuentes para nuevos libros</target>
-        </alt-trans>
+        <target xml:lang="es-ES">Fuentes para nuevos libros</target>
         <alt-trans>
           <target xml:lang="es-ES">Orígenes de nuevos libros</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Recursos para nuevos libros</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.BookSourcesLockNotice" approved="yes">
@@ -943,21 +943,21 @@
       <trans-unit id="CollectionTab.HiddenBookExplanationForSourceCollections" approved="yes">
         <source xml:lang="en">Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</source>
         <note>ID: CollectionTab.HiddenBookExplanationForSourceCollections</note>
-        <target xml:lang="es-ES">Debido a que esta es una colección fuente, Bloom no está ofreciendo libros prediseñados existentes como recursos para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
+        <target xml:lang="es-ES">Debido a que esta es una colección de libros fuente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
         <alt-trans>
-          <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como recursos para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Debido a que esta es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Debido a que esteaes una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+          <target xml:lang="es-ES">Debido a que esta es una colección fuente, Bloom no está ofreciendo libros prediseñados existentes como recursos para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de hacer una copia. El Calendario tampoco puede ser utilizado para crear un nuevo Libro Prediseñado.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección originaria, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Porque este es una colección originaría, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos libros prediseñados. Si desea agregar un idioma a un libro prediseñado, debe editar la colección que contiene el libro prediseñado, en vez de copiarlo. El calendario tampoco puede ser utilizado para crear un nuevo libro prediseñado.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo libros prediseñados existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Porque este es una colección de furente, Bloom no está ofreciendo "shells" existentes como fuentes para nuevos "shells". Si desea agregar un idioma a un "shell", debe editar la colección que contiene el "shell", en vez de copiarlo haga una copia de la misma. El calendario tampoco puede ser utilizado para crear un nuevo "shell".</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
@@ -1089,7 +1089,10 @@
       <trans-unit id="CollectionTab.SourcesForNewShellsHeading" approved="yes">
         <source xml:lang="en">Sources For New Shells</source>
         <note>ID: CollectionTab.SourcesForNewShellsHeading</note>
-        <target xml:lang="es-ES">Recursos para nuevos Libros Prediseñados</target>
+        <target xml:lang="es-ES">Fuentes para nuevos Libros Prediseñados</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Recursos para nuevos Libros Prediseñados</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Fuentes para nuevos libros prediseñados</target>
         </alt-trans>
@@ -3826,7 +3829,10 @@
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage" approved="yes">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
         <note>ID: OpenCreateCloneControl.InSourceCollectionMessage</note>
-        <target xml:lang="es-ES">Esta colección forma parte de sus " Fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <target xml:lang="es-ES">Esta colección forma parte de sus "Fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta colección forma parte de sus " Fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta colección forma parte de sus "Recursos para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
         </alt-trans>
