@@ -84,6 +84,9 @@
         <source xml:lang="en">Leveled Reader Level</source>
         <target xml:lang="es-ES">Nivel de Libro por Niveles</target>
         <note>ID: leveled.reader.level</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Nivel de Libro Nivelado</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
