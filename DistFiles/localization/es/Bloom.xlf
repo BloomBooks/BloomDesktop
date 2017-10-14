@@ -3826,7 +3826,10 @@
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage" approved="yes">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
         <note>ID: OpenCreateCloneControl.InSourceCollectionMessage</note>
-        <target xml:lang="es-ES">Esta colección forma parte de sus "Recursos para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <target xml:lang="es-ES">Esta colección forma parte de sus " Fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta colección forma parte de sus "Recursos para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta colección forma parte de sus "fuentes para nuevos libros" que se puede ver en la parte inferior izquierda de la pestaña Colecciones. No puede ser modificado.</target>
         </alt-trans>
