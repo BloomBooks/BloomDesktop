@@ -6052,7 +6052,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.BookName.Picture Dictionary" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture Dictionary</source>
         <note>ID: TemplateBooks.BookName.Picture Dictionary</note>
-        <target xml:lang="es-ES">Diccionario ilustrado</target>
+        <target xml:lang="es-ES">Diccionario Ilustrado</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Diccionario ilustrado</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Vaccinations" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Vaccinations</source>
