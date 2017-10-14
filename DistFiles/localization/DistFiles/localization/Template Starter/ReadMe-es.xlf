@@ -2,9 +2,9 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="es-ES">
     <body>
-      <trans-unit id="template.starter">
+      <trans-unit id="template.starter" approved="yes">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="es-ES" state="translated">Cómo usar la Plantilla Inicial</target>
+        <target xml:lang="es-ES">Cómo usar la Plantilla Inicial</target>
         <note>ID: template.starter</note>
         <alt-trans>
           <target xml:lang="es-ES">Cómo usar la Plantilla Iniciador</target>
@@ -13,12 +13,16 @@
           <target xml:lang="es-ES">Cómo usar la Plantilla de Arranque</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.firstusage">
+      <trans-unit id="template.starter.firstusage" approved="yes">
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
-        <target xml:lang="es-ES" state="translated">Esta plantilla especial le permite crear sus propias plantillas. Una plantilla proporciona un conjunto de diseños de páginas relacionados que un autor puede elegir para la escritura de un libro original. Normalmente los cuadros de texto y los cuadros para imágenes en las páginas de plantilla estarán vacíos, listos para que un autor los rellene.A veces puede haber texto estándar o imágenes que deben estar en cada copia de la página.
-Hay dos maneras en que la gente puede usar su plantilla. La primera manera es para comenzar libros nuevos. Por ejemplo, imagine libros para estudiantes que tengan una página por cada día escolar de la semana. Usted podría hacer una plantilla con 5 páginas, cada una con cuadros para ingresar texto y elegir imágenes. Los autores de currículo podrían seleccionar su plantilla y hacer un nuevo libro, uno por cada semana<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
+        <target xml:lang="es-ES">Esta plantilla especial le permite crear sus propias plantillas. Una plantilla proporciona un conjunto de diseños de páginas relacionados que un autor puede elegir para la escritura de un libro original. Normalmente los cuadros de texto y los cuadros para imágenes en las páginas de plantilla estarán vacíos, listos para que un autor los rellene. A veces puede haber texto estándar o imágenes estándares que deben estar en cada copia de la página.
+Hay dos maneras en que la gente puede usar su plantilla. La primera manera es para comenzar libros nuevos. Por ejemplo, imagine libros para estudiantes que tengan una página por cada día escolar de la semana. Usted podría hacer una plantilla con 5 páginas, cada una con cuadros para ingresar texto y elegir imágenes. Los autores de currículo podrían seleccionar su plantilla y crear un nuevo libro, uno por cada semana<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         <note>ID: template.starter.firstusage</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta plantilla especial le permite crear sus propias plantillas. Una plantilla proporciona un conjunto de diseños de páginas relacionados que un autor puede elegir para la escritura de un libro original. Normalmente los cuadros de texto y los cuadros para imágenes en las páginas de plantilla estarán vacíos, listos para que un autor los rellene.A veces puede haber texto estándar o imágenes que deben estar en cada copia de la página.
+Hay dos maneras en que la gente puede usar su plantilla. La primera manera es para comenzar libros nuevos. Por ejemplo, imagine libros para estudiantes que tengan una página por cada día escolar de la semana. Usted podría hacer una plantilla con 5 páginas, cada una con cuadros para ingresar texto y elegir imágenes. Los autores de currículo podrían seleccionar su plantilla y hacer un nuevo libro, uno por cada semana<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta plantilla especial le permite crear sus propias plantillas.Una plantilla proporciona un conjunto de diseños de páginas relacionados que un autor puede elegir para la escritura de un libro original. Normalmente los bloques para el texto y los bloques para la imagen en las páginas de plantilla estarán vacíos, listos para que un autor los rellene.A veces puede haber texto estándar o imágenes que deben estar en cada copia de la página.
 Hay dos maneras en que la gente puede usar su plantilla. La primera manera es comenzar libros nuevos. Por ejemplo, imagine libros de estudiantes que tengan una página por cada día escolar de la semana. Usted podría hacer una plantilla con 5 páginas, cada una con lugares para escribir en el texto y elegir las imágenes. Los autores del currículo pueden seleccionar su plantilla y hacer un nuevo libro, uno por cada semana<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
