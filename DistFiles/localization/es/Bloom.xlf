@@ -2110,7 +2110,7 @@
       <trans-unit id="EditTab.FrontMatter.SimpleLineDrawings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Simple line drawings look best. Instead of using this page, you can also make your own thumbnail.png file and set it to Read-only so Bloom doesn't write over it.</source>
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
-        <target xml:lang="es-ES">Los dibujos de líneas simples se ven mejor. En vez de usar esta página, usted puede crear su propio thumbnail.png (miniatura) y marcar la opción de sólo lectura (Read-only) para que Bloom no escriba sobre la miniatura.</target>
+        <target xml:lang="es-ES">Los dibujos de líneas simples se ven mejor. En vez de usar esta página, usted puede crear su propio thumbnail.png (miniatura) y marcar la opción de Sólo Lectura (Read-only) para que Bloom no escriba sobre la miniatura.</target>
         <alt-trans>
           <target xml:lang="es-ES">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
         </alt-trans>
