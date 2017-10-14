@@ -6255,7 +6255,10 @@ Desea seguir?</target>
       <trans-unit id="TemplateBooks.PageLabel.Credits Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Credits Page</source>
         <note>ID: TemplateBooks.PageLabel.Credits Page</note>
-        <target xml:lang="es-ES">Página de créditos</target>
+        <target xml:lang="es-ES">Página de Créditos</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Página de créditos</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Custom</source>
