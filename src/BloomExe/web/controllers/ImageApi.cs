@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using SIL.Code;
@@ -14,6 +15,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using L10NSharp;
 using SIL.IO;
+using SIL.Xml;
 
 namespace Bloom.web.controllers
 {
@@ -58,30 +60,36 @@ namespace Bloom.web.controllers
 		{
 			// This method is called on a fileserver thread. To minimize the chance that the current selection somehow
 			// changes while it is running, we capture the things that depend on it in variables right at the start.
-			var names = BookStorage.GetImagePathsRelativeToBook(_bookSelection.CurrentSelection.RawDom.DocumentElement);
+			var domBody = _bookSelection.CurrentSelection.RawDom.DocumentElement.SelectSingleNode("//body");
+			var imageNameToPages = GetWhichImagesAreUsedOnWhichPages(domBody)
+					.Where(kvp => !DoNotPasteCreditsImages(kvp.Key));
 			var currentSelectionFolderPath = _bookSelection.CurrentSelection.FolderPath;
-			IEnumerable<string> langs = null;
+			IEnumerable<string> langs;
 			if (request.CurrentCollectionSettings != null)
 				langs = request.CurrentCollectionSettings.LicenseDescriptionLanguagePriorities;
 			else
 				langs = new List<string> { "en" };		// emergency fall back -- probably never used.
-			var credits = new List<string>();
+			var credits = new Dictionary<string, List<int>>();
 			var missingCredits = new List<string>();
-			foreach (var name in names)
+			foreach (var kvp in imageNameToPages)
 			{
-				var path = currentSelectionFolderPath.CombineForPath(name);
+				var path = currentSelectionFolderPath.CombineForPath(kvp.Key);
 				if (RobustFile.Exists(path))
 				{
 					var meta = Metadata.FromFile(path);
-					string id;
-					var credit = meta.MinimalCredits(langs, out id);
-					if (string.IsNullOrEmpty(credit) && !DoNotPasteCreditsImages(name))
-						missingCredits.Add(name);
-					if (!string.IsNullOrEmpty(credit) && !credits.Contains(credit))
-						credits.Add(credit);
+					string dummy;
+					var credit = meta.MinimalCredits(langs, out dummy);
+					if (string.IsNullOrEmpty(credit))
+						missingCredits.Add(kvp.Key);
+					if (!string.IsNullOrEmpty(credit))
+					{
+						var pageList = kvp.Value;
+						BuildCreditsDictionary(credits, credit, pageList);
+					}
 				}
 			}
-			var total = credits.Aggregate(new StringBuilder(), (all,credit) => {
+			var collectedCredits = CollectFormattedCredits(credits);
+			var total = collectedCredits.Aggregate(new StringBuilder(), (all,credit) => {
 				all.AppendFormat("<p>{0}</p>{1}", credit, System.Environment.NewLine);
 				return all;
 			});
@@ -101,11 +109,119 @@ namespace Bloom.web.controllers
 			request.ReplyWithText(total.ToString());
 		}
 
+		private IEnumerable<string> CollectFormattedCredits(Dictionary<string, List<int>> credits)
+		{
+			// Dictionary Key is metadata.MinimalCredits, Value is the list of pages that have images this credits string applies to.
+			// Generate a formatted credit string like:
+			//   Image on page 2 by John Doe, Copyright John Doe, 2016, CC-BY-NC. or
+			//   Images on pages 1,3, & 4 from Art of Reading, Copyright SIL International 2017, CC-BY-SA.
+			// The goal is to return one string for each credit source listing the pages that apply.
+			var singleCredit = LocalizationManager.GetString("EditTab.FrontMatter.SingleImageCredit", "Image on page {0} by {1}.");
+			var multipleCredit = LocalizationManager.GetString("EditTab.FrontMatter.MultipleImageCredit", "Images on pages {0} by {1}.");
+			foreach (var kvp in credits.OrderBy(kvp => kvp.Value.First())) // sort by the earliest page number
+			{
+				var pages = kvp.Value;
+				var credit = kvp.Key;
+				if (pages.Count == 1)
+				{
+					// use singleCredit format
+					yield return string.Format(singleCredit, pages[0], credit);
+				}
+				else
+				{
+					// use multipleCredit format
+					var sb = new StringBuilder();
+					for (var i = 0; i < pages.Count; i++)
+					{
+						if (i < pages.Count - 1)
+						{
+							sb.Append(pages[i] + ", ");
+						}
+						else
+						{
+							sb.Append("and " + pages[i]);
+						}
+					}
+					yield return string.Format(multipleCredit, sb, credit);
+				}
+			}
+		}
+
+		private static void BuildCreditsDictionary(Dictionary<string, List<int>> credits, string credit,
+				List<int> listOfPageUsages)
+		{
+			// need to see if 'credit' string is already in dict
+			// if not, add it along with the associated 'List<int> listOfPageUsages'
+			// if yes, aggregate the new List<int> pages with what's already on file in the dict.
+			List<int> oldPagesList;
+			if (credits.TryGetValue(credit, out oldPagesList))
+			{
+				var newResult = new SortedSet<int>();
+				newResult.AddRange(oldPagesList);
+				newResult.AddRange(listOfPageUsages);
+				credits.Remove(credit);
+				credits.Add(credit, newResult.ToList());
+			}
+			else
+			{
+				credits.Add(credit, listOfPageUsages);
+			}
+		}
+
+		/// <summary>
+		/// Determine whether or not a particular image should have its credits pasted.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
 		private bool DoNotPasteCreditsImages(string name)
 		{
 			// returns 'true' if 'name' is among the list of ones we don't want to paste image credits for
 			// includes CC license image, placeholder and branding images
 			return _doNotPasteArray.Contains(name.ToLowerInvariant());
+		}
+
+		/// <summary>
+		/// Returns a Dictionary&lt;string, List&lt;int&gt;&gt; that contains each image name and a list of pages
+		/// that contain that image.
+		/// </summary>
+		/// <param name="domBody"></param>
+		public static Dictionary<string, List<int>> GetWhichImagesAreUsedOnWhichPages(XmlNode domBody)
+		{
+			var imageNameToPages = new Dictionary<string, List<int>>();
+			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(domBody as XmlElement))
+			{
+				var name = HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded;
+				var pageNum = GetPageNumberForImageElement(img);
+				if (pageNum < 0)
+					continue; // This image is on a page with no pagenumber or something is drastically wrong.
+				List<int> currentList;
+				if (imageNameToPages.TryGetValue(name, out currentList))
+				{
+					if (currentList.Contains(pageNum))
+						continue; // already got this image on this page
+
+					currentList.Add(pageNum);
+				}
+				else
+				{
+					imageNameToPages.Add(name, new List<int> { pageNum });
+				}
+			}
+			return imageNameToPages;
+		}
+
+		private static int GetPageNumberForImageElement(XmlElement img)
+		{
+			const string xpath = "ancestor::div[@data-page-number]";
+			var pageNumNode = img.SelectSingleNode(xpath);
+			var pageNumStr = pageNumNode?.GetStringAttribute("data-page-number");
+			if (pageNumNode == null || string.IsNullOrEmpty(pageNumStr))
+			{
+				return -1; // unsuccessful
+			}
+			// Review: I assume the data-page-number attribute is just normal arabic digit(s)
+			// and css converts what's displayed if we want some other script's number system?
+			return Convert.ToInt32(pageNumStr);
 		}
 
 		/// <summary>
