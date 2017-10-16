@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -84,7 +84,6 @@ namespace Bloom.Book
 		private BookRenamedEvent _bookRenamedEvent;
 		private readonly CollectionSettings _collectionSettings;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
-		private HtmlDom _dom; //never remove the readonly: this is shared by others
 		private BookInfo _metaData;
 		private bool _errorAlreadyContainsInstructions;
 		public event EventHandler FolderPathChanged;
@@ -187,16 +186,7 @@ namespace Bloom.Book
 			return false;
 		}
 
-
-
-		public HtmlDom Dom
-		{
-			get
-			{
-
-				return _dom;
-			}
-		}
+		public HtmlDom Dom { get; private set; }
 
 		public static string GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(HtmlDom dom,string path)
 		{
@@ -369,7 +359,7 @@ namespace Bloom.Book
 
 		private void AssertIsAlreadyInitialized()
 		{
-			if (_dom == null)
+			if (Dom == null)
 				throw new ApplicationException("BookStorage was at a place that should have been initialized earlier, but wasn't.");
 		}
 
@@ -507,7 +497,7 @@ namespace Bloom.Book
 			}
 
 
-			return ValidateBook(_dom, PathToExistingHtml);
+			return ValidateBook(Dom, PathToExistingHtml);
 		}
 
 		/// <summary>
@@ -711,7 +701,7 @@ namespace Bloom.Book
 		private void ExpensiveInitialization(bool forSelectedBook = false)
 		{
 			Debug.WriteLine(string.Format("ExpensiveInitialization({0})", _folderPath));
-			_dom = new HtmlDom();
+			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(_folderPath);
 			RequireThat.Directory(_folderPath).Exists();
@@ -776,16 +766,16 @@ namespace Bloom.Book
 					}
 				}
 
-				_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
+				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
-				_dom.RawDom.PreserveWhitespace = true;
+				Dom.RawDom.PreserveWhitespace = true;
 
 				// An earlier comment warned that this was taking 1/3 of startup time. However, it was being done anyway
 				// at some point where the Book constructor wanted to know whether the book was editable (which
 				// triggers a check since books that don't validate aren't editable).
 				// Hopefully this is OK since another old comment said,
 				// we did in fact change things so that storage isn't used until we've shown all the thumbnails we can (then we go back and update in background)
-				InitialLoadErrors = ValidateBook(_dom, pathToExistingHtml);
+				InitialLoadErrors = ValidateBook(Dom, pathToExistingHtml);
 				if (forSelectedBook && !string.IsNullOrEmpty(InitialLoadErrors))
 				{
 					XmlDocument possibleBackupDom;
@@ -793,7 +783,7 @@ namespace Bloom.Book
 					{
 						RestoreBackup(pathToExistingHtml, new ApplicationException("main html file was not valid: " + InitialLoadErrors));
 						xmlDomFromHtmlFile = possibleBackupDom;
-						_dom = new HtmlDom(xmlDomFromHtmlFile);
+						Dom = new HtmlDom(xmlDomFromHtmlFile);
 					}
 				}
 
@@ -802,7 +792,7 @@ namespace Bloom.Book
 
 				if (!string.IsNullOrEmpty(ErrorMessagesHtml))
 				{
-					_dom.RawDom.LoadXml(
+					Dom.RawDom.LoadXml(
 						"<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
 					Logger.WriteEvent(
 						"{0}: There is a problem with the html structure of this book which will require expert help: {1}",
@@ -914,13 +904,13 @@ namespace Bloom.Book
 
 			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
 			var nameOfCollectionXMatterPack = _collectionSettings.XMatterPackName;
-			nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(_dom, nameOfCollectionXMatterPack);
+			nameOfCollectionXMatterPack = HandleRetiredXMatterPacks(Dom, nameOfCollectionXMatterPack);
 
 			try
 			{
 				//Here the xmatter Helper may come back loaded with the xmatter from the collection settings, but if the book
 				//specifies a different one, it will come back with that (if it can be found).
-				var helper = new XMatterHelper(_dom, nameOfCollectionXMatterPack, _fileLocator);
+				var helper = new XMatterHelper(Dom, nameOfCollectionXMatterPack, _fileLocator);
 				Update(Path.GetFileName(helper.PathToXMatterStylesheet), helper.PathToXMatterStylesheet);
 			}
 			catch (Exception error)
@@ -1044,9 +1034,9 @@ namespace Bloom.Book
 		private void EnsureHasLinksToStylesheets(HtmlDom dom)
 		{
 			//clear out any old ones
-			_dom.RemoveXMatterStyleSheets();
+			Dom.RemoveXMatterStyleSheets();
 
-			var helper = new XMatterHelper(_dom, this._collectionSettings.XMatterPackName, _fileLocator);
+			var helper = new XMatterHelper(Dom, this._collectionSettings.XMatterPackName, _fileLocator);
 
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(helper.PathToXMatterStylesheet));
 

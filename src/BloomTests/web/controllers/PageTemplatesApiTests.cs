@@ -1,6 +1,4 @@
-﻿using System;
 using System.IO;
-using System.Web.UI.WebControls;
 using BloomTemp;
 using NUnit.Framework;
 using SIL.PlatformUtilities;
