@@ -57,8 +57,11 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
       </trans-unit>
       <trans-unit id="template.starter.labeleachpage">
         <source xml:lang="en">When you add pages to your template, make sure to give each one useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note2">3</g>,<g id="genid-7" ctype="x-html-a" html:href="@note3">4</g></g>:</source>
-        <target xml:lang="es-ES" state="translated">Cuando agrega páginas a su plantilla, dé a cada una una etiqueta útil <g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
+        <target xml:lang="es-ES" state="translated">Cuando agrega páginas a su plantilla, dé a cada página una etiqueta útil <g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Cuando agrega páginas a su plantilla, dé a cada una una etiqueta útil <g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="template.starter.thumbnails" approved="yes">
         <source xml:lang="en">Check Your Thumbnails</source>
