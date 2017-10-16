@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -358,6 +358,50 @@ namespace Bloom.Book
 		{
 			return (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
 				select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
+		}
+
+		/// <summary>
+		/// Returns a Dictionary&lt;string, List&lt;int&gt;&gt; that contains each image name and a list of pages
+		/// that contain that image.
+		/// </summary>
+		/// <param name="domBody"></param>
+		public static Dictionary<string, List<int>> GetWhichImagesAreUsedOnWhichPages(XmlNode domBody)
+		{
+			var imageNameToPages = new Dictionary<string, List<int>>();
+			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(domBody as XmlElement))
+			{
+				var name = HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded;
+				var pageNum = GetPageNumberForImageElement(img);
+				if (pageNum < 0)
+					continue; // This image is on a page with no pagenumber or something is drastically wrong.
+				List<int> currentList;
+				if (imageNameToPages.TryGetValue(name, out currentList))
+				{
+					if (currentList.Contains(pageNum))
+						continue; // already got this image on this page
+
+					currentList.Add(pageNum);
+				}
+				else
+				{
+					imageNameToPages.Add(name, new List<int>{ pageNum });
+				}
+			}
+			return imageNameToPages;
+		}
+
+		private static int GetPageNumberForImageElement(XmlElement img)
+		{
+			const string xpath = "ancestor::div[@data-page-number]";
+			var pageNumNode = img.SelectSingleNode(xpath);
+			var pageNumStr = pageNumNode?.GetStringAttribute("data-page-number");
+			if (pageNumNode == null || string.IsNullOrEmpty(pageNumStr))
+			{
+				return -1; // unsuccessful
+			}
+			// Review: I assume the data-page-number attribute is just normal arabic digit(s)
+			// and css converts what's displayed if we want some other script's number system?
+			return Convert.ToInt32(pageNumStr);
 		}
 
 		private string GetNormalizedPathForOS(string path)
