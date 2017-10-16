@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="leveled.learn">
         <source xml:lang="en">To learn about using Leveled Readers in Bloom, you can:</source>
-        <target xml:lang="es-ES" state="translated">Para aprender cómo usar los Libros por Niveles en Bloom, puede:</target>
+        <target xml:lang="es-ES" state="translated">Para aprender cómo usar los Libros Nivelados en Bloom, puede:</target>
         <note>ID: leveled.learn</note>
         <alt-trans>
           <target xml:lang="es-ES">Para aprender cómo usar Libros por Niveles en Bloom, puede:</target>
