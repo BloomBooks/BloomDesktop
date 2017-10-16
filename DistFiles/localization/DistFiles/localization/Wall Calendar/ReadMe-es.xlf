@@ -23,9 +23,9 @@
         <target xml:lang="es-ES">Limitaciones de esta versión</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.noshells">
+      <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="es-ES" state="translated">Actualmente, no se puede crear un "calendario prediseñado" para ser usado en otros idiomas.</target>
+        <target xml:lang="es-ES">Actualmente, no se puede crear un "calendario prediseñado" para ser usado en otros idiomas.</target>
         <note>ID: wall.calendar.noshells</note>
         <alt-trans>
           <target xml:lang="es-ES">Actualmente, no se puede hacer un "calendario prediseñado" para ser usado por otros idiomas.</target>
