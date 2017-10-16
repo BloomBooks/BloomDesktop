@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -588,7 +588,8 @@ namespace Bloom.Book
 						summary = Summary,
 						pageCount = PageCount,
 						langPointers = LanguageTableReferences,
-						uploader = Uploader
+						uploader = Uploader,
+						leveledReaderLevel = LeveledReaderLevel
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -704,6 +705,23 @@ namespace Bloom.Book
 		[JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool BookletMakingIsAppropriate { get; set; }
+
+		public ToolboxTool LeveledReaderTool => Tools?.SingleOrDefault(t => t.ToolId == "leveledReader");
+
+		public int LeveledReaderLevel
+		{
+			get
+			{
+				var leveledReaderTool = LeveledReaderTool;
+				if (leveledReaderTool == null || !leveledReaderTool.Enabled)
+					return 0;
+
+				int level;
+				if (Int32.TryParse(leveledReaderTool.State, out level))
+					return level;
+				return 0;
+			}
+		}
 
 		public void SetUploader(string id)
 		{
