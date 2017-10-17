@@ -2,9 +2,9 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="es-ES">
     <body>
-      <trans-unit id="leveled.definition">
+      <trans-unit id="leveled.definition" approved="yes">
         <source xml:lang="en">A <g id="genid-1" ctype="x-html-strong">Leveled Reader</g> is a book that is written specifically for a learner who is at a certain level of reading development. Levels define targets for word length, sentence length, etc. They also determine appropriate formatting, vocabulary, illustration support, and topic.</source>
-        <target xml:lang="es-ES" state="translated">Un <g id="genid-1" ctype="x-html-strong">Libro Nivelado</g> es un libro escrito específicamente para un estudiante que está en un cierto nivel de desarrollo de lectura. Los niveles definen metas para la longitud de palabras, longitud de oraciones, etcétera. También determinan el formato apropiado, el vocabulario, el apoyo para las ilustraciones y el tema.</target>
+        <target xml:lang="es-ES">Un <g id="genid-1" ctype="x-html-strong">Libro por Niveles</g> es un libro escrito específicamente para un estudiante que está en un cierto nivel de desarrollo de lectura. Los niveles definen metas para la longitud de palabras, longitud de oraciones, etcétera. También determinan el formato apropiado, el vocabulario, el apoyo para las ilustraciones y el tema.</target>
         <note>ID: leveled.definition</note>
         <alt-trans>
           <target xml:lang="es-ES">Un <g id="genid-1" ctype="x-html-strong">Libro por Niveles</g> es un libro escrito específicamente para un estudiante que está en un cierto nivel de desarrollo de lectura. Los niveles definen metas para la longitud de palabras, longitud de frases, etcétera. También determinan el formato apropiado, el vocabulario, el apoyo para ilustraciones y el tema.</target>
@@ -64,10 +64,13 @@
         <target xml:lang="es-ES">Vaya al menú de Ayuda y seleccione: "Creando Plantillas de Libros".</target>
         <note>ID: leveled.learn.helpmenu</note>
       </trans-unit>
-      <trans-unit id="leveled.vs.decodable">
+      <trans-unit id="leveled.vs.decodable" approved="yes">
         <source xml:lang="en">Relationship to Decodable Readers</source>
-        <target xml:lang="es-ES" state="translated">Relación con los Libros Decifrables</target>
+        <target xml:lang="es-ES">Relación con los Libros Descifrables</target>
         <note>ID: leveled.vs.decodable</note>
+        <alt-trans>
+          <target xml:lang="es-ES">Relación con los Libros Decifrables</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Relación a los Libros Decifrables</target>
         </alt-trans>
