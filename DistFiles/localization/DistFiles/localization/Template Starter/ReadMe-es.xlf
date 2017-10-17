@@ -157,17 +157,12 @@ Hay dos maneras en que la gente puede usar su plantilla. La primera manera es co
 <g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estos libros podrían ser combinados en el futuro con la inminente función de Folio. Tenga en cuenta que Bloom 3.9 todavía no tiene un mecanismo para indicar que una página debe ser incluido automaticamente en los libros nuevos; el autor tendrá que agregar cada página desde el cuadro de diálogo de Agregar página.</target>
         </alt-trans>
       </trans-unit>
-      <trans-unit id="template.starter.nametonotaddpage">
+      <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="es-ES" state="translated">
+        <target xml:lang="es-ES">
           
 <g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo llamado "NotForAddPage.txt." en la carpeta de Plantillas del Libro.</target>
         <note>ID: template.starter.nametonotaddpage</note>
-        <alt-trans>
-          <target xml:lang="es-ES">
-          
-<g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Si no desea que las páginas de su plantilla se muestren en el cuadro de diálogo "Agregar Página", usted puede indicarle esto a Bloom mediante la creación de un archivo en la carpeta de Plantillas del Libro, nombrando el archivo "NotForAddPage.txt.".</target>
-        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">
           
