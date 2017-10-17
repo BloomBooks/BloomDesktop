@@ -73,7 +73,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private static string LoginFailureString
+		public static string LoginFailureString
 		{
 			get
 			{
