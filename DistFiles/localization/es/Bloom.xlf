@@ -599,7 +599,10 @@
       <trans-unit id="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink" approved="yes">
         <source xml:lang="en">Remove</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.RemoveLanguageLink</note>
-        <target xml:lang="es-ES">Remover</target>
+        <target xml:lang="es-ES">Eliminar</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Remover</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Quitar</target>
         </alt-trans>
