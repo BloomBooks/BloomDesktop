@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Web;
 using System.Windows.Forms;
@@ -35,6 +35,9 @@ namespace Bloom.WebLibraryIntegration
 		private BloomS3Client _s3Client;
 		private readonly BookThumbNailer _thumbnailer;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
+
+		// The full path of the log text file used to restart failed bulk uploads.
+		private string _uploadLogPath;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
@@ -334,7 +337,7 @@ namespace Bloom.WebLibraryIntegration
 			return UploadBook(bookFolder, progress, out parseId);
 		}
 
-		public string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null)
+		public string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool excludeAudio = false)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -391,7 +394,7 @@ namespace Bloom.WebLibraryIntegration
 				parseId = "";
 				try
 				{
-					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude: pdfToInclude);
+					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, excludeAudio);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database."));
@@ -563,7 +566,10 @@ namespace Bloom.WebLibraryIntegration
 		/// If no collection is found there it uses whatever collection was last open, or the current default.
 		/// </summary>
 		/// <param name="folder"></param>
-		public void UploadFolder(string folder, ApplicationContainer container)
+		/// <param name="container"></param>
+		/// <param name="excludeAudio"></param>
+		/// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
+		public void UploadFolder(string folder, ApplicationContainer container, bool excludeAudio = false)
 		{
 			if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
 			{
@@ -574,15 +580,20 @@ namespace Bloom.WebLibraryIntegration
 			using (var dlg = new BulkUploadProgressDlg())
 			{
 				var worker = new BackgroundWorker();
+				worker.WorkerReportsProgress = true;
 				worker.DoWork += BackgroundUpload;
 				worker.RunWorkerCompleted += (sender, args) =>
 				{
+					if (args.Error != null)
+						throw args.Error;
 					dlg.Close();
 				};
-				worker.RunWorkerAsync(new object[] { folder, dlg, container });
+				worker.RunWorkerAsync(new object[] { folder, dlg, container, excludeAudio });
 				dlg.ShowDialog(); // waits until worker completed closes it.
 			}
 		}
+
+		private const string UploadLogFilename = "BloomBulkUploadLog.txt";
 
 		/// <summary>
 		/// Worker function for a background thread task. See first lines for required args passed to RunWorkerAsync, which triggers this.
@@ -595,16 +606,57 @@ namespace Bloom.WebLibraryIntegration
 			var folder = (string) args[0];
 			var dlg = (BulkUploadProgressDlg) args[1];
 			var appContext = (ApplicationContainer)args[2];
+			var excludeAudio = (bool)args[3];
+			var alreadyUploaded = GetUploadLogIfPresent(folder);
 			ProjectContext context = null; // Expensive to create; hold each one we make until we find a book that needs a different one.
 			try
 			{
-				UploadInternal(folder, dlg, appContext, ref context);
+				UploadInternal(folder, dlg, appContext, excludeAudio, alreadyUploaded, ref context);
+
+				// If we make it here, append a "finished" note to our log file
+				AppendBookToUploadLogFile("\n\nAll finished!\nIn order to repeat the uploading, this file will need to be deleted.");
 			}
 			finally
 			{
-				if (context != null)
-					context.Dispose();
+				context?.Dispose();
 			}
+		}
+
+		private string GetUploadFilePath()
+		{
+			return _uploadLogPath ?? string.Empty;
+		}
+
+		private void AppendBookToUploadLogFile(string newBook)
+		{
+			Debug.Assert(GetUploadFilePath().Length > 0);
+			File.AppendAllLines(GetUploadFilePath(), new []{ newBook });
+		}
+
+		private string[] GetUploadLogIfPresent(string folder)
+		{
+			var results = new string[0];
+			var fullFilepath = Path.Combine(folder, UploadLogFilename);
+			if (RobustFile.Exists(fullFilepath)) // this is just looking in the same directory that we're uploading from
+			{
+				results = RobustFile.ReadAllLines(fullFilepath);
+			}
+			_uploadLogPath = fullFilepath;
+			return results;
+		}
+
+		private static string GetBookshelfName(string folder)
+		{
+			// We only want our tag to go down one level into the directory structure at this point
+			// (i.e. EnablingWriters has sub-shelves, but the sub-shelves don't have sub-shelves).
+			const string slash = "/";
+			Debug.Assert(Path.IsPathRooted(folder), "path not rooted!?");
+			var splitPathArray = folder.Substring(Path.GetPathRoot(folder).Length).Replace("\\", slash).Split('/');
+			if (splitPathArray.Length == 1)
+			{
+				return splitPathArray[0];
+			}
+			return splitPathArray[0] + slash + splitPathArray[1];
 		}
 
 		/// <summary>
@@ -614,14 +666,21 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="folder"></param>
 		/// <param name="dlg"></param>
 		/// <param name="container"></param>
+		/// <param name="excludeAudio"></param>
+		/// <param name="alreadyUploaded"></param>
 		/// <param name="context"></param>
-		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, ref ProjectContext context)
+		private void UploadInternal(string folder, BulkUploadProgressDlg dlg, ApplicationContainer container, bool excludeAudio, string[] alreadyUploaded, ref ProjectContext context)
 		{
-			if (Path.GetFileName(folder).StartsWith("."))
+			var lastFolderPart = Path.GetFileName(folder);
+			if (lastFolderPart != null && lastFolderPart.StartsWith("."))
 				return; // secret folder, probably .hg
 
-			if (Directory.GetFiles(folder, "*.htm").Count() == 1)
+			if (Directory.GetFiles(folder, "*.htm").Length == 1)
 			{
+				if (alreadyUploaded.Contains(folder))
+				{
+					return; // skip this one; we already successfully uploaded it at some point
+				}
 				// Exactly one htm file, assume this is a bloom book folder.
 				dlg.Progress.WriteMessage("Starting to upload " + folder);
 
@@ -630,22 +689,24 @@ namespace Bloom.WebLibraryIntegration
 				// proper parent book collection if possible.
 				var parent = Path.GetDirectoryName(folder);
 				var collectionPath = Directory.GetFiles(parent, "*.bloomCollection").FirstOrDefault();
-				if (collectionPath == null && context == null)
-				{
+				if (collectionPath == null)
 					collectionPath = Settings.Default.MruProjects.Latest;
-				}
+				if (collectionPath == null)
+					throw new ApplicationException("Collection not found in this or parent directory.");
 				if (context == null || context.SettingsPath != collectionPath)
 				{
-					if (context != null)
-						context.Dispose();
+					context?.Dispose();
 					// optimise: creating a context seems to be quite expensive. Probably the only thing we need to change is
 					// the collection. If we could update that in place...despite autofac being told it has lifetime scope...we would save some time.
 					// Note however that it's not good enough to just store it in the project context. The one that is actually in
 					// the autofac object (_scope in the ProjectContext) is used by autofac to create various objects, in particular, books.
 					context = container.CreateProjectContext(collectionPath);
+					Program.SetProjectContext(context);
 				}
 				var server = context.BookServer;
-				var book = server.GetBookFromBookInfo(new BookInfo(folder, true));
+				var bookInfo = new BookInfo(folder, true);
+				bookInfo.BookshelfList = GetBookshelfName(folder);
+				var book = server.GetBookFromBookInfo(bookInfo);
 				book.BringBookUpToDate(new NullProgress());
 
 				// Assemble the various arguments needed to make the objects normally involved in an upload.
@@ -653,13 +714,11 @@ namespace Bloom.WebLibraryIntegration
 				var bookSelection = new BookSelection();
 				bookSelection.SelectBook(book);
 				var currentEditableCollectionSelection = new CurrentEditableCollectionSelection();
-				if (collectionPath != null)
-				{
-					var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection,
-						bookSelection);
-					currentEditableCollectionSelection.SelectCollection(collection);
-				}
-				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _thumbnailer, null);
+
+				var collection = new BookCollection(collectionPath, BookCollection.CollectionType.SourceCollection, bookSelection);
+				currentEditableCollectionSelection.SelectCollection(collection);
+
+				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer, null);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null, null);
 				string dummy;
@@ -667,11 +726,16 @@ namespace Bloom.WebLibraryIntegration
 				var langDict = book.AllLanguages;
 				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToArray();
 				if (languagesToUpload.Any())
-					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, dlg);
+				{
+					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, dlg, excludeAudio);
+					AppendBookToUploadLogFile(folder);
+				}
 				return;
 			}
 			foreach (var sub in Directory.GetDirectories(folder))
-				UploadInternal(sub, dlg, container, ref context);
+			{
+				UploadInternal(sub, dlg, container, excludeAudio, alreadyUploaded, ref context);
+			}
 		}
 
 		/// <summary>
@@ -684,7 +748,8 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="languages"></param>
 		/// <param name="invokeTarget"></param>
 		/// <returns></returns>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null,
+			bool excludeAudio = false)
 		{
 			var bookFolder = book.FolderPath;
 			parseId = ""; // in case of early return
@@ -725,7 +790,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			if (progressBox.CancelRequested)
 				return "";
-			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath));
+			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath), excludeAudio);
 		}
 
 		internal static string UploadPdfPath(string bookFolder)

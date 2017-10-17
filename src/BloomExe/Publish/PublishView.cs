@@ -98,7 +98,10 @@ namespace Bloom.Publish
 			// Adding this renderer prevents a white line from showing up under the components.
 			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
 
-			GeckoPreferences.Default["pdfjs.disabled"] = false;
+			// As far as I can tell, this is not needed anymore, and its presence,
+			// at least in this place in the code, causes errors when running command-line tools
+			// like UploadCommand which needs a PublishView but must not have something fully initialized.
+			//GeckoPreferences.Default["pdfjs.disabled"] = false;
 			SetupLocalization();
 			localizationChangedEvent.Subscribe(o =>
 			{

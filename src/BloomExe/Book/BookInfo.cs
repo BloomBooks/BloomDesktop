@@ -25,6 +25,7 @@ namespace Bloom.Book
 	public class BookInfo
 	{
 		private const string kTopicPrefix = "topic:";
+		private const string kBookshelfPrefix = "bookshelf:";
 
 		private BookMetaData _metadata;
 
@@ -295,6 +296,9 @@ namespace Bloom.Book
 			return list.Split(',').Select(item => item.Trim()).Where(item => !string.IsNullOrEmpty(item)).ToArray();
 		}
 
+		/// <summary>
+		/// Get a comma delimited list of Topics, or set the Topic tags using a comma delimited list.
+		/// </summary>
 		public string TopicsList
 		{
 			get
@@ -303,14 +307,31 @@ namespace Bloom.Book
 			}
 			set
 			{
-				var topicsToSet = SplitList(value);
-				EnsureTopicPrefixes(topicsToSet);
-				if (MetaData.Tags == null)
-					MetaData.Tags = topicsToSet;
-				else
-					// Leave all the non-topic tags intact. Replace all existing topics.
-					MetaData.Tags = MetaData.Tags.Where(t => !TagIsTopic(t)).Union(topicsToSet).ToArray();
+				UpdateOneTypeOfMetaDataTags(TagIsTopic, kTopicPrefix, value);
 			}
+		}
+
+		/// <summary>
+		/// Allow mass uploader to set a bookshelf tag before uploading.
+		/// </summary>
+		public string BookshelfList
+		{
+			set
+			{
+				UpdateOneTypeOfMetaDataTags(TagIsBookshelf, kBookshelfPrefix, value);
+				Save();
+			}
+		}
+
+		private void UpdateOneTypeOfMetaDataTags(Func<string, bool> tagTest, string prefix, string valueToSet)
+		{
+			var splitValues = SplitList(valueToSet);
+			EnsureStringsHaveCorrectPrefixes(prefix, splitValues);
+			if (MetaData.Tags == null)
+				MetaData.Tags = splitValues;
+			else
+				// Leave all the other types of tags intact. Replace all existing tags matching the prefix type.
+				MetaData.Tags = MetaData.Tags.Where(t => !tagTest(t)).Union(splitValues).ToArray();
 		}
 
 		public int PageCount
@@ -408,22 +429,32 @@ namespace Bloom.Book
 			}
 		}
 
-		private bool TagIsTopic(string tag)
+		private static bool TagIsTopic(string tag)
 		{
-			return tag.StartsWith(kTopicPrefix) || !tag.Contains(":");
+			return TagIsCorrectType(kTopicPrefix, tag);
 		}
 
-		private string GetTopicNameFromTag(string tag)
+		private static bool TagIsBookshelf(string tag)
+		{
+			return TagIsCorrectType(kBookshelfPrefix, tag);
+		}
+
+		private static bool TagIsCorrectType(string prefix, string tag)
+		{
+			return tag.StartsWith(prefix) || !tag.Contains(":");
+		}
+
+		private static string GetTopicNameFromTag(string tag)
 		{
 			return tag.StartsWith(kTopicPrefix) ? tag.Substring(kTopicPrefix.Length) : tag;
 		}
 
-		private void EnsureTopicPrefixes(string[] topics)
+		private static void EnsureStringsHaveCorrectPrefixes(string prefix, string[] tagStrings)
 		{
-			for (int i = 0; i < topics.Length; i++)
+			for (int i = 0; i < tagStrings.Length; i++)
 			{
-				if (!topics[i].StartsWith(kTopicPrefix))
-					topics[i] = kTopicPrefix + topics[i];
+				if (!tagStrings[i].StartsWith(prefix))
+					tagStrings[i] = kBookshelfPrefix + tagStrings[i];
 			}
 		}
 	}
