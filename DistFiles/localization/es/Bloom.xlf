@@ -124,6 +124,9 @@
         <note>ID: BloomPackInstallDialog.SingleCollectionFolder</note>
         <target xml:lang="es-ES">Los Paquetes de Bloom deben tener sólo una carpeta de colección en el nivel superior del archivo ZIP.</target>
         <alt-trans>
+          <target xml:lang="es-ES">Los Paquetes de Bloom deben tener solo una carpeta de colección en el nivel superior del archivo ZIP.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Los Paquetes de Bloom deben tener sólo una carpeta de colección en el nivel superior del archivo zip.</target>
         </alt-trans>
         <alt-trans>
@@ -1876,6 +1879,9 @@
         <note>ID: EditTab.FormatDialog.PleaseUseAlpha</note>
         <target xml:lang="es-ES">Por favor, utilice sólo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
         <alt-trans>
+          <target xml:lang="es-ES">Por favor, utilice solo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Por favor, use sólo caracteres alfabéticos. Los números al final están bien, como en "parte2".</target>
         </alt-trans>
         <alt-trans>
@@ -2115,6 +2121,12 @@
         <note>ID: EditTab.FrontMatter.SimpleLineDrawings</note>
         <target xml:lang="es-ES">Los dibujos de líneas simples se ven mejor. En vez de usar esta página, usted puede crear su propio thumbnail.png (miniatura) y marcar la opción de Sólo Lectura (Read-only) para que Bloom no escriba sobre la miniatura.</target>
         <alt-trans>
+          <target xml:lang="es-ES">Los dibujos de líneas simples se ven mejor. En vez de usar esta página, usted puede crear su propio thumbnail.png (miniatura) y marcar la opción de Solo Lectura (Read-only) para que Bloom no escriba sobre la miniatura.</target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo solo lectura (read-only) para que Bloom no lo sobreescribe.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Dibujos de lineas simples se ven mejores. En vez de usar esta página, tambien puede crear su propia miniatura.png y márcalo sólo lectura (Read-only) para que Bloom no lo sobreescribe.</target>
         </alt-trans>
       </trans-unit>
@@ -2239,6 +2251,9 @@
         <source xml:lang="en">This option is only available in the Publish tab.</source>
         <note>ID: EditTab.LayoutInPublishTabOnlyNotice</note>
         <target xml:lang="es-ES">Esta opción sólo está disponible en la pestaña "Publicar".</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Esta opción solo está disponible en la pestaña "Publicar".</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Esta opción sólo es disponible en la pestaña publicar.</target>
         </alt-trans>
@@ -2562,6 +2577,9 @@
         <note>ID: EditTab.TextBoxProperties.ShowOnGroup</note>
         <target xml:lang="es-ES">Sólo una vez en todo el grupo</target>
         <alt-trans>
+          <target xml:lang="es-ES">Solo una vez en todo el grupo</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Sólo una vez para todo el grupo</target>
         </alt-trans>
       </trans-unit>
@@ -2625,6 +2643,9 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated</note>
         <target xml:lang="es-ES">Bloom sólo puede utilizar las primeras {0} palabras.</target>
         <alt-trans>
+          <target xml:lang="es-ES">Bloom solo puede utilizar las primeras {0} palabras.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Bloom solo puede utilazar las primeras {0} palabras.</target>
         </alt-trans>
       </trans-unit>
@@ -2647,6 +2668,9 @@
         <source xml:lang="en">The following is a generated report of the decodable stages for {0}. You can make any changes you want to this file, but Bloom will not notice your changes. It is just a report.</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage</note>
         <target xml:lang="es-ES">El siguiente es un informe generado sobre las etapas descifrables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es sólo un informe.</target>
+        <alt-trans>
+          <target xml:lang="es-ES">El siguiente es un informe generado sobre las etapas descifrables para {0}. Usted puede hacer cambios a este archivo, pero Bloom no notará sus cambios. Es solo un informe.</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">El siguiente es un informe generado de las etapas decodificables para {0}. Usted puede hacer los cambios que desee a este archivo, pero Bloom no notará los cambios. Es sólo un informe.</target>
         </alt-trans>
@@ -4316,6 +4340,9 @@
         <source xml:lang="en">Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
         <target xml:lang="es-ES">Hacer un librito de las páginas interiores del libro. Las páginas serán distribuidas y reordenadas de tal manera que sólo tiene que doblarlas para tener un librito.\n</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Hacer un librito de las páginas interiores del libro. Las páginas serán distribuidas y reordenadas de tal manera que solo tiene que doblarlas para tener un librito.\n</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Hacer un librito de las páginas interiores del libro. Las páginas serán formateadas y reordenadas de tal manera que solo tiene que doblarlas para tener un librito.\n</target>
         </alt-trans>
