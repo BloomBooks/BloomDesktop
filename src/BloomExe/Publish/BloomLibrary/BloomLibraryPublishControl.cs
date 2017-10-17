@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -10,6 +10,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using SIL.Windows.Forms.ClearShare;
+using SIL.Reporting;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -132,9 +133,7 @@ namespace Bloom.Publish.BloomLibrary
 			}
 			catch (Exception e)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					LocalizationManager.GetString("PublishTab.Upload.LoginFailure",
-						"Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection."));
+				LogAndInformButDontReportFailureToConnectToServer(e);
 			}
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
 			// Copyright info is not required if the book has been put in the public domain
@@ -162,6 +161,14 @@ namespace Bloom.Publish.BloomLibrary
 					_okToUpload = false;
 				}
 			}
+		}
+
+		private void LogAndInformButDontReportFailureToConnectToServer(Exception exc)
+		{
+			var msg = LocalizationManager.GetString("PublishTab.Upload.LoginFailure",
+				"Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.");
+			MessageBox.Show(this, msg, LoginDialog.LoginFailureString, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			Logger.WriteEvent("Failure connecting to parse server " + exc.Message);
 		}
 
 		void _progressBox_LinkClicked(object sender, LinkClickedEventArgs e)
