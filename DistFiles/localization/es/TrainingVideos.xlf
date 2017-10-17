@@ -58,14 +58,9 @@
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
         <target xml:lang="es-ES">
-          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizado las plantillas de Libros Descifrables y Libros Nivelados (varios vídeos)</g>
-        </target>
-        <note>ID: training.videos.readers</note>
-        <alt-trans>
-          <target xml:lang="es-ES">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizado las plantillas de Libros Descifrables y Libros por Niveles (varios vídeos)</g>
         </target>
-        </alt-trans>
+        <note>ID: training.videos.readers</note>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
@@ -104,14 +99,9 @@
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
         <target xml:lang="es-ES">
-          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para Libros Descifrables y Libros Nivelados (varios vídeos)</g>
-        </target>
-        <note>ID: training.videos.readertemplates</note>
-        <alt-trans>
-          <target xml:lang="es-ES">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para Libros Descifrables y Libros por Niveles (varios vídeos)</g>
         </target>
-        </alt-trans>
+        <note>ID: training.videos.readertemplates</note>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
         <source xml:lang="en">Offline Viewing</source>
