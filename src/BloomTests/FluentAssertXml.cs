@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
@@ -175,6 +175,11 @@ namespace BloomTests
 
 		public static void PrintNodeToConsole(XmlNode node)
 		{
+			// without this, we may get "DTD is not allowed in XML fragments"
+			var doctype = ((XmlDocument) node)?.DocumentType;
+			if(doctype != null)
+				node.RemoveChild(doctype);
+
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;
 			settings.ConformanceLevel = ConformanceLevel.Fragment;

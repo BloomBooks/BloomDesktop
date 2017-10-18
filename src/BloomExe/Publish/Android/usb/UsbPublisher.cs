@@ -1,4 +1,4 @@
-﻿#if !__MonoCS__
+#if !__MonoCS__
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,14 +12,16 @@ namespace Bloom.Publish.Android.usb
 {
 	public class UsbPublisher
 	{
+		private readonly BookServer _bookServer;
 		public Action Stopped;
 
 		private readonly WebSocketProgress _progress;
 		private readonly AndroidDeviceUsbConnection _androidDeviceUsbConnection;
 		private DeviceNotFoundReportType _previousDeviceNotFoundReportType;
 
-		public UsbPublisher(WebSocketProgress progress)
+		public UsbPublisher(WebSocketProgress progress, BookServer bookServer)
 		{
+			_bookServer = bookServer;
 			_progress = progress.WithL10NPrefix("PublishTab.Android.Usb.Progress.");
 			_androidDeviceUsbConnection = new AndroidDeviceUsbConnection();
 		}
@@ -151,7 +153,7 @@ namespace Bloom.Publish.Android.usb
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 			{
-				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book);
+				BookCompressor.CompressBookForDevice(bloomdTempFile.Path, book, _bookServer);
 
 				if (bookExistsOnDevice)
 					_progress.MessageUsingTitle("ReplacingBook", "Replacing existing \"{0}\"...", bookTitle);
