@@ -454,7 +454,7 @@ namespace Bloom.Book
 			for (int i = 0; i < tagStrings.Length; i++)
 			{
 				if (!tagStrings[i].StartsWith(prefix))
-					tagStrings[i] = kBookshelfPrefix + tagStrings[i];
+					tagStrings[i] = prefix + tagStrings[i];
 			}
 		}
 	}
