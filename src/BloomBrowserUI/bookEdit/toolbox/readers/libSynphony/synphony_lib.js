@@ -578,51 +578,6 @@ LibSynphony.prototype.wrap_words_extra = function (storyHTML, aWords, cssClass, 
 };
 
 /**
- * Detects if the browser has the localStorage object.
- * @returns {Boolean}
- */
-LibSynphony.prototype.supportsHTML5Storage = function () {
-
-    try {
-        return 'localStorage' in window && window['localStorage'] !== null;
-    } catch (e) {
-        return false;
-    }
-};
-
-/**
- * Gets data previously stored locally in the browser.
- * @param {String} key
- * @returns {Array|Object}
- */
-LibSynphony.prototype.dbGet = function (key) {
-
-    if (this.supportsHTML5Storage()) {
-        var item = localStorage.getItem(key);
-        if (!item)
-            return null;
-        return JSON.parse(item);
-    } else {
-        alert('Local storage is not supported in your browser.');
-    }
-};
-
-/**
- * Stores data locally in the browser.
- * @param {string} key
- * @param {Object} value
- */
-LibSynphony.prototype.dbSet = function (key, value) {
-
-    if (this.supportsHTML5Storage()) {
-        var json = JSON.stringify(value);
-        localStorage.setItem(key, json);
-    } else {
-        alert('Local storage is not supported in your browser.');
-    }
-};
-
-/**
  * Construct a "StoryCheckResults" Class
  *
  * @param {Array} focus_words The words used in the story from the current stage

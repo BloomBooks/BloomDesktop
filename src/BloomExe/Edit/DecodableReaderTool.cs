@@ -1,7 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Bloom.Collection;
+using Bloom.Properties;
 using SIL.IO;
 
 namespace Bloom.Edit
@@ -68,5 +70,39 @@ namespace Bloom.Edit
 		/// See the API handler for more remarks on it.
 		/// </remarks>
 		public const string kSynphonyLanguageDataFileNameFormat = "ReaderToolsWords-{0}.json";
+
+		private const string StagePrefix = "stage:";
+
+		public override void SaveDefaultState()
+		{
+			base.SaveDefaultState();
+			// We expect the state to be something like "stage:6;sort:byLength"
+			if (State == null)
+				return;
+			int startStage = State.IndexOf(StagePrefix, StringComparison.InvariantCulture);
+			if (startStage < 0)
+				return;
+			startStage += StagePrefix.Length;
+			int endStage = State.IndexOf(";", startStage, StringComparison.InvariantCulture);
+			if (endStage < 0)
+				endStage = State.Length;
+			var stageString = State.Substring(startStage, endStage - startStage);
+			int stage;
+			if (Int32.TryParse(stageString, out stage))
+			{
+				Settings.Default.CurrentStage = stage;
+				Settings.Default.Save();
+			}
+		}
+
+		public override string DefaultState()
+		{
+			// Currently we are not saving and restoring the sort method.
+			// However the default MUST provide one, since the JS is definitely expecting
+			// a string with two settings separated by semi-colon; so we just put the
+			// general default here. Unfortunately that duplicates knowledge that
+			// must be elsewhere also but I'm not sure how to avoid it.
+			return StagePrefix + Settings.Default.CurrentStage + @";sort:alphabetic";
+		}
 	}
 }

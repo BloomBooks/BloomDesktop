@@ -120,6 +120,14 @@ namespace Bloom.Edit
 			{
 				if (!String.IsNullOrEmpty(tool.State))
 					settings.Add(tool.StateName, tool.State);
+				else
+				{
+					var defaultState = tool.DefaultState();
+					if (!string.IsNullOrEmpty(defaultState))
+					{
+						settings.Add(tool.StateName, defaultState);
+					}
+				}
 			}
 
 			request.ReplyWithJson(settings);
@@ -230,7 +238,10 @@ namespace Bloom.Edit
 			var item = tools.FirstOrDefault(t => t.ToolId == toolName);
 
 			if (item != null)
+			{
 				item.State = state;
+				item.SaveDefaultState();
+			}
 		}
 
 		private static void UpdateActiveToolSetting(Book.Book book, string toolName, bool enabled)

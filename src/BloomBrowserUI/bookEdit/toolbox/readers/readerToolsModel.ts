@@ -1163,13 +1163,8 @@ export class ReaderToolsModel {
         var active = toolbox.accordion('option', 'active');
         if (isNaN(active)) return;
 
-        var state = new DRTState();
-        state.stage = this.stageNumber;
-        state.level = this.levelNumber;
-        state.markupType = this.currentMarkupType;
         ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tdecodableReader\t" + "stage:" + this.stageNumber + ";sort:" + this.sort);
         ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
-        theOneLibSynphony.dbSet('drt_state', state);
     }
 
     restoreState(): void {
@@ -1178,8 +1173,7 @@ export class ReaderToolsModel {
         var toolbox = $('#toolbox');
         if (typeof toolbox.accordion !== 'function') return;
 
-        var state = theOneLibSynphony.dbGet('drt_state');
-        if (!state) state = new DRTState();
+        var state = new DRTState();
 
         if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
         this.setStageNumber(state.stage);
