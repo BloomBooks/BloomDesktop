@@ -5649,6 +5649,9 @@ Desea seguir?</target>
         <note>ID: ReaderSetup.SetUpLeveledReaderTool</note>
         <target xml:lang="es-ES">Configurar la herramienta de los Libros por Niveles</target>
         <alt-trans>
+          <target xml:lang="es-ES">Configurar la herramienta de los Libros Graduados</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Configurar la herramienta de libros por niveles</target>
         </alt-trans>
         <alt-trans>
@@ -5810,6 +5813,9 @@ Desea seguir?</target>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
         <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros descifrables y libros por niveles para el idioma \"{0}\". Cualquiera que abra este Paquete de Bloom, y después abra una colección en el idioma \"{0}\", tendrá su configuración actual para libros descifrables y libros por niveles reemplazada por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros descifrables.</target>
         <alt-trans>
+          <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros descifrables y libros graduados para el idioma \"{0}\". Cualquiera que abra este Paquete de Bloom, y después abra una colección en el idioma \"{0}\", tendrá su configuración actual para libros descifrables y libros graduados reemplazada por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros descifrables.</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Además, este Paquete de Bloom llevará su última configuración para libros decifrables y por niveles para el idioma \"{0}\". Cualquier que abre este Paquete de Bloom, y depues abre una colección en el idioma \"{0}\", tendrá su configuración actual para libros decifrables y por niveles reemplazados por la configuración de este Paquete de Bloom. También recibirán el conjunto actual de palabras para su uso en libros decifrables.</target>
         </alt-trans>
         <alt-trans>
@@ -5820,9 +5826,6 @@ Desea seguir?</target>
         </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Además, este BloomPack llevará su última configuración para lecturas decodificables y nivelado para el idioma \"{0}\". Cualquier que abre este BloomPack, que entonces abre una colección en el idioma \"{0}\", tendrá su configuración actual para lecturas decodificables y nivelados reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en lecturas decodificables.</target>
-        </alt-trans>
-        <alt-trans>
-          <target xml:lang="es-ES">Además, este BloomPack llevará su última configuración para lectores decodificables y nivelado para el idioma \"{0}\". Cualquiera que abre este BloomPack, que entonces se abre una colección en el idioma \"{0}\", tendrá su configuración actual para lectores decodificables y nivelado reemplazados por la configuración de este BloomPack. También recibirán el conjunto actual de palabras para su uso en lectores decodificables.</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel" approved="yes">
@@ -6081,6 +6084,9 @@ Desea seguir?</target>
         <source xml:lang="en">Leveled Reader</source>
         <note>ID: TemplateBooks.BookName.Leveled Reader</note>
         <target xml:lang="es-ES">Libro por Niveles</target>
+        <alt-trans>
+          <target xml:lang="es-ES">Libro Graduado</target>
+        </alt-trans>
         <alt-trans>
           <target xml:lang="es-ES">Libro nivelado</target>
         </alt-trans>
