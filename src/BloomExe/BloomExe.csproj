@@ -308,6 +308,7 @@
     <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
     <Compile Include="CLI\DownloadBookCommand.cs" />
     <Compile Include="CLI\GetUsedFontsCommand.cs" />
+    <Compile Include="CLI\UploadCommand.cs" />
     <Compile Include="CLI\HydrateBookCommand.cs" />
     <Compile Include="Edit\BookSettingsTool.cs" />
     <Compile Include="Edit\ToolboxTool.cs" />

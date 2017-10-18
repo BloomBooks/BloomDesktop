@@ -7,6 +7,7 @@ using Bloom.Properties;
 using Bloom.Publish.BloomLibrary;
 using L10NSharp;
 using SIL.Code;
+using SIL.Reporting;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -53,12 +54,9 @@ namespace Bloom.WebLibraryIntegration
 			{
 				logIn = _client.LogIn(_emailBox.Text, _passwordBox.Text);
 			}
-			catch (Exception)
+			catch (Exception exc)
 			{
-				MessageBox.Show(this, LocalizationManager.GetString("PublishTab.Upload.Login.LoginConnectFailed", "Bloom could not connect to the server to verify your login. Please check your network connection."),
-					LoginFailureString,
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Error);
+				LogAndInformButDontReportFailureToConnectToServer(exc);
 				return;
 			}
 			if (logIn)
@@ -75,14 +73,14 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-
-		private static string LoginFailureString
+		public static string LoginFailureString
 		{
 			get
 			{
 				return LocalizationManager.GetString("PublishTab.Upload.Login.LoginFailed", "Login failed");
 			}
 		}
+
 		private static string LoginOrSignupConnectionFailedString
 		{
 			get
@@ -90,6 +88,13 @@ namespace Bloom.WebLibraryIntegration
 				return LocalizationManager.GetString("PublishTab.Upload.Login.LoginOrSignupConnectionFailed",
 					"Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.");
 			}
+		}
+
+		private void LogAndInformButDontReportFailureToConnectToServer(Exception exc)
+		{
+			MessageBox.Show(this, LoginOrSignupConnectionFailedString, LoginFailureString, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			Logger.WriteEvent("Failure connecting to parse server " + exc.Message);
+			Close();
 		}
 
 		private void DoSignUp()
@@ -108,9 +113,9 @@ namespace Bloom.WebLibraryIntegration
 			{
 				userExists = _client.UserExists(_emailBox.Text);
 			}
-			catch (Exception e)
+			catch (Exception exc)
 			{
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, LoginFailureString, LoginOrSignupConnectionFailedString, e);
+				LogAndInformButDontReportFailureToConnectToServer(exc);
 				return;
 			}
 			if (userExists)
@@ -133,9 +138,9 @@ namespace Bloom.WebLibraryIntegration
 					Close();
 
 			}
-			catch (Exception e)
+			catch (Exception exc)
 			{
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, LoginFailureString, LoginOrSignupConnectionFailedString, e);
+				LogAndInformButDontReportFailureToConnectToServer(exc);
 			}
 		}
 
