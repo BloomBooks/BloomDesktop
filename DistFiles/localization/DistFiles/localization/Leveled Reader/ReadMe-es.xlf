@@ -102,6 +102,9 @@
         <alt-trans>
           <target xml:lang="es-ES">Nivel de Libro Nivelado</target>
         </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">Nivel de Libro Graduado</target>
+        </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
         <source xml:lang="en">Decodable Stage</source>
