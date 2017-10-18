@@ -2779,6 +2779,9 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool</note>
         <target xml:lang="es-ES">Herramienta para los Libros por Niveles</target>
         <alt-trans>
+          <target xml:lang="es-ES">Herramienta para los Libros Graduados</target>
+        </alt-trans>
+        <alt-trans>
           <target xml:lang="es-ES">Herramienta para libros por niveles</target>
         </alt-trans>
         <alt-trans>
