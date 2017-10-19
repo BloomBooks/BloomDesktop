@@ -337,7 +337,7 @@ namespace Bloom.WebLibraryIntegration
 			return UploadBook(bookFolder, progress, out parseId);
 		}
 
-		public string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool excludeAudio = false)
+		private string UploadBook(string bookFolder, IProgress progress, out string parseId, string pdfToInclude = null, bool excludeAudio = false)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -727,7 +727,7 @@ namespace Bloom.WebLibraryIntegration
 				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToArray();
 				if (languagesToUpload.Any())
 				{
-					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, dlg, excludeAudio);
+					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, excludeAudio);
 					AppendBookToUploadLogFile(folder);
 				}
 				return;
@@ -744,12 +744,11 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="book"></param>
 		/// <param name="progressBox"></param>
 		/// <param name="publishView"></param>
-		/// <param name="parseId"></param>
 		/// <param name="languages"></param>
-		/// <param name="invokeTarget"></param>
+		/// <param name="parseId"></param>
+		/// <param name="excludeAudio"></param>
 		/// <returns></returns>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null,
-			bool excludeAudio = false)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, bool excludeAudio = false)
 		{
 			var bookFolder = book.FolderPath;
 			parseId = ""; // in case of early return
@@ -761,17 +760,17 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
-			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
-			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book, 70); // this is a sacrificial one to prime the pump, to fix BL-2673
+			_thumbnailer.MakeThumbnailOfCover(book, 70);
 			if (progressBox.CancelRequested)
 				return "";
-			_thumbnailer.MakeThumbnailOfCover(book, 256, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book, 256);
 			if (progressBox.CancelRequested)
 				return "";
 
 			// It is possible the user never went back to the Collection tab after creating/updating the book, in which case
 			// the 'normal' thumbnail never got created/updating. See http://issues.bloomlibrary.org/youtrack/issue/BL-3469.
-			_thumbnailer.MakeThumbnailOfCover(book, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book);
 			if (progressBox.CancelRequested)
 				return "";
 
