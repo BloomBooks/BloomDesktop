@@ -337,8 +337,18 @@ namespace Bloom.Book
 			{
 				return; //leave the original there.
 			}
+			// If there's no copyright information in a source-collection book, we're presumably making
+			// a new original book, and shouldn't try to record any original copyright and license information.
+			// This is somewhat redundant with the check in BookStarter.SetupNewDocumentContents(), the one
+			// non-unit-test current caller of this method, that doesn't call this at all if the source is
+			// a template book. I was trying for a minimal reasonable change for BL-5131, and therefore
+			// put in this extra check, since previously this method was simply NEVER called in a source
+			// collection.
+			var copyrightNotice = GetMetadata(dom).CopyrightNotice;
+			if (string.IsNullOrEmpty(copyrightNotice) && collectionSettings.IsSourceCollection)
+				return;
 			bookData.Set("originalLicenseUrl", GetLicenseUrl(dom), "*");
-			bookData.Set("originalCopyright", System.Web.HttpUtility.HtmlEncode(BookCopyrightAndLicense.GetMetadata(dom).CopyrightNotice), "*");
+			bookData.Set("originalCopyright", System.Web.HttpUtility.HtmlEncode(copyrightNotice), "*");
 			bookData.Set("originalLicenseNotes", dom.GetBookSetting("licenseNotes").GetFirstAlternative(), "*");
 			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
 		}
@@ -349,6 +359,12 @@ namespace Bloom.Book
 			if (!dom.RecordedAsLockedDown)
 				return null;
 			var metadata = GetOriginalMetadata(dom);
+			// In a source collection, unless we really already have some original licence information,
+			// we don't want to generate any...probably we are authoring an original book. (Note that
+			// new books created from templates have RecordedAsLockedDown true, which is overridden
+			// in Book.LockedDown for source collections.)
+			if (collectionSettings.IsSourceCollection && string.IsNullOrEmpty(metadata.CopyrightNotice))
+				return null;
 			string idOfLanguageUsed;
 			var languagePriorityIds = collectionSettings.LicenseDescriptionLanguagePriorities;
 

@@ -158,10 +158,10 @@ namespace Bloom.Book
 
 			SetBookTitle(storage, bookData, usingTemplate);
 
-			if(!usingTemplate &&
-				// when people add a book to a source collection, they are assumed *editing* the book, not making a derivative (BL-4497)
-				!_collectionSettings.IsSourceCollection)
+			if(!usingTemplate && !makingTemplate)
 			{
+				// If we're not making it from a template or making a template, we're deriving a translation from an existing book,
+				// and we should save the original copyright and license of that book.
 				BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(storage.Dom, bookData, _collectionSettings);
 			}
 
@@ -294,8 +294,8 @@ namespace Bloom.Book
 		/// something like "A blank page that allows to create custom items"; once
 		/// you modify that page, the description stops being accurate.
 		/// Now, I can think of scenarios where you'd want to keep description.
-		/// E.g. you have an alphabet chart, you add that to another template where hey, 
-		/// it's still an alphabet chart. This is a judgment call, which is worse. 
+		/// E.g. you have an alphabet chart, you add that to another template where hey,
+		/// it's still an alphabet chart. This is a judgment call, which is worse.
 		/// I'm judging that it's worse to have an out-of-date description than a missing one.
 		/// </remarks>
 		private static void ClearAwayPageDescription(XmlNode pageDiv)

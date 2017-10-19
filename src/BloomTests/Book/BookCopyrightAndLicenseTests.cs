@@ -562,6 +562,24 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void SetOriginalCopyrightAndLicense_HasNoCopyrightOrLicense_SourceCollection_GetsNoOriginalNotice()
+		{
+			try
+			{
+				_collectionSettings.IsSourceCollection = true;
+				var dom = SetOriginalCopyrightAndLicense(@" <div id='bloomDataDiv'>
+					  <div data-book='bookTitle' lang='en'>A really really empty book</div>
+					</div>");
+				Assert.AreEqual(null, GetEnglishOriginalCopyrightAndLicense(dom));
+				AssertOriginalCopyrightAndLicense(dom, "", "", "");
+			}
+			finally
+			{
+				_collectionSettings.IsSourceCollection = false;
+			}
+		}
+
+		[Test]
 		public void SetOriginalCopyrightAndLicense_HasLicenseButNoCopyright_GetsExpectedOriginalCopyrightAndLicense()
 		{
 			var dom = SetOriginalCopyrightAndLicense(
