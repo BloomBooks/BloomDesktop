@@ -58,12 +58,17 @@
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
         <target xml:lang="es-ES">
-          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizado las plantillas de Libros Descifrables y Libros por Niveles (varios vídeos)</g>
+          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizando las plantillas de Libros Descifrables y Libros Graduados (varios vídeos)</g>
         </target>
         <note>ID: training.videos.readers</note>
         <alt-trans>
           <target xml:lang="es-ES">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizado las plantillas de libros descifrables y graduados (varios vídeos)</g>
+        </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Utilizado las plantillas de Libros Descifrables y Libros por Niveles (varios vídeos)</g>
         </target>
         </alt-trans>
       </trans-unit>
@@ -104,12 +109,17 @@
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
         <target xml:lang="es-ES">
-          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para Libros Descifrables y Libros por Niveles (varios vídeos)</g>
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para Libros Descifrables y Libros Graduados (varios vídeos)</g>
         </target>
         <note>ID: training.videos.readertemplates</note>
         <alt-trans>
           <target xml:lang="es-ES">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para libros descifrables y graduados (varios vídeos)</g>
+        </target>
+        </alt-trans>
+        <alt-trans>
+          <target xml:lang="es-ES">
+          <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Creando un conjunto de plantillas para Libros Descifrables y Libros por Niveles (varios vídeos)</g>
         </target>
         </alt-trans>
       </trans-unit>
