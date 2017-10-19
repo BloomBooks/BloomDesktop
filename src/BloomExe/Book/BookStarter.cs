@@ -160,10 +160,10 @@ namespace Bloom.Book
 
 			SetBookTitle(storage, bookData, usingTemplate);
 
-			if(!usingTemplate &&
-				// when people add a book to a source collection, they are assumed *editing* the book, not making a derivative (BL-4497)
-				!_collectionSettings.IsSourceCollection)
+			if(!usingTemplate && !makingTemplate)
 			{
+				// If we're not making it from a template or making a template, we're deriving a translation from an existing book,
+				// and we should save the original copyright and license of that book.
 				BookCopyrightAndLicense.SetOriginalCopyrightAndLicense(storage.Dom, bookData, _collectionSettings);
 			}
 
