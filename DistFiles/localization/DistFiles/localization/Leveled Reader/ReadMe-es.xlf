@@ -86,7 +86,7 @@
       </trans-unit>
       <trans-unit id="leveled.and.decodable" approved="yes">
         <source xml:lang="en">So how do leveled reader <g id="genid-5" ctype="x-html-em">levels</g> fit in decodable reader <g id="genid-6" ctype="x-html-em">stages</g>? The two concepts are complementary, and Bloom allows you to set both a <g id="genid-7" ctype="x-html-em">decodable stage</g> and a <g id="genid-8" ctype="x-html-em">leveled reader level</g> for a book you are writing. Typically books at level 1 and possibly level 2 will also need to be written with <g id="genid-9" ctype="x-html-em">decodability stages</g> in mind. Books at the first level or two will also need to be careful about being <g id="genid-10" ctype="x-html-em">decodable</g> (i.e. using letters the reader has learned). So a sequence of books might look like this:</source>
-        <target xml:lang="es-ES">¿Qué tienen que ver los <g id="genid-5" ctype="x-html-em">niveles</g> de los libros por niveles con las <g id="genid-6" ctype="x-html-em">etapas</g> de los libros descifrables? Los dos conceptos son complementarios. Bloom le permite establecer una <g id="genid-7" ctype="x-html-em">etapa descifrable</g> y un <g id="genid-8" ctype="x-html-em">nivel de libro por niveles</g> para el libro que está escribiendo. Generalmente, los libros de nivel 1 y posiblemente de nivel 2 también deben ser escritos manteniendo en mente las <g id="genid-9" ctype="x-html-em">etapas descifrables</g>. También hay que ser cuidadosos para que los libros en el primer y probablemente en el segundo nivel sean <g id="genid-10" ctype="x-html-em">descifrables</g> (es decir, que usen solamente las letras ya aprendidas). Por lo tanto una secuencia de libros puede ser algo como esto:</target>
+        <target xml:lang="es-ES">¿Qué tienen que ver los <g id="genid-5" ctype="x-html-em">niveles</g> de los libros graduados con las <g id="genid-6" ctype="x-html-em">etapas</g> de los libros descifrables? Los dos conceptos son complementarios. Bloom le permite establecer una <g id="genid-7" ctype="x-html-em">etapa descifrable</g> y un <g id="genid-8" ctype="x-html-em">nivel de libro graduado</g> para el libro que está escribiendo. Generalmente, los libros de nivel 1 y posiblemente de nivel 2 también deben ser escritos manteniendo en mente las <g id="genid-9" ctype="x-html-em">etapas descifrables</g>. También hay que ser cuidadosos para que los libros en el primer y probablemente en el segundo nivel sean <g id="genid-10" ctype="x-html-em">descifrables</g> (es decir, que usen solamente las letras ya aprendidas). Por lo tanto una secuencia de libros puede ser algo como esto:</target>
         <note>ID: leveled.and.decodable</note>
         <alt-trans>
           <target xml:lang="es-ES">¿Qué tienen que ver los <g id="genid-5" ctype="x-html-em">niveles</g> de los libros graduados con las <g id="genid-6" ctype="x-html-em">etapas</g> de los libros descifrables? Los dos conceptos son complementarios. Bloom le permite establecer una <g id="genid-7" ctype="x-html-em">etapa descifrable</g> y un <g id="genid-8" ctype="x-html-em">nivel de libro por niveles</g> para el libro que está escribiendo. Generalmente, los libros de nivel 1 y posiblemente de nivel 2 también deben ser escritos manteniendo en mente las <g id="genid-9" ctype="x-html-em">etapas descifrables</g>. También hay que ser cuidadosos para que los libros en el primer y probablemente en el segundo nivel sean <g id="genid-10" ctype="x-html-em">descifrables</g> (es decir, que usen solamente las letras ya aprendidas). Por lo tanto una secuencia de libros puede ser algo como esto:</target>
@@ -100,13 +100,13 @@
       </trans-unit>
       <trans-unit id="leveled.reader.level" approved="yes">
         <source xml:lang="en">Leveled Reader Level</source>
-        <target xml:lang="es-ES">Nivel de Libro por Niveles</target>
+        <target xml:lang="es-ES">Nivel de Libro Graduado</target>
         <note>ID: leveled.reader.level</note>
         <alt-trans>
           <target xml:lang="es-ES">Nivel de Libro Nivelado</target>
         </alt-trans>
         <alt-trans>
-          <target xml:lang="es-ES">Nivel de Libro Graduado</target>
+          <target xml:lang="es-ES">Nivel de Libro por Niveles</target>
         </alt-trans>
       </trans-unit>
       <trans-unit id="decodable.stage" approved="yes">
