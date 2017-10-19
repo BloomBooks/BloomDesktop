@@ -559,8 +559,6 @@ namespace Bloom.Publish
 			_publishControl.BringToFront();
 		}
 
-
-
 		private void OnBookletRadioChanged(object sender, EventArgs e)
 		{
 			if (!_activated)
