@@ -8,8 +8,8 @@
         <note>ID: training.videos</note>
       </trans-unit>
       <trans-unit id="training.videos.watch" approved="yes">
-        <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser: </source>
-        <target xml:lang="pt-PT">Se o computador estiver conectado à internet, você pode ver vídeos no seu navegador: </target>
+        <source xml:lang="en">If you are connected to the internet now, you can watch videos in your web browser:</source>
+        <target xml:lang="pt-PT">Se o computador estiver conectado à internet, você pode ver vídeos no seu navegador:</target>
         <note>ID: training.videos.watch</note>
       </trans-unit>
       <trans-unit id="training.videos.all" approved="yes">
@@ -109,8 +109,8 @@
         <note>ID: training.videos.offline</note>
       </trans-unit>
       <trans-unit id="training.videos.download" approved="yes">
-        <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: </source>
-        <target xml:lang="pt-PT">Se você quiser baixar qualquer um desses vídeos para mostrar e compartilhar quando não há conexão de Internet, você pode baixar os vídeos em seu computador: </target>
+        <source xml:lang="en">If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer:</source>
+        <target xml:lang="pt-PT">Se você quiser baixar qualquer um desses vídeos para mostrar e compartilhar quando não há conexão de Internet, você pode baixar os vídeos em seu computador:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
